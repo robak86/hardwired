@@ -62,7 +62,7 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
             if (cache[childModule.id]){
                 return cache[childModule.id].getWithCache(cache, path);
             } else {
-                let childMaterializedModule:MaterializedContainer<any, any, any> = childModule.checkout(this.context);
+                let childMaterializedModule:any = childModule.checkout(this.context);
                 cache[childModule.id] = childMaterializedModule;
                 return childMaterializedModule.getWithCache(cache, path);
             }

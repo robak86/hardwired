@@ -1,23 +1,15 @@
 import {PathFunction} from "./Path";
-import {MaterializedContainer} from "../MaterializedContainer";
-
-
 
 
 export type ModuleGetKey<MM, MR> = keyof (MM & MR);
-export type Resolver<CONTAINER, OUT> = (container:CONTAINER) => OUT;
 
-
-export type MaterializedModule2<D, M extends ModulesRegistry> = D & {
+export type MaterializedModule2<D, M extends ModulesRegistry> =  {
     [K in keyof M]:MaterializedModule2<ExtractMR<M[K]>, ExtractR<M[K]>>;
-}
+} & D
 
 export type ExtractMR<M> = M extends IModule<infer MR, any> ? MR : never;
 export type ExtractR<M> = M extends IModule<any, infer R> ? R : never;
 
-export type ResolversRegistry<CONTAINER, D> = {
-    [K in keyof D]:Resolver<CONTAINER, D[K]>;
-}
 
 export type ModulesRegistry = {
     [key:string]:IModule<any, any>

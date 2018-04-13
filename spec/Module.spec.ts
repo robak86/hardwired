@@ -86,11 +86,13 @@ describe(`Module`, () => {
                     .import('childModule', childM)
                     .declare('t1', () => new T1())
                     .declare('t2', () => new T2())
-                    .declare('t1WithChildT1', (p) => [p.t1, p.childModule.childT1])
+                    .declare('t1WithChildT1', (p) => {
+
+                    })
                     .declare('t2WithChildT2', () => new T2())
                 ;
-
-                childM.checkout({}).get('childT1');
+                //
+                // childM.checkout({}).get('childT1');
 
                 // let materializedContainer = m1.checkout({});
                 //

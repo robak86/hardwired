@@ -38,14 +38,16 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
             this.imports as any,
             ctx as any,
             {}
-            );
+        );
     }
 
     checkoutAsync(ctx:C):Promise<MaterializedContainer> {
         throw new Error("implement me");
     }
 
+
     declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule2<D, M>, C1) => V):Module<D & Record<K, V>, M, C & C1> {
+        // declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule2<D, M>, C1) => V):Module<D & Record<K, V>, M, C & C1> {
         this.assertKeyNotTaken(key);
         this.declarations[key] = new DependencyResolver<any, any, any>(factory);
         return this as any;
