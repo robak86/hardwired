@@ -19,6 +19,8 @@
     "lodash": "^4.17.5"
   },
   "devDependencies": {
+    "@types/sinon": "^4.3.1",
+    "sinon": "^4.5.0",
     "lodash": "^4.17.5",
     "@types/chai": "^4.1.2",
     "@types/chai-as-promised": "^7.1.0",

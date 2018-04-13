@@ -41,22 +41,68 @@ describe(`Module`, () => {
 
 
     describe(`.get`, () => {
-        it(`returns registered dependency`, async () => {
+        class T1 {
+            id = Math.random();
+            type:string = 't1';
+        }
 
-            let m1 = module()
-                .declare('someString', () => "someStringValue")
-                .declare('someNumber', () => 123);
+        class T2 {
+            id = Math.random();
+            type:string = 't2';
+        }
 
-
-            let materializedContainer = m1.checkout({});
-
-            //TYPESAFE CHECK const c1:boolean = materializedContainer.get('someString');
-            //TYPESAFE CHECK const c2:boolean = materializedContainer.get('someNumber');
-
-            expect(materializedContainer.get('someString')).to.eq("someStringValue");
-            expect(materializedContainer.get('someNumber')).to.eq(123);
+        describe(`instances declared in current module`, () => {
 
 
+            it(`returns registered dependency`, async () => {
+                let m1 = module()
+                    .declare('t1', () => new T1())
+                    .declare('t2', () => new T2())
+                    .declare('t1_t2', (c) => {
+                        return [c.t1, c.t2]
+                    });
+
+                let materializedContainer = m1.checkout({});
+
+                expect(materializedContainer.get('t1').type).to.eq("t1");
+                expect(materializedContainer.get('t2').type).to.eq("t2");
+                expect(materializedContainer.get('t1_t2').map(t => t.type)).to.eql(['t1', 't2']);
+
+                expect([
+                    materializedContainer.get('t1').id,
+                    materializedContainer.get('t2').id,
+                ]).to.eql(materializedContainer.get('t1_t2').map(t => t.id))
+            });
+        });
+
+        describe(`instances fetched from submodules`, () => {
+
+            it(`returns registered dependency`, async () => {
+                let childM = module()
+                    .declare('childT1', () => new T1())
+                    .declare('childT2', () => new T2());
+
+                let m1 = module()
+                    .import('childModule', childM)
+                    .declare('t1', () => new T1())
+                    .declare('t2', () => new T2())
+                    .declare('t1WithChildT1', (p) => [p.t1, p.childModule.childT1])
+                    .declare('t2WithChildT2', () => new T2())
+                ;
+
+                childM.checkout({}).get('childT1');
+
+                // let materializedContainer = m1.checkout({});
+                //
+                // expect(materializedContainer.get('t1').type).to.eq("t1");
+                // expect(materializedContainer.get('t2').type).to.eq("t2");
+                // expect(materializedContainer.get('t1_t2').map(t => t.type)).to.eql(['t1', 't2']);
+                //
+                // expect([
+                //     materializedContainer.get('t1').id,
+                //     materializedContainer.get('t2').id,
+                // ]).to.eql(materializedContainer.get('t1_t2').map(t => t.id))
+            });
         });
     });
 });

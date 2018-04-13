@@ -1,20 +1,24 @@
 import {invariant, PathFunction} from "./utils";
 import {MaterializedModule2, ModuleGetKey, ModulesRegistry} from "./utils/IModule";
 import {MaterializedContainer} from "./MaterializedContainer";
+import {nextId} from "./utils/fastId";
+import {DependencyResolver} from "./DependencyResolver";
 
 
 export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
-    private importedModules:{ [key:string]:Module } = {};
-    private ownEntries:{ [key:string]:any } = {};
+    public id:string = nextId();
+
+    private imports:{ [key:string]:Module } = {};
+    private declarations:{ [key:string]:DependencyResolver<any, any, any> } = {};
 
     constructor() {}
 
     hasModule(key:keyof M):boolean {
-        return !!this.importedModules[key];
+        return !!this.imports[key];
     }
 
     isDeclared(key:keyof D):boolean {
-        return !!this.ownEntries;
+        return !!this.declarations;
     }
 
     get<K extends ModuleGetKey<M, D>>(key:K):MaterializedModule2<D, M>[K] {
@@ -28,8 +32,13 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     //     throw new Error("not implemented");
     // }
 
-    checkout(ctx:C):MaterializedContainer<D,M,C> {
-        return new MaterializedContainer<D, M, C>(this.ownEntries as any, this.importedModules as any, ctx);
+    checkout(ctx:C):MaterializedContainer<D, M, C> {
+        return new MaterializedContainer<D, M, C>(
+            this.declarations as any,
+            this.imports as any,
+            ctx as any,
+            {}
+            );
     }
 
     checkoutAsync(ctx:C):Promise<MaterializedContainer> {
@@ -38,7 +47,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
     declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule2<D, M>, C1) => V):Module<D & Record<K, V>, M, C & C1> {
         this.assertKeyNotTaken(key);
-        this.ownEntries[key] = factory;
+        this.declarations[key] = new DependencyResolver<any, any, any>(factory);
         return this as any;
     }
 
@@ -53,15 +62,15 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
     import<K extends string, M1 extends Module>(key:K, mod2:M1):Module<D, M & Record<K, M1>> {
         this.assertKeyNotTaken(key);
-        this.importedModules[key] = mod2;
+        this.imports[key] = mod2;
 
         return this as any;
     }
 
 
     private assertKeyNotTaken(key:string) {
-        invariant(!this.importedModules[key], `Cannot register module. Given key=${key} is already taken by other module`);
-        invariant(!this.ownEntries[key], `Cannot register module. Given key=${key} is already taken by module's registered dependency`);
+        invariant(!this.imports[key], `Cannot register module. Given key=${key} is already taken by other module`);
+        invariant(!this.declarations[key], `Cannot register module. Given key=${key} is already taken by module's registered dependency`);
     }
 
 // lazyImport<M1 extends ModulesRegistry = {}>(mod2:M1):Module<D, M & M1> {

@@ -1,4 +1,7 @@
 import {PathFunction} from "./Path";
+import {MaterializedContainer} from "../MaterializedContainer";
+
+
 
 
 export type ModuleGetKey<MM, MR> = keyof (MM & MR);
@@ -21,6 +24,7 @@ export type ModulesRegistry = {
 }
 
 export interface IModule<D = {}, M extends ModulesRegistry = {}, C = {}> {
+    id:string;
     hasModule(key:keyof M):boolean;
     isDeclared(key:keyof D):boolean;
 
@@ -30,4 +34,10 @@ export interface IModule<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
     declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule2<D, M>, C1) => V):IModule<D & Record<K, V>, M, C & C1>
     import<K extends string, M1 extends IModule>(key:K, mod2:M1):IModule<D, M & Record<K, M1>>
+
+    checkout(ctx:C):IMaterializedContainer<D, M, C>
+}
+
+export interface IMaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {}> {
+    get:PathFunction<MaterializedModule2<D, M>>
 }
