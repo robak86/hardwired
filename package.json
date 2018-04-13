@@ -11,13 +11,18 @@
     "build:dist": "npm run build:clean && npm run build:copy && npm run build:compile",
     "build:watch": "npm run build:clean && npm run build:copy && tsc --watch --sourceMap --pretty",
     "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec dist/spec/**/*.spec.js | coveralls",
-    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js",
+    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "peerDependencies": {
+    "lodash": "^4.17.5"
+  },
+  "devDependencies": {
+    "lodash": "^4.17.5",
     "@types/chai": "^4.1.2",
     "@types/chai-as-promised": "^7.1.0",
+    "@types/lodash": "^4.14.106",
     "@types/mocha": "^5.0.0",
     "@types/node": "^9.6.5",
     "chai": "^4.1.2",
