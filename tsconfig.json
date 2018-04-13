@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./dist",
+    "sourceMap": true,
+    "target": "es5",
+    "lib": [
+      "dom",
+      "esnext"
+    ],
+    "types": [
+      "mocha",
+      "chai",
+      "chai-as-promised",
+      "node"
+    ],
+    "jsx": "react",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true
+  }
+}
+

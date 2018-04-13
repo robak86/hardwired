@@ -1,0 +1,29 @@
+{
+  "name": "hardwired",
+  "version": "0.0.1",
+  "description": "Minimalistic type-safe dependencies container",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "mocha --require dist/spec/SpecHelper.js dist/spec/**/*.spec.js",
+    "build:clean": "rm -rf ./dist && mkdir -p dist/lib",
+    "build:copy": "cp package.json ./dist/lib/ && cp README.md ./dist/lib/",
+    "build:compile": "tsc",
+    "build:dist": "npm run build:clean && npm run build:copy && npm run build:compile",
+    "build:watch": "npm run build:clean && npm run build:copy && tsc --watch --sourceMap --pretty",
+    "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec dist/spec/**/*.spec.js | coveralls",
+    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js",
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/chai": "^4.1.2",
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/mocha": "^5.0.0",
+    "@types/node": "^9.6.5",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^5.1.0",
+    "source-map-support": "^0.5.4",
+    "typescript": "^2.8.1"
+  }
+}

@@ -1,0 +1,12 @@
+.idea
+dist
+**/node_modules
+.DS_Store
+*.iml
+tmp
+minio_data
+*.log
+**/.cache
+.cache
+
+
