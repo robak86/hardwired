@@ -1,10 +1,27 @@
-import {IModule, MaterializedModule2, ModulesRegistry} from "./utils/IModule";
 import {PathFunction} from "./utils";
-import {nextId} from "./utils/fastId";
 import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
+import {MaterializedModule2, ModulesRegistry} from "./Module";
 
 // const a:Exclude<"a", "b"> = {};
 
+//
+// function proxyAccessor() {
+//     new Proxy({} as any, {
+//         has(target, property):boolean {
+//             return true;
+//         },
+//         get(target, property) {
+//
+//             let returned = self.get(property as any);
+//
+//             return returned;
+//
+//
+//             // self.path.push(property as string);
+//             // return self.pathSniffer;
+//         }
+//     })
+// }
 
 export type DependencyResolversRegistry<D> = {
     [K in keyof D]:DependencyResolverFunction<any, any, any>;
@@ -13,7 +30,7 @@ export type DependencyResolversRegistry<D> = {
 export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
     private cache:{ [key:string]:any } = {};
-    private readonly proxiedGet;
+    protected readonly proxiedGet;
 
     constructor(private declarationsResolvers:DependencyResolversRegistry<D>,
                 private imports:M,
@@ -28,7 +45,9 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
             },
             get(target, property) {
 
-                return self.get(property as any);
+                let returned = self.get(property as any);
+
+                return returned;
 
 
                 // self.path.push(property as string);
@@ -59,12 +78,12 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
 
         if (this.imports[first]) {
             let childModule = this.imports[first];
-            if (cache[childModule.id]){
+            if (cache[childModule.id]) {
                 return cache[childModule.id].getWithCache(cache, path);
             } else {
                 let childMaterializedModule:any = childModule.checkout(this.context);
                 cache[childModule.id] = childMaterializedModule;
-                return childMaterializedModule.getWithCache(cache, path);
+                return childMaterializedModule.proxiedGet; //TODO: we have to pass cache !!!!
             }
 
 

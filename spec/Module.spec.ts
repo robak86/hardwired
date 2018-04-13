@@ -77,22 +77,29 @@ describe(`Module`, () => {
 
         describe(`instances fetched from submodules`, () => {
 
-            it(`returns registered dependency`, async () => {
+            it.only(`returns registered dependency`, async () => {
                 let childM = module()
-                    .declare('childT1', () => new T1())
-                    .declare('childT2', () => new T2());
+                    .declare('t1', () => new T1())
+                    .declare('t2', () => new T2());
 
                 let m1 = module()
                     .import('childModule', childM)
                     .declare('t1', () => new T1())
                     .declare('t2', () => new T2())
-                    .declare('t1WithChildT1', (p) => {
-
-                    })
-                    .declare('t2WithChildT2', () => new T2())
+                    .declare('t1FromChildModule', (c) => c.childModule.t1)
+                    .declare('t2FromChildModule', (c) => c.childModule.t2)
+                    .declare('t1WithChildT1', (p) => [p.t1, p.childModule.t1])
+                    .declare('t2WithChildT2', (p) => [p.t1, p.childModule.t2])
                 ;
-                //
-                // childM.checkout({}).get('childT1');
+
+                let container = m1.checkout({});
+
+                // container.get('t1FromChildModule').id
+                expect(container.get('childModule', 't1').type).to.eq('t1');
+                // container.get('childModule', 't1').id
+
+                // expect(container.get('t1FromChildModule').id).to.eql(container.get('childModule', 't1').id)
+
 
                 // let materializedContainer = m1.checkout({});
                 //
