@@ -52,8 +52,6 @@ describe(`Module`, () => {
         }
 
         describe(`instances declared in current module`, () => {
-
-
             it(`returns registered dependency`, async () => {
                 let m1 = module()
                     .declare('t1', () => new T1())
@@ -77,12 +75,12 @@ describe(`Module`, () => {
 
         describe(`instances fetched from submodules`, () => {
 
-            it.only(`returns registered dependency`, async () => {
-                let childM = module()
+            it(`returns registered dependency`, async () => {
+                let childM = module('1')
                     .declare('t1', () => new T1())
                     .declare('t2', () => new T2());
 
-                let m1 = module()
+                let m1 = module('2')
                     .import('childModule', childM)
                     .declare('t1', () => new T1())
                     .declare('t2', () => new T2())
@@ -94,23 +92,9 @@ describe(`Module`, () => {
 
                 let container = m1.checkout({});
 
-                // container.get('t1FromChildModule').id
                 expect(container.get('childModule', 't1').type).to.eq('t1');
-                // container.get('childModule', 't1').id
-
-                // expect(container.get('t1FromChildModule').id).to.eql(container.get('childModule', 't1').id)
-
-
-                // let materializedContainer = m1.checkout({});
-                //
-                // expect(materializedContainer.get('t1').type).to.eq("t1");
-                // expect(materializedContainer.get('t2').type).to.eq("t2");
-                // expect(materializedContainer.get('t1_t2').map(t => t.type)).to.eql(['t1', 't2']);
-                //
-                // expect([
-                //     materializedContainer.get('t1').id,
-                //     materializedContainer.get('t2').id,
-                // ]).to.eql(materializedContainer.get('t1_t2').map(t => t.id))
+                expect(container.get('t1FromChildModule').id).to.eql(container.get('childModule', 't1').id);
+                expect(container.get('t2FromChildModule').id).to.eql(container.get('childModule', 't2').id);
             });
         });
     });
