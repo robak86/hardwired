@@ -4,9 +4,13 @@ dist
 .DS_Store
 *.iml
 tmp
-minio_data
+lib
 *.log
 **/.cache
 .cache
+/**/lib
+*.tsbuildinfo
+.nyc_output
+.vscode
 
 

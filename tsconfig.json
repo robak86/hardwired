@@ -1,27 +1,29 @@
 {
   "compilerOptions": {
-    "rootDir": "./",
-    "outDir": "./dist",
+    "composite": true,
+    "lib": [
+      "ES2019.Array",
+      "DOM"
+    ],
+    "declarationMap": true,
     "sourceMap": true,
     "target": "es5",
-    "lib": [
-      "dom",
-      "esnext"
-    ],
-    "types": [
-      "mocha",
-      "chai",
-      "chai-as-promised",
-      "node"
-    ],
     "jsx": "react",
     "module": "commonjs",
     "moduleResolution": "node",
+    "isolatedModules": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
-    "declaration": true
+    "declaration": true,
+    "alwaysStrict": true,
+    "strict": true,
+    "strictFunctionTypes": false,
+    "noImplicitAny": false,
+    "keyofStringsOnly": false,
+    "downlevelIteration": true,
+    "esModuleInterop": true
   }
 }
 

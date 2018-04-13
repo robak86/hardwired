@@ -1,0 +1,19 @@
+{
+  "name": "@hardwired/core",
+  "version": "0.0.1",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "lib",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -b ./tsconfig.json",
+    "test": "yarn test"
+  }
+}

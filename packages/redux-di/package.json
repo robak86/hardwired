@@ -1,0 +1,30 @@
+{
+  "name": "@hardwired/redux-di",
+  "version": "0.0.1",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "dependencies": {
+    "@hardwired/core": "*"
+  },
+  "peerDependencies": {
+    "redux": "^4.0.5",
+    "redux-saga": "^1.1.3"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^10.0.4",
+    "@types/react": "^16.9.34",
+    "redux": "^4.0.5",
+    "redux-saga": "^1.1.3"
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -b ./tsconfig.json",
+    "test": "yarn test"
+  }
+}

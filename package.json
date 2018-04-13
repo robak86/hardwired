@@ -2,33 +2,50 @@
   "name": "hardwired",
   "version": "0.0.1",
   "description": "Minimalistic type-safe dependencies container",
-  "main": "dist/index.js",
+  "private": true,
   "scripts": {
-    "test": "mocha --require dist/spec/SpecHelper.js dist/spec/**/*.spec.js",
-    "build:clean": "rm -rf ./dist && mkdir -p dist/lib",
-    "build:copy": "cp package.json ./dist/lib/ && cp README.md ./dist/lib/",
+    "start": "tsc -b packages/tsconfig.json --watch --pretty",
+    "build": "tsc -b packages/tsconfig.json --pretty",
+    "test": "yarn run jest --config jest.config.js",
+    "test:watch": "yarn run jest --config jest.config.js --watch",
+    "postinstall": "yarn run update:tsconfig.json && yarn run update:package.json",
+    "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
+    "update:package.json": "ts-node scripts/update-package-json.ts",
+    "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
     "build:compile": "tsc",
-    "build:dist": "npm run build:clean && npm run build:copy && npm run build:compile",
-    "build:watch": "npm run build:clean && npm run build:copy && tsc --watch --sourceMap --pretty",
-    "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec dist/spec/**/*.spec.js | coveralls",
-    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js"
+    "build:link": "yarn run build:copy && cd ./packages/lib && yarn link && yarn install --production",
+    "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec packages/**/__test__/*.test.js | coveralls",
+    "build:coverage:local": "nyc mocha -- -- spec packages/**/__test__/*.test.js"
   },
-  "author": "",
+  "author": "Tomasz Robaczewski",
   "license": "ISC",
   "peerDependencies": {
-    "lodash": "^4.17.5"
+    "lodash": "^4.17.11"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
-    "lodash": "^4.17.5",
-    "@types/chai": "^4.1.2",
-    "@types/chai-as-promised": "^7.1.0",
-    "@types/lodash": "^4.14.106",
-    "@types/mocha": "^5.0.0",
-    "@types/node": "^9.6.5",
-    "chai": "^4.1.2",
-    "chai-as-promised": "^7.1.1",
-    "mocha": "^5.1.0",
-    "source-map-support": "^0.5.4",
-    "typescript": "^2.8.1"
+    "@types/benchmark": "^1.0.33",
+    "@types/jest": "^25.2.2",
+    "@types/node": "^13.13.2",
+    "@types/ramda": "^0.27.6",
+    "benny": "^3.6.14",
+    "concurrently": "^5.2.0",
+    "jest": "^26.0.1",
+    "nyc": "^15.0.1",
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2",
+    "source-map-support": "^0.5.19",
+    "ts-expect": "^1.1.0",
+    "ts-jest": "^26.0.0",
+    "ts-node": "^8.10.1",
+    "tslint": "^6.1.2",
+    "typescript": "^4.0.1-rc"
+  },
+  "dependencies": {
+    "ramda": "^0.27.0",
+    "tiny-invariant": "^1.1.0",
+    "utility-types": "^3.10.0"
   }
 }

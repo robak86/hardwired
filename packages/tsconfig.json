@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./core/tsconfig.json"
+    },
+    {
+      "path": "./react-di/tsconfig.json"
+    },
+    {
+      "path": "./redux-di/tsconfig.json"
+    }
+  ]
+}

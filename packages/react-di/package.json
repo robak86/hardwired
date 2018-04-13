@@ -1,0 +1,26 @@
+{
+  "name": "@hardwired/react-di",
+  "version": "0.0.1",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "dependencies": {
+    "@hardwired/core": "*"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^10.0.4",
+    "@types/react": "^16.9.34",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -b ./tsconfig.json",
+    "test": "yarn test"
+  }
+}
