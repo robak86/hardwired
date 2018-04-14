@@ -1,20 +1,21 @@
 import {module} from "../lib";
 import {expect} from 'chai';
+import {spy} from 'sinon';
 
 
 describe(`Module`, () => {
 
     describe(`.hasModule`, () => {
         it(`returns true if there is a module registered for given key`, async () => {
-            let otherModule = module();
-            let rootModule = module()
+            let otherModule = module('someName');
+            let rootModule = module('someOtherModule')
                 .import('otherModule', otherModule);
 
             expect(rootModule.hasModule('otherModule')).to.eq(true);
         });
 
         it(`returns false if module is missing`, async () => {
-            let otherModule = module();
+            let otherModule = module('otherModule');
             expect((otherModule as any).hasModule('otherModule')).to.eq(false);
         });
 
@@ -23,15 +24,40 @@ describe(`Module`, () => {
         });
     });
 
+    describe(`.imports`, () => {
+        it(`doesn't mutate original module`, async () => {
+            let childModule1 = module('child1');
+            let childModule2 = module('child2');
+
+            let rootModule = module('someOtherModule')
+                .import('c1', childModule1);
+
+            let updatedRoot = rootModule.import('c2', childModule2);
+
+            expect((<any>rootModule).hasModule('c2')).to.eq(false);
+        });
+    });
+
     describe(`.declare`, () => {
         it(`registers new dependency resolver`, async () => {
             class SomeType {public a:string;}
 
-            let m1 = module()
+            let m1 = module('otherModule')
                 .declare('someType', () => new SomeType());
 
             expect(m1.isDeclared('someType')).to.eq(true);
+        });
 
+        it(`does not mutate original module`, async () => {
+            let m1 = module('m1')
+                .declare('someType', () => true);
+
+
+            let m2 = m1.declare('someNewType', () => 123);
+
+            expect((<any>m1).isDeclared('someNewType')).to.eq(false);
+            expect(m2.isDeclared('someNewType')).to.eq(true);
+            expect(m2.isDeclared('someType')).to.eq(true);
         });
 
         it(`returns new instance of module (doesn't mutate original module)`, async () => {
@@ -39,6 +65,32 @@ describe(`Module`, () => {
         });
     });
 
+
+    describe(`.undeclare`, () => {
+        it(`removes declaration`, async () => {
+            let m1 = module('m1')
+                .declare('a', () => 1)
+                .declare('b', () => 2);
+
+            let m2 = m1.undeclare('a');
+
+            expect(m1.isDeclared(('a'))).to.eq(true);
+            expect(m1.isDeclared(('b'))).to.eq(true);
+
+            expect((<any>m2).isDeclared('a')).to.eq(false);
+            expect(m2.isDeclared('b')).to.eq(true);
+        });
+    });
+
+    describe(`.replace`, () => {
+        it(`replaces declaration`, async () => {
+            let m1 = module('m1')
+                .declare('a', () => 1);
+
+            let updated = m1.replace('a', () => 2);
+            expect(updated.checkout({}).get('a')).to.eq(2);
+        });
+    });
 
     describe(`.get`, () => {
         class T1 {
@@ -53,7 +105,7 @@ describe(`Module`, () => {
 
         describe(`instances declared in current module`, () => {
             it(`returns registered dependency`, async () => {
-                let m1 = module()
+                let m1 = module('m1')
                     .declare('t1', () => new T1())
                     .declare('t2', () => new T2())
                     .declare('t1_t2', (c) => {
@@ -95,6 +147,109 @@ describe(`Module`, () => {
                 expect(container.get('childModule', 't1').type).to.eq('t1');
                 expect(container.get('t1FromChildModule').id).to.eql(container.get('childModule', 't1').id);
                 expect(container.get('t2FromChildModule').id).to.eql(container.get('childModule', 't2').id);
+            });
+        });
+
+
+        describe(`dependencies resolution`, () => {
+            it(`resolves all dependencies lazily`, async () => {
+                let f1 = spy(() => 123);
+                let f2 = spy(() => 456);
+                let f3 = spy(() => 678);
+                let f4 = spy(() => 9);
+
+
+                let m1 = module('m1')
+                    .declare('s3', f3)
+                    .declare('s4', f4);
+
+                let m2 = module('m2')
+                    .import('m1', m1)
+                    .declare('s1', f1)
+                    .declare('s2', f2);
+
+                let container = m2.checkout({});
+
+                container.get('s1');
+                expect(f1.calledOnce).to.eq(true);
+
+                expect(f2.calledOnce).to.eq(false);
+                expect(f3.calledOnce).to.eq(false);
+                expect(f4.calledOnce).to.eq(false);
+            });
+
+            it(`caches all initialized dependencies`, async () => {
+                let f1 = spy(() => 123);
+                let f2 = spy(() => 456);
+                let f3 = spy(() => 678);
+                let f4 = spy(() => 9);
+
+                let m1 = module('m1')
+                    .declare('s3', f3)
+                    .declare('s4', f4);
+
+                let m2 = module('m2')
+                    .import('m1', m1)
+                    .declare('s1', f1)
+                    .declare('s2', f2)
+                    .declare('s3_s1', (c) => [c.m1.s3, c.s1])
+                    .declare('s4_s2', (c) => [c.m1.s4, c.s2]);
+
+                let container = m2.checkout({});
+
+                container.get('s1');
+                container.get('s1');
+                container.get('s3_s1');
+                container.get('s4_s2');
+                container.get('m1', 's3');
+                container.get('m1', 's4');
+
+                expect(f1.calledOnce).to.eq(true);
+                expect(f2.calledOnce).to.eq(true);
+                expect(f3.calledOnce).to.eq(true);
+                expect(f4.calledOnce).to.eq(true);
+            });
+
+            it(`calls all dependecies factory functions with correct context`, async () => {
+                let f1 = spy(() => 123);
+                let f2 = spy(() => 456);
+                let f3 = spy(() => 678);
+                let f4 = spy(() => 9);
+
+                let m1 = module('m1')
+                    .declare('s3', f3)
+                    .declare('s4', f4);
+
+                let m2 = module('m2')
+                    .import('m1', m1)
+                    .declare('s1', f1)
+                    .declare('s2', f2)
+                    .declare('s3_s1', (c) => [c.m1.s3, c.s1])
+                    .declare('s4_s2', (c) => [c.m1.s4, c.s2]);
+
+                let container = m2.checkout({someCtxVal: 1});
+
+                container.get('s1');
+                container.get('s1');
+                container.get('s3_s1');
+                container.get('s4_s2');
+                container.get('m1', 's3');
+                container.get('m1', 's4');
+
+                expect(f1.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
+                expect(f2.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
+                expect(f3.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
+                expect(f4.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
+            });
+
+            //TODO: Maximum call stack size exceeded
+            it.skip(`properly resolvers circular dependencies`, async () => {
+                let m1 = module('m1')
+                    .declare('i', () => 1)
+                    .declare('a', (c:any) => c.i + c.b)
+                    .declare('b', (c:any) => c.i + c.a);
+
+                m1.checkout({}).get('a')
             });
         });
     });

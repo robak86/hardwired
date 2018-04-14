@@ -11,7 +11,8 @@
     "build:dist": "npm run build:clean && npm run build:copy && npm run build:compile",
     "build:watch": "npm run build:clean && npm run build:copy && tsc --watch --sourceMap --pretty",
     "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec dist/spec/**/*.spec.js | coveralls",
-    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js"
+    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js",
+    "preinstall": "npm run build:dist"
   },
   "author": "",
   "license": "ISC",
@@ -31,6 +32,7 @@
     "chai-as-promised": "^7.1.1",
     "mocha": "^5.1.0",
     "source-map-support": "^0.5.4",
-    "typescript": "^2.8.1"
+    "typescript": "^2.8.1",
+    "leakage": "^0.3.0"
   }
 }
