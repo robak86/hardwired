@@ -183,15 +183,24 @@ describe(`Module`, () => {
                 let f2 = spy(() => 456);
                 let f3 = spy(() => 678);
                 let f4 = spy(() => 9);
+                let f5 = spy(() => 9);
+                let f6 = spy(() => 9);
+
+
+                let m0 = module('m1')
+                    .declare('s5', f5)
+                    .declare('s6', f6);
 
                 let m1 = module('m1')
-                    .declare('s3', f3)
-                    .declare('s4', f4);
+                    .import('m0', m0)
+                    .declare('s3', (c) => [f3(), c.m0.s6] )
+                    .declare('s4', (c) => [f4(), c.m0.s5]);
 
                 let m2 = module('m2')
                     .import('m1', m1)
-                    .declare('s1', f1)
-                    .declare('s2', f2)
+                    .import('m0', m0)
+                    .declare('s1', (c) => [f3(), c.m0.s5])
+                    .declare('s2', (c) => [f2(), c.m0.s6] )
                     .declare('s3_s1', (c) => [c.m1.s3, c.s1])
                     .declare('s4_s2', (c) => [c.m1.s4, c.s2]);
 
