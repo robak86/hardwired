@@ -10,9 +10,9 @@
     "build:compile": "tsc",
     "build:dist": "npm run build:clean && npm run build:copy && npm run build:compile",
     "build:watch": "npm run build:clean && npm run build:copy && tsc --watch --sourceMap --pretty",
+    "build:link": "npm run build:copy && cd ./dist/lib && yarn link && yarn install --production",
     "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec dist/spec/**/*.spec.js | coveralls",
-    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js",
-    "preinstall": "npm run build:dist"
+    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js"
   },
   "author": "",
   "license": "ISC",

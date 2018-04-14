@@ -187,36 +187,48 @@ describe(`Module`, () => {
                 let f6 = spy(() => 9);
 
 
-                let m0 = module('m1')
-                    .declare('s5', f5)
-                    .declare('s6', f6);
+                let c = module('c')
+                    .declare('f1', f1)
+                    .declare('f2', f2)
+                    .declare('f1+f2', ({f1, f2}) => f1 + f2);
 
-                let m1 = module('m1')
-                    .import('m0', m0)
-                    .declare('s3', (c) => [f3(), c.m0.s6] )
-                    .declare('s4', (c) => [f4(), c.m0.s5]);
+                let b = module('b')
+                    .import('c', c)
+                    .declare('f3', f3)
+                    .declare('f4', f4)
+                    .declare('f3+f4', ({f3, f4}) => f3 + f4)
+                    .declare('f1+f2+f3+f4', (_) => _.c.f1 + _.c.f2 + _.f3 + _.f3);
 
-                let m2 = module('m2')
-                    .import('m1', m1)
-                    .import('m0', m0)
-                    .declare('s1', (c) => [f3(), c.m0.s5])
-                    .declare('s2', (c) => [f2(), c.m0.s6] )
-                    .declare('s3_s1', (c) => [c.m1.s3, c.s1])
-                    .declare('s4_s2', (c) => [c.m1.s4, c.s2]);
+                let a = module('a')
+                    .import('b', b)
+                    .import('c', c)
+                    .declare('f5', f5)
+                    .declare('f6', f6)
+                    .declare('f5+f1', (_) => _.c.f1 + _.f5)
+                    .declare('f6+f2', (_) => _.c.f2 + _.f6);
 
-                let container = m2.checkout({});
+                let container = a.checkout({});
 
-                container.get('s1');
-                container.get('s1');
-                container.get('s3_s1');
-                container.get('s4_s2');
-                container.get('m1', 's3');
-                container.get('m1', 's4');
+                container.get('b');
+                container.get('c');
+                container.get('f5');
+                container.get('f6');
+                container.get('f5+f1');
+                container.get('f6+f2');
+                container.get('b', 'f3');
+                container.get('b', 'f4');
+                container.get('b', 'f3+f4');
+                container.get('b', 'f1+f2+f3+f4');
+                container.get('b','c', 'f1');
+                container.get('b','c', 'f2');
+                container.get('b','c', 'f1+f2');
 
                 expect(f1.calledOnce).to.eq(true);
                 expect(f2.calledOnce).to.eq(true);
                 expect(f3.calledOnce).to.eq(true);
                 expect(f4.calledOnce).to.eq(true);
+                expect(f5.calledOnce).to.eq(true);
+                expect(f6.calledOnce).to.eq(true);
             });
 
             it(`calls all dependecies factory functions with correct context`, async () => {

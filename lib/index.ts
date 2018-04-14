@@ -1,5 +1,6 @@
 import {Module} from "./Module";
 
+export * from './Module';
 
 //TODO: make sure that there won't be any collisions!!!!
 export function module(name:string):Module {
