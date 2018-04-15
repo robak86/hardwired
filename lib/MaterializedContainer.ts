@@ -1,6 +1,6 @@
 import {PathFunction} from "./utils";
 import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
-import {MaterializedModule, ModulesRegistry} from "./Module";
+import {MaterializedModule, Module, ModulesRegistry} from "./Module";
 
 
 export type DependencyResolversRegistry<D> = {
@@ -26,7 +26,10 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
         }, null);
     };
 
-    // get()
+
+    import<D1,M1 extends ModulesRegistry,C1, K extends keyof D1>(module:Module<D1,M1,C1>, key: K):D1[K]{
+        throw new Error("Implement met");
+    }
 
     private getProxiedAccessor(cache) {
         const self = this;

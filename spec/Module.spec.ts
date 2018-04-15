@@ -24,8 +24,17 @@ describe(`Module`, () => {
         });
     });
 
-    describe(``, () => {
+    describe(`.import`, () => {
+        it(`does something`, async () => {
+            const m1 = module('m1')
+                .declare('wtf', () => true);
 
+            const m2 = module('m2')
+                .declare('wtf2', () => false);
+
+
+            m2.checkout({}).import(m1, 'wtf')
+        });
     });
 
     describe(`.imports`, () => {
