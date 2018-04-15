@@ -1,11 +1,13 @@
 import {PathFunction} from "./utils";
 import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
-import {MaterializedModule2, ModulesRegistry} from "./Module";
+import {MaterializedModule, ModulesRegistry} from "./Module";
 
 
 export type DependencyResolversRegistry<D> = {
     [K in keyof D]:DependencyResolverFunction<any, any, any>;
 }
+
+// export type Module
 
 export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {}> {
     private cache:{ [key:string]:any } = {};
@@ -14,7 +16,7 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
                 private imports:M,
                 private context:C) {}
 
-    get:PathFunction<MaterializedModule2<D, M>> = (...args:any[]) => {
+    get:PathFunction<MaterializedModule<D, M>> = (...args:any[]) => {
         return args.reduce((prev, currentKey) => {
             if (prev) {
                 return prev[currentKey];
@@ -23,6 +25,8 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
             }
         }, null);
     };
+
+    // get()
 
     private getProxiedAccessor(cache) {
         const self = this;

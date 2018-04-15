@@ -24,6 +24,10 @@ describe(`Module`, () => {
         });
     });
 
+    describe(``, () => {
+
+    });
+
     describe(`.imports`, () => {
         it(`doesn't mutate original module`, async () => {
             let childModule1 = module('child1');
@@ -150,6 +154,15 @@ describe(`Module`, () => {
             });
         });
 
+        describe(`using enums`, () => {
+            it(`works`, async () => {
+
+
+                const m1 = module('m1')
+
+            });
+        });
+
 
         describe(`dependencies resolution`, () => {
             it(`resolves all dependencies lazily`, async () => {
@@ -219,9 +232,9 @@ describe(`Module`, () => {
                 container.get('b', 'f4');
                 container.get('b', 'f3+f4');
                 container.get('b', 'f1+f2+f3+f4');
-                container.get('b','c', 'f1');
-                container.get('b','c', 'f2');
-                container.get('b','c', 'f1+f2');
+                container.get('b', 'c', 'f1');
+                container.get('b', 'c', 'f2');
+                container.get('b', 'c', 'f1+f2');
 
                 expect(f1.calledOnce).to.eq(true);
                 expect(f2.calledOnce).to.eq(true);
@@ -272,6 +285,33 @@ describe(`Module`, () => {
 
                 m1.checkout({}).get('a')
             });
+        });
+    });
+
+
+    describe(`.inject`, () => {
+        it(`replaces all related modules in whole tree`, async () => {
+            let m1 = module('m1')
+                .declare('val', () => 1);
+
+
+            let m2 = module('m2')
+                .import('child', m1)
+                .declare('valFromChild', c => c.child.val);
+
+            let m3 = module('m3')
+                .import('child1', m1)
+                .import('child2', m2)
+                .declare('val', c => c.child2.valFromChild);
+
+            let mocked = m3.inject(m1.replace('val', c => 2));
+
+            expect(mocked.checkout({}).get('val')).to.eq(2);
+            expect(mocked.checkout({}).get('child1', 'val')).to.eq(2);
+            expect(mocked.checkout({}).get('child2', 'valFromChild')).to.eq(2);
+            expect(mocked.checkout({}).get('child2', 'child', 'val')).to.eq(2);
+
+            expect(m3).not.to.eq(mocked);
         });
     });
 });

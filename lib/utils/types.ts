@@ -12,3 +12,7 @@ export type Sub<O extends string,
  * @example Omit<{a: number, b: string}, keyof {a: number}> // === {b: string}
  */
 export type Omit<O, D extends string> = Pick<O, Sub<keyof O, D>>
+
+export interface Type<T> {
+    new(...args:any[]):T;
+}
