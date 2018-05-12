@@ -5,20 +5,42 @@ import {spy} from 'sinon';
 
 describe(`Module`, () => {
 
+    describe(`.hasModule`, () => {
+        it(`returns true if there is a module registered for given key`, async () => {
+            let otherModule = module('someName');
+            let rootModule = module('someOtherModule')
+                .import('otherModule', otherModule);
 
-    describe(`.import`, () => {
-        it(`does something`, async () => {
-            const m1 = module('m1')
-                .declare('wtf', () => true);
+            expect(rootModule.hasModule('otherModule')).to.eq(true);
+        });
 
-            const m2 = module('m2')
-                .declare('wtf2', () => false);
+        it(`returns false if module is missing`, async () => {
+            let otherModule = module('otherModule');
+            expect((otherModule as any).hasModule('otherModule')).to.eq(false);
+        });
 
+        it(`returns new instance of module (doesn't mutate original module)`, async () => {
 
-            m2.checkout({}).import(m1, 'wtf')
         });
     });
 
+    describe(``, () => {
+
+    });
+
+    describe(`.imports`, () => {
+        it(`doesn't mutate original module`, async () => {
+            let childModule1 = module('child1');
+            let childModule2 = module('child2');
+
+            let rootModule = module('someOtherModule')
+                .import('c1', childModule1);
+
+            let updatedRoot = rootModule.import('c2', childModule2);
+
+            expect((<any>rootModule).hasModule('c2')).to.eq(false);
+        });
+    });
 
     describe(`.declare`, () => {
         it(`registers new dependency resolver`, async () => {
@@ -44,34 +66,6 @@ describe(`Module`, () => {
 
         it(`returns new instance of module (doesn't mutate original module)`, async () => {
 
-        });
-
-        it(`allows to use enums`, async () => {
-            enum SomeModule  {
-                service1 = 's1',
-                service2 = 's2'
-            }
-
-
-
-            let someModule = module('m')
-                .declare(SomeModule.service1, () => true)
-                .declare(SomeModule.service2, () => 123);
-
-            const serv2:number = someModule.checkout({}).get(SomeModule.service2);
-            const serv1:boolean  = someModule.checkout({}).get(SomeModule.service1);
-
-            expect(serv1).to.eq(true);
-            expect(serv2).to.eq(123);
-
-            enum SomeChildModule {
-                someService = 'someService'
-            }
-
-            let child = module('m2')
-                .declare(SomeChildModule.someService, ({ext}) => ext(someModule, SomeModule.service1))
-
-            const a:boolean = child.checkout({}).get(SomeChildModule.someService);
         });
     });
 
@@ -119,7 +113,7 @@ describe(`Module`, () => {
                     .declare('t1', () => new T1())
                     .declare('t2', () => new T2())
                     .declare('t1_t2', (c) => {
-                        return [c.get('t1'), c.get('t2')]
+                        return [c.t1, c.t2]
                     });
 
                 let materializedContainer = m1.checkout({});
@@ -143,20 +137,20 @@ describe(`Module`, () => {
                     .declare('t2', () => new T2());
 
                 let m1 = module('2')
-                    // .import('childModule', childM)
-                        .declare('t1', () => new T1())
-                        .declare('t2', () => new T2())
-                        .declare('t1FromChildModule', (c) => c.ext(childM, 't1'))
-                        .declare('t2FromChildModule', (c) => c.ext(childM, 't2'))
-                        .declare('t1WithChildT1', (p) => [p.get('t1'), p.ext(childM, 't1')])
-                        .declare('t2WithChildT2', (p) => [p.get('t1'), p.ext(childM, 't2')])
+                    .import('childModule', childM)
+                    .declare('t1', () => new T1())
+                    .declare('t2', () => new T2())
+                    .declare('t1FromChildModule', (c) => c.childModule.t1)
+                    .declare('t2FromChildModule', (c) => c.childModule.t2)
+                    .declare('t1WithChildT1', (p) => [p.t1, p.childModule.t1])
+                    .declare('t2WithChildT2', (p) => [p.t1, p.childModule.t2])
                 ;
 
                 let container = m1.checkout({});
 
-                expect(container.import(childM, 't1').type).to.eq('t1');
-                // expect(container.get('t1FromChildModule').id).to.eql(container.import(childM, 't1').id);
-                // expect(container.get('t2FromChildModule').id).to.eql(container.import(childM, 't2').id);
+                expect(container.get('childModule', 't1').type).to.eq('t1');
+                expect(container.get('t1FromChildModule').id).to.eql(container.get('childModule', 't1').id);
+                expect(container.get('t2FromChildModule').id).to.eql(container.get('childModule', 't2').id);
             });
         });
 
@@ -183,6 +177,7 @@ describe(`Module`, () => {
                     .declare('s4', f4);
 
                 let m2 = module('m2')
+                    .import('m1', m1)
                     .declare('s1', f1)
                     .declare('s2', f2);
 
@@ -208,41 +203,45 @@ describe(`Module`, () => {
                 let c = module('c')
                     .declare('f1', f1)
                     .declare('f2', f2)
-                    .declare('f1+f2', ({get}) => get('f1') + get('f2'));
+                    .declare('f1+f2', ({f1, f2}) => f1 + f2);
 
                 let b = module('b')
+                    .import('c', c)
                     .declare('f3', f3)
                     .declare('f4', f4)
-                    .declare('f3+f4', ({get}) => get('f3') + get('f4'))
-                    .declare('f1+f2+f3+f4', ({get, ext}) => ext(c, 'f1') + ext(c, 'f2') + get('f3') + get('f3'));
+                    .declare('f3+f4', ({f3, f4}) => f3 + f4)
+                    .declare('f1+f2+f3+f4', (_) => _.c.f1 + _.c.f2 + _.f3 + _.f3);
 
                 let a = module('a')
+                    .import('b', b)
+                    .import('c', c)
                     .declare('f5', f5)
                     .declare('f6', f6)
-                    .declare('f5+f1', ({get, ext}) => ext(c, 'f1') + get('f5'))
-                    .declare('f6+f2', ({get, ext}) => ext(c, 'f2') + get('f6'));
+                    .declare('f5+f1', (_) => _.c.f1 + _.f5)
+                    .declare('f6+f2', (_) => _.c.f2 + _.f6);
 
                 let container = a.checkout({});
 
-
+                container.get('b');
+                container.get('c');
                 container.get('f5');
                 container.get('f6');
                 container.get('f5+f1');
                 container.get('f6+f2');
-                container.import(b, 'f3');
-                container.import(b, 'f4');
-                container.import(b, 'f3+f4');
-                container.import(b, 'f1+f2+f3+f4');
-                container.import(c, 'f1');
-                let val = container.import(c, 'f2');
-                container.import(c, 'f1+f2');
+                container.get('b', 'f3');
+                container.get('b', 'f4');
+                container.get('b', 'f3+f4');
+                container.get('b', 'f1+f2+f3+f4');
+                container.get('b', 'c', 'f1');
+                container.get('b', 'c', 'f2');
+                container.get('b', 'c', 'f1+f2');
 
-                expect(f1.callCount).to.eq(1);
-                expect(f2.callCount).to.eq(1);
-                expect(f3.callCount).to.eq(1);
-                expect(f4.callCount).to.eq(1);
-                expect(f5.callCount).to.eq(1);
-                expect(f6.callCount).to.eq(1);
+                expect(f1.calledOnce).to.eq(true);
+                expect(f2.calledOnce).to.eq(true);
+                expect(f3.calledOnce).to.eq(true);
+                expect(f4.calledOnce).to.eq(true);
+                expect(f5.calledOnce).to.eq(true);
+                expect(f6.calledOnce).to.eq(true);
             });
 
             it(`calls all dependecies factory functions with correct context`, async () => {
@@ -256,10 +255,11 @@ describe(`Module`, () => {
                     .declare('s4', f4);
 
                 let m2 = module('m2')
+                    .import('m1', m1)
                     .declare('s1', f1)
                     .declare('s2', f2)
-                    .declare('s3_s1', ({ext, get}) => [ext(m1, 's3'), get('s1')])
-                    .declare('s4_s2', ({ext, get}) => [ext(m1, 's4'), get('s2')]);
+                    .declare('s3_s1', (c) => [c.m1.s3, c.s1])
+                    .declare('s4_s2', (c) => [c.m1.s4, c.s2]);
 
                 let container = m2.checkout({someCtxVal: 1});
 
@@ -267,8 +267,8 @@ describe(`Module`, () => {
                 container.get('s1');
                 container.get('s3_s1');
                 container.get('s4_s2');
-                container.import(m1, 's3');
-                container.import(m1, 's4');
+                container.get('m1', 's3');
+                container.get('m1', 's4');
 
                 expect(f1.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
                 expect(f2.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
@@ -296,21 +296,22 @@ describe(`Module`, () => {
 
 
             let m2 = module('m2')
-                .declare('valFromChild', c => c.ext(m1, 'val'));
+                .import('child', m1)
+                .declare('valFromChild', c => c.child.val);
 
-            // let m3 = module('m3')
-            //     .declare('val', c => c.ext(m2, 'valFromChild'));
+            let m3 = module('m3')
+                .import('child1', m1)
+                .import('child2', m2)
+                .declare('val', c => c.child2.valFromChild);
 
-            let mocked = m2.inject(m1.replace('val', c => 2));
+            let mocked = m3.inject(m1.replace('val', c => 2));
 
-            // expect(m1.replace('val', c => 2).checkout({}).get('val')).to.eq(2);
+            expect(mocked.checkout({}).get('val')).to.eq(2);
+            expect(mocked.checkout({}).get('child1', 'val')).to.eq(2);
+            expect(mocked.checkout({}).get('child2', 'valFromChild')).to.eq(2);
+            expect(mocked.checkout({}).get('child2', 'child', 'val')).to.eq(2);
 
-            expect(mocked.checkout({}).get('valFromChild')).to.eq(2);
-            // expect(mocked.checkout({}).import(m1, 'val')).to.eq(2);
-            // expect(mocked.checkout({}).import(m2, 'valFromChild')).to.eq(2);
-            // expect(mocked.checkout({}).import(m1,  'val')).to.eq(2);
-            //
-            // expect(m3).not.to.eq(mocked);
+            expect(m3).not.to.eq(mocked);
         });
     });
 });

@@ -5,12 +5,6 @@ import {MaterializedContainer} from "./MaterializedContainer";
 import {Omit} from "./utils/types";
 import {mapValues} from 'lodash';
 
-
-export type Accessor<D> = {
-    get<K extends keyof D>(key:K):D[K]
-    ext<D1, M1 extends ModulesRegistry, C1, K extends keyof D1>(module:Module<D1, M1, C1>, key:K):D1[K]
-}
-
 export type MaterializedModule<D, M extends ModulesRegistry> = D & {
     [K in keyof M]:MaterializedModule<ExtractMR<M[K]>, ExtractR<M[K]>>;
 }
@@ -27,10 +21,14 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
 
     constructor(private name:string,
-                private injectedModules:{ [key:string]:Module } = {},
+                private imports:{ [key:string]:Module } = {},
                 private declarations:{ [key:string]:DependencyResolver<any, any, any> } = {},
                 public identity:string = `module_${nextId()}`
     ) {}
+
+    hasModule(key:keyof M):boolean {
+        return !!this.imports[key];
+    }
 
     isDeclared(key:keyof D):boolean {
         return !!this.declarations[key];
@@ -43,30 +41,36 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     checkout(ctx:C):MaterializedContainer<D, M, C> {
         return new MaterializedContainer(
             this.declarations as any,
-            this.injectedModules as any,
+            this.imports as any,
             ctx as any);
     }
 
-    declare<K extends string, V, C1>(key:K, factory:(container:Accessor<D>, C1) => V):Module<D & Record<K, V>, M, C & C1> {
+    declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):Module<D & Record<K, V>, M, C & C1> {
         this.assertKeyNotTaken(key);
         let cloned = new Module(
             this.name,
-            {...this.injectedModules},
+            {...this.imports},
             {...this.declarations, [key]: new DependencyResolver<any, any, any>(factory)},
             this.identity
         );
         return cloned as any;
     }
 
-    inject<D1, M1 extends ModulesRegistry, C1>(otherModule:Module<D1, M1, C1>):Module<D, M, C> {
+    inject<D1,M1 extends ModulesRegistry,C1>(otherModule:Module<D1, M1, C1>):Module<D, M, C> {
+        const importsCopy = mapValues(this.imports, (module) => {
+            return module.identity === otherModule.identity ?
+                otherModule :
+                module.inject(otherModule)
+        });
+
         return new Module<D, M, C>(
             this.name,
-            {...this.injectedModules, [otherModule.identity]: otherModule},
+            importsCopy,
             {...this.declarations},
             this.identity)
     }
 
-    replace<K extends keyof D, C>(key:K, factory:(container:Accessor<D>, C) => D[K]):Module<D, M, C> {
+    replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModule<D, M>, C) => D[K]):Module<D, M, C> {
         return this.undeclare(key).declare(key, factory) as any;
     }
 
@@ -78,25 +82,25 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
         let cloned = new Module(
             this.name,
-            {...this.injectedModules},
+            {...this.imports},
             declarations,
             this.identity
         );
         return cloned as any;
     }
 
-    // import<K extends string, M1 extends Module>(key:K, mod2:M1):Module<D, M & Record<K, M1>> {
-    //     this.assertKeyNotTaken(key);
-    //
-    //     let cloned = new Module(
-    //         this.name,
-    //         {...this.injectedModules, [key]: mod2},
-    //         {...this.declarations},
-    //         this.identity
-    //     );
-    //
-    //     return cloned as any;
-    // }
+    import<K extends string, M1 extends Module>(key:K, mod2:M1):Module<D, M & Record<K, M1>> {
+        this.assertKeyNotTaken(key);
+
+        let cloned = new Module(
+            this.name,
+            {...this.imports, [key]: mod2},
+            {...this.declarations},
+            this.identity
+        );
+
+        return cloned as any;
+    }
 
     private getChild(key) {
 
@@ -107,7 +111,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     merge(otherModule) {}
 
     private assertKeyNotTaken(key:string) {
-        invariant(!this.injectedModules[key], `Cannot register module. Given key=${key} is already taken by other module`);
+        invariant(!this.imports[key], `Cannot register module. Given key=${key} is already taken by other module`);
         invariant(!this.declarations[key], `Cannot register module. Given key=${key} is already taken by module's registered dependency`);
         //TODO: assert that modules names are unique
     }
@@ -119,7 +123,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     mock(otherModule:Module, otherModuleKey, newValueOrResolverOrWTF):Module<D, M, C> {
         throw new Error("Implement me");
 
-        //1. find all modules which injectedModules otherModule.
+        //1. find all modules which imports otherModule.
         //2. create mocked instance of other module
         //3. undeclare original dep from all found modules and replace it with mocked instance
         //TODO: in order to implement this we
