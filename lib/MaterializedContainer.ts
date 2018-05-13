@@ -1,7 +1,7 @@
-import {PathFunction} from "./utils";
 import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
-import {ExtractMR, MaterializedModule, ModulesRegistry, Module} from "./Module";
+import {ExtractMR, Module, ModulesRegistry} from "./Module";
 import {values} from 'lodash';
+import {container} from "./index";
 
 export type DependencyResolversRegistry<D> = {
     [K in keyof D]:DependencyResolverFunction<any, any, any>;
@@ -31,7 +31,7 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
         if (this.cache[childModule.id]) {
             return this.cache[childModule.id].getChild(this.cache, key);
         } else {
-            let childMaterializedModule:any = childModule.checkout(this.context);
+            let childMaterializedModule:any = container(childModule,this.context);
             this.cache[childModule.id] = childMaterializedModule;
             return childMaterializedModule.getChild(this.cache, key); //TODO: we have to pass cache !!!!
         }
@@ -44,8 +44,8 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
         }
 
         for (let importKey in this.imports) {
-            const container = this.imports[importKey].checkout(this.context);
-            let found = container.findModule(moduleIdentity);
+            const targetContainer = container(this.imports[importKey],this.context as any);
+            let found = targetContainer.findModule(moduleIdentity);
             if (found) {
                 return found;
             }
@@ -83,7 +83,7 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
             if (cache[childModule.id]) {
                 return cache[childModule.id].getProxiedAccessor(cache)
             } else {
-                let childMaterializedModule:any = childModule.checkout(this.context);
+                let childMaterializedModule:any = container(childModule,this.context);
                 cache[childModule.id] = childMaterializedModule;
                 return childMaterializedModule.getProxiedAccessor(cache); //TODO: we have to pass cache !!!!
             }

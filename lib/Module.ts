@@ -11,6 +11,7 @@ export type MaterializedModule<D, M extends ModulesRegistry> = D & {
 
 export type ExtractMR<M> = M extends Module<infer MR, any> ? MR : never;
 export type ExtractR<M> = M extends Module<any, infer R> ? R : never;
+export type ExtractContext<M> = M extends Module<any, any, infer CTX> ? CTX : never;
 
 export type ModulesRegistry = {
     [key:string]:Module<any, any>
@@ -47,12 +48,12 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     }
 
     //TODO: shouldn't be available in Module - Module shouldn't know anything about container
-    checkout(ctx:C):MaterializedContainer<D, M, C> {
-        return new MaterializedContainer(
-            this.declarations as any,
-            this.imports as any,
-            ctx as any);
-    }
+    // checkout(ctx:C):MaterializedContainer<D, M, C> {
+    //     return new MaterializedContainer(
+    //         this.declarations as any,
+    //         this.imports as any,
+    //         ctx as any);
+    // }
 
     declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K, D, Module<D & Record<K, V>, M, C & C1>> {
         this.assertKeyNotTaken(key);

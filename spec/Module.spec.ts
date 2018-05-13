@@ -1,4 +1,4 @@
-import {module} from "../lib";
+import {container, module} from "../lib";
 import {expect} from "chai";
 import {spy} from "sinon";
 
@@ -89,7 +89,7 @@ describe(`Module`, () => {
             let m1 = module("m1").declare("a", () => 1);
 
             let updated = m1.replace("a", () => 2);
-            expect(updated.checkout({}).get("a")).to.eq(2);
+            expect(container(updated,{}).get("a")).to.eq(2);
         });
     });
 
@@ -113,7 +113,7 @@ describe(`Module`, () => {
                         return [c.t1, c.t2];
                     });
 
-                let materializedContainer = m1.checkout({});
+                let materializedContainer = container(m1,{});
 
                 expect(materializedContainer.get("t1").type).to.eq("t1");
                 expect(materializedContainer.get("t2").type).to.eq("t2");
@@ -137,8 +137,8 @@ describe(`Module`, () => {
                     .import('a', a)
                     .declare("t1", () => new T1());
 
-                const container = b.checkout({});
-                const t1 = container.deepGet(a, 't1');
+                const c = container(b,{});
+                const t1 = c.deepGet(a, 't1');
                 expect(t1.type).to.eq('t1');
             });
         });
@@ -159,9 +159,9 @@ describe(`Module`, () => {
                     .declare("t2WithChildT2", p => [p.t1, p.childModule.t2]);
 
 
-                let container = m1.checkout({});
-                expect(container.get("t1FromChildModule").id).to.eql(container.deepGet(childM, 't1').id);
-                expect(container.get("t2FromChildModule").id).to.eql(container.deepGet(childM, 't2').id);
+                let cont = container(m1,{});
+                expect(cont.get("t1FromChildModule").id).to.eql(cont.deepGet(childM, 't1').id);
+                expect(cont.get("t2FromChildModule").id).to.eql(cont.deepGet(childM, 't2').id);
             });
         });
 
@@ -187,9 +187,9 @@ describe(`Module`, () => {
                     .declare("s1", f1)
                     .declare("s2", f2);
 
-                let container = m2.checkout({});
+                let cnt = container(m2,{});
 
-                container.get("s1");
+                cnt.get("s1");
                 expect(f1.calledOnce).to.eq(true);
 
                 expect(f2.calledOnce).to.eq(false);
@@ -225,21 +225,21 @@ describe(`Module`, () => {
                     .declare("f5+f1", _ => _.c.f1 + _.f5)
                     .declare("f6+f2", _ => _.c.f2 + _.f6);
 
-                let container = a.checkout({});
+                let cnt = container(a,{});
 
                 // container.get("b");
                 // container.get("c");
-                container.get("f5");
-                container.get("f6");
-                container.get("f5+f1");
-                container.get("f6+f2");
-                container.deepGet(b, 'f3')
-                container.deepGet(b, 'f4')
-                container.deepGet(b, 'f3+f4')
-                container.deepGet(b, 'f1+f2+f3+f4')
-                container.deepGet(c, "f1");
-                container.deepGet(c, "f2");
-                container.deepGet(c, "f1+f2");
+                cnt.get("f5");
+                cnt.get("f6");
+                cnt.get("f5+f1");
+                cnt.get("f6+f2");
+                cnt.deepGet(b, 'f3')
+                cnt.deepGet(b, 'f4')
+                cnt.deepGet(b, 'f3+f4')
+                cnt.deepGet(b, 'f1+f2+f3+f4')
+                cnt.deepGet(c, "f1");
+                cnt.deepGet(c, "f2");
+                cnt.deepGet(c, "f1+f2");
 
                 expect(f1.calledOnce).to.eq(true);
                 expect(f2.calledOnce).to.eq(true);
@@ -266,14 +266,14 @@ describe(`Module`, () => {
                     .declare("s3_s1", c => [c.m1.s3, c.s1])
                     .declare("s4_s2", c => [c.m1.s4, c.s2]);
 
-                let container = m2.checkout({someCtxVal: 1});
+                let cnt = container(m2,{someCtxVal: 1});
 
-                container.get("s1");
-                container.get("s1");
-                container.get("s3_s1");
-                container.get("s4_s2");
-                container.deepGet(m1, "s3");
-                container.deepGet(m1, "s4");
+                cnt.get("s1");
+                cnt.get("s1");
+                cnt.get("s3_s1");
+                cnt.get("s4_s2");
+                cnt.deepGet(m1, "s3");
+                cnt.deepGet(m1, "s4");
 
                 expect(f1.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
                 expect(f2.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
@@ -288,7 +288,7 @@ describe(`Module`, () => {
                     .declare("a", (c:any) => c.i + c.b)
                     .declare("b", (c:any) => c.i + c.a);
 
-                m1.checkout({}).get("a");
+                container(m1,{}).get("a");
             });
         });
     });
@@ -308,10 +308,10 @@ describe(`Module`, () => {
 
             let mocked = m3.inject(m1.replace("val", c => 2));
 
-            expect(mocked.checkout({}).get("val")).to.eq(2);
-            expect(mocked.checkout({}).deepGet(m1, "val")).to.eq(2);
-            expect(mocked.checkout({}).deepGet(m2, "valFromChild")).to.eq(2);
-            expect(mocked.checkout({}).deepGet(m1, "val")).to.eq(2);
+            expect(container(mocked,{}).get("val")).to.eq(2);
+            expect(container(mocked,{}).deepGet(m1, "val")).to.eq(2);
+            expect(container(mocked,{}).deepGet(m2, "valFromChild")).to.eq(2);
+            expect(container(mocked,{}).deepGet(m1, "val")).to.eq(2);
             expect(m3).not.to.eq(mocked);
         });
     });
