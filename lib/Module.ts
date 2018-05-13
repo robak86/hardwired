@@ -10,10 +10,19 @@ export type MaterializedModule<D, M extends ModulesRegistry> = D & {
 }
 
 export type ExtractMR<M> = M extends Module<infer MR, any> ? MR : never;
+export type ExtractR<M> = M extends Module<any, infer R> ? R : never;
 
 export type ModulesRegistry = {
     [key:string]:Module<any, any>
 }
+
+// export type ValuesOf<T> = T[keyof T];
+
+// export type DeepModules<T extends ModulesRegistry> = ValuesOf<{
+//     [K in keyof T]: DeepModules<ExtractR<T[K]>>
+// }>
+
+
 
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never ? RETURN: never;
 
@@ -35,7 +44,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return !!this.declarations[key];
     }
 
-
+    //TODO: shouldn't be available in Module - Module shouldn't know anything about container
     checkout(ctx:C):MaterializedContainer<D, M, C> {
         return new MaterializedContainer(
             this.declarations as any,
@@ -43,7 +52,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
             ctx as any);
     }
 
-    declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K,D, Module<D & Record<K, V>, M, C & C1>> {
+    declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K, D, Module<D & Record<K, V>, M, C & C1>> {
         this.assertKeyNotTaken(key);
         let cloned = new Module(
             this.name,
@@ -54,7 +63,9 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return cloned as any;
     }
 
-    inject<D1,M1 extends ModulesRegistry,C1>(otherModule:Module<D1, M1, C1>):Module<D, M, C> {
+
+    //TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
+    inject<D1, M1 extends ModulesRegistry, C1>(otherModule:Module<D1, M1, C1>):Module<D, M, C> {
         const importsCopy = mapValues(this.imports, (module) => {
             return module.identity === otherModule.identity ?
                 otherModule :
@@ -87,7 +98,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return cloned as any;
     }
 
-    import<K extends string, M1 extends Module>(key:K, mod2:M1):NotDuplicated<K,M,Module<D, M & Record<K, M1>>> {
+    import<K extends string, M1 extends Module>(key:K, mod2:M1):NotDuplicated<K, M, Module<D, M & Record<K, M1>>> {
         this.assertKeyNotTaken(key);
 
         let cloned = new Module(
@@ -100,49 +111,9 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return cloned as any;
     }
 
-    private getChild(key) {
-
-    }
-
-
-    //Interesting but won't be typesafe and checked at compile time, because there can be collisions!!!
-    merge(otherModule) {}
-
     private assertKeyNotTaken(key:string) {
         invariant(!this.imports[key], `Cannot register module. Given key=${key} is already taken by other module`);
         invariant(!this.declarations[key], `Cannot register module. Given key=${key} is already taken by module's registered dependency`);
         //TODO: assert that modules names are unique
     }
-
-
-    override() {}
-
-    // TODO: this method would allow to mock items in already imported modules especially deeply nested
-    mock(otherModule:Module, otherModuleKey, newValueOrResolverOrWTF):Module<D, M, C> {
-        throw new Error("Implement me");
-
-        //1. find all modules which imports otherModule.
-        //2. create mocked instance of other module
-        //3. undeclare original dep from all found modules and replace it with mocked instance
-        //TODO: in order to implement this we
-    }
-
-    /*
-
-            const rootModule = module()...;
-            const deeplyNestedModule;
-
-            rootModule.override(
-                    deeplyNestedModule.mock('key', newValue),
-                    deeplyNestedModule2.mock('key', newValue)
-            ) -> it returns new isntance of rootModule. - original rootModule is untouced
-
-            in order to implement this, we need to implement assoc method for module
-            use local stack for this. go to bottom and replace everything going up
-
-     */
-
-    // private mockOwn():Module<D, M, C> { //TODO: use Exclude for undeclaring
-    //     this.undeclare()
-    // }
 }

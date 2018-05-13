@@ -3,10 +3,6 @@ import {expect} from "chai";
 import {spy} from "sinon";
 
 
-let a = module('a')
-    .declare('a', () => 1);
-
-
 describe(`Module`, () => {
     describe(`.hasModule`, () => {
         it(`returns true if there is a module registered for given key`, async () => {
@@ -132,6 +128,21 @@ describe(`Module`, () => {
             });
         });
 
+        describe(`.getDeep`, () => {
+            it(`returns instance from other module`, async () => {
+                let a = module("1")
+                    .declare("t1", () => new T1());
+
+                let b = module("1")
+                    .import('a', a)
+                    .declare("t1", () => new T1());
+
+                const container = b.checkout({});
+                const t1 = container.deepGet(a, 't1');
+                expect(t1.type).to.eq('t1');
+            });
+        });
+
         describe(`instances fetched from submodules`, () => {
             it(`returns registered dependency`, async () => {
                 let childM = module("1")
@@ -149,14 +160,8 @@ describe(`Module`, () => {
 
 
                 let container = m1.checkout({});
-
-
-                expect(container.get("t1FromChildModule").id).to.eql(
-                    container.get("childModule", "t1").id
-                );
-                expect(container.get("t2FromChildModule").id).to.eql(
-                    container.get("childModule", "t2").id
-                );
+                expect(container.get("t1FromChildModule").id).to.eql(container.deepGet(childM, 't1').id);
+                expect(container.get("t2FromChildModule").id).to.eql(container.deepGet(childM, 't2').id);
             });
         });
 
@@ -228,13 +233,13 @@ describe(`Module`, () => {
                 container.get("f6");
                 container.get("f5+f1");
                 container.get("f6+f2");
-                container.get("b", "f3");
-                container.get("b", "f4");
-                container.get("b", "f3+f4");
-                container.get("b", "f1+f2+f3+f4");
-                container.get("b", "c", "f1");
-                container.get("b", "c", "f2");
-                container.get("b", "c", "f1+f2");
+                container.deepGet(b, 'f3')
+                container.deepGet(b, 'f4')
+                container.deepGet(b, 'f3+f4')
+                container.deepGet(b, 'f1+f2+f3+f4')
+                container.deepGet(c, "f1");
+                container.deepGet(c, "f2");
+                container.deepGet(c, "f1+f2");
 
                 expect(f1.calledOnce).to.eq(true);
                 expect(f2.calledOnce).to.eq(true);
@@ -267,8 +272,8 @@ describe(`Module`, () => {
                 container.get("s1");
                 container.get("s3_s1");
                 container.get("s4_s2");
-                container.get("m1", "s3");
-                container.get("m1", "s4");
+                container.deepGet(m1, "s3");
+                container.deepGet(m1, "s4");
 
                 expect(f1.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
                 expect(f2.getCalls()[0].args[1]).to.eql({someCtxVal: 1});
@@ -289,7 +294,7 @@ describe(`Module`, () => {
     });
 
     describe(`.inject`, () => {
-        it(`replaces all related modules in whole tree`, async () => {
+        it.only(`replaces all related modules in whole tree`, async () => {
             let m1 = module("m1").declare("val", () => 1);
 
             let m2 = module("m2")
@@ -304,10 +309,9 @@ describe(`Module`, () => {
             let mocked = m3.inject(m1.replace("val", c => 2));
 
             expect(mocked.checkout({}).get("val")).to.eq(2);
-            expect(mocked.checkout({}).get("child1", "val")).to.eq(2);
-            expect(mocked.checkout({}).get("child2", "valFromChild")).to.eq(2);
-            expect(mocked.checkout({}).get("child2", "child", "val")).to.eq(2);
-
+            expect(mocked.checkout({}).deepGet(m1, "val")).to.eq(2);
+            expect(mocked.checkout({}).deepGet(m2, "valFromChild")).to.eq(2);
+            expect(mocked.checkout({}).deepGet(m1, "val")).to.eq(2);
             expect(m3).not.to.eq(mocked);
         });
     });

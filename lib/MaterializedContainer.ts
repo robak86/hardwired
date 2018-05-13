@@ -1,13 +1,13 @@
 import {PathFunction} from "./utils";
 import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
-import {MaterializedModule, ModulesRegistry} from "./Module";
-
+import {ExtractMR, MaterializedModule, ModulesRegistry, Module} from "./Module";
+import {values} from 'lodash';
 
 export type DependencyResolversRegistry<D> = {
     [K in keyof D]:DependencyResolverFunction<any, any, any>;
 }
 
-// export type Module
+// export type RegisteredModules<T extends ModulesRegistry> = T[keyof T];
 
 export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {}> {
     private cache:{ [key:string]:any } = {};
@@ -19,6 +19,40 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
     get = <K extends keyof D>(key:K):D[K] => {
         return this.getChild(this.cache, key);
     };
+
+    deepGet<M1 extends Module<any, any, any>, K extends keyof ExtractMR<M1>>(module:M1, key:K):ExtractMR<M1>[K] {
+        let childModule = this.findModule(module.identity);
+
+        if (!childModule){
+            console.warn('deepGet called with module which is not imported by any descendant module')
+            childModule = module;
+        }
+
+        if (this.cache[childModule.id]) {
+            return this.cache[childModule.id].getChild(this.cache, key);
+        } else {
+            let childMaterializedModule:any = childModule.checkout(this.context);
+            this.cache[childModule.id] = childMaterializedModule;
+            return childMaterializedModule.getChild(this.cache, key); //TODO: we have to pass cache !!!!
+        }
+    }
+
+    private findModule(moduleIdentity):Module<any,any,any> | undefined {
+        let found = values(this.imports).find(m => m.identity === moduleIdentity);
+        if (found) {
+            return found;
+        }
+
+        for (let importKey in this.imports) {
+            const container = this.imports[importKey].checkout(this.context);
+            let found = container.findModule(moduleIdentity);
+            if (found) {
+                return found;
+            }
+        }
+
+        return undefined;
+    }
 
     private getProxiedAccessor(cache) {
         const self = this;
