@@ -16,8 +16,9 @@ export type ModulesRegistry = {
     [key:string]:Module<any, any>
 }
 
-// export type ValuesOf<T> = T[keyof T];
 
+//TODO: following types blows compilator ://
+// export type ValuesOf<T> = T[keyof T];
 // export type DeepModules<T extends ModulesRegistry> = ValuesOf<{
 //     [K in keyof T]: DeepModules<ExtractR<T[K]>>
 // }>
@@ -29,6 +30,7 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never 
 export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     public id:string = nextId();
 
+    //TODO: consider adding version property and increment it after each "mutation" ?! Could be valuable for inject and determining
 
     constructor(private name:string,
                 private imports:{ [key:string]:Module } = {},

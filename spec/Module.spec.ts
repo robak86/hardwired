@@ -294,7 +294,7 @@ describe(`Module`, () => {
     });
 
     describe(`.inject`, () => {
-        it.only(`replaces all related modules in whole tree`, async () => {
+        it(`replaces all related modules in whole tree`, async () => {
             let m1 = module("m1").declare("val", () => 1);
 
             let m2 = module("m2")
