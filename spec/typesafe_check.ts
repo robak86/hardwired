@@ -10,7 +10,6 @@ const modB = module("b")
 
 const modC = module("c")
   .import("b", modB)
-  .declare("v4", ({b}) => b.v3);
+  .declare("v4", ({ b }) => b.v3);
 
-
-modC.checkout({}).get('v4');
+modC.checkout({}).get("v4");

@@ -10,11 +10,12 @@ export type MaterializedModule<D, M extends ModulesRegistry> = D & {
 }
 
 export type ExtractMR<M> = M extends Module<infer MR, any> ? MR : never;
-export type ExtractR<M> = M extends Module<any, infer R> ? R : never;
 
 export type ModulesRegistry = {
     [key:string]:Module<any, any>
 }
+
+export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never ? RETURN: never;
 
 export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     public id:string = nextId();
@@ -42,7 +43,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
             ctx as any);
     }
 
-    declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):Module<D & Record<K, V>, M, C & C1> {
+    declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K,D, Module<D & Record<K, V>, M, C & C1>> {
         this.assertKeyNotTaken(key);
         let cloned = new Module(
             this.name,
@@ -86,7 +87,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return cloned as any;
     }
 
-    import<K extends string, M1 extends Module>(key:K, mod2:M1):Module<D, M & Record<K, M1>> {
+    import<K extends string, M1 extends Module>(key:K, mod2:M1):NotDuplicated<K,M,Module<D, M & Record<K, M1>>> {
         this.assertKeyNotTaken(key);
 
         let cloned = new Module(
