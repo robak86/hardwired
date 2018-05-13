@@ -16,17 +16,9 @@ export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {
                 private imports:M,
                 private context:C) {}
 
-    get:PathFunction<MaterializedModule<D, M>> = (...args:any[]) => {
-        return args.reduce((prev, currentKey) => {
-            if (prev) {
-                return prev[currentKey];
-            } else {
-                return this.getChild(this.cache, currentKey);
-            }
-        }, null);
+    get = <K extends keyof D>(key:K):D[K] => {
+        return this.getChild(this.cache, key);
     };
-
-    // get()
 
     private getProxiedAccessor(cache) {
         const self = this;

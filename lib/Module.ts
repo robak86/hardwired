@@ -6,7 +6,7 @@ import {Omit} from "./utils/types";
 import {mapValues} from 'lodash';
 
 export type MaterializedModule<D, M extends ModulesRegistry> = D & {
-    [K in keyof M]:MaterializedModule<ExtractMR<M[K]>, ExtractR<M[K]>>;
+    [K in keyof M]:MaterializedModule<ExtractMR<M[K]>, {}>;
 }
 
 export type ExtractMR<M> = M extends Module<infer MR, any> ? MR : never;
@@ -34,9 +34,6 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return !!this.declarations[key];
     }
 
-    requires<C1>():Module<D, M, C & C1> {
-        return this as any;
-    }
 
     checkout(ctx:C):MaterializedContainer<D, M, C> {
         return new MaterializedContainer(
