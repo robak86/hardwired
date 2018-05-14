@@ -9,7 +9,7 @@ export type DependencyResolversRegistry<D> = {
 
 // export type RegisteredModules<T extends ModulesRegistry> = T[keyof T];
 
-export class MaterializedContainer<D = {}, M extends ModulesRegistry = {}, C = {}> {
+export class Container<D = {}, M extends ModulesRegistry = {}, C = {}> {
     private cache:{ [key:string]:any } = {};
 
     constructor(private declarationsResolvers:DependencyResolversRegistry<D>,

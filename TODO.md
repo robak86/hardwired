@@ -1,15 +1,24 @@
-### add function getter function
+# HardWired
+
+Fast, minimalistic, type-safe dependency injection solution for typescript.
+
+
+- [x] No decorators, no reflection
+- [x] Venus
+- [x] Earth (Orbit/Moon)
+- [x] Mars
+- [ ] Jupiter
+- [ ] Saturn
+- [ ] Uranus
+- [ ] Neptune
+- [ ] Comet Haley
 
 
 ```typescript
-const getFunction:(ctx) => SomeDeclaration = fromContainer(someModule, 'someDeclaration')
+import {module} from 'hardwired';
+
+const someModule = module('someModuleName')
+
 
 
 ```
-
-
-
-* error messages when cannot get instance
-* scope type
-    * module level (cached inside module)
-    * checkout level (cached )

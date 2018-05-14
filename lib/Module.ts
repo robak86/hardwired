@@ -1,7 +1,6 @@
 import {invariant} from "./utils";
 import {nextId} from "./utils/fastId";
 import {DependencyResolver} from "./DependencyResolver";
-import {MaterializedContainer} from "./MaterializedContainer";
 import {Omit} from "./utils/types";
 import {mapValues} from 'lodash';
 
@@ -23,8 +22,6 @@ export type ModulesRegistry = {
 // export type DeepModules<T extends ModulesRegistry> = ValuesOf<{
 //     [K in keyof T]: DeepModules<ExtractR<T[K]>>
 // }>
-
-
 
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never ? RETURN: never;
 
@@ -48,13 +45,14 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     }
 
     //TODO: shouldn't be available in Module - Module shouldn't know anything about container
-    // checkout(ctx:C):MaterializedContainer<D, M, C> {
-    //     return new MaterializedContainer(
+    // checkout(ctx:C):Container<D, M, C> {
+    //     return new Container(
     //         this.declarations as any,
     //         this.imports as any,
     //         ctx as any);
     // }
 
+    //TODO: typescript doesn't interfere properly context type!!! try with conditional type (like ExtractR, ExtractMR)
     declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K, D, Module<D & Record<K, V>, M, C & C1>> {
         this.assertKeyNotTaken(key);
         let cloned = new Module(

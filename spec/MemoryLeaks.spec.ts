@@ -1,10 +1,9 @@
-import {module} from "../lib";
+import {container, module} from "../lib";
 import {iterate} from 'leakage'
 
 
 describe.skip(`MemoryLeaks`, () => {
     describe(`.checkout`, () => {
-
         it(`doesn't cause memory leaks`, async () => {
             let m1 = module('m1')
                 .declare('s3', () => 123)
@@ -18,7 +17,7 @@ describe.skip(`MemoryLeaks`, () => {
                 .declare('s4_s2', (c) => [c.m1.s4, c.s2]);
 
             iterate(() => {
-                m2.checkout({}).get('s3_s1');
+                container(m2, {}).get('s3_s1');
             })
         }).timeout(10000)
     });

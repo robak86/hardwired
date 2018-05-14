@@ -233,10 +233,10 @@ describe(`Module`, () => {
                 cnt.get("f6");
                 cnt.get("f5+f1");
                 cnt.get("f6+f2");
-                cnt.deepGet(b, 'f3')
-                cnt.deepGet(b, 'f4')
-                cnt.deepGet(b, 'f3+f4')
-                cnt.deepGet(b, 'f1+f2+f3+f4')
+                cnt.deepGet(b, 'f3');
+                cnt.deepGet(b, 'f4');
+                cnt.deepGet(b, 'f3+f4');
+                cnt.deepGet(b, 'f1+f2+f3+f4');
                 cnt.deepGet(c, "f1");
                 cnt.deepGet(c, "f2");
                 cnt.deepGet(c, "f1+f2");
