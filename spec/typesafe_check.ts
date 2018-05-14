@@ -3,20 +3,20 @@ import {container, module, withContainer} from "../lib";
 type P = { ctxVal1:boolean };
 
 const otherMod = module('z')
-    .declare('a1', (c, ctx:P) => 1);
+    .define('a1', (c, ctx:P) => 1);
 
 // container(otherMod,{});
 const modA = module("a")
-    .declare("v1", () => 1)
-    .declare("v2", () => 2);
+    .define("v1", () => 1)
+    .define("v2", () => 2);
 
 const modB = module("b")
     .import("a", modA)
-    .declare("v3", () => 3);
+    .define("v3", () => 3);
 
 const modC = module("c")
     .import("b", modB)
-    .declare("v4", ({b}) => b.v3);
+    .define("v4", ({b}) => b.v3);
 
 
 const getV1 = withContainer(modA, 'v1');

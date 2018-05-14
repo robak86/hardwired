@@ -47,7 +47,7 @@ describe(`Module`, () => {
                 public a:string;
             }
 
-            let m1 = module("otherModule").declare(
+            let m1 = module("otherModule").define(
                 "someType",
                 () => new SomeType()
             );
@@ -56,9 +56,9 @@ describe(`Module`, () => {
         });
 
         it(`does not mutate original module`, async () => {
-            let m1 = module("m1").declare("someType", () => true);
+            let m1 = module("m1").define("someType", () => true);
 
-            let m2 = m1.declare("someNewType", () => 123);
+            let m2 = m1.define("someNewType", () => 123);
 
             expect((<any>m1).isDeclared("someNewType")).to.eq(false);
             expect(m2.isDeclared("someNewType")).to.eq(true);
@@ -71,8 +71,8 @@ describe(`Module`, () => {
     describe(`.undeclare`, () => {
         it(`removes declaration`, async () => {
             let m1 = module("m1")
-                .declare("a", () => 1)
-                .declare("b", () => 2);
+                .define("a", () => 1)
+                .define("b", () => 2);
 
             let m2 = m1.undeclare("a");
 
@@ -86,7 +86,7 @@ describe(`Module`, () => {
 
     describe(`.replace`, () => {
         it(`replaces declaration`, async () => {
-            let m1 = module("m1").declare("a", () => 1);
+            let m1 = module("m1").define("a", () => 1);
 
             let updated = m1.replace("a", () => 2);
             expect(container(updated,{}).get("a")).to.eq(2);
@@ -107,8 +107,8 @@ describe(`Module`, () => {
         describe(`instances declared in current module`, () => {
             it(`returns registered dependency`, async () => {
                 let m1 = module("m1")
-                    .declare("t1", () => new T1())
-                    .declare("t2", () => new T2())
+                    .define("t1", () => new T1())
+                    .define("t2", () => new T2())
                     .declare("t1_t2", c => {
                         return [c.t1, c.t2];
                     });
@@ -131,11 +131,11 @@ describe(`Module`, () => {
         describe(`.getDeep`, () => {
             it(`returns instance from other module`, async () => {
                 let a = module("1")
-                    .declare("t1", () => new T1());
+                    .define("t1", () => new T1());
 
                 let b = module("1")
                     .import('a', a)
-                    .declare("t1", () => new T1());
+                    .define("t1", () => new T1());
 
                 const c = container(b,{});
                 const t1 = c.deepGet(a, 't1');
@@ -146,13 +146,13 @@ describe(`Module`, () => {
         describe(`instances fetched from submodules`, () => {
             it(`returns registered dependency`, async () => {
                 let childM = module("1")
-                    .declare("t1", () => new T1())
-                    .declare("t2", () => new T2());
+                    .define("t1", () => new T1())
+                    .define("t2", () => new T2());
 
                 let m1 = module("2")
                     .import("childModule", childM)
-                    .declare("t1", () => new T1())
-                    .declare("t2", () => new T2())
+                    .define("t1", () => new T1())
+                    .define("t2", () => new T2())
                     .declare("t1FromChildModule", c => c.childModule.t1)
                     .declare("t2FromChildModule", c => c.childModule.t2)
                     .declare("t1WithChildT1", p => [p.t1, p.childModule.t1])
@@ -179,13 +179,13 @@ describe(`Module`, () => {
                 let f4 = spy(() => 9);
 
                 let m1 = module("m1")
-                    .declare("s3", f3)
-                    .declare("s4", f4);
+                    .define("s3", f3)
+                    .define("s4", f4);
 
                 let m2 = module("m2")
                     .import("m1", m1)
-                    .declare("s1", f1)
-                    .declare("s2", f2);
+                    .define("s1", f1)
+                    .define("s2", f2);
 
                 let cnt = container(m2,{});
 
@@ -206,14 +206,14 @@ describe(`Module`, () => {
                 let f6 = spy(() => 9);
 
                 let c = module("c")
-                    .declare("f1", f1)
-                    .declare("f2", f2)
+                    .define("f1", f1)
+                    .define("f2", f2)
                     .declare("f1+f2", ({f1, f2}) => f1 + f2);
 
                 let b = module("b")
                     .import("c", c)
-                    .declare("f3", f3)
-                    .declare("f4", f4)
+                    .define("f3", f3)
+                    .define("f4", f4)
                     .declare("f3+f4", ({f3, f4}) => f3 + f4)
                     .declare("f1+f2+f3+f4", _ => _.c.f1 + _.c.f2 + _.f3 + _.f3);
 
@@ -256,13 +256,13 @@ describe(`Module`, () => {
                 let f4 = spy(() => 9);
 
                 let m1 = module("m1")
-                    .declare("s3", f3)
-                    .declare("s4", f4);
+                    .define("s3", f3)
+                    .define("s4", f4);
 
                 let m2 = module("m2")
                     .import("m1", m1)
-                    .declare("s1", f1)
-                    .declare("s2", f2)
+                    .define("s1", f1)
+                    .define("s2", f2)
                     .declare("s3_s1", c => [c.m1.s3, c.s1])
                     .declare("s4_s2", c => [c.m1.s4, c.s2]);
 
@@ -284,8 +284,8 @@ describe(`Module`, () => {
             //TODO: Maximum call stack size exceeded
             it.skip(`properly resolvers circular dependencies`, async () => {
                 let m1 = module("m1")
-                    .declare("i", () => 1)
-                    .declare("a", (c:any) => c.i + c.b)
+                    .define("i", () => 1)
+                    .define("a", (c:any) => c.i + c.b)
                     .declare("b", (c:any) => c.i + c.a);
 
                 container(m1,{}).get("a");
@@ -295,11 +295,11 @@ describe(`Module`, () => {
 
     describe(`.inject`, () => {
         it(`replaces all related modules in whole tree`, async () => {
-            let m1 = module("m1").declare("val", () => 1);
+            let m1 = module("m1").define("val", () => 1);
 
             let m2 = module("m2")
                 .import("child", m1)
-                .declare("valFromChild", c => c.child.val);
+                .define("valFromChild", c => c.child.val);
 
             let m3 = module("m3")
                 .import("child1", m1)

@@ -3,7 +3,7 @@ require('source-map-support').install();
 import * as chai from 'chai';
 chai.use(require('chai-as-promised'));
 
-// declare global {
+// define global {
 //     namespace NodeJS {
 //         import ExpectStatic = Chai.ExpectStatic;
 //         import ChaiStatic = Chai.ChaiStatic;

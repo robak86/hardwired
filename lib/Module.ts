@@ -53,7 +53,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     // }
 
     //TODO: typescript doesn't interfere properly context type!!! try with conditional type (like ExtractR, ExtractMR)
-    declare<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K, D, Module<D & Record<K, V>, M, C & C1>> {
+    define<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K, D, Module<D & Record<K, V>, M, C & C1>> {
         this.assertKeyNotTaken(key);
         let cloned = new Module(
             this.name,
@@ -81,7 +81,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
     }
 
     replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModule<D, M>, C) => D[K]):Module<D, M, C> {
-        return this.undeclare(key).declare(key, factory) as any;
+        return this.undeclare(key).define(key, factory) as any;
     }
 
 
