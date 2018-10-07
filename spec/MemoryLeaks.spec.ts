@@ -13,8 +13,8 @@ describe.skip(`MemoryLeaks`, () => {
                 .import('m1', m1)
                 .define('s1', () => 678)
                 .define('s2', () => 9)
-                .declare('s3_s1', (c) => [c.m1.s3, c.s1])
-                .declare('s4_s2', (c) => [c.m1.s4, c.s2]);
+                .define('s3_s1', (c) => [c.m1.s3, c.s1])
+                .define('s4_s2', (c) => [c.m1.s4, c.s2]);
 
             iterate(() => {
                 container(m2, {}).get('s3_s1');

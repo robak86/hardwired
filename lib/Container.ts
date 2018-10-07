@@ -21,10 +21,10 @@ export class Container<D = {}, M extends ModulesRegistry = {}, C = {}> {
     };
 
     deepGet<M1 extends Module<any, any, any>, K extends keyof ExtractMR<M1>>(module:M1, key:K):ExtractMR<M1>[K] {
-        let childModule = this.findModule(module.identity);
+        let childModule = this.findModule(module.identity); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
         if (!childModule){
-            console.warn('deepGet called with module which is not imported by any descendant module')
+            console.warn('deepGet called with module which is not imported by any descendant module');
             childModule = module;
         }
 

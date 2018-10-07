@@ -12,6 +12,9 @@ export function module(name:string):Module {
     return new Module(name);
 }
 
+
+//TODO: consider completely removing the m parameter. Create empty container instead and instantiate all dependencies via deepGet
+//TODO: investigate how to pass context in such case? and how to make it typesafe ?!
 export function container<MOD extends Module<any, any, any>>(m:MOD, ctx:ExtractContext<MOD>):Container<ExtractMR<MOD>, ExtractR<MOD>, ExtractContext<MOD>> {
     return new Container(
         (m as any).declarations as any,

@@ -21,7 +21,8 @@
     "emitDecoratorMetadata": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
-    "declaration": true
+    "declaration": true,
+    "keyofStringsOnly": true
   }
 }
 

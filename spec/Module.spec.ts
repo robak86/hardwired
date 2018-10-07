@@ -41,7 +41,7 @@ describe(`Module`, () => {
         });
     });
 
-    describe(`.declare`, () => {
+    describe(`.define`, () => {
         it(`registers new dependency resolver`, async () => {
             class SomeType {
                 public a:string;
@@ -109,7 +109,7 @@ describe(`Module`, () => {
                 let m1 = module("m1")
                     .define("t1", () => new T1())
                     .define("t2", () => new T2())
-                    .declare("t1_t2", c => {
+                    .define("t1_t2", c => {
                         return [c.t1, c.t2];
                     });
 
@@ -153,10 +153,10 @@ describe(`Module`, () => {
                     .import("childModule", childM)
                     .define("t1", () => new T1())
                     .define("t2", () => new T2())
-                    .declare("t1FromChildModule", c => c.childModule.t1)
-                    .declare("t2FromChildModule", c => c.childModule.t2)
-                    .declare("t1WithChildT1", p => [p.t1, p.childModule.t1])
-                    .declare("t2WithChildT2", p => [p.t1, p.childModule.t2]);
+                    .define("t1FromChildModule", c => c.childModule.t1)
+                    .define("t2FromChildModule", c => c.childModule.t2)
+                    .define("t1WithChildT1", p => [p.t1, p.childModule.t1])
+                    .define("t2WithChildT2", p => [p.t1, p.childModule.t2]);
 
 
                 let cont = container(m1,{});
@@ -208,22 +208,22 @@ describe(`Module`, () => {
                 let c = module("c")
                     .define("f1", f1)
                     .define("f2", f2)
-                    .declare("f1+f2", ({f1, f2}) => f1 + f2);
+                    .define("f1+f2", ({f1, f2}) => f1 + f2);
 
                 let b = module("b")
                     .import("c", c)
                     .define("f3", f3)
                     .define("f4", f4)
-                    .declare("f3+f4", ({f3, f4}) => f3 + f4)
-                    .declare("f1+f2+f3+f4", _ => _.c.f1 + _.c.f2 + _.f3 + _.f3);
+                    .define("f3+f4", ({f3, f4}) => f3 + f4)
+                    .define("f1+f2+f3+f4", _ => _.c.f1 + _.c.f2 + _.f3 + _.f3);
 
                 let a = module("a")
                     .import("b", b)
                     .import("c", c)
-                    .declare("f5", f5)
-                    .declare("f6", f6)
-                    .declare("f5+f1", _ => _.c.f1 + _.f5)
-                    .declare("f6+f2", _ => _.c.f2 + _.f6);
+                    .define("f5", f5)
+                    .define("f6", f6)
+                    .define("f5+f1", _ => _.c.f1 + _.f5)
+                    .define("f6+f2", _ => _.c.f2 + _.f6);
 
                 let cnt = container(a,{});
 
@@ -263,8 +263,8 @@ describe(`Module`, () => {
                     .import("m1", m1)
                     .define("s1", f1)
                     .define("s2", f2)
-                    .declare("s3_s1", c => [c.m1.s3, c.s1])
-                    .declare("s4_s2", c => [c.m1.s4, c.s2]);
+                    .define("s3_s1", c => [c.m1.s3, c.s1])
+                    .define("s4_s2", c => [c.m1.s4, c.s2]);
 
                 let cnt = container(m2,{someCtxVal: 1});
 
@@ -286,7 +286,7 @@ describe(`Module`, () => {
                 let m1 = module("m1")
                     .define("i", () => 1)
                     .define("a", (c:any) => c.i + c.b)
-                    .declare("b", (c:any) => c.i + c.a);
+                    .define("b", (c:any) => c.i + c.a);
 
                 container(m1,{}).get("a");
             });
@@ -304,7 +304,7 @@ describe(`Module`, () => {
             let m3 = module("m3")
                 .import("child1", m1)
                 .import("child2", m2)
-                .declare("val", c => c.child2.valFromChild);
+                .define("val", c => c.child2.valFromChild);
 
             let mocked = m3.inject(m1.replace("val", c => 2));
 

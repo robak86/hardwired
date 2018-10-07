@@ -12,9 +12,7 @@ export type ExtractMR<M> = M extends Module<infer MR, any> ? MR : never;
 export type ExtractR<M> = M extends Module<any, infer R> ? R : never;
 export type ExtractContext<M> = M extends Module<any, any, infer CTX> ? CTX : never;
 
-export type ModulesRegistry = {
-    [key:string]:Module<any, any>
-}
+export type ModulesRegistry = Record<string, Module<any, any>>
 
 
 //TODO: following types blows compilator ://
@@ -23,16 +21,16 @@ export type ModulesRegistry = {
 //     [K in keyof T]: DeepModules<ExtractR<T[K]>>
 // }>
 
-export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never ? RETURN: never;
+export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never ? RETURN : never;
 
-export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
-    public id:string = nextId();
+export class Module<D extends Record<string, any> = {}, M extends ModulesRegistry = {}, C = {}> {
+    public id:string = nextId(); //TODO: extract it to Identity class (id: string, origin??: string;)
 
     //TODO: consider adding version property and increment it after each "mutation" ?! Could be valuable for inject and determining
 
     constructor(private name:string,
-                private imports:{ [key:string]:Module } = {},
-                private declarations:{ [key:string]:DependencyResolver<any, any, any> } = {},
+                private imports:M = {} as M,
+                private declarations:Record<keyof D, DependencyResolver<any, any, any>> = {} as Record<keyof D, DependencyResolver<any, any, any>>,
                 public identity:string = `module_${nextId()}`
     ) {}
 
@@ -44,21 +42,13 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return !!this.declarations[key];
     }
 
-    //TODO: shouldn't be available in Module - Module shouldn't know anything about container
-    // checkout(ctx:C):Container<D, M, C> {
-    //     return new Container(
-    //         this.declarations as any,
-    //         this.imports as any,
-    //         ctx as any);
-    // }
-
     //TODO: typescript doesn't interfere properly context type!!! try with conditional type (like ExtractR, ExtractMR)
     define<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K, D, Module<D & Record<K, V>, M, C & C1>> {
         this.assertKeyNotTaken(key);
         let cloned = new Module(
             this.name,
-            {...this.imports},
-            {...this.declarations, [key]: new DependencyResolver<any, any, any>(factory)},
+            {...this.imports as any},
+            {...this.declarations as any, [key]: new DependencyResolver<any, any, any>(factory)},
             this.identity
         );
         return cloned as any;
@@ -67,7 +57,7 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
     //TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
     inject<D1, M1 extends ModulesRegistry, C1>(otherModule:Module<D1, M1, C1>):Module<D, M, C> {
-        const importsCopy = mapValues(this.imports, (module) => {
+        const importsCopy:any = mapValues(this.imports, (module) => {
             return module.identity === otherModule.identity ?
                 otherModule :
                 module.inject(otherModule)
@@ -76,23 +66,23 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return new Module<D, M, C>(
             this.name,
             importsCopy,
-            {...this.declarations},
+            {...this.declarations as any},
             this.identity)
     }
 
     replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModule<D, M>, C) => D[K]):Module<D, M, C> {
-        return this.undeclare(key).define(key, factory) as any;
+        return this.undeclare(key).define(key as any, factory) as any;
     }
 
 
     //TODO: should be private. because it breaks typesafety when module is nested
     undeclare<K extends keyof D>(key:K):Module<Omit<D, K>, M, C> {
-        let declarations = {...this.declarations};
+        let declarations = {...this.declarations as any};
         delete declarations[key];
 
         let cloned = new Module(
             this.name,
-            {...this.imports},
+            {...this.imports as any},
             declarations,
             this.identity
         );
@@ -104,8 +94,8 @@ export class Module<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
         let cloned = new Module(
             this.name,
-            {...this.imports, [key]: mod2},
-            {...this.declarations},
+            {...this.imports as any, [key]: mod2},
+            {...this.declarations as any},
             this.identity
         );
 
