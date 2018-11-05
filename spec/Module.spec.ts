@@ -96,7 +96,7 @@ describe(`Module`, () => {
             let m1 = module("m1").define("a", () => 1);
 
             let updated = m1.replace("a", () => 2);
-            expect(container(updated,{}).get("a")).to.eq(2);
+            expect(container(updated, {}).get("a")).to.eq(2);
         });
     });
 
@@ -120,7 +120,7 @@ describe(`Module`, () => {
                         return [c.t1, c.t2];
                     });
 
-                let materializedContainer = container(m1,{});
+                let materializedContainer = container(m1, {});
 
                 expect(materializedContainer.get("t1").type).to.eq("t1");
                 expect(materializedContainer.get("t2").type).to.eq("t2");
@@ -144,7 +144,7 @@ describe(`Module`, () => {
                     .import('a', a)
                     .define("t1", () => new T1());
 
-                const c = container(b,{});
+                const c = container(b, {});
                 const t1 = c.deepGet(a, 't1');
                 expect(t1.type).to.eq('t1');
             });
@@ -166,7 +166,7 @@ describe(`Module`, () => {
                     .define("t2WithChildT2", p => [p.t1, p.childModule.t2]);
 
 
-                let cont = container(m1,{});
+                let cont = container(m1, {});
                 expect(cont.get("t1FromChildModule").id).to.eql(cont.deepGet(childM, 't1').id);
                 expect(cont.get("t2FromChildModule").id).to.eql(cont.deepGet(childM, 't2').id);
             });
@@ -179,6 +179,38 @@ describe(`Module`, () => {
         });
 
         describe(`dependencies resolution`, () => {
+            describe(`.toObject`, () => {
+                it(`returns proxy object able for getting all dependencies`, async () => {
+                    let m1 = module("m1")
+                        .define("v1", () => 1)
+                        .define("v2", () => 2);
+
+                    let m2 = module("m2")
+                        .import("m1", () => m1)
+                        .define("ov1", () => 10)
+                        .define("s2", () => 11);
+
+                    const obj = container(m2, {}).toObject();
+                    expect(obj.s2).to.eq(11);
+                    expect(obj.m1.v1).to.eq(1);
+                });
+            });
+
+
+            describe(`.getMany`, () => {
+                it(`returns all dependencies`, async () => {
+                    let m1 = module("m1")
+                        .define("s1", () => 1)
+                        .define("s2", () => 'str');
+
+                    const [s1, s2] = container(m1, {}).getMany('s1', 's2');
+
+                    expect(s1).to.eq(1);
+                    expect(s2).to.eq('str');
+                });
+            });
+
+
             it(`resolves all dependencies lazily`, async () => {
                 let f1 = spy(() => 123);
                 let f2 = spy(() => 456);
@@ -194,7 +226,7 @@ describe(`Module`, () => {
                     .define("s1", f1)
                     .define("s2", f2);
 
-                let cnt = container(m2,{});
+                let cnt = container(m2, {});
 
                 cnt.get("s1");
                 expect(f1.calledOnce).to.eq(true);
@@ -232,7 +264,7 @@ describe(`Module`, () => {
                     .define("f5+f1", _ => _.c.f1 + _.f5)
                     .define("f6+f2", _ => _.c.f2 + _.f6);
 
-                let cnt = container(a,{});
+                let cnt = container(a, {});
 
                 // container.get("b");
                 // container.get("c");
@@ -273,7 +305,7 @@ describe(`Module`, () => {
                     .define("s3_s1", c => [c.m1.s3, c.s1])
                     .define("s4_s2", c => [c.m1.s4, c.s2]);
 
-                let cnt = container(m2,{someCtxVal: 1});
+                let cnt = container(m2, {someCtxVal: 1});
 
                 cnt.get("s1");
                 cnt.get("s1");
@@ -295,7 +327,7 @@ describe(`Module`, () => {
                     .define("a", (c:any) => c.i + c.b)
                     .define("b", (c:any) => c.i + c.a);
 
-                container(m1,{}).get("a");
+                container(m1, {}).get("a");
             });
         });
     });
@@ -315,10 +347,10 @@ describe(`Module`, () => {
 
             let mocked = m3.inject(m1.replace("val", c => 2));
 
-            expect(container(mocked,{}).get("val")).to.eq(2);
-            expect(container(mocked,{}).deepGet(m1, "val")).to.eq(2);
-            expect(container(mocked,{}).deepGet(m2, "valFromChild")).to.eq(2);
-            expect(container(mocked,{}).deepGet(m1, "val")).to.eq(2);
+            expect(container(mocked, {}).get("val")).to.eq(2);
+            expect(container(mocked, {}).deepGet(m1, "val")).to.eq(2);
+            expect(container(mocked, {}).deepGet(m2, "valFromChild")).to.eq(2);
+            expect(container(mocked, {}).deepGet(m1, "val")).to.eq(2);
             expect(m3).not.to.eq(mocked);
         });
     });
