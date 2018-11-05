@@ -3,6 +3,7 @@ import {nextId} from "./utils/fastId";
 import {DependencyResolver} from "./DependencyResolver";
 import {Omit} from "./utils/types";
 import {mapValues} from 'lodash';
+import {Thunk, unwrapThunk} from "./utils/thunk";
 
 export type MaterializedModule<D, M extends ModulesRegistry> = D & {
     [K in keyof M]:MaterializedModule<ExtractMR<M[K]>, {}>;
@@ -13,17 +14,15 @@ export type ExtractR<M> = M extends Module<any, infer R> ? R : never;
 export type ExtractContext<M> = M extends Module<any, any, infer CTX> ? CTX : never;
 
 export type ModulesRegistry = Record<string, Module<any, any>>
+type DependenciesRegistry = Record<string, any>;
 
 
-//TODO: following types blows compilator ://
-// export type ValuesOf<T> = T[keyof T];
-// export type DeepModules<T extends ModulesRegistry> = ValuesOf<{
-//     [K in keyof T]: DeepModules<ExtractR<T[K]>>
-// }>
+
 
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never ? RETURN : never;
 
-export class Module<D extends Record<string, any> = {}, M extends ModulesRegistry = {}, C = {}> {
+
+export class Module<D extends DependenciesRegistry = {}, M extends ModulesRegistry = {}, C = {}> {
     public id:string = nextId(); //TODO: extract it to Identity class (id: string, origin??: string;)
 
     //TODO: consider adding version property and increment it after each "mutation" ?! Could be valuable for inject and determining
@@ -89,12 +88,12 @@ export class Module<D extends Record<string, any> = {}, M extends ModulesRegistr
         return cloned as any;
     }
 
-    import<K extends string, M1 extends Module>(key:K, mod2:M1):NotDuplicated<K, M, Module<D, M & Record<K, M1>>> {
+    import<K extends string, M1 extends Module>(key:K, mod2:Thunk<M1>):NotDuplicated<K, M, Module<D, M & Record<K, M1>>> {
         this.assertKeyNotTaken(key);
 
         let cloned = new Module(
             this.name,
-            {...this.imports as any, [key]: mod2},
+            {...this.imports as any, [key]: unwrapThunk(mod2)},
             {...this.declarations as any},
             this.identity
         );

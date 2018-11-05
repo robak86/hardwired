@@ -39,6 +39,13 @@ describe(`Module`, () => {
 
             expect((<any>rootModule).hasModule("c2")).to.eq(false);
         });
+
+        it(`supports thunks`, async () => {
+            let childModule1 = module("child1");
+            let rootModule = module("someOtherModule").import("c1", () => childModule1);
+
+            expect(rootModule.hasModule("c1")).to.eq(true);
+        });
     });
 
     describe(`.define`, () => {
