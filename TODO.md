@@ -29,9 +29,9 @@ add support for thunks for import! (circular dependencies)
 - container().toObject() - returns proxified object which can be passed as a context to any function
 
 
-
-getMany([])
-
+- throw if undefined was returned  
 
 
-- use conditional types for extracting module shape!
+
+
+

@@ -1,5 +1,5 @@
 import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
-import {ExtractMR, MaterializedModule, Module, ModulesRegistry} from "./Module";
+import {ModuleDeclarations, MaterializedModule, Module, ModulesRegistry} from "./Module";
 import {values} from 'lodash';
 import {container} from "./index";
 
@@ -34,7 +34,7 @@ export class Container<D = {}, M extends ModulesRegistry = {}, C = {}> {
         return this.getProxiedAccessor();
     }
 
-    deepGet<M1 extends Module<any, any, any>, K extends keyof ExtractMR<M1>>(module:M1, key:K):ExtractMR<M1>[K] {
+    deepGet<M1 extends Module<any, any, any>, K extends keyof ModuleDeclarations<M1>>(module:M1, key:K):ModuleDeclarations<M1>[K] {
         let childModule = this.findModule(module.identity); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
         if (!childModule) {
