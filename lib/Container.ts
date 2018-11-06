@@ -1,5 +1,5 @@
 import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
-import {ModuleDeclarations, MaterializedModule, Module, ModulesRegistry} from "./Module";
+import {ModuleDeclarations, MaterializedModule, Module, ImportsRegistry} from "./Module";
 import {values} from 'lodash';
 import {container} from "./index";
 
@@ -15,7 +15,7 @@ interface GetMany<D> {
     <K extends keyof D, K2 extends keyof D, K3 extends keyof D, K4 extends keyof D>(key:K, key2:K2, key3:K3, key4:K4):[D[K], D[K2], D[K3], D[K4]]
 }
 
-export class Container<D = {}, M extends ModulesRegistry = {}, C = {}> {
+export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
     private cache:{ [key:string]:any } = {};
 
     constructor(private declarationsResolvers:DependencyResolversRegistry<D>,
@@ -35,24 +35,24 @@ export class Container<D = {}, M extends ModulesRegistry = {}, C = {}> {
     }
 
     deepGet<M1 extends Module<any, any, any>, K extends keyof ModuleDeclarations<M1>>(module:M1, key:K):ModuleDeclarations<M1>[K] {
-        let childModule = this.findModule(module.identity); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
+        let childModule = this.findModule(module.moduleId.identity); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
         if (!childModule) {
             console.warn('deepGet called with module which is not imported by any descendant module');
             childModule = module;
         }
 
-        if (this.cache[childModule.id]) {
-            return this.cache[childModule.id].getChild(this.cache, key);
+        if (this.cache[childModule.moduleId.id]) {
+            return this.cache[childModule.moduleId.id].getChild(this.cache, key);
         } else {
             let childMaterializedModule:any = container(childModule, this.context);
-            this.cache[childModule.id] = childMaterializedModule;
+            this.cache[childModule.moduleId.id] = childMaterializedModule;
             return childMaterializedModule.getChild(this.cache, key); //TODO: we have to pass cache !!!!
         }
     }
 
     private findModule(moduleIdentity):Module<any, any, any> | undefined {
-        let found = values(this.imports).find(m => m.identity === moduleIdentity);
+        let found = values(this.imports).find(m => m.moduleId.identity === moduleIdentity);
         if (found) {
             return found;
         }
@@ -94,11 +94,11 @@ export class Container<D = {}, M extends ModulesRegistry = {}, C = {}> {
 
         if (this.imports[localKey]) {
             let childModule = this.imports[localKey];
-            if (cache[childModule.id]) {
-                return cache[childModule.id].getProxiedAccessor(cache)
+            if (cache[childModule.moduleId.id]) {
+                return cache[childModule.moduleId.id].getProxiedAccessor(cache)
             } else {
                 let childMaterializedModule:any = container(childModule, this.context);
-                cache[childModule.id] = childMaterializedModule;
+                cache[childModule.moduleId.id] = childMaterializedModule;
                 return childMaterializedModule.getProxiedAccessor(cache); //TODO: we have to pass cache !!!!
             }
         }

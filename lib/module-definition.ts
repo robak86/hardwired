@@ -2,7 +2,7 @@ import {Registry} from "./registry";
 import {NotDuplicated} from "./Module";
 import {Thunk} from "./utils/thunk";
 
-// D extends DependenciesRegistry = {}, M extends ModulesRegistry = {}, C = {}
+// D extends DependenciesRegistry = {}, M extends ImportsRegistry = {}, C = {}
 
 type Factory<T> = () => T;
 type ImportsRegistry = Registry<ModuleDefinition<any, any>>

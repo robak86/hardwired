@@ -22,7 +22,7 @@ const modB = module("b")
 
 const modC = module("c")
     .import("b", modB)
-    .define("v4", ({z}) => b.v3);
+    .define("v4", ({b}) => b.v3);
 
 
 

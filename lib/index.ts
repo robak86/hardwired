@@ -1,6 +1,7 @@
 import {ModuleContext, ModuleDeclarations, ModuleImports, Module} from "./Module";
 import {Container} from "./Container";
 import {curry, CurriedFunction3} from 'lodash';
+import {moduleId} from "./module-id";
 
 
 export * from './Module';
@@ -9,7 +10,7 @@ export * from './utils';
 
 
 export function module(name:string):Module {
-    return new Module(name);
+    return new Module(moduleId(name));
 }
 
 
