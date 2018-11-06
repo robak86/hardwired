@@ -1,11 +1,8 @@
-import {invariant} from "./utils";
-import {nextId} from "./utils/fastId";
-import {DependencyResolver} from "./DependencyResolver";
 import {Omit} from "./utils/types";
-import {mapValues} from 'lodash';
-import {Thunk, unwrapThunk} from "./utils/thunk";
-import {ModuleRegistry} from "./registry";
+import {Thunk} from "./utils/thunk";
+import {ImmutableMap} from "./immutable-map";
 import {ModuleId} from "./module-id";
+import {DependencyResolver} from "./DependencyResolver";
 
 
 export type MaterializedModule<D, M extends ImportsRegistry> = D & {
@@ -32,41 +29,32 @@ export class Module<D extends DependenciesRegistry = {},
     AD extends AsyncDependenciesRegistry = {},
     M extends ImportsRegistry = {}, C = {}> {
 
-    //TODO: consider adding version property and increment it after each "mutation" ?! Could be valuable for inject and determining
-
-
-    // private entries:ModuleRegistry<D, M>;
-
-
 
     constructor(public moduleId:ModuleId,
-                private imports:M = {} as M,
-                private declarations:Record<keyof D, DependencyResolver<any, any, any>> = {} as Record<keyof D, DependencyResolver<any, any, any>>,
-                private asyncDeclarations:Record<keyof D, DependencyResolver<any, any, any>> = {} as Record<keyof D, DependencyResolver<any, any, any>>,
+                private imports:ImmutableMap<Module, M> = new ImmutableMap<Module, M>('imports'),
+                private declarations:ImmutableMap<any, D> = new ImmutableMap<any, D>('declarations')
     ) {}
 
 
     //MODULE should not expose such methods. It only should expose .getDefinitions() methods which returns raw map of imports and declarations
-    hasAsyncDeclarations():boolean {
-        return Object.keys(this.asyncDeclarations).length > 0;
-    }
+    // hasAsyncDeclarations():boolean {
+    //     return Object.keys(this.asyncDeclarations).length > 0;
+    // }
 
     hasModule(key:keyof M):boolean {
-        return !!this.imports[key];
+        return this.imports.hasKey(key);
     }
 
     isDeclared(key:keyof D):boolean {
-        return !!this.declarations[key];
+        return this.declarations.hasKey(key);
     }
 
     //TODO: typescript doesn't interfere properly context type!!! try with conditional type (like ModuleImports, ModuleDeclarations)
     define<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K, D, Module<D & Record<K, V>, AD, M, C & C1>> {
-        this.assertKeyNotTaken(key);
         let cloned = new Module(
             this.moduleId.withNextId(),
-            {...this.imports as any},
-            {...this.declarations as any, [key]: new DependencyResolver<any, any, any>(factory)},
-            {...this.asyncDeclarations as any},
+            this.imports,
+            this.declarations.set(key, new DependencyResolver<any, any, any>(factory))
         );
         return cloned as any;
     }
@@ -74,7 +62,7 @@ export class Module<D extends DependenciesRegistry = {},
 
     //TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
     inject<D1, AD1 extends AsyncDependenciesRegistry, M1 extends ImportsRegistry, C1>(otherModule:Module<D1, AD1, M1, C1>):Module<D, AD, M, C> {
-        const importsCopy:any = mapValues(this.imports, (module) => {
+        const imports = this.imports.mapValues((module) => {
             return module.moduleId.identity === otherModule.moduleId.identity ? //todo implement isEqual
                 otherModule :
                 module.inject(otherModule)
@@ -82,9 +70,9 @@ export class Module<D extends DependenciesRegistry = {},
 
         return new Module<D, AD, M, C>(
             this.moduleId.withNextId(),
-            importsCopy,
-            {...this.declarations as any},
-            {...this.asyncDeclarations as any})
+            imports,
+            this.declarations
+        )
     }
 
     replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModule<D, M>, C) => D[K]):Module<D, AD, M, C> {
@@ -92,36 +80,20 @@ export class Module<D extends DependenciesRegistry = {},
     }
 
 
-    //TODO: should be private. because it breaks typesafety when module is nested
+    //TODO: should be private. because it breaks typesafety when module is nested? ()
     undeclare<K extends keyof D>(key:K):Module<Omit<D, K>, AD, M, C> {
-        let declarations = {...this.declarations as any};
-        delete declarations[key];
-
-        let cloned = new Module(
+        return new Module(
             this.moduleId.withNextId(),
-            {...this.imports as any},
-            declarations,
-            {...this.asyncDeclarations as any},
+            this.imports,
+            this.declarations.unset(key)
         );
-        return cloned as any;
     }
 
-    import<K extends string, M1 extends Module>(key:K, mod2:Thunk<M1>):NotDuplicated<K, M, Module<D, AD, M & Record<K, M1>>> {
-        this.assertKeyNotTaken(key);
-
-        let cloned = new Module(
+    import<K extends string, M1 extends Module>(key:K, mod2:Thunk<M1>):NotDuplicated<K, M, Module<D, AD, M & Record<K, Thunk<M1>>>> {
+        return new Module(
             this.moduleId.withNextId(),
-            {...this.imports as any, [key]: unwrapThunk(mod2)},
-            {...this.declarations as any},
-            {...this.asyncDeclarations as any}
-        );
-
-        return cloned as any;
-    }
-
-    private assertKeyNotTaken(key:string) {
-        invariant(!this.imports[key], `Cannot register module. Given key=${key} is already taken by other module`);
-        invariant(!this.declarations[key], `Cannot register module. Given key=${key} is already taken by module's registered dependency`);
-        //TODO: assert that modules names are unique
+            this.imports.set(key, mod2),
+            this.declarations
+        ) as any;
     }
 }

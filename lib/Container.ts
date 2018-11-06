@@ -1,10 +1,11 @@
-import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
-import {ModuleDeclarations, MaterializedModule, Module, ImportsRegistry} from "./Module";
-import {values} from 'lodash';
+import {DependencyResolver} from "./DependencyResolver";
+import {ImportsRegistry, MaterializedModule, Module, ModuleDeclarations} from "./Module";
 import {container} from "./index";
+import {ImmutableMap} from "./immutable-map";
+import {unwrapThunk} from "./utils/thunk";
 
 export type DependencyResolversRegistry<D> = {
-    [K in keyof D]:DependencyResolverFunction<any, any, any>;
+    [K in keyof D]:DependencyResolver<any, any, any>;
 }
 
 
@@ -16,10 +17,10 @@ interface GetMany<D> {
 }
 
 export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
-    private cache:{ [key:string]:any } = {};
+    private cache:{ [key:string]:any } = {};  //TODO: create cache class for managing cache
 
-    constructor(private declarationsResolvers:DependencyResolversRegistry<D>,
-                private imports:M,
+    constructor(private declarationsResolvers:ImmutableMap<any, DependencyResolversRegistry<D>>,
+                private imports:ImmutableMap<any,M>,
                 private context:C) {}
 
     get = <K extends keyof D>(key:K):D[K] => {
@@ -52,13 +53,13 @@ export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
     }
 
     private findModule(moduleIdentity):Module<any, any, any> | undefined {
-        let found = values(this.imports).find(m => m.moduleId.identity === moduleIdentity);
+        let found = this.imports.values.find(m => m.moduleId.identity === moduleIdentity);
         if (found) {
             return found;
         }
 
         for (let importKey in this.imports) {
-            const targetContainer = container(this.imports[importKey], this.context as any);
+            const targetContainer = container(this.imports.get(importKey), this.context as any);
             let found = targetContainer.findModule(moduleIdentity);
             if (found) {
                 return found;
@@ -80,8 +81,8 @@ export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
     }
 
     protected getChild(cache, localKey) {
-        if (this.declarationsResolvers[localKey]) {
-            let declarationResolver:DependencyResolver = this.declarationsResolvers[localKey];
+        if (this.declarationsResolvers.hasKey(localKey)) {
+            let declarationResolver:DependencyResolver = this.declarationsResolvers.get(localKey);
 
             if (cache[declarationResolver.id]) {
                 return cache[declarationResolver.id]
@@ -92,8 +93,8 @@ export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
             }
         }
 
-        if (this.imports[localKey]) {
-            let childModule = this.imports[localKey];
+        if (this.imports.hasKey(localKey)) {
+            let childModule = unwrapThunk(this.imports.get(localKey));
             if (cache[childModule.moduleId.id]) {
                 return cache[childModule.moduleId.id].getProxiedAccessor(cache)
             } else {
