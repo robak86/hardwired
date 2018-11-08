@@ -25,13 +25,20 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never 
 //TODO: .defineAsync should return AsyncModule! (container(...) should accept only Module asyncContainer(...) should accept AsyncModule)
 //TODO: .import() should return AsyncModule if imported module is async
 
+type ModuleWithDefinition<K extends string, V, C1, I extends ImportsRegistry, D, AD extends AsyncDependenciesRegistry, C> =
+    NotDuplicated<K, D, Module<D & Record<K, V>, AD, I, C & C1>>
+
+type ModuleWithImport<K extends string, M1 extends Module, I extends ImportsRegistry, D, AD extends AsyncDependenciesRegistry, C> =
+    NotDuplicated<K, I, Module<D, AD, I & Record<K, Thunk<M1>>, C>>
+
+
 export class Module<D extends DependenciesRegistry = {},
     AD extends AsyncDependenciesRegistry = {},
-    M extends ImportsRegistry = {}, C = {}> {
+    I extends ImportsRegistry = {}, C = {}> {
 
 
     constructor(public moduleId:ModuleId,
-                private imports:ImmutableMap<Module, M> = new ImmutableMap<Module, M>('imports'),
+                private imports:ImmutableMap<Module, I> = new ImmutableMap<Module, I>('imports'),
                 private declarations:ImmutableMap<any, D> = new ImmutableMap<any, D>('declarations')
     ) {}
 
@@ -41,7 +48,7 @@ export class Module<D extends DependenciesRegistry = {},
     //     return Object.keys(this.asyncDeclarations).length > 0;
     // }
 
-    hasModule(key:keyof M):boolean {
+    hasModule(key:keyof I):boolean {
         return this.imports.hasKey(key);
     }
 
@@ -49,8 +56,7 @@ export class Module<D extends DependenciesRegistry = {},
         return this.declarations.hasKey(key);
     }
 
-    //TODO: typescript doesn't interfere properly context type!!! try with conditional type (like ModuleImports, ModuleDeclarations)
-    define<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, M>, C1) => V):NotDuplicated<K, D, Module<D & Record<K, V>, AD, M, C & C1>> {
+    define<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, I>, C1) => V):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
         let cloned = new Module(
             this.moduleId.withNextId(),
             this.imports,
@@ -61,27 +67,27 @@ export class Module<D extends DependenciesRegistry = {},
 
 
     //TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
-    inject<D1, AD1 extends AsyncDependenciesRegistry, M1 extends ImportsRegistry, C1>(otherModule:Module<D1, AD1, M1, C1>):Module<D, AD, M, C> {
+    inject<D1, AD1 extends AsyncDependenciesRegistry, M1 extends ImportsRegistry, C1>(otherModule:Module<D1, AD1, M1, C1>):Module<D, AD, I, C> {
         const imports = this.imports.mapValues((module) => {
             return module.moduleId.identity === otherModule.moduleId.identity ? //todo implement isEqual
                 otherModule :
                 module.inject(otherModule)
         });
 
-        return new Module<D, AD, M, C>(
+        return new Module<D, AD, I, C>(
             this.moduleId.withNextId(),
             imports,
             this.declarations
         )
     }
 
-    replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModule<D, M>, C) => D[K]):Module<D, AD, M, C> {
+    replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModule<D, I>, C) => D[K]):Module<D, AD, I, C> {
         return this.undeclare(key).define(key as any, factory) as any;
     }
 
 
     //TODO: should be private. because it breaks typesafety when module is nested? ()
-    undeclare<K extends keyof D>(key:K):Module<Omit<D, K>, AD, M, C> {
+    undeclare<K extends keyof D>(key:K):Module<Omit<D, K>, AD, I, C> {
         return new Module(
             this.moduleId.withNextId(),
             this.imports,
@@ -89,7 +95,7 @@ export class Module<D extends DependenciesRegistry = {},
         );
     }
 
-    import<K extends string, M1 extends Module>(key:K, mod2:Thunk<M1>):NotDuplicated<K, M, Module<D, AD, M & Record<K, Thunk<M1>>>> {
+    import<K extends string, M1 extends Module>(key:K, mod2:Thunk<M1>):ModuleWithImport<K, M1, I, D, AD, C> {
         return new Module(
             this.moduleId.withNextId(),
             this.imports.set(key, mod2),
