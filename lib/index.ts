@@ -1,7 +1,7 @@
-import {ModuleContext, ModuleDeclarations, ModuleImports, Module} from "./Module";
+import {Module, ModuleContext, ModuleDeclarations, ModuleImports} from "./Module";
 import {Container} from "./Container";
-import {curry, CurriedFunction3} from 'lodash';
-import {moduleId} from "./module-id";
+import {curry} from 'lodash';
+import {ModuleEntries} from "./fp";
 
 
 export * from './Module';
@@ -10,7 +10,7 @@ export * from './utils';
 
 
 export function module(name:string):Module {
-    return new Module(moduleId(name));
+    return new Module(ModuleEntries.build(name));
 }
 
 
@@ -18,9 +18,9 @@ export function module(name:string):Module {
 //TODO: investigate how to pass context in such case? and how to make it typesafe ?!
 export function container<MOD extends Module<any, any, any>>(m:MOD, ctx:ModuleContext<MOD>):Container<ModuleDeclarations<MOD>, ModuleImports<MOD>, ModuleContext<MOD>> {
     return new Container(
-        (m as any).declarations as any,
-        (m as any).imports as any,
-        ctx as any);
+        m.entries,
+        ctx as any
+    );
 }
 
 //TODO: ctx should be typesafe. we should forbid calling deepGet with modules requiring different context than the context passed here

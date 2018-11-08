@@ -1,8 +1,6 @@
 import {Omit} from "./utils/types";
-import {Thunk} from "./utils/thunk";
-import {ImmutableMap} from "./immutable-map";
-import {ModuleId} from "./module-id";
-import {DependencyResolver} from "./DependencyResolver";
+import {Thunk, unwrapThunk} from "./utils/thunk";
+import {ModuleEntries} from "./fp";
 
 export type MaterializedModule<D, M extends ImportsRegistry> = D & {
     [K in keyof M]:MaterializedModule<ModuleDeclarations<M[K]>, {}>;
@@ -37,11 +35,7 @@ export class Module<I extends ImportsRegistry = {},
     C = {}> {
 
 
-    constructor(public moduleId:ModuleId,
-                private imports:ImmutableMap<Module, I> = new ImmutableMap<Module, I>('imports'),
-                private declarations:ImmutableMap<any, D> = new ImmutableMap<any, D>('declarations'),
-                private asyncDeclarations:ImmutableMap<any, AD> = new ImmutableMap<any, AD>('declarations')
-    ) {}
+    constructor(public entries:ModuleEntries<I, D>) {}
 
 
     //MODULE should not expose such methods. It only should expose .getDefinitions() methods which returns raw map of imports and declarations
@@ -50,37 +44,34 @@ export class Module<I extends ImportsRegistry = {},
     // }
 
     hasModule(key:keyof I):boolean {
-        return this.imports.hasKey(key);
+        return ModuleEntries.hasModule(key, this.entries);
     }
 
     isDeclared(key:keyof D):boolean {
-        return this.declarations.hasKey(key);
+        return ModuleEntries.hasDefinition(key, this.entries);
     }
 
     define<K extends string, V, C1>(key:K, factory:(container:MaterializedModule<D, I>, C1) => V):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
-        let cloned = new Module(
-            this.moduleId.withNextId(),
-            this.imports,
-            this.declarations.set(key, new DependencyResolver<any, any, any>(factory)),
-            this.asyncDeclarations
-        );
+        let cloned = new Module(ModuleEntries.define(key, factory)(this.entries));
         return cloned as any;
     }
 
 
     //TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
     inject<D1, AD1 extends AsyncDependenciesRegistry, I1 extends ImportsRegistry, C1>(otherModule:Module<I1, D1, AD1, C1>):Module<I, D, AD, C> {
-        const imports = this.imports.mapValues((module) => {
-            return module.moduleId.identity === otherModule.moduleId.identity ? //todo implement isEqual
-                otherModule :
-                module.inject(otherModule)
-        });
+        // const imports = this.imports.mapValues((module) => {
+        //     return module.moduleId.identity === otherModule.moduleId.identity ? //todo implement isEqual
+        //         otherModule :
+        //         module.inject(otherModule)
+        // });
+        //
+        // return new Module<I, D, AD, C>(
+        //     this.moduleId.withNextId(),
+        //     imports,
+        //     this.declarations
+        // )
 
-        return new Module<I, D, AD, C>(
-            this.moduleId.withNextId(),
-            imports,
-            this.declarations
-        )
+        return new Module(ModuleEntries.inject(otherModule.entries, this.entries));
     }
 
     replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModule<D, I>, C) => D[K]):Module<I, D, AD, C> {
@@ -90,18 +81,19 @@ export class Module<I extends ImportsRegistry = {},
 
     //TODO: should be private. because it breaks typesafety when module is nested? ()
     undeclare<K extends keyof D>(key:K):Module<I, Omit<D, K>, AD, C> {
-        return new Module(
-            this.moduleId.withNextId(),
-            this.imports,
-            this.declarations.unset(key)
-        );
+        return new Module(ModuleEntries.undefine(key, this.entries));
     }
 
+    getEntries = () => {
+        return this.entries;
+    };
+
     import<K extends string, M1 extends Module>(key:K, mod2:Thunk<M1>):ModuleWithImport<K, M1, I, D, AD, C> {
-        return new Module(
-            this.moduleId.withNextId(),
-            this.imports.set(key, mod2),
-            this.declarations
-        ) as any;
+        const getEntries = () => unwrapThunk(mod2).getEntries();
+        return new Module(ModuleEntries.import(key, getEntries)(this.entries)) as any
+    }
+
+    private apply(fn):Module<any, any> {
+        return new Module(fn(this.entries));
     }
 }

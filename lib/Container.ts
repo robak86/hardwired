@@ -3,6 +3,7 @@ import {ImportsRegistry, MaterializedModule, Module, ModuleDeclarations} from ".
 import {container} from "./index";
 import {ImmutableMap} from "./immutable-map";
 import {unwrapThunk} from "./utils/thunk";
+import {ModuleEntries} from "./fp";
 
 export type DependencyResolversRegistry<D> = {
     [K in keyof D]:DependencyResolver<any, any, any>;
@@ -19,9 +20,11 @@ interface GetMany<D> {
 export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
     private cache:{ [key:string]:any } = {};  //TODO: create cache class for managing cache
 
-    constructor(private declarationsResolvers:ImmutableMap<any, DependencyResolversRegistry<D>>,
-                private imports:ImmutableMap<any,M>,
-                private context:C) {}
+    constructor(
+        private entries:ModuleEntries<M, D>,
+        private context:C) {
+        console.log(entries);
+    }
 
     get = <K extends keyof D>(key:K):D[K] => {
         return this.getChild(this.cache, key);
@@ -36,30 +39,30 @@ export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
     }
 
     deepGet<M1 extends Module<any, any, any>, K extends keyof ModuleDeclarations<M1>>(module:M1, key:K):ModuleDeclarations<M1>[K] {
-        let childModule = this.findModule(module.moduleId.identity); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
+        let childModule:ModuleEntries | undefined = unwrapThunk(this.findModule(module.entries.moduleId.identity)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
         if (!childModule) {
             console.warn('deepGet called with module which is not imported by any descendant module');
-            childModule = module;
+            childModule = module.entries;
         }
 
         if (this.cache[childModule.moduleId.id]) {
             return this.cache[childModule.moduleId.id].getChild(this.cache, key);
         } else {
-            let childMaterializedModule:any = container(childModule, this.context);
+            let childMaterializedModule:any = new Container(childModule, this.context);
             this.cache[childModule.moduleId.id] = childMaterializedModule;
             return childMaterializedModule.getChild(this.cache, key); //TODO: we have to pass cache !!!!
         }
     }
 
-    private findModule(moduleIdentity):Module<any, any, any> | undefined {
-        let found = this.imports.values.find(m => m.moduleId.identity === moduleIdentity);
+    private findModule(moduleIdentity):ModuleEntries | undefined {
+        let found = Object.values(this.entries.imports).map(unwrapThunk).find(m => m.moduleId.identity === moduleIdentity);
         if (found) {
             return found;
         }
 
-        for (let importKey in this.imports) {
-            const targetContainer = container(this.imports.get(importKey), this.context as any);
+        for (let importKey in this.entries.imports) {
+            const targetContainer = new Container(unwrapThunk(this.entries.imports[importKey]), this.context as any);
             let found = targetContainer.findModule(moduleIdentity);
             if (found) {
                 return found;
@@ -81,8 +84,8 @@ export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
     }
 
     protected getChild(cache, localKey) {
-        if (this.declarationsResolvers.hasKey(localKey)) {
-            let declarationResolver:DependencyResolver = this.declarationsResolvers.get(localKey);
+        if (this.entries.declarations[localKey]) {
+            let declarationResolver:DependencyResolver = this.entries.declarations[localKey];
 
             if (cache[declarationResolver.id]) {
                 return cache[declarationResolver.id]
@@ -93,12 +96,12 @@ export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
             }
         }
 
-        if (this.imports.hasKey(localKey)) {
-            let childModule = unwrapThunk(this.imports.get(localKey));
+        if (this.entries.imports[localKey]) {
+            let childModule = unwrapThunk(this.entries.imports[localKey]);
             if (cache[childModule.moduleId.id]) {
                 return cache[childModule.moduleId.id].getProxiedAccessor(cache)
             } else {
-                let childMaterializedModule:any = container(childModule, this.context);
+                let childMaterializedModule:any = new Container(childModule, this.context);
                 cache[childModule.moduleId.id] = childMaterializedModule;
                 return childMaterializedModule.getProxiedAccessor(cache); //TODO: we have to pass cache !!!!
             }

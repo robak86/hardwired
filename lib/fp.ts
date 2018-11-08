@@ -1,6 +1,10 @@
-import {DependenciesRegistry, ImportsRegistry} from "./Module";
+import {DependenciesRegistry, ImportsRegistry, MaterializedModule} from "./Module";
 import {nextId} from "./utils/fastId";
-import {assoc, shallowClone} from "./utils/shallowClone";
+import {assoc, dissoc, shallowClone} from "./utils/shallowClone";
+import {Thunk, unwrapThunk} from "./utils/thunk";
+import {Omit} from "./utils/types";
+import {mapValues} from 'lodash';
+import {DependencyResolver} from "./DependencyResolver";
 
 
 export type ModuleId = {
@@ -10,7 +14,7 @@ export type ModuleId = {
 }
 
 const ModuleId = {
-    build(name:string) {
+    build(name:string):ModuleId {
         return {
             name,
             id: nextId(),
@@ -27,39 +31,69 @@ const ModuleId = {
 };
 
 
+// type ModuleImportsRegistry = Record<string, ModuleEntries>;
+
 type DeclarationsFactories<D> = {
-    [K in keyof D]:(module:Module) => D[K]
+    [K in keyof D]:DependencyResolver<any, any, D>
 }
 
-export type Module<I extends ImportsRegistry = any, D extends DependenciesRegistry = any> = {
-    id:ModuleId,
+export type ModuleEntries<I extends ImportsRegistry = any, D extends DependenciesRegistry = any> = {
+    moduleId:ModuleId,
     imports:I,
     declarations:DeclarationsFactories<D>
 }
 
-export const Module = {
-    build(name:string) {
+export const ModuleEntries = {
+    build(name:string):ModuleEntries {
         return {
-            id: ModuleId.build(name),
+            moduleId: ModuleId.build(name),
             imports: {},
             declarations: {}
         }
     },
 
-    define<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, O>(key:K, factory:() => O) {
-        return (module:Module<I, D>):Module<I, D & Record<K, O>> => {
+    hasModule(key:string, entries:ModuleEntries):boolean {
+        return !!entries.imports[key];
+    },
+
+    hasDefinition(key:string, entries:ModuleEntries):boolean {
+        return !!entries.declarations[key];
+    },
+
+    define<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, O>(key:K, factory:(container:MaterializedModule<D, I>, C1) => O) {
+        return (module:ModuleEntries<I, D>):ModuleEntries<I, D & Record<K, O>> => {
             return {
-                id: ModuleId.next(module.id),
+                moduleId: ModuleId.next(module.moduleId),
                 imports: shallowClone(module.imports),
-                declarations: assoc(key, factory, module.declarations)
+                declarations: assoc(key, new DependencyResolver(factory), module.declarations)
             }
         }
     },
 
-    import<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, O, M2 extends Module>(key:K, otherModule:M2) {
-        return (module:Module<I, D>):Module<I & Record<K, M2>, D> => {
+    inject(otherModule:ModuleEntries, entries:ModuleEntries):ModuleEntries {
+        return {
+            moduleId: ModuleId.next(entries.moduleId),
+            declarations: shallowClone(entries.declarations),
+            imports: mapValues(entries.imports, (module) => {
+                return unwrapThunk(module).moduleId.identity === unwrapThunk(otherModule).moduleId.identity ? //todo implement isEqual
+                    otherModule :
+                    ModuleEntries.inject(otherModule, unwrapThunk(module))
+            })
+        };
+    },
+
+    undefine<I extends ImportsRegistry, D extends DependenciesRegistry, K extends keyof D>(key:K, entries:ModuleEntries<I, D>):ModuleEntries<I, Omit<D, K>> {
+        return {
+            moduleId: ModuleId.next(entries.moduleId),
+            imports: shallowClone(entries.imports),
+            declarations: dissoc(key, entries.declarations)
+        }
+    },
+
+    import<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, O, M2 extends ModuleEntries>(key:K, otherModule:Thunk<M2>) {
+        return (module:ModuleEntries<I, D>):ModuleEntries<I & Record<K, Thunk<M2>>, D> => {
             return {
-                id: ModuleId.next(module.id),
+                moduleId: ModuleId.next(module.moduleId),
                 imports: assoc(key, otherModule, module.imports),
                 declarations: shallowClone(module.declarations)
             }
