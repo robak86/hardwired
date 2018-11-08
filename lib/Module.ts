@@ -4,7 +4,6 @@ import {ImmutableMap} from "./immutable-map";
 import {ModuleId} from "./module-id";
 import {DependencyResolver} from "./DependencyResolver";
 
-
 export type MaterializedModule<D, M extends ImportsRegistry> = D & {
     [K in keyof M]:MaterializedModule<ModuleDeclarations<M[K]>, {}>;
 }
@@ -32,7 +31,6 @@ type ModuleWithDefinition<K extends string, V, C1, I extends ImportsRegistry, D,
 type ModuleWithImport<K extends string, M1 extends Module, I extends ImportsRegistry, D, AD extends AsyncDependenciesRegistry, C> =
     NotDuplicated<K, I, Module<I & Record<K, Thunk<M1>>, D, AD, C>>
 
-
 export class Module<I extends ImportsRegistry = {},
     D extends DependenciesRegistry = {},
     AD extends AsyncDependenciesRegistry = {},
@@ -41,7 +39,8 @@ export class Module<I extends ImportsRegistry = {},
 
     constructor(public moduleId:ModuleId,
                 private imports:ImmutableMap<Module, I> = new ImmutableMap<Module, I>('imports'),
-                private declarations:ImmutableMap<any, D> = new ImmutableMap<any, D>('declarations')
+                private declarations:ImmutableMap<any, D> = new ImmutableMap<any, D>('declarations'),
+                private asyncDeclarations:ImmutableMap<any, AD> = new ImmutableMap<any, AD>('declarations')
     ) {}
 
 
@@ -62,7 +61,8 @@ export class Module<I extends ImportsRegistry = {},
         let cloned = new Module(
             this.moduleId.withNextId(),
             this.imports,
-            this.declarations.set(key, new DependencyResolver<any, any, any>(factory))
+            this.declarations.set(key, new DependencyResolver<any, any, any>(factory)),
+            this.asyncDeclarations
         );
         return cloned as any;
     }

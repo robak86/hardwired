@@ -11,7 +11,9 @@ type Ctx = {type: string}
 // container(otherMod,{});
 const modA = module("a")
     .define("v1", (_, {type}:Ctx) => 1)
-    .define("v2", () => 2);
+    .define("v2", ({v2}) => 2);
+
+container(modA,{}).get('v5')
 
 
 
@@ -22,7 +24,7 @@ const modB = module("b")
 
 const modC = module("c")
     .import("b", modB)
-    .define("v4", ({z}) => b.v3);
+    .define("v4", ({v3}) => b.v3);
 
 
 
