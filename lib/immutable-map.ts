@@ -3,7 +3,7 @@ import {mapValues} from 'lodash';
 import {Mapped, Omit} from "./utils/types";
 import {shallowClone} from "./utils/shallowClone";
 
-
+// TODO: we don't need to  be so typesafe here
 export class ImmutableMap<T = any, R extends Record<string, T> = {}> {
 
     * [Symbol.iterator]() {
