@@ -1,6 +1,5 @@
-import {MaterializedModule} from "./Module";
 import {assoc, dissoc, shallowClone} from "./utils/shallowClone";
-import {Thunk, unwrapThunk} from "./utils/thunk";
+import {Thunk, UnwrapThunk, unwrapThunk} from "./utils/thunk";
 import {Omit} from "./utils/types";
 import {mapValues} from 'lodash';
 import {DependencyResolver} from "./DependencyResolver";
@@ -15,11 +14,18 @@ export type ImportsRegistry = Record<string, Thunk<ModuleEntries<any, any>>>
 export type DependenciesRegistry = Record<string, any>;
 export type AsyncDependenciesRegistry = Record<string, () => Promise<any>>;
 
-export type ModuleEntries<I extends ImportsRegistry = any, D extends DependenciesRegistry = any> = {
+export type ModuleEntries<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> = {
     moduleId:ModuleId,
     imports:I,
     declarations:DeclarationsFactories<D>
 }
+
+export type MaterializedModuleEntries<M extends ImportsRegistry, D extends DependenciesRegistry> = D & {
+    [K in keyof M]:MaterializedModuleEntries<{}, ExtractModuleRegistryDeclarations<UnwrapThunk<M[K]>>>;
+}
+
+export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D> ? D : never;
+
 
 export const ModuleEntries = {
     build(name:string):ModuleEntries {
@@ -38,7 +44,7 @@ export const ModuleEntries = {
         return !!entries.declarations[key];
     },
 
-    define<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, O>(key:K, factory:(container:MaterializedModule<D, I>, C1) => O) {
+    define<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, O>(key:K, factory:(container:MaterializedModuleEntries<I, D>, C1) => O) {
         return (module:ModuleEntries<I, D>):ModuleEntries<I, D & Record<K, O>> => {
             return {
                 moduleId: ModuleId.next(module.moduleId),

@@ -1,11 +1,13 @@
 import {DependencyResolver} from "./DependencyResolver";
-import {MaterializedModule, Module, ModuleDeclarations} from "./Module";
+import {Module} from "./Module";
 import {unwrapThunk} from "./utils/thunk";
-import {ImportsRegistry, ModuleEntries} from "./module-entries";
-
-export type DependencyResolversRegistry<D> = {
-    [K in keyof D]:DependencyResolver<any, any, any>;
-}
+import {
+    ImportsRegistry,
+    MaterializedModuleEntries,
+    ExtractModuleRegistryDeclarations,
+    ModuleEntries,
+    DependenciesRegistry
+} from "./module-entries";
 
 
 interface GetMany<D> {
@@ -15,13 +17,12 @@ interface GetMany<D> {
     <K extends keyof D, K2 extends keyof D, K3 extends keyof D, K4 extends keyof D>(key:K, key2:K2, key3:K3, key4:K4):[D[K], D[K2], D[K3], D[K4]]
 }
 
-export class Container<D = {}, I extends ImportsRegistry = {}, C = {}> {
+export class Container<I extends ImportsRegistry = {}, D extends DependenciesRegistry = {}, C = {}> {
     private cache:{ [key:string]:any } = {};  //TODO: create cache class for managing cache
 
     constructor(
         private entries:ModuleEntries<I, D>,
         private context:C) {
-        console.log(entries);
     }
 
     get = <K extends keyof D>(key:K):D[K] => {
@@ -32,11 +33,11 @@ export class Container<D = {}, I extends ImportsRegistry = {}, C = {}> {
         return args.map(this.get) as any;
     };
 
-    toObject():MaterializedModule<D, I> {
+    toObject():MaterializedModuleEntries<I, D> {
         return this.getProxiedAccessor();
     }
 
-    deepGet<M1 extends Module<any, any, any>, K extends keyof ModuleDeclarations<M1>>(module:M1, key:K):ModuleDeclarations<M1>[K] {
+    deepGet<I1 extends ImportsRegistry, D2 extends DependenciesRegistry, K extends keyof MaterializedModuleEntries<I1, D2>>(module:Module<I1, D2>, key:K):MaterializedModuleEntries<I1, D2>[K] {
         let childModule:ModuleEntries | undefined = unwrapThunk(this.findModule(module.entries.moduleId.identity)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
         if (!childModule) {

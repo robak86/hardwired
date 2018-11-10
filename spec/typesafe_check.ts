@@ -11,7 +11,7 @@ type Ctx = {type: string}
 // container(otherMod,{});
 const modA = module("a")
     .define("v1", (_, {type}:Ctx) => 1)
-    .define("v2", ({v2}) => 2);
+    .define("v2", ({v1}) => 2);
 
 container(modA,{}).get('v5');
 
