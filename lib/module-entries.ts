@@ -10,7 +10,7 @@ import {DependencyResolver} from "./DependencyResolver";
 export type FactoryFunction<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> =
     (ctx:MaterializedModuleEntries<I, D, AD>) => any
 
-export type AsyncFactoryFunction<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> =
+export type AsyncFactoryFunction<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
     (ctx:MaterializedModuleEntries<I, D, AD>) => Promise<any>
 
 
@@ -18,38 +18,35 @@ type DeclarationsFactories<D> = {
     [K in keyof D]:DependencyResolver<any, any, D>
 }
 
-type AsyncDeclarationsFactories<I extends ImportsRegistry, D extends DependenciesRegistry> = {
-    [K in keyof I]:AsyncDependencyDefinition<I, D>
+type AsyncDeclarationsFactories<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> = {
+    [K in keyof I]:AsyncDependencyDefinition<I, D, AD>
 }
 
 export type ImportsRegistry = Record<string, Thunk<ModuleEntries<any, any>>>
 export type DependenciesRegistry = Record<string, any>;
-export type AsyncDependenciesRegistry = Record<string, () => Promise<any>>;
+export type AsyncDependenciesRegistry = Record<string, any>;
 
-export type MaterializeAsyncDependencies<AD extends AsyncDependenciesRegistry> = {
-    [K in keyof AD]:UnwrapPromise<ReturnType<AD[K]>>
-}
-
-// type WTF = MaterializeAsyncDependencies<{a: () => Promise<boolean>}>;
+// export type MaterializeAsyncDependencies<AD extends AsyncDependenciesRegistry> = {
+//     [K in keyof AD]:UnwrapPromise<ReturnType<AD[K]['resolver']>>
+// }
 
 
 export type ModuleEntriesDependencies<D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
-    D
-    & MaterializeAsyncDependencies<AD>;
+    D & AD;
 
 export type MaterializedModuleEntries<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
-    MaterializeAsyncDependencies<AD> & D & {
+    AD & D & {
     [K in keyof I]:MaterializedModuleEntries<{}, {}, ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>>;
 }
 
-export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D, infer AD> ? ModuleEntriesDependencies<D,AD> : never;
+export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D, infer AD> ? ModuleEntriesDependencies<D, AD> : never;
 
 
 export type ModuleEntries<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> = {
     moduleId:ModuleId,
     imports:I,
     declarations:DeclarationsFactories<D>,
-    asyncDeclarations:AsyncDeclarationsFactories<I, D>,
+    asyncDeclarations:AsyncDeclarationsFactories<I, D, AD>,
 }
 export const ModuleEntries = {
     build(name:string):ModuleEntries {

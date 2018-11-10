@@ -1,8 +1,8 @@
 import {Omit} from "./utils/types";
 import {Thunk, unwrapThunk} from "./utils/thunk";
 import {
-    AsyncDependenciesRegistry, AsyncFactoryFunction,
-    DependenciesRegistry, FactoryFunction,
+    AsyncDependenciesRegistry,
+    DependenciesRegistry,
     ImportsRegistry,
     MaterializedModuleEntries,
     ModuleEntries
@@ -22,11 +22,13 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never 
 type ModuleWithDefinition<K extends string, V, C1, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =
     NotDuplicated<K, D, Module<I, D & Record<K, V>, AD, C & C1>>
 
-type ModuleWithAsyncDefinition<K extends string, V extends AsyncFactoryFunction<I, D, AD>, C1, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =
+type ModuleWithAsyncDefinition<K extends string, V, C1, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =
     NotDuplicated<K, D, Module<I, D, AD & Record<K, V>, C & C1>>
 
-type ModuleWithImport<K extends string, I1 extends ImportsRegistry, D1 extends DependenciesRegistry, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =
-    NotDuplicated<K, I, Module<I & Record<K, Thunk<ModuleEntries<I1, D1>>>, D, AD, C>>
+type ModuleWithImport<K extends string, I1 extends ImportsRegistry, D1 extends DependenciesRegistry, AD1 extends AsyncDependenciesRegistry, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =
+    NotDuplicated<K, I, Module<I & Record<K, Thunk<ModuleEntries<I1, D1, AD1>>>, D, AD, C>>
+
+type DefineAsyncContext<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> = MaterializedModuleEntries<I, D, AD>
 
 export class Module<I extends ImportsRegistry = {},
     D extends DependenciesRegistry = {},
@@ -50,7 +52,7 @@ export class Module<I extends ImportsRegistry = {},
         return cloned as any;
     }
 
-    defineAsync<K extends string, V extends AsyncFactoryFunction<I, D, AD>, C1>(key:K, factory:V):ModuleWithAsyncDefinition<K, V, C1, I, D, AD, C> {
+    defineAsync<K extends string, V, C1>(key:K, factory:(ctx:DefineAsyncContext<I, D, AD>) => Promise<V>):ModuleWithAsyncDefinition<K, V, C1, I, D, AD, C> {
         let cloned = new Module(ModuleEntries.defineAsync(key, factory)(this.entries));
         return cloned as any;
     }
@@ -74,8 +76,7 @@ export class Module<I extends ImportsRegistry = {},
         return this.entries;
     };
 
-    import<K extends string, I1 extends ImportsRegistry, D1 extends DependenciesRegistry>(key:K, mod2:Thunk<Module<I1, D1>>):ModuleWithImport<K, I1, D1, I, D, AD, C> {
-        // import<K extends string, I1 extends ImportsRegistry, D1 extends DependenciesRegistry>(key:K, mod2:Thunk<Module<I1, D1>>): NotDuplicated<K, I, Module<I & Record<K, Thunk<ModuleEntries<I1, D1>>>, D, AD, C>> {
+    import<K extends string, I1 extends ImportsRegistry, D1 extends DependenciesRegistry, AD1 extends AsyncDependenciesRegistry>(key:K, mod2:Thunk<Module<I1, D1, AD1>>):ModuleWithImport<K, I1, D1, AD1, I, D, AD, C> {
         const getEntries = () => unwrapThunk(mod2).getEntries();
         return new Module(ModuleEntries.import(key, getEntries)(this.entries)) as any
     }
