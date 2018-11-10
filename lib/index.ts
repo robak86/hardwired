@@ -29,10 +29,10 @@ export function container<I extends ImportsRegistry, D extends DependenciesRegis
     );
 }
 
-export async function asyncContainer<I extends ImportsRegistry, D extends DependenciesRegistry>(m:Module<I, D, {}>, ctx:any):Promise<Container<I, D, any>> {
+export async function asyncContainer<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry>(m:Module<I, D, AD>, ctx:any):Promise<Container<I, D, AD>> {
     let container = new Container(m.entries, ctx as any);
     await container.initAsyncDependencies();
-    return container;
+    return container as any;
 }
 
 //TODO: ctx should be typesafe. we should forbid calling deepGet with modules requiring different context than the context passed here
@@ -41,16 +41,15 @@ export function emptyContainer(ctx:any):Container<any, any, any> {
 }
 
 
-export interface WithContainerFn {
-    <MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K):(ctx:CTX) => ExtractModuleRegistryDeclarations<MOD>[K]
-    <MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX):ExtractModuleRegistryDeclarations<MOD>[K]
-
-}
+// export interface WithContainerFn {
+//     <MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K):(ctx:CTX) => ExtractModuleRegistryDeclarations<MOD>[K]
+//     <MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX):ExtractModuleRegistryDeclarations<MOD>[K]
+// }
 
 //TODO: make it type-safe
-export const withContainer:WithContainerFn = curry(<MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX) => {
-    return container(module, ctx).get(def);
-});
+// export const withContainer:WithContainerFn = curry(<MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX) => {
+//     return container(module, ctx).get(def);
+// });
 export {AsyncDependenciesRegistry} from "./module-entries";
 export {DependenciesRegistry} from "./module-entries";
 export {ImportsRegistry} from "./module-entries";

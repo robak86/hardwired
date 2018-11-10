@@ -37,12 +37,12 @@ export type ModuleEntriesDependencies<D extends DependenciesRegistry, AD extends
     D
     & MaterializeAsyncDependencies<AD>;
 
-export type MaterializedModuleEntries<M extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
+export type MaterializedModuleEntries<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
     MaterializeAsyncDependencies<AD> & D & {
-    [K in keyof M]:MaterializedModuleEntries<{}, {}, ExtractModuleRegistryDeclarations<UnwrapThunk<M[K]>>>;
+    [K in keyof I]:MaterializedModuleEntries<{}, {}, ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>>;
 }
 
-export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D> ? D : never;
+export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D, infer AD> ? ModuleEntriesDependencies<D,AD> : never;
 
 
 export type ModuleEntries<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> = {
@@ -95,8 +95,8 @@ export const ModuleEntries = {
         I extends ImportsRegistry,
         D extends DependenciesRegistry,
         AD extends AsyncDependenciesRegistry,
-        O extends Promise<any>>
-    (key:K, factory:AsyncFactoryFunction<I,D>) {
+        O extends AsyncFactoryFunction<I, D, AD>>
+    (key:K, factory:O) {
         return (module:ModuleEntries<I, D>):ModuleEntries<I, D, AD & Record<K, O>> => {
             return {
                 moduleId: ModuleId.next(module.moduleId),
@@ -129,8 +129,8 @@ export const ModuleEntries = {
         }
     },
 
-    import<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, O, M2 extends ModuleEntries>(key:K, otherModule:Thunk<M2>) {
-        return (module:ModuleEntries<I, D>):ModuleEntries<I & Record<K, Thunk<M2>>, D> => {
+    import<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, M2 extends ModuleEntries>(key:K, otherModule:Thunk<M2>) {
+        return (module:ModuleEntries<I, D>):ModuleEntries<I & Record<K, Thunk<M2>>, D, AD> => {
             return {
                 moduleId: ModuleId.next(module.moduleId),
                 imports: assoc(key, otherModule, module.imports),

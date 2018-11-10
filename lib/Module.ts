@@ -22,7 +22,7 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never 
 type ModuleWithDefinition<K extends string, V, C1, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =
     NotDuplicated<K, D, Module<I, D & Record<K, V>, AD, C & C1>>
 
-type ModuleWithAsyncDefinition<K extends string, V, C1, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =
+type ModuleWithAsyncDefinition<K extends string, V extends AsyncFactoryFunction<I, D, AD>, C1, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =
     NotDuplicated<K, D, Module<I, D, AD & Record<K, V>, C & C1>>
 
 type ModuleWithImport<K extends string, I1 extends ImportsRegistry, D1 extends DependenciesRegistry, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, C> =

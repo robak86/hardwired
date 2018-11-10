@@ -5,4 +5,4 @@ export type Mapped<T, N> = {
 }
 
 export type UnwrapPromise<T extends Promise<any>> =
-    T extends Promise<infer IT> ? IT : T;
+    T extends Promise<infer IT> ? IT : never;
