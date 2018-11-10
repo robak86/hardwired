@@ -1,6 +1,6 @@
 import {Omit} from "./utils/types";
 import {Thunk, UnwrapThunk, unwrapThunk} from "./utils/thunk";
-import {ModuleEntries} from "./fp";
+import {AsyncDependenciesRegistry, DependenciesRegistry, ImportsRegistry, ModuleEntries} from "./module-entries";
 
 export type MaterializedModule<D, M extends ImportsRegistry> = D & {
     [K in keyof M]:MaterializedModule<UnwrapThunk<ModuleDeclarations<M[K]>>, {}>;
@@ -10,10 +10,6 @@ export type ModuleDeclarations<M> = M extends Module<any, infer D> ? D : never;
 export type ModuleImports<M> = M extends Module<infer M, any, any> ? M : never;
 export type ModuleAsyncDeclarations<M> = M extends Module<any, any, infer AD> ? AD : never; //TODO Unwrap promise
 export type ModuleContext<M> = M extends Module<any, any, any, infer CTX> ? CTX : never;
-
-export type ImportsRegistry = Record<string, Thunk<Module<any, any>>>
-export type DependenciesRegistry = Record<string, any>;
-export type AsyncDependenciesRegistry = Record<string, () => Promise<any>>;
 
 
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never ? RETURN : never;

@@ -1,41 +1,19 @@
-import {DependenciesRegistry, ImportsRegistry, MaterializedModule} from "./Module";
-import {nextId} from "./utils/fastId";
+import {MaterializedModule} from "./Module";
 import {assoc, dissoc, shallowClone} from "./utils/shallowClone";
 import {Thunk, unwrapThunk} from "./utils/thunk";
 import {Omit} from "./utils/types";
 import {mapValues} from 'lodash';
 import {DependencyResolver} from "./DependencyResolver";
+import {ModuleId} from "./module-id";
 
-
-export type ModuleId = {
-    name:string,
-    id:string,
-    identity:string
-}
-
-const ModuleId = {
-    build(name:string):ModuleId {
-        return {
-            name,
-            id: nextId(),
-            identity: `module_${nextId()}`
-        }
-    },
-    next(m:ModuleId):ModuleId {
-        return {
-            name: m.name,
-            id: nextId(),
-            identity: `module_${nextId()}`
-        }
-    }
-};
-
-
-// type ModuleImportsRegistry = Record<string, ModuleEntries>;
 
 type DeclarationsFactories<D> = {
     [K in keyof D]:DependencyResolver<any, any, D>
 }
+
+export type ImportsRegistry = Record<string, Thunk<ModuleEntries<any, any>>>
+export type DependenciesRegistry = Record<string, any>;
+export type AsyncDependenciesRegistry = Record<string, () => Promise<any>>;
 
 export type ModuleEntries<I extends ImportsRegistry = any, D extends DependenciesRegistry = any> = {
     moduleId:ModuleId,

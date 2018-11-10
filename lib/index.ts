@@ -1,7 +1,7 @@
 import {Module, ModuleContext, ModuleDeclarations, ModuleImports} from "./Module";
 import {Container} from "./Container";
 import {curry} from 'lodash';
-import {ModuleEntries} from "./fp";
+import {ModuleEntries} from "./module-entries";
 
 
 export * from './Module';
@@ -39,3 +39,6 @@ export interface WithContainerFn {
 export const withContainer:WithContainerFn = curry(<MOD extends Module<any, any, any>, K extends keyof ModuleDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX) => {
     return container(module, ctx).get(def);
 });
+export {AsyncDependenciesRegistry} from "./module-entries";
+export {DependenciesRegistry} from "./module-entries";
+export {ImportsRegistry} from "./module-entries";

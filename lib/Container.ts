@@ -1,9 +1,7 @@
 import {DependencyResolver} from "./DependencyResolver";
-import {ImportsRegistry, MaterializedModule, Module, ModuleDeclarations} from "./Module";
-import {container} from "./index";
-import {ImmutableMap} from "./immutable-map";
+import {MaterializedModule, Module, ModuleDeclarations} from "./Module";
 import {unwrapThunk} from "./utils/thunk";
-import {ModuleEntries} from "./fp";
+import {ImportsRegistry, ModuleEntries} from "./module-entries";
 
 export type DependencyResolversRegistry<D> = {
     [K in keyof D]:DependencyResolver<any, any, any>;

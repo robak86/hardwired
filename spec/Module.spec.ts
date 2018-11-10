@@ -1,4 +1,4 @@
-import {container, module} from "../lib";
+import {container, module, ModuleDeclarations} from "../lib";
 import {expect} from "chai";
 import {spy} from "sinon";
 
@@ -327,7 +327,12 @@ describe(`Module`, () => {
                     .define("a", (c:any) => c.i + c.b)
                     .define("b", (c:any) => c.i + c.a);
 
-                container(m1, {}).get("a");
+
+
+
+
+                let container1 = container(m1, {});
+                container1.get("a");
             });
         });
     });
@@ -336,16 +341,29 @@ describe(`Module`, () => {
         it(`replaces all related modules in whole tree`, async () => {
             let m1 = module("m1").define("val", () => 1);
 
+            console.log('m1',m1.entries.moduleId);
+
             let m2 = module("m2")
                 .import("child", m1)
                 .define("valFromChild", c => c.child.val);
+
+            console.log('m2',m2.entries.moduleId);
 
             let m3 = module("m3")
                 .import("child1", m1)
                 .import("child2", m2)
                 .define("val", c => c.child2.valFromChild);
 
-            let mocked = m3.inject(m1.replace("val", c => 2));
+            console.log('m3', m3.entries.moduleId);
+
+
+            let m1Overrides = m1.replace("val", c => 2);
+
+            console.log('m1Overrides', m1Overrides.entries.moduleId);
+
+            let mocked = m3.inject(m1Overrides);
+
+
 
             expect(container(mocked, {}).get("val")).to.eq(2);
             expect(container(mocked, {}).deepGet(m1, "val")).to.eq(2);

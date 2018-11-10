@@ -13,7 +13,9 @@ const modA = module("a")
     .define("v1", (_, {type}:Ctx) => 1)
     .define("v2", ({v2}) => 2);
 
-container(modA,{}).get('v5')
+container(modA,{}).get('v5');
+
+const z = container(modA,{}).get('v1')
 
 
 
