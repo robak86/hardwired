@@ -7,7 +7,7 @@ export class DependencyResolver<CONT = any, CTX = any, D = any> {
 
     constructor(private resolver:DependencyResolverFunction<CONT, CTX, D>) {}
 
-    get(container, ctx) {
+    build(container, ctx) {
         return this.resolver(container, ctx);
     }
 }

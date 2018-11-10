@@ -1,14 +1,15 @@
 import {DependencyResolver} from "./DependencyResolver";
 import {Module} from "./Module";
-import {unwrapThunk} from "./utils/thunk";
+import {Thunk, unwrapThunk} from "./utils/thunk";
 import {
     AsyncDependenciesRegistry,
     DependenciesRegistry,
-    ImportsRegistry,
+    ImportsRegistry, MaterializeAsyncDependencies,
     MaterializedModuleEntries,
     ModuleEntries,
     ModuleEntriesDependencies
 } from "./module-entries";
+import {AsyncDependencyDefinition} from "./utils/async-dependency-resolver";
 
 
 interface GetMany<D> {
@@ -18,8 +19,7 @@ interface GetMany<D> {
     <K extends keyof D, K2 extends keyof D, K3 extends keyof D, K4 extends keyof D>(key:K, key2:K2, key3:K3, key4:K4):[D[K], D[K2], D[K3], D[K4]]
 }
 
-export class Container<
-    I extends ImportsRegistry = {},
+export class Container<I extends ImportsRegistry = {},
     D extends DependenciesRegistry = {},
     AD extends AsyncDependenciesRegistry = {},
     C = {}> {
@@ -59,8 +59,22 @@ export class Container<
         }
     }
 
-    initAsyncDependencies() {
+    async initAsyncDependencies(cache = this.cache) {
+        await Promise.all(Object
+            .values(this.entries.imports)
+            .map((e:Thunk<ModuleEntries>) => new Container(unwrapThunk(e), cache))
+            .map(c => c.initAsyncDependencies(cache)));
 
+
+        let keys = Object.keys(this.entries.asyncDeclarations);
+
+        let resolved = await Promise.all(keys.map((key) => this.entries.asyncDeclarations[key].resolver(this.getProxiedAccessor(cache)).then((value) => ({
+            id: this.entries.asyncDeclarations[key].id,
+            key,
+            value
+        }))));
+
+        resolved.forEach(r => cache[r.id] = r.value);
     }
 
     private findModule(moduleIdentity):ModuleEntries | undefined {
@@ -84,28 +98,38 @@ export class Container<
         const self = this;
 
         return new Proxy({} as any, {
-            get(target, property) {
+            get(target, property:string) {
                 let returned = self.getChild(cache, property);
                 return returned;
             }
         })
     }
 
-    protected getChild(cache, localKey) {
-        if (this.entries.declarations[localKey]) {
-            let declarationResolver:DependencyResolver = this.entries.declarations[localKey];
+    protected getChild(cache, dependencyKey:string) {
+        if (this.entries.declarations[dependencyKey]) {
+            let declarationResolver:DependencyResolver = this.entries.declarations[dependencyKey];
 
             if (cache[declarationResolver.id]) {
                 return cache[declarationResolver.id]
             } else {
-                let instance = declarationResolver.get(this.getProxiedAccessor(cache), this.context);
+                let instance = declarationResolver.build(this.getProxiedAccessor(cache), this.context);
                 cache[declarationResolver.id] = instance;
                 return instance;
             }
         }
 
-        if (this.entries.imports[localKey]) {
-            let childModule = unwrapThunk(this.entries.imports[localKey]);
+        if (this.entries.asyncDeclarations[dependencyKey]) {
+            let asyncDefinition:AsyncDependencyDefinition = this.entries.asyncDeclarations[dependencyKey];
+
+            if (cache[asyncDefinition.id]) {
+                return cache[asyncDefinition.id]
+            } else {
+                // throw new Error(`Cannot get ${dependencyKey} from ${this.entries.moduleId.name}. Getting async dependencies is only allowed by using asyncContainer`);
+            }
+        }
+
+        if (this.entries.imports[dependencyKey]) {
+            let childModule = unwrapThunk(this.entries.imports[dependencyKey]);
             if (cache[childModule.moduleId.id]) {
                 return cache[childModule.moduleId.id].getProxiedAccessor(cache)
             } else {
@@ -114,5 +138,7 @@ export class Container<
                 return childMaterializedModule.getProxiedAccessor(cache); //TODO: we have to pass cache !!!!
             }
         }
+
+        throw new Error(`Cannot find dependency for ${dependencyKey} key`)
     }
 }

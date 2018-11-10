@@ -2,11 +2,12 @@ import {Omit} from "./utils/types";
 import {Thunk, unwrapThunk} from "./utils/thunk";
 import {
     AsyncDependenciesRegistry, AsyncFactoryFunction,
-    DependenciesRegistry,
+    DependenciesRegistry, FactoryFunction,
     ImportsRegistry,
     MaterializedModuleEntries,
     ModuleEntries
 } from "./module-entries";
+import {Container} from "./Container";
 
 
 export type ModuleContext<M> = M extends Module<any, any, any, infer CTX> ? CTX : never;
@@ -35,11 +36,6 @@ export class Module<I extends ImportsRegistry = {},
 
     constructor(public entries:ModuleEntries<I, D>) {}
 
-
-    //MODULE should not expose such methods. It only should expose .getDefinitions() methods which returns raw map of imports and declarations
-    // hasAsyncDeclarations():boolean {
-    //     return Object.keys(this.asyncDeclarations).length > 0;
-    // }
 
     hasModule(key:keyof I):boolean {
         return ModuleEntries.hasModule(key, this.entries);
@@ -84,7 +80,11 @@ export class Module<I extends ImportsRegistry = {},
         return new Module(ModuleEntries.import(key, getEntries)(this.entries)) as any
     }
 
-    private apply(fn):Module<any, any> {
-        return new Module(fn(this.entries));
+    buildContainer(ctx:C):Container<I, D, AD> {
+        return new Container(this.entries, ctx);
+    }
+
+    async buildAsyncContainer(ctx:C):Promise<Container<I, D, AD, C>> {
+        return new Container(this.entries, ctx);
     }
 }
