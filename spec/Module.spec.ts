@@ -1,7 +1,6 @@
-import {container, module, ExtractModuleRegistryDeclarations, ModuleImports, Module} from "../lib";
+import {container, module} from "../lib";
 import {expect} from "chai";
 import {spy} from "sinon";
-import {ModuleEntries} from "../lib/module-entries";
 
 
 describe(`Module`, () => {

@@ -1,38 +1,63 @@
 import {assoc, dissoc, shallowClone} from "./utils/shallowClone";
 import {Thunk, UnwrapThunk, unwrapThunk} from "./utils/thunk";
-import {Omit} from "./utils/types";
+import {Omit, UnwrapPromise} from "./utils/types";
 import {mapValues} from 'lodash';
-import {DependencyResolver} from "./DependencyResolver";
 import {ModuleId} from "./module-id";
+import {AsyncDependencyDefinition} from "./utils/async-dependency-resolver";
+import {DependencyResolver} from "./DependencyResolver";
+
+
+export type FactoryFunction<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> =
+    (ctx:MaterializedModuleEntries<I, D, AD>) => any
+
+export type AsyncFactoryFunction<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> =
+    (ctx:MaterializedModuleEntries<I, D, AD>) => Promise<any>
 
 
 type DeclarationsFactories<D> = {
     [K in keyof D]:DependencyResolver<any, any, D>
 }
 
+type AsyncDeclarationsFactories<I extends ImportsRegistry, D extends DependenciesRegistry> = {
+    [K in keyof I]:AsyncDependencyDefinition<I, D>
+}
+
 export type ImportsRegistry = Record<string, Thunk<ModuleEntries<any, any>>>
 export type DependenciesRegistry = Record<string, any>;
 export type AsyncDependenciesRegistry = Record<string, () => Promise<any>>;
 
-export type ModuleEntries<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> = {
-    moduleId:ModuleId,
-    imports:I,
-    declarations:DeclarationsFactories<D>
+export type MaterializeAsyncDependencies<AD extends AsyncDependenciesRegistry> = {
+    [K in keyof AD]:UnwrapPromise<ReturnType<AD[K]>>
 }
 
-export type MaterializedModuleEntries<M extends ImportsRegistry, D extends DependenciesRegistry> = D & {
-    [K in keyof M]:MaterializedModuleEntries<{}, ExtractModuleRegistryDeclarations<UnwrapThunk<M[K]>>>;
+// type WTF = MaterializeAsyncDependencies<{a: () => Promise<boolean>}>;
+
+
+export type ModuleEntriesDependencies<D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
+    D
+    & MaterializeAsyncDependencies<AD>;
+
+export type MaterializedModuleEntries<M extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
+    MaterializeAsyncDependencies<AD> & D & {
+    [K in keyof M]:MaterializedModuleEntries<{}, {}, ExtractModuleRegistryDeclarations<UnwrapThunk<M[K]>>>;
 }
 
 export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D> ? D : never;
 
 
+export type ModuleEntries<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> = {
+    moduleId:ModuleId,
+    imports:I,
+    declarations:DeclarationsFactories<D>,
+    asyncDeclarations:AsyncDeclarationsFactories<I, D>,
+}
 export const ModuleEntries = {
     build(name:string):ModuleEntries {
         return {
             moduleId: ModuleId.build(name),
             imports: {},
-            declarations: {}
+            declarations: {},
+            asyncDeclarations: {}
         }
     },
 
@@ -44,12 +69,40 @@ export const ModuleEntries = {
         return !!entries.declarations[key];
     },
 
-    define<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, O>(key:K, factory:(container:MaterializedModuleEntries<I, D>, C1) => O) {
-        return (module:ModuleEntries<I, D>):ModuleEntries<I, D & Record<K, O>> => {
+    hasOwnAsyncDefinition(entries:ModuleEntries):boolean {
+        return Object.keys(entries.asyncDeclarations).length > 0;
+    },
+
+    hasAsyncDefinitions(entries:ModuleEntries):boolean {
+        return ModuleEntries.hasAsyncDefinitions(entries) ||
+            Object.values(entries.imports).some((moduleEntries:Thunk<ModuleEntries>) => ModuleEntries.hasAsyncDefinitions(unwrapThunk(moduleEntries)))
+    },
+
+    //TODO: use assoc, assoc path or something
+    define<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, O>
+    (key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, C1) => O) {
+        return (module:ModuleEntries<I, D>):ModuleEntries<I, D & Record<K, O>, AD> => {
             return {
                 moduleId: ModuleId.next(module.moduleId),
                 imports: shallowClone(module.imports),
-                declarations: assoc(key, new DependencyResolver(factory), module.declarations)
+                declarations: assoc(key, new DependencyResolver(factory), module.declarations),
+                asyncDeclarations: shallowClone(module.asyncDeclarations),
+            }
+        }
+    },
+
+    defineAsync<K extends string,
+        I extends ImportsRegistry,
+        D extends DependenciesRegistry,
+        AD extends AsyncDependenciesRegistry,
+        O extends Promise<any>>
+    (key:K, factory:AsyncFactoryFunction<I,D>) {
+        return (module:ModuleEntries<I, D>):ModuleEntries<I, D, AD & Record<K, O>> => {
+            return {
+                moduleId: ModuleId.next(module.moduleId),
+                imports: shallowClone(module.imports),
+                declarations: shallowClone(module.declarations),
+                asyncDeclarations: assoc(key, AsyncDependencyDefinition.build(factory), module.asyncDeclarations),
             }
         }
     },
@@ -62,7 +115,8 @@ export const ModuleEntries = {
                 return unwrapThunk(module).moduleId.identity === unwrapThunk(otherModule).moduleId.identity ? //todo implement isEqual
                     otherModule :
                     ModuleEntries.inject(otherModule, unwrapThunk(module))
-            })
+            }),
+            asyncDeclarations: shallowClone(entries.asyncDeclarations)
         };
     },
 
@@ -70,7 +124,8 @@ export const ModuleEntries = {
         return {
             moduleId: ModuleId.next(entries.moduleId),
             imports: shallowClone(entries.imports),
-            declarations: dissoc(key, entries.declarations)
+            declarations: dissoc(key, entries.declarations),
+            asyncDeclarations: shallowClone(entries.asyncDeclarations)
         }
     },
 
@@ -79,7 +134,8 @@ export const ModuleEntries = {
             return {
                 moduleId: ModuleId.next(module.moduleId),
                 imports: assoc(key, otherModule, module.imports),
-                declarations: shallowClone(module.declarations)
+                declarations: shallowClone(module.declarations),
+                asyncDeclarations: shallowClone(module.asyncDeclarations)
             }
         }
     }

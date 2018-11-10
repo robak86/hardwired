@@ -2,11 +2,12 @@ import {DependencyResolver} from "./DependencyResolver";
 import {Module} from "./Module";
 import {unwrapThunk} from "./utils/thunk";
 import {
+    AsyncDependenciesRegistry,
+    DependenciesRegistry,
     ImportsRegistry,
     MaterializedModuleEntries,
-    ExtractModuleRegistryDeclarations,
     ModuleEntries,
-    DependenciesRegistry
+    ModuleEntriesDependencies
 } from "./module-entries";
 
 
@@ -17,7 +18,11 @@ interface GetMany<D> {
     <K extends keyof D, K2 extends keyof D, K3 extends keyof D, K4 extends keyof D>(key:K, key2:K2, key3:K3, key4:K4):[D[K], D[K2], D[K3], D[K4]]
 }
 
-export class Container<I extends ImportsRegistry = {}, D extends DependenciesRegistry = {}, C = {}> {
+export class Container<
+    I extends ImportsRegistry = {},
+    D extends DependenciesRegistry = {},
+    AD extends AsyncDependenciesRegistry = {},
+    C = {}> {
     private cache:{ [key:string]:any } = {};  //TODO: create cache class for managing cache
 
     constructor(
@@ -25,7 +30,7 @@ export class Container<I extends ImportsRegistry = {}, D extends DependenciesReg
         private context:C) {
     }
 
-    get = <K extends keyof D>(key:K):D[K] => {
+    get = <K extends keyof (D & AD)>(key:K):ModuleEntriesDependencies<D, AD>[K] => {
         return this.getChild(this.cache, key);
     };
 
@@ -33,11 +38,11 @@ export class Container<I extends ImportsRegistry = {}, D extends DependenciesReg
         return args.map(this.get) as any;
     };
 
-    toObject():MaterializedModuleEntries<I, D> {
+    toObject():MaterializedModuleEntries<I, D, AD> {
         return this.getProxiedAccessor();
     }
 
-    deepGet<I1 extends ImportsRegistry, D2 extends DependenciesRegistry, K extends keyof MaterializedModuleEntries<I1, D2>>(module:Module<I1, D2>, key:K):MaterializedModuleEntries<I1, D2>[K] {
+    deepGet<I1 extends ImportsRegistry, D2 extends DependenciesRegistry, AD2 extends AsyncDependenciesRegistry, K extends keyof MaterializedModuleEntries<I1, D2, AD2>>(module:Module<I1, D2>, key:K):MaterializedModuleEntries<I1, D2, AD2>[K] {
         let childModule:ModuleEntries | undefined = unwrapThunk(this.findModule(module.entries.moduleId.identity)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
         if (!childModule) {
@@ -52,6 +57,10 @@ export class Container<I extends ImportsRegistry = {}, D extends DependenciesReg
             this.cache[childModule.moduleId.id] = childMaterializedModule;
             return childMaterializedModule.getChild(this.cache, key); //TODO: we have to pass cache !!!!
         }
+    }
+
+    initAsyncDependencies() {
+
     }
 
     private findModule(moduleIdentity):ModuleEntries | undefined {

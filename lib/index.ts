@@ -1,7 +1,8 @@
-import {Module, ModuleContext, ModuleImports} from "./Module";
+import {Module, ModuleContext} from "./Module";
 import {Container} from "./Container";
 import {curry} from 'lodash';
 import {
+    AsyncDependenciesRegistry,
     DependenciesRegistry,
     ExtractModuleRegistryDeclarations,
     ImportsRegistry,
@@ -21,11 +22,17 @@ export function module(name:string):Module {
 
 //TODO: consider completely removing the m parameter. Create empty container instead and instantiate all dependencies via deepGet
 //TODO: investigate how to pass context in such case? and how to make it typesafe ?!
-export function container<I extends ImportsRegistry, D extends DependenciesRegistry>(m:Module<I,D>, ctx:any):Container<I,D, any> {
+export function container<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry>(m:Module<I, D, AD>, ctx:any):Container<I, D, AD, any> {
     return new Container(
         m.entries,
         ctx as any
     );
+}
+
+export async function asyncContainer<I extends ImportsRegistry, D extends DependenciesRegistry>(m:Module<I, D, {}>, ctx:any):Promise<Container<I, D, any>> {
+    let container = new Container(m.entries, ctx as any);
+    await container.initAsyncDependencies();
+    return container;
 }
 
 //TODO: ctx should be typesafe. we should forbid calling deepGet with modules requiring different context than the context passed here
