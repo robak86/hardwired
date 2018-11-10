@@ -15,11 +15,11 @@ interface GetMany<D> {
     <K extends keyof D, K2 extends keyof D, K3 extends keyof D, K4 extends keyof D>(key:K, key2:K2, key3:K3, key4:K4):[D[K], D[K2], D[K3], D[K4]]
 }
 
-export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
+export class Container<D = {}, I extends ImportsRegistry = {}, C = {}> {
     private cache:{ [key:string]:any } = {};  //TODO: create cache class for managing cache
 
     constructor(
-        private entries:ModuleEntries<M, D>,
+        private entries:ModuleEntries<I, D>,
         private context:C) {
         console.log(entries);
     }
@@ -32,7 +32,7 @@ export class Container<D = {}, M extends ImportsRegistry = {}, C = {}> {
         return args.map(this.get) as any;
     };
 
-    toObject():MaterializedModule<D, M> {
+    toObject():MaterializedModule<D, I> {
         return this.getProxiedAccessor();
     }
 
