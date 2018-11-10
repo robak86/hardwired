@@ -1,5 +1,5 @@
 import {container, module} from "../lib";
-import {iterate} from 'leakage'
+// import {iterate} from 'leakage'
 
 
 describe.skip(`MemoryLeaks`, () => {

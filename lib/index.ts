@@ -22,7 +22,14 @@ export function module(name:string):Module {
 
 //TODO: consider completely removing the m parameter. Create empty container instead and instantiate all dependencies via deepGet
 //TODO: investigate how to pass context in such case? and how to make it typesafe ?!
-export function container<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry>(m:Module<I, D, AD>, ctx:any):Container<I, D, AD, any> {
+export function container<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, CTX>(m:Module<I, D, AD, CTX>, ctx:CTX):Container<I, D, AD, any> {
+    return new Container(
+        m.entries,
+        ctx as any
+    );
+}
+
+export function container2(m:Module<any, any, any, {a: boolean}>, ctx:ModuleContext<typeof m>):Container<any, any, any, any> {
     return new Container(
         m.entries,
         ctx as any

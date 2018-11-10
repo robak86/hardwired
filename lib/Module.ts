@@ -47,7 +47,7 @@ export class Module<I extends ImportsRegistry = {},
         return ModuleEntries.hasDefinition(key, this.entries);
     }
 
-    define<K extends string, V, C1>(key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, C1) => V):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
+    define<K extends string, V, C1>(key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, ctx:C1) => V):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
         let cloned = new Module(ModuleEntries.define(key, factory)(this.entries));
         return cloned as any;
     }

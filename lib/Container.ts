@@ -4,7 +4,7 @@ import {Thunk, unwrapThunk} from "./utils/thunk";
 import {
     AsyncDependenciesRegistry,
     DependenciesRegistry,
-    ImportsRegistry, MaterializeAsyncDependencies,
+    ImportsRegistry,
     MaterializedModuleEntries,
     ModuleEntries,
     ModuleEntriesDependencies
@@ -19,11 +19,14 @@ interface GetMany<D> {
     <K extends keyof D, K2 extends keyof D, K3 extends keyof D, K4 extends keyof D>(key:K, key2:K2, key3:K3, key4:K4):[D[K], D[K2], D[K3], D[K4]]
 }
 
+
+
 export class Container<I extends ImportsRegistry = {},
     D extends DependenciesRegistry = {},
     AD extends AsyncDependenciesRegistry = {},
     C = {}> {
     private cache:{ [key:string]:any } = {};  //TODO: create cache class for managing cache
+    private asyncDependenciesInitialized:boolean = false;
 
     constructor(
         private entries:ModuleEntries<I, D>,
@@ -31,6 +34,7 @@ export class Container<I extends ImportsRegistry = {},
     }
 
     get = <K extends keyof (D & AD)>(key:K):ModuleEntriesDependencies<D, AD>[K] => {
+        //if is async container check if asyncDependenciesInitialized is true. if not throw an error
         return this.getChild(this.cache, key);
     };
 
@@ -75,6 +79,8 @@ export class Container<I extends ImportsRegistry = {},
         }))));
 
         resolved.forEach(r => cache[r.id] = r.value);
+
+        this.asyncDependenciesInitialized = true;
     }
 
     private findModule(moduleIdentity):ModuleEntries | undefined {
@@ -124,7 +130,17 @@ export class Container<I extends ImportsRegistry = {},
             if (cache[asyncDefinition.id]) {
                 return cache[asyncDefinition.id]
             } else {
-                // throw new Error(`Cannot get ${dependencyKey} from ${this.entries.moduleId.name}. Getting async dependencies is only allowed by using asyncContainer`);
+                throw new Error(`
+                Cannot get ${dependencyKey} from ${this.entries.moduleId.name}. 
+                Getting async dependencies is only allowed by using asyncContainer.
+                If asyncContainer was used it means that circular between two async definition exists
+                `);
+
+                // console.warn(`Dependencies between two async definitions detected. Requested key: ${dependencyKey}`);
+                // cache[asyncDefinition.id] = true;
+                // let resolver = this.entries.asyncDeclarations[dependencyKey].resolver(this.getProxiedAccessor(cache));
+                //
+                // return resolver
             }
         }
 

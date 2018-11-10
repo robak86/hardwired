@@ -7,7 +7,7 @@ import {
 import {nextId} from "./fastId";
 
 
-export type AsyncDependencyDefinition<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> = {
+export type AsyncDependencyDefinition<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> = {
     id:string;
     resolver:AsyncFactoryFunction<I, D, AD>
 }

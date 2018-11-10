@@ -1,9 +1,11 @@
-import {container, module, withContainer} from "../lib";
+import {container, container2, module, withContainer} from "../lib";
 
 type P = { ctxVal1:boolean };
 
 const otherMod = module('z')
     .define('a1', (c, ctx:P) => 1);
+
+container2(otherMod, {a:1})
 
 
 type Ctx = {type: string}

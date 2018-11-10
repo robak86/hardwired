@@ -11,7 +11,7 @@ export type FactoryFunction<I extends ImportsRegistry = any, D extends Dependenc
     (ctx:MaterializedModuleEntries<I, D, AD>) => any
 
 export type AsyncFactoryFunction<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
-    (ctx:MaterializedModuleEntries<I, D, AD>) => Promise<any>
+    (ctx:AsyncMaterializedModuleEntries<I, D, AD>) => Promise<any>
 
 
 type DeclarationsFactories<D> = {
@@ -26,6 +26,10 @@ export type ImportsRegistry = Record<string, Thunk<ModuleEntries<any, any>>>
 export type DependenciesRegistry = Record<string, any>;
 export type AsyncDependenciesRegistry = Record<string, any>;
 
+export type PromiseWrappedAsyncDependencies<T extends AsyncDependenciesRegistry> = {
+    [K in keyof T]:() => Promise<T[K]>
+}
+
 // export type MaterializeAsyncDependencies<AD extends AsyncDependenciesRegistry> = {
 //     [K in keyof AD]:UnwrapPromise<ReturnType<AD[K]['resolver']>>
 // }
@@ -38,6 +42,12 @@ export type MaterializedModuleEntries<I extends ImportsRegistry, D extends Depen
     AD & D & {
     [K in keyof I]:MaterializedModuleEntries<{}, {}, ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>>;
 }
+
+export type AsyncMaterializedModuleEntries<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry> =
+    PromiseWrappedAsyncDependencies<AD> & D & {
+    [K in keyof I]:MaterializedModuleEntries<{}, {}, ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>>;
+}
+
 
 export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D, infer AD> ? ModuleEntriesDependencies<D, AD> : never;
 

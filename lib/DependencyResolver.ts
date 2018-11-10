@@ -2,6 +2,8 @@ import {nextId} from "./utils/fastId";
 
 export type DependencyResolverFunction<CONT, CTX, VAL> = (container:CONT, context:CTX) => VAL;
 
+
+//TODO: convert to fp kind of
 export class DependencyResolver<CONT = any, CTX = any, D = any> {
     public id:string = nextId(); //TODO: not sure if necessary
 

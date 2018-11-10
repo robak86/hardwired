@@ -1,39 +1,31 @@
-// type KV<K extends string, V> = { k:K, v:V }
-//
-// type KV2<K extends string, V> = [K, V];
-//
-//
-// function add<ARR extends KV2<any, any>[]>(...args:ARR):ARR {
-//     return args;
-// }
-//
-//
-// const w = add(['k1', 1], ['k2', true]);
-//
-//
-//
-// type Map2<T extends KV2<any, any>> = {
-//     [K in keyof T[0]]: T[1]
-// }
-//
-// type Map3<T extends KV2<any, any>[]> = Map2<T[number]>;
-//
-//
-// type Wtf = Map3<(typeof w)>;
-//
-// const a:Wtf = {k1: 1, k2: true}
-//
-// //
-// // w[0][1] = 'sdf';
-// // w[1][1] = false;
-//
-//
-// // interface C {
-// //     "key"   : B,
-// //     "value" : string
-// // }
-// //
-// // interface KeyValueify<T> {
-// //     key: keyof T,
-// //     value: T[keyof T]
-// // }
+// types simplification
+
+//TODO:!!!!
+type Registry<I extends Record<string, any>, D extends Record<string, any>, AD extends Record<string, any>> = {
+    imports:I,
+    definitions:D,
+    asyncDefinitions:AD
+}
+
+type ExtendRegistryImports<K extends string, V, T extends Registry<any, any, any>> = Registry<RegistryImports<T>, RegistryDefinitions<T> & Record<K, V>, RegistryAsyncDefinitions<T>>
+
+type RegistryImports<T> = T extends Registry<infer I, any, any> ? I : never;
+type RegistryDefinitions<T> = T extends Registry<any, infer D, any> ? D : never;
+type RegistryAsyncDefinitions<T> = T extends Registry<any, any, infer AD> ? AD : never;
+
+
+class Test<R extends Registry<{}, {}, {}>> {
+
+    public registry: R;
+
+    define<K extends string, V>(k:K, value:V):Test<ExtendRegistryImports<K, V, R>> {
+        return null as any;
+    }
+}
+
+
+
+const a = new Test().define('v1', 1).define('v2', 2);
+
+const z = a.registry.definitions.v1;
+const z = a.registry.definitions.v2;
