@@ -11,6 +11,7 @@ import {
 } from "./module-entries";
 import {AsyncDependencyDefinition} from "./utils/async-dependency-resolver";
 import {containerProxyAccessor} from "./container-proxy-accessor";
+import {ContainerCache} from "./container-cache";
 
 
 interface GetMany<D> {
@@ -25,7 +26,7 @@ export class Container<I extends ImportsRegistry = {},
     D extends DependenciesRegistry = {},
     AD extends AsyncDependenciesRegistry = {},
     C = {}> {
-    private cache:{ [key:string]:any } = {};  //TODO: create cache class for managing cache
+    private cache:ContainerCache = new ContainerCache();
     private asyncDependenciesInitialized:boolean = false;
 
     constructor(
@@ -47,7 +48,7 @@ export class Container<I extends ImportsRegistry = {},
     }
 
     checkout(inherit:boolean):Container<I, D, AD> {
-        if (inherit){
+        if (inherit) {
             return new Container(this.entries, {...this.cache});
         } else {
             return new Container(this.entries, {});
@@ -76,13 +77,13 @@ export class Container<I extends ImportsRegistry = {},
             childModule = module.entries;
         }
 
-        if (this.cache[childModule.moduleId.id]) {
-            return this.cache[childModule.moduleId.id].getChild(this.cache, key);
-        } else {
+        // if (this.cache[childModule.moduleId.id]) {
+        //     return this.cache[childModule.moduleId.id].getChild(this.cache, key);
+        // } else {
             let childMaterializedModule:any = new Container(childModule, this.context);
-            this.cache[childModule.moduleId.id] = childMaterializedModule;
+            // this.cache[childModule.moduleId.id] = childMaterializedModule;
             return childMaterializedModule.getChild(this.cache, key); //TODO: we have to pass cache !!!!
-        }
+        // }
     }
 
     async initAsyncDependencies(cache = this.cache) {
@@ -128,14 +129,7 @@ export class Container<I extends ImportsRegistry = {},
     protected getChild(cache, dependencyKey:string) {
         if (this.entries.declarations[dependencyKey]) {
             let declarationResolver:DependencyResolver = this.entries.declarations[dependencyKey];
-
-            if (cache[declarationResolver.id]) {
-                return cache[declarationResolver.id]
-            } else {
-                let instance = declarationResolver.build(this, this.context, cache);
-                cache[declarationResolver.id] = instance;
-                return instance;
-            }
+            return declarationResolver.build(this, this.context, cache);
         }
 
         if (this.entries.asyncDeclarations[dependencyKey]) {
@@ -160,13 +154,15 @@ export class Container<I extends ImportsRegistry = {},
 
         if (this.entries.imports[dependencyKey]) {
             let childModule = unwrapThunk(this.entries.imports[dependencyKey]);
-            if (cache[childModule.moduleId.id]) {
-                return containerProxyAccessor(cache[childModule.moduleId.id], cache);
-            } else {
+
+
+            // if (cache[childModule.moduleId.id]) {
+            //     return containerProxyAccessor(cache[childModule.moduleId.id], cache);
+            // } else {
                 let childMaterializedModule:any = new Container(childModule, this.context);
-                cache[childModule.moduleId.id] = childMaterializedModule;
+                // cache[childModule.moduleId.id] = childMaterializedModule;
                 return containerProxyAccessor(childMaterializedModule, cache); //TODO: we have to pass cache !!!!
-            }
+            // }
         }
 
         throw new Error(`Cannot find dependency for ${dependencyKey} key`)

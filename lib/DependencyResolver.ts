@@ -11,7 +11,13 @@ export class DependencyResolver<CONT = any, CTX = any, V = any> {
 
     constructor(private resolver:DependencyResolverFunction<CONT, CTX, V>) {}
 
-    build(container:Container, ctx, cache) {
-        return this.resolver(containerProxyAccessor(container, cache), ctx);
+    build = (container:Container, ctx, cache) => {
+        if (cache[this.id]) {
+            return cache[this.id]
+        } else {
+            let instance = this.resolver(containerProxyAccessor(container, cache), ctx);
+            cache[this.id] = instance;
+            return instance;
+        }
     }
 }
