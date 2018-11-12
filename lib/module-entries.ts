@@ -87,12 +87,12 @@ export const ModuleEntries = {
 
     //TODO: use assoc, assoc path or something
     define<K extends string, I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, O>
-    (key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, C1) => O) {
+    (key:K, factory:DependencyResolver<MaterializedModuleEntries<I, D, AD>, any, O>) {
         return (module:ModuleEntries<I, D>):ModuleEntries<I, D & Record<K, O>, AD> => {
             return {
                 moduleId: ModuleId.next(module.moduleId),
                 imports: shallowClone(module.imports),
-                declarations: assoc(key, new DependencyResolver(factory), module.declarations),
+                declarations: assoc(key, factory, module.declarations),
                 asyncDeclarations: shallowClone(module.asyncDeclarations),
             }
         }

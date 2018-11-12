@@ -8,6 +8,8 @@ import {
     ModuleEntries
 } from "./module-entries";
 import {Container} from "./Container";
+import {Resolver} from "../scratches";
+import {DependencyResolver} from "./DependencyResolver";
 
 
 export type ModuleContext<M> = M extends Module<any, any, any, infer CTX> ? CTX : never;
@@ -47,10 +49,23 @@ export class Module<I extends ImportsRegistry = {},
         return ModuleEntries.hasDefinition(key, this.entries);
     }
 
-    define<K extends string, V, C1>(key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, ctx:C1) => V):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
-        let cloned = new Module(ModuleEntries.define(key, factory)(this.entries));
+
+    define<K extends string, V, C1>(key:K, factory:DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>):ModuleWithDefinition<K, V, C1, I, D, AD, C>
+    define<K extends string, V, C1>(key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, ctx:C1) => V):ModuleWithDefinition<K, V, C1, I, D, AD, C>
+    define<K extends string, V, C1>(key:K, factory:DependencyResolver<MaterializedModuleEntries<I, D, AD>, V> | ((container:MaterializedModuleEntries<I, D, AD>, ctx:C1) => V)):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
+        const resolver = typeof factory === 'function' ? new DependencyResolver(factory) : factory;
+
+        let cloned = new Module(ModuleEntries.define(key, resolver)(this.entries));
         return cloned as any;
     }
+
+    //container:, ctx:C1
+
+    // defineV2<K extends string, V, C1>(key:K, resolver:Resolver<MaterializedModuleEntries<I, D, AD>, V>):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
+    //     let cloned = new Module(ModuleEntries.define(key, factory)(this.entries));
+    //     return cloned as any;
+    // }
+
 
     defineAsync<K extends string, V, C1>(key:K, factory:(ctx:DefineAsyncContext<I, D, AD>) => Promise<V>):ModuleWithAsyncDefinition<K, V, C1, I, D, AD, C> {
         let cloned = new Module(ModuleEntries.defineAsync(key, factory)(this.entries));

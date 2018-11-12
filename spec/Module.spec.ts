@@ -190,7 +190,7 @@ describe(`Module`, () => {
                         .define("ov1", () => 10)
                         .define("s2", () => 11);
 
-                    const obj = container(m2, {}).toObject();
+                    const obj = container(m2, {}).asObject();
                     expect(obj.s2).to.eq(11);
                     expect(obj.m1.v1).to.eq(1);
                 });
