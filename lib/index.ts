@@ -1,6 +1,5 @@
 import {Module, ModuleContext} from "./Module";
 import {Container} from "./Container";
-import {curry} from 'lodash';
 import {
     AsyncDependenciesRegistry,
     DependenciesRegistry,
@@ -13,6 +12,9 @@ import {
 export * from './Module';
 export * from './Container'
 export * from './utils';
+export {
+    withContainer, useContainer, bindContainer, useMockedModules, useDependency, bindMockedContainer
+}from './hooks/use-container';
 
 
 export function module(name:string):Module {
@@ -29,7 +31,7 @@ export function container<I extends ImportsRegistry, D extends DependenciesRegis
     );
 }
 
-export function container2(m:Module<any, any, any, {a: boolean}>, ctx:ModuleContext<typeof m>):Container<any, any, any, any> {
+export function container2(m:Module<any, any, any, { a:boolean }>, ctx:ModuleContext<typeof m>):Container<any, any, any, any> {
     return new Container(
         m.entries,
         ctx as any
