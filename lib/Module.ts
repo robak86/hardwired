@@ -10,6 +10,7 @@ import {
 import {Container} from "./Container";
 import {Resolver} from "../scratches";
 import {DependencyResolver} from "./DependencyResolver";
+import {GlobalSingletonResolver} from "./resolvers/global-singleton-resolver";
 
 
 export type ModuleContext<M> = M extends Module<any, any, any, infer CTX> ? CTX : never;
@@ -53,7 +54,7 @@ export class Module<I extends ImportsRegistry = {},
     define<K extends string, V, C1>(key:K, factory:DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>):ModuleWithDefinition<K, V, C1, I, D, AD, C>
     define<K extends string, V, C1>(key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, ctx:C1) => V):ModuleWithDefinition<K, V, C1, I, D, AD, C>
     define<K extends string, V, C1>(key:K, factory:DependencyResolver<MaterializedModuleEntries<I, D, AD>, V> | ((container:MaterializedModuleEntries<I, D, AD>, ctx:C1) => V)):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
-        const resolver = typeof factory === 'function' ? new DependencyResolver(factory) : factory;
+        const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
 
         let cloned = new Module(ModuleEntries.define(key, resolver)(this.entries));
         return cloned as any;

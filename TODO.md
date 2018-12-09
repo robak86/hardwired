@@ -1,5 +1,9 @@
 # TODO: Add callback for dispose ? (e.g for disposing database connection)
 
+# Simple conditional type for asObject
+
+type AppModuleDeps = Materialized<typeof appModule> - currently Materialized requires three params
+
 * add support for factories
 ```typescript
 

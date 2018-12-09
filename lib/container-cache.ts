@@ -1,4 +1,4 @@
-import {nextId} from "./utils/fastId";
+import {invariant} from "./utils";
 
 export type ContainerCacheEntry = {
     // requestId:string;
@@ -6,33 +6,41 @@ export type ContainerCacheEntry = {
 }
 
 export class ContainerCache {
-
     public requestScope:Record<string, ContainerCacheEntry> = {};
 
     constructor(public globalScope:Record<string, ContainerCacheEntry> = {}) {}
 
-    setShared(uuid:string, instance:any) {
+    setForGlobalScope(uuid:string, instance:any) {
         this.globalScope[uuid] = {
             value: instance
         }
     }
 
-    setLocal(uuid:string, instance:any) {
+    setForRequestScope(uuid:string, instance:any) {
         this.globalScope[uuid] = {
             value: instance
         }
     }
 
-    get(uuid) {
-        return this.requestScope[uuid] || this.globalScope[uuid]
+    hasInGlobalScope(uuid:string):boolean{
+        return !!this.globalScope[uuid]
     }
 
+    hasInRequestScope(uuid:string):boolean{
+        return !!this.requestScope[uuid]
+    }
 
-    existsInCurrentRequest(uuid:string) {
+    getFromRequestScope(uuid:string){
+        invariant(!!this.requestScope[uuid], `Dependency with given uuid doesn't exists in request scope`);
+        return this.requestScope[uuid].value
+    }
 
+    getFromGlobalScope(uuid:string){
+        invariant(!!this.globalScope[uuid], `Dependency with given uuid doesn't exists in global scope`);
+        return this.globalScope[uuid].value;
     }
 
     forNewRequest():ContainerCache {
-        return new ContainerCache({...this.globalScope});
+        return new ContainerCache(this.globalScope);
     }
 }

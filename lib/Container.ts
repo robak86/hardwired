@@ -36,15 +36,19 @@ export class Container<I extends ImportsRegistry = {},
 
     get = <K extends keyof (D & AD)>(key:K):ModuleEntriesDependencies<D, AD>[K] => {
         //if is async container check if asyncDependenciesInitialized is true. if not throw an error
-        return this.getChild(this.cache, key); //
+        return this.getChild(this.cache.forNewRequest(), key); //
     };
 
     getMany:GetMany<D> = (...args:any[]) => {
-        return args.map(this.get) as any;
+        const cache = this.cache.forNewRequest();
+
+        return args.map(dep => {
+            return this.getChild(cache, dep);
+        }) as any;
     };
 
     asObject():MaterializedModuleEntries<I, D, AD> {
-        return containerProxyAccessor(this);
+        return containerProxyAccessor(this, this.cache.forNewRequest());
     }
 
     checkout(inherit:boolean):Container<I, D, AD> {
@@ -55,20 +59,6 @@ export class Container<I extends ImportsRegistry = {},
         }
     }
 
-    withScope(scopeName:string, fn:(container) => void) {
-        //it creates new container, with reference to parent container
-
-        /*
-
-           withScope('requests', (container)  => {
-
-
-           })
-
-
-         */
-    }
-
     deepGet<I1 extends ImportsRegistry, D2 extends DependenciesRegistry, AD2 extends AsyncDependenciesRegistry, K extends keyof MaterializedModuleEntries<I1, D2, AD2>>(module:Module<I1, D2>, key:K):MaterializedModuleEntries<I1, D2, AD2>[K] {
         let childModule:ModuleEntries | undefined = unwrapThunk(this.findModule(module.entries.moduleId.identity)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
@@ -77,6 +67,7 @@ export class Container<I extends ImportsRegistry = {},
             childModule = module.entries;
         }
 
+        //TODO: investigate if we should cache containers. If so we need import resolver, but since containers are almost stateless maybe caching is not mandatory ?!
         // if (this.cache[childModule.moduleId.id]) {
         //     return this.cache[childModule.moduleId.id].getChild(this.cache, key);
         // } else {
@@ -101,7 +92,7 @@ export class Container<I extends ImportsRegistry = {},
             value
         }))));
 
-        resolved.forEach(r => cache[r.id] = r.value);
+        resolved.forEach(r => cache.setForGlobalScope(r.id, r.value));
 
         this.asyncDependenciesInitialized = true;
     }
@@ -132,23 +123,18 @@ export class Container<I extends ImportsRegistry = {},
             return declarationResolver.build(this, this.context, cache);
         }
 
+        //TODO: asyncDeclarations should be wrapped in AsyncResolver - analogous to DependencyResolver
         if (this.entries.asyncDeclarations[dependencyKey]) {
             let asyncDefinition:AsyncDependencyDefinition = this.entries.asyncDeclarations[dependencyKey];
 
-            if (cache[asyncDefinition.id]) {
-                return cache[asyncDefinition.id]
+            if (cache.hasInGlobalScope(asyncDefinition.id)) {
+                return cache.getFromGlobalScope(asyncDefinition.id)
             } else {
                 throw new Error(`
                 Cannot get ${dependencyKey} from ${this.entries.moduleId.name}. 
                 Getting async dependencies is only allowed by using asyncContainer.
                 If asyncContainer was used it means that circular between two async definition exists
                 `);
-
-                // console.warn(`Dependencies between two async definitions detected. Requested key: ${dependencyKey}`);
-                // cache[asyncDefinition.id] = true;
-                // let resolver = this.entries.asyncDeclarations[dependencyKey].resolver(this.getProxiedAccessor(cache));
-                //
-                // return resolver
             }
         }
 
@@ -156,6 +142,7 @@ export class Container<I extends ImportsRegistry = {},
             let childModule = unwrapThunk(this.entries.imports[dependencyKey]);
 
 
+            //TODO: investigate if we should cache containers
             // if (cache[childModule.moduleId.id]) {
             //     return containerProxyAccessor(cache[childModule.moduleId.id], cache);
             // } else {
