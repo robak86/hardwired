@@ -1,3 +1,101 @@
+const define:any = null as any;
+const run:any = null as any;
+const set:any = null as any;
+const symbol = <T>(a:string):any => null;
+type Connection = {};
+type Config = {};
+type Renderer = {};
+
+// const DI = {
+//     database: symbol<Connection>('connection'),
+//     config: symbol<Config>('connection'),
+//     renderer: symbol<Renderer>('renderer'),
+//     request: symbol<Renderer>('renderer'),
+// };
+
+
+// function config() {
+//     return define(DI.config, () => ({
+//         hostname: 'localhost',
+//         port: '4000'
+//     }))
+// }
+
+// const defineD:MethodDecorator = null as any;
+
+
+
+
+const ss = define(function ss() {
+
+});
+
+
+// V1 TODO: this labels can be optional
+const config = define('config', (props) => ({
+    hostname: 'localhost',
+    port: '4000'
+}));
+
+// V2 TODO version without label - the only problem I see is that it can be hard to debug
+const config2 = define((props) => ({
+    hostname: 'localhost',
+    port: '4000'
+}));
+
+// V3 - IT WON'T WORK! :/ because define would have to decorate config3
+function config3(props) {
+
+}
+
+// this would be work
+config3 = define(config3); //can be applied later in the development process
+
+
+const database = define('database', () => {
+    const c = config();
+});
+
+
+const d1 = database(); //it's run single time. No caching
+const d2 = database(); //it's run single time. No caching
+
+run(() => {
+    const d1 = database(); //it's cached for
+
+    const d2 = database(); //it's cached for
+
+    d1 === d2 // true
+
+
+    run([database, config], () => { //nested scope will inherit database and config instances
+
+    })
+});
+
+const request = define<RequestTypeWhichWillBeSetInTheFuture>('request');
+
+
+run(() => {
+    set(request, () => {
+
+    })
+});
+
+
+describe(`some test`, () => {
+    run(() => {
+
+    })
+});
+
+// function database() {
+//     const c = config();
+//
+//
+// }
+
+
 // // const container:any = null as any;
 // // const module:any = null as any;
 // // const asObject:any = (container:Container) => container.asObject();

@@ -4,6 +4,7 @@
   "description": "Minimalistic type-safe dependencies container",
   "main": "dist/index.js",
   "scripts": {
+    "start": "yarn build:watch",
     "test": "mocha --require dist/spec/SpecHelper.js dist/spec/**/*.spec.js",
     "test:watch": "mocha -w --require dist/spec/SpecHelper.js dist/spec/**/*.spec.js",
     "build:clean": "rm -rf ./dist && mkdir -p dist/lib",

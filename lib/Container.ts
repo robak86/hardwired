@@ -1,5 +1,5 @@
 import {DependencyResolver} from "./DependencyResolver";
-import {Module} from "./Module";
+import {Module} from "./module";
 import {Thunk, unwrapThunk} from "./utils/thunk";
 import {
     AsyncDependenciesRegistry,
@@ -119,7 +119,7 @@ export class Container<I extends ImportsRegistry = {},
 
     protected getChild(cache, dependencyKey:string) {
         if (this.entries.declarations[dependencyKey]) {
-            let declarationResolver:DependencyResolver = this.entries.declarations[dependencyKey];
+            let declarationResolver:DependencyResolver<any, any, any> = this.entries.declarations[dependencyKey];
             return declarationResolver.build(this, this.context, cache);
         }
 

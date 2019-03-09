@@ -1,4 +1,4 @@
-import {Module, ModuleContext} from "./Module";
+import {Module, ModuleContext} from "./module";
 import {Container} from "./Container";
 import {
     AsyncDependenciesRegistry,
@@ -9,12 +9,14 @@ import {
 } from "./module-entries";
 
 
-export * from './Module';
+export * from './module';
 export * from './Container'
 export * from './utils';
 export {
     withContainer, useContainer, bindContainer, useMockedModules, useDependency, bindMockedContainer
 }from './hooks/use-container';
+
+export {def, withScope} from './hooks/hooks-simplified';
 
 
 export function module(name:string):Module {
