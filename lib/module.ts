@@ -8,10 +8,28 @@ import {
     ModuleEntries
 } from "./module-entries";
 import {Container} from "./Container";
-import {Resolver} from "../scratches";
 import {DependencyResolver} from "./DependencyResolver";
 import {GlobalSingletonResolver} from "./resolvers/global-singleton-resolver";
 
+
+/*
+TODO: refactor plan
+
+* extract all complex types to separate types/interfaces
+* define class methods as properties
+* Add typesafety checks (look at the omni type library)
+
+someMethod: ExtractedComplexType = (p1,p2,p3) => {
+
+}
+
+* make Module inherit from Immutable base class ./look at the immutable directory examples!
+
+ */
+
+type FilterPrivateFields<T> = {
+    [K in keyof T]:T[K]
+}
 
 export type ModuleContext<M> = M extends Module<any, any, any, infer CTX> ? CTX : never;
 
@@ -78,7 +96,7 @@ export class Module<I extends ImportsRegistry = {},
         return new Module(ModuleEntries.inject(otherModule.entries, this.entries));
     }
 
-    replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, C) => D[K]):Module<I, D, AD, C> {
+    replace<K extends keyof D, C>(key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, C) => FilterPrivateFields<D[K]>):Module<I, D, AD, C> {
         return this.undeclare(key).define(key as any, factory) as any;
     }
 

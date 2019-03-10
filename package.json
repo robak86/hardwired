@@ -2,7 +2,8 @@
   "name": "hardwired",
   "version": "0.0.1",
   "description": "Minimalistic type-safe dependencies container",
-  "main": "dist/index.js",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
   "scripts": {
     "start": "yarn build:watch",
     "test": "mocha --require dist/spec/SpecHelper.js dist/spec/**/*.spec.js",
