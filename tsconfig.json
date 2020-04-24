@@ -22,7 +22,7 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "declaration": true,
-    "keyofStringsOnly": true
+    "keyofStringsOnly": false
   }
 }
 

@@ -1,6 +1,6 @@
-import {container, module} from "../lib";
-import {expect} from "chai";
-import {spy} from "sinon";
+import { container, module } from "../lib";
+import { expect } from "chai";
+import { spy } from "sinon";
 
 
 describe(`Module`, () => {
@@ -289,10 +289,10 @@ describe(`Module`, () => {
             });
 
             it(`calls all dependecies factory functions with correct context`, async () => {
-                let f1 = spy(() => 123);
-                let f2 = spy(() => 456);
-                let f3 = spy(() => 678);
-                let f4 = spy(() => 9);
+                let f1 = spy((...args:any[]) => 123);
+                let f2 = spy((...args:any[]) => 456);
+                let f3 = spy((...args:any[]) => 678);
+                let f4 = spy((...args:any[]) => 9);
 
                 let m1 = module("m1")
                     .define("s3", f3)

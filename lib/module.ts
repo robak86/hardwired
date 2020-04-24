@@ -23,9 +23,13 @@ someMethod: ExtractedComplexType = (p1,p2,p3) => {
 
 }
 
+
 * make Module inherit from Immutable base class ./look at the immutable directory examples!
 
  */
+
+
+class Test {}
 
 type FilterPrivateFields<T> = {
     [K in keyof T]:T[K]
@@ -59,15 +63,16 @@ export class Module<I extends ImportsRegistry = {},
 
     constructor(public entries:ModuleEntries<I, D>) {}
 
+    // TODO make constructor to accept partial object with moduleId, declarations, etc.
+
 
     hasModule(key:keyof I):boolean {
-        return ModuleEntries.hasModule(key, this.entries);
+        return ModuleEntries.hasModule(key as any, this.entries);
     }
 
     isDeclared(key:keyof D):boolean {
-        return ModuleEntries.hasDefinition(key, this.entries);
+        return ModuleEntries.hasDefinition(key as any, this.entries);
     }
-
 
     define<K extends string, V, C1>(key:K, factory:DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>):ModuleWithDefinition<K, V, C1, I, D, AD, C>
     define<K extends string, V, C1>(key:K, factory:(container:MaterializedModuleEntries<I, D, AD>, ctx:C1) => V):ModuleWithDefinition<K, V, C1, I, D, AD, C>

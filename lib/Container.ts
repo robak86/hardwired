@@ -36,7 +36,7 @@ export class Container<I extends ImportsRegistry = {},
 
     get = <K extends keyof (D & AD)>(key:K):ModuleEntriesDependencies<D, AD>[K] => {
         //if is async container check if asyncDependenciesInitialized is true. if not throw an error
-        return this.getChild(this.cache.forNewRequest(), key); //
+        return this.getChild(this.cache.forNewRequest(), key as any); //
     };
 
     getMany:GetMany<D> = (...args:any[]) => {

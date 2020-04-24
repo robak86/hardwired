@@ -1,6 +1,11 @@
 import {asyncContainer, module} from '../lib';
 import {expect} from 'chai';
 
+
+
+// const z:Z = null as any;
+
+
 describe(`asyncDependencies`, () => {
     it(`enables definition of async dependencies`, async () => {
         const m1 = module('asyncTest')

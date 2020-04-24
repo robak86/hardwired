@@ -22,6 +22,8 @@ type AsyncDeclarationsFactories<I extends ImportsRegistry, D extends Dependencie
     [K in keyof I]:AsyncDependencyDefinition<I, D, AD>
 }
 
+
+
 export type ImportsRegistry = Record<string, Thunk<ModuleEntries<any, any>>>
 export type DependenciesRegistry = Record<string, any>;
 export type AsyncDependenciesRegistry = Record<string, any>;
@@ -131,7 +133,7 @@ export const ModuleEntries = {
         return {
             moduleId: ModuleId.next(entries.moduleId),
             imports: shallowClone(entries.imports),
-            declarations: dissoc(key, entries.declarations),
+            declarations: dissoc(key as any, entries.declarations) as any,
             asyncDeclarations: shallowClone(entries.asyncDeclarations)
         }
     },

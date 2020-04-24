@@ -23,26 +23,26 @@
     "lodash": "^4.17.11"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.7",
+    "@types/chai": "^4.2.11",
     "@types/chai-as-promised": "^7.1.0",
     "@types/continuation-local-storage": "^3.2.1",
     "@types/lodash": "^4.14.118",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "^10.12.12",
-    "@types/sinon": "^4.3.3",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.13.2",
+    "@types/sinon": "^9.0.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "lodash": "^4.17.11",
-    "mocha": "^5.2.0",
-    "sinon": "^5.1.1",
+    "mocha": "^7.1.1",
+    "sinon": "^9.0.2",
     "source-map-support": "^0.5.9",
-    "typescript": "^3.1.6"
+    "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@types/cls-hooked": "^4.2.1",
+    "@types/cls-hooked": "^4.3.0",
     "async-listener": "^0.6.10",
     "cls-hooked": "^4.2.2",
     "continuation-local-storage": "^3.2.1",
-    "ts-node": "^6.2.0"
+    "ts-node": "^8.9.0"
   }
 }

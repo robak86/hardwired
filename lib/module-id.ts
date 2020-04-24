@@ -1,4 +1,4 @@
-import {nextId} from "./utils/fastId";
+import { nextId } from "./utils/fastId";
 
 export type ModuleId = {
     name:string,

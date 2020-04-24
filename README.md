@@ -10,7 +10,8 @@ Minimalistic, type-safe dependency injection for typescript.
 - [x] Easy mocking and testing
 - [x] Suitable for backend servers 
 - [ ] Fast [TODO: measure it]
-
+- [x] Allows writing code which is not coupled to DI solution
+ 
 The library consists of two main components
 - Module
 - Container
