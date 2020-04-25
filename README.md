@@ -1,5 +1,6 @@
 # HardWired [WIP]
 
+TODO: compositions of modules using imports forces Law of Demeter
 
 Minimalistic, type-safe dependency injection for typescript.
 
@@ -12,6 +13,7 @@ Minimalistic, type-safe dependency injection for typescript.
 - [ ] Fast [TODO: measure it]
 - [x] Allows writing code which is not coupled to DI solution
 - [ ] Leverages structural typing (why? what is the relation to dependency inversion principle) 
+
  
 The library consists of two main components
 - Module

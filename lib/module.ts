@@ -1,18 +1,17 @@
-import { Thunk, unwrapThunk } from "./utils/thunk";
+import { Thunk, unwrapThunk } from './utils/thunk';
 import {
-  AsyncDeclarationsFactories,
-  AsyncDependenciesRegistry,
-  DeclarationsFactories,
-  DependenciesRegistry,
-  ImmutableSet,
-  ImportsRegistry,
+  AsyncDefinitionsRecord,
+  DefinitionsRecord,
+  ImportsRecord,
   MaterializedModuleEntries,
   ModuleEntries,
-} from "./module-entries";
-import { Container } from "./Container";
-import { DependencyResolver } from "./DependencyResolver";
-import { GlobalSingletonResolver } from "./resolvers/global-singleton-resolver";
-import { ModuleId } from "./module-id";
+} from './module-entries';
+import { Container } from './Container';
+import { DependencyResolver } from './DependencyResolver';
+import { GlobalSingletonResolver } from './resolvers/global-singleton-resolver';
+import { ModuleId } from './module-id';
+import { AsyncDependencyDefinition } from './utils/async-dependency-resolver';
+import { curry } from './utils/curry';
 
 /*
 TODO: refactor plan
@@ -36,257 +35,192 @@ type FilterPrivateFields<T> = {
   [K in keyof T]: T[K];
 };
 
-// interface Class<T> {
-//   constructor(): T;
-// }
-//
-// type ClassRef = new (...args: any[]) => any;
-//
-// export interface Type extends Function {
-//   new (...args: any[]): any;
-// }
-//
-// type ZZZ = InstanceType<any>;
-// type ClassOrFunction<T> = T extends new (...args: any) => T
-//   ? "class"
-//   : "function";
-//
-// type Fun = () => null;
-//
-// type Check = ClassOrFunction<Zygmunt>;
-
-export type ModuleContext<M> = M extends Module<any, any, any, infer CTX>
-  ? CTX
-  : never;
+export type ModuleContext<M> = M extends Module<any, any, any, infer CTX> ? CTX : never;
 
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
   ? RETURN
-  : never;
+  : 'Module contains duplicated definitions';
 
 //TODO: .defineAsync should return AsyncModule! (container(...) should accept only Module asyncContainer(...) should accept AsyncModule)
 //TODO: .import() should return AsyncModule if imported module is async
 
-type ModuleWithDefinition<
+interface Defineable<I extends ImportsRecord, D extends DefinitionsRecord, AD extends AsyncDefinitionsRecord, C> {
+  define<K extends string, V, C1>(
+    key: K,
+    factory: DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>,
+  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C>;
+  define<K extends string, V, C1>(
+    key: K,
+    factory: (container: MaterializedModuleEntries<I, D, AD>, ctx: C1) => V,
+  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C>;
+  define<K extends string, V, C1>(
+    key: K,
+    factory:
+      | DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>
+      | ((container: MaterializedModuleEntries<I, D, AD>, ctx: C1) => V),
+  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C>;
+}
+
+type ModuleWithNextDefinition<
   K extends string,
   V,
   C1,
-  I extends ImportsRegistry,
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry,
+  I extends ImportsRecord,
+  D extends DefinitionsRecord,
+  AD extends AsyncDefinitionsRecord,
   C
 > = NotDuplicated<K, D, Module<I, D & Record<K, V>, AD, C & C1>>;
 
-type ModuleWithAsyncDefinition<
+type ModuleWithNextAsyncDefinition<
   K extends string,
   V,
   C1,
-  I extends ImportsRegistry,
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry,
+  I extends ImportsRecord,
+  D extends DefinitionsRecord,
+  AD extends AsyncDefinitionsRecord,
   C
 > = NotDuplicated<K, D, Module<I, D, AD & Record<K, V>, C & C1>>;
 
 type ModuleWithImport<
   K extends string,
-  I1 extends ImportsRegistry,
-  D1 extends DependenciesRegistry,
-  AD1 extends AsyncDependenciesRegistry,
-  I extends ImportsRegistry,
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry,
+  I1 extends ImportsRecord,
+  D1 extends DefinitionsRecord,
+  AD1 extends AsyncDefinitionsRecord,
+  I extends ImportsRecord,
+  D extends DefinitionsRecord,
+  AD extends AsyncDefinitionsRecord,
   C
-> = NotDuplicated<
-  K,
-  I,
-  Module<I & Record<K, Thunk<ModuleEntries<I1, D1, AD1>>>, D, AD, C>
->;
+> = NotDuplicated<K, I, Module<I & Record<K, Thunk<ModuleEntries<I1, D1, AD1>>>, D, AD, C>>;
 
 type DefineAsyncContext<
-  I extends ImportsRegistry,
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry
+  I extends ImportsRecord,
+  D extends DefinitionsRecord,
+  AD extends AsyncDefinitionsRecord
 > = MaterializedModuleEntries<I, D, AD>;
 
 export class Module<
-  I extends ImportsRegistry = {},
-  D extends DependenciesRegistry = {},
-  AD extends AsyncDependenciesRegistry = {},
+  I extends ImportsRecord = {},
+  D extends DefinitionsRecord = {},
+  AD extends AsyncDefinitionsRecord = {},
   C = {}
-> {
-  // private readonly moduleId:ModuleId;
-  // private readonly imports:I;
-  // private readonly declarations:DeclarationsFactories<D>;
-  // private readonly asyncDeclarations:AsyncDeclarationsFactories<I, D, AD>;
-
-  constructor(
-    private readonly moduleId: ModuleId,
-    private readonly imports: ImmutableSet<I>,
-    private readonly declarations: ImmutableSet<DeclarationsFactories<D>>,
-    private readonly asyncDeclarations: ImmutableSet<
-      AsyncDeclarationsFactories<I, D, AD>
-    >
-  ) {}
+> implements Defineable<I, D, AD, C> {
+  constructor(private definitions: ModuleEntries<I, D, AD>) {}
 
   get entries(): ModuleEntries<I, D, AD> {
-    return {
-      moduleId: this.moduleId,
-      imports: this.imports,
-      declarations: this.declarations,
-      asyncDeclarations: this.asyncDeclarations,
-    };
+    return this.definitions;
+  }
+
+  get id(): ModuleId {
+    return this.definitions.moduleId;
   }
 
   // TODO make constructor to accept partial object with moduleId, declarations, etc.
-
   hasModule(key: keyof I): boolean {
-    return this.imports.hasKey(key);
+    return this.definitions.hasImport(key);
   }
 
   isDeclared(key: keyof D): boolean {
-    return this.declarations.hasKey(key);
+    return this.definitions.hasDeclaration(key);
   }
 
-  // function(){
-  //
-  // }
-
-  // TODO: conditional types doesn't allow to check if type is a constructor or function. The same at the runtime
-  // We need two separate methods
-  // It enables to implements api lik
-  /*
-    .defineClass('name', SomeClass, _ => [_.dep1, _.dep2])    // returns class instance
-    .defineFunction('name', SomeFunction, _ => [_.dep1, _.dep2]) // returns curried function
-   */
   define<K extends string, V, C1>(
     key: K,
-    factory: DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>
-  ): ModuleWithDefinition<K, V, C1, I, D, AD, C>;
+    factory: DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>,
+  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C>;
   define<K extends string, V, C1>(
     key: K,
-    factory: (container: MaterializedModuleEntries<I, D, AD>, ctx: C1) => V
-  ): ModuleWithDefinition<K, V, C1, I, D, AD, C>;
+    factory: (container: MaterializedModuleEntries<I, D, AD>, ctx: C1) => V,
+  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C>;
   define<K extends string, V, C1>(
     key: K,
     factory:
       | DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>
-      | ((container: MaterializedModuleEntries<I, D, AD>, ctx: C1) => V)
-  ): ModuleWithDefinition<K, V, C1, I, D, AD, C> {
-    const resolver =
-      typeof factory === "function"
-        ? new GlobalSingletonResolver(factory)
-        : factory;
-
-    // let cloned = new Module(ModuleEntries.define(key, resolver)(this.entries));
-    // return cloned as any;
-    return new Module(
-      ModuleId.next(this.moduleId),
-      this.imports,
-      this.declarations.extend(key, resolver) as any,
-      this.asyncDeclarations
-    ) as any; //TODO: fix types
+      | ((container: MaterializedModuleEntries<I, D, AD>, ctx: C1) => V),
+  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C> {
+    const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
+    return new Module(this.definitions.extendDeclarations(key, resolver)) as any;
   }
 
-  //container:, ctx:C1
-
-  // defineV2<K extends string, V, C1>(key:K, resolver:Resolver<MaterializedModuleEntries<I, D, AD>, V>):ModuleWithDefinition<K, V, C1, I, D, AD, C> {
-  //     let cloned = new Module(ModuleEntries.define(key, factory)(this.entries));
-  //     return cloned as any;
-  // }
+  defineFunction<TKey extends string, TResult>(
+    key: TKey,
+    fn: () => TResult,
+  ): ModuleWithNextDefinition<TKey, () => TResult, C, I, D, AD, C>;
+  defineFunction<TKey extends string, TDep1, TResult>(
+    key: TKey,
+    fn: (d1: TDep1) => TResult,
+  ): ModuleWithNextDefinition<TKey, (d1: TDep1) => TResult, C, I, D, AD, C>;
+  defineFunction<TKey extends string, TDep1, TResult>(
+    key: TKey,
+    fn: (d1: TDep1) => TResult,
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
+  ): ModuleWithNextDefinition<TKey, () => TResult, C, I, D, AD, C>;
+  defineFunction<TKey extends string, TDep1, TDep2, TResult>(
+    key: TKey,
+    fn: (d1: TDep1, d2: TDep2) => TResult,
+  ): ModuleWithNextDefinition<TKey, (d1: TDep1, d2: TDep2) => TResult, C, I, D, AD, C>;
+  defineFunction<TKey extends string, TDep1, TDep2, TResult>(
+    key: TKey,
+    fn: (d1: TDep1, d2: TDep2) => TResult,
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2],
+  ): ModuleWithNextDefinition<TKey, () => TResult, C, I, D, AD, C>;
+  defineFunction<TKey extends string, TDep1, TDep2, TResult>(
+    key: TKey,
+    fn: (d1: TDep1, d2: TDep2) => TResult,
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
+  ): ModuleWithNextDefinition<TKey, (dep2: TDep2) => TResult, C, I, D, AD, C>;
+  defineFunction(key, fn, depSelect?): any {
+    const curried = curry(fn);
+    const select = depSelect ? depSelect : () => [];
+    return this.define(key, container => {
+      const params = select(container);
+      if (params.length === fn.length) {
+        return () => fn(...params);
+      } else {
+        return curried(...params);
+      }
+    });
+  }
 
   defineAsync<K extends string, V, C1>(
     key: K,
-    factory: (ctx: DefineAsyncContext<I, D, AD>) => Promise<V>
-  ): ModuleWithAsyncDefinition<K, V, C1, I, D, AD, C> {
-    return this.appendDefinition(
-      this.imports, // breakme
-      this.declarations,
-      this.asyncDeclarations.set(key, factory as any)
-    );
+    factory: (ctx: DefineAsyncContext<I, D, AD>) => Promise<V>,
+  ): ModuleWithNextAsyncDefinition<K, V, C1, I, D, AD, C> {
+    return new Module(
+      this.definitions.extendAsyncDeclarations(key, AsyncDependencyDefinition.build(factory) as any),
+    ) as any;
   }
 
   //TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
-  inject<
-    D1,
-    AD1 extends AsyncDependenciesRegistry,
-    I1 extends ImportsRegistry,
-    C1
-  >(otherModule: Module<I1, D1, AD1, C1>): Module<I, D, AD, C> {
-    const nextImports = this.imports.mapValues((importedModule: any) => {
-      const unwrappedImportedModule = unwrapThunk(importedModule);
-      return unwrappedImportedModule.isEqual(otherModule)
-        ? otherModule
-        : unwrappedImportedModule.inject(otherModule);
-    });
-
-    return this.appendDefinition(
-      nextImports,
-      this.declarations,
-      this.asyncDeclarations
-    );
+  inject<D1, AD1 extends AsyncDefinitionsRecord, I1 extends ImportsRecord, C1>(
+    otherModule: Module<I1, D1, AD1, C1>,
+  ): Module<I, D, AD, C> {
+    return new Module(this.definitions.inject(otherModule.entries));
   }
 
   replace<K extends keyof D, C>(
     key: K,
-    factory: (
-      container: MaterializedModuleEntries<I, D, AD>,
-      C
-    ) => FilterPrivateFields<D[K]>
+    factory: (container: MaterializedModuleEntries<I, D, AD>, C) => FilterPrivateFields<D[K]>,
   ): Module<I, D, AD, C> {
     return this.undeclare(key).define(key as any, factory) as any;
   }
 
   //TODO: should be private. because it breaks typesafety when module is nested? ()
   undeclare<K extends keyof D>(key: K): Module<I, Omit<D, K>, AD, C> {
-    return this.appendDefinition(
-      this.imports,
-      this.declarations.remove(key) as any, // TODO
-      this.asyncDeclarations
-    );
+    return new Module(this.definitions.removeDeclaration(key)) as any;
   }
 
-  getEntries = () => {
-    return this.entries;
-  };
-
-  import<
-    K extends string,
-    I1 extends ImportsRegistry,
-    D1 extends DependenciesRegistry,
-    AD1 extends AsyncDependenciesRegistry
-  >(
+  import<K extends string, I1 extends ImportsRecord, D1 extends DefinitionsRecord, AD1 extends AsyncDefinitionsRecord>(
     key: K,
-    mod2: Thunk<Module<I1, D1, AD1>>
+    mod2: Thunk<Module<I1, D1, AD1>>,
   ): ModuleWithImport<K, I1, D1, AD1, I, D, AD, C> {
-    return this.appendDefinition(
-      this.imports.set(key, unwrapThunk(mod2) as any),
-      this.declarations,
-      this.asyncDeclarations
-    );
+    return new Module(this.definitions.extendImports(key, unwrapThunk(mod2).definitions)) as any;
   }
 
-  isEqual(other: Module<any, any, any>): boolean {
-    return this.moduleId.identity === other.moduleId.identity;
-  }
-
-  buildContainer(ctx: C): Container<I, D, AD> {
+  toContainer(ctx: C): Container<I, D, AD> {
     return new Container(this.entries, ctx);
   }
 
   async buildAsyncContainer(ctx: C): Promise<Container<I, D, AD, C>> {
     return new Container(this.entries, ctx);
-  }
-
-  // TODO: fix types (TNextAd seems to be wrong)
-  private appendDefinition<
-    TNextI extends ImmutableSet<I>,
-    TNextD extends ImmutableSet<DeclarationsFactories<D>>,
-    TNextAD extends ImmutableSet<AsyncDeclarationsFactories<any, any, any>> // TODO: fix types
-  >(imports: TNextI, declarations: TNextD, asyncDefinitions: TNextAD): any {
-    return new Module(
-      ModuleId.next(this.moduleId),
-      imports,
-      declarations,
-      asyncDefinitions as any
-    ) as any;
   }
 }

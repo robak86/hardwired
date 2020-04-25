@@ -2,9 +2,9 @@ import { DependencyResolver } from "./DependencyResolver";
 import { Module } from "./module";
 import { Thunk, unwrapThunk } from "./utils/thunk";
 import {
-  AsyncDependenciesRegistry,
-  DependenciesRegistry,
-  ImportsRegistry,
+  AsyncDefinitionsRecord,
+  DefinitionsRecord,
+  ImportsRecord,
   MaterializedModuleEntries,
   ModuleEntries,
   ModuleEntriesDependencies,
@@ -37,9 +37,9 @@ interface GetMany<D> {
 // TODO: extract all code related to instantiation of definition into services
 
 export class Container<
-  I extends ImportsRegistry = {},
-  D extends DependenciesRegistry = {},
-  AD extends AsyncDependenciesRegistry = {},
+  I extends ImportsRecord = {},
+  D extends DefinitionsRecord = {},
+  AD extends AsyncDefinitionsRecord = {},
   C = {}
 > {
   private cache: ContainerCache = new ContainerCache();
@@ -76,13 +76,13 @@ export class Container<
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
   deepGet<
-    I1 extends ImportsRegistry,
-    D2 extends DependenciesRegistry,
-    AD2 extends AsyncDependenciesRegistry,
+    I1 extends ImportsRecord,
+    D2 extends DefinitionsRecord,
+    AD2 extends AsyncDefinitionsRecord,
     K extends keyof MaterializedModuleEntries<I1, D2, AD2>
   >(module: Module<I1, D2>, key: K): MaterializedModuleEntries<I1, D2, AD2>[K] {
     let childModule: ModuleEntries | undefined = unwrapThunk(
-      this.findModule(module.entries.moduleId.identity)
+      this.findModule(module.entries)
     ); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
     if (!childModule) {
@@ -112,46 +112,40 @@ export class Container<
         .map((c) => c.initAsyncDependencies(cache))
     );
 
-    let keys = this.entries.asyncDeclarations.keys;
+    // let keys = this.entries.asyncDeclarations.keys;
 
-    let resolved = await Promise.all(
-      keys.map((key) =>
-        this.entries.asyncDeclarations
-          .get(key)
+    let resolved = this.entries.asyncDeclarations.mapValues(
+      (declaration, key) => {
+        return declaration
           .resolver(containerProxyAccessor(this as any, cache))
           .then((value) => ({
             id: this.entries.asyncDeclarations.get(key).id,
             key,
             value,
-          }))
-      )
+          }));
+      }
     );
+    //
+    // let resolved = await Promise.all(
+    //   keys.map((key) =>
+    //     this.entries.asyncDeclarations
+    //       .get(key)
+    //       .resolver(containerProxyAccessor(this as any, cache))
+    //       .then((value) => ({
+    //         id: this.entries.asyncDeclarations.get(key).id,
+    //         key,
+    //         value,
+    //       }))
+    //   )
+    // );
 
-    resolved.forEach((r) => cache.setForGlobalScope(r.id, r.value));
+    resolved.forEach((r: any) => cache.setForGlobalScope(r.id, r.value));
 
     this.asyncDependenciesInitialized = true;
   }
 
-  private findModule(moduleIdentity): ModuleEntries | undefined {
-    let found = this.entries.imports.values
-      .map(unwrapThunk)
-      .find((m) => m.moduleId.identity === moduleIdentity);
-    if (found) {
-      return found;
-    }
-
-    for (let importKey in this.entries.imports.keys) {
-      const targetContainer = new Container(
-        unwrapThunk(this.entries.imports.get(importKey)),
-        this.context as any
-      );
-      let found = targetContainer.findModule(moduleIdentity);
-      if (found) {
-        return found;
-      }
-    }
-
-    return undefined;
+  private findModule(moduleIdentity: ModuleEntries): ModuleEntries | undefined {
+    return this.entries.findModule(moduleIdentity);
   }
 
   //TODO: extract to class
@@ -167,7 +161,7 @@ export class Container<
     }
 
     //TODO: asyncDeclarations should be wrapped in AsyncResolver - analogous to DependencyResolver
-    if (this.entries.asyncDeclarations[dependencyKey]) {
+    if (this.entries.asyncDeclarations.hasKey(dependencyKey)) {
       let asyncDefinition: AsyncDependencyDefinition = this.entries.asyncDeclarations.get(
         dependencyKey
       );

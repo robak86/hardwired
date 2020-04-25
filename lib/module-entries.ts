@@ -1,100 +1,19 @@
-import { Thunk, UnwrapThunk } from "./utils/thunk";
-import { ModuleId } from "./module-id";
-import { AsyncDependencyDefinition } from "./utils/async-dependency-resolver";
-import { DependencyResolver } from "./DependencyResolver";
-import { NotDuplicated } from "./module";
-
-export class ImmutableSet<D extends Record<string, any>> {
-  static empty(): ImmutableSet<{}> {
-    return new ImmutableSet<{}>({});
-  }
-
-  private constructor(private records: D) {}
-
-  get<K extends keyof D>(key: K): D[K] {
-    return this.records[key];
-  }
-
-  hasKey(key: any): boolean {
-    return !!this.records[key];
-  }
-
-  get values(): Array<D[keyof D]> {
-    return Object.values(this.records);
-  }
-
-  get keys(): Array<keyof D> {
-    return Object.keys(this.records);
-  }
-
-  // get entries(): D {
-  //   return { ...this.records };
-  // }
-
-  remove<TKey extends keyof D>(key: TKey): ImmutableSet<Omit<D, TKey>> {
-    const cloned: D = { ...this.records };
-    delete cloned[key];
-    return new ImmutableSet(cloned) as any;
-  }
-
-  set<TKey extends keyof D, TValue extends D[TKey]>(
-    key: TKey,
-    value: TValue
-  ): ImmutableSet<D> {
-    return new ImmutableSet({
-      ...this.records,
-      [key]: value,
-    });
-  }
-
-  mapValues<TNext>(mapFn: (value: D[keyof D]) => TNext): ImmutableSet<TNext> {
-    const next: any = {};
-    this.keys.forEach((key) => {
-      next[key] = mapFn(this.get(key));
-    });
-
-    return new ImmutableSet(next);
-  }
-
-  // extend<TKey extends string, TValue>(
-  //   key: TKey,
-  //   value: TValue
-  // ): NotDuplicated<
-  //   TKey,
-  //   TValue,
-  //   ImmutableSet<D & { [K in keyof TKey]: TValue }>
-  // > {
-  //   return new ImmutableSet({
-  //     ...this.records,
-  //     [key]: value,
-  //   }) as any;
-  // }
-
-  extend<TKey extends string, TValue>(
-    key: TKey,
-    value: TValue
-  ): ImmutableSet<D & { [K in TKey]: TValue }> {
-    return new ImmutableSet({
-      ...this.records,
-      [key]: value,
-    });
-  }
-}
-
-const a = ImmutableSet.empty().extend("1", 12).extend("2", "sdf");
-
-a.mapValues((val) => {});
+import { Thunk, unwrapThunk, UnwrapThunk } from './utils/thunk';
+import { ModuleId } from './module-id';
+import { AsyncDependencyDefinition } from './utils/async-dependency-resolver';
+import { DependencyResolver } from './DependencyResolver';
+import { ImmutableSet } from './ImmutableSet';
 
 export type FactoryFunction<
-  I extends ImportsRegistry = any,
-  D extends DependenciesRegistry = any,
-  AD extends AsyncDependenciesRegistry = any
+  I extends ImportsRecord = any,
+  D extends DefinitionsRecord = any,
+  AD extends AsyncDefinitionsRecord = any
 > = (ctx: MaterializedModuleEntries<I, D, AD>) => any;
 
 export type AsyncFactoryFunction<
-  I extends ImportsRegistry,
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry
+  I extends ImportsRecord,
+  D extends DefinitionsRecord,
+  AD extends AsyncDefinitionsRecord
 > = (ctx: AsyncMaterializedModuleEntries<I, D, AD>) => Promise<any>;
 
 export type DeclarationsFactories<D> = {
@@ -102,20 +21,18 @@ export type DeclarationsFactories<D> = {
 };
 
 export type AsyncDeclarationsFactories<
-  I extends ImportsRegistry,
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry
+  I extends ImportsRecord,
+  D extends DefinitionsRecord,
+  AD extends AsyncDefinitionsRecord
 > = {
   [K in keyof I]: AsyncDependencyDefinition<I, D, AD>;
 };
 
-export type ImportsRegistry = Record<string, Thunk<ModuleEntries<any, any>>>;
-export type DependenciesRegistry = Record<string, any>;
-export type AsyncDependenciesRegistry = Record<string, any>;
+export type ImportsRecord = Record<string, Thunk<ModuleEntries<any, any>>>;
+export type DefinitionsRecord = Record<string, any>;
+export type AsyncDefinitionsRecord = Record<string, any>;
 
-export type PromiseWrappedAsyncDependencies<
-  T extends AsyncDependenciesRegistry
-> = {
+export type PromiseWrappedAsyncDependencies<T extends AsyncDefinitionsRecord> = {
   [K in keyof T]: () => Promise<T[K]>;
 };
 
@@ -123,179 +40,126 @@ export type PromiseWrappedAsyncDependencies<
 //     [K in keyof AD]:UnwrapPromise<ReturnType<AD[K]['resolver']>>
 // }
 
-export type ModuleEntriesDependencies<
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry
-> = D & AD;
+export type ModuleEntriesDependencies<D extends DefinitionsRecord, AD extends AsyncDefinitionsRecord> = D & AD;
 
 export type MaterializedModuleEntries<
-  I extends ImportsRegistry,
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry
+  I extends ImportsRecord,
+  D extends DefinitionsRecord,
+  AD extends AsyncDefinitionsRecord
 > = AD &
   D &
   {
-    [K in keyof I]: MaterializedModuleEntries<
-      {},
-      {},
-      ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>
-    >;
+    [K in keyof I]: MaterializedModuleEntries<{}, {}, ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>>;
   };
 
 export type AsyncMaterializedModuleEntries<
-  I extends ImportsRegistry,
-  D extends DependenciesRegistry,
-  AD extends AsyncDependenciesRegistry
+  I extends ImportsRecord,
+  D extends DefinitionsRecord,
+  AD extends AsyncDefinitionsRecord
 > = PromiseWrappedAsyncDependencies<AD> &
   D &
   {
-    [K in keyof I]: MaterializedModuleEntries<
-      {},
-      {},
-      ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>
-    >;
+    [K in keyof I]: MaterializedModuleEntries<{}, {}, ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>>;
   };
 
-export type ExtractModuleRegistryDeclarations<
-  M extends ModuleEntries
-> = M extends ModuleEntries<any, infer D, infer AD>
+export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D, infer AD>
   ? ModuleEntriesDependencies<D, AD>
   : never;
 
-// TODO: maybe this should be a class ? providing convenience methods for cloning (with partially setting of properties) ?
-export type ModuleEntries<
-  I extends ImportsRegistry = any,
-  D extends DependenciesRegistry = any,
-  AD extends AsyncDependenciesRegistry = any
-> = {
-  moduleId: ModuleId;
-  imports: ImmutableSet<I>;
-  declarations: ImmutableSet<DeclarationsFactories<D>>;
-  asyncDeclarations: ImmutableSet<AsyncDeclarationsFactories<I, D, AD>>;
-};
-//
-// export const ModuleEntrie2s = {
-//   build(name: string): ModuleEntries {
-//     return {
-//       moduleId: ModuleId.build(name),
-//       imports: {},
-//       declarations: {},
-//       asyncDeclarations: {},
-//     };
-//   },
-//
-//   hasModule(key: string, entries: ModuleEntries): boolean {
-//     return !!entries.imports[key];
-//   },
-//
-//   hasDefinition(key: string, entries: ModuleEntries): boolean {
-//     return !!entries.declarations[key];
-//   },
-//
-//   hasOwnAsyncDefinition(entries: ModuleEntries): boolean {
-//     return Object.keys(entries.asyncDeclarations).length > 0;
-//   },
-//
-//   hasAsyncDefinitions(entries: ModuleEntries): boolean {
-//     return (
-//       ModuleEntries.hasAsyncDefinitions(entries) ||
-//       Object.values(
-//         entries.imports
-//       ).some((moduleEntries: Thunk<ModuleEntries>) =>
-//         ModuleEntries.hasAsyncDefinitions(unwrapThunk(moduleEntries))
-//       )
-//     );
-//   },
-//
-//   //TODO: use assoc, assoc path or something
-//   define<
-//     K extends string,
-//     I extends ImportsRegistry,
-//     D extends DependenciesRegistry,
-//     AD extends AsyncDependenciesRegistry,
-//     O
-//   >(
-//     key: K,
-//     factory: DependencyResolver<MaterializedModuleEntries<I, D, AD>, any, O>
-//   ) {
-//     return (
-//       module: ModuleEntries<I, D>
-//     ): ModuleEntries<I, D & Record<K, O>, AD> => {
-//       return {
-//         moduleId: ModuleId.next(module.moduleId),
-//         imports: shallowClone(module.imports),
-//         declarations: assoc(key, factory, module.declarations),
-//         asyncDeclarations: shallowClone(module.asyncDeclarations),
-//       };
-//     };
-//   },
-//
-//   defineAsync<
-//     K extends string,
-//     I extends ImportsRegistry,
-//     D extends DependenciesRegistry,
-//     AD extends AsyncDependenciesRegistry,
-//     O extends AsyncFactoryFunction<I, D, AD>
-//   >(key: K, factory: O) {
-//     return (
-//       module: ModuleEntries<I, D>
-//     ): ModuleEntries<I, D, AD & Record<K, O>> => {
-//       return {
-//         moduleId: ModuleId.next(module.moduleId),
-//         imports: shallowClone(module.imports),
-//         declarations: shallowClone(module.declarations),
-//         asyncDeclarations: assoc(
-//           key,
-//           AsyncDependencyDefinition.build(factory),
-//           module.asyncDeclarations
-//         ),
-//       };
-//     };
-//   },
-//
-//   inject(otherModule: ModuleEntries, entries: ModuleEntries): ModuleEntries {
-//     return {
-//       moduleId: ModuleId.next(entries.moduleId),
-//       declarations: shallowClone(entries.declarations),
-//       imports: mapValues(entries.imports, (module) => {
-//         return unwrapThunk(module).moduleId.identity ===
-//           unwrapThunk(otherModule).moduleId.identity //todo implement isEqual
-//           ? otherModule
-//           : ModuleEntries.inject(otherModule, unwrapThunk(module));
-//       }),
-//       asyncDeclarations: shallowClone(entries.asyncDeclarations),
-//     };
-//   },
-//
-//   undefine<
-//     I extends ImportsRegistry,
-//     D extends DependenciesRegistry,
-//     K extends keyof D
-//   >(key: K, entries: ModuleEntries<I, D>): ModuleEntries<I, Omit<D, K>> {
-//     return {
-//       moduleId: ModuleId.next(entries.moduleId),
-//       imports: shallowClone(entries.imports),
-//       declarations: dissoc(key as any, entries.declarations) as any,
-//       asyncDeclarations: shallowClone(entries.asyncDeclarations),
-//     };
-//   },
-//
-//   import<
-//     K extends string,
-//     I extends ImportsRegistry,
-//     D extends DependenciesRegistry,
-//     AD extends AsyncDependenciesRegistry,
-//     M2 extends ModuleEntries
-//   >(key: K, otherModule: Thunk<M2>) {
-//     return (
-//       module: ModuleEntries<I, D>
-//     ): ModuleEntries<I & Record<K, Thunk<M2>>, D, AD> => {
-//       return {
-//         moduleId: ModuleId.next(module.moduleId),
-//         imports: assoc(key, otherModule, module.imports),
-//         declarations: shallowClone(module.declarations),
-//         asyncDeclarations: shallowClone(module.asyncDeclarations),
-//       };
-//     };
-//   },
-// };
+type ImportedModulesRecord = Record<string, Thunk<ModuleEntries<any, any, any>>>;
+
+export class ModuleEntries<
+  I extends ImportedModulesRecord = any,
+  D extends DefinitionsRecord = any,
+  AD extends AsyncDefinitionsRecord = any
+> {
+  static empty(name: string): ModuleEntries {
+    return new ModuleEntries<any, any, any>(
+      ModuleId.build(name),
+      ImmutableSet.empty(),
+      ImmutableSet.empty(),
+      ImmutableSet.empty(),
+    );
+  }
+
+  protected constructor(
+    public moduleId: ModuleId,
+    public imports: ImmutableSet<I>,
+    public declarations: ImmutableSet<DeclarationsFactories<D>>,
+    public asyncDeclarations: ImmutableSet<AsyncDeclarationsFactories<I, D, AD>>,
+  ) {}
+
+  isEqual(other: ModuleEntries): boolean {
+    return this.moduleId.identity === other.moduleId.identity;
+  }
+
+  extendImports(key, resolver) {
+    return new ModuleEntries(
+      ModuleId.next(this.moduleId),
+      this.imports.extend(key, resolver) as any,
+      this.declarations,
+      this.asyncDeclarations,
+    ) as any; //TODO: fix types
+  }
+
+  extendDeclarations(key, resolver) {
+    return new ModuleEntries(
+      ModuleId.next(this.moduleId),
+      this.imports,
+      this.declarations.extend(key, resolver) as any,
+      this.asyncDeclarations,
+    ) as any; //TODO: fix types
+  }
+
+  removeDeclaration(key) {
+    return new ModuleEntries(
+      ModuleId.next(this.moduleId),
+      this.imports,
+      this.declarations.remove(key) as any,
+      this.asyncDeclarations,
+    );
+  }
+
+  extendAsyncDeclarations(key, resolver) {
+    return new ModuleEntries(
+      ModuleId.next(this.moduleId),
+      this.imports,
+      this.declarations,
+      this.asyncDeclarations.extend(key, resolver),
+    ) as any; //TODO: fix types
+  }
+
+  inject(otherModule: ModuleEntries): ModuleEntries<I, D, AD> {
+    const nextImports = this.imports.mapValues((importedModule: any) => {
+      const unwrappedImportedModule = unwrapThunk(importedModule);
+      return unwrappedImportedModule.isEqual(otherModule) ? otherModule : unwrappedImportedModule.inject(otherModule);
+    });
+
+    return new ModuleEntries(ModuleId.next(this.moduleId), nextImports, this.declarations, this.asyncDeclarations);
+  }
+
+  hasImport(key): boolean {
+    return this.imports.hasKey(key);
+  }
+
+  hasDeclaration(key): boolean {
+    return this.declarations.hasKey(key);
+  }
+
+  findModule(other: ModuleEntries) {
+    let found = this.imports.values.map(unwrapThunk).find(m => m.isEqual(other));
+    if (found) {
+      return found;
+    }
+
+    for (let importKey in this.imports.keys) {
+      const targetContainer = unwrapThunk(this.imports.get(importKey));
+      let found = targetContainer.findModule(other);
+      if (found) {
+        return found;
+      }
+    }
+
+    return undefined;
+  }
+}

@@ -1,11 +1,11 @@
 import * as cls from 'cls-hooked';
 import {
-    AsyncDependenciesRegistry,
+    AsyncDefinitionsRecord,
     container,
     Container,
-    DependenciesRegistry,
+    DefinitionsRecord,
     emptyContainer,
-    ImportsRegistry, MaterializedModuleEntries,
+    ImportsRecord, MaterializedModuleEntries,
     Module,
     module
 } from "../index";
@@ -48,9 +48,9 @@ export const useContainer = ():Container => {
     return container;
 };
 
-export function useDependency<I1 extends ImportsRegistry,
-    D2 extends DependenciesRegistry,
-    AD2 extends AsyncDependenciesRegistry,
+export function useDependency<I1 extends ImportsRecord,
+    D2 extends DefinitionsRecord,
+    AD2 extends AsyncDefinitionsRecord,
     K extends keyof MaterializedModuleEntries<I1, D2, AD2>>(module:Module<I1, D2>, key:K):MaterializedModuleEntries<I1, D2, AD2>[K] {
     const container = useContainer();
     return container.deepGet(module, key)

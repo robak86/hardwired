@@ -1,19 +1,19 @@
 import {
-    AsyncDependenciesRegistry,
+    AsyncDefinitionsRecord,
     AsyncFactoryFunction,
-    DependenciesRegistry,
-    ImportsRegistry
+    DefinitionsRecord,
+    ImportsRecord
 } from "../module-entries";
 import {nextId} from "./fastId";
 
 
-export type AsyncDependencyDefinition<I extends ImportsRegistry = any, D extends DependenciesRegistry = any, AD extends AsyncDependenciesRegistry = any> = {
+export type AsyncDependencyDefinition<I extends ImportsRecord = any, D extends DefinitionsRecord = any, AD extends AsyncDefinitionsRecord = any> = {
     id:string;
     resolver:AsyncFactoryFunction<I, D, AD>
 }
 
 export const AsyncDependencyDefinition = {
-    build<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, V>(resolver:AsyncFactoryFunction<I, D, AD>):AsyncDependencyDefinition<I, D, AD> {
+    build<I extends ImportsRecord, D extends DefinitionsRecord, AD extends AsyncDefinitionsRecord, V>(resolver:AsyncFactoryFunction<I, D, AD>):AsyncDependencyDefinition<I, D, AD> {
         return {
             id: nextId(),
             resolver
