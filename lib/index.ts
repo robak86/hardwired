@@ -1,55 +1,70 @@
-import {Module, ModuleContext} from "./module";
-import {Container} from "./Container";
+import { Module, ModuleContext } from "./module";
+import { Container } from "./Container";
 import {
-    AsyncDependenciesRegistry,
-    DependenciesRegistry,
-    ExtractModuleRegistryDeclarations,
-    ImportsRegistry,
-    ModuleEntries
+  AsyncDependenciesRegistry,
+  DependenciesRegistry,
+  ExtractModuleRegistryDeclarations,
+  ImmutableSet,
+  ImportsRegistry,
+  ModuleEntries,
 } from "./module-entries";
+import { ModuleId } from "./module-id";
 
-export * from './module';
-export * from './Container'
-export * from './utils';
+export * from "./module";
+export * from "./Container";
+export * from "./utils";
 export {
-    withContainer, useContainer, bindContainer, useMockedModules, useDependency, bindMockedContainer
-}from './hooks/use-container';
+  withContainer,
+  useContainer,
+  bindContainer,
+  useMockedModules,
+  useDependency,
+  bindMockedContainer,
+} from "./hooks/use-container";
 
-export {def, withScope} from './hooks/hooks-simplified';
+export { def, withScope } from "./hooks/hooks-simplified";
 
-
-export function module(name:string):Module {
-    return new Module(ModuleEntries.build(name));
+export function module(name: string): Module {
+  return new Module(
+    ModuleId.build(name),
+    ImmutableSet.empty(),
+    ImmutableSet.empty(),
+    ImmutableSet.empty()
+  );
 }
-
 
 //TODO: consider completely removing the m parameter. Create empty container instead and instantiate all dependencies via deepGet
 //TODO: investigate how to pass context in such case? and how to make it typesafe ?!
-export function container<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry, CTX>(m:Module<I, D, AD, CTX>, ctx:CTX):Container<I, D, AD, any> {
-    return new Container(
-        m.entries,
-        ctx as any
-    );
+export function container<
+  I extends ImportsRegistry,
+  D extends DependenciesRegistry,
+  AD extends AsyncDependenciesRegistry,
+  CTX
+>(m: Module<I, D, AD, CTX>, ctx: CTX): Container<I, D, AD, any> {
+  return new Container(m.entries, ctx as any);
 }
 
-export function container2(m:Module<any, any, any, { a:boolean }>, ctx:ModuleContext<typeof m>):Container<any, any, any, any> {
-    return new Container(
-        m.entries,
-        ctx as any
-    );
+export function container2(
+  m: Module<any, any, any, { a: boolean }>,
+  ctx: ModuleContext<typeof m>
+): Container<any, any, any, any> {
+  return new Container(m.entries, ctx as any);
 }
 
-export async function asyncContainer<I extends ImportsRegistry, D extends DependenciesRegistry, AD extends AsyncDependenciesRegistry>(m:Module<I, D, AD>, ctx:any):Promise<Container<I, D, AD>> {
-    let container = new Container(m.entries, ctx as any);
-    await container.initAsyncDependencies();
-    return container as any;
+export async function asyncContainer<
+  I extends ImportsRegistry,
+  D extends DependenciesRegistry,
+  AD extends AsyncDependenciesRegistry
+>(m: Module<I, D, AD>, ctx: any): Promise<Container<I, D, AD>> {
+  let container = new Container(m.entries, ctx as any);
+  await container.initAsyncDependencies();
+  return container as any;
 }
 
 //TODO: ctx should be typesafe. we should forbid calling deepGet with modules requiring different context than the context passed here
-export function emptyContainer(ctx:any):Container<any, any, any> {
-    return container(module('__moduleForEmptyContainer'), ctx); //TODO: refactor - one should not create empty module for creating empty container;
+export function emptyContainer(ctx: any): Container<any, any, any> {
+  return container(module("__moduleForEmptyContainer"), ctx); //TODO: refactor - one should not create empty module for creating empty container;
 }
-
 
 // export interface WithContainerFn {
 //     <MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K):(ctx:CTX) => ExtractModuleRegistryDeclarations<MOD>[K]
@@ -60,8 +75,8 @@ export function emptyContainer(ctx:any):Container<any, any, any> {
 // export const withContainer:WithContainerFn = curry(<MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX) => {
 //     return container(module, ctx).get(def);
 // });
-export {AsyncDependenciesRegistry} from "./module-entries";
-export {DependenciesRegistry} from "./module-entries";
-export {ImportsRegistry} from "./module-entries";
-export {ExtractModuleRegistryDeclarations} from "./module-entries";
-export {MaterializedModuleEntries} from "./module-entries";
+export { AsyncDependenciesRegistry } from "./module-entries";
+export { DependenciesRegistry } from "./module-entries";
+export { ImportsRegistry } from "./module-entries";
+export { ExtractModuleRegistryDeclarations } from "./module-entries";
+export { MaterializedModuleEntries } from "./module-entries";
