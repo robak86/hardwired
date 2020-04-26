@@ -2,26 +2,28 @@
   "name": "hardwired",
   "version": "0.0.1",
   "description": "Minimalistic type-safe dependencies container",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "private": true,
   "scripts": {
-    "start": "yarn build:watch",
-    "test": "mocha --require dist/spec/SpecHelper.js dist/spec/**/*.spec.js",
-    "test:watch": "mocha -w --require dist/spec/SpecHelper.js dist/spec/**/*.spec.js",
-    "build:clean": "rimraf ./lib",
-    "build:copy": "mkdir -p ./lib && cp package.json ./lib && cp README.md ./lib/",
+    "start": "tsc -b packages/tsconfig.json --watch --pretty",
+    "test": "mocha --require packages/lib/SpecHelper.js packages/lib/**/*.spec.js",
+    "test:watch": "mocha -w --require packages/lib/SpecHelper.js packages/lib/**/*.spec.js",
+    "postinstall": "yarn run purge && yarn run update:tsconfig.json && yarn run update:package.json",
+    "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
+    "update:package.json": "ts-node scripts/update-package-json.ts",
+    "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
     "build:compile": "tsc",
-    "build:dist": "yarn run build:clean && yarn run build:copy && yarn run build:compile",
-    "build:watch": "yarn run build:clean && yarn run build:copy && tsc --watch --sourceMap --pretty",
-    "build:link": "yarn run build:copy && cd ./dist/lib && yarn link && yarn install --production",
-    "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec dist/spec/**/*.spec.js | coveralls",
-    "build:coverage:local": "nyc mocha -- -- spec dist/spec/**/*.spec.js"
+    "build:link": "yarn run build:copy && cd ./packages/lib && yarn link && yarn install --production",
+    "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec packages/lib/**/*.spec.js | coveralls",
+    "build:coverage:local": "nyc mocha -- -- spec packages/lib/**/*.spec.js"
   },
   "author": "",
   "license": "ISC",
   "peerDependencies": {
     "lodash": "^4.17.11"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/chai-as-promised": "^7.1.0",
@@ -36,7 +38,7 @@
     "mocha": "^7.1.1",
     "sinon": "^9.0.2",
     "source-map-support": "^0.5.9",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.0-beta"
   },
   "dependencies": {
     "@types/cls-hooked": "^4.3.0",

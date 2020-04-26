@@ -328,7 +328,7 @@ export class Module<
     key: K,
     factory: (container: MaterializedModuleEntries<I, D, AD>, C) => FilterPrivateFields<D[K]>,
   ): Module<I, D, AD, C> {
-    return this.undeclare(key).define(key as any, factory) as any;
+    return this.undeclare(key).define(key as any, factory as any) as any;
   }
 
   // convenient method for providing mocks for testing

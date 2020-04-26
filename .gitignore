@@ -8,5 +8,7 @@ lib
 *.log
 **/.cache
 .cache
+/**/lib
+*.tsbuildinfo
 
 
