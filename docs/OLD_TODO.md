@@ -1,6 +1,6 @@
-```module``` may be in collision with node's module
 
-# TODO: Add callback for dispose ? (e.g for disposing database connection)
+
+
 
 # Simple conditional type for asObject
 

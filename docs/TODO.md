@@ -1,12 +1,22 @@
-- add convenience methods for
+- migrate unit tests to jest (we need to test react-di)
+
+`module` may be in collision with node's module
+
+- type AppModuleDeps = Materialized<typeof appModule> - currently Materialized requires three params
+  -# TODO: Add callback for dispose ? (e.g for disposing database connection)
+
+- check if module with replaced values (used for testing) are correctly garbage collected (reference to module entries)
+- check if containers should be explicitely disposed (in order to remove references to module entries)
+
+- ~~add convenience methods for~~
 
 ```typescript
 const m1 = module('name1').defineFunction('someFunction', someFunction, ctx => [ctx.dep1, ctx.dep2, ctx.dep3]); // returns curried version of someFunction
 const m2 = module('name2').defineClass('someClass', SomeClass, ctx => [{ dep1: ctx.dep1, dep2: ctx.dep2 }]); // returns instance of SomeClass
 ```
 
-- 
 - investigage pros and cons of module-less container
+  - we wouldn't be able to implement typesafe context
 - remove async dependencies in favor of module.require<{someAsyncValue: number}>()
 
 ```typescript
@@ -36,7 +46,9 @@ function MyComponent() {
 
 function App() {
   return (
-    <HardwiredContainer module={appModule}>  // Here appModule should be frozen, so it's readonly 
+    <HardwiredContainer module={appModule}>
+      {' '}
+      // Here appModule should be frozen, so it's readonly
       <MyComponent />
     </HardwiredContainer>
   );
@@ -55,4 +67,16 @@ const wrapper = mount(
 
 // THE MAIN DRAWBACK OF THIS APPORACH IS THAT IT'S NOT THE FULLY FLEDGED INTEGRATION TEST, BEACUSE
 // How to inject deps into saga ?! sagas should be also registered in container ? check implementation of selecting state from saga (they somehow use context)
+```
+
+- checkout method (used for explicitely creating new container scope, with or withour inherited properties)
+
+```typescript
+function app(container) {
+  use('someRoute', (req, res) => container.checkout().get('handler')(req, res));
+}
+```
+... or instead 
+```typescript
+const m1 = module().define('handler', )
 ```
