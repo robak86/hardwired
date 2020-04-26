@@ -29,11 +29,18 @@ someMethod: ExtractedComplexType = (p1,p2,p3) => {
 
  */
 
+type ClassType<TConstructorArgs extends any[], TInstance> = {
+  new (...args: TConstructorArgs): TInstance;
+};
+
 class Test {}
 
-type FilterPrivateFields<T> = {
-  [K in keyof T]: T[K];
-};
+// Helper type for preserving only public properties.
+type FilterPrivateFields<T> = T extends Function
+  ? T
+  : {
+      [K in keyof T]: T[K];
+    };
 
 export type ModuleContext<M> = M extends Module<any, any, any, infer CTX> ? CTX : never;
 
@@ -123,6 +130,10 @@ export class Module<
     return this.definitions.hasDeclaration(key);
   }
 
+  // TODO: this define should only accept DependencyResolver as a second argument (no additional overrides)
+  // It will be general purpose define for registering more complicated dependencies (some transient, scoped shit - assuming that we wanna even have them)
+  // For simple registration one should use specialized .defineFunction and defineClass/Instance ?
+  // TODO: in order to apply conditional resolution we need to create specialized dependencyResolver
   define<K extends string, V, C1>(
     key: K,
     factory: DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>,
@@ -139,6 +150,54 @@ export class Module<
   ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C> {
     const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
     return new Module(this.definitions.extendDeclarations(key, resolver)) as any;
+  }
+
+  defineConst<TKey extends string, TValue>(
+    key: TKey,
+    value: TValue,
+  ): ModuleWithNextDefinition<TKey, TValue, C, I, D, AD, C> {
+    return this.define(key, () => value);
+  }
+
+  // TODO: define -> register -> useClass -> ??
+  defineClass<TKey extends string, TResult>(
+    key: TKey,
+    klass: ClassType<[], TResult>,
+  ): ModuleWithNextDefinition<TKey, TResult, C, I, D, AD, C>;
+  defineClass<TKey extends string, TDeps extends any[], TResult>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
+  ): ModuleWithNextDefinition<TKey, TResult, C, I, D, AD, C>;
+  defineClass<TKey extends string, TDeps extends any[], TResult>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect?: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
+  ): ModuleWithNextDefinition<TKey, TResult, C, I, D, AD, C> {
+    return this.define(key, container => {
+      const selectDeps = depSelect ? depSelect : () => [];
+      return new klass(...(selectDeps(container) as any));
+    });
+  }
+
+  replaceClass<TKey extends keyof D, TResult extends D[TKey]>(
+    key: TKey,
+    klass: ClassType<[], TResult>,
+  ): Module<I, D, AD, C>;
+  replaceClass<TKey extends keyof D, TDeps extends any[], TResult extends D[TKey]>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
+  ): Module<I, D, AD, C>;
+  replaceClass<TKey extends keyof D, TDeps extends any[], TResult extends D[TKey]>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect?: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
+  ): Module<I, D, AD, C> {
+    return this.replace(key as any, container => {
+      const selectDeps = depSelect ? depSelect : () => [];
+      return new klass(...(selectDeps(container) as any)) as any;
+    });
   }
 
   defineFunction<TKey extends string, TResult>(
@@ -161,16 +220,37 @@ export class Module<
   defineFunction<TKey extends string, TDep1, TDep2, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2],
-  ): ModuleWithNextDefinition<TKey, () => TResult, C, I, D, AD, C>;
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
+  ): ModuleWithNextDefinition<TKey, (dep2: TDep2) => TResult, C, I, D, AD, C>;
   defineFunction<TKey extends string, TDep1, TDep2, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2) => TResult,
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2],
+  ): ModuleWithNextDefinition<TKey, () => TResult, C, I, D, AD, C>;
+  // 3 args
+  defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
+    key: TKey,
+    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
+  ): ModuleWithNextDefinition<TKey, (d1: TDep1, d2: TDep2, d3: TDep3) => TResult, C, I, D, AD, C>;
+  defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
+    key: TKey,
+    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
     depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
-  ): ModuleWithNextDefinition<TKey, (dep2: TDep2) => TResult, C, I, D, AD, C>;
+  ): ModuleWithNextDefinition<TKey, (dep2: TDep2, dep3: TDep3) => TResult, C, I, D, AD, C>;
+  defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
+    key: TKey,
+    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2],
+  ): ModuleWithNextDefinition<TKey, (dep3: TDep3) => TResult, C, I, D, AD, C>;
+  defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
+    key: TKey,
+    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
+    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2, TDep3],
+  ): ModuleWithNextDefinition<TKey, () => TResult, C, I, D, AD, C>;
   defineFunction(key, fn, depSelect?): any {
     const curried = curry(fn);
     const select = depSelect ? depSelect : () => [];
+    // TODO: container => {...} should be wrapped in some concrete DependencyResolver instance (.e.g CurriedFunctionResolver)
     return this.define(key, container => {
       const params = select(container);
       if (params.length === fn.length) {
@@ -180,6 +260,68 @@ export class Module<
       }
     });
   }
+
+  // TODO: does not work because of currying :/
+  // replaceFunction<TKey extends keyof D, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: () => TResult,
+  // ): Module<I, D, AD, C>;
+  // replaceFunction<TKey extends keyof D, TDep1, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1) => TResult,
+  // ): Module<I, D, AD, C>;
+  // replaceFunction<TKey extends keyof D, TDep1, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1) => TResult,
+  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
+  // ): Module<I, D, AD, C>;
+  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1, d2: TDep2) => TResult,
+  // ): Module<I, D, AD, C>;
+  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1, d2: TDep2) => TResult,
+  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
+  // ): Module<I, D, AD, C>;
+  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1, d2: TDep2) => TResult,
+  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2],
+  // ): Module<I, D, AD, C>;
+  // // 3 args
+  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TDep3, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
+  // ): Module<I, D, AD, C>;
+  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TDep3, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
+  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
+  // ): Module<I, D, AD, C>;
+  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TDep3, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
+  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2],
+  // ): Module<I, D, AD, C>;
+  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TDep3, TResult extends ReturnType<D[TKey]>>(
+  //   key: TKey,
+  //   fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
+  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2, TDep3],
+  // ): Module<I, D, AD, C>;
+  // replaceFunction(key, fn, depSelect?): any {
+  //   const curried = curry(fn);
+  //   const select = depSelect ? depSelect : () => [];
+  //   // TODO: container => {...} should be wrapped in some concrete DependencyResolver instance (.e.g CurriedFunctionResolver)
+  //   return this.replace(key, container => {
+  //     const params = select(container);
+  //     if (params.length === fn.length) {
+  //       return () => fn(...params);
+  //     } else {
+  //       return curried(...params);
+  //     }
+  //   });
+  // }
 
   defineAsync<K extends string, V, C1>(
     key: K,
