@@ -1,4 +1,4 @@
-import { Module, ModuleContext } from './module/module';
+import { Module } from './module/module';
 import { Container } from './container/Container';
 import {
   AsyncDefinitionsRecord,
@@ -11,16 +11,6 @@ import {
 export * from './module/module';
 export * from './container/Container';
 export * from './utils';
-export {
-  withContainer,
-  useContainer,
-  bindContainer,
-  useMockedModules,
-  useDependency,
-  bindMockedContainer,
-} from './hooks/use-container';
-
-export { def, withScope } from './hooks/hooks-simplified';
 
 export function module<CTX = {}>(name: string): Module<{}, {}, {}, CTX> {
   return new Module(ModuleEntries.empty(name));
@@ -34,7 +24,6 @@ export function container<I extends ImportsRecord, D extends DefinitionsRecord, 
 ): Container<I, D, AD, any> {
   return new Container((m as any).definitions, ctx as any);
 }
-
 
 export async function asyncContainer<
   I extends ImportsRecord,

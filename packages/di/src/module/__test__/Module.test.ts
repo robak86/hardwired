@@ -528,24 +528,17 @@ describe(`Module`, () => {
     it(`replaces all related modules in whole tree`, async () => {
       let m1 = module('m1').define('val', () => 1);
 
-      console.log('m1', m1.id);
-
       let m2 = module('m2')
         .import('child', m1)
         .define('valFromChild', c => c.child.val);
-
-      console.log('m2', m2.id);
 
       let m3 = module('m3')
         .import('child1', m1)
         .import('child2', m2)
         .define('val', c => c.child2.valFromChild);
 
-      console.log('m3', m3.id);
-
       let m1Overrides = m1.replace('val', c => 2);
 
-      console.log('m1Overrides', m1Overrides.id);
 
       let mocked = m3.inject(m1Overrides);
 

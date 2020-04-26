@@ -4,6 +4,9 @@
   "references": [
     {
       "path": "./di/tsconfig.json"
+    },
+    {
+      "path": "./react-di/tsconfig.json"
     }
   ]
 }

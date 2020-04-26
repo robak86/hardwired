@@ -7,6 +7,7 @@ const m2 = module('name2').defineClass('someClass', SomeClass, ctx => [{ dep1: c
 
 - 
 - investigage pros and cons of module-less container
+- remove async dependencies in favor of module.require<{someAsyncValue: number}>()
 
 ```typescript
 const c = container();

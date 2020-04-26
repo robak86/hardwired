@@ -10,5 +10,6 @@ lib
 .cache
 /**/lib
 *.tsbuildinfo
+.nyc_output
 
 

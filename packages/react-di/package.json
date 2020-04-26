@@ -1,0 +1,22 @@
+{
+  "name": "@hardwired/react-di",
+  "private": true,
+  "version": "1.0.0",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "dependencies": {
+    "@hardwired/di": "*"
+  },
+  "devDependencies": {},
+  "files": [
+    "lib",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -b ./tsconfig.json",
+    "test": "yarn test"
+  }
+}

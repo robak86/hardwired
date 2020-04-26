@@ -5,18 +5,18 @@
   "private": true,
   "scripts": {
     "start": "tsc -b packages/tsconfig.json --watch --pretty",
-    "test": "mocha --require packages/lib/SpecHelper.js packages/lib/**/*.spec.js",
-    "test:watch": "mocha -w --require packages/lib/SpecHelper.js packages/lib/**/*.spec.js",
+    "test": "mocha --require packages/lib/SpecHelper.js packages/**/lib/**/*.test.js",
+    "test:watch": "mocha -w --require packages/testConfig.js packages/**/__test__/*.test.js",
     "postinstall": "yarn run purge && yarn run update:tsconfig.json && yarn run update:package.json",
     "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
     "update:package.json": "ts-node scripts/update-package-json.ts",
     "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
     "build:compile": "tsc",
     "build:link": "yarn run build:copy && cd ./packages/lib && yarn link && yarn install --production",
-    "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec packages/lib/**/*.spec.js | coveralls",
-    "build:coverage:local": "nyc mocha -- -- spec packages/lib/**/*.spec.js"
+    "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec packages/**/__test__/*.test.js | coveralls",
+    "build:coverage:local": "nyc mocha -- -- spec packages/**/__test__/*.test.js"
   },
-  "author": "",
+  "author": "Tomasz Robaczewski",
   "license": "ISC",
   "peerDependencies": {
     "lodash": "^4.17.11"
@@ -27,28 +27,21 @@
   "devDependencies": {
     "@types/chai": "^4.2.11",
     "@types/chai-as-promised": "^7.1.0",
-    "@types/continuation-local-storage": "^3.2.1",
-    "@types/lodash": "^4.14.118",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.13.2",
     "@types/sinon": "^9.0.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "lodash": "^4.17.11",
     "mocha": "^7.1.1",
-    "sinon": "^9.0.2",
-    "source-map-support": "^0.5.9",
-    "typescript": "^3.9.0-beta"
-  },
-  "dependencies": {
-    "@types/cls-hooked": "^4.3.0",
-    "async-listener": "^0.6.10",
-    "cls-hooked": "^4.2.2",
-    "continuation-local-storage": "^3.2.1",
+    "nyc": "^15.0.1",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
+    "source-map-support": "^0.5.9",
     "ts-expect": "^1.1.0",
     "ts-node": "^8.9.0",
-    "tslint": "^6.1.1"
-  }
+    "tslint": "^6.1.1",
+    "typescript": "^3.9.0-beta"
+  },
+  "dependencies": {}
 }
