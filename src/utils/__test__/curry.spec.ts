@@ -1,4 +1,4 @@
-import { curry } from '../../lib/utils/curry';
+import { curry } from '../curry';
 import { expect } from 'chai';
 
 describe(`curry`, () => {

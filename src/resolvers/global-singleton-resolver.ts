@@ -1,7 +1,7 @@
 import {nextId} from "../utils/fastId";
-import {ContainerCache} from "../container-cache";
-import {containerProxyAccessor} from "../container-proxy-accessor";
-import {DependencyResolver, DependencyResolverFunction} from "../DependencyResolver";
+import {ContainerCache} from "../container/container-cache";
+import {containerProxyAccessor} from "../container/container-proxy-accessor";
+import {DependencyResolver, DependencyResolverFunction} from "./DependencyResolver";
 
 export class GlobalSingletonResolver<CONT, CTX = any, V = any> implements DependencyResolver<CONT, CTX, V> {
     public id:string = nextId(); //TODO: not sure if necessary

@@ -1,6 +1,6 @@
-import { DependencyResolver } from "./DependencyResolver";
-import { Module } from "./module";
-import { Thunk, unwrapThunk } from "./utils/thunk";
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { Module } from "../module/module";
+import { Thunk, unwrapThunk } from "../utils/thunk";
 import {
   AsyncDefinitionsRecord,
   DefinitionsRecord,
@@ -8,8 +8,8 @@ import {
   MaterializedModuleEntries,
   ModuleEntries,
   ModuleEntriesDependencies,
-} from "./module-entries";
-import { AsyncDependencyDefinition } from "./utils/async-dependency-resolver";
+} from "../module/module-entries";
+import { AsyncDependencyDefinition } from "../utils/async-dependency-resolver";
 import { containerProxyAccessor } from "./container-proxy-accessor";
 import { ContainerCache } from "./container-cache";
 
@@ -53,6 +53,11 @@ export class Container<
     //if is async container check if asyncDependenciesInitialized is true. if not throw an error
     return this.getChild(this.cache.forNewRequest(), key as any); //
   };
+
+  // TODO: returns proxified module object (reusing existing instance from cache if possible)
+  getModuleInstance(){
+
+  }
 
   getMany: GetMany<D> = (...args: any[]) => {
     const cache = this.cache.forNewRequest();

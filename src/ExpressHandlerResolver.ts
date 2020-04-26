@@ -1,6 +1,6 @@
 import {nextId} from "./utils/fastId";
-import {Container} from "./Container";
-import {containerProxyAccessor} from "./container-proxy-accessor";
+import {Container} from "./container/Container";
+import {containerProxyAccessor} from "./container/container-proxy-accessor";
 
 export type DependencyResolverFunction<CONT, CTX, VAL> = (container:CONT, context:CTX) => VAL;
 

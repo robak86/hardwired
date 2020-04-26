@@ -3,7 +3,7 @@ import {
     AsyncFactoryFunction,
     DefinitionsRecord,
     ImportsRecord
-} from "../module-entries";
+} from "../module/module-entries";
 import {nextId} from "./fastId";
 
 

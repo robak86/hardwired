@@ -1,4 +1,4 @@
-import {asyncContainer, module} from '../lib';
+import {asyncContainer, module} from '../index';
 import {expect} from 'chai';
 
 

@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {def, withScope} from '../lib';
+import {def, withScope} from '../index';
 
 describe(`def`, () => {
     it(`doesn't cache any value if it's not called in any scope`, async () => {

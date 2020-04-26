@@ -1,4 +1,4 @@
-import { Thunk, unwrapThunk } from './utils/thunk';
+import { Thunk, unwrapThunk } from '../utils/thunk';
 import {
   AsyncDefinitionsRecord,
   DefinitionsRecord,
@@ -6,12 +6,12 @@ import {
   MaterializedModuleEntries,
   ModuleEntries,
 } from './module-entries';
-import { Container } from './Container';
-import { DependencyResolver } from './DependencyResolver';
-import { GlobalSingletonResolver } from './resolvers/global-singleton-resolver';
-import { ModuleId } from './module-id';
-import { AsyncDependencyDefinition } from './utils/async-dependency-resolver';
-import { curry } from './utils/curry';
+import { Container } from '../container/Container';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
+import { ModuleId } from '../module-id';
+import { AsyncDependencyDefinition } from '../utils/async-dependency-resolver';
+import { curry } from '../utils/curry';
 
 /*
 TODO: refactor plan
@@ -50,23 +50,6 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
 
 //TODO: .defineAsync should return AsyncModule! (container(...) should accept only Module asyncContainer(...) should accept AsyncModule)
 //TODO: .import() should return AsyncModule if imported module is async
-
-interface Defineable<I extends ImportsRecord, D extends DefinitionsRecord, AD extends AsyncDefinitionsRecord, C> {
-  define<K extends string, V, C1>(
-    key: K,
-    factory: DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>,
-  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C>;
-  define<K extends string, V, C1>(
-    key: K,
-    factory: (container: MaterializedModuleEntries<I, D, AD>, ctx: C1) => V,
-  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C>;
-  define<K extends string, V, C1>(
-    key: K,
-    factory:
-      | DependencyResolver<MaterializedModuleEntries<I, D, AD>, V>
-      | ((container: MaterializedModuleEntries<I, D, AD>, ctx: C1) => V),
-  ): ModuleWithNextDefinition<K, V, C1, I, D, AD, C>;
-}
 
 type ModuleWithNextDefinition<
   K extends string,
@@ -110,7 +93,7 @@ export class Module<
   D extends DefinitionsRecord = {},
   AD extends AsyncDefinitionsRecord = {},
   C = {}
-> implements Defineable<I, D, AD, C> {
+> {
   constructor(private definitions: ModuleEntries<I, D, AD>) {}
 
   get entries(): ModuleEntries<I, D, AD> {
@@ -177,26 +160,6 @@ export class Module<
     return this.define(key, container => {
       const selectDeps = depSelect ? depSelect : () => [];
       return new klass(...(selectDeps(container) as any));
-    });
-  }
-
-  replaceClass<TKey extends keyof D, TResult extends D[TKey]>(
-    key: TKey,
-    klass: ClassType<[], TResult>,
-  ): Module<I, D, AD, C>;
-  replaceClass<TKey extends keyof D, TDeps extends any[], TResult extends D[TKey]>(
-    key: TKey,
-    klass: ClassType<TDeps, TResult>,
-    depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
-  ): Module<I, D, AD, C>;
-  replaceClass<TKey extends keyof D, TDeps extends any[], TResult extends D[TKey]>(
-    key: TKey,
-    klass: ClassType<TDeps, TResult>,
-    depSelect?: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
-  ): Module<I, D, AD, C> {
-    return this.replace(key as any, container => {
-      const selectDeps = depSelect ? depSelect : () => [];
-      return new klass(...(selectDeps(container) as any)) as any;
     });
   }
 
@@ -323,6 +286,27 @@ export class Module<
   //   });
   // }
 
+  // TODO: since we don't provide replace for function, we shouldn't also provide replace for class
+  // replaceClass<TKey extends keyof D, TResult extends D[TKey]>(
+  //     key: TKey,
+  //     klass: ClassType<[], TResult>,
+  // ): Module<I, D, AD, C>;
+  // replaceClass<TKey extends keyof D, TDeps extends any[], TResult extends D[TKey]>(
+  //     key: TKey,
+  //     klass: ClassType<TDeps, TResult>,
+  //     depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
+  // ): Module<I, D, AD, C>;
+  // replaceClass<TKey extends keyof D, TDeps extends any[], TResult extends D[TKey]>(
+  //     key: TKey,
+  //     klass: ClassType<TDeps, TResult>,
+  //     depSelect?: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
+  // ): Module<I, D, AD, C> {
+  //   return this.replace(key as any, container => {
+  //     const selectDeps = depSelect ? depSelect : () => [];
+  //     return new klass(...(selectDeps(container) as any)) as any;
+  //   });
+  // }
+
   defineAsync<K extends string, V, C1>(
     key: K,
     factory: (ctx: DefineAsyncContext<I, D, AD>) => Promise<V>,
@@ -332,7 +316,8 @@ export class Module<
     ) as any;
   }
 
-  //TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
+  // TODO: rename -> replaceModule() ?
+  // TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
   inject<D1, AD1 extends AsyncDefinitionsRecord, I1 extends ImportsRecord, C1>(
     otherModule: Module<I1, D1, AD1, C1>,
   ): Module<I, D, AD, C> {
@@ -344,6 +329,11 @@ export class Module<
     factory: (container: MaterializedModuleEntries<I, D, AD>, C) => FilterPrivateFields<D[K]>,
   ): Module<I, D, AD, C> {
     return this.undeclare(key).define(key as any, factory) as any;
+  }
+
+  // convenient method for providing mocks for testing
+  replaceConst<K extends keyof D, C>(key: K, value: D[K]): Module<I, D, AD, C> {
+    return this.undeclare(key).define(key as any, () => value) as any;
   }
 
   //TODO: should be private. because it breaks typesafety when module is nested? ()

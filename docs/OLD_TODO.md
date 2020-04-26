@@ -65,9 +65,9 @@ export function createApp(container):Application {
 
 * passing proxy object is tricky! we are hiding the fact when dependency would be instantiated
 
-* enable registering const values
-    * builder does not have any external dependency
-    * value is cached in module itself (how to integrate it with mocking ?)
+* ~~enable registering const values~~
+    * ~~builder does not have any external dependency~~
+    * ~~value is cached in module itself (how to integrate it with mocking ?)~~
     
 * enable registering for constAsync()
     * the same 

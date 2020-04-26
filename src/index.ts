@@ -1,15 +1,15 @@
-import { Module, ModuleContext } from './module';
-import { Container } from './Container';
+import { Module, ModuleContext } from './module/module';
+import { Container } from './container/Container';
 import {
   AsyncDefinitionsRecord,
   DefinitionsRecord,
   ExtractModuleRegistryDeclarations,
   ImportsRecord,
   ModuleEntries,
-} from './module-entries';
+} from './module/module-entries';
 
-export * from './module';
-export * from './Container';
+export * from './module/module';
+export * from './container/Container';
 export * from './utils';
 export {
   withContainer,
@@ -60,8 +60,8 @@ export function emptyContainer(ctx: any): Container<any, any, any> {
 // export const withContainer:WithContainerFn = curry(<MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX) => {
 //     return container(module, ctx).get(def);
 // });
-export { AsyncDefinitionsRecord } from './module-entries';
-export { DefinitionsRecord } from './module-entries';
-export { ImportsRecord } from './module-entries';
-export { ExtractModuleRegistryDeclarations } from './module-entries';
-export { MaterializedModuleEntries } from './module-entries';
+export { AsyncDefinitionsRecord } from './module/module-entries';
+export { DefinitionsRecord } from './module/module-entries';
+export { ImportsRecord } from './module/module-entries';
+export { ExtractModuleRegistryDeclarations } from './module/module-entries';
+export { MaterializedModuleEntries } from './module/module-entries';

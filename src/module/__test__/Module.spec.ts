@@ -1,4 +1,4 @@
-import { Container, container, Module, module } from '../lib';
+import { Container, container, Module, module } from '../../index';
 import { expect } from 'chai';
 import { spy } from 'sinon';
 import { expectType, TypeEqual } from 'ts-expect';

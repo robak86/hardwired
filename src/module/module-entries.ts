@@ -1,8 +1,8 @@
-import { Thunk, unwrapThunk, UnwrapThunk } from './utils/thunk';
-import { ModuleId } from './module-id';
-import { AsyncDependencyDefinition } from './utils/async-dependency-resolver';
-import { DependencyResolver } from './DependencyResolver';
-import { ImmutableSet } from './ImmutableSet';
+import { Thunk, unwrapThunk, UnwrapThunk } from '../utils/thunk';
+import { ModuleId } from '../module-id';
+import { AsyncDependencyDefinition } from '../utils/async-dependency-resolver';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { ImmutableSet } from '../ImmutableSet';
 
 export type FactoryFunction<
   I extends ImportsRecord = any,

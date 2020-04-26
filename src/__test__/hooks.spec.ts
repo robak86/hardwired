@@ -1,5 +1,5 @@
-import {module} from '../lib';
-import {useDependency, withContainer} from "../lib";
+import {module} from '../index';
+import {useDependency, withContainer} from "../index";
 import {expect} from 'chai';
 
 describe(`hooks`, () => {

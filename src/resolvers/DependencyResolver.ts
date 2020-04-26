@@ -1,4 +1,4 @@
-import {ContainerCache} from "./container-cache";
+import {ContainerCache} from "../container/container-cache";
 
 export type DependencyResolverFunction<CONT, CTX, VAL> = (container:CONT, context:CTX) => VAL;
 
