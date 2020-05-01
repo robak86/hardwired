@@ -2,10 +2,8 @@ import { Thunk, UnwrapThunk, unwrapThunk } from '../utils/thunk';
 import { ModuleId } from '../module-id';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { ImmutableSet } from '../ImmutableSet';
+import { Module } from './Module';
 
-export type FactoryFunction<I extends ImportsRecord = any, D extends DefinitionsRecord = any> = (
-  ctx: MaterializedModuleEntries<I, D>,
-) => any;
 
 export type DeclarationsFactories<D> = {
   [K in keyof D]: DependencyResolver<any, any, D>;
@@ -23,9 +21,15 @@ export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M exten
   ? D
   : never;
 
+export type ExtractModuleRegistryImports<M extends ModuleEntries> = M extends ModuleEntries<infer I, any> ? I : never;
+
+export type ExtractModuleDeclarations<M extends Module> = M extends ModuleEntries<any, infer D> ? D : never;
+
+export type ExtractModuleImports<M extends Module> = M extends ModuleEntries<infer I, any> ? I : never;
+
 type ImportedModulesRecord = Record<string, Thunk<ModuleEntries<any, any>>>;
 
-export class ModuleEntries<I extends ImportedModulesRecord = any, D extends DefinitionsRecord = any> {
+export class ModuleEntries<I extends ImportedModulesRecord = any, D extends DefinitionsRecord = any, C = any> {
   static empty(name: string): ModuleEntries {
     return new ModuleEntries<any, any>(ModuleId.build(name), ImmutableSet.empty(), ImmutableSet.empty());
   }

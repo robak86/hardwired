@@ -1,4 +1,4 @@
-import { Module } from './module/module';
+import { Module } from './module/Module';
 import { Container } from './container/Container';
 import {
   DefinitionsRecord,
@@ -7,7 +7,7 @@ import {
   ModuleEntries,
 } from './module/module-entries';
 
-export * from './module/module';
+export * from './module/Module';
 export * from './container/Container';
 export * from './utils';
 

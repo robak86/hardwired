@@ -1,7 +1,13 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { Module } from '../module/module';
-import { Thunk, unwrapThunk } from '../utils/thunk';
-import { DefinitionsRecord, ImportsRecord, MaterializedModuleEntries, ModuleEntries } from '../module/module-entries';
+import { FlattenModule, Module } from '../module/Module';
+import { unwrapThunk } from '../utils/thunk';
+import {
+  DefinitionsRecord,
+  ExtractModuleRegistryDeclarations,
+  ImportsRecord,
+  MaterializedModuleEntries,
+  ModuleEntries,
+} from '../module/module-entries';
 import { containerProxyAccessor } from './container-proxy-accessor';
 import { ContainerCache } from './container-cache';
 
@@ -50,6 +56,14 @@ export class Container<I extends ImportsRecord = {}, D extends DefinitionsRecord
     } else {
       return new Container(this.entries, {});
     }
+  }
+
+  deepGet2<M extends FlattenModule<I, D>>(module: M): M {
+    throw new Error('implement me');
+  }
+
+  flatten(): FlattenModule<I, D> {
+    throw new Error('implement me');
   }
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!

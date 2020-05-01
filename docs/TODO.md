@@ -1,6 +1,10 @@
 - deepGet won't be typesafe with context. In order to fix this deepGet needs to recursively collec all registered modules 
 and check if module passed to deepGet is registered in container. If we won't be able to do this, newly ad-hoc registered module
 may miss it's context 
+- module('someName').requires<>(key: 'someKey') // we need to explicitely set key in order to lazyli rebuild 
+ 
+- container.updateContext({}) // it rebuild all dependencies which are connected with context... in practice it will be almost
+always the whole tree, becuase in most of the cases context will be some deeply nested dependency( probabilit leaf)
  
 - ~~migrate unit tests to jest (we need to test react-di)~~
 - investigate if deepGet can be type safe

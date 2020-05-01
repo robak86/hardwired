@@ -1,5 +1,14 @@
-import { Thunk, unwrapThunk } from '../utils/thunk';
-import { DefinitionsRecord, ImportsRecord, MaterializedModuleEntries, ModuleEntries } from './module-entries';
+import { Thunk, UnwrapThunk, unwrapThunk } from '../utils/thunk';
+import {
+  DefinitionsRecord,
+  ExtractModuleDeclarations,
+  ExtractModuleImports,
+  ExtractModuleRegistryDeclarations,
+  ExtractModuleRegistryImports,
+  ImportsRecord,
+  MaterializedModuleEntries,
+  ModuleEntries,
+} from './module-entries';
 import { Container } from '../container/Container';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
@@ -61,6 +70,18 @@ type ModuleWithImport<
   D extends DefinitionsRecord,
   C
 > = NotDuplicated<K, I, Module<I & Record<K, Thunk<ModuleEntries<I1, D1>>>, D, C>>;
+
+export type FlattenModule<I extends ImportsRecord = {}, D extends DefinitionsRecord = {}, C = {}> =
+  | Module<I, D, C>
+  | {
+      [K in keyof I]: UnwrapThunk<I[keyof I]>;
+    };
+// | {
+//     [K in keyof I]: FlattenModule<
+//       ExtractModuleRegistryImports<UnwrapThunk<I[keyof I]>>,
+//       ExtractModuleRegistryDeclarations<UnwrapThunk<I[keyof I]>>
+//     >;
+//   };
 
 export class Module<I extends ImportsRecord = {}, D extends DefinitionsRecord = {}, C = {}> {
   constructor(private definitions: ModuleEntries<I, D>) {}
@@ -193,89 +214,6 @@ export class Module<I extends ImportsRecord = {}, D extends DefinitionsRecord = 
     });
   }
 
-  // TODO: does not work because of currying :/
-  // replaceFunction<TKey extends keyof D, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: () => TResult,
-  // ): Module<I, D, AD, C>;
-  // replaceFunction<TKey extends keyof D, TDep1, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1) => TResult,
-  // ): Module<I, D, AD, C>;
-  // replaceFunction<TKey extends keyof D, TDep1, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1) => TResult,
-  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
-  // ): Module<I, D, AD, C>;
-  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1, d2: TDep2) => TResult,
-  // ): Module<I, D, AD, C>;
-  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1, d2: TDep2) => TResult,
-  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
-  // ): Module<I, D, AD, C>;
-  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1, d2: TDep2) => TResult,
-  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2],
-  // ): Module<I, D, AD, C>;
-  // // 3 args
-  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TDep3, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-  // ): Module<I, D, AD, C>;
-  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TDep3, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1],
-  // ): Module<I, D, AD, C>;
-  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TDep3, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2],
-  // ): Module<I, D, AD, C>;
-  // replaceFunction<TKey extends keyof D, TDep1, TDep2, TDep3, TResult extends ReturnType<D[TKey]>>(
-  //   key: TKey,
-  //   fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-  //   depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => [TDep1, TDep2, TDep3],
-  // ): Module<I, D, AD, C>;
-  // replaceFunction(key, fn, depSelect?): any {
-  //   const curried = curry(fn);
-  //   const select = depSelect ? depSelect : () => [];
-  //   // TODO: container => {...} should be wrapped in some concrete DependencyResolver instance (.e.g CurriedFunctionResolver)
-  //   return this.replace(key, container => {
-  //     const params = select(container);
-  //     if (params.length === fn.length) {
-  //       return () => fn(...params);
-  //     } else {
-  //       return curried(...params);
-  //     }
-  //   });
-  // }
-
-  // TODO: since we don't provide replace for function, we shouldn't also provide replace for class
-  // replaceClass<TKey extends keyof D, TResult extends D[TKey]>(
-  //     key: TKey,
-  //     klass: ClassType<[], TResult>,
-  // ): Module<I, D, AD, C>;
-  // replaceClass<TKey extends keyof D, TDeps extends any[], TResult extends D[TKey]>(
-  //     key: TKey,
-  //     klass: ClassType<TDeps, TResult>,
-  //     depSelect: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
-  // ): Module<I, D, AD, C>;
-  // replaceClass<TKey extends keyof D, TDeps extends any[], TResult extends D[TKey]>(
-  //     key: TKey,
-  //     klass: ClassType<TDeps, TResult>,
-  //     depSelect?: (ctx: MaterializedModuleEntries<I, D, AD>) => TDeps,
-  // ): Module<I, D, AD, C> {
-  //   return this.replace(key as any, container => {
-  //     const selectDeps = depSelect ? depSelect : () => [];
-  //     return new klass(...(selectDeps(container) as any)) as any;
-  //   });
-  // }
-
   // TODO: rename -> replaceModule() ?
   // TODO: make sure that inject replaces all module occurrences - given module can be imported many times - write specs
   inject<D1, I1 extends ImportsRecord, C1>(otherModule: Module<I1, D1, C1>): Module<I, D, C> {
@@ -307,10 +245,6 @@ export class Module<I extends ImportsRecord = {}, D extends DefinitionsRecord = 
   }
 
   toContainer(ctx: C): Container<I, D> {
-    return new Container(this.entries, ctx);
-  }
-
-  async buildAsyncContainer(ctx: C): Promise<Container<I, D, C>> {
     return new Container(this.entries, ctx);
   }
 }
