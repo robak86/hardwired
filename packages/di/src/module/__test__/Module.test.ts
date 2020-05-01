@@ -31,14 +31,14 @@ describe(`Module`, () => {
     describe(`types`, () => {
       it(`creates module with correct generic types for class with no constructor args`, async () => {
         const m1 = module('m1').defineClass('class0', Class0);
-        expectType<TypeEqual<typeof m1, Module<{}, { class0: Class0 }, {}, {}>>>(true);
+        expectType<TypeEqual<typeof m1, Module<{}, { class0: Class0 }, {}>>>(true);
       });
 
       it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
         const m1 = module('m1')
           .define('d1', () => 123)
           .defineClass('class1', Class1, ctx => [ctx.d1]);
-        expectType<TypeEqual<typeof m1, Module<{}, { class1: Class1; d1: number }, {}, {}>>>(true);
+        expectType<TypeEqual<typeof m1, Module<{}, { class1: Class1; d1: number }, {}>>>(true);
       });
 
       it(`creates module with correct generic types for class with 2 constructor arg`, async () => {
@@ -46,7 +46,7 @@ describe(`Module`, () => {
           .define('d1', () => 123)
           .define('d2', () => '123')
           .defineClass('class2', Class2, ctx => [ctx.d1, ctx.d2]);
-        expectType<TypeEqual<typeof m1, Module<{}, { class2: Class2; d1: number; d2: string }, {}, {}>>>(true);
+        expectType<TypeEqual<typeof m1, Module<{}, { class2: Class2; d1: number; d2: string }, {}>>>(true);
       });
     });
 
@@ -98,13 +98,13 @@ describe(`Module`, () => {
       it(`creates correct module type for function without any dependencies`, async () => {
         const someFunction = () => 123;
         const m = module('m1').defineFunction('noDepsFunction', someFunction);
-        expectType<TypeEqual<typeof m, Module<{}, { noDepsFunction: () => number }, {}, {}>>>(true);
+        expectType<TypeEqual<typeof m, Module<{}, { noDepsFunction: () => number }, {}>>>(true);
       });
 
       it(`creates correct module type for function with single parameter`, async () => {
         const someFunction = (someParam: string) => 123;
         const m = module('m1').defineFunction('noDepsFunction', someFunction);
-        expectType<TypeEqual<typeof m, Module<{}, { noDepsFunction: (param: string) => number }, {}, {}>>>(true);
+        expectType<TypeEqual<typeof m, Module<{}, { noDepsFunction: (param: string) => number }, {}>>>(true);
       });
 
       it(`creates correct module type for function with single parameter with all deps provided`, async () => {
@@ -113,7 +113,7 @@ describe(`Module`, () => {
           .define('someString', () => 'someString')
           .defineFunction('noDepsFunction', someFunction, ctx => [ctx.someString]);
 
-        expectType<TypeEqual<typeof m, Module<{}, { someString: string; noDepsFunction: () => number }, {}, {}>>>(true);
+        expectType<TypeEqual<typeof m, Module<{}, { someString: string; noDepsFunction: () => number }, {}>>>(true);
       });
 
       it(`creates correct module type for function with two parameters with no deps provided`, async () => {
@@ -133,7 +133,6 @@ describe(`Module`, () => {
                 someNumber: number;
                 noDepsFunction: (d1: string, d2: number) => number;
               },
-              {},
               {}
             >
           >
@@ -148,10 +147,7 @@ describe(`Module`, () => {
           .defineFunction('noDepsFunction', someFunction, ctx => [ctx.someString, ctx.someNumber]);
 
         expectType<
-          TypeEqual<
-            typeof m,
-            Module<{}, { someString: string; someNumber: number; noDepsFunction: () => number }, {}, {}>
-          >
+          TypeEqual<typeof m, Module<{}, { someString: string; someNumber: number; noDepsFunction: () => number }, {}>>
         >(true);
       });
     });
@@ -230,9 +226,9 @@ describe(`Module`, () => {
           .define('number', () => 123)
           .define('string', () => 'str');
 
-        expectType<
-          TypeEqual<typeof m, Module<{}, { number: number; string: string }, {}, { externalDependency: number }>>
-        >(true);
+        expectType<TypeEqual<typeof m, Module<{}, { number: number; string: string }, { externalDependency: number }>>>(
+          true,
+        );
       });
 
       it(`does not allow duplicates`, async () => {
@@ -291,7 +287,7 @@ describe(`Module`, () => {
           .define('b', () => '2')
           .toContainer({});
 
-        expectType<TypeEqual<typeof c1, Container<{}, { a: number; b: string }, {}, {}>>>(true);
+        expectType<TypeEqual<typeof c1, Container<{}, { a: number; b: string }, {}>>>(true);
       });
     });
   });
@@ -494,7 +490,6 @@ describe(`Module`, () => {
           .define('s2', f2)
           .define('s3_s1', c => [c.m1.s3, c.s1])
           .define('s4_s2', c => [c.m1.s4, c.s2]);
-
 
         let cnt = container(m2, { someCtxVal: 1 });
 
