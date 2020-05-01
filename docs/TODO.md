@@ -1,3 +1,7 @@
+- deepGet won't be typesafe with context. In order to fix this deepGet needs to recursively collec all registered modules 
+and check if module passed to deepGet is registered in container. If we won't be able to do this, newly ad-hoc registered module
+may miss it's context 
+ 
 - ~~migrate unit tests to jest (we need to test react-di)~~
 - investigate if deepGet can be type safe
   - it would require flattening of imports into union of types <I,D, AD, C>
