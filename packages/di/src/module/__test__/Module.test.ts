@@ -1,6 +1,5 @@
 import { Container, container, Module, module } from '../../index';
-import { expect } from 'chai';
-import { spy } from 'sinon';
+
 import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`Module`, () => {
@@ -9,12 +8,12 @@ describe(`Module`, () => {
       let otherModule = module('someName');
       let rootModule = module('someOtherModule').import('otherModule', otherModule);
 
-      expect(rootModule.hasModule('otherModule')).to.eq(true);
+      expect(rootModule.hasModule('otherModule')).toEqual(true);
     });
 
     it(`returns false if module is missing`, async () => {
       let otherModule = module('otherModule');
-      expect((otherModule as any).hasModule('otherModule')).to.eq(false);
+      expect((otherModule as any).hasModule('otherModule')).toEqual(false);
     });
 
     it(`returns new instance of module (doesn't mutate original module)`, async () => {});
@@ -59,17 +58,17 @@ describe(`Module`, () => {
         .toContainer({});
 
       it(`returns instance of given class`, async () => {
-        expect(m.get('class2')).to.be.instanceOf(Class2);
+        expect(m.get('class2')).toBeInstanceOf(Class2);
       });
 
       it(`instantiates class with correct params`, async () => {
         const class2 = m.get('class2');
-        expect(class2.arg1).to.eq(m.get('d1'));
-        expect(class2.arg2).to.eq(m.get('d2'));
+        expect(class2.arg1).toEqual(m.get('d1'));
+        expect(class2.arg2).toEqual(m.get('d2'));
       });
 
       it(`caches instance of the class`, async () => {
-        expect(m.get('class2')).to.eq(m.get('class2'));
+        expect(m.get('class2')).toEqual(m.get('class2'));
       });
     });
   });
@@ -83,14 +82,14 @@ describe(`Module`, () => {
 
       let updatedRoot = rootModule.import('c2', childModule2);
 
-      expect((<any>rootModule).hasModule('c2')).to.eq(false);
+      expect((<any>rootModule).hasModule('c2')).toEqual(false);
     });
 
     it(`supports thunks`, async () => {
       let childModule1 = module('child1');
       let rootModule = module('someOtherModule').import('c1', () => childModule1);
 
-      expect(rootModule.hasModule('c1')).to.eq(true);
+      expect(rootModule.hasModule('c1')).toEqual(true);
     });
   });
 
@@ -168,9 +167,9 @@ describe(`Module`, () => {
           .defineFunction('curry2', someFunction, ctx => [ctx.d1, ctx.d2])
           .toContainer({});
 
-        expect(m.get('curry0')('string', 123)).to.eql(['string', 123]);
-        expect(m.get('curry1')(123)).to.eql(['dependency1', 123]);
-        expect(m.get('curry2')()).to.eql(['dependency1', 123]);
+        expect(m.get('curry0')('string', 123)).toEqual(['string', 123]);
+        expect(m.get('curry1')(123)).toEqual(['dependency1', 123]);
+        expect(m.get('curry2')()).toEqual(['dependency1', 123]);
       });
 
       it(`caches curried functions`, async () => {
@@ -183,9 +182,9 @@ describe(`Module`, () => {
           .defineFunction('curry2', someFunction, ctx => [ctx.d1, ctx.d2])
           .toContainer({});
 
-        expect(m.get('curry0')).to.eq(m.get('curry0'));
-        expect(m.get('curry1')).to.eq(m.get('curry1'));
-        expect(m.get('curry2')).to.eq(m.get('curry2'));
+        expect(m.get('curry0')).toEqual(m.get('curry0'));
+        expect(m.get('curry1')).toEqual(m.get('curry1'));
+        expect(m.get('curry2')).toEqual(m.get('curry2'));
       });
     });
   });
@@ -196,7 +195,7 @@ describe(`Module`, () => {
   //     const functionOverride = () => 2;
   //
   //     const m = module('m1').defineFunction('f1', someFunction);
-  //     expect(m.toContainer({}).get('f1')()).to.eq(1);
+  //     expect(m.toContainer({}).get('f1')()).toEqual(1);
   //
   //     const mWithOverride = m.replaceFunction('f1', functionOverride);
   //   });
@@ -206,10 +205,10 @@ describe(`Module`, () => {
   //     const functionOverride = (arg1: number) => 2;
   //
   //     const m = module('m1').defineFunction('f1', someFunction);
-  //     expect(m.toContainer({}).get('f1')(1)).to.eq(1);
+  //     expect(m.toContainer({}).get('f1')(1)).toEqual(1);
   //
   //     const mWithOverride = m.replaceFunction('f1', functionOverride);
-  //     expect(mWithOverride.toContainer({}).get('f1')(1)).to.eq(2);
+  //     expect(mWithOverride.toContainer({}).get('f1')(1)).toEqual(2);
   //   });
   //
   //   it(`replaces previously registered function without any params`, async () => {
@@ -217,10 +216,10 @@ describe(`Module`, () => {
   //     const functionOverride = () => 2;
   //
   //     const m = module('m1').defineFunction('f1', someFunction, ctx => [1]);
-  //     expect(m.toContainer({}).get('f1')()).to.eq(1);
+  //     expect(m.toContainer({}).get('f1')()).toEqual(1);
   //
   //     const mWithOverride = m.replace('f1', () => functionOverride);
-  //     expect(mWithOverride.toContainer({}).get('f1')()).to.eq(2);
+  //     expect(mWithOverride.toContainer({}).get('f1')()).toEqual(2);
   //   });
   // });
 
@@ -252,7 +251,7 @@ describe(`Module`, () => {
 
       let m1 = module('otherModule').define('someType', () => new SomeType());
 
-      expect(m1.isDeclared('someType')).to.eq(true);
+      expect(m1.isDeclared('someType')).toEqual(true);
     });
 
     it(`does not mutate original module`, async () => {
@@ -260,9 +259,9 @@ describe(`Module`, () => {
 
       let m2 = m1.define('someNewType', () => 123);
 
-      expect(m1.isDeclared('someNewType' as any)).to.eq(false);
-      expect(m2.isDeclared('someNewType')).to.eq(true);
-      expect(m2.isDeclared('someType')).to.eq(true);
+      expect(m1.isDeclared('someNewType' as any)).toEqual(false);
+      expect(m2.isDeclared('someNewType')).toEqual(true);
+      expect(m2.isDeclared('someType')).toEqual(true);
     });
 
     it(`returns new instance of module (doesn't mutate original module)`, async () => {});
@@ -276,11 +275,11 @@ describe(`Module`, () => {
 
       let m2 = m1.undeclare('a');
 
-      expect(m1.isDeclared('a')).to.eq(true);
-      expect(m1.isDeclared('b')).to.eq(true);
+      expect(m1.isDeclared('a')).toEqual(true);
+      expect(m1.isDeclared('b')).toEqual(true);
 
-      expect((<any>m2).isDeclared('a')).to.eq(false);
-      expect(m2.isDeclared('b')).to.eq(true);
+      expect((<any>m2).isDeclared('a')).toEqual(false);
+      expect(m2.isDeclared('b')).toEqual(true);
     });
   });
 
@@ -302,7 +301,7 @@ describe(`Module`, () => {
       let m1 = module('m1').define('a', () => 1);
 
       let updated = m1.replace('a', () => 2);
-      expect(updated.toContainer({}).get('a')).to.eq(2);
+      expect(updated.toContainer({}).get('a')).toEqual(2);
     });
   });
 
@@ -328,11 +327,11 @@ describe(`Module`, () => {
 
         let materializedContainer = m1.toContainer({});
 
-        expect(materializedContainer.get('t1').type).to.eq('t1');
-        expect(materializedContainer.get('t2').type).to.eq('t2');
-        expect(materializedContainer.get('t1_t2').map(t => t.type)).to.eql(['t1', 't2']);
+        expect(materializedContainer.get('t1').type).toEqual('t1');
+        expect(materializedContainer.get('t2').type).toEqual('t2');
+        expect(materializedContainer.get('t1_t2').map(t => t.type)).toEqual(['t1', 't2']);
 
-        expect([materializedContainer.get('t1').id, materializedContainer.get('t2').id]).to.eql(
+        expect([materializedContainer.get('t1').id, materializedContainer.get('t2').id]).toEqual(
           materializedContainer.get('t1_t2').map(t => t.id),
         );
       });
@@ -347,7 +346,7 @@ describe(`Module`, () => {
           .define('t1', () => new T1());
 
         const t1 = b.toContainer({}).deepGet(a, 't1');
-        expect(t1.type).to.eq('t1');
+        expect(t1.type).toEqual('t1');
       });
     });
 
@@ -367,8 +366,8 @@ describe(`Module`, () => {
           .define('t2WithChildT2', p => [p.t1, p.childModule.t2]);
 
         let cont = container(m1, {});
-        expect(cont.get('t1FromChildModule').id).to.eql(cont.deepGet(childM, 't1').id);
-        expect(cont.get('t2FromChildModule').id).to.eql(cont.deepGet(childM, 't2').id);
+        expect(cont.get('t1FromChildModule').id).toEqual(cont.deepGet(childM, 't1').id);
+        expect(cont.get('t2FromChildModule').id).toEqual(cont.deepGet(childM, 't2').id);
       });
     });
 
@@ -391,8 +390,8 @@ describe(`Module`, () => {
             .define('s2', () => 11);
 
           const obj = m2.toContainer({}).asObject();
-          expect(obj.s2).to.eq(11);
-          expect(obj.m1.v1).to.eq(1);
+          expect(obj.s2).toEqual(11);
+          expect(obj.m1.v1).toEqual(1);
         });
       });
 
@@ -404,16 +403,16 @@ describe(`Module`, () => {
 
           const [s1, s2] = m1.toContainer({}).getMany('s1', 's2');
 
-          expect(s1).to.eq(1);
-          expect(s2).to.eq('str');
+          expect(s1).toEqual(1);
+          expect(s2).toEqual('str');
         });
       });
 
       it(`resolves all dependencies lazily`, async () => {
-        let f1 = spy(() => 123);
-        let f2 = spy(() => 456);
-        let f3 = spy(() => 678);
-        let f4 = spy(() => 9);
+        let f1 = jest.fn().mockReturnValue(() => 123);
+        let f2 = jest.fn().mockReturnValue(() => 456);
+        let f3 = jest.fn().mockReturnValue(() => 678);
+        let f4 = jest.fn().mockReturnValue(() => 9);
 
         let m1 = module('m1').define('s3', f3).define('s4', f4);
 
@@ -422,20 +421,20 @@ describe(`Module`, () => {
         let cnt = m2.toContainer({});
 
         cnt.get('s1');
-        expect(f1.calledOnce).to.eq(true);
+        expect(f1).toBeCalledTimes(1);
 
-        expect(f2.calledOnce).to.eq(false);
-        expect(f3.calledOnce).to.eq(false);
-        expect(f4.calledOnce).to.eq(false);
+        expect(f2).toBeCalledTimes(0);
+        expect(f3).toBeCalledTimes(0);
+        expect(f4).toBeCalledTimes(0);
       });
 
       it(`caches all initialized dependencies`, async () => {
-        let f1 = spy(() => 123);
-        let f2 = spy(() => 456);
-        let f3 = spy(() => 678);
-        let f4 = spy(() => 9);
-        let f5 = spy(() => 9);
-        let f6 = spy(() => 9);
+        let f1 = jest.fn().mockReturnValue(() => 123);
+        let f2 = jest.fn().mockReturnValue(() => 456);
+        let f3 = jest.fn().mockReturnValue(() => 678);
+        let f4 = jest.fn().mockReturnValue(() => 9);
+        let f5 = jest.fn().mockReturnValue(() => 9);
+        let f6 = jest.fn().mockReturnValue(() => 9);
 
         let c = module('c')
           .define('f1', f1)
@@ -473,19 +472,19 @@ describe(`Module`, () => {
         cnt.deepGet(c, 'f2');
         cnt.deepGet(c, 'f1+f2');
 
-        expect(f1.calledOnce).to.eq(true);
-        expect(f2.calledOnce).to.eq(true);
-        expect(f3.calledOnce).to.eq(true);
-        expect(f4.calledOnce).to.eq(true);
-        expect(f5.calledOnce).to.eq(true);
-        expect(f6.calledOnce).to.eq(true);
+        expect(f1).toBeCalledTimes(1);
+        expect(f2).toBeCalledTimes(1);
+        expect(f3).toBeCalledTimes(1);
+        expect(f4).toBeCalledTimes(1);
+        expect(f5).toBeCalledTimes(1);
+        expect(f6).toBeCalledTimes(1);
       });
 
       it(`calls all dependecies factory functions with correct context`, async () => {
-        let f1 = spy((...args: any[]) => 123);
-        let f2 = spy((...args: any[]) => 456);
-        let f3 = spy((...args: any[]) => 678);
-        let f4 = spy((...args: any[]) => 9);
+        let f1 = jest.fn().mockReturnValue((...args: any[]) => 123);
+        let f2 = jest.fn().mockReturnValue((...args: any[]) => 456);
+        let f3 = jest.fn().mockReturnValue((...args: any[]) => 678);
+        let f4 = jest.fn().mockReturnValue((...args: any[]) => 9);
 
         let m1 = module('m1').define('s3', f3).define('s4', f4);
 
@@ -496,6 +495,7 @@ describe(`Module`, () => {
           .define('s3_s1', c => [c.m1.s3, c.s1])
           .define('s4_s2', c => [c.m1.s4, c.s2]);
 
+
         let cnt = container(m2, { someCtxVal: 1 });
 
         cnt.get('s1');
@@ -505,10 +505,10 @@ describe(`Module`, () => {
         cnt.deepGet(m1, 's3');
         cnt.deepGet(m1, 's4');
 
-        expect(f1.getCalls()[0].args[1]).to.eql({ someCtxVal: 1 });
-        expect(f2.getCalls()[0].args[1]).to.eql({ someCtxVal: 1 });
-        expect(f3.getCalls()[0].args[1]).to.eql({ someCtxVal: 1 });
-        expect(f4.getCalls()[0].args[1]).to.eql({ someCtxVal: 1 });
+        expect(f1.mock.calls[0][1]).toEqual({ someCtxVal: 1 });
+        expect(f2.mock.calls[0][1]).toEqual({ someCtxVal: 1 });
+        expect(f3.mock.calls[0][1]).toEqual({ someCtxVal: 1 });
+        expect(f4.mock.calls[0][1]).toEqual({ someCtxVal: 1 });
       });
 
       //TODO: Maximum call stack size exceeded
@@ -539,14 +539,13 @@ describe(`Module`, () => {
 
       let m1Overrides = m1.replace('val', c => 2);
 
-
       let mocked = m3.inject(m1Overrides);
 
-      expect(container(mocked, {}).get('val')).to.eq(2);
-      expect(container(mocked, {}).deepGet(m1, 'val')).to.eq(2);
-      expect(container(mocked, {}).deepGet(m2, 'valFromChild')).to.eq(2);
-      expect(container(mocked, {}).deepGet(m1, 'val')).to.eq(2);
-      expect(m3).not.to.eq(mocked);
+      expect(container(mocked, {}).get('val')).toEqual(2);
+      expect(container(mocked, {}).deepGet(m1, 'val')).toEqual(2);
+      expect(container(mocked, {}).deepGet(m2, 'valFromChild')).toEqual(2);
+      expect(container(mocked, {}).deepGet(m1, 'val')).toEqual(2);
+      expect(m3).not.toEqual(mocked);
     });
   });
 });

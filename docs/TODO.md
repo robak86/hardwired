@@ -1,4 +1,22 @@
-- migrate unit tests to jest (we need to test react-di)
+- ~~migrate unit tests to jest (we need to test react-di)~~
+- investigate if deepGet can be type safe
+  - it would require flattening of imports into union of types <I,D, AD, C>
+  - if it is typesafe then we would have to create factory for all react api - `const {useContainer, ContainerProvider} = createContainer(module)`
+  - if typesafe is not type safe, then we could consider feature for extending current(parent) container with additional modules
+  ```
+    const A = () {
+      return <ContainerProvider module={module1}>
+                <ContainerProvider module={module2}>
+
+                </>
+        </> // but this is not typesafe and can be easily replaced by dynamic container extension while calling deepGet with unknown module
+    }
+  ```
+- add methods for checking equality
+  - if two container are equal - it means they have exactly the same definitions and imports
+- replace ts-jest with babel and run jest on already transpiled files
+- add checks for definition (cannot return null and undefined)
+- add .require() for external params (acts similary to import, but expect parameters to be provided at container builds step)
 
 `module` may be in collision with node's module
 
@@ -9,6 +27,9 @@
 - check if containers should be explicitely disposed (in order to remove references to module entries)
 
 - ~~add convenience methods for~~
+
+- Lazy loading for the web
+- eager container for browser not supporting es6 proxy
 
 ```typescript
 const m1 = module('name1').defineFunction('someFunction', someFunction, ctx => [ctx.dep1, ctx.dep2, ctx.dep3]); // returns curried version of someFunction
@@ -69,6 +90,26 @@ const wrapper = mount(
 // How to inject deps into saga ?! sagas should be also registered in container ? check implementation of selecting state from saga (they somehow use context)
 ```
 
+- New scope for a container ?
+
+```typescript jsx
+function App() {
+  return (
+    <HardwiredContainer module={appModule} context={{someParam: 1}}>
+      <HardwiredScope>
+        <MyComponent />
+      </HardwiredScope>
+      <HardwiredScope>
+        <MyComponent />
+      </HardwiredScope>
+    </HardwiredContainer>
+  );
+}
+```
+
+- composition using module granularity
+    - multiple ```HardwiredContainer``` with different modules, reusing instances from parent container
+
 - checkout method (used for explicitely creating new container scope, with or withour inherited properties)
 
 ```typescript
@@ -76,7 +117,9 @@ function app(container) {
   use('someRoute', (req, res) => container.checkout().get('handler')(req, res));
 }
 ```
-... or instead 
+
+... or instead
+
 ```typescript
-const m1 = module().define('handler', )
+const m1 = module().define('handler');
 ```
