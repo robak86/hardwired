@@ -31,7 +31,7 @@ someMethod: ExtractedComplexType = (p1,p2,p3) => {
 
  */
 
-type ClassType<TConstructorArgs extends any[], TInstance> = {
+export type ClassType<TConstructorArgs extends any[], TInstance> = {
   new (...args: TConstructorArgs): TInstance;
 };
 
