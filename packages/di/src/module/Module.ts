@@ -1,16 +1,9 @@
-// type ModuleRegistry<I, D, C> = {
-//   imports: I;
-//   declarations: D;
-//   context: C;
-// };
-
-import { ImmutableSet } from '../ImmutableSet';
-
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
 import { Thunk, unwrapThunk, UnwrapThunk } from '../utils/thunk';
 import { curry } from '../utils/curry';
 import { Container } from '..';
+import { DefinitionsSet } from './module-entries';
 
 export type Definition<T> = { definition: T };
 
@@ -43,8 +36,6 @@ export type MaterializedImports<R extends ModuleDefinitions> = {
 export type MaterializedModuleEntries<R extends ModuleDefinitions> = MaterializedDefinitions<R> &
   MaterializedImports<R>;
 
-export type DefinitionsSet<R> = ImmutableSet<any>; //TODO: Remap R to support resolver types
-
 export type ClassType<TConstructorArgs extends any[], TInstance> = {
   new (...args: TConstructorArgs): TInstance;
 };
@@ -57,14 +48,14 @@ type FilterPrivateFields<T> = T extends Function
 
 // TODO: add moduleId and name
 export class Module<R extends ModuleDefinitions, C = {}> {
-  constructor(public definition: DefinitionsSet<R>) {}
+  constructor(public entries: DefinitionsSet<R>) {}
 
   hasModule(key: ImportsKeys<R>): boolean {
-    return this.definition.hasKey(key); // TODO: hacky - because we cannot be sure that this key is a module and not a import
+    return this.entries.hasImport(key); // TODO: hacky - because we cannot be sure that this key is a module and not a import
   }
 
   isDeclared(key: DefinitionsKeys<R>): boolean {
-    return this.definition.hasKey(key);
+    return this.entries.hasDeclaration(key);
   }
 
   define<K extends string, V, C1>(
@@ -82,7 +73,7 @@ export class Module<R extends ModuleDefinitions, C = {}> {
       | ((container: MaterializedModuleEntries<R>, ctx: C1) => V),
   ): NextModuleDefinition<K, V, R, C, C1> {
     const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
-    return new Module(this.definition.set(key, resolver)) as any;
+    return new Module(this.entries.extendDeclarations(key, resolver)) as any;
   }
 
   defineConst<TKey extends string, TValue>(key: TKey, value: TValue): NextModuleDefinition<TKey, TValue, R, C, C> {
@@ -173,8 +164,8 @@ export class Module<R extends ModuleDefinitions, C = {}> {
 
   // TODO: use Flatten to make this method type safe
   inject<TNextR extends ModuleDefinitions>(otherModule: Module<TNextR>): Module<R> {
-    throw new Error('Implement me');
-    // return new Module(this.definitions.inject(otherModule.entries));
+
+    return new Module(this.entries.inject(otherModule.entries));
   }
 
   replace<K extends DefinitionsKeys<R>, C>(
@@ -191,18 +182,18 @@ export class Module<R extends ModuleDefinitions, C = {}> {
 
   //TODO: should be private. because it breaks typesafety when module is nested? ()
   undeclare<K extends DefinitionsKeys<R>>(key: K): Module<Omit<R, K>, C> {
-    return new Module(this.definition.remove(key)) as any;
+    return new Module(this.entries.removeDeclaration(key)) as any;
   }
 
   import<K extends string, TImportedR extends ModuleDefinitions>(
     key: K,
     mod2: Thunk<Module<TImportedR>>,
   ): NextModuleImport<K, Module<TImportedR>, R, C, C> {
-    return new Module(this.definition.set(key, unwrapThunk(mod2).definition)) as any;
+    return new Module(this.entries.extendImports(key, unwrapThunk(mod2).entries)) as any;
   }
 
   toContainer(ctx: C): Container<R> {
-    return new Container(this.definition, ctx);
+    return new Container(this.entries, ctx);
   }
 }
 

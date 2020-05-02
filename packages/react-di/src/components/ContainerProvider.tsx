@@ -3,7 +3,7 @@ import { FunctionComponent, useContext, useMemo } from 'react';
 import { Container, Module, module } from '@hardwired/di';
 
 type HardwiredContext = {
-  container: Container<any, any, any>;
+  container: Container<any>;
 };
 
 const ContainerContext = React.createContext<HardwiredContext>({ container: module('emptyModule').toContainer({}) });
@@ -13,7 +13,7 @@ export const useContainer = () => {
 };
 
 export type ContainerProviderProps = {
-  module: Module<any, any, any>;
+  module: Module<any>;
 };
 
 export const ContainerProvider: FunctionComponent<ContainerProviderProps> = ({ children, module }) => {

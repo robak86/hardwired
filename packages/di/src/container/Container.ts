@@ -2,21 +2,23 @@ import { DependencyResolver } from '../resolvers/DependencyResolver';
 import {
   Definitions,
   DefinitionsKeys,
-  DefinitionsSet,
   MaterializedDefinitions,
   MaterializedModuleEntries,
   Module,
   ModuleDefinitions,
 } from '../module/Module';
 import { unwrapThunk } from '../utils/thunk';
-import { ModuleEntries } from '../module/module-entries';
 import { containerProxyAccessor } from './container-proxy-accessor';
 import { ContainerCache } from './container-cache';
+import { DefinitionsSet } from '../module/module-entries';
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
+
   <K extends keyof D, K2 extends keyof D>(key: K, key2: K2): [D[K], D[K2]];
+
   <K extends keyof D, K2 extends keyof D, K3 extends keyof D>(key: K, key2: K2, key3: K3): [D[K], D[K2], D[K3]];
+
   <K extends keyof D, K2 extends keyof D, K3 extends keyof D, K4 extends keyof D>(
     key: K,
     key2: K2,
@@ -30,7 +32,9 @@ interface GetMany<D> {
 export class Container<R extends ModuleDefinitions = {}, C = {}> {
   private cache: ContainerCache = new ContainerCache();
 
-  constructor(private entries: DefinitionsSet<R>, private context: C) {}
+  constructor(private entries: DefinitionsSet<R>, private context: C) {
+    console.log(entries)
+  }
 
   get = <K extends DefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
     //if is async container check if asyncDependenciesInitialized is true. if not throw an error
@@ -73,7 +77,7 @@ export class Container<R extends ModuleDefinitions = {}, C = {}> {
     module: Module<TNextR>,
     key: K,
   ): MaterializedModuleEntries<TNextR>[K] {
-    let childModule: ModuleEntries | undefined = unwrapThunk(this.findModule(module.entries)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
+    let childModule: DefinitionsSet<any> | undefined = unwrapThunk(this.findModule(module.entries)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
     if (!childModule) {
       console.warn('deepGet called with module which is not imported by any descendant module');
@@ -90,7 +94,7 @@ export class Container<R extends ModuleDefinitions = {}, C = {}> {
     // }
   }
 
-  private findModule(moduleIdentity: ModuleEntries): ModuleEntries | undefined {
+  private findModule(moduleIdentity: DefinitionsSet<any>): DefinitionsSet<any> | undefined {
     return this.entries.findModule(moduleIdentity);
   }
 
