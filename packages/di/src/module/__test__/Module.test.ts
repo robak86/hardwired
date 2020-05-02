@@ -1,4 +1,13 @@
-import { Container, container, Definition, Module, module } from '../../index';
+import {
+  Container,
+  container,
+  Definition,
+  Definitions, DefinitionsKeys,
+  FlattenModules, Imports,
+  ImportsKeys,
+  Module,
+  module
+} from "../../index";
 
 import { expectType, TypeEqual } from 'ts-expect';
 
@@ -550,7 +559,13 @@ describe(`Module`, () => {
         .define('val', c => c.child2.valFromChild);
 
       // const a = m2.toContainer({}).flatten();
-      // m2.toContainer({}).deepGet2(m1);
+
+      type ZZZ = FlattenModules<typeof m3.debug>;
+      type ZZZZZ = ImportsKeys<typeof m3.debug>;
+      type Def = Definitions<typeof m3.debug>;
+      type Imp = Imports<typeof m3.debug>;
+
+      m2.toContainer({}).deepGet(m2, 'child');
 
       let m1Overrides = m1.replace('val', c => 2);
 

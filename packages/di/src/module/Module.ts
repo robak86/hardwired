@@ -16,6 +16,7 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
 type NextModuleDefinition<K extends string, V, R extends ModuleDefinitions, C, C1> = NotDuplicated<
   K,
   R,
+  // Module<R & Record<K, Definition<V>>>
   Module<R & Record<K, Definition<V>>>
 >;
 
@@ -48,6 +49,8 @@ type FilterPrivateFields<T> = T extends Function
 
 // TODO: add moduleId and name
 export class Module<R extends ModuleDefinitions, C = {}> {
+  public debug: R;
+
   constructor(public entries: DefinitionsSet<R>) {}
 
   hasModule(key: ImportsKeys<R>): boolean {
@@ -164,7 +167,6 @@ export class Module<R extends ModuleDefinitions, C = {}> {
 
   // TODO: use Flatten to make this method type safe
   inject<TNextR extends ModuleDefinitions>(otherModule: Module<TNextR>): Module<R> {
-
     return new Module(this.entries.inject(otherModule.entries));
   }
 
@@ -197,30 +199,26 @@ export class Module<R extends ModuleDefinitions, C = {}> {
   }
 }
 
-const module = <I extends Record<string, Module<any>>, D extends Record<string, Definition<any>>>() => {
-  return new Module<{ [K in keyof (I & D)]: (I & D)[K] }>(null as any);
-};
-
-const a = module<{}, { z: Definition<number> }>();
-const ap = module<{}, { z2: Definition<number> }>();
-
-const b = module<{ imported: typeof a }, { z: Definition<number>; j: Definition<string> }>();
-const c = module<{ imported: typeof b; imported2: typeof ap }, { z: Definition<number>; j: Definition<string> }>();
-
 type DefinitionsUnion<T> = {
   [K in keyof T]: T[K] extends Definition<any> ? T[K] : never;
 }[keyof T];
 
 export type DefinitionsKeys<T> = { [K in keyof T]: T[K] extends Definition<any> ? K : never }[keyof T];
-export type Definitions<T> = Pick<T, DefinitionsKeys<T>>;
+export type Definitions<T> = { [K in DefinitionsKeys<T>]: T[K] };
 
 export type ImportsKeys<T> = { [K in keyof T]: UnwrapThunk<T[K]> extends Module<any> ? K : never }[keyof T];
 export type Imports<T> = {
-  [K in keyof Pick<T, ImportsKeys<T>>]: Pick<T, ImportsKeys<T>>[K] extends Module<infer R> ? R : never;
+  [K in ImportsKeys<T>]: T[K] extends Module<infer R> ? R : never;
 };
 
-type FlattenModules<R extends ModuleDefinitions> =
-  | (R extends ModuleDefinitions ? Module<R> : R)
+// export type FlattenModules<R extends ModuleDefinitions> =
+//   | (R extends ModuleDefinitions ? Module<R> : R)
+//   | {
+//       [K in keyof Imports<R>]: FlattenModules<Imports<R>[K]>;
+//     }[keyof Imports<R>];
+
+export type FlattenModules<R extends ModuleDefinitions> =
+  | Definitions<R extends Module<infer RR> ? RR : R>
   | {
       [K in keyof Imports<R>]: FlattenModules<Imports<R>[K]>;
     }[keyof Imports<R>];

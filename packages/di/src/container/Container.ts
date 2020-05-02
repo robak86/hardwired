@@ -73,7 +73,7 @@ export class Container<R extends ModuleDefinitions = {}, C = {}> {
   // }
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
-  deepGet<TNextR extends ModuleDefinitions, K extends keyof MaterializedModuleEntries<TNextR>>(
+  deepGet<TNextR extends R, K extends keyof MaterializedModuleEntries<TNextR>>(
     module: Module<TNextR>,
     key: K,
   ): MaterializedModuleEntries<TNextR>[K] {
