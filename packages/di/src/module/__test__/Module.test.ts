@@ -58,10 +58,7 @@ describe(`Module`, () => {
           .define('d2', () => '123')
           .defineClass('class2', Class2, ctx => [ctx.d1, ctx.d2]);
         expectType<
-          TypeEqual<
-            typeof m1,
-            Module<{ class2: Definition<Class2>; d1: Definition<number>; d2: Definition<string> }, {}>
-          >
+          TypeEqual<typeof m1, Module<{ class2: Definition<Class2>; d1: Definition<number>; d2: Definition<string> }>>
         >(true);
       });
     });
@@ -163,14 +160,11 @@ describe(`Module`, () => {
         expectType<
           TypeEqual<
             typeof m,
-            Module<
-              {
-                someString: Definition<string>;
-                someNumber: Definition<number>;
-                noDepsFunction: Definition<() => number>;
-              },
-              {}
-            >
+            Module<{
+              someString: Definition<string>;
+              someNumber: Definition<number>;
+              noDepsFunction: Definition<() => number>;
+            }>
           >
         >(true);
       });
@@ -246,16 +240,11 @@ describe(`Module`, () => {
   describe(`.define`, () => {
     describe(`types`, () => {
       it(`creates correct types`, async () => {
-        const m = module<{ externalDependency: number }>('m1')
+        const m = module('m1')
           .define('number', () => 123)
           .define('string', () => 'str');
 
-        expectType<
-          TypeEqual<
-            typeof m,
-            Module<{ number: Definition<number>; string: Definition<string> }, { externalDependency: number }>
-          >
-        >(true);
+        expectType<TypeEqual<typeof m, Module<{ number: Definition<number>; string: Definition<string> }>>>(true);
       });
 
       it(`does not allow duplicates`, async () => {

@@ -6,15 +6,15 @@ import { Container } from '..';
 import { DefinitionsSet } from './module-entries';
 
 export type Definition<T> = { definition: T };
-export type ModuleDefinition<T> = { module: T };
+export type RequiresDefinition<T> = { requires: T };
 
-export type ModuleDefinitions = Record<string, Thunk<Module<any>> | Definition<any>>;
+export type ModuleDefinitions = Record<string, Thunk<Module<any>> | Definition<any> | RequiresDefinition<any>>;
 
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
   ? RETURN
   : 'Module contains duplicated definitions';
 
-type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleDefinitions, C, C1> = NotDuplicated<
+type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleDefinitions> = NotDuplicated<
   TDefinitionKey,
   R,
   // Module<R & { [K in TDefinitionKey]: Definition<V> }>
@@ -23,7 +23,7 @@ type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleDefi
   >
 >;
 
-type NextModuleImport<TImportKey extends string, V, R extends ModuleDefinitions, C, C1> = NotDuplicated<
+type NextModuleImport<TImportKey extends string, V, R extends ModuleDefinitions> = NotDuplicated<
   TImportKey,
   R,
   // Module<R & { [K in TImportKey]: V }>
@@ -52,7 +52,7 @@ type FilterPrivateFields<T> = T extends Function
     };
 
 // TODO: add moduleId and name
-export class Module<R extends ModuleDefinitions, C = {}> {
+export class Module<R extends ModuleDefinitions> {
   public debug: R;
 
   constructor(public entries: DefinitionsSet<R>) {}
@@ -68,22 +68,22 @@ export class Module<R extends ModuleDefinitions, C = {}> {
   define<K extends string, V, C1>(
     key: K,
     factory: DependencyResolver<MaterializedModuleEntries<R>, V>,
-  ): NextModuleDefinition<K, V, R, C, C1>;
+  ): NextModuleDefinition<K, V, R>;
   define<K extends string, V, C1>(
     key: K,
     factory: (container: MaterializedModuleEntries<R>, ctx: C1) => V,
-  ): NextModuleDefinition<K, V, R, C, C1>;
+  ): NextModuleDefinition<K, V, R>;
   define<K extends string, V, C1>(
     key: K,
     factory:
       | DependencyResolver<MaterializedModuleEntries<R>, V>
       | ((container: MaterializedModuleEntries<R>, ctx: C1) => V),
-  ): NextModuleDefinition<K, V, R, C, C1> {
+  ): NextModuleDefinition<K, V, R> {
     const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
     return new Module(this.entries.extendDeclarations(key, resolver)) as any;
   }
 
-  defineConst<TKey extends string, TValue>(key: TKey, value: TValue): NextModuleDefinition<TKey, TValue, R, C, C> {
+  defineConst<TKey extends string, TValue>(key: TKey, value: TValue): NextModuleDefinition<TKey, TValue, R> {
     return this.define(key, () => value);
   }
 
@@ -91,17 +91,17 @@ export class Module<R extends ModuleDefinitions, C = {}> {
   defineClass<TKey extends string, TResult>(
     key: TKey,
     klass: ClassType<[], TResult>,
-  ): NextModuleDefinition<TKey, TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, TResult, R>;
   defineClass<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
     depSelect: (ctx: MaterializedModuleEntries<R>) => TDeps,
-  ): NextModuleDefinition<TKey, TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, TResult, R>;
   defineClass<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
     depSelect?: (ctx: MaterializedModuleEntries<R>) => TDeps,
-  ): NextModuleDefinition<TKey, TResult, R, C, C> {
+  ): NextModuleDefinition<TKey, TResult, R> {
     return this.define(key, container => {
       const selectDeps = depSelect ? depSelect : () => [];
       return new klass(...(selectDeps(container) as any));
@@ -111,50 +111,50 @@ export class Module<R extends ModuleDefinitions, C = {}> {
   defineFunction<TKey extends string, TResult>(
     key: TKey,
     fn: () => TResult,
-  ): NextModuleDefinition<TKey, () => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, () => TResult, R>;
   defineFunction<TKey extends string, TDep1, TResult>(
     key: TKey,
     fn: (d1: TDep1) => TResult,
-  ): NextModuleDefinition<TKey, (d1: TDep1) => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, (d1: TDep1) => TResult, R>;
   defineFunction<TKey extends string, TDep1, TResult>(
     key: TKey,
     fn: (d1: TDep1) => TResult,
     depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1],
-  ): NextModuleDefinition<TKey, () => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, () => TResult, R>;
   defineFunction<TKey extends string, TDep1, TDep2, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2) => TResult,
-  ): NextModuleDefinition<TKey, (d1: TDep1, d2: TDep2) => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, (d1: TDep1, d2: TDep2) => TResult, R>;
   defineFunction<TKey extends string, TDep1, TDep2, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2) => TResult,
     depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1],
-  ): NextModuleDefinition<TKey, (dep2: TDep2) => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, (dep2: TDep2) => TResult, R>;
   defineFunction<TKey extends string, TDep1, TDep2, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2) => TResult,
     depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1, TDep2],
-  ): NextModuleDefinition<TKey, () => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, () => TResult, R>;
   // 3 args
   defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-  ): NextModuleDefinition<TKey, (d1: TDep1, d2: TDep2, d3: TDep3) => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, (d1: TDep1, d2: TDep2, d3: TDep3) => TResult, R>;
   defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
     depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1],
-  ): NextModuleDefinition<TKey, (dep2: TDep2, dep3: TDep3) => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, (dep2: TDep2, dep3: TDep3) => TResult, R>;
   defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
     depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1, TDep2],
-  ): NextModuleDefinition<TKey, (dep3: TDep3) => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, (dep3: TDep3) => TResult, R>;
   defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
     key: TKey,
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
     depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1, TDep2, TDep3],
-  ): NextModuleDefinition<TKey, () => TResult, R, C, C>;
+  ): NextModuleDefinition<TKey, () => TResult, R>;
   defineFunction(key, fn, depSelect?): any {
     const curried = curry(fn);
     const select = depSelect ? depSelect : () => [];
@@ -187,18 +187,19 @@ export class Module<R extends ModuleDefinitions, C = {}> {
   }
 
   //TODO: should be private. because it breaks typesafety when module is nested? ()
-  undeclare<K extends DefinitionsKeys<R>>(key: K): Module<Omit<R, K>, C> {
+  undeclare<K extends DefinitionsKeys<R>>(key: K): Module<Omit<R, K>> {
     return new Module(this.entries.removeDeclaration(key)) as any;
   }
 
   import<K extends string, TImportedR extends ModuleDefinitions>(
     key: K,
     mod2: Thunk<Module<TImportedR>>,
-  ): NextModuleImport<K, Module<TImportedR>, R, C, C> {
+  ): NextModuleImport<K, Module<TImportedR>, R> {
     return new Module(this.entries.extendImports(key, unwrapThunk(mod2).entries)) as any;
   }
 
-  toContainer(ctx: C): Container<R> {
+  // TODO: use mapped type similar to Definitions
+  toContainer(ctx: any): Container<R> {
     return new Container(this.entries, ctx);
   }
 }

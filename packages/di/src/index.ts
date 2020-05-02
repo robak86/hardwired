@@ -6,13 +6,13 @@ export * from './module/Module';
 export * from './container/Container';
 export * from './utils';
 
-export function module<CTX = {}>(name: string): Module<{}, CTX> {
+export function module<CTX = {}>(name: string): Module<{}> {
   return new Module(DefinitionsSet.empty(name));
 }
 
 //TODO: consider completely removing the m parameter. Create empty container instead and instantiate all dependencies via deepGet
 //TODO: investigate how to pass context in such case? and how to make it typesafe ?!
-export function container<R extends ModuleDefinitions, CTX>(m: Module<R, CTX>, ctx: CTX): Container<R, any> {
+export function container<R extends ModuleDefinitions, CTX>(m: Module<R>, ctx: any): Container<R, any> {
   return new Container((m as any).entries, ctx as any);
 }
 
