@@ -1,13 +1,15 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { FlattenModule, Module } from '../module/Module';
-import { unwrapThunk } from '../utils/thunk';
 import {
-  DefinitionsRecord,
-  ExtractModuleRegistryDeclarations,
-  ImportsRecord,
+  Definitions,
+  DefinitionsKeys,
+  DefinitionsSet,
+  MaterializedDefinitions,
   MaterializedModuleEntries,
-  ModuleEntries,
-} from '../module/module-entries';
+  Module,
+  ModuleDefinitions,
+} from '../module/Module';
+import { unwrapThunk } from '../utils/thunk';
+import { ModuleEntries } from '../module/module-entries';
 import { containerProxyAccessor } from './container-proxy-accessor';
 import { ContainerCache } from './container-cache';
 
@@ -25,12 +27,12 @@ interface GetMany<D> {
 
 // TODO: extract all code related to instantiation of definition into services
 
-export class Container<I extends ImportsRecord = {}, D extends DefinitionsRecord = {}, C = {}> {
+export class Container<R extends ModuleDefinitions = {}, C = {}> {
   private cache: ContainerCache = new ContainerCache();
 
-  constructor(private entries: ModuleEntries<I, D>, private context: C) {}
+  constructor(private entries: DefinitionsSet<R>, private context: C) {}
 
-  get = <K extends keyof D>(key: K): D[K] => {
+  get = <K extends DefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
     //if is async container check if asyncDependenciesInitialized is true. if not throw an error
     return this.getChild(this.cache.forNewRequest(), key as any); //
   };
@@ -38,7 +40,7 @@ export class Container<I extends ImportsRecord = {}, D extends DefinitionsRecord
   // TODO: returns proxified module object (reusing existing instance from cache if possible)
   getModuleInstance() {}
 
-  getMany: GetMany<D> = (...args: any[]) => {
+  getMany: GetMany<Definitions<R>> = (...args: any[]) => {
     const cache = this.cache.forNewRequest();
 
     return args.map(dep => {
@@ -46,11 +48,11 @@ export class Container<I extends ImportsRecord = {}, D extends DefinitionsRecord
     }) as any;
   };
 
-  asObject(): MaterializedModuleEntries<I, D> {
+  asObject(): MaterializedModuleEntries<R> {
     return containerProxyAccessor(this as any, this.cache.forNewRequest());
   }
 
-  checkout(inherit: boolean): Container<I, D> {
+  checkout(inherit: boolean): Container<R> {
     if (inherit) {
       return new Container(this.entries, { ...this.cache });
     } else {
@@ -58,19 +60,19 @@ export class Container<I extends ImportsRecord = {}, D extends DefinitionsRecord
     }
   }
 
-  deepGet2<M extends FlattenModule<I, D>>(module: M): M {
-    throw new Error('implement me');
-  }
-
-  flatten(): FlattenModule<I, D> {
-    throw new Error('implement me');
-  }
+  // deepGet2<M extends FlattenModule<I, D>>(module: M): M {
+  //   throw new Error('implement me');
+  // }
+  //
+  // flatten(): FlattenModule<I, D> {
+  //   throw new Error('implement me');
+  // }
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
-  deepGet<I1 extends ImportsRecord, D2 extends DefinitionsRecord, K extends keyof MaterializedModuleEntries<I1, D2>>(
-    module: Module<I1, D2>,
+  deepGet<TNextR extends ModuleDefinitions, K extends keyof MaterializedModuleEntries<TNextR>>(
+    module: Module<TNextR>,
     key: K,
-  ): MaterializedModuleEntries<I1, D2>[K] {
+  ): MaterializedModuleEntries<TNextR>[K] {
     let childModule: ModuleEntries | undefined = unwrapThunk(this.findModule(module.entries)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
     if (!childModule) {

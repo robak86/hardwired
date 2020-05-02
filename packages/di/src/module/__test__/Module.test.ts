@@ -1,4 +1,4 @@
-import { Container, container, FlattenModule, Module, module } from '../../index';
+import { Container, container, Definition, Module, module } from '../../index';
 
 import { expectType, TypeEqual } from 'ts-expect';
 
@@ -31,14 +31,14 @@ describe(`Module`, () => {
     describe(`types`, () => {
       it(`creates module with correct generic types for class with no constructor args`, async () => {
         const m1 = module('m1').defineClass('class0', Class0);
-        expectType<TypeEqual<typeof m1, Module<{}, { class0: Class0 }, {}>>>(true);
+        expectType<TypeEqual<typeof m1, Module<{ class0: Definition<Class0> }>>>(true);
       });
 
       it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
         const m1 = module('m1')
           .define('d1', () => 123)
           .defineClass('class1', Class1, ctx => [ctx.d1]);
-        expectType<TypeEqual<typeof m1, Module<{}, { class1: Class1; d1: number }, {}>>>(true);
+        expectType<TypeEqual<typeof m1, Module<{ class1: Definition<Class1>; d1: Definition<number> }>>>(true);
       });
 
       it(`creates module with correct generic types for class with 2 constructor arg`, async () => {
@@ -46,7 +46,12 @@ describe(`Module`, () => {
           .define('d1', () => 123)
           .define('d2', () => '123')
           .defineClass('class2', Class2, ctx => [ctx.d1, ctx.d2]);
-        expectType<TypeEqual<typeof m1, Module<{}, { class2: Class2; d1: number; d2: string }, {}>>>(true);
+        expectType<
+          TypeEqual<
+            typeof m1,
+            Module<{ class2: Definition<Class2>; d1: Definition<number>; d2: Definition<string> }, {}>
+          >
+        >(true);
       });
     });
 
@@ -98,13 +103,13 @@ describe(`Module`, () => {
       it(`creates correct module type for function without any dependencies`, async () => {
         const someFunction = () => 123;
         const m = module('m1').defineFunction('noDepsFunction', someFunction);
-        expectType<TypeEqual<typeof m, Module<{}, { noDepsFunction: () => number }, {}>>>(true);
+        expectType<TypeEqual<typeof m, Module<{ noDepsFunction: Definition<() => number> }>>>(true);
       });
 
       it(`creates correct module type for function with single parameter`, async () => {
         const someFunction = (someParam: string) => 123;
         const m = module('m1').defineFunction('noDepsFunction', someFunction);
-        expectType<TypeEqual<typeof m, Module<{}, { noDepsFunction: (param: string) => number }, {}>>>(true);
+        expectType<TypeEqual<typeof m, Module<{ noDepsFunction: Definition<(param: string) => number> }>>>(true);
       });
 
       it(`creates correct module type for function with single parameter with all deps provided`, async () => {
@@ -113,7 +118,9 @@ describe(`Module`, () => {
           .define('someString', () => 'someString')
           .defineFunction('noDepsFunction', someFunction, ctx => [ctx.someString]);
 
-        expectType<TypeEqual<typeof m, Module<{}, { someString: string; noDepsFunction: () => number }, {}>>>(true);
+        expectType<
+          TypeEqual<typeof m, Module<{ someString: Definition<string>; noDepsFunction: Definition<() => number> }>>
+        >(true);
       });
 
       it(`creates correct module type for function with two parameters with no deps provided`, async () => {
@@ -126,15 +133,11 @@ describe(`Module`, () => {
         expectType<
           TypeEqual<
             typeof m,
-            Module<
-              {},
-              {
-                someString: string;
-                someNumber: number;
-                noDepsFunction: (d1: string, d2: number) => number;
-              },
-              {}
-            >
+            Module<{
+              someString: Definition<string>;
+              someNumber: Definition<number>;
+              noDepsFunction: Definition<(d1: string, d2: number) => number>;
+            }>
           >
         >(true);
       });
@@ -147,7 +150,17 @@ describe(`Module`, () => {
           .defineFunction('noDepsFunction', someFunction, ctx => [ctx.someString, ctx.someNumber]);
 
         expectType<
-          TypeEqual<typeof m, Module<{}, { someString: string; someNumber: number; noDepsFunction: () => number }, {}>>
+          TypeEqual<
+            typeof m,
+            Module<
+              {
+                someString: Definition<string>;
+                someNumber: Definition<number>;
+                noDepsFunction: Definition<() => number>;
+              },
+              {}
+            >
+          >
         >(true);
       });
     });
@@ -226,9 +239,12 @@ describe(`Module`, () => {
           .define('number', () => 123)
           .define('string', () => 'str');
 
-        expectType<TypeEqual<typeof m, Module<{}, { number: number; string: string }, { externalDependency: number }>>>(
-          true,
-        );
+        expectType<
+          TypeEqual<
+            typeof m,
+            Module<{ number: Definition<number>; string: Definition<string> }, { externalDependency: number }>
+          >
+        >(true);
       });
 
       it(`does not allow duplicates`, async () => {
@@ -287,7 +303,7 @@ describe(`Module`, () => {
           .define('b', () => '2')
           .toContainer({});
 
-        expectType<TypeEqual<typeof c1, Container<{}, { a: number; b: string }, {}>>>(true);
+        expectType<TypeEqual<typeof c1, Container<{ a: Definition<number>; b: Definition<string> }, {}>>>(true);
       });
     });
   });
@@ -354,6 +370,7 @@ describe(`Module`, () => {
 
         let m1 = module('2')
           .import('childModule', childM)
+          .define('sdf', ctx => ctx.childModule)
           .define('t1', () => new T1())
           .define('t2', () => new T2())
           .define('t1FromChildModule', c => c.childModule.t1)
@@ -476,7 +493,7 @@ describe(`Module`, () => {
         expect(f6).toBeCalledTimes(1);
       });
 
-      it(`calls all dependecies factory functions with correct context`, async () => {
+      it(`calls all dependencies factory functions with correct context`, async () => {
         let f1 = jest.fn().mockReturnValue((...args: any[]) => 123);
         let f2 = jest.fn().mockReturnValue((...args: any[]) => 456);
         let f3 = jest.fn().mockReturnValue((...args: any[]) => 678);
@@ -532,8 +549,8 @@ describe(`Module`, () => {
         .import('child2', m2)
         .define('val', c => c.child2.valFromChild);
 
-      const a = m2.toContainer({}).flatten();
-      m2.toContainer({}).deepGet2(m1)
+      // const a = m2.toContainer({}).flatten();
+      // m2.toContainer({}).deepGet2(m1);
 
       let m1Overrides = m1.replace('val', c => 2);
 

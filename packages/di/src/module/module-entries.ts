@@ -12,20 +12,13 @@ export type DeclarationsFactories<D> = {
 export type ImportsRecord = Record<string, Thunk<ModuleEntries<any, any>>>;
 export type DefinitionsRecord = Record<string, any>;
 
-export type MaterializedModuleEntries<I extends ImportsRecord, D extends DefinitionsRecord> = D &
-  {
-    [K in keyof I]: MaterializedModuleEntries<{}, ExtractModuleRegistryDeclarations<UnwrapThunk<I[K]>>>;
-  };
+
 
 export type ExtractModuleRegistryDeclarations<M extends ModuleEntries> = M extends ModuleEntries<any, infer D>
   ? D
   : never;
 
-export type ExtractModuleRegistryImports<M extends ModuleEntries> = M extends ModuleEntries<infer I, any> ? I : never;
 
-export type ExtractModuleDeclarations<M extends Module> = M extends ModuleEntries<any, infer D> ? D : never;
-
-export type ExtractModuleImports<M extends Module> = M extends ModuleEntries<infer I, any> ? I : never;
 
 type ImportedModulesRecord = Record<string, Thunk<ModuleEntries<any, any>>>;
 
