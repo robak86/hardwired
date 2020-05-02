@@ -6,6 +6,7 @@ import { Container } from '..';
 import { DefinitionsSet } from './module-entries';
 
 export type Definition<T> = { definition: T };
+export type ModuleDefinition<T> = { module: T };
 
 export type ModuleDefinitions = Record<string, Thunk<Module<any>> | Definition<any>>;
 
@@ -13,17 +14,20 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
   ? RETURN
   : 'Module contains duplicated definitions';
 
-type NextModuleDefinition<K extends string, V, R extends ModuleDefinitions, C, C1> = NotDuplicated<
-  K,
+type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleDefinitions, C, C1> = NotDuplicated<
+  TDefinitionKey,
   R,
-  // Module<R & Record<K, Definition<V>>>
-  Module<R & Record<K, Definition<V>>>
+  // Module<R & { [K in TDefinitionKey]: Definition<V> }>
+  Module<
+    { [K in keyof (R & { [K in TDefinitionKey]: Definition<V> })]: (R & { [K in TDefinitionKey]: Definition<V> })[K] }
+  >
 >;
 
-type NextModuleImport<K extends string, V, R extends ModuleDefinitions, C, C1> = NotDuplicated<
-  K,
+type NextModuleImport<TImportKey extends string, V, R extends ModuleDefinitions, C, C1> = NotDuplicated<
+  TImportKey,
   R,
-  Module<R & Record<K, V>>
+  // Module<R & { [K in TImportKey]: V }>
+  Module<{ [K in keyof (R & { [K in TImportKey]: V })]: (R & { [K in TImportKey]: V })[K] }>
 >;
 
 export type MaterializedDefinitions<R extends ModuleDefinitions> = {
@@ -208,20 +212,27 @@ export type Definitions<T> = { [K in DefinitionsKeys<T>]: T[K] };
 
 export type ImportsKeys<T> = { [K in keyof T]: UnwrapThunk<T[K]> extends Module<any> ? K : never }[keyof T];
 export type Imports<T> = {
-  [K in ImportsKeys<T>]: T[K] extends Module<infer R> ? R : never;
+  [K in ImportsKeys<T>]: UnwrapThunk<T[K]> extends Module<infer R> ? R : never;
 };
 
-// export type FlattenModules<R extends ModuleDefinitions> =
-//   | (R extends ModuleDefinitions ? Module<R> : R)
-//   | {
-//       [K in keyof Imports<R>]: FlattenModules<Imports<R>[K]>;
-//     }[keyof Imports<R>];
-
 export type FlattenModules<R extends ModuleDefinitions> =
-  | Definitions<R extends Module<infer RR> ? RR : R>
+  | R
   | {
       [K in keyof Imports<R>]: FlattenModules<Imports<R>[K]>;
     }[keyof Imports<R>];
+
+// export type FlattenModules<R> =
+//   | (R extends Module<infer RR> ? RR : R)
+//   | {
+//   [K in keyof Imports<R>]: FlattenModules<Imports<R>[K]>;
+// }[keyof Imports<R>];
+
+// | Definitions<R extends Module<infer RR> ? RR : R>
+// export type FlattenModules<R extends ModuleDefinitions> =
+//   | R
+//   | {
+//       [K in keyof Imports<R>]: FlattenModules<Imports<R>[K] extends Module<infer RR> ? RR : never>;
+//     }[keyof Imports<R>];
 
 // type ZZ = Definitions<typeof b.defs>;
 // type ZZz = Imports<typeof b.defs>;

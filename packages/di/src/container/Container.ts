@@ -1,16 +1,16 @@
-import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { DependencyResolver } from "../resolvers/DependencyResolver";
 import {
   Definitions,
   DefinitionsKeys,
   MaterializedDefinitions,
   MaterializedModuleEntries,
   Module,
-  ModuleDefinitions,
-} from '../module/Module';
-import { unwrapThunk } from '../utils/thunk';
-import { containerProxyAccessor } from './container-proxy-accessor';
-import { ContainerCache } from './container-cache';
-import { DefinitionsSet } from '../module/module-entries';
+  ModuleDefinitions
+} from "../module/Module";
+import { unwrapThunk } from "../utils/thunk";
+import { containerProxyAccessor } from "./container-proxy-accessor";
+import { ContainerCache } from "./container-cache";
+import { DefinitionsSet } from "../module/module-entries";
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -33,7 +33,7 @@ export class Container<R extends ModuleDefinitions = {}, C = {}> {
   private cache: ContainerCache = new ContainerCache();
 
   constructor(private entries: DefinitionsSet<R>, private context: C) {
-    console.log(entries)
+    console.log(entries);
   }
 
   get = <K extends DefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
@@ -73,7 +73,7 @@ export class Container<R extends ModuleDefinitions = {}, C = {}> {
   // }
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
-  deepGet<TNextR extends R, K extends keyof MaterializedModuleEntries<TNextR>>(
+  deepGet<TNextR extends ModuleDefinitions, K extends keyof MaterializedDefinitions<TNextR>>(
     module: Module<TNextR>,
     key: K,
   ): MaterializedModuleEntries<TNextR>[K] {
