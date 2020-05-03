@@ -1,3 +1,43 @@
+
+- extendable api for react custom elements
+
+  ```typescript jsx
+  const m = module('m')
+    .define('state', cxt => state())
+    .define('someSaga', ctx => saga(someSaga()));
+  ```
+
+- how to integrate hierarchical containers composition with state branches composition
+
+  ```typescript jsx
+  const Component = () => {
+    return (
+      <Container1>
+        <Container2>
+          useSelector() // has access to state merged from states defined in Container1 and in Container2
+          dispatch() // should dispatch actions defined only in Container1 and Container2 (to corresponding sagas)
+          or should be dispatched to the whole application
+        </Container2>
+      </Container1>
+    );
+  };
+  ```
+- sagas, reducers, states should be propagated to root container - it's global dependency. How to reuse it in child modules ?
+
+- should we provide module().onInit(ctx => {})
+    - it enables side effect (which is bad)
+    - but it's called only once (which is acceptable ?)
+
+- should we provide StatModule in separate packages ?
+  ```typescript jsx
+  function createStateModule(name: string, {rootReducer:}) {
+      return module('state1')
+  
+  }
+  ```
+
+- investigate saga custom redux saga middleware effects
+
 - use strictFunction (tuple error)
 
   - possible solution would be to probide tuple helper method
