@@ -1,16 +1,17 @@
-import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { DependencyResolver } from '../resolvers/DependencyResolver';
 import {
   Definitions,
   DefinitionsKeys,
+  Externals,
   MaterializedDefinitions,
   MaterializedModuleEntries,
   Module,
-  ModuleDefinitions
-} from "../module/Module";
-import { unwrapThunk } from "../utils/thunk";
-import { containerProxyAccessor } from "./container-proxy-accessor";
-import { ContainerCache } from "./container-cache";
-import { DefinitionsSet } from "../module/module-entries";
+  ModuleDefinitions,
+} from '../module/Module';
+import { unwrapThunk } from '../utils/thunk';
+import { containerProxyAccessor } from './container-proxy-accessor';
+import { ContainerCache } from './container-cache';
+import { DefinitionsSet } from '../module/module-entries';
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -27,6 +28,14 @@ interface GetMany<D> {
   ): [D[K], D[K2], D[K3], D[K4]];
 }
 
+type DeepGetReturn<
+  K extends keyof MaterializedDefinitions<TModuleRegistry>,
+  TModuleRegistry extends ModuleDefinitions,
+  TContainerRegistry extends ModuleDefinitions
+> = Externals<TContainerRegistry> extends Externals<TModuleRegistry>
+  ? MaterializedModuleEntries<TModuleRegistry>[K]
+  : `Given module cannot be used with deepGet because module's context is missing in the container`;
+
 // TODO: extract all code related to instantiation of definition into services
 
 export class Container<R extends ModuleDefinitions = {}, C = {}> {
@@ -37,7 +46,6 @@ export class Container<R extends ModuleDefinitions = {}, C = {}> {
   }
 
   get = <K extends DefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
-    //if is async container check if asyncDependenciesInitialized is true. if not throw an error
     return this.getChild(this.cache.forNewRequest(), key as any); //
   };
 
@@ -76,7 +84,7 @@ export class Container<R extends ModuleDefinitions = {}, C = {}> {
   deepGet<TNextR extends ModuleDefinitions, K extends keyof MaterializedDefinitions<TNextR>>(
     module: Module<TNextR>,
     key: K,
-  ): MaterializedModuleEntries<TNextR>[K] {
+  ): DeepGetReturn<K, TNextR, R> {
     let childModule: DefinitionsSet<any> | undefined = unwrapThunk(this.findModule(module.entries)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
 
     if (!childModule) {

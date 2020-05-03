@@ -3,12 +3,13 @@ import {
   container,
   Definition,
   Definitions,
-  DefinitionsKeys,
+  Externals,
   FlattenModules,
   Imports,
   ImportsKeys,
   Module,
   module,
+  RequiresDefinition,
 } from '../../index';
 
 import { expectType, TypeEqual } from 'ts-expect';
@@ -295,6 +296,26 @@ describe(`Module`, () => {
     });
   });
 
+  describe(`.require`, () => {
+    describe(`types`, () => {
+      it(`creates modules with correct type`, async () => {
+        const m = module('m').require<{ dependency1: number }>();
+        expectType<TypeEqual<typeof m, Module<{ dependency1: RequiresDefinition<number> }>>>(true);
+      });
+
+      it(`aggregates all dependencies from imported modules`, async () => {
+        const m = module('m').require<{ dependency1: number }>();
+        const m2 = module('m2').require<{ dependency2: number }>().import('imported', m);
+        expectType<
+          TypeEqual<
+            Externals<typeof m2.debug>,
+            { dependency1: RequiresDefinition<number>; dependency2: RequiresDefinition<number> }
+          >
+        >(true);
+      });
+    });
+  });
+
   describe(`.toContainer`, () => {
     describe(`types`, () => {
       it(`produces container with correct types`, async () => {
@@ -540,6 +561,10 @@ describe(`Module`, () => {
     it(`replaces all related modules in whole tree`, async () => {
       let m1 = module('m1').define('val', () => 1);
 
+      let m11 = module('m1')
+        .require<{ a: number }>()
+        .define('val', () => 1);
+
       let m2 = module('m2')
         .import('child', m1)
         .define('valFromChild', c => c.child.val);
@@ -551,14 +576,15 @@ describe(`Module`, () => {
 
       // const a = m2.toContainer({}).flatten();
 
-      type ZZZ = FlattenModules<typeof m3.debug>;
-      type ZZZZZ = ImportsKeys<typeof m3.debug>;
-      type Def = Definitions<typeof m3.debug>;
-      type Imp = Imports<typeof m3.debug>;
+      // type ZZZ = FlattenModules<typeof m3.debug>;
+      // type ZZZZZ = ImportsKeys<typeof m3.debug>;
+      // type Def = Definitions<typeof m3.debug>;
+      // type Imp = Imports<typeof m3.debug>;
 
-      m2.toContainer({}).deepGet(m2, 'valFromChild');
-      m2.toContainer({}).deepGet(m1, 'val');
-      m3.toContainer({}).deepGet(m3, 'val');
+      // m2.toContainer({}).deepGet(m2, 'valFromChild');
+      // m2.toContainer({}).deepGet(m1, 'val');
+      type WTF = Externals<typeof m1.debug>;
+      const a = m1.toContainer({}).deepGet(m11, 'val');
 
       let m1Overrides = m1.replace('val', c => 2);
 

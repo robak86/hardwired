@@ -14,6 +14,10 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
   ? RETURN
   : 'Module contains duplicated definitions';
 
+export type NotDuplicatedKeys<TSource, TTarget, TReturn> = Extract<keyof TSource, keyof TTarget> extends never
+  ? TReturn
+  : 'Module contains duplicated definitions';
+
 type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleDefinitions> = NotDuplicated<
   TDefinitionKey,
   R,
@@ -23,11 +27,15 @@ type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleDefi
   >
 >;
 
-type NextModuleImport<TImportKey extends string, V, R extends ModuleDefinitions> = NotDuplicated<
+type NextModuleImport<
+  TImportKey extends string,
+  V extends ModuleDefinitions,
+  R extends ModuleDefinitions
+> = NotDuplicated<
   TImportKey,
   R,
-  // Module<R & { [K in TImportKey]: V }>
-  Module<{ [K in keyof (R & { [K in TImportKey]: V })]: (R & { [K in TImportKey]: V })[K] }>
+  Module<R & { [K in TImportKey]: Module<V> } & Externals<V>>
+  // Module<{ [K in keyof (R & { [K in TImportKey]: V })]: (R & { [K in TImportKey]: V })[K] }>
 >;
 
 export type MaterializedDefinitions<R extends ModuleDefinitions> = {
@@ -63,6 +71,14 @@ export class Module<R extends ModuleDefinitions> {
 
   isDeclared(key: DefinitionsKeys<R>): boolean {
     return this.entries.hasDeclaration(key);
+  }
+
+  require<TNextContext extends object>(): NotDuplicatedKeys<
+    R,
+    TNextContext,
+    Module<R & { [K in keyof TNextContext]: RequiresDefinition<TNextContext[K]> }>
+  > {
+    return this as any;
   }
 
   define<K extends string, V, C1>(
@@ -194,7 +210,7 @@ export class Module<R extends ModuleDefinitions> {
   import<K extends string, TImportedR extends ModuleDefinitions>(
     key: K,
     mod2: Thunk<Module<TImportedR>>,
-  ): NextModuleImport<K, Module<TImportedR>, R> {
+  ): NextModuleImport<K, TImportedR, R> {
     return new Module(this.entries.extendImports(key, unwrapThunk(mod2).entries)) as any;
   }
 
@@ -210,6 +226,9 @@ type DefinitionsUnion<T> = {
 
 export type DefinitionsKeys<T> = { [K in keyof T]: T[K] extends Definition<any> ? K : never }[keyof T];
 export type Definitions<T> = { [K in DefinitionsKeys<T>]: T[K] };
+
+export type ExternalsKeys<T> = { [K in keyof T]: T[K] extends RequiresDefinition<any> ? K : never }[keyof T];
+export type Externals<T> = { [K in ExternalsKeys<T>]: T[K] };
 
 export type ImportsKeys<T> = { [K in keyof T]: UnwrapThunk<T[K]> extends Module<any> ? K : never }[keyof T];
 export type Imports<T> = {
