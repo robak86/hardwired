@@ -1,16 +1,34 @@
-- deepGet won't be typesafe with context. In order to fix this deepGet needs to recursively collec all registered modules 
-and check if module passed to deepGet is registered in container. If we won't be able to do this, newly ad-hoc registered module
-may miss it's context 
-- module('someName').requires<>(key: 'someKey') // we need to explicitely set key in order to lazyli rebuild 
- 
+- Add extra generic type, with Context - context will be the guard for deepGet !!!!
+
+```
+class Module<R, Modules> {
+// Modules is a flat union of all modules registered in module
+import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules | Module<TNext, any> | TNextModules> {
+
+}
+}
+
+```
+
+- **module shouldn't be extendable. The registered definition can be replaced, but not removed or added**
+  - freeze method, would still allow to create multiple modules with the same name
+  - automatically freeze object in next tick, and throw errors on define, import calls ?
+  -
+- deepGet won't be typesafe with context. In order to fix this deepGet needs to recursively collec all registered modules
+  and check if module passed to deepGet is registered in container. If we won't be able to do this, newly ad-hoc registered module
+  may miss it's context
+- module('someName').requires<>(key: 'someKey') // we need to explicitely set key in order to lazyli rebuild
+
 - container.updateContext({}) // it rebuild all dependencies which are connected with context... in practice it will be almost
-always the whole tree, becuase in most of the cases context will be some deeply nested dependency( probabilit leaf)
- 
+  always the whole tree, becuase in most of the cases context will be some deeply nested dependency( probabilit leaf)
+
 - ~~migrate unit tests to jest (we need to test react-di)~~
 - investigate if deepGet can be type safe
+
   - it would require flattening of imports into union of types <I,D, AD, C>
   - if it is typesafe then we would have to create factory for all react api - `const {useContainer, ContainerProvider} = createContainer(module)`
   - if typesafe is not type safe, then we could consider feature for extending current(parent) container with additional modules
+
   ```
     const A = () {
       return <ContainerProvider module={module1}>
@@ -20,6 +38,7 @@ always the whole tree, becuase in most of the cases context will be some deeply 
         </> // but this is not typesafe and can be easily replaced by dynamic container extension while calling deepGet with unknown module
     }
   ```
+
 - add methods for checking equality
   - if two container are equal - it means they have exactly the same definitions and imports
 - replace ts-jest with babel and run jest on already transpiled files
@@ -103,7 +122,7 @@ const wrapper = mount(
 ```typescript jsx
 function App() {
   return (
-    <HardwiredContainer module={appModule} context={{someParam: 1}}>
+    <HardwiredContainer module={appModule} context={{ someParam: 1 }}>
       <HardwiredScope>
         <MyComponent />
       </HardwiredScope>
@@ -116,7 +135,8 @@ function App() {
 ```
 
 - composition using module granularity
-    - multiple ```HardwiredContainer``` with different modules, reusing instances from parent container
+
+  - multiple `HardwiredContainer` with different modules, reusing instances from parent container
 
 - checkout method (used for explicitely creating new container scope, with or withour inherited properties)
 
