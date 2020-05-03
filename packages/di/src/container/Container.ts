@@ -1,12 +1,12 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import {
-  Definitions,
-  DefinitionsKeys,
-  Externals,
+  ModuleRegistryDefinitions,
+  ModuleRegistryDefinitionsKeys,
+  ModuleRegistryContext,
   MaterializedDefinitions,
   MaterializedModuleEntries,
   Module,
-  ModuleDefinitions,
+  ModuleRegistry,
 } from '../module/Module';
 import { unwrapThunk } from '../utils/thunk';
 import { containerProxyAccessor } from './container-proxy-accessor';
@@ -28,31 +28,29 @@ interface GetMany<D> {
   ): [D[K], D[K2], D[K3], D[K4]];
 }
 
-type DeepGetReturn<
+export type DeepGetReturn<
   K extends keyof MaterializedDefinitions<TModuleRegistry>,
-  TModuleRegistry extends ModuleDefinitions,
-  TContainerRegistry extends ModuleDefinitions
-> = Externals<TContainerRegistry> extends Externals<TModuleRegistry>
+  TModuleRegistry extends ModuleRegistry,
+  TContainerRegistry extends ModuleRegistry
+> = ModuleRegistryContext<TContainerRegistry> extends ModuleRegistryContext<TModuleRegistry>
   ? MaterializedModuleEntries<TModuleRegistry>[K]
   : `Given module cannot be used with deepGet because module's context is missing in the container`;
 
 // TODO: extract all code related to instantiation of definition into services
 
-export class Container<R extends ModuleDefinitions = {}, C = {}> {
+export class Container<R extends ModuleRegistry = {}, C = {}> {
   private cache: ContainerCache = new ContainerCache();
 
-  constructor(private entries: DefinitionsSet<R>, private context: C) {
-    console.log(entries);
-  }
+  constructor(private entries: DefinitionsSet<R>, private context: C) {}
 
-  get = <K extends DefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
+  get = <K extends ModuleRegistryDefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
     return this.getChild(this.cache.forNewRequest(), key as any); //
   };
 
   // TODO: returns proxified module object (reusing existing instance from cache if possible)
   getModuleInstance() {}
 
-  getMany: GetMany<Definitions<R>> = (...args: any[]) => {
+  getMany: GetMany<ModuleRegistryDefinitions<R>> = (...args: any[]) => {
     const cache = this.cache.forNewRequest();
 
     return args.map(dep => {
@@ -81,11 +79,14 @@ export class Container<R extends ModuleDefinitions = {}, C = {}> {
   // }
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
-  deepGet<TNextR extends ModuleDefinitions, K extends keyof MaterializedDefinitions<TNextR>>(
+  deepGet<TNextR extends ModuleRegistry, K extends keyof MaterializedDefinitions<TNextR>>(
     module: Module<TNextR>,
     key: K,
   ): DeepGetReturn<K, TNextR, R> {
-    let childModule: DefinitionsSet<any> | undefined = unwrapThunk(this.findModule(module.entries)); //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
+    //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
+    let childModule: DefinitionsSet<any> | undefined = this.entries.isEqual(module.entries)
+      ? this.entries
+      : unwrapThunk(this.findModule(module.entries));
 
     if (!childModule) {
       console.warn('deepGet called with module which is not imported by any descendant module');

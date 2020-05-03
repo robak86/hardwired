@@ -1,4 +1,4 @@
-import { Container, container, Definition, Externals, Module, module, RequiresDefinition, } from '../../index';
+import { Container, container, Definition, ModuleRegistryContext, Module, module, RequiresDefinition, } from '../../index';
 
 import { expectType, TypeEqual } from 'ts-expect';
 
@@ -296,7 +296,7 @@ describe(`Module`, () => {
         const m2 = module('m2').require<{ dependency2: number }>().import('imported', m);
         expectType<
           TypeEqual<
-            Externals<typeof m2.debug>,
+            ModuleRegistryContext<typeof m2.debug>,
             { dependency1: RequiresDefinition<number>; dependency2: RequiresDefinition<number> }
           >
         >(true);
@@ -571,7 +571,7 @@ describe(`Module`, () => {
 
       // m2.toContainer({}).deepGet(m2, 'valFromChild');
       // m2.toContainer({}).deepGet(m1, 'val');
-      type WTF = Externals<typeof m1.debug>;
+      type WTF = ModuleRegistryContext<typeof m1.debug>;
       const a = m1.toContainer({}).deepGet(m11, 'val');
 
       let m1Overrides = m1.replace('val', c => 2);

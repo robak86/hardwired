@@ -1,9 +1,9 @@
 import { unwrapThunk } from '../utils/thunk';
 import { ModuleId } from '../module-id';
 import { ImmutableSet } from '../ImmutableSet';
-import { ModuleDefinitions } from './Module';
+import { ModuleRegistry } from './Module';
 
-export class DefinitionsSet<R extends ModuleDefinitions, C = any> {
+export class DefinitionsSet<R extends ModuleRegistry, C = any> {
   static empty(name: string): DefinitionsSet<{}> {
     return new DefinitionsSet<any, any>(ModuleId.build(name), ImmutableSet.empty(), ImmutableSet.empty());
   }

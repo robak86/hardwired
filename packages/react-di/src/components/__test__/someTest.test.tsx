@@ -1,7 +1,9 @@
 import { module } from '@hardwired/di';
+import { render } from '@testing-library/react';
 import * as React from 'react';
 import { FunctionComponent } from 'react';
-import { shallow } from 'enzyme';
+// import '@testing-library/jest-dom/extend-expect'
+// import '@testing-library/jest-dom/extend-expect';
 
 describe(`It works`, () => {
   it(`does not not`, async () => {
@@ -11,7 +13,7 @@ describe(`It works`, () => {
 
   it(`works with enzyme`, async () => {
     const Test: FunctionComponent = () => <div>It works</div>;
-    const wrapper = shallow(<Test />);
+    const wrapper = render(<Test />);
     console.log(wrapper.debug());
   });
 });

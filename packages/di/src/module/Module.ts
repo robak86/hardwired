@@ -8,7 +8,7 @@ import { DefinitionsSet } from './module-entries';
 export type Definition<T> = { definition: T };
 export type RequiresDefinition<T> = { requires: T };
 
-export type ModuleDefinitions = Record<string, Thunk<Module<any>> | Definition<any> | RequiresDefinition<any>>;
+export type ModuleRegistry = Record<string, Thunk<Module<any>> | Definition<any> | RequiresDefinition<any>>;
 
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
   ? RETURN
@@ -18,7 +18,7 @@ export type NotDuplicatedKeys<TSource, TTarget, TReturn> = Extract<keyof TSource
   ? TReturn
   : 'Module contains duplicated definitions';
 
-type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleDefinitions> = NotDuplicated<
+type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleRegistry> = NotDuplicated<
   TDefinitionKey,
   R,
   // Module<R & { [K in TDefinitionKey]: Definition<V> }>
@@ -27,27 +27,24 @@ type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleDefi
   >
 >;
 
-type NextModuleImport<
-  TImportKey extends string,
-  V extends ModuleDefinitions,
-  R extends ModuleDefinitions
-> = NotDuplicated<
+type NextModuleImport<TImportKey extends string, V extends ModuleRegistry, R extends ModuleRegistry> = NotDuplicated<
   TImportKey,
   R,
-  Module<R & { [K in TImportKey]: Module<V> } & Externals<V>>
+  Module<R & { [K in TImportKey]: Module<V> } & ModuleRegistryContext<V>>
   // Module<{ [K in keyof (R & { [K in TImportKey]: V })]: (R & { [K in TImportKey]: V })[K] }>
 >;
 
-export type MaterializedDefinitions<R extends ModuleDefinitions> = {
-  [K in DefinitionsKeys<R>]: Definitions<R>[K] extends Definition<infer TDefinition> ? TDefinition : never;
+export type MaterializedDefinitions<R extends ModuleRegistry> = {
+  [K in ModuleRegistryDefinitionsKeys<R>]: ModuleRegistryDefinitions<R>[K] extends Definition<infer TDefinition>
+    ? TDefinition
+    : never;
 };
 
-export type MaterializedImports<R extends ModuleDefinitions> = {
-  [K in ImportsKeys<R>]: MaterializedDefinitions<Imports<R>[K]>;
+export type MaterializedImports<R extends ModuleRegistry> = {
+  [K in ModuleRegistryImportsKeys<R>]: MaterializedDefinitions<ModuleRegistryImports<R>[K]>;
 };
 
-export type MaterializedModuleEntries<R extends ModuleDefinitions> = MaterializedDefinitions<R> &
-  MaterializedImports<R>;
+export type MaterializedModuleEntries<R extends ModuleRegistry> = MaterializedDefinitions<R> & MaterializedImports<R>;
 
 export type ClassType<TConstructorArgs extends any[], TInstance> = {
   new (...args: TConstructorArgs): TInstance;
@@ -60,16 +57,16 @@ type FilterPrivateFields<T> = T extends Function
     };
 
 // TODO: add moduleId and name
-export class Module<R extends ModuleDefinitions> {
+export class Module<R extends ModuleRegistry> {
   public debug!: R;
 
   constructor(public entries: DefinitionsSet<R>) {}
 
-  hasModule(key: ImportsKeys<R>): boolean {
+  hasModule(key: ModuleRegistryImportsKeys<R>): boolean {
     return this.entries.hasImport(key); // TODO: hacky - because we cannot be sure that this key is a module and not a import
   }
 
-  isDeclared(key: DefinitionsKeys<R>): boolean {
+  isDeclared(key: ModuleRegistryDefinitionsKeys<R>): boolean {
     return this.entries.hasDeclaration(key);
   }
 
@@ -186,11 +183,11 @@ export class Module<R extends ModuleDefinitions> {
   }
 
   // TODO: use Flatten to make this method type safe
-  inject<TNextR extends ModuleDefinitions>(otherModule: Module<TNextR>): Module<R> {
+  inject<TNextR extends ModuleRegistry>(otherModule: Module<TNextR>): Module<R> {
     return new Module(this.entries.inject(otherModule.entries));
   }
 
-  replace<K extends DefinitionsKeys<R>, C>(
+  replace<K extends ModuleRegistryDefinitionsKeys<R>, C>(
     key: K,
     factory: (container: MaterializedModuleEntries<R>, C) => FilterPrivateFields<MaterializedDefinitions<R>[K]>,
   ): Module<R> {
@@ -198,16 +195,19 @@ export class Module<R extends ModuleDefinitions> {
   }
 
   // convenient method for providing mocks for testing
-  replaceConst<K extends DefinitionsKeys<R>, C>(key: K, value: Definitions<R>[K]): Module<R> {
+  replaceConst<K extends ModuleRegistryDefinitionsKeys<R>, C>(
+    key: K,
+    value: ModuleRegistryDefinitions<R>[K],
+  ): Module<R> {
     return this.undeclare(key).define(key as any, () => value) as any;
   }
 
   //TODO: should be private. because it breaks typesafety when module is nested? ()
-  undeclare<K extends DefinitionsKeys<R>>(key: K): Module<Omit<R, K>> {
+  undeclare<K extends ModuleRegistryDefinitionsKeys<R>>(key: K): Module<Omit<R, K>> {
     return new Module(this.entries.removeDeclaration(key)) as any;
   }
 
-  import<K extends string, TImportedR extends ModuleDefinitions>(
+  import<K extends string, TImportedR extends ModuleRegistry>(
     key: K,
     mod2: Thunk<Module<TImportedR>>,
   ): NextModuleImport<K, TImportedR, R> {
@@ -224,22 +224,26 @@ type DefinitionsUnion<T> = {
   [K in keyof T]: T[K] extends Definition<any> ? T[K] : never;
 }[keyof T];
 
-export type DefinitionsKeys<T> = { [K in keyof T]: T[K] extends Definition<any> ? K : never }[keyof T];
-export type Definitions<T> = { [K in DefinitionsKeys<T>]: T[K] };
+export type ModuleRegistryDefinitionsKeys<T> = { [K in keyof T]: T[K] extends Definition<any> ? K : never }[keyof T];
+export type ModuleRegistryDefinitions<T> = { [K in ModuleRegistryDefinitionsKeys<T>]: T[K] };
 
-export type ExternalsKeys<T> = { [K in keyof T]: T[K] extends RequiresDefinition<any> ? K : never }[keyof T];
-export type Externals<T> = { [K in ExternalsKeys<T>]: T[K] };
+export type ModuleRegistryContextKeys<T> = {
+  [K in keyof T]: T[K] extends RequiresDefinition<any> ? K : never;
+}[keyof T];
+export type ModuleRegistryContext<T> = { [K in ModuleRegistryContextKeys<T>]: T[K] };
 
-export type ImportsKeys<T> = { [K in keyof T]: UnwrapThunk<T[K]> extends Module<any> ? K : never }[keyof T];
-export type Imports<T> = {
-  [K in ImportsKeys<T>]: UnwrapThunk<T[K]> extends Module<infer R> ? R : never;
+export type ModuleRegistryImportsKeys<T> = {
+  [K in keyof T]: UnwrapThunk<T[K]> extends Module<any> ? K : never;
+}[keyof T];
+export type ModuleRegistryImports<T> = {
+  [K in ModuleRegistryImportsKeys<T>]: UnwrapThunk<T[K]> extends Module<infer R> ? R : never;
 };
 
-export type FlattenModules<R extends ModuleDefinitions> =
+export type FlattenModules<R extends ModuleRegistry> =
   | R
   | {
-      [K in keyof Imports<R>]: FlattenModules<Imports<R>[K]>;
-    }[keyof Imports<R>];
+      [K in keyof ModuleRegistryImports<R>]: FlattenModules<ModuleRegistryImports<R>[K]>;
+    }[keyof ModuleRegistryImports<R>];
 
 // export type FlattenModules<R> =
 //   | (R extends Module<infer RR> ? RR : R)

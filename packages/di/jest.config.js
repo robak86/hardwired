@@ -2,7 +2,7 @@ module.exports = {
   "name": "di",
   "displayName": "di",
   "preset": "ts-jest",
-  "testEnvironment": "node",
+  "testEnvironment": "jsdom",
   "rootDir": "./",
   "testPathIgnorePatterns": [
     "/lib/"

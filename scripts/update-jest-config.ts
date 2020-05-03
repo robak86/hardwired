@@ -12,7 +12,7 @@ packages.forEach(packageName => {
     name: packageName,
     displayName: packageName,
     preset: 'ts-jest',
-    testEnvironment: 'node',
+    testEnvironment: 'jsdom',
     rootDir: './',
     testPathIgnorePatterns: ['/lib/'],
     setupFilesAfterEnv: ['./lib/test.setup.js'],
