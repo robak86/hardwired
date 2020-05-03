@@ -60,14 +60,14 @@ type FilterPrivateFields<T> = T extends Function
 export class Module<R extends ModuleRegistry> {
   public debug!: R;
 
-  constructor(public entries: DefinitionsSet<R>) {}
+  constructor(public registry: DefinitionsSet<R>) {}
 
   hasModule(key: ModuleRegistryImportsKeys<R>): boolean {
-    return this.entries.hasImport(key); // TODO: hacky - because we cannot be sure that this key is a module and not a import
+    return this.registry.hasImport(key); // TODO: hacky - because we cannot be sure that this key is a module and not a import
   }
 
   isDeclared(key: ModuleRegistryDefinitionsKeys<R>): boolean {
-    return this.entries.hasDeclaration(key);
+    return this.registry.hasDeclaration(key);
   }
 
   require<TNextContext extends object>(): NotDuplicatedKeys<
@@ -93,7 +93,7 @@ export class Module<R extends ModuleRegistry> {
       | ((container: MaterializedModuleEntries<R>, ctx: C1) => V),
   ): NextModuleDefinition<K, V, R> {
     const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
-    return new Module(this.entries.extendDeclarations(key, resolver)) as any;
+    return new Module(this.registry.extendDeclarations(key, resolver)) as any;
   }
 
   defineConst<TKey extends string, TValue>(key: TKey, value: TValue): NextModuleDefinition<TKey, TValue, R> {
@@ -184,7 +184,7 @@ export class Module<R extends ModuleRegistry> {
 
   // TODO: use Flatten to make this method type safe
   inject<TNextR extends ModuleRegistry>(otherModule: Module<TNextR>): Module<R> {
-    return new Module(this.entries.inject(otherModule.entries));
+    return new Module(this.registry.inject(otherModule.registry));
   }
 
   replace<K extends ModuleRegistryDefinitionsKeys<R>, C>(
@@ -204,19 +204,19 @@ export class Module<R extends ModuleRegistry> {
 
   //TODO: should be private. because it breaks typesafety when module is nested? ()
   undeclare<K extends ModuleRegistryDefinitionsKeys<R>>(key: K): Module<Omit<R, K>> {
-    return new Module(this.entries.removeDeclaration(key)) as any;
+    return new Module(this.registry.removeDeclaration(key)) as any;
   }
 
   import<K extends string, TImportedR extends ModuleRegistry>(
     key: K,
     mod2: Thunk<Module<TImportedR>>,
   ): NextModuleImport<K, TImportedR, R> {
-    return new Module(this.entries.extendImports(key, unwrapThunk(mod2).entries)) as any;
+    return new Module(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any;
   }
 
   // TODO: use mapped type similar to Definitions
   toContainer(ctx: any): Container<R> {
-    return new Container(this.entries, ctx);
+    return new Container(this.registry, ctx);
   }
 }
 

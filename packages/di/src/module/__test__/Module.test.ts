@@ -1,4 +1,12 @@
-import { Container, container, Definition, ModuleRegistryContext, Module, module, RequiresDefinition, } from '../../index';
+import {
+  Container,
+  container,
+  Definition,
+  Module,
+  module,
+  ModuleRegistryContext,
+  RequiresDefinition,
+} from '../../index';
 
 import { expectType, TypeEqual } from 'ts-expect';
 

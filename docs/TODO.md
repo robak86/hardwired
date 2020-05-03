@@ -1,5 +1,7 @@
 - use strictFunction (tuple error)
+
   - possible solution would be to probide tuple helper method
+
   ```typescript
   function tuple<T1, T2>(...args: [T1, T2]): [T1, T2];
   function tuple<T1, T2, T3>(...args: [T1, T2]): [T1, T2, T3];
@@ -7,9 +9,42 @@
     throw new Error('Implement me');
   }
   ```
-```
-- use isolated modules
 
+### React
+
+- how to connect it with saga ?
+
+- implement nesting multiple containers
+
+  - container1 -> container2 -> container3. If child module has common modules with the parent, then parent modules are resued ?
+
+- implement scope
+
+  - but it only makes sens if we allow having mutable properties in module classes... and this creates problem
+    of change detection... it starts to share responsibility of state management solution :/
+
+  ```typescript jsx
+  const Component = () => {
+    return (
+      <Container>
+        <Scope>// it practically calls checkout(inherit=false)</Scope>
+        <Scope>// it practically calls checkout(inherit=false)</Scope>
+      </Container>
+    );
+  };
+  ```
+
+### Context
+
+- add methods setContext()
+
+  - it updates context and revalidates all definitions which are using changed context props
+
+- add addRevalidateListener(module, 'key')
+
+  - calls the listener if the 'key' was reinstantiated because of the setContext change
+
+- ~~use isolated modules~~
 - ~~Add extra generic type, with Context - context will be the guard for deepGet !!!!~~
   - context is part of the registry type in order to make types related error messages simpler
 
@@ -69,17 +104,19 @@ import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules |
         </> // but this is not typesafe and can be easily replaced by dynamic container extension while calling deepGet with unknown module
     }
 
-````
+```
 
-* add methods for checking equality
-- if two container are equal - it means they have exactly the same definitions and imports
-* ~~replace ts-jest with babel and run jest on already transpiled files~~
-* add checks for definition (cannot return null and undefined)
+- add methods for checking equality
+
+* if two container are equal - it means they have exactly the same definitions and imports
+
+- ~~replace ts-jest with babel and run jest on already transpiled files~~
+- add checks for definition (cannot return null and undefined)
 
 `module` may be in collision with node's module
 
 - type AppModuleDeps = Materialized<typeof appModule> - currently Materialized requires three params
--# TODO: Add callback for dispose ? (e.g for disposing database connection)
+  -# TODO: Add callback for dispose ? (e.g for disposing database connection)
 
 - check if module with replaced values (used for testing) are correctly garbage collected (reference to module entries)
 - check if containers should be explicitely disposed (in order to remove references to module entries)
@@ -91,7 +128,7 @@ import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules |
 ```typescript
 const m1 = module('name1').defineFunction('someFunction', someFunction, ctx => [ctx.dep1, ctx.dep2, ctx.dep3]); // returns curried version of someFunction
 const m2 = module('name2').defineClass('someClass', SomeClass, ctx => [{ dep1: ctx.dep1, dep2: ctx.dep2 }]); // returns instance of SomeClass
-````
+```
 
 - investigage pros and cons of module-less container
   - we wouldn't be able to implement typesafe context

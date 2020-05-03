@@ -13,7 +13,7 @@ export function module<CTX = {}>(name: string): Module<{}> {
 //TODO: consider completely removing the m parameter. Create empty container instead and instantiate all dependencies via deepGet
 //TODO: investigate how to pass context in such case? and how to make it typesafe ?!
 export function container<R extends ModuleRegistry, CTX>(m: Module<R>, ctx: any): Container<R, any> {
-  return new Container((m as any).entries, ctx as any);
+  return new Container(m.registry, ctx as any);
 }
 
 //TODO: ctx should be typesafe. we should forbid calling deepGet with modules requiring different context than the context passed here

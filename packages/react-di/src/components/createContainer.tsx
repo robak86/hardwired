@@ -51,6 +51,7 @@ type ContainerComponents<TRegistry extends ModuleRegistry> = {
   useContainer: () => MaterializedDefinitions<TRegistry>;
 };
 
+// TODO: allow thunk returning promise for lazy loading ?
 export function createContainer<TRegistry extends ModuleRegistry>(
   module: Module<TRegistry>,
 ): ContainerComponents<TRegistry> {

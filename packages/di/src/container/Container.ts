@@ -1,12 +1,12 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import {
-  ModuleRegistryDefinitions,
-  ModuleRegistryDefinitionsKeys,
-  ModuleRegistryContext,
   MaterializedDefinitions,
   MaterializedModuleEntries,
   Module,
   ModuleRegistry,
+  ModuleRegistryContext,
+  ModuleRegistryDefinitions,
+  ModuleRegistryDefinitionsKeys,
 } from '../module/Module';
 import { unwrapThunk } from '../utils/thunk';
 import { containerProxyAccessor } from './container-proxy-accessor';
@@ -70,27 +70,19 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
     }
   }
 
-  // deepGet2<M extends FlattenModule<I, D>>(module: M): M {
-  //   throw new Error('implement me');
-  // }
-  //
-  // flatten(): FlattenModule<I, D> {
-  //   throw new Error('implement me');
-  // }
-
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
   deepGet<TNextR extends ModuleRegistry, K extends keyof MaterializedDefinitions<TNextR>>(
     module: Module<TNextR>,
     key: K,
   ): DeepGetReturn<K, TNextR, R> {
     //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
-    let childModule: DefinitionsSet<any> | undefined = this.entries.isEqual(module.entries)
+    let childModule: DefinitionsSet<any> | undefined = this.entries.isEqual(module.registry)
       ? this.entries
-      : unwrapThunk(this.findModule(module.entries));
+      : unwrapThunk(this.findModule(module.registry));
 
     if (!childModule) {
       console.warn('deepGet called with module which is not imported by any descendant module');
-      childModule = module.entries;
+      childModule = module.registry;
     }
 
     //TODO: investigate if we should cache containers. If so we need import resolver, but since containers are almost stateless maybe caching is not mandatory ?!
