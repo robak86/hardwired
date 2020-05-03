@@ -61,7 +61,7 @@ type FilterPrivateFields<T> = T extends Function
 
 // TODO: add moduleId and name
 export class Module<R extends ModuleDefinitions> {
-  public debug: R;
+  public debug!: R;
 
   constructor(public entries: DefinitionsSet<R>) {}
 

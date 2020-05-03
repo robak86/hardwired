@@ -21,3 +21,11 @@ export const ContainerProvider: FunctionComponent<ContainerProviderProps> = ({ c
 
   return <ContainerContext.Provider value={{ container }}>{children}</ContainerContext.Provider>;
 };
+
+type ContainerComponents<P> = {
+  Container: FunctionComponent<{ context: P }>;
+};
+
+export function createContainer<TRegistry>(module: Module<TRegistry>) {
+  return {};
+}

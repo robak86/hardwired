@@ -1,6 +1,6 @@
-import { Module, ModuleDefinitions } from "./module/Module";
-import { Container } from "./container/Container";
-import { DefinitionsSet } from "./module/module-entries";
+import { Module, ModuleDefinitions } from './module/Module';
+import { Container } from './container/Container';
+import { DefinitionsSet } from './module/module-entries';
 
 export * from './module/Module';
 export * from './container/Container';

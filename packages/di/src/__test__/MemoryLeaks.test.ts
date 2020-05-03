@@ -1,8 +1,11 @@
-// import {iterate} from 'leakage'
+// https://www.npmjs.com/search?q=keywords:memory%20leak
+
+import { module } from '../index';
 
 describe.skip(`MemoryLeaks`, () => {
   describe(`.checkout`, () => {
     it(`doesn't cause memory leaks`, async () => {
+      const m = module('sdf');
       //   let m1 = module('m1')
       //     .define('s3', () => 123)
       //     .define('s4', () => 456);

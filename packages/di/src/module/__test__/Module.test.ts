@@ -1,16 +1,4 @@
-import {
-  Container,
-  container,
-  Definition,
-  Definitions,
-  Externals,
-  FlattenModules,
-  Imports,
-  ImportsKeys,
-  Module,
-  module,
-  RequiresDefinition,
-} from '../../index';
+import { Container, container, Definition, Externals, Module, module, RequiresDefinition, } from '../../index';
 
 import { expectType, TypeEqual } from 'ts-expect';
 

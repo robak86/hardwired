@@ -1,6 +1,35 @@
-- Add extra generic type, with Context - context will be the guard for deepGet !!!!
+- use strictFunction (tuple error)
+  - possible solution would be to probide tuple helper method
+  ```typescript
+  function tuple<T1, T2>(...args: [T1, T2]): [T1, T2];
+  function tuple<T1, T2, T3>(...args: [T1, T2]): [T1, T2, T3];
+  function tuple(...args: any[]): any[] {
+    throw new Error('Implement me');
+  }
+  ```
+```
+- use isolated modules
+
+- ~~Add extra generic type, with Context - context will be the guard for deepGet !!!!~~
+  - context is part of the registry type in order to make types related error messages simpler
+
+### Proxy object
+
+- proxy object compatibility
+  - dependency select method
+  - eager container for browser not supporting es6 proxy
+
+### External dependencies
+
+- add .require() for external params (acts similary to import, but expect parameters to be provided at container builds step)
+- module('someName').requires<>(key: 'someKey') // we need to explicitely set key in order to lazyli rebuild
+- require<{someProp: number}>()
+  - investigate if we really need to explicitely get `someProp` while defining external dependency
+  - it looks like we can compare all keys from registry with all keys called with select method (proxy object)
+  - ...but in some env's we won't be able to use proxy object
 
 ```
+
 class Module<R, Modules> {
 // Modules is a flat union of all modules registered in module
 import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules | Module<TNext, any> | TNextModules> {
@@ -14,22 +43,24 @@ import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules |
   - freeze method, would still allow to create multiple modules with the same name
   - automatically freeze object in next tick, and throw errors on define, import calls ?
   -
-- deepGet won't be typesafe with context. In order to fix this deepGet needs to recursively collec all registered modules
+- ~~deepGet won't be typesafe with context. In order to fix this deepGet needs to recursively collec all registered modules
   and check if module passed to deepGet is registered in container. If we won't be able to do this, newly ad-hoc registered module
-  may miss it's context
-- module('someName').requires<>(key: 'someKey') // we need to explicitely set key in order to lazyli rebuild
+  may miss it's context~~
+  - because of typescript is missing contravariant generic constraints, the only way to achive typesafe is by using
+    conditional return type, returning error message if module is not compatibile with container
 
-- container.updateContext({}) // it rebuild all dependencies which are connected with context... in practice it will be almost
+* container.updateContext({}) // it rebuild all dependencies which are connected with context... in practice it will be almost
   always the whole tree, becuase in most of the cases context will be some deeply nested dependency( probabilit leaf)
 
-- ~~migrate unit tests to jest (we need to test react-di)~~
-- investigate if deepGet can be type safe
+* ~~migrate unit tests to jest (we need to test react-di)~~
+* investigate if deepGet can be type safe
 
   - it would require flattening of imports into union of types <I,D, AD, C>
   - if it is typesafe then we would have to create factory for all react api - `const {useContainer, ContainerProvider} = createContainer(module)`
   - if typesafe is not type safe, then we could consider feature for extending current(parent) container with additional modules
 
-  ```
+```
+
     const A = () {
       return <ContainerProvider module={module1}>
                 <ContainerProvider module={module2}>
@@ -37,18 +68,18 @@ import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules |
                 </>
         </> // but this is not typesafe and can be easily replaced by dynamic container extension while calling deepGet with unknown module
     }
-  ```
 
-- add methods for checking equality
-  - if two container are equal - it means they have exactly the same definitions and imports
-- replace ts-jest with babel and run jest on already transpiled files
-- add checks for definition (cannot return null and undefined)
-- add .require() for external params (acts similary to import, but expect parameters to be provided at container builds step)
+````
+
+* add methods for checking equality
+- if two container are equal - it means they have exactly the same definitions and imports
+* ~~replace ts-jest with babel and run jest on already transpiled files~~
+* add checks for definition (cannot return null and undefined)
 
 `module` may be in collision with node's module
 
 - type AppModuleDeps = Materialized<typeof appModule> - currently Materialized requires three params
-  -# TODO: Add callback for dispose ? (e.g for disposing database connection)
+-# TODO: Add callback for dispose ? (e.g for disposing database connection)
 
 - check if module with replaced values (used for testing) are correctly garbage collected (reference to module entries)
 - check if containers should be explicitely disposed (in order to remove references to module entries)
@@ -56,12 +87,11 @@ import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules |
 - ~~add convenience methods for~~
 
 - Lazy loading for the web
-- eager container for browser not supporting es6 proxy
 
 ```typescript
 const m1 = module('name1').defineFunction('someFunction', someFunction, ctx => [ctx.dep1, ctx.dep2, ctx.dep3]); // returns curried version of someFunction
 const m2 = module('name2').defineClass('someClass', SomeClass, ctx => [{ dep1: ctx.dep1, dep2: ctx.dep2 }]); // returns instance of SomeClass
-```
+````
 
 - investigage pros and cons of module-less container
   - we wouldn't be able to implement typesafe context
