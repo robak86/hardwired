@@ -9,6 +9,7 @@ import {
 } from '../../index';
 
 import { expectType, TypeEqual } from 'ts-expect';
+import { fun } from '../../resolvers/CurriedFunctionResolver';
 
 describe(`Module`, () => {
   describe(`.hasModule`, () => {
@@ -178,6 +179,13 @@ describe(`Module`, () => {
           .defineFunction('curry2', someFunction, ctx => [ctx.d1, ctx.d2])
           .toContainer({});
 
+        const zz = module('m2')
+          .define('d1', () => 'dependency1')
+          .define('d2', () => 123)
+          .define2('a', ctx => fun(someFunction, [ctx.d1, ctx.d2]));
+
+        console.log(m);
+        console.log(m.get);
         expect(m.get('curry0')('string', 123)).toEqual(['string', 123]);
         expect(m.get('curry1')(123)).toEqual(['dependency1', 123]);
         expect(m.get('curry2')()).toEqual(['dependency1', 123]);
@@ -199,40 +207,6 @@ describe(`Module`, () => {
       });
     });
   });
-
-  // describe(`.replaceFunction`, () => {
-  //   it(`replaces previously registered function without any params`, async () => {
-  //     const someFunction = () => 1;
-  //     const functionOverride = () => 2;
-  //
-  //     const m = module('m1').defineFunction('f1', someFunction);
-  //     expect(m.toContainer({}).get('f1')()).toEqual(1);
-  //
-  //     const mWithOverride = m.replaceFunction('f1', functionOverride);
-  //   });
-  //
-  //   it(`replaces previously registered function without any params`, async () => {
-  //     const someFunction = (arg1: number) => 1;
-  //     const functionOverride = (arg1: number) => 2;
-  //
-  //     const m = module('m1').defineFunction('f1', someFunction);
-  //     expect(m.toContainer({}).get('f1')(1)).toEqual(1);
-  //
-  //     const mWithOverride = m.replaceFunction('f1', functionOverride);
-  //     expect(mWithOverride.toContainer({}).get('f1')(1)).toEqual(2);
-  //   });
-  //
-  //   it(`replaces previously registered function without any params`, async () => {
-  //     const someFunction = (arg1: number) => 1;
-  //     const functionOverride = () => 2;
-  //
-  //     const m = module('m1').defineFunction('f1', someFunction, ctx => [1]);
-  //     expect(m.toContainer({}).get('f1')()).toEqual(1);
-  //
-  //     const mWithOverride = m.replace('f1', () => functionOverride);
-  //     expect(mWithOverride.toContainer({}).get('f1')()).toEqual(2);
-  //   });
-  // });
 
   describe(`.define`, () => {
     describe(`types`, () => {

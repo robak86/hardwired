@@ -1,9 +1,24 @@
+- define should be default create dependencies in transient scope :/.... \
+  - or we should forbid syntax like `.define(ctx => ...)`
+  - instead we should require providing dependency resolvers
+- consider more strict api ?
+
+```typescript
+type Resolvable = () => Treturn | DependencyResolver;
+
+const m = module('someName')
+  .define() // (ctx => TReturn) //transient by default
+  .using(singleton)
+  .define() // each time define comes from different implementation
+  .using(singletonFunction)
+  .define(); // the same as define
+```
 
 - extendable api for react custom elements
 
   ```typescript jsx
   const m = module('m')
-    .define('state', cxt => state())
+    .define('state', cxt => state()) // useDependency() tracks changes to state ?
     .define('someSaga', ctx => saga(someSaga()));
   ```
 
@@ -14,25 +29,28 @@
     return (
       <Container1>
         <Container2>
-          useSelector() // has access to state merged from states defined in Container1 and in Container2
-          dispatch() // should dispatch actions defined only in Container1 and Container2 (to corresponding sagas)
-          or should be dispatched to the whole application
+          useSelector() // has access to state merged from states defined in Container1 and in Container2 dispatch() //
+          should dispatch actions defined only in Container1 and Container2 (to corresponding sagas) or should be
+          dispatched to the whole application
         </Container2>
       </Container1>
     );
   };
   ```
+
 - sagas, reducers, states should be propagated to root container - it's global dependency. How to reuse it in child modules ?
 
 - should we provide module().onInit(ctx => {})
-    - it enables side effect (which is bad)
-    - but it's called only once (which is acceptable ?)
+
+  - it enables side effect (which is bad)
+  - but it's called only once (which is acceptable ?)
 
 - should we provide StatModule in separate packages ?
+
   ```typescript jsx
   function createStateModule(name: string, {rootReducer:}) {
       return module('state1')
-  
+
   }
   ```
 

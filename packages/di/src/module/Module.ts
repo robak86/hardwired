@@ -4,6 +4,7 @@ import { Thunk, unwrapThunk, UnwrapThunk } from '../utils/thunk';
 import { curry } from '../utils/curry';
 import { Container } from '..';
 import { DefinitionsSet } from './module-entries';
+import { CurriedFunctionResolver } from '../resolvers/CurriedFunctionResolver';
 
 export type Definition<T> = { definition: T };
 export type RequiresDefinition<T> = { requires: T };
@@ -84,13 +85,21 @@ export class Module<R extends ModuleRegistry> {
   ): NextModuleDefinition<K, V, R>;
   define<K extends string, V, C1>(
     key: K,
-    factory: (container: MaterializedModuleEntries<R>, ctx: C1) => V,
+    factory: (container: MaterializedModuleEntries<R>, ctx: C1) => V, // TODO: its unclear if this single override shouldn't be exposed in the api
   ): NextModuleDefinition<K, V, R>;
   define<K extends string, V, C1>(
     key: K,
     factory:
       | DependencyResolver<MaterializedModuleEntries<R>, V>
       | ((container: MaterializedModuleEntries<R>, ctx: C1) => V),
+  ): NextModuleDefinition<K, V, R> {
+    const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
+    return new Module(this.registry.extendDeclarations(key, resolver)) as any;
+  }
+
+  define2<K extends string, V, C1>(
+    key: K,
+    factory: (container: MaterializedModuleEntries<R>) => DependencyResolver<MaterializedModuleEntries<R>, V>,
   ): NextModuleDefinition<K, V, R> {
     const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
     return new Module(this.registry.extendDeclarations(key, resolver)) as any;
@@ -169,17 +178,7 @@ export class Module<R extends ModuleRegistry> {
     depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1, TDep2, TDep3],
   ): NextModuleDefinition<TKey, () => TResult, R>;
   defineFunction(key, fn, depSelect?): any {
-    const curried = curry(fn);
-    const select = depSelect ? depSelect : () => [];
-    // TODO: container => {...} should be wrapped in some concrete DependencyResolver instance (.e.g CurriedFunctionResolver)
-    return this.define(key, container => {
-      const params = select(container);
-      if (params.length === fn.length) {
-        return () => fn(...params);
-      } else {
-        return curried(...params);
-      }
-    });
+    return this.define(key, new CurriedFunctionResolver(fn, depSelect));
   }
 
   // TODO: use Flatten to make this method type safe
@@ -265,3 +264,19 @@ export type FlattenModules<R extends ModuleRegistry> =
 //
 // const wtf2: Fla = ap;
 // const wtf22: Fla = a;
+
+// type Wrapped<T> = { wrapped: T };
+//
+// function accept<T>(fn: () => Wrapped<T>): Wrapped<T> {
+//   throw new Error('Implement me');
+// }
+//
+// const z = accept(() => {
+//   if (Math.random()) {
+//     return { wrapped: 1 };
+//   } else {
+//     return { wrapped: 'sdf' };
+//   }
+// });
+
+
