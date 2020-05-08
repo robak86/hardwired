@@ -22,7 +22,6 @@ import {
 } from './ModuleUtils';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 
-
 // TODO: extends BaseModule throws error (some circular dependencies makes BaseModule to be undefined)
 export class Module<R extends ModuleRegistry> {
   public debug!: R;
@@ -98,57 +97,6 @@ export class Module<R extends ModuleRegistry> {
       const selectDeps = depSelect ? depSelect : () => [];
       return new klass(...(selectDeps(container) as any));
     });
-  }
-
-  defineFunction<TKey extends string, TResult>(
-    key: TKey,
-    fn: () => TResult,
-  ): NextModuleDefinition<TKey, () => TResult, R>;
-  defineFunction<TKey extends string, TDep1, TResult>(
-    key: TKey,
-    fn: (d1: TDep1) => TResult,
-  ): NextModuleDefinition<TKey, (d1: TDep1) => TResult, R>;
-  defineFunction<TKey extends string, TDep1, TResult>(
-    key: TKey,
-    fn: (d1: TDep1) => TResult,
-    depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1],
-  ): NextModuleDefinition<TKey, () => TResult, R>;
-  defineFunction<TKey extends string, TDep1, TDep2, TResult>(
-    key: TKey,
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-  ): NextModuleDefinition<TKey, (d1: TDep1, d2: TDep2) => TResult, R>;
-  defineFunction<TKey extends string, TDep1, TDep2, TResult>(
-    key: TKey,
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1],
-  ): NextModuleDefinition<TKey, (dep2: TDep2) => TResult, R>;
-  defineFunction<TKey extends string, TDep1, TDep2, TResult>(
-    key: TKey,
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1, TDep2],
-  ): NextModuleDefinition<TKey, () => TResult, R>;
-  // 3 args
-  defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    key: TKey,
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-  ): NextModuleDefinition<TKey, (d1: TDep1, d2: TDep2, d3: TDep3) => TResult, R>;
-  defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    key: TKey,
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1],
-  ): NextModuleDefinition<TKey, (dep2: TDep2, dep3: TDep3) => TResult, R>;
-  defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    key: TKey,
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1, TDep2],
-  ): NextModuleDefinition<TKey, (dep3: TDep3) => TResult, R>;
-  defineFunction<TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    key: TKey,
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: (ctx: MaterializedModuleEntries<R>) => [TDep1, TDep2, TDep3],
-  ): NextModuleDefinition<TKey, () => TResult, R>;
-  defineFunction(key, fn, depSelect?): any {
-    return this.define(key, new CurriedFunctionResolver(fn, depSelect));
   }
 
   // TODO: use Flatten to make this method type safe

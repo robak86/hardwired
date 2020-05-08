@@ -1,8 +1,9 @@
 import { Container, container, Definition, Module, module, ModuleRegistryContext, RequiresDefinition } from '../..';
 
 import { expectType, TypeEqual } from 'ts-expect';
-import { fun } from '../../builders/FunctionBuilder';
+import { fun, FunctionModuleBuilder } from '../../builders/FunctionBuilder';
 import { ClassBuilder, classInstance } from '../../builders/ClassBuilder';
+import { ModuleBuilder } from '../../builders/ModuleBuilder';
 
 describe(`Module`, () => {
   describe(`.hasModule`, () => {
@@ -101,24 +102,30 @@ describe(`Module`, () => {
     describe(`types`, () => {
       it(`creates correct module type for function without any dependencies`, async () => {
         const someFunction = () => 123;
-        const m = module('m1').defineFunction('noDepsFunction', someFunction);
-        expectType<TypeEqual<typeof m, Module<{ noDepsFunction: Definition<() => number> }>>>(true);
+        const m = module('m1').using(fun).define('noDepsFunction', someFunction);
+        expectType<TypeEqual<typeof m, FunctionModuleBuilder<{ noDepsFunction: Definition<() => number> }>>>(true);
       });
 
       it(`creates correct module type for function with single parameter`, async () => {
         const someFunction = (someParam: string) => 123;
-        const m = module('m1').defineFunction('noDepsFunction', someFunction);
-        expectType<TypeEqual<typeof m, Module<{ noDepsFunction: Definition<(param: string) => number> }>>>(true);
+        const m = module('m1').using(fun).define('noDepsFunction', someFunction);
+        expectType<
+          TypeEqual<typeof m, FunctionModuleBuilder<{ noDepsFunction: Definition<(param: string) => number> }>>
+        >(true);
       });
 
       it(`creates correct module type for function with single parameter with all deps provided`, async () => {
         const someFunction = (someParam: string) => 123;
         const m = module('m1')
           .define('someString', () => 'someString')
-          .defineFunction('noDepsFunction', someFunction, ctx => [ctx.someString]);
+          .using(fun)
+          .define('noDepsFunction', someFunction, ctx => [ctx.someString]);
 
         expectType<
-          TypeEqual<typeof m, Module<{ someString: Definition<string>; noDepsFunction: Definition<() => number> }>>
+          TypeEqual<
+            typeof m,
+            FunctionModuleBuilder<{ someString: Definition<string>; noDepsFunction: Definition<() => number> }>
+          >
         >(true);
       });
 
@@ -127,12 +134,13 @@ describe(`Module`, () => {
         const m = module('m1')
           .define('someString', () => 'someString')
           .define('someNumber', () => 123)
-          .defineFunction('noDepsFunction', someFunction);
+          .using(fun)
+          .define('noDepsFunction', someFunction);
 
         expectType<
           TypeEqual<
             typeof m,
-            Module<{
+            FunctionModuleBuilder<{
               someString: Definition<string>;
               someNumber: Definition<number>;
               noDepsFunction: Definition<(d1: string, d2: number) => number>;
@@ -146,12 +154,13 @@ describe(`Module`, () => {
         const m = module('m1')
           .define('someString', () => 'someString')
           .define('someNumber', () => 123)
-          .defineFunction('noDepsFunction', someFunction, ctx => [ctx.someString, ctx.someNumber]);
+          .using(fun)
+          .define('noDepsFunction', someFunction, ctx => [ctx.someString, ctx.someNumber]);
 
         expectType<
           TypeEqual<
             typeof m,
-            Module<{
+            FunctionModuleBuilder<{
               someString: Definition<string>;
               someNumber: Definition<number>;
               noDepsFunction: Definition<() => number>;
@@ -184,14 +193,16 @@ describe(`Module`, () => {
         const m = module('m1')
           .define('d1', () => 'dependency1')
           .define('d2', () => 123)
-          .defineFunction('curry0', someFunction)
-          .defineFunction('curry1', someFunction, ctx => [ctx.d1])
-          .defineFunction('curry2', someFunction, ctx => [ctx.d1, ctx.d2])
-          .toContainer({});
+          .using(fun)
+          .define('curry0', someFunction)
+          .define('curry1', someFunction, ctx => [ctx.d1])
+          .define('curry2', someFunction, ctx => [ctx.d1, ctx.d2]);
 
-        expect(m.get('curry0')).toEqual(m.get('curry0'));
-        expect(m.get('curry1')).toEqual(m.get('curry1'));
-        expect(m.get('curry2')).toEqual(m.get('curry2'));
+        const c = container(m);
+
+        expect(c.get('curry0')).toEqual(c.get('curry0'));
+        expect(c.get('curry1')).toEqual(c.get('curry1'));
+        expect(c.get('curry2')).toEqual(c.get('curry2'));
       });
     });
   });
@@ -282,7 +293,7 @@ describe(`Module`, () => {
           .define('b', () => '2')
           .toContainer({});
 
-        expectType<TypeEqual<typeof c1, Container<{ a: Definition<number>; b: Definition<string> }, {}>>>(true);
+        expectType<TypeEqual<typeof c1, Container<{ a: Definition<number>; b: Definition<string> }>>>(true);
       });
     });
   });

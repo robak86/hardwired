@@ -10,6 +10,14 @@ export type ModuleRegistryContextKeys<T> = {
   [K in keyof T]: T[K] extends RequiresDefinition<any> ? K : never;
 }[keyof T];
 export type ModuleRegistryContext<T> = { [K in ModuleRegistryContextKeys<T>]: T[K] };
+export type MaterializedModuleRegistryContext<TRegistry extends ModuleRegistry> = {
+  [K in keyof ModuleRegistryContextKeys<TRegistry>]: ModuleRegistryContextKeys<TRegistry>[K] extends RequiresDefinition<
+    infer TContext
+  >
+    ? TContext
+    : never;
+};
+
 export type ModuleRegistryImportsKeys<T> = {
   [K in keyof T]: UnwrapThunk<T[K]> extends Module<any> ? K : never;
 }[keyof T];

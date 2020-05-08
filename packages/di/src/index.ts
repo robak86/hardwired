@@ -2,9 +2,9 @@ import { Module } from './module/Module';
 import { Container } from './container/Container';
 import { DefinitionsSet } from './module/DefinitionsSet';
 import { ModuleRegistry } from './module/ModuleRegistry';
-import { ModuleBuilder } from './builders/ModuleBuilder';
 import { BaseModuleBuilder } from './builders/BaseModuleBuilder';
 import { FunctionModuleBuilder } from './builders/FunctionBuilder';
+import { ModuleBuilder } from "./builders/ModuleBuilder";
 
 export * from './module/Module';
 export * from './container/Container';
@@ -14,11 +14,14 @@ export function module<CTX = {}>(name: string): Module<{}> {
   return new Module(DefinitionsSet.empty(name));
 }
 
-//TODO: consider completely removing the m parameter. Create empty container instead and instantiate all dependencies via deepGet
 //TODO: investigate how to pass context in such case? and how to make it typesafe ?!
-
-export function container<R extends ModuleRegistry>(m: FunctionModuleBuilder<R>, ctx?: any): Container<R, any> {
-  return new Container((m as any).registry, {});
+// TODO: currently in order to have correct TRegistry type we need pass union of exact implementations of ModuleBuilder - which forbids custom builders in user space
+export function container<TRegistry extends ModuleRegistry>(
+  m: FunctionModuleBuilder<TRegistry> | Module<TRegistry>,
+  // m: ModuleBuilder<TRegistry>,
+  ctx?: any,
+): Container<TRegistry> {
+  return new Container((m as any).registry, ctx);
 }
 
 //TODO: make it type-safe

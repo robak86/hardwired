@@ -4,17 +4,17 @@ import { ContainerCache } from '../container/container-cache';
 
 export type ServiceLocatorDependencyConfig = {};
 
-export const serviceLocator = <TRegistry extends ModuleRegistry, TContext, TReturn>(
-  run: (container: Container<TRegistry, TContext>) => TReturn,
+export const serviceLocator = <TRegistry extends ModuleRegistry, TReturn>(
+  run: (container: Container<TRegistry>) => TReturn,
   config: Partial<ServiceLocatorDependencyConfig> = {},
 ) => {
-  return new ServiceLocatorResolver<TRegistry, TContext, TReturn>(run);
+  return new ServiceLocatorResolver<TRegistry, TReturn>(run);
 };
 
 // TODO: it is stored as singleton
-export class ServiceLocatorResolver<TRegistry extends ModuleRegistry, TContext, TReturn>
-  implements DependencyResolver<TRegistry, TContext, TReturn> {
-  constructor(private run: (container: Container<TRegistry, TContext>) => TReturn) {}
+export class ServiceLocatorResolver<TRegistry extends ModuleRegistry, TReturn>
+  implements DependencyResolver<TRegistry, TReturn> {
+  constructor(private run: (container: Container<TRegistry>) => TReturn) {}
 
   build(container: TRegistry, ctx, cache: ContainerCache): TReturn {
     throw new Error('Implement me');

@@ -1,5 +1,6 @@
 import { BaseModuleBuilder, Definition, MaterializedModuleEntries, ModuleRegistry, NotDuplicated } from '..';
 import { DefinitionsSet } from '../module/DefinitionsSet';
+import { CurriedFunctionResolver } from '../resolvers/CurriedFunctionResolver';
 
 type NextFunctionModuleBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
   TKey,
@@ -65,8 +66,8 @@ export class FunctionModuleBuilder<TRegistry extends ModuleRegistry> extends Bas
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => [TDep1, TDep2, TDep3],
   ): NextFunctionModuleBuilder<TKey, () => TResult, TRegistry>;
   define(key, fn, depSelect?): any {
-    // return this.define(key, new CurriedFunctionResolver(fn, depSelect)) as any;
-    throw new Error('');
+    const newRegistry = this.registry.extendDeclarations(key, new CurriedFunctionResolver(fn, depSelect));
+    return new FunctionModuleBuilder(newRegistry);
   }
 }
 

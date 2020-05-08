@@ -42,10 +42,10 @@ export type DeepGetReturn<
 
 // TODO: extract all code related to instantiation of definition into services
 
-export class Container<R extends ModuleRegistry = {}, C = {}> {
+export class Container<R extends ModuleRegistry = {}> {
   private cache: ContainerCache = new ContainerCache();
 
-  constructor(private entries: DefinitionsSet<R>, private context: C) {}
+  constructor(private entries: DefinitionsSet<R>, private context) {}
 
   get = <K extends ModuleRegistryDefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
     return this.getChild(this.cache.forNewRequest(), key as any); //
