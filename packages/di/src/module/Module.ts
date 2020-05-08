@@ -10,11 +10,9 @@ import {
   ModuleRegistry,
   ModuleRegistryDefinitions,
   ModuleRegistryDefinitionsKeys,
-  ModuleRegistryImportsKeys,
   RequiresDefinition,
 } from './ModuleRegistry';
 import { FilterPrivateFields, NextModuleDefinition, NextModuleImport, NotDuplicatedKeys } from './ModuleUtils';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { BaseModuleBuilder } from '../builders/BaseModuleBuilder';
 
 // TODO: extends BaseModule throws error (some circular dependencies makes BaseModule to be undefined)
@@ -27,18 +25,6 @@ export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
 
   protected build<TNextBuilder extends this>(ctx: any): TNextBuilder {
     return new Module(ctx) as any;
-  }
-
-  using<TNextBuilder extends ModuleBuilder<R>>(builderFactory: (ctx: DefinitionsSet<R>) => TNextBuilder): TNextBuilder {
-    return builderFactory(this.registry);
-  }
-
-  hasModule(key: ModuleRegistryImportsKeys<R>): boolean {
-    return this.registry.hasImport(key); // TODO: hacky - because we cannot be sure that this key is a module and not a import
-  }
-
-  isDeclared(key: ModuleRegistryDefinitionsKeys<R>): boolean {
-    return this.registry.hasDeclaration(key);
   }
 
   require<TNextContext extends object>(): NotDuplicatedKeys<
@@ -77,11 +63,6 @@ export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
 
   defineConst<TKey extends string, TValue>(key: TKey, value: TValue): NextModuleDefinition<TKey, TValue, R> {
     return this.define(key, () => value);
-  }
-
-  // TODO: use Flatten to make this method type safe
-  inject<TNextR extends ModuleRegistry>(otherModule: Module<TNextR>): Module<R> {
-    return new Module(this.registry.inject(otherModule.registry));
   }
 
   replace<K extends ModuleRegistryDefinitionsKeys<R>, C>(
