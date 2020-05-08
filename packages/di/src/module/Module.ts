@@ -1,9 +1,9 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
 import { Thunk, unwrapThunk } from '../utils/thunk';
-import { BaseModuleBuilder, Container } from '..';
+
 import { DefinitionsSet } from './DefinitionsSet';
-import { CurriedFunctionResolver } from '../resolvers/CurriedFunctionResolver';
+
 import {
   MaterializedDefinitions,
   MaterializedModuleEntries,
@@ -13,20 +13,21 @@ import {
   ModuleRegistryImportsKeys,
   RequiresDefinition,
 } from './ModuleRegistry';
-import {
-  ClassType,
-  FilterPrivateFields,
-  NextModuleDefinition,
-  NextModuleImport,
-  NotDuplicatedKeys,
-} from './ModuleUtils';
+import { FilterPrivateFields, NextModuleDefinition, NextModuleImport, NotDuplicatedKeys } from './ModuleUtils';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { BaseModuleBuilder } from '../builders/BaseModuleBuilder';
 
 // TODO: extends BaseModule throws error (some circular dependencies makes BaseModule to be undefined)
-export class Module<R extends ModuleRegistry> {
+export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
   public debug!: R;
 
-  constructor(public readonly registry: DefinitionsSet<R>) {}
+  constructor(registry: DefinitionsSet<R>) {
+    super(registry);
+  }
+
+  protected build<TNextBuilder extends this>(ctx: any): TNextBuilder {
+    return new Module(ctx) as any;
+  }
 
   using<TNextBuilder extends ModuleBuilder<R>>(builderFactory: (ctx: DefinitionsSet<R>) => TNextBuilder): TNextBuilder {
     return builderFactory(this.registry);
@@ -78,27 +79,6 @@ export class Module<R extends ModuleRegistry> {
     return this.define(key, () => value);
   }
 
-  // TODO: define -> register -> useClass -> ??
-  defineClass<TKey extends string, TResult>(
-    key: TKey,
-    klass: ClassType<[], TResult>,
-  ): NextModuleDefinition<TKey, TResult, R>;
-  defineClass<TKey extends string, TDeps extends any[], TResult>(
-    key: TKey,
-    klass: ClassType<TDeps, TResult>,
-    depSelect: (ctx: MaterializedModuleEntries<R>) => TDeps,
-  ): NextModuleDefinition<TKey, TResult, R>;
-  defineClass<TKey extends string, TDeps extends any[], TResult>(
-    key: TKey,
-    klass: ClassType<TDeps, TResult>,
-    depSelect?: (ctx: MaterializedModuleEntries<R>) => TDeps,
-  ): NextModuleDefinition<TKey, TResult, R> {
-    return this.define(key, container => {
-      const selectDeps = depSelect ? depSelect : () => [];
-      return new klass(...(selectDeps(container) as any));
-    });
-  }
-
   // TODO: use Flatten to make this method type safe
   inject<TNextR extends ModuleRegistry>(otherModule: Module<TNextR>): Module<R> {
     return new Module(this.registry.inject(otherModule.registry));
@@ -129,11 +109,6 @@ export class Module<R extends ModuleRegistry> {
     mod2: Thunk<Module<TImportedR>>,
   ): NextModuleImport<K, TImportedR, R> {
     return new Module(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any;
-  }
-
-  // TODO: use mapped type similar to Definitions
-  toContainer(ctx: any): Container<R> {
-    return new Container(this.registry, ctx);
   }
 }
 
@@ -171,3 +146,6 @@ export class Module<R extends ModuleRegistry> {
 //     return { wrapped: 'sdf' };
 //   }
 // });
+export function module<CTX = {}>(name: string): Module<{}> {
+  return new Module(DefinitionsSet.empty(name));
+}

@@ -1,4 +1,4 @@
-import { ModuleRegistry } from '..';
+import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 
 export interface ModuleBuilder<TRegistry extends ModuleRegistry> {

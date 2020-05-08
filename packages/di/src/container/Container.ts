@@ -1,9 +1,5 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
-import {
-  Module,
-
-
-} from '../module/Module';
+import { Module, } from '../module/Module';
 import { unwrapThunk } from '../utils/thunk';
 import { containerProxyAccessor } from './container-proxy-accessor';
 import { ContainerCache } from './container-cache';
@@ -16,6 +12,8 @@ import {
   ModuleRegistryDefinitions,
   ModuleRegistryDefinitionsKeys
 } from "../module/ModuleRegistry";
+import { FunctionModuleBuilder } from "../builders/FunctionBuilder";
+import { ClassBuilder } from "../builders/ClassBuilder";
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -42,10 +40,10 @@ export type DeepGetReturn<
 
 // TODO: extract all code related to instantiation of definition into services
 
-export class Container<R extends ModuleRegistry = {}> {
+export class Container<R extends ModuleRegistry = {}, C = {}> {
   private cache: ContainerCache = new ContainerCache();
 
-  constructor(private entries: DefinitionsSet<R>, private context) {}
+  constructor(private entries: DefinitionsSet<R>, private context: C) {}
 
   get = <K extends ModuleRegistryDefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
     return this.getChild(this.cache.forNewRequest(), key as any); //
@@ -126,4 +124,12 @@ export class Container<R extends ModuleRegistry = {}> {
 
     throw new Error(`Cannot find dependency for ${dependencyKey} key`);
   }
+}
+
+// TODO: currently in order to have correct TRegistry type we need pass union of exact implementations of ModuleBuilder - which forbids custom builders in user space
+export function container<TRegistry extends ModuleRegistry>(
+    m: FunctionModuleBuilder<TRegistry> | Module<TRegistry> | ClassBuilder<TRegistry>,
+    ctx?: any,
+): Container<TRegistry> {
+  return new Container((m as any).registry, ctx);
 }

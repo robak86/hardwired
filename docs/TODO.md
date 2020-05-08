@@ -2,6 +2,7 @@
   - or we should forbid syntax like `.define(ctx => ...)`
   - instead we should require providing dependency resolvers
 - consider more strict api ?
+- add `flatImport` which redefines all definitions from flatImported module, so the are available as module's own definitions
 
 - ~~emptyContainer for deepGet breaks type-safety (because of missing check for context)~~
 

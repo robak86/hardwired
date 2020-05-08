@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { FunctionComponent, useContext, useMemo } from 'react';
 import {
+  container,
   Container,
   DeepGetReturn,
   MaterializedDefinitions,
@@ -14,7 +15,7 @@ type HardwiredContext = {
   container: Container<any>;
 };
 
-const ContainerContext = React.createContext<HardwiredContext>({ container: module('emptyModule').toContainer({}) });
+const ContainerContext = React.createContext<HardwiredContext>({ container: container(module('emptyModule')) });
 
 export const useContainerContext = (): HardwiredContext => {
   return useContext(ContainerContext);
@@ -29,9 +30,9 @@ export type ContainerProviderProps = {
 };
 
 export const createContainerProvider = module => ({ children }) => {
-  const container = useMemo(() => module.toContainer({}), [module]);
+  const containerInstance = useMemo(() => container(module), [module]);
 
-  return <ContainerContext.Provider value={{ container }}>{children}</ContainerContext.Provider>;
+  return <ContainerContext.Provider value={{ container: containerInstance }}>{children}</ContainerContext.Provider>;
 };
 
 const useDependency = (module: any, key: any) => {

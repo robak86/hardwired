@@ -1,9 +1,9 @@
 import { Thunk, UnwrapThunk } from '../utils/thunk';
-import { Module } from './Module';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
 
 export type Definition<T> = { definition: T };
 export type RequiresDefinition<T> = { requires: T };
-export type ModuleRegistry = Record<string, Thunk<Module<any>> | Definition<any> | RequiresDefinition<any>>;
+export type ModuleRegistry = Record<string, Thunk<ModuleBuilder<any>> | Definition<any> | RequiresDefinition<any>>;
 export type ModuleRegistryDefinitionsKeys<T> = { [K in keyof T]: T[K] extends Definition<any> ? K : never }[keyof T];
 export type ModuleRegistryDefinitions<T> = { [K in ModuleRegistryDefinitionsKeys<T>]: T[K] };
 export type ModuleRegistryContextKeys<T> = {
@@ -19,10 +19,10 @@ export type MaterializedModuleRegistryContext<TRegistry extends ModuleRegistry> 
 };
 
 export type ModuleRegistryImportsKeys<T> = {
-  [K in keyof T]: UnwrapThunk<T[K]> extends Module<any> ? K : never;
+  [K in keyof T]: UnwrapThunk<T[K]> extends ModuleBuilder<any> ? K : never;
 }[keyof T];
 export type ModuleRegistryImports<T> = {
-  [K in ModuleRegistryImportsKeys<T>]: UnwrapThunk<T[K]> extends Module<infer R> ? R : never;
+  [K in ModuleRegistryImportsKeys<T>]: UnwrapThunk<T[K]> extends ModuleBuilder<infer R> ? R : never;
 };
 export type FlattenModules<R extends ModuleRegistry> =
   | R

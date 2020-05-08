@@ -1,9 +1,10 @@
-import { Container, container, Definition, Module, module, ModuleRegistryContext, RequiresDefinition } from '../..';
+import { Module, module } from '../Module';
 
 import { expectType, TypeEqual } from 'ts-expect';
 import { fun, FunctionModuleBuilder } from '../../builders/FunctionBuilder';
 import { ClassBuilder, classInstance } from '../../builders/ClassBuilder';
-import { ModuleBuilder } from '../../builders/ModuleBuilder';
+import { Container, container } from '../../container/Container';
+import { Definition, ModuleRegistryContext, RequiresDefinition } from '../ModuleRegistry';
 
 describe(`Module`, () => {
   describe(`.hasModule`, () => {
@@ -40,17 +41,22 @@ describe(`Module`, () => {
       it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
         const m1 = module('m1')
           .define('d1', () => 123)
-          .defineClass('class1', Class1, ctx => [ctx.d1]);
-        expectType<TypeEqual<typeof m1, Module<{ class1: Definition<Class1>; d1: Definition<number> }>>>(true);
+          .using(classInstance)
+          .define('class1', Class1, ctx => [ctx.d1]);
+        expectType<TypeEqual<typeof m1, ClassBuilder<{ class1: Definition<Class1>; d1: Definition<number> }>>>(true);
       });
 
       it(`creates module with correct generic types for class with 2 constructor arg`, async () => {
         const m1 = module('m1')
           .define('d1', () => 123)
           .define('d2', () => '123')
-          .defineClass('class2', Class2, ctx => [ctx.d1, ctx.d2]);
+          .using(classInstance)
+          .define('class2', Class2, ctx => [ctx.d1, ctx.d2]);
         expectType<
-          TypeEqual<typeof m1, Module<{ class2: Definition<Class2>; d1: Definition<number>; d2: Definition<string> }>>
+          TypeEqual<
+            typeof m1,
+            ClassBuilder<{ class2: Definition<Class2>; d1: Definition<number>; d2: Definition<string> }>
+          >
         >(true);
       });
     });
@@ -59,21 +65,23 @@ describe(`Module`, () => {
       const m = module('m1')
         .defineConst('d1', 123)
         .defineConst('d2', '123')
-        .defineClass('class2', Class2, ctx => [ctx.d1, ctx.d2])
-        .toContainer({});
+        .using(classInstance)
+        .define('class2', Class2, ctx => [ctx.d1, ctx.d2]);
+
+      const c = container(m);
 
       it(`returns instance of given class`, async () => {
-        expect(m.get('class2')).toBeInstanceOf(Class2);
+        expect(c.get('class2')).toBeInstanceOf(Class2);
       });
 
       it(`instantiates class with correct params`, async () => {
-        const class2 = m.get('class2');
-        expect(class2.arg1).toEqual(m.get('d1'));
-        expect(class2.arg2).toEqual(m.get('d2'));
+        const class2 = c.get('class2');
+        expect(class2.arg1).toEqual(c.get('d1'));
+        expect(class2.arg2).toEqual(c.get('d2'));
       });
 
       it(`caches instance of the class`, async () => {
-        expect(m.get('class2')).toEqual(m.get('class2'));
+        expect(c.get('class2')).toEqual(c.get('class2'));
       });
     });
   });
@@ -288,11 +296,11 @@ describe(`Module`, () => {
   describe(`.toContainer`, () => {
     describe(`types`, () => {
       it(`produces container with correct types`, async () => {
-        let c1 = module('m1')
+        let m = module('m1')
           .define('a', () => 1)
-          .define('b', () => '2')
-          .toContainer({});
+          .define('b', () => '2');
 
+        const c1 = container(m);
         expectType<TypeEqual<typeof c1, Container<{ a: Definition<number>; b: Definition<string> }>>>(true);
       });
     });
@@ -303,7 +311,7 @@ describe(`Module`, () => {
       let m1 = module('m1').define('a', () => 1);
 
       let updated = m1.replace('a', () => 2);
-      expect(updated.toContainer({}).get('a')).toEqual(2);
+      expect(container(updated).get('a')).toEqual(2);
     });
   });
 
@@ -327,7 +335,7 @@ describe(`Module`, () => {
             return [c.t1, c.t2];
           });
 
-        let materializedContainer = m1.toContainer({});
+        let materializedContainer = container(m1);
 
         expect(materializedContainer.get('t1').type).toEqual('t1');
         expect(materializedContainer.get('t2').type).toEqual('t2');
@@ -347,7 +355,7 @@ describe(`Module`, () => {
           .import('a', a)
           .define('t1', () => new T1());
 
-        const t1 = b.toContainer({}).deepGet(a, 't1');
+        const t1 = container(b).deepGet(a, 't1');
         expect(t1.type).toEqual('t1');
       });
     });
@@ -392,7 +400,7 @@ describe(`Module`, () => {
             .define('ov1', () => 10)
             .define('s2', () => 11);
 
-          const obj = m2.toContainer({}).asObject();
+          const obj = container(m2).asObject();
           expect(obj.s2).toEqual(11);
           expect(obj.m1.v1).toEqual(1);
         });
@@ -404,7 +412,7 @@ describe(`Module`, () => {
             .define('s1', () => 1)
             .define('s2', () => 'str');
 
-          const [s1, s2] = m1.toContainer({}).getMany('s1', 's2');
+          const [s1, s2] = container(m1).getMany('s1', 's2');
 
           expect(s1).toEqual(1);
           expect(s2).toEqual('str');
@@ -421,7 +429,7 @@ describe(`Module`, () => {
 
         let m2 = module('m2').import('m1', m1).define('s1', f1).define('s2', f2);
 
-        let cnt = m2.toContainer({});
+        let cnt = container(m2);
 
         cnt.get('s1');
         expect(f1).toBeCalledTimes(1);
@@ -552,8 +560,6 @@ describe(`Module`, () => {
 
       // m2.toContainer({}).deepGet(m2, 'valFromChild');
       // m2.toContainer({}).deepGet(m1, 'val');
-      type WTF = ModuleRegistryContext<typeof m1.debug>;
-      const a = m1.toContainer({}).deepGet(m11, 'val');
 
       let m1Overrides = m1.replace('val', c => 2);
 

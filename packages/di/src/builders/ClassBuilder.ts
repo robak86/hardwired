@@ -1,13 +1,8 @@
-import {
-  BaseModuleBuilder,
-  ClassType,
-  Definition,
-  MaterializedModuleEntries,
-  ModuleRegistry,
-  NextModuleDefinition,
-} from '..';
 import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
 import { DefinitionsSet } from '../module/DefinitionsSet';
+import { Definition, MaterializedModuleEntries, ModuleRegistry } from '../module/ModuleRegistry';
+import { BaseModuleBuilder } from './BaseModuleBuilder';
+import { ClassType } from '../module/ModuleUtils';
 
 export class ClassBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
   constructor(registry: DefinitionsSet<TRegistry>) {
@@ -37,6 +32,10 @@ export class ClassBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBu
     );
 
     return new ClassBuilder(newRegistry) as any;
+  }
+
+  protected build<TNextBuilder>(ctx): TNextBuilder {
+    return new ClassBuilder(ctx) as any;
   }
 }
 

@@ -1,6 +1,4 @@
-import { Container } from './Container';
-
-export function containerProxyAccessor(container: Container, cache = {}) {
+export function containerProxyAccessor(container: any, cache = {}) {
   return new Proxy({} as any, {
     get(target, property: string) {
       //TODO: set correct types

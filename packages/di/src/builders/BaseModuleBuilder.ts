@@ -6,6 +6,7 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
   protected constructor(public readonly registry: DefinitionsSet<TRegistry>) {}
 
   abstract define(...args: any[]): any;
+  protected abstract build<TNextBuilder extends this>(ctx): TNextBuilder;
 
   using<TNextBuilder extends ModuleBuilder<TRegistry>>(
     builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
