@@ -1,17 +1,21 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import {
-  MaterializedDefinitions,
-  MaterializedModuleEntries,
   Module,
-  ModuleRegistry,
-  ModuleRegistryContext,
-  ModuleRegistryDefinitions,
-  ModuleRegistryDefinitionsKeys,
+
+
 } from '../module/Module';
 import { unwrapThunk } from '../utils/thunk';
 import { containerProxyAccessor } from './container-proxy-accessor';
 import { ContainerCache } from './container-cache';
-import { DefinitionsSet } from '../module/module-entries';
+import { DefinitionsSet } from '../module/DefinitionsSet';
+import {
+  MaterializedDefinitions,
+  MaterializedModuleEntries,
+  ModuleRegistry,
+  ModuleRegistryContext,
+  ModuleRegistryDefinitions,
+  ModuleRegistryDefinitionsKeys
+} from "../module/ModuleRegistry";
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];

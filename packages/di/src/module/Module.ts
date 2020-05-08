@@ -1,92 +1,37 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
-import { Thunk, unwrapThunk, UnwrapThunk } from '../utils/thunk';
-import { curry } from '../utils/curry';
-import { Container } from '..';
-import { DefinitionsSet } from './module-entries';
+import { Thunk, unwrapThunk } from '../utils/thunk';
+import { BaseModuleBuilder, Container } from '..';
+import { DefinitionsSet } from './DefinitionsSet';
 import { CurriedFunctionResolver } from '../resolvers/CurriedFunctionResolver';
+import {
+  MaterializedDefinitions,
+  MaterializedModuleEntries,
+  ModuleRegistry,
+  ModuleRegistryDefinitions,
+  ModuleRegistryDefinitionsKeys,
+  ModuleRegistryImportsKeys,
+  RequiresDefinition,
+} from './ModuleRegistry';
+import {
+  ClassType,
+  FilterPrivateFields,
+  NextModuleDefinition,
+  NextModuleImport,
+  NotDuplicatedKeys,
+} from './ModuleUtils';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
 
-export type Definition<T> = { definition: T };
-export type RequiresDefinition<T> = { requires: T };
 
-export type ModuleRegistry = Record<string, Thunk<Module<any>> | Definition<any> | RequiresDefinition<any>>;
-
-export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
-  ? RETURN
-  : 'Module contains duplicated definitions';
-
-export type NotDuplicatedKeys<TSource, TTarget, TReturn> = Extract<keyof TSource, keyof TTarget> extends never
-  ? TReturn
-  : 'Module contains duplicated definitions';
-
-type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleRegistry> = NotDuplicated<
-  TDefinitionKey,
-  R,
-  // Module<R & { [K in TDefinitionKey]: Definition<V> }>
-  Module<
-    { [K in keyof (R & { [K in TDefinitionKey]: Definition<V> })]: (R & { [K in TDefinitionKey]: Definition<V> })[K] }
-  >
->;
-
-type NextModuleImport<TImportKey extends string, V extends ModuleRegistry, R extends ModuleRegistry> = NotDuplicated<
-  TImportKey,
-  R,
-  Module<R & { [K in TImportKey]: Module<V> } & ModuleRegistryContext<V>>
-  // Module<{ [K in keyof (R & { [K in TImportKey]: V })]: (R & { [K in TImportKey]: V })[K] }>
->;
-
-export type MaterializedDefinitions<R extends ModuleRegistry> = {
-  [K in ModuleRegistryDefinitionsKeys<R>]: ModuleRegistryDefinitions<R>[K] extends Definition<infer TDefinition>
-    ? TDefinition
-    : never;
-};
-
-export type MaterializedImports<R extends ModuleRegistry> = {
-  [K in ModuleRegistryImportsKeys<R>]: MaterializedDefinitions<ModuleRegistryImports<R>[K]>;
-};
-
-export type MaterializedModuleEntries<R extends ModuleRegistry> = MaterializedDefinitions<R> & MaterializedImports<R>;
-
-export type ClassType<TConstructorArgs extends any[], TInstance> = {
-  new (...args: TConstructorArgs): TInstance;
-};
-
-type FilterPrivateFields<T> = T extends Function
-  ? T
-  : {
-      [K in keyof T]: T[K];
-    };
-
-export interface ModuleBuilder<TRegistry extends ModuleRegistry> {
-  // new (registry: TRegistry): ModuleBuilder<TRegistry>;
-  using<TNextBuilder extends ModuleBuilder<TRegistry>>(builderFactory: (ctx: TRegistry) => TNextBuilder): TNextBuilder;
-  define(...args: any[]): ModuleBuilder<TRegistry>;
-}
-
-class MoreSpecific implements ModuleBuilder<any> {
-  define(): this {
-    return this;
-  }
-
-  using<TNextBuilder extends ModuleBuilder<any>>(builderFactory: (ctx: any) => TNextBuilder): TNextBuilder {
-    throw new Error('implement me');
-  }
-}
-
-abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
-  protected constructor(private readonly registry: TRegistry) {}
-  abstract define(...args: any[]): ModuleBuilder<TRegistry>;
-
-  using<TNextBuilder extends ModuleBuilder<TRegistry>>(builderFactory: (ctx: TRegistry) => TNextBuilder): TNextBuilder {
-    return builderFactory(this.registry);
-  }
-}
-
-// TODO: add moduleId and name
+// TODO: extends BaseModule throws error (some circular dependencies makes BaseModule to be undefined)
 export class Module<R extends ModuleRegistry> {
   public debug!: R;
 
-  constructor(public registry: DefinitionsSet<R>) {}
+  constructor(public readonly registry: DefinitionsSet<R>) {}
+
+  using<TNextBuilder extends ModuleBuilder<R>>(builderFactory: (ctx: DefinitionsSet<R>) => TNextBuilder): TNextBuilder {
+    return builderFactory(this.registry);
+  }
 
   hasModule(key: ModuleRegistryImportsKeys<R>): boolean {
     return this.registry.hasImport(key); // TODO: hacky - because we cannot be sure that this key is a module and not a import
@@ -243,31 +188,6 @@ export class Module<R extends ModuleRegistry> {
     return new Container(this.registry, ctx);
   }
 }
-
-type DefinitionsUnion<T> = {
-  [K in keyof T]: T[K] extends Definition<any> ? T[K] : never;
-}[keyof T];
-
-export type ModuleRegistryDefinitionsKeys<T> = { [K in keyof T]: T[K] extends Definition<any> ? K : never }[keyof T];
-export type ModuleRegistryDefinitions<T> = { [K in ModuleRegistryDefinitionsKeys<T>]: T[K] };
-
-export type ModuleRegistryContextKeys<T> = {
-  [K in keyof T]: T[K] extends RequiresDefinition<any> ? K : never;
-}[keyof T];
-export type ModuleRegistryContext<T> = { [K in ModuleRegistryContextKeys<T>]: T[K] };
-
-export type ModuleRegistryImportsKeys<T> = {
-  [K in keyof T]: UnwrapThunk<T[K]> extends Module<any> ? K : never;
-}[keyof T];
-export type ModuleRegistryImports<T> = {
-  [K in ModuleRegistryImportsKeys<T>]: UnwrapThunk<T[K]> extends Module<infer R> ? R : never;
-};
-
-export type FlattenModules<R extends ModuleRegistry> =
-  | R
-  | {
-      [K in keyof ModuleRegistryImports<R>]: FlattenModules<ModuleRegistryImports<R>[K]>;
-    }[keyof ModuleRegistryImports<R>];
 
 // export type FlattenModules<R> =
 //   | (R extends Module<infer RR> ? RR : R)

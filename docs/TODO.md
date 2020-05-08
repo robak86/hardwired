@@ -3,6 +3,8 @@
   - instead we should require providing dependency resolvers
 - consider more strict api ?
 
+- ~~emptyContainer for deepGet breaks type-safety (because of missing check for context)~~
+
 ```typescript
 type Resolvable = () => Treturn | DependencyResolver;
 

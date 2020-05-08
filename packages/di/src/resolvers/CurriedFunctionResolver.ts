@@ -2,7 +2,6 @@ import { DependencyResolver } from './DependencyResolver';
 import { ContainerCache } from '../container/container-cache';
 import { curry } from '../utils/curry';
 import { GlobalSingletonResolver } from './global-singleton-resolver';
-import { MaterializedModuleEntries } from '..';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
@@ -29,48 +28,3 @@ export class CurriedFunctionResolver<TRegistry, TContext, TReturn>
     return this.singletonResolver.build(container, ctx, cache);
   }
 }
-
-export const fun: CurriedFunction = null as any;
-
-type CurriedFunction = {
-  <TKey extends string, TResult>(fn: () => TResult): DependencyResolver<any, any, () => TResult>;
-  <TKey extends string, TDep1, TResult>(fn: (d1: TDep1) => TResult): DependencyResolver<
-    any,
-    any,
-    (d1: TDep1) => TResult
-  >;
-  <TKey extends string, TDep1, TResult>(fn: (d1: TDep1) => TResult, depSelect: [TDep1]): DependencyResolver<
-    any,
-    any,
-    () => TResult
-  >;
-  <TKey extends string, TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult): DependencyResolver<
-    any,
-    any,
-    (d1: TDep1, d2: TDep2) => TResult
-  >;
-  <TKey extends string, TDep1, TDep2, TResult>(
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: [TDep1],
-  ): DependencyResolver<any, any, (dep2: TDep2) => TResult>;
-  <TKey extends string, TDep1, TDep2, TResult>(
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: [TDep1, TDep2],
-  ): DependencyResolver<any, any, () => TResult>;
-  // 3 args
-  <TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-  ): DependencyResolver<any, any, (d1: TDep1, d2: TDep2, d3: TDep3) => TResult>;
-  <TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [TDep1],
-  ): DependencyResolver<any, any, (dep2: TDep2, dep3: TDep3) => TResult>;
-  <TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [TDep1, TDep2],
-  ): DependencyResolver<any, any, (dep3: TDep3) => TResult>;
-  <TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [TDep1, TDep2, TDep3],
-  ): DependencyResolver<any, any, () => TResult>;
-};

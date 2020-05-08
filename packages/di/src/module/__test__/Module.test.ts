@@ -1,15 +1,8 @@
-import {
-  Container,
-  container,
-  Definition,
-  Module,
-  module,
-  ModuleRegistryContext,
-  RequiresDefinition,
-} from '../../index';
+import { Container, container, Definition, Module, module, ModuleRegistryContext, RequiresDefinition } from '../..';
 
 import { expectType, TypeEqual } from 'ts-expect';
-import { fun } from '../../resolvers/CurriedFunctionResolver';
+import { fun } from '../../builders/FunctionBuilder';
+import { ClassBuilder, classInstance } from '../../builders/ClassBuilder';
 
 describe(`Module`, () => {
   describe(`.hasModule`, () => {
@@ -39,8 +32,8 @@ describe(`Module`, () => {
 
     describe(`types`, () => {
       it(`creates module with correct generic types for class with no constructor args`, async () => {
-        const m1 = module('m1').defineClass('class0', Class0);
-        expectType<TypeEqual<typeof m1, Module<{ class0: Definition<Class0> }>>>(true);
+        const m1 = module('m1').using(classInstance).define('class0', Class0);
+        expectType<TypeEqual<typeof m1, ClassBuilder<{ class0: Definition<Class0> }>>>(true);
       });
 
       it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
@@ -174,21 +167,16 @@ describe(`Module`, () => {
         const m = module('m1')
           .define('d1', () => 'dependency1')
           .define('d2', () => 123)
-          .defineFunction('curry0', someFunction)
-          .defineFunction('curry1', someFunction, ctx => [ctx.d1])
-          .defineFunction('curry2', someFunction, ctx => [ctx.d1, ctx.d2])
-          .toContainer({});
+          .using(fun)
+          .define('curry0', someFunction)
+          .define('curry1', someFunction, ctx => [ctx.d1])
+          .define('curry2', someFunction, ctx => [ctx.d1, ctx.d2]);
 
-        const zz = module('m2')
-          .define('d1', () => 'dependency1')
-          .define('d2', () => 123)
-          .define2('a', ctx => fun(someFunction, [ctx.d1, ctx.d2]));
+        const c = container(m);
 
-        console.log(m);
-        console.log(m.get);
-        expect(m.get('curry0')('string', 123)).toEqual(['string', 123]);
-        expect(m.get('curry1')(123)).toEqual(['dependency1', 123]);
-        expect(m.get('curry2')()).toEqual(['dependency1', 123]);
+        expect(c.get('curry0')('string', 123)).toEqual(['string', 123]);
+        expect(c.get('curry1')(123)).toEqual(['dependency1', 123]);
+        expect(c.get('curry2')()).toEqual(['dependency1', 123]);
       });
 
       it(`caches curried functions`, async () => {

@@ -1,6 +1,10 @@
-import { Module, ModuleRegistry } from './module/Module';
+import { Module } from './module/Module';
 import { Container } from './container/Container';
-import { DefinitionsSet } from './module/module-entries';
+import { DefinitionsSet } from './module/DefinitionsSet';
+import { ModuleRegistry } from './module/ModuleRegistry';
+import { ModuleBuilder } from './builders/ModuleBuilder';
+import { BaseModuleBuilder } from './builders/BaseModuleBuilder';
+import { FunctionModuleBuilder } from './builders/FunctionBuilder';
 
 export * from './module/Module';
 export * from './container/Container';
@@ -12,21 +16,32 @@ export function module<CTX = {}>(name: string): Module<{}> {
 
 //TODO: consider completely removing the m parameter. Create empty container instead and instantiate all dependencies via deepGet
 //TODO: investigate how to pass context in such case? and how to make it typesafe ?!
-export function container<R extends ModuleRegistry, CTX>(m: Module<R>, ctx: any): Container<R, any> {
-  return new Container(m.registry, ctx as any);
-}
 
-//TODO: ctx should be typesafe. we should forbid calling deepGet with modules requiring different context than the context passed here
-export function emptyContainer(ctx: any): Container<any> {
-  return container(module('__moduleForEmptyContainer'), ctx); //TODO: refactor - one should not create empty module for creating empty container;
+export function container<R extends ModuleRegistry>(m: FunctionModuleBuilder<R>, ctx?: any): Container<R, any> {
+  return new Container((m as any).registry, {});
 }
-
-// export interface WithContainerFn {
-//     <MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K):(ctx:CTX) => ExtractModuleRegistryDeclarations<MOD>[K]
-//     <MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX):ExtractModuleRegistryDeclarations<MOD>[K]
-// }
 
 //TODO: make it type-safe
 // export const withContainer:WithContainerFn = curry(<MOD extends Module<any, any, any>, K extends keyof ExtractModuleRegistryDeclarations<MOD>, CTX extends ModuleContext<MOD>>(module:MOD, def:K, ctx:CTX) => {
 //     return container(module, ctx).get(def);
 // });
+export { BaseModuleBuilder } from './builders/BaseModuleBuilder';
+export type { FlattenModules } from './module/ModuleRegistry';
+export type { ModuleRegistryImports } from './module/ModuleRegistry';
+export type { ModuleRegistryImportsKeys } from './module/ModuleRegistry';
+export type { ModuleRegistryContext } from './module/ModuleRegistry';
+export type { ModuleRegistryContextKeys } from './module/ModuleRegistry';
+export type { ModuleRegistryDefinitions } from './module/ModuleRegistry';
+export type { ModuleRegistryDefinitionsKeys } from './module/ModuleRegistry';
+export type { ModuleRegistry } from './module/ModuleRegistry';
+export type { RequiresDefinition } from './module/ModuleRegistry';
+export type { Definition } from './module/ModuleRegistry';
+export type { MaterializedModuleEntries } from './module/ModuleRegistry';
+export type { MaterializedImports } from './module/ModuleRegistry';
+export type { MaterializedDefinitions } from './module/ModuleRegistry';
+export type { FilterPrivateFields } from './module/ModuleUtils';
+export type { ClassType } from './module/ModuleUtils';
+export type { NextModuleImport } from './module/ModuleUtils';
+export type { NextModuleDefinition } from './module/ModuleUtils';
+export type { NotDuplicatedKeys } from './module/ModuleUtils';
+export type { NotDuplicated } from './module/ModuleUtils';
