@@ -57,6 +57,31 @@ type FilterPrivateFields<T> = T extends Function
       [K in keyof T]: T[K];
     };
 
+export interface ModuleBuilder<TRegistry extends ModuleRegistry> {
+  // new (registry: TRegistry): ModuleBuilder<TRegistry>;
+  using<TNextBuilder extends ModuleBuilder<TRegistry>>(builderFactory: (ctx: TRegistry) => TNextBuilder): TNextBuilder;
+  define(...args: any[]): ModuleBuilder<TRegistry>;
+}
+
+class MoreSpecific implements ModuleBuilder<any> {
+  define(): this {
+    return this;
+  }
+
+  using<TNextBuilder extends ModuleBuilder<any>>(builderFactory: (ctx: any) => TNextBuilder): TNextBuilder {
+    throw new Error('implement me');
+  }
+}
+
+abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
+  protected constructor(private readonly registry: TRegistry) {}
+  abstract define(...args: any[]): ModuleBuilder<TRegistry>;
+
+  using<TNextBuilder extends ModuleBuilder<TRegistry>>(builderFactory: (ctx: TRegistry) => TNextBuilder): TNextBuilder {
+    return builderFactory(this.registry);
+  }
+}
+
 // TODO: add moduleId and name
 export class Module<R extends ModuleRegistry> {
   public debug!: R;
@@ -278,5 +303,3 @@ export type FlattenModules<R extends ModuleRegistry> =
 //     return { wrapped: 'sdf' };
 //   }
 // });
-
-
