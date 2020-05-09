@@ -3,6 +3,7 @@ import { Module, module } from '../Module';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Container, container } from '../../container/Container';
 import { Definition, ModuleRegistryContext, RequiresDefinition } from '../ModuleRegistry';
+import { singleton, SingletonBuilder } from '../../builders/SingletonBuilder';
 
 describe(`Module`, () => {
   describe(`.hasModule`, () => {
@@ -45,10 +46,13 @@ describe(`Module`, () => {
     describe(`types`, () => {
       it(`creates correct types`, async () => {
         const m = module('m1')
+          .using(singleton)
           .define('number', () => 123)
           .define('string', () => 'str');
 
-        expectType<TypeEqual<typeof m, Module<{ number: Definition<number>; string: Definition<string> }>>>(true);
+        expectType<TypeEqual<typeof m, SingletonBuilder<{ number: Definition<number>; string: Definition<string> }>>>(
+          true,
+        );
       });
 
       it(`does not allow duplicates`, async () => {
