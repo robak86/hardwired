@@ -14,6 +14,8 @@ import {
 } from './ModuleRegistry';
 import { FilterPrivateFields, NextModuleDefinition, NextModuleImport, NotDuplicatedKeys } from './ModuleUtils';
 import { BaseModuleBuilder } from '../builders/BaseModuleBuilder';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { FunctionModuleBuilder } from '../builders/FunctionBuilder';
 
 // TODO: extends BaseModule throws error (some circular dependencies makes BaseModule to be undefined)
 export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
@@ -87,7 +89,7 @@ export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
 
   import<K extends string, TImportedR extends ModuleRegistry>(
     key: K,
-    mod2: Thunk<Module<TImportedR>>,
+    mod2: Thunk<ModuleBuilder<TImportedR> | FunctionModuleBuilder<TImportedR>>,
   ): NextModuleImport<K, TImportedR, R> {
     return new Module(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any;
   }

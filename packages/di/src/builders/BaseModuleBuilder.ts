@@ -5,7 +5,7 @@ import { ModuleBuilder } from './ModuleBuilder';
 export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
   protected constructor(public readonly registry: DefinitionsSet<TRegistry>) {}
 
-  abstract define(...args: any[]): any;
+  // abstract define(...args: any[]): any;
 
   // Maybe imports should be realized by separate builder ?
   // abstract import(...args: any[]): any;

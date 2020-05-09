@@ -366,19 +366,26 @@ describe(`Module`, () => {
 
   describe(`.inject`, () => {
     it(`replaces all related modules in whole tree`, async () => {
-      let m1 = module('m1').define('val', () => 1);
+      let m1 = module('m1')
+        // .using(singleton)
+        .define('val', () => 1);
 
       let m11 = module('m1')
         .require<{ a: number }>()
+        // .using(singleton)
         .define('val', () => 1);
 
       let m2 = module('m2')
         .import('child', m1)
+        // .using(singleton)
+
         .define('valFromChild', c => c.child.val);
 
       let m3 = module('m3')
         .import('child1', m1)
         .import('child2', m2)
+        // .using(singleton)
+
         .define('val', c => c.child2.valFromChild);
 
       // const a = m2.toContainer({}).flatten();

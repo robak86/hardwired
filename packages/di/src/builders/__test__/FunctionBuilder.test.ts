@@ -20,6 +20,28 @@ describe(`FunctionBuilder`, () => {
       );
     });
 
+    it(`creates correct types using dependencies from imported modules`, async () => {
+      const someFunction = (someParam: string) => 123;
+      const imported = module('imported')
+        .using(fun)
+        .define(
+          'importedFunction',
+          () => 'someString',
+          ctx => ['someString'],
+        );
+
+      const m = module('m1')
+        .import('otherModule', imported)
+        .using(fun)
+        .define('noDepsFunction', someFunction, c => [c.otherModule.importedFunction()]);
+      expectType<
+        TypeEqual<
+          typeof m,
+          FunctionModuleBuilder<{ noDepsFunction: Definition<(param: string) => number>; otherModule: typeof imported }>
+        >
+      >(true);
+    });
+
     it(`creates correct module type for function with single parameter with all deps provided`, async () => {
       const someFunction = (someParam: string) => 123;
       const m = module('m1')
