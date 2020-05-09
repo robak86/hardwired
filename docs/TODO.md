@@ -5,6 +5,7 @@
 - add `flatImport` which redefines all definitions from flatImported module, so the are available as module's own definitions
 
 - ~~emptyContainer for deepGet breaks type-safety (because of missing check for context)~~
+- insted of ```Definition``` wrapper we could use ```DependencyResolver``` (not sure if inference will work correctyl)
 
 ```typescript
 type Resolvable = () => Treturn | DependencyResolver;

@@ -1,8 +1,6 @@
 import { Module, module } from '../Module';
 
 import { expectType, TypeEqual } from 'ts-expect';
-import { fun, FunctionModuleBuilder } from '../../builders/FunctionBuilder';
-import { ClassBuilder, classInstance } from '../../builders/ClassBuilder';
 import { Container, container } from '../../container/Container';
 import { Definition, ModuleRegistryContext, RequiresDefinition } from '../ModuleRegistry';
 
@@ -23,69 +21,6 @@ describe(`Module`, () => {
     it(`returns new instance of module (doesn't mutate original module)`, async () => {});
   });
 
-  describe(`defineClass`, () => {
-    class Class0 {}
-    class Class1 {
-      constructor(public arg1: number) {}
-    }
-    class Class2 {
-      constructor(public arg1: number, public arg2: string) {}
-    }
-
-    describe(`types`, () => {
-      it(`creates module with correct generic types for class with no constructor args`, async () => {
-        const m1 = module('m1').using(classInstance).define('class0', Class0);
-        expectType<TypeEqual<typeof m1, ClassBuilder<{ class0: Definition<Class0> }>>>(true);
-      });
-
-      it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
-        const m1 = module('m1')
-          .define('d1', () => 123)
-          .using(classInstance)
-          .define('class1', Class1, ctx => [ctx.d1]);
-        expectType<TypeEqual<typeof m1, ClassBuilder<{ class1: Definition<Class1>; d1: Definition<number> }>>>(true);
-      });
-
-      it(`creates module with correct generic types for class with 2 constructor arg`, async () => {
-        const m1 = module('m1')
-          .define('d1', () => 123)
-          .define('d2', () => '123')
-          .using(classInstance)
-          .define('class2', Class2, ctx => [ctx.d1, ctx.d2]);
-        expectType<
-          TypeEqual<
-            typeof m1,
-            ClassBuilder<{ class2: Definition<Class2>; d1: Definition<number>; d2: Definition<string> }>
-          >
-        >(true);
-      });
-    });
-
-    describe(`instantiation`, () => {
-      const m = module('m1')
-        .defineConst('d1', 123)
-        .defineConst('d2', '123')
-        .using(classInstance)
-        .define('class2', Class2, ctx => [ctx.d1, ctx.d2]);
-
-      const c = container(m);
-
-      it(`returns instance of given class`, async () => {
-        expect(c.get('class2')).toBeInstanceOf(Class2);
-      });
-
-      it(`instantiates class with correct params`, async () => {
-        const class2 = c.get('class2');
-        expect(class2.arg1).toEqual(c.get('d1'));
-        expect(class2.arg2).toEqual(c.get('d2'));
-      });
-
-      it(`caches instance of the class`, async () => {
-        expect(c.get('class2')).toEqual(c.get('class2'));
-      });
-    });
-  });
-
   describe(`.imports`, () => {
     it(`doesn't mutate original module`, async () => {
       let childModule1 = module('child1');
@@ -103,115 +38,6 @@ describe(`Module`, () => {
       let rootModule = module('someOtherModule').import('c1', () => childModule1);
 
       expect(rootModule.hasModule('c1')).toEqual(true);
-    });
-  });
-
-  describe(`.defineFunction`, () => {
-    describe(`types`, () => {
-      it(`creates correct module type for function without any dependencies`, async () => {
-        const someFunction = () => 123;
-        const m = module('m1').using(fun).define('noDepsFunction', someFunction);
-        expectType<TypeEqual<typeof m, FunctionModuleBuilder<{ noDepsFunction: Definition<() => number> }>>>(true);
-      });
-
-      it(`creates correct module type for function with single parameter`, async () => {
-        const someFunction = (someParam: string) => 123;
-        const m = module('m1').using(fun).define('noDepsFunction', someFunction);
-        expectType<
-          TypeEqual<typeof m, FunctionModuleBuilder<{ noDepsFunction: Definition<(param: string) => number> }>>
-        >(true);
-      });
-
-      it(`creates correct module type for function with single parameter with all deps provided`, async () => {
-        const someFunction = (someParam: string) => 123;
-        const m = module('m1')
-          .define('someString', () => 'someString')
-          .using(fun)
-          .define('noDepsFunction', someFunction, ctx => [ctx.someString]);
-
-        expectType<
-          TypeEqual<
-            typeof m,
-            FunctionModuleBuilder<{ someString: Definition<string>; noDepsFunction: Definition<() => number> }>
-          >
-        >(true);
-      });
-
-      it(`creates correct module type for function with two parameters with no deps provided`, async () => {
-        const someFunction = (someParam: string, someOtherParam: number) => 123;
-        const m = module('m1')
-          .define('someString', () => 'someString')
-          .define('someNumber', () => 123)
-          .using(fun)
-          .define('noDepsFunction', someFunction);
-
-        expectType<
-          TypeEqual<
-            typeof m,
-            FunctionModuleBuilder<{
-              someString: Definition<string>;
-              someNumber: Definition<number>;
-              noDepsFunction: Definition<(d1: string, d2: number) => number>;
-            }>
-          >
-        >(true);
-      });
-
-      it(`creates correct module type for function with two parameters with all deps provided`, async () => {
-        const someFunction = (someParam: string, someOtherParam: number) => 123;
-        const m = module('m1')
-          .define('someString', () => 'someString')
-          .define('someNumber', () => 123)
-          .using(fun)
-          .define('noDepsFunction', someFunction, ctx => [ctx.someString, ctx.someNumber]);
-
-        expectType<
-          TypeEqual<
-            typeof m,
-            FunctionModuleBuilder<{
-              someString: Definition<string>;
-              someNumber: Definition<number>;
-              noDepsFunction: Definition<() => number>;
-            }>
-          >
-        >(true);
-      });
-    });
-
-    describe(`instantiation`, () => {
-      it(`returns correctly curried functions`, async () => {
-        const someFunction = (someParam: string, someOtherParam: number) => [someParam, someOtherParam];
-        const m = module('m1')
-          .define('d1', () => 'dependency1')
-          .define('d2', () => 123)
-          .using(fun)
-          .define('curry0', someFunction)
-          .define('curry1', someFunction, ctx => [ctx.d1])
-          .define('curry2', someFunction, ctx => [ctx.d1, ctx.d2]);
-
-        const c = container(m);
-
-        expect(c.get('curry0')('string', 123)).toEqual(['string', 123]);
-        expect(c.get('curry1')(123)).toEqual(['dependency1', 123]);
-        expect(c.get('curry2')()).toEqual(['dependency1', 123]);
-      });
-
-      it(`caches curried functions`, async () => {
-        const someFunction = (someParam: string, someOtherParam: number) => [someParam, someOtherParam];
-        const m = module('m1')
-          .define('d1', () => 'dependency1')
-          .define('d2', () => 123)
-          .using(fun)
-          .define('curry0', someFunction)
-          .define('curry1', someFunction, ctx => [ctx.d1])
-          .define('curry2', someFunction, ctx => [ctx.d1, ctx.d2]);
-
-        const c = container(m);
-
-        expect(c.get('curry0')).toEqual(c.get('curry0'));
-        expect(c.get('curry1')).toEqual(c.get('curry1'));
-        expect(c.get('curry2')).toEqual(c.get('curry2'));
-      });
     });
   });
 
@@ -515,10 +341,10 @@ describe(`Module`, () => {
         cnt.deepGet(m1, 's3');
         cnt.deepGet(m1, 's4');
 
-        expect(f1.mock.calls[0][1]).toEqual({ someCtxVal: 1 });
-        expect(f2.mock.calls[0][1]).toEqual({ someCtxVal: 1 });
-        expect(f3.mock.calls[0][1]).toEqual({ someCtxVal: 1 });
-        expect(f4.mock.calls[0][1]).toEqual({ someCtxVal: 1 });
+        expect(f1.mock.calls[0][0].someCtxVal).toEqual(1);
+        expect(f2.mock.calls[0][0].someCtxVal).toEqual(1);
+        expect(f3.mock.calls[0][0].someCtxVal).toEqual(1);
+        expect(f4.mock.calls[0][0].someCtxVal).toEqual(1);
       });
 
       //TODO: Maximum call stack size exceeded

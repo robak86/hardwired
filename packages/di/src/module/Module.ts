@@ -49,7 +49,7 @@ export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
       | DependencyResolver<MaterializedModuleEntries<R>, V>
       | ((container: MaterializedModuleEntries<R>, ctx: C1) => V),
   ): NextModuleDefinition<K, V, R> {
-    const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory) : factory;
+    const resolver = typeof factory === 'function' ? new GlobalSingletonResolver(factory as any) : factory;
     return new Module(this.registry.extendDeclarations(key, resolver)) as any;
   }
 

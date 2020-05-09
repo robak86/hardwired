@@ -1,5 +1,5 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { Module, } from '../module/Module';
+import { Module } from '../module/Module';
 import { unwrapThunk } from '../utils/thunk';
 import { containerProxyAccessor } from './container-proxy-accessor';
 import { ContainerCache } from './container-cache';
@@ -10,10 +10,10 @@ import {
   ModuleRegistry,
   ModuleRegistryContext,
   ModuleRegistryDefinitions,
-  ModuleRegistryDefinitionsKeys
-} from "../module/ModuleRegistry";
-import { FunctionModuleBuilder } from "../builders/FunctionBuilder";
-import { ClassBuilder } from "../builders/ClassBuilder";
+  ModuleRegistryDefinitionsKeys,
+} from '../module/ModuleRegistry';
+import { FunctionModuleBuilder } from '../builders/FunctionBuilder';
+import { ClassBuilder } from '../builders/ClassBuilder';
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -104,8 +104,12 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
   //TODO: extract to class
 
   protected getChild(cache, dependencyKey: string) {
+    if (this.context && this.context[dependencyKey]) {
+      return this.context[dependencyKey];
+    }
+
     if (this.entries.declarations.hasKey(dependencyKey)) {
-      let declarationResolver: DependencyResolver<any, any, any> = this.entries.declarations.get(dependencyKey);
+      let declarationResolver: DependencyResolver<any, any> = this.entries.declarations.get(dependencyKey);
       return declarationResolver.build(this, this.context, cache);
     }
 
@@ -128,8 +132,8 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
 
 // TODO: currently in order to have correct TRegistry type we need pass union of exact implementations of ModuleBuilder - which forbids custom builders in user space
 export function container<TRegistry extends ModuleRegistry>(
-    m: FunctionModuleBuilder<TRegistry> | Module<TRegistry> | ClassBuilder<TRegistry>,
-    ctx?: any,
+  m: FunctionModuleBuilder<TRegistry> | Module<TRegistry> | ClassBuilder<TRegistry>,
+  ctx?: any,
 ): Container<TRegistry> {
   return new Container((m as any).registry, ctx);
 }

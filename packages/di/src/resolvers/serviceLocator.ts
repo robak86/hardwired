@@ -16,7 +16,7 @@ export class ServiceLocatorResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TReturn> {
   constructor(private run: (container: Container<TRegistry>) => TReturn) {}
 
-  build(container: TRegistry, ctx, cache: ContainerCache): TReturn {
+  build(container: Container<TRegistry>, ctx, cache: ContainerCache): TReturn {
     throw new Error('Implement me');
   }
 }
