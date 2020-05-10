@@ -1,10 +1,9 @@
-import { Definition, ModuleRegistry } from '../module/ModuleRegistry';
+import { ModuleRegistry } from '../module/ModuleRegistry';
 import { BaseModuleBuilder } from './BaseModuleBuilder';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { NotDuplicated } from '../module/ModuleUtils';
 import { Thunk, unwrapThunk } from '../utils/thunk';
 import { ModuleBuilder } from './ModuleBuilder';
-import { FunctionModuleBuilder } from './FunctionBuilder';
 
 type NextImportsModuleBuilder<
   TKey extends string,

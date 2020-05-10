@@ -8,6 +8,7 @@ import {
 } from '../module/ModuleRegistry';
 import { ModuleBuilder } from './ModuleBuilder';
 import { FilterPrivateFields } from '../module/ModuleUtils';
+import { TransientResolver } from '../resolvers/TransientResolver';
 
 export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
   protected constructor(public readonly registry: DefinitionsSet<TRegistry>) {}
@@ -40,9 +41,12 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
 
   replace<K extends ModuleRegistryDefinitionsKeys<TRegistry>, C>(
     key: K,
-    factory: (container: MaterializedModuleEntries<TRegistry>, C) => FilterPrivateFields<MaterializedDefinitions<TRegistry>[K]>,
+    factory: (
+      container: MaterializedModuleEntries<TRegistry>,
+      C,
+    ) => FilterPrivateFields<MaterializedDefinitions<TRegistry>[K]>,
   ): this {
-    throw new Error('implement me');
-    // return this.undeclare(key).define(key as any, factory as any) as any;
+    const newRegistry = this.registry.extendDeclarations(key, new TransientResolver(factory as any));
+    return this.build(newRegistry) as any;
   }
 }

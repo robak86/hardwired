@@ -1,5 +1,5 @@
 import { Module, module } from '../Module';
-
+import { external } from '../../builders/RequireBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Container, container } from '../../container/Container';
 import { Definition, RequiresDefinition } from '../ModuleRegistry';
@@ -99,13 +99,13 @@ describe(`Module`, () => {
   describe(`.require`, () => {
     describe(`types`, () => {
       it(`creates modules with correct type`, async () => {
-        const m = module('m').require<{ dependency1: number }>();
-        expectType<TypeEqual<typeof m, Module<{ dependency1: RequiresDefinition<number> }>>>(true);
+        const m = module('m').using(external).require<{ dependency1: number }>();
+        expectType<TypeEqual<ModuleBuilderRegistry<typeof m>, { dependency1: RequiresDefinition<number> }>>(true);
       });
 
       it(`aggregates all dependencies from imported modules`, async () => {
-        const m = module('m').require<{ dependency1: number }>();
-        const m2 = module('m2').require<{ dependency2: number }>().using(imports).import('imported', m);
+        const m = module('m').using(external).require<{ dependency1: number }>();
+        const m2 = module('m2').using(external).require<{ dependency2: number }>().using(imports).import('imported', m);
         expectType<
           TypeEqual<
             ModuleBuilderRegistry<typeof m2>,

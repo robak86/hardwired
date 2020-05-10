@@ -1,4 +1,4 @@
-import { Definition, MaterializedModuleEntries, ModuleRegistry } from '../module/ModuleRegistry';
+import { Definition, ModuleRegistry } from '../module/ModuleRegistry';
 import { BaseModuleBuilder } from './BaseModuleBuilder';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { NotDuplicated } from '../module/ModuleUtils';
@@ -21,7 +21,7 @@ export class ValueModule<TRegistry extends ModuleRegistry> extends BaseModuleBui
   }
 
   define<K extends string, V>(key: K, factory: V): NextValueModule<K, V, TRegistry> {
-    const newRegistry = this.registry.extendDeclarations(key, new GlobalSingletonResolver(factory as any));
+    const newRegistry = this.registry.extendDeclarations(key, new GlobalSingletonResolver(() => factory as any));
 
     return new ValueModule(newRegistry) as any;
   }

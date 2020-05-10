@@ -1,6 +1,5 @@
 import { DefinitionsSet } from './DefinitionsSet';
-import { ModuleRegistry, RequiresDefinition } from './ModuleRegistry';
-import { NotDuplicatedKeys } from './ModuleUtils';
+import { ModuleRegistry } from './ModuleRegistry';
 import { BaseModuleBuilder } from '../builders/BaseModuleBuilder';
 
 export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
@@ -10,14 +9,6 @@ export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
 
   protected build<TNextBuilder extends this>(ctx: any): TNextBuilder {
     return new Module(ctx) as any;
-  }
-
-  require<TNextContext extends object>(): NotDuplicatedKeys<
-    R,
-    TNextContext,
-    Module<R & { [K in keyof TNextContext]: RequiresDefinition<TNextContext[K]> }>
-  > {
-    return this as any;
   }
 }
 
