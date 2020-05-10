@@ -46,11 +46,11 @@ export class ContainerCache {
     return new ContainerCache(this.globalScope);
   }
 
-  isInitialized(moduleId: ModuleId): boolean {
+  isModuleInitialized(moduleId: ModuleId): boolean {
     return !!this.initializedModules[moduleId.id];
   }
 
-  markInitialized(moduleId: ModuleId) {
+  markModuleAsInitialized(moduleId: ModuleId) {
     this.initializedModules[moduleId.id] = true;
   }
 }

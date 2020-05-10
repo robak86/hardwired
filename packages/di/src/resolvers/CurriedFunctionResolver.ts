@@ -4,6 +4,7 @@ import { curry } from '../utils/curry';
 import { GlobalSingletonResolver } from './global-singleton-resolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { Container } from "../container/Container";
+import { DefinitionsSet } from "../module/DefinitionsSet";
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
@@ -26,7 +27,7 @@ export class CurriedFunctionResolver<TRegistry extends ModuleRegistry, TReturn>
     });
   }
 
-  build(container: Container<TRegistry>, ctx, cache: ContainerCache) {
-    return this.singletonResolver.build(container, ctx, cache);
+  build(registry: DefinitionsSet<TRegistry>, ctx, cache: ContainerCache) {
+    return this.singletonResolver.build(registry, ctx, cache);
   }
 }

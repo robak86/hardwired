@@ -1,6 +1,7 @@
 import { DependencyResolver } from './DependencyResolver';
 import { Container, ModuleRegistry } from '..';
 import { ContainerCache } from '../container/container-cache';
+import { DefinitionsSet } from '../module/DefinitionsSet';
 
 export type ServiceLocatorDependencyConfig = {};
 
@@ -16,7 +17,7 @@ export class ServiceLocatorResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TReturn> {
   constructor(private run: (container: Container<TRegistry>) => TReturn) {}
 
-  build(container: Container<TRegistry>, ctx, cache: ContainerCache): TReturn {
+  build(registry: DefinitionsSet<TRegistry>, ctx, cache: ContainerCache): TReturn {
     throw new Error('Implement me');
   }
 }

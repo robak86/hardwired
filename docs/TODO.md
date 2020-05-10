@@ -1,3 +1,6 @@
+- Container is going to be also stateless. All living instances will be hold in ```ContainerCache```
+    - future reactivity(if any), should be also done in ```ContainerCache``` (if we decide to support any)
+     
 - add typesafe effect (for getting dependencies) for redux saga 
 - make sure that container uses correct id's for cache and there are no collisiongs (write tests)
 - How implement lazy loading for modules ?
