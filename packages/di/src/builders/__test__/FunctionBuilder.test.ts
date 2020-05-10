@@ -3,9 +3,17 @@ import { fun, FunctionModuleBuilder } from '../FunctionBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Definition } from '../../module/ModuleRegistry';
 import { container } from '../../container/Container';
+import { ModuleBuilder, ModuleBuilderRegistry } from '../ModuleBuilder';
+import { imports } from '../ImportsBuilder';
 
 describe(`FunctionBuilder`, () => {
   describe(`types`, () => {
+    it(`correctly propagates TRegistry`, async () => {
+      const module: ModuleBuilder<{ a: Definition<number> }> = null as any;
+      const nextModule = module.using(fun);
+      expectType<TypeEqual<ModuleBuilderRegistry<typeof nextModule>, { a: Definition<number> }>>(true);
+    });
+
     it(`creates correct module type for function without any dependencies`, async () => {
       const someFunction = () => 123;
       const m = module('m1').using(fun).define('noDepsFunction', someFunction);
@@ -30,14 +38,20 @@ describe(`FunctionBuilder`, () => {
           ctx => ['someString'],
         );
 
+
       const m = module('m1')
+        .using(imports)
         .import('otherModule', imported)
         .using(fun)
         .define('noDepsFunction', someFunction, c => [c.otherModule.importedFunction()]);
+
       expectType<
         TypeEqual<
-          typeof m,
-          FunctionModuleBuilder<{ noDepsFunction: Definition<(param: string) => number>; otherModule: typeof imported }>
+          ModuleBuilderRegistry<typeof m>,
+          {
+            noDepsFunction: Definition<() => number>;
+            otherModule: ModuleBuilder<ModuleBuilderRegistry<typeof imported>>;
+          }
         >
       >(true);
     });

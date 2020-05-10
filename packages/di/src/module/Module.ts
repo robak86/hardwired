@@ -89,7 +89,7 @@ export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
 
   import<K extends string, TImportedR extends ModuleRegistry>(
     key: K,
-    mod2: Thunk<ModuleBuilder<TImportedR> | FunctionModuleBuilder<TImportedR>>,
+    mod2: Thunk<ModuleBuilder<TImportedR>>,
   ): NextModuleImport<K, TImportedR, R> {
     return new Module(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any;
   }

@@ -15,7 +15,7 @@ type NextFunctionModuleBuilder<TKey extends string, TReturn, TRegistry extends M
   >
 >;
 
-export class FunctionModuleBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<ModuleRegistry> {
+export class FunctionModuleBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
   constructor(registry: DefinitionsSet<TRegistry>) {
     super(registry);
   }

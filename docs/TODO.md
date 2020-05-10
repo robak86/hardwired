@@ -1,3 +1,5 @@
+- ```NextModule``` types for duplicates checks can be replaced at the container creation using checks if any
+of the module has type unions (not sure if it will work with nested invalid modules)
 - define should be default create dependencies in transient scope :/.... \
   - or we should forbid syntax like `.define(ctx => ...)`
   - instead we should require providing dependency resolvers

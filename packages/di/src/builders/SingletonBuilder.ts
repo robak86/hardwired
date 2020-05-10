@@ -1,7 +1,6 @@
 import { Definition, MaterializedModuleEntries, ModuleRegistry } from '../module/ModuleRegistry';
 import { BaseModuleBuilder } from './BaseModuleBuilder';
 import { DefinitionsSet } from '../module/DefinitionsSet';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { NotDuplicated } from '../module/ModuleUtils';
 import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
 
@@ -16,7 +15,7 @@ type NextSingletonBuilder<TKey extends string, TReturn, TRegistry extends Module
   >
 >;
 
-export class SingletonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<ModuleRegistry> {
+export class SingletonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
   constructor(registry: DefinitionsSet<TRegistry>) {
     super(registry);
   }
@@ -35,5 +34,5 @@ export class SingletonBuilder<TRegistry extends ModuleRegistry> extends BaseModu
   }
 }
 
-export const singleton = <TRegistry extends ModuleRegistry>(registry: DefinitionsSet<TRegistry>) =>
+export const singleton = <TRegistry extends ModuleRegistry>(registry: DefinitionsSet<TRegistry>):SingletonBuilder<TRegistry> =>
   new SingletonBuilder(registry);
