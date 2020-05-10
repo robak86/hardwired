@@ -29,7 +29,7 @@ export class ImportsModuleBuilder<TRegistry extends ModuleRegistry> extends Base
     key: TKey,
     mod2: Thunk<ModuleBuilder<TImportedR>>,
   ): NextImportsModuleBuilder<TKey, TImportedR, TRegistry> {
-    return this.build(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any;
+    return this.build(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any; //TODO: unwrap should happen at object construction - in other case it won't prevent for undefined values
   }
 
   protected build<TNextBuilder>(ctx): TNextBuilder {

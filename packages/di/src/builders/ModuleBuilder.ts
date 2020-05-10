@@ -6,9 +6,6 @@ export interface ModuleBuilder<TRegistry extends ModuleRegistry> {
   using<TNextBuilder extends ModuleBuilder<TRegistry>>(
     builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
   ): TNextBuilder;
-  //
-  // // define(...args: any[]): any;
 }
 
-
-export type ModuleBuilderRegistry<T> = T extends ModuleBuilder<infer TRegistry> ? TRegistry : never
+export type ModuleBuilderRegistry<T> = T extends ModuleBuilder<infer TRegistry> ? TRegistry : never;

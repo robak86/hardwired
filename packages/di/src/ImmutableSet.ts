@@ -1,9 +1,9 @@
 export class ImmutableSet<D extends Record<string, any>> {
   static empty(): ImmutableSet<{}> {
-    return new ImmutableSet<{}>({});
+    return new ImmutableSet<{}>({}, []);
   }
 
-  private constructor(private records: D) {}
+  private constructor(private records: D, private orderedKeys: string[]) {}
 
   get<K extends keyof D>(key: K): D[K] {
     return this.records[key];
@@ -23,33 +23,35 @@ export class ImmutableSet<D extends Record<string, any>> {
 
   remove<TKey extends keyof D>(key: TKey): ImmutableSet<Omit<D, TKey>> {
     const cloned: D = { ...this.records };
+
     delete cloned[key];
-    return new ImmutableSet(cloned) as any;
+    return new ImmutableSet(
+      cloned,
+      this.orderedKeys.filter(key => key !== key),
+    ) as any;
   }
 
-  set<TKey extends keyof D, TValue extends D[TKey]>(
-    key: TKey,
-    value: TValue
-  ): ImmutableSet<D> {
-    return new ImmutableSet({
-      ...this.records,
-      [key]: value,
-    });
+  set<TKey extends keyof D, TValue extends D[TKey]>(key: TKey, value: TValue): ImmutableSet<D> {
+    return new ImmutableSet(
+      {
+        ...this.records,
+        [key]: value,
+      },
+      [...this.orderedKeys, key as any],
+    );
   }
 
-  mapValues<TNext>(
-    mapFn: (value: D[keyof D], key: keyof D) => TNext
-  ): ImmutableSet<TNext> {
+  mapValues<TNext>(mapFn: (value: D[keyof D], key: keyof D) => TNext): ImmutableSet<TNext> {
     const next: any = {};
-    this.keys.forEach((key) => {
+    this.orderedKeys.forEach(key => {
       next[key] = mapFn(this.get(key), key);
     });
 
-    return new ImmutableSet(next);
+    return new ImmutableSet(next, this.orderedKeys);
   }
 
   forEach(iterFn: (val: D[keyof D], key: keyof D) => void) {
-    this.keys.forEach((key) => {
+    this.orderedKeys.forEach(key => {
       iterFn(this.get(key), key);
     });
   }
@@ -68,13 +70,13 @@ export class ImmutableSet<D extends Record<string, any>> {
   //   }) as any;
   // }
 
-  extend<TKey extends string, TValue>(
-    key: TKey,
-    value: TValue
-  ): ImmutableSet<D & { [K in TKey]: TValue }> {
-    return new ImmutableSet({
-      ...this.records,
-      [key]: value,
-    });
+  extend<TKey extends string, TValue>(key: TKey, value: TValue): ImmutableSet<D & { [K in TKey]: TValue }> {
+    return new ImmutableSet(
+      {
+        ...this.records,
+        [key]: value,
+      },
+      [...this.orderedKeys, key],
+    );
   }
 }

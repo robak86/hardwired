@@ -18,7 +18,9 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
   // Maybe imports should be realized by separate builder ?
   // abstract import(...args: any[]): any;
 
-  protected abstract build<TNextBuilder extends this>(ctx): TNextBuilder;
+  protected abstract build<TNextModule extends this>(
+    ctx: DefinitionsSet<any>,
+  );
 
   using<TNextBuilder extends ModuleBuilder<TRegistry>>(
     builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,

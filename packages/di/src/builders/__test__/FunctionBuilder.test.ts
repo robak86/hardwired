@@ -10,7 +10,7 @@ import { singleton } from '../SingletonBuilder';
 describe(`FunctionBuilder`, () => {
   describe(`types`, () => {
     it(`correctly propagates TRegistry`, async () => {
-      const m: ModuleBuilder<{ a: Definition<number> }> = module('someModule');
+      const m: ModuleBuilder<{ a: Definition<number> }> = module('someModule') as any;
       const nextModule = m.using(fun);
       expectType<TypeEqual<ModuleBuilderRegistry<typeof nextModule>, { a: Definition<number> }>>(true);
     });

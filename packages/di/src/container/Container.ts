@@ -41,9 +41,11 @@ export type DeepGetReturn<
 // TODO: extract all code related to instantiation of definition into services
 
 export class Container<R extends ModuleRegistry = {}, C = {}> {
-  private cache: ContainerCache = new ContainerCache();
-
-  constructor(private entries: DefinitionsSet<R>, private context: C) {}
+  constructor(
+    private registry: DefinitionsSet<R>,
+    private cache: ContainerCache = new ContainerCache(),
+    private context?: C,
+  ) {}
 
   get = <K extends ModuleRegistryDefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
     return this.getChild(this.cache.forNewRequest(), key as any); //
@@ -66,9 +68,9 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
 
   checkout(inherit: boolean): Container<R> {
     if (inherit) {
-      return new Container(this.entries, { ...this.cache });
+      return new Container(this.registry, this.cache, this.context);
     } else {
-      return new Container(this.entries, {});
+      return new Container(this.registry, new ContainerCache(), this.context);
     }
   }
 
@@ -78,8 +80,8 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
     key: K,
   ): DeepGetReturn<K, TNextR, R> {
     //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
-    let childModule: DefinitionsSet<any> | undefined = this.entries.isEqual(module.registry)
-      ? this.entries
+    let childModule: DefinitionsSet<any> | undefined = this.registry.isEqual(module.registry)
+      ? this.registry
       : unwrapThunk(this.findModule(module.registry));
 
     if (!childModule) {
@@ -91,14 +93,19 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
     // if (this.cache[childModule.moduleId.id]) {
     //     return this.cache[childModule.moduleId.id].getChild(this.cache, key);
     // } else {
-    let childMaterializedModule: any = new Container(childModule as any, this.context);
+
+    //TODO: optimization - instead of creating new instance of Container, we should have services/functions which takes container, and cache as a paremeter
+    // eg. getChild(registry, cache, key) - it would obviously mutate cache :/
+    let childMaterializedModule: any = new Container(childModule as any, this.cache);
+
+    childMaterializedModule.init(); // TODO: not sure if we should lazily initialize modules :/
     // this.cache[childModule.moduleId.id] = childMaterializedModule;
     return childMaterializedModule.getChild(this.cache, key); //TODO: we have to pass cache !!!!
     // }
   }
 
   private findModule(moduleIdentity: DefinitionsSet<any>): DefinitionsSet<any> | undefined {
-    return this.entries.findModule(moduleIdentity);
+    return this.registry.findModule(moduleIdentity);
   }
 
   //TODO: extract to class
@@ -108,25 +115,39 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
       return this.context[dependencyKey];
     }
 
-    if (this.entries.declarations.hasKey(dependencyKey)) {
-      let declarationResolver: DependencyResolver<any, any> = this.entries.declarations.get(dependencyKey);
+    if (this.registry.declarations.hasKey(dependencyKey)) {
+      let declarationResolver: DependencyResolver<any, any> = this.registry.declarations.get(dependencyKey);
       return declarationResolver.build(this, this.context, cache);
     }
 
-    if (this.entries.imports.hasKey(dependencyKey)) {
-      let childModule = unwrapThunk(this.entries.imports.get(dependencyKey));
+    if (this.registry.imports.hasKey(dependencyKey)) {
+      let childModule = unwrapThunk(this.registry.imports.get(dependencyKey));
 
       //TODO: investigate if we should cache containers
       // if (cache[childModule.moduleId.id]) {
       //     return containerProxyAccessor(cache[childModule.moduleId.id], cache);
       // } else {
-      let childMaterializedModule: any = new Container(childModule, this.context);
+      let childMaterializedModule: any = new Container(childModule, this.cache);
       // cache[childModule.moduleId.id] = childMaterializedModule;
       return containerProxyAccessor(childMaterializedModule, cache); //TODO: we have to pass cache !!!!
       // }
     }
 
     throw new Error(`Cannot find dependency for ${dependencyKey} key`);
+  }
+
+  public init() {
+    this.registry.forEachModule(registry => {
+      if (this.cache.isInitialized(registry.moduleId)) {
+        return;
+      }
+
+      const moduleContainer = new Container(registry, this.cache);
+      registry.initializers.forEach(init => {
+        init(containerProxyAccessor(moduleContainer, this.cache));
+      });
+      this.cache.markInitialized(registry.moduleId);
+    });
   }
 }
 
@@ -135,5 +156,5 @@ export function container<TRegistry extends ModuleRegistry>(
   m: ModuleBuilder<TRegistry>,
   ctx?: any,
 ): Container<TRegistry> {
-  return new Container((m as any).registry, ctx);
+  return new Container((m as any).registry, new ContainerCache(), ctx);
 }

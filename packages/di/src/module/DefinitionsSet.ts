@@ -1,18 +1,19 @@
 import { unwrapThunk } from '../utils/thunk';
 import { ModuleId } from '../module-id';
 import { ImmutableSet } from '../ImmutableSet';
-import { ModuleRegistry } from './ModuleRegistry';
+import { MaterializedModuleEntries, ModuleRegistry } from './ModuleRegistry';
 
-export class DefinitionsSet<R extends ModuleRegistry, C = any> {
+// TODO: rename => RegistryEntries ? RegistrySet ... or even something better than Registry ?
+export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
   static empty(name: string): DefinitionsSet<{}> {
-    return new DefinitionsSet<any, any>(ModuleId.build(name), ImmutableSet.empty(), ImmutableSet.empty());
+    return new DefinitionsSet<any, any>(ModuleId.build(name), ImmutableSet.empty(), ImmutableSet.empty(), []);
   }
 
   protected constructor(
     public moduleId: ModuleId,
-    public imports: ImmutableSet<any>,
+    public imports: ImmutableSet<Record<string, DefinitionsSet<any>>>,
     public declarations: ImmutableSet<any>,
-    public initializers: any[] = [],
+    public initializers: any[],
   ) {}
 
   isEqual(other: DefinitionsSet<any>): boolean {
@@ -24,7 +25,22 @@ export class DefinitionsSet<R extends ModuleRegistry, C = any> {
       ModuleId.next(this.moduleId),
       this.imports.extend(key, resolver) as any,
       this.declarations,
+      this.initializers,
     ) as any; //TODO: fix types
+  }
+
+  appendInitializer(initializer: (ctx: MaterializedModuleEntries<TRegistry>) => void) {
+    return new DefinitionsSet(ModuleId.next(this.moduleId), this.imports, this.declarations, [
+      ...this.initializers,
+      initializer,
+    ]) as any;
+  }
+
+  forEachModule(iterFn: (registry: DefinitionsSet<any>) => void) {
+    this.imports.forEach(importedRegistry => {
+      importedRegistry.forEachModule(iterFn);
+    });
+    iterFn(this);
   }
 
   extendDeclarations(key, resolver) {
@@ -32,11 +48,17 @@ export class DefinitionsSet<R extends ModuleRegistry, C = any> {
       ModuleId.next(this.moduleId),
       this.imports,
       this.declarations.extend(key, resolver) as any,
+      this.initializers,
     ) as any; //TODO: fix types
   }
 
   removeDeclaration(key) {
-    return new DefinitionsSet(ModuleId.next(this.moduleId), this.imports, this.declarations.remove(key) as any);
+    return new DefinitionsSet(
+      ModuleId.next(this.moduleId),
+      this.imports,
+      this.declarations.remove(key) as any,
+      this.initializers,
+    );
   }
 
   inject(otherModule: DefinitionsSet<any>): DefinitionsSet<any> {
@@ -45,7 +67,7 @@ export class DefinitionsSet<R extends ModuleRegistry, C = any> {
       return unwrappedImportedModule.isEqual(otherModule) ? otherModule : unwrappedImportedModule.inject(otherModule);
     });
 
-    return new DefinitionsSet(ModuleId.next(this.moduleId), nextImports, this.declarations);
+    return new DefinitionsSet(ModuleId.next(this.moduleId), nextImports, this.declarations, this.initializers);
   }
 
   hasImport(key): boolean {

@@ -14,10 +14,12 @@ export class StoreInstance<AppState> {
     this.getState = this.store.getState;
   }
 
+  // TODO: maybe this should be idempotent ?
   appendReducer(reducer: Reducer<AppState, any>) {
     this.reducers.push(reducer);
   }
 
+  // TODO: maybe this should be idempotent ?
   appendMiddleware(middleware: Middleware) {
     let dispatch: any = () => {
       throw new Error(
