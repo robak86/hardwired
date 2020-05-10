@@ -17,6 +17,7 @@
     "strict": true,
     "strictFunctionTypes": false,
     "noImplicitAny": false,
-    "keyofStringsOnly": false
+    "keyofStringsOnly": false,
+    "downlevelIteration": true
   }
 }

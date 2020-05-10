@@ -1,3 +1,4 @@
+- add typesafe effect (for getting dependencies) for redux saga 
 - make sure that container uses correct id's for cache and there are no collisiongs (write tests)
 - How implement lazy loading for modules ?
   - check how loading of the next module is done, at what point ? what should trigger loading of the new module ?
