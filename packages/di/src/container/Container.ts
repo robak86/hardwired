@@ -1,5 +1,4 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { Module } from '../module/Module';
 import { unwrapThunk } from '../utils/thunk';
 import { containerProxyAccessor } from './container-proxy-accessor';
 import { ContainerCache } from './container-cache';
@@ -12,8 +11,6 @@ import {
   ModuleRegistryDefinitions,
   ModuleRegistryDefinitionsKeys,
 } from '../module/ModuleRegistry';
-import { FunctionModuleBuilder } from '../builders/FunctionBuilder';
-import { ClassBuilder } from '../builders/ClassBuilder';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 
 interface GetMany<D> {
@@ -31,13 +28,15 @@ interface GetMany<D> {
   ): [D[K], D[K2], D[K3], D[K4]];
 }
 
+export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGet because module's context is missing in the container`;
+
 export type DeepGetReturn<
   K extends keyof MaterializedDefinitions<TModuleRegistry>,
   TModuleRegistry extends ModuleRegistry,
   TContainerRegistry extends ModuleRegistry
 > = ModuleRegistryContext<TContainerRegistry> extends ModuleRegistryContext<TModuleRegistry>
   ? MaterializedModuleEntries<TModuleRegistry>[K]
-  : `Given module cannot be used with deepGet because module's context is missing in the container`;
+  : DeepGetReturnErrorMessage;
 
 // TODO: extract all code related to instantiation of definition into services
 

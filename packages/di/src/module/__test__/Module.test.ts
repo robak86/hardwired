@@ -190,6 +190,7 @@ describe(`Module`, () => {
           .define('t1', () => new T1());
 
         const t1 = container(b).deepGet(a, 't1');
+
         expect(t1.type).toEqual('t1');
       });
     });

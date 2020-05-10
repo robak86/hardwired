@@ -6,7 +6,7 @@ import { ModuleRegistry } from '../module/ModuleRegistry';
 
 export class GlobalSingletonResolver<TRegistry extends ModuleRegistry, TReturn = any>
   implements DependencyResolver<TRegistry, TReturn> {
-  public id: string = nextId(); //TODO: not sure if necessary
+  public id: string = nextId();
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
 

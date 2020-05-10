@@ -9,6 +9,8 @@ export { singleton } from './builders/SingletonBuilder';
 export { value } from './builders/ValueBuilder';
 export { transient } from './builders/TransientBuilder';
 export { imports } from './builders/ImportsBuilder';
+export { tuple } from './utils/tuple';
+
 export type { ModuleBuilder } from './builders/ModuleBuilder';
 
 export { BaseModuleBuilder } from './builders/BaseModuleBuilder';

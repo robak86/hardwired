@@ -1,13 +1,28 @@
-- ```NextModule``` types for duplicates checks can be replaced at the container creation using checks if any
-of the module has type unions (not sure if it will work with nested invalid modules)
-- define should be default create dependencies in transient scope :/.... \
-  - or we should forbid syntax like `.define(ctx => ...)`
-  - instead we should require providing dependency resolvers
-- consider more strict api ?
+- make sure that container uses correct id's for cache and there are no collisiongs (write tests)
+- How implement lazy loading for modules ?
+  - check how loading of the next module is done, at what point ? what should trigger loading of the new module ?
+
+`module` may be in collision with node's module
+
+- rename `module` (becuase of conflict with built-in name) -> `unit` | `trait` ?
+  - `unit` is in collision with unit type
+  - `trait` is about completely different concept
+- `NextModule` types for duplicates checks can be replaced at the container creation using checks if any
+  of the module has type unions (not sure if it will work with nested invalid modules)
+- ~~define should be default create dependencies in transient scope~~
+  - ~~or we should forbid syntax like `.define(ctx => ...)`~~
+  - ~~instead we should require providing dependency resolvers~~
+- ~~consider more strict api ?~~
+
 - add `flatImport` which redefines all definitions from flatImported module, so the are available as module's own definitions
 
+  - ... but how it would behave with inject ?!!! How we replace all flattened definitions ??
+  - maybe we should treat all replaced
+
 - ~~emptyContainer for deepGet breaks type-safety (because of missing check for context)~~
-- insted of ```Definition``` wrapper we could use ```DependencyResolver``` (not sure if inference will work correctyl)
+- ~~insted of `Definition` wrapper we could use `DependencyResolver` (not sure if inference will work correctyl)~~
+  - ~~bad idea - because it would make final type more complex and ureadable - Definition takes single generic, but
+    DependencyResolver takes 2~~
 
 ```typescript
 type Resolvable = () => Treturn | DependencyResolver;
@@ -20,7 +35,7 @@ const m = module('someName')
   .define(); // the same as define
 ```
 
-- extendable api for react custom elements
+- ~~extendable api for react custom elements~~
 
   ```typescript jsx
   const m = module('m')
@@ -46,7 +61,8 @@ const m = module('someName')
 
 - sagas, reducers, states should be propagated to root container - it's global dependency. How to reuse it in child modules ?
 
-- should we provide module().onInit(ctx => {})
+- ~~should we provide module().onInit(ctx => {})~~
+- provide `lifecycle` builder
 
   - it enables side effect (which is bad)
   - but it's called only once (which is acceptable ?)
@@ -62,10 +78,8 @@ const m = module('someName')
 
 - investigate saga custom redux saga middleware effects
 
-- use strictFunction (tuple error)
-
-  - possible solution would be to probide tuple helper method
-
+- ~~use strictFunction (tuple error)~~
+  - ~~possible solution would be to probide tuple helper method~~
   ```typescript
   function tuple<T1, T2>(...args: [T1, T2]): [T1, T2];
   function tuple<T1, T2, T3>(...args: [T1, T2]): [T1, T2, T3];
@@ -81,6 +95,12 @@ const m = module('someName')
 - implement nesting multiple containers
 
   - container1 -> container2 -> container3. If child module has common modules with the parent, then parent modules are resued ?
+  - so it looks like we need two kind of components (or maybe ContainerProvider would be enough)
+    - ContainerProvider - created with `createContainer` it provides container for whole application and it defines
+      external context for all lazyli (or deepGet) loaded modules. - it's type safe - provides single `useDependency()` hook for the whole application. `useDependency` accepts all modules
+      with compatibile external context. So it is required for the ContainerProvider to provide external context
+      for all modules used in application
+    - ModuleProvider - it may create new scope ? .. ?
 
 - implement scope
 
@@ -110,7 +130,7 @@ const m = module('someName')
 
 - ~~use isolated modules~~
 - ~~Add extra generic type, with Context - context will be the guard for deepGet !!!!~~
-  - context is part of the registry type in order to make types related error messages simpler
+  - ~~context is part of the registry type in order to make types related error messages simpler~~
 
 ### Proxy object
 
@@ -120,11 +140,16 @@ const m = module('someName')
 
 ### External dependencies
 
-- add .require() for external params (acts similary to import, but expect parameters to be provided at container builds step)
+- ~~add .require() for external params (acts similary to import, but expect parameters to be provided at container builds step)~~
 - module('someName').requires<>(key: 'someKey') // we need to explicitely set key in order to lazyli rebuild
 - require<{someProp: number}>()
   - investigate if we really need to explicitely get `someProp` while defining external dependency
   - it looks like we can compare all keys from registry with all keys called with select method (proxy object)
+    - but it there is no guarantee that all keys will be called, therefore we cannot infer types
+  - container.updateContext({}) // it rebuild all dependencies which are connected with context... in practice it will be almost
+    always the whole tree, becuase in most of the cases context will be some deeply nested dependency( probabilit leaf)
+  - add `.watch` mathod on external dependencies builder - it will rebuild whole container on property passed to watch change ?
+    - investigate if it should be responsibility of this DI library. Maybe change detection should be implemented in user space ?
   - ...but in some env's we won't be able to use proxy object
 
 ```
@@ -145,18 +170,14 @@ import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules |
 - ~~deepGet won't be typesafe with context. In order to fix this deepGet needs to recursively collec all registered modules
   and check if module passed to deepGet is registered in container. If we won't be able to do this, newly ad-hoc registered module
   may miss it's context~~
-  - because of typescript is missing contravariant generic constraints, the only way to achive typesafe is by using
-    conditional return type, returning error message if module is not compatibile with container
-
-* container.updateContext({}) // it rebuild all dependencies which are connected with context... in practice it will be almost
-  always the whole tree, becuase in most of the cases context will be some deeply nested dependency( probabilit leaf)
+  - ~~because of typescript is missing contravariant generic constraints, the only way to achive typesafe is by using
+    conditional return type, returning error message if module is not compatibile with container~~
 
 * ~~migrate unit tests to jest (we need to test react-di)~~
-* investigate if deepGet can be type safe
-
-  - it would require flattening of imports into union of types <I,D, AD, C>
-  - if it is typesafe then we would have to create factory for all react api - `const {useContainer, ContainerProvider} = createContainer(module)`
-  - if typesafe is not type safe, then we could consider feature for extending current(parent) container with additional modules
+* ~~investigate if deepGet can be type safe~~
+  - ~~it would require flattening of imports into union of types <I,D, AD, C>~~
+  - ~~if it is typesafe then we would have to create factory for all react api - `const {useContainer, ContainerProvider} = createContainer(module)`.~~
+  - ~~if typesafe is not type safe, then we could consider feature for extending current(parent) container with additional modules~~
 
 ```
 
@@ -177,26 +198,24 @@ import<Tnext, TNextModules>>(mod:Module<TNext,TNextModules>):Module<R, Modules |
 - ~~replace ts-jest with babel and run jest on already transpiled files~~
 - add checks for definition (cannot return null and undefined)
 
-`module` may be in collision with node's module
-
-- type AppModuleDeps = Materialized<typeof appModule> - currently Materialized requires three params
+* type AppModuleDeps = Materialized<typeof appModule> - currently Materialized requires three params
   -# TODO: Add callback for dispose ? (e.g for disposing database connection)
 
-- check if module with replaced values (used for testing) are correctly garbage collected (reference to module entries)
-- check if containers should be explicitely disposed (in order to remove references to module entries)
+* check if module with replaced values (used for testing) are correctly garbage collected (reference to module entries)
+* check if containers should be explicitely disposed (in order to remove references to module entries)
 
-- ~~add convenience methods for~~
+* ~~add convenience methods for~~
 
-- Lazy loading for the web
+* Lazy loading for the web
 
 ```typescript
 const m1 = module('name1').defineFunction('someFunction', someFunction, ctx => [ctx.dep1, ctx.dep2, ctx.dep3]); // returns curried version of someFunction
 const m2 = module('name2').defineClass('someClass', SomeClass, ctx => [{ dep1: ctx.dep1, dep2: ctx.dep2 }]); // returns instance of SomeClass
 ```
 
-- investigage pros and cons of module-less container
-  - we wouldn't be able to implement typesafe context
-- remove async dependencies in favor of module.require<{someAsyncValue: number}>()
+- ~~investigage pros and cons of module-less container~~
+  - ~~we wouldn't be able to implement typesafe context~~
+- ~~remove async dependencies in favor of module.require<{someAsyncValue: number}>()~~
 
 ```typescript
 const c = container();
@@ -205,7 +224,7 @@ c.get(someModule, 'dependencyName'); // someModule automatically registered in c
 c.get(someModule, 'dependencyName');
 ```
 
-- container shouldn't allow getting imported modules. only `D` are the public interface of the module
+- ~~container shouldn't allow getting imported modules. only `D` are the public interface of the module~~
 - add react package
 
 ```typescript jsx
@@ -263,22 +282,4 @@ function App() {
     </HardwiredContainer>
   );
 }
-```
-
-- composition using module granularity
-
-  - multiple `HardwiredContainer` with different modules, reusing instances from parent container
-
-- checkout method (used for explicitely creating new container scope, with or withour inherited properties)
-
-```typescript
-function app(container) {
-  use('someRoute', (req, res) => container.checkout().get('handler')(req, res));
-}
-```
-
-... or instead
-
-```typescript
-const m1 = module().define('handler');
 ```
