@@ -1,6 +1,13 @@
 import { DefinitionsSet } from '../module/DefinitionsSet';
-import { ModuleRegistry, ModuleRegistryDefinitionsKeys, ModuleRegistryImportsKeys } from '../module/ModuleRegistry';
+import {
+  MaterializedDefinitions,
+  MaterializedModuleEntries,
+  ModuleRegistry,
+  ModuleRegistryDefinitionsKeys,
+  ModuleRegistryImportsKeys,
+} from '../module/ModuleRegistry';
 import { ModuleBuilder } from './ModuleBuilder';
+import { FilterPrivateFields } from '../module/ModuleUtils';
 
 export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
   protected constructor(public readonly registry: DefinitionsSet<TRegistry>) {}
@@ -29,5 +36,13 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
 
   isDeclared(key: ModuleRegistryDefinitionsKeys<TRegistry>): boolean {
     return this.registry.hasDeclaration(key);
+  }
+
+  replace<K extends ModuleRegistryDefinitionsKeys<TRegistry>, C>(
+    key: K,
+    factory: (container: MaterializedModuleEntries<TRegistry>, C) => FilterPrivateFields<MaterializedDefinitions<TRegistry>[K]>,
+  ): this {
+    throw new Error('implement me');
+    // return this.undeclare(key).define(key as any, factory as any) as any;
   }
 }

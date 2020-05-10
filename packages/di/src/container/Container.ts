@@ -14,6 +14,7 @@ import {
 } from '../module/ModuleRegistry';
 import { FunctionModuleBuilder } from '../builders/FunctionBuilder';
 import { ClassBuilder } from '../builders/ClassBuilder';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -74,7 +75,7 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
   deepGet<TNextR extends ModuleRegistry, K extends keyof MaterializedDefinitions<TNextR>>(
-    module: Module<TNextR>,
+    module: ModuleBuilder<TNextR>,
     key: K,
   ): DeepGetReturn<K, TNextR, R> {
     //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
@@ -132,7 +133,7 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
 
 // TODO: currently in order to have correct TRegistry type we need pass union of exact implementations of ModuleBuilder - which forbids custom builders in user space
 export function container<TRegistry extends ModuleRegistry>(
-  m: FunctionModuleBuilder<TRegistry> | Module<TRegistry> | ClassBuilder<TRegistry>,
+  m: ModuleBuilder<TRegistry>,
   ctx?: any,
 ): Container<TRegistry> {
   return new Container((m as any).registry, ctx);

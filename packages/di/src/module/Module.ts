@@ -67,12 +67,7 @@ export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
     return this.define(key, () => value);
   }
 
-  replace<K extends ModuleRegistryDefinitionsKeys<R>, C>(
-    key: K,
-    factory: (container: MaterializedModuleEntries<R>, C) => FilterPrivateFields<MaterializedDefinitions<R>[K]>,
-  ): Module<R> {
-    return this.undeclare(key).define(key as any, factory as any) as any;
-  }
+
 
   // convenient method for providing mocks for testing
   replaceConst<K extends ModuleRegistryDefinitionsKeys<R>, C>(
@@ -87,12 +82,12 @@ export class Module<R extends ModuleRegistry> extends BaseModuleBuilder<R> {
     return new Module(this.registry.removeDeclaration(key)) as any;
   }
 
-  import<K extends string, TImportedR extends ModuleRegistry>(
-    key: K,
-    mod2: Thunk<ModuleBuilder<TImportedR>>,
-  ): NextModuleImport<K, TImportedR, R> {
-    return new Module(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any;
-  }
+  // import<K extends string, TImportedR extends ModuleRegistry>(
+  //   key: K,
+  //   mod2: Thunk<ModuleBuilder<TImportedR>>,
+  // ): NextModuleImport<K, TImportedR, R> {
+  //   return new Module(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any;
+  // }
 }
 
 // export type FlattenModules<R> =

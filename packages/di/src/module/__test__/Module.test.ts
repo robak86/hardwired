@@ -2,14 +2,16 @@ import { Module, module } from '../Module';
 
 import { expectType, TypeEqual } from 'ts-expect';
 import { Container, container } from '../../container/Container';
-import { Definition, ModuleRegistryContext, RequiresDefinition } from '../ModuleRegistry';
+import { Definition, RequiresDefinition } from '../ModuleRegistry';
 import { singleton, SingletonBuilder } from '../../builders/SingletonBuilder';
+import { imports } from '../../builders/ImportsBuilder';
+import { ModuleBuilder, ModuleBuilderRegistry } from '../../builders/ModuleBuilder';
 
 describe(`Module`, () => {
   describe(`.hasModule`, () => {
     it(`returns true if there is a module registered for given key`, async () => {
       let otherModule = module('someName');
-      let rootModule = module('someOtherModule').import('otherModule', otherModule);
+      let rootModule = module('someOtherModule').using(imports).import('otherModule', otherModule);
 
       expect(rootModule.hasModule('otherModule')).toEqual(true);
     });
@@ -27,7 +29,7 @@ describe(`Module`, () => {
       let childModule1 = module('child1');
       let childModule2 = module('child2');
 
-      let rootModule = module('someOtherModule').import('c1', childModule1);
+      let rootModule = module('someOtherModule').using(imports).import('c1', childModule1);
 
       let updatedRoot = rootModule.import('c2', childModule2);
 
@@ -36,7 +38,9 @@ describe(`Module`, () => {
 
     it(`supports thunks`, async () => {
       let childModule1 = module('child1');
-      let rootModule = module('someOtherModule').import('c1', () => childModule1);
+      let rootModule = module('someOtherModule')
+        .using(imports)
+        .import('c1', () => childModule1);
 
       expect(rootModule.hasModule('c1')).toEqual(true);
     });
@@ -112,11 +116,14 @@ describe(`Module`, () => {
 
       it(`aggregates all dependencies from imported modules`, async () => {
         const m = module('m').require<{ dependency1: number }>();
-        const m2 = module('m2').require<{ dependency2: number }>().import('imported', m);
+        const m2 = module('m2').require<{ dependency2: number }>().using(imports).import('imported', m);
         expectType<
           TypeEqual<
-            ModuleRegistryContext<typeof m2.debug>,
-            { dependency1: RequiresDefinition<number>; dependency2: RequiresDefinition<number> }
+            ModuleBuilderRegistry<typeof m2>,
+            {
+              dependency2: RequiresDefinition<number>;
+              imported: ModuleBuilder<ModuleBuilderRegistry<typeof m>>;
+            }
           >
         >(true);
       });
@@ -182,7 +189,9 @@ describe(`Module`, () => {
         let a = module('1').define('t1', () => new T1());
 
         let b = module('1')
+          .using(imports)
           .import('a', a)
+          .using(singleton)
           .define('t1', () => new T1());
 
         const t1 = container(b).deepGet(a, 't1');
@@ -197,7 +206,9 @@ describe(`Module`, () => {
           .define('t2', () => new T2());
 
         let m1 = module('2')
+          .using(imports)
           .import('childModule', childM)
+          .using(singleton)
           .define('sdf', ctx => ctx.childModule)
           .define('t1', () => new T1())
           .define('t2', () => new T2())
@@ -226,7 +237,9 @@ describe(`Module`, () => {
             .define('v2', () => 2);
 
           let m2 = module('m2')
+            .using(imports)
             .import('m1', () => m1)
+            .using(singleton)
             .define('ov1', () => 10)
             .define('s2', () => 11);
 
@@ -255,9 +268,16 @@ describe(`Module`, () => {
         let f3 = jest.fn().mockReturnValue(() => 678);
         let f4 = jest.fn().mockReturnValue(() => 9);
 
-        let m1 = module('m1').define('s3', f3).define('s4', f4);
+        let m1 = module('m1') //breakme
+          .define('s3', f3)
+          .define('s4', f4);
 
-        let m2 = module('m2').import('m1', m1).define('s1', f1).define('s2', f2);
+        let m2 = module('m2') //breakme
+          .using(imports)
+          .import('m1', m1)
+          .using(singleton)
+          .define('s1', f1)
+          .define('s2', f2);
 
         let cnt = container(m2);
 
@@ -283,15 +303,19 @@ describe(`Module`, () => {
           .define('f1+f2', ({ f1, f2 }) => f1 + f2);
 
         let b = module('b')
+          .using(imports)
           .import('c', c)
+          .using(singleton)
           .define('f3', f3)
           .define('f4', f4)
           .define('f3+f4', ({ f3, f4 }) => f3 + f4)
           .define('f1+f2+f3+f4', _ => _.c.f1 + _.c.f2 + _.f3 + _.f3);
 
         let a = module('a')
+          .using(imports)
           .import('b', b)
           .import('c', c)
+          .using(singleton)
           .define('f5', f5)
           .define('f6', f6)
           .define('f5+f1', _ => _.c.f1 + _.f5)
@@ -330,7 +354,9 @@ describe(`Module`, () => {
         let m1 = module('m1').define('s3', f3).define('s4', f4);
 
         let m2 = module('m2')
+          .using(imports)
           .import('m1', m1)
+          .using(singleton)
           .define('s1', f1)
           .define('s2', f2)
           .define('s3_s1', c => [c.m1.s3, c.s1])
@@ -367,25 +393,20 @@ describe(`Module`, () => {
   describe(`.inject`, () => {
     it(`replaces all related modules in whole tree`, async () => {
       let m1 = module('m1')
-        // .using(singleton)
-        .define('val', () => 1);
-
-      let m11 = module('m1')
-        .require<{ a: number }>()
-        // .using(singleton)
+        .using(singleton)
         .define('val', () => 1);
 
       let m2 = module('m2')
+        .using(imports)
         .import('child', m1)
-        // .using(singleton)
-
+        .using(singleton)
         .define('valFromChild', c => c.child.val);
 
       let m3 = module('m3')
+        .using(imports)
         .import('child1', m1)
         .import('child2', m2)
-        // .using(singleton)
-
+        .using(singleton)
         .define('val', c => c.child2.valFromChild);
 
       // const a = m2.toContainer({}).flatten();
