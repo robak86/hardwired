@@ -61,6 +61,7 @@ describe(`Module`, () => {
 
       it(`does not allow duplicates`, async () => {
         const m = module<{ externalDependency: number }>('m1')
+          .using(singleton)
           .define('number', () => 123)
           .define('number', () => 'str');
 
@@ -73,13 +74,17 @@ describe(`Module`, () => {
         public a!: string;
       }
 
-      let m1 = module('otherModule').define('someType', () => new SomeType());
+      let m1 = module('otherModule')
+        .using(singleton)
+        .define('someType', () => new SomeType());
 
       expect(m1.isDeclared('someType')).toEqual(true);
     });
 
     it(`does not mutate original module`, async () => {
-      let m1 = module('m1').define('someType', () => true);
+      let m1 = module('m1')
+        .using(singleton)
+        .define('someType', () => true);
 
       let m2 = m1.define('someNewType', () => 123);
 
@@ -89,22 +94,6 @@ describe(`Module`, () => {
     });
 
     it(`returns new instance of module (doesn't mutate original module)`, async () => {});
-  });
-
-  describe(`.undeclare`, () => {
-    it(`removes declaration`, async () => {
-      let m1 = module('m1')
-        .define('a', () => 1)
-        .define('b', () => 2);
-
-      let m2 = m1.undeclare('a');
-
-      expect(m1.isDeclared('a')).toEqual(true);
-      expect(m1.isDeclared('b')).toEqual(true);
-
-      expect((<any>m2).isDeclared('a')).toEqual(false);
-      expect(m2.isDeclared('b')).toEqual(true);
-    });
   });
 
   describe(`.require`, () => {
@@ -134,6 +123,7 @@ describe(`Module`, () => {
     describe(`types`, () => {
       it(`produces container with correct types`, async () => {
         let m = module('m1')
+          .using(singleton)
           .define('a', () => 1)
           .define('b', () => '2');
 
@@ -145,7 +135,9 @@ describe(`Module`, () => {
 
   describe(`.replace`, () => {
     it(`replaces declaration`, async () => {
-      let m1 = module('m1').define('a', () => 1);
+      let m1 = module('m1')
+        .using(singleton)
+        .define('a', () => 1);
 
       let updated = m1.replace('a', () => 2);
       expect(container(updated).get('a')).toEqual(2);
@@ -166,6 +158,7 @@ describe(`Module`, () => {
     describe(`instances declared in current module`, () => {
       it(`returns registered dependency`, async () => {
         let m1 = module('m1')
+          .using(singleton)
           .define('t1', () => new T1())
           .define('t2', () => new T2())
           .define('t1_t2', c => {
@@ -186,7 +179,9 @@ describe(`Module`, () => {
 
     describe(`.getDeep`, () => {
       it(`returns instance from other module`, async () => {
-        let a = module('1').define('t1', () => new T1());
+        let a = module('1')
+          .using(singleton)
+          .define('t1', () => new T1());
 
         let b = module('1')
           .using(imports)
@@ -202,6 +197,7 @@ describe(`Module`, () => {
     describe(`instances fetched from submodules`, () => {
       it(`returns registered dependency`, async () => {
         let childM = module('1')
+          .using(singleton)
           .define('t1', () => new T1())
           .define('t2', () => new T2());
 
@@ -233,6 +229,7 @@ describe(`Module`, () => {
       describe(`.toObject`, () => {
         it(`returns proxy object able for getting all dependencies`, async () => {
           let m1 = module('m1')
+            .using(singleton)
             .define('v1', () => 1)
             .define('v2', () => 2);
 
@@ -252,6 +249,7 @@ describe(`Module`, () => {
       describe(`.getMany`, () => {
         it(`returns all dependencies`, async () => {
           let m1 = module('m1')
+            .using(singleton)
             .define('s1', () => 1)
             .define('s2', () => 'str');
 
@@ -269,6 +267,7 @@ describe(`Module`, () => {
         let f4 = jest.fn().mockReturnValue(() => 9);
 
         let m1 = module('m1') //breakme
+          .using(singleton)
           .define('s3', f3)
           .define('s4', f4);
 
@@ -298,6 +297,7 @@ describe(`Module`, () => {
         let f6 = jest.fn().mockReturnValue(() => 9);
 
         let c = module('c')
+          .using(singleton)
           .define('f1', f1)
           .define('f2', f2)
           .define('f1+f2', ({ f1, f2 }) => f1 + f2);
@@ -351,7 +351,7 @@ describe(`Module`, () => {
         let f3 = jest.fn().mockReturnValue((...args: any[]) => 678);
         let f4 = jest.fn().mockReturnValue((...args: any[]) => 9);
 
-        let m1 = module('m1').define('s3', f3).define('s4', f4);
+        let m1 = module('m1').using(singleton).define('s3', f3).define('s4', f4);
 
         let m2 = module('m2')
           .using(imports)
@@ -380,6 +380,7 @@ describe(`Module`, () => {
       //TODO: Maximum call stack size exceeded
       it.skip(`properly resolvers circular dependencies`, async () => {
         let m1 = module('m1')
+          .using(singleton)
           .define('i', () => 1)
           .define('a', (c: any) => c.i + c.b)
           .define('b', (c: any) => c.i + c.a);

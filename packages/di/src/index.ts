@@ -5,6 +5,12 @@ export * from './module/Module';
 export * from './container/Container';
 export * from './utils';
 
+export { singleton } from './builders/SingletonBuilder';
+export { value } from './builders/ValueBuilder';
+export { transient } from './builders/TransientBuilder';
+export { imports } from './builders/ImportsBuilder';
+export type { ModuleBuilder } from './builders/ModuleBuilder';
+
 export { BaseModuleBuilder } from './builders/BaseModuleBuilder';
 export type { FlattenModules } from './module/ModuleRegistry';
 export type { ModuleRegistryImports } from './module/ModuleRegistry';

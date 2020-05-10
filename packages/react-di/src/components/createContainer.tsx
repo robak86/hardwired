@@ -7,6 +7,7 @@ import {
   MaterializedDefinitions,
   Module,
   module,
+  ModuleBuilder,
   ModuleRegistry,
   ModuleRegistryContext,
 } from '@hardwired/di';
@@ -46,7 +47,7 @@ type ContainerComponents<TRegistry extends ModuleRegistry> = {
     TModuleRegistry extends ModuleRegistry,
     TModuleRegistryKey extends keyof MaterializedDefinitions<TModuleRegistry>
   >(
-    module: Module<TModuleRegistry>,
+    module: ModuleBuilder<TModuleRegistry>,
     key: TModuleRegistryKey,
   ) => DeepGetReturn<TModuleRegistryKey, TModuleRegistry, TRegistry>;
   useContainer: () => MaterializedDefinitions<TRegistry>;
@@ -54,7 +55,7 @@ type ContainerComponents<TRegistry extends ModuleRegistry> = {
 
 // TODO: allow thunk returning promise for lazy loading ?
 export function createContainer<TRegistry extends ModuleRegistry>(
-  module: Module<TRegistry>,
+  module: ModuleBuilder<TRegistry>,
 ): ContainerComponents<TRegistry> {
   return {
     Container: createContainerProvider(module) as any,

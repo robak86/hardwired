@@ -5,6 +5,7 @@ import { Definition } from '../../module/ModuleRegistry';
 import { container } from '../../container/Container';
 import { ModuleBuilder, ModuleBuilderRegistry } from '../ModuleBuilder';
 import { imports } from '../ImportsBuilder';
+import { singleton } from '../SingletonBuilder';
 
 describe(`FunctionBuilder`, () => {
   describe(`types`, () => {
@@ -38,7 +39,6 @@ describe(`FunctionBuilder`, () => {
           ctx => ['someString'],
         );
 
-
       const m = module('m1')
         .using(imports)
         .import('otherModule', imported)
@@ -59,6 +59,7 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with single parameter with all deps provided`, async () => {
       const someFunction = (someParam: string) => 123;
       const m = module('m1')
+        .using(singleton)
         .define('someString', () => 'someString')
         .using(fun)
         .define('noDepsFunction', someFunction, ctx => [ctx.someString]);
@@ -74,6 +75,7 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with two parameters with no deps provided`, async () => {
       const someFunction = (someParam: string, someOtherParam: number) => 123;
       const m = module('m1')
+        .using(singleton)
         .define('someString', () => 'someString')
         .define('someNumber', () => 123)
         .using(fun)
@@ -94,6 +96,7 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with two parameters with all deps provided`, async () => {
       const someFunction = (someParam: string, someOtherParam: number) => 123;
       const m = module('m1')
+        .using(singleton)
         .define('someString', () => 'someString')
         .define('someNumber', () => 123)
         .using(fun)
@@ -115,6 +118,7 @@ describe(`FunctionBuilder`, () => {
   describe(`instantiation`, () => {
     const someFunction = (someParam: string, someOtherParam: number) => [someParam, someOtherParam];
     const m = module('m1')
+      .using(singleton)
       .define('d1', () => 'dependency1')
       .define('d2', () => 123)
       .using(fun)
