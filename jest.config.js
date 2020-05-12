@@ -1,6 +1,6 @@
 module.exports = {
   // preset: 'ts-jest',
-  projects: ['<rootDir>/packages/di', '<rootDir>/packages/react-di'],
+  projects: ['<rootDir>/packages/di', '<rootDir>/packages/react-di', '<rootDir>/packages/redux-di'],
   // testPathIgnorePatterns: ['tsconfig\\.json', '^.+\\.json'],
   // moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx'],
   // testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],

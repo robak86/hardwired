@@ -25,6 +25,7 @@ export class StoreBuilder<TRegistry extends ModuleRegistry, TState> extends Base
   }
 }
 
+
 const stateDefines = <TState>() => <TRegistry extends ModuleRegistry>(
   ctx: DefinitionsSet<TRegistry>,
 ): StoreBuilder<TRegistry, TState> => {
