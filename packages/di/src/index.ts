@@ -11,6 +11,8 @@ export { transient } from './builders/TransientBuilder';
 export { imports } from './builders/ImportsBuilder';
 export { tuple } from './utils/tuple';
 
+export { GlobalSingletonResolver } from './resolvers/global-singleton-resolver';
+
 export type { ModuleBuilder } from './builders/ModuleBuilder';
 
 export { BaseModuleBuilder } from './builders/BaseModuleBuilder';

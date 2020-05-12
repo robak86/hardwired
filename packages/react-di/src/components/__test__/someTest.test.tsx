@@ -9,9 +9,9 @@ describe(`It works`, () => {
     expect(container(m).get('a')).toEqual('a');
   });
 
-  it(`works with enzyme`, async () => {
-    const Test: FunctionComponent = () => <div>It works</div>;
-    const wrapper = render(<Test />);
-    console.log(wrapper.debug());
-  });
+  // it(`works with enzyme`, async () => {
+  //   const Test: FunctionComponent = () => <div>It works</div>;
+  //   const wrapper = render(<Test />);
+  //   console.log(wrapper.debug());
+  // });
 });

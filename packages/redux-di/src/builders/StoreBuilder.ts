@@ -1,8 +1,7 @@
-import { BaseModuleBuilder, ModuleRegistry } from '@hardwired/di';
+import { BaseModuleBuilder, GlobalSingletonResolver, ModuleRegistry } from '@hardwired/di';
 import { DefinitionsSet } from '../../../di/src/module/DefinitionsSet';
 import { Definition, MaterializedModuleEntries } from '../../../di/src/module/ModuleRegistry';
 import { StoreInstance } from '../StoreInstance';
-import { GlobalSingletonResolver } from '../../../di/src/resolvers/global-singleton-resolver';
 
 export class StoreBuilder<TRegistry extends ModuleRegistry, TState> extends BaseModuleBuilder<TRegistry> {
   constructor(registry: DefinitionsSet<TRegistry>) {
@@ -24,7 +23,6 @@ export class StoreBuilder<TRegistry extends ModuleRegistry, TState> extends Base
     return new StoreBuilder(ctx);
   }
 }
-
 
 const stateDefines = <TState>() => <TRegistry extends ModuleRegistry>(
   ctx: DefinitionsSet<TRegistry>,

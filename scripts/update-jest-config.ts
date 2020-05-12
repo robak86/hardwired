@@ -11,11 +11,11 @@ packages.forEach(packageName => {
   let jestConfigValues = {
     name: packageName,
     displayName: packageName,
-    preset: 'ts-jest',
+    // preset: 'ts-jest',
     testEnvironment: 'jsdom',
-    rootDir: './',
-    testPathIgnorePatterns: ['/lib/'],
-    setupFilesAfterEnv: ['./lib/test.setup.js'],
+    rootDir: './src',
+    // testPathIgnorePatterns: ['/lib/'],
+    setupFilesAfterEnv: ['./test.setup.ts'],
 
     // testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
   };
