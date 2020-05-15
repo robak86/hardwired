@@ -1,7 +1,76 @@
-- Container is going to be also stateless. All living instances will be hold in ```ContainerCache```
-    - future reactivity(if any), should be also done in ```ContainerCache``` (if we decide to support any)
-     
-- add typesafe effect (for getting dependencies) for redux saga 
+- we need a mechanism for notifying the partner dependency resolvers about:
+  - newly activated modules
+    - new definitions
+    - definition replace
+- create object with signals
+
+```typescript
+{
+    onDefinitionAppend: Sinals<DependencyResovler>
+    onDefinitionReplace: Sinals<DependencyResovler>
+}
+```
+
+- allow DependencyResovler registering for events
+- events will be lazyliy triggered by container, not before!! 
+- events should be registered in DefinitionsSet
+
+- StoreDependencyResolver registers listeners onDefinitionAppend
+    - listener is called by the container creation and unknown module activation (deepGet)
+    - in the listener resolver checks for reducer/saga resolvers 
+
+- ~~explicit store creation - no initializers and magic under the hood~~
+- we need to provide our own wrapper over reducers, saga, etc in order to enable lazy loading
+
+```typescript
+const m = module()
+  .requires<{ defaultState: AppState }>()
+  .using(storeDefines<AppState>())
+  .defineReducer('appReducer', appReducer)
+  .defineReducer('secondAppReducer', appReducer)
+  .defineSaga('rootSaga', saga)
+  .defineStore('store', ctx => {
+    return createStore<AppState, any, any, any>(ctx.appReducer, ctx.defaultState as any, this.storeEnhancer);
+  });
+```
+
+```typescript
+const m = module()
+  .requires<{ defaultState: AppState }>()
+  .using(fun())
+
+  .using(singletion())
+  .defineSaga('rootSaga', () => saga)
+  .defineStore('store', ctx => {
+    return createStore<AppState, any, any, any>(ctx.appReducer, ctx.defaultState as any, this.storeEnhancer);
+  });
+```
+
+- ...and it shows that we probaby don't even need specialized redux-di package :D
+
+  - only redux saga helper
+
+  ```typescript
+  function* someSaga() {
+    const someDependency = yield* useDependency(someModule, 'someKey');
+    // or
+    const { someKey } = yield* useModule(someModule);
+  }
+  ```
+
+  ```typescript
+  const effectMiddleware = containerCache => next => effect => {
+    if (effect.type === 'useDependency') {
+      return containerCache.get(effect.module);
+    }
+
+    return next(effect);
+  };
+  ```
+
+- Container is going to be also stateless. All living instances will be hold in `ContainerCache`
+  - future reactivity(if any), should be also done in `ContainerCache` (if we decide to support any)
+- add typesafe effect (for getting dependencies) for redux saga
 - make sure that container uses correct id's for cache and there are no collisiongs (write tests)
 - How implement lazy loading for modules ?
   - check how loading of the next module is done, at what point ? what should trigger loading of the new module ?

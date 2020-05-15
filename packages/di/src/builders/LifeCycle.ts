@@ -7,8 +7,11 @@ export class LifeCycle<TRegistry extends ModuleRegistry> extends BaseModuleBuild
     super(registry);
   }
 
-  onInit(initFn: (container: MaterializedModuleEntries<TRegistry>) => void): this {
-    return this.build(this.registry.appendInitializer(initFn));
+  onInit(
+    // key: TKey,
+    initFn: (container: MaterializedModuleEntries<TRegistry>) => void,
+  ): this {
+    return this.build(this.registry.appendInitializer('_____module', initFn));
   }
 
   protected build(ctx) {

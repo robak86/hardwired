@@ -1,19 +1,37 @@
 import { unwrapThunk } from '../utils/thunk';
 import { ModuleId } from '../module-id';
 import { ImmutableSet } from '../ImmutableSet';
-import { MaterializedModuleEntries, ModuleRegistry } from './ModuleRegistry';
+import { Definition, MaterializedModuleEntries, ModuleRegistry } from './ModuleRegistry';
+
+type RegistrySets = ImmutableSet<{
+  definition: ImmutableSet<Record<string, Definition<any>>>;
+  imports: ImmutableSet<Record<string, DefinitionsSet<any>>>;
+  initializers: ImmutableSet<Record<string, any>>;
+}>;
+
+function initDefinitionSet(): RegistrySets {
+  return ImmutableSet.empty()
+    .extend('definition', ImmutableSet.empty())
+    .extend('imports', ImmutableSet.empty())
+    .extend('initializers', ImmutableSet.empty());
+}
 
 // TODO: rename => RegistryEntries ? RegistrySet ... or even something better than Registry ?
 export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
   static empty(name: string): DefinitionsSet<{}> {
-    return new DefinitionsSet<any, any>(ModuleId.build(name), ImmutableSet.empty(), ImmutableSet.empty(), []);
+    return new DefinitionsSet<any, any>(
+      ModuleId.build(name),
+      ImmutableSet.empty(),
+      ImmutableSet.empty(),
+      ImmutableSet.empty(),
+    );
   }
 
   protected constructor(
     public moduleId: ModuleId,
     public imports: ImmutableSet<Record<string, DefinitionsSet<any>>>,
     public declarations: ImmutableSet<any>,
-    public initializers: any[],
+    public initializers: ImmutableSet<any>,
   ) {}
 
   isEqual(other: DefinitionsSet<any>): boolean {
@@ -29,11 +47,13 @@ export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
     ) as any; //TODO: fix types
   }
 
-  appendInitializer(initializer: (ctx: MaterializedModuleEntries<TRegistry>) => void) {
-    return new DefinitionsSet(ModuleId.next(this.moduleId), this.imports, this.declarations, [
-      ...this.initializers,
-      initializer,
-    ]) as any;
+  appendInitializer(key, initializer: (ctx: MaterializedModuleEntries<TRegistry>) => void) {
+    return new DefinitionsSet(
+      ModuleId.next(this.moduleId),
+      this.imports,
+      this.declarations,
+      this.initializers.updateWithDefaults(key, [], initializers => [...initializers, initializer]),
+    ) as any;
   }
 
   forEachModule(iterFn: (registry: DefinitionsSet<any>) => void) {

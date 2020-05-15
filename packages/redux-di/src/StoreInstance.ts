@@ -1,4 +1,4 @@
-import { compose, createStore, Dispatch, Middleware, Reducer, Store, StoreEnhancer } from 'redux';
+import { compose, createStore, Dispatch, Middleware, Reducer, Store } from 'redux';
 
 export class StoreInstance<AppState> {
   private middlewares: ReturnType<Middleware>[] = [];

@@ -9,6 +9,10 @@ export class ImmutableSet<D extends Record<string, any>> {
     return this.records[key];
   }
 
+  getOr<K extends keyof D>(key: K, defaultValue: D[K]): D[K] {
+    return this.records[key] || defaultValue;
+  }
+
   hasKey(key: any): boolean {
     return !!this.records[key];
   }
@@ -19,6 +23,22 @@ export class ImmutableSet<D extends Record<string, any>> {
 
   get keys(): Array<keyof D> {
     return Object.keys(this.records);
+  }
+
+  update<TKey extends keyof D>(key: TKey, updateFn: (val: D[TKey]) => D[TKey]): ImmutableSet<D> {
+    if (!this.hasKey(key)) {
+      throw new Error(`Key ${key} does not exist`);
+    }
+
+    return this.set(key, updateFn(this.get(key)));
+  }
+
+  updateWithDefaults<TKey extends keyof D>(
+    key: TKey,
+    defaults: D[TKey],
+    updateFn: (val: D[TKey]) => D[TKey],
+  ): ImmutableSet<D> {
+    return this.set(key, updateFn(this.getOr(key, defaults)));
   }
 
   remove<TKey extends keyof D>(key: TKey): ImmutableSet<Omit<D, TKey>> {

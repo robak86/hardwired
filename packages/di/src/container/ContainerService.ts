@@ -37,9 +37,11 @@ export const ContainerService = {
       }
 
       // const moduleContainer = new Container(registry, cache);
-      registry.initializers.forEach(init => {
-        init(proxyGetter(registry, cache, context));
-      });
+      registry.initializers.forEach(initializers =>
+        initializers.forEach(init => {
+          init(proxyGetter(registry, cache, context));
+        }),
+      );
       cache.markModuleAsInitialized(registry.moduleId);
     });
   },
