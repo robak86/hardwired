@@ -1,24 +1,23 @@
 import { unwrapThunk } from '../utils/thunk';
 import { ModuleId } from '../module-id';
 import { ImmutableSet } from '../ImmutableSet';
-import {
-  Definition,
-  MaterializedModuleEntries,
-  ModuleRegistry,
-  ModuleRegistryDefinitionsResolvers,
-} from './ModuleRegistry';
+import { MaterializedModuleEntries, ModuleRegistry, ModuleRegistryDefinitionsResolvers } from './ModuleRegistry';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { ContainerEvents } from '../container/ContainerEvents';
 
-type RegistrySets = ImmutableSet<{
-  definition: ImmutableSet<Record<string, Definition<any>>>;
+type RegistrySets<TRegistry extends ModuleRegistry> = ImmutableSet<{
+  definition: ImmutableSet<ModuleRegistryDefinitionsResolvers<TRegistry>>;
   imports: ImmutableSet<Record<string, DefinitionsSet<any>>>;
   initializers: ImmutableSet<Record<string, any>>;
+  events: ContainerEvents;
 }>;
 
-function initDefinitionSet(): RegistrySets {
+function initDefinitionSet<TRegistry extends ModuleRegistry>(): RegistrySets<TRegistry> {
   return ImmutableSet.empty()
     .extend('definition', ImmutableSet.empty())
     .extend('imports', ImmutableSet.empty())
-    .extend('initializers', ImmutableSet.empty());
+    .extend('initializers', ImmutableSet.empty())
+    .extend('events', new ContainerEvents()) as any;
 }
 
 // TODO: rename => RegistryEntries ? RegistrySet ... or even something better than Registry ?
@@ -27,7 +26,7 @@ export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
     return new DefinitionsSet<any, any>(ModuleId.build(name), initDefinitionSet());
   }
 
-  protected constructor(public moduleId: ModuleId, public data: RegistrySets = initDefinitionSet()) {}
+  protected constructor(public moduleId: ModuleId, public data: RegistrySets<TRegistry> = initDefinitionSet()) {}
 
   isEqual(other: DefinitionsSet<any>): boolean {
     return this.moduleId.identity === other.moduleId.identity;
@@ -45,12 +44,13 @@ export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
     return this.data.get('initializers');
   }
 
+  get events(): ContainerEvents {
+    return this.data.get('events');
+  }
+
   extendImports(key, resolver) {
     return new DefinitionsSet(
       ModuleId.next(this.moduleId),
-      // this.imports.extend(key, resolver) as any,
-      // this.declarations,
-      // this.initializers,
       this.data.update('imports', importsSet => importsSet.extend(key, resolver)),
     ) as any; //TODO: fix types
   }
@@ -71,10 +71,20 @@ export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
     iterFn(this);
   }
 
-  extendDeclarations(key, resolver) {
+  forEachDefinition(iterFn: (resolver: DependencyResolver<any, any>) => void) {
+    this.forEachModule(definitionsSet => {
+      definitionsSet.declarations.forEach(iterFn);
+    });
+  }
+
+  extendDeclarations<TKey extends string>(key: TKey, resolver: DependencyResolver<any, any>) {
+    if (resolver.onRegister) {
+      resolver.onRegister(this.events);
+    }
+
     return new DefinitionsSet(
       ModuleId.next(this.moduleId),
-      this.data.update('definition', definitionsSet => definitionsSet.extend(key, resolver)),
+      this.data.update('definition', definitionsSet => definitionsSet.extend(key, resolver) as any),
     ) as any; //TODO: fix types
   }
 

@@ -18,9 +18,7 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
   // Maybe imports should be realized by separate builder ?
   // abstract import(...args: any[]): any;
 
-  protected abstract build<TNextModule extends this>(
-    ctx: DefinitionsSet<any>,
-  );
+  protected abstract build<TNextModule extends this>(ctx: DefinitionsSet<any>);
 
   using<TNextBuilder extends ModuleBuilder<TRegistry>>(
     builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
@@ -48,7 +46,7 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
       C,
     ) => FilterPrivateFields<MaterializedDefinitions<TRegistry>[K]>,
   ): this {
-    const newRegistry = this.registry.extendDeclarations(key, new TransientResolver(factory as any));
+    const newRegistry = this.registry.extendDeclarations(key as any, new TransientResolver(factory as any));
     return this.build(newRegistry) as any;
   }
 }
