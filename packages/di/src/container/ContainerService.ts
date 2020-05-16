@@ -11,7 +11,7 @@ export const ContainerService = {
     registry: DefinitionsSet<TRegistry>,
     cache: ContainerCache,
     context,
-    dependencyKey: string,
+    dependencyKey: keyof TRegistry,
   ) {
     if (context && context[dependencyKey]) {
       return context[dependencyKey];

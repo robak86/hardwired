@@ -13,8 +13,8 @@ export class ImmutableSet<D extends Record<string, any>> {
     return this.records[key] || defaultValue;
   }
 
-  hasKey(key: any): boolean {
-    return !!this.records[key];
+  hasKey<TKey>(key: string | number | symbol): key is keyof D {
+    return !!this.records[key as string];
   }
 
   get values(): Array<D[keyof D]> {

@@ -1,11 +1,19 @@
 import { Thunk, UnwrapThunk } from '../utils/thunk';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
 
 export type Definition<T> = { definition: T };
 export type RequiresDefinition<T> = { requires: T };
 export type ModuleRegistry = Record<string, Thunk<ModuleBuilder<any>> | Definition<any> | RequiresDefinition<any>>;
+
 export type ModuleRegistryDefinitionsKeys<T> = { [K in keyof T]: T[K] extends Definition<any> ? K : never }[keyof T];
 export type ModuleRegistryDefinitions<T> = { [K in ModuleRegistryDefinitionsKeys<T>]: T[K] };
+export type ModuleRegistryDefinitionsResolvers<TRegistry extends ModuleRegistry> = {
+  [K in ModuleRegistryDefinitionsKeys<TRegistry>]: TRegistry[K] extends Definition<infer TReturn>
+    ? DependencyResolver<TRegistry, TReturn>
+    : never;
+};
+
 export type ModuleRegistryContextKeys<T> = {
   [K in keyof T]: T[K] extends RequiresDefinition<any> ? K : never;
 }[keyof T];
