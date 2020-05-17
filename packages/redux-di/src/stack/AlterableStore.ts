@@ -17,8 +17,10 @@ export class AlterableStore<AppState> {
     this.getState = this.store.getState;
   }
 
+  // TODO: investigate if we shouldn't mirror some init behavior specific to combineReducers
   replaceReducers(reducers: Reducer<AppState, any>[]) {
     this.reducers = reducers;
+    // this.store.replaceReducer(this.appReducer);
   }
 
   replaceMiddleware(middlewares: Middleware[]) {

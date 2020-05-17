@@ -8,7 +8,7 @@ import {
 } from '@hardwired/di';
 import { ReducerFactory } from './ReducerFactory';
 import { ContainerCache } from '@hardwired/di/lib/container/container-cache';
-import { AlterableStore } from '../AlterableStore';
+import { AlterableStore } from '../stack/AlterableStore';
 import { proxyGetter } from '@hardwired/di/lib/container/proxyGetter';
 import { SagaFactory } from './SagaFactory';
 

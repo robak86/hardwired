@@ -6,43 +6,44 @@ describe(`Integration tests`, () => {
   type AppState = {
     userName: string;
   };
-  describe(`no lazy loading`, () => {
-    function setup() {
-      const appReducer1 = jest.fn().mockImplementation(state => state);
-      const appReducer2 = jest.fn().mockImplementation(state => state);
 
-      const defaultState = { userName: 'Tomasz' };
+  describe(`registering reducers`, () => {
+    describe(`no lazy loading`, () => {
+      function setup() {
+        const appReducer1 = jest.fn().mockImplementation(state => state);
+        const appReducer2 = jest.fn().mockImplementation(state => state);
 
-      const childModule = module('childModule').using(reduxDefines<AppState>()).reducer('appReducer2', appReducer2);
+        const defaultState = { userName: 'Tomasz' };
 
-      const m = module('m')
-        .using(singleton)
-        .define('defaultState', () => defaultState)
+        const childModule = module('childModule').using(reduxDefines<AppState>()).reducer('appReducer2', appReducer2);
 
-        .using(reduxDefines<AppState>())
-        .store('store', ({ defaultState }) => defaultState)
-        .reducer('appReducer1', appReducer1)
-        .using(imports)
-        .import('childStoreModule', childModule);
+        const m = module('m')
+          .using(singleton)
+          .define('defaultState', () => defaultState)
 
-      const c = container(m);
+          .using(reduxDefines<AppState>())
+          .store('store', ({ defaultState }) => defaultState)
+          .reducer('appReducer1', appReducer1)
+          .using(imports)
+          .import('childStoreModule', childModule);
 
-      return { container: c, appReducer1, appReducer2, defaultState };
-    }
+        const c = container(m);
 
+        return { container: c, appReducer1, appReducer2, defaultState };
+      }
 
+      it(`calls reducers with correct params`, async () => {
+        const { container, appReducer1, appReducer2, defaultState } = setup();
+        const { store } = container.asObject();
 
-    it(`works`, async () => {
-      const { container, appReducer1, appReducer2, defaultState } = setup();
-      const { store } = container.asObject();
+        expect(store.getState()).toEqual(defaultState);
 
-      expect(store.getState()).toEqual(defaultState);
+        const action = { type: 'SOME_TYPE' };
+        store.dispatch(action);
 
-      const action = { type: 'SOME_TYPE' };
-      store.dispatch(action);
-
-      expect(appReducer1).toBeCalledWith(defaultState, action);
-      expect(appReducer2).toBeCalledWith(defaultState, action);
+        expect(appReducer1).toBeCalledWith(defaultState, action);
+        expect(appReducer2).toBeCalledWith(defaultState, action);
+      });
     });
   });
 });

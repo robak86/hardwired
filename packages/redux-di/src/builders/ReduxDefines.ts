@@ -7,7 +7,7 @@ import {
 } from '@hardwired/di';
 import { Reducer } from 'redux';
 import { ReducerFactory } from '../factories/ReducerFactory';
-import { AlterableStore } from '../AlterableStore';
+import { AlterableStore } from '../stack/AlterableStore';
 import { StoreFactory } from '../factories/StoreFactory';
 import { SagaFactory } from '../factories/SagaFactory';
 

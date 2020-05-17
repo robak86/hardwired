@@ -1,5 +1,5 @@
 import { container, module } from '@hardwired/di';
-import { AlterableStore } from '../../AlterableStore';
+import { AlterableStore } from '../../stack/AlterableStore';
 import { reduxDefines } from '../ReduxDefines';
 import { ReducerFactory } from '../../factories/ReducerFactory';
 import { SagaFactory } from '../../factories/SagaFactory';

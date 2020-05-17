@@ -1,4 +1,4 @@
-import { AlterableStore } from '../AlterableStore';
+import { AlterableStore } from '../stack/AlterableStore';
 import createSagaMiddleware from 'redux-saga';
 
 describe(`StoreInstance`, () => {
@@ -50,6 +50,8 @@ describe(`StoreInstance`, () => {
 
     sagaMiddleware.run(helloSaga);
     sagaMiddleware.run(helloSaga2);
+
+    sagaMiddleware.
 
     store.dispatch(action);
   });
