@@ -79,6 +79,7 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
       ? this.registry
       : unwrapThunk(this.findModule(module.registry));
 
+    // TODO: we probably be explicit (add method appendModule) and throw an error for an unknown module here
     if (!childModule) {
       console.warn('deepGet called with module which is not imported by any descendant module');
       childModule = module.registry;
@@ -92,7 +93,9 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
     return this.registry.findModule(moduleIdentity);
   }
 
+  // TODO: add flag - for preventing getting instances from uninitialized container
   public init() {
+    ContainerService.callDefinitionsListeners(this.registry);
     ContainerService.init(this.registry, this.cache, this.context);
   }
 }
@@ -101,5 +104,7 @@ export function container<TRegistry extends ModuleRegistry>(
   m: ModuleBuilder<TRegistry>,
   ctx?: any,
 ): Container<TRegistry> {
-  return new Container((m as any).registry, new ContainerCache(), ctx);
+  let container = new Container((m as any).registry, new ContainerCache(), ctx);
+  container.init();
+  return container as any;
 }

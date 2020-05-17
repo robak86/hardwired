@@ -1,6 +1,6 @@
 import { compose, createStore, Dispatch, Middleware, Reducer, Store } from 'redux';
 
-export class StoreInstance<AppState> {
+export class AlterableStore<AppState> {
   private middlewares: ReturnType<Middleware>[] = [];
   private reducers: Reducer<AppState>[] = [];
   private store: Store<AppState>;
@@ -12,6 +12,10 @@ export class StoreInstance<AppState> {
     this.store = createStore<AppState, any, any, any>(this.appReducer, defaultState as any, this.storeEnhancer);
     this.dispatch = this.store.dispatch;
     this.getState = this.store.getState;
+  }
+
+  replaceReducers(reducers: Reducer<AppState, any>[]) {
+    this.reducers = reducers;
   }
 
   // TODO: maybe this should be idempotent ?

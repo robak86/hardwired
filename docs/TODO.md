@@ -1,8 +1,27 @@
+- investigate simpler api
+
+```typescript
+const m = module('m')
+  .define('key', import(), otherModule)
+  .import(key, someModifier(), other);
+```
+
+- listener which register to onDefinitionAppend - shouldn't be called with dependency resolver which registered given listener
 - we need a mechanism for notifying the partner dependency resolvers about:
   - newly activated modules
     - new definitions
     - definition replace
 - create object with signals
+- maybe onDefinitionAppend shouldn't be called in the reverse order ? e.g.
+
+```typescript
+const storeModule = module('store')
+  .define('reducer1', reducer)
+  .define('reducer2', reducer2)
+  .define('middleware1', mid1)
+  .define('middleware2', mid2);
+// one would expect that  reducers and middleware will be appended in the lexical order
+```
 
 ```typescript
 {
@@ -12,12 +31,13 @@
 ```
 
 - allow DependencyResovler registering for events
-- events will be lazyliy triggered by container, not before!! 
+- events will be lazyliy triggered by container, not before!!
 - events should be registered in DefinitionsSet
 
 - StoreDependencyResolver registers listeners onDefinitionAppend
-    - listener is called by the container creation and unknown module activation (deepGet)
-    - in the listener resolver checks for reducer/saga resolvers 
+
+  - listener is called by the container creation and unknown module activation (deepGet)
+  - in the listener resolver checks for reducer/saga resolvers
 
 - ~~explicit store creation - no initializers and magic under the hood~~
 - we need to provide our own wrapper over reducers, saga, etc in order to enable lazy loading

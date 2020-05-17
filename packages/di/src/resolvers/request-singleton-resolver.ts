@@ -6,7 +6,10 @@ import { ModuleRegistry } from '../module/ModuleRegistry';
 
 export class RequestSingletonResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TReturn> {
+  static type = 'requestScope';
+
   public id: string = nextId(); //TODO: not sure if necessary
+  public type = RequestSingletonResolver.type;
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
 

@@ -10,4 +10,8 @@ export class SignalEmitter<TEventType> {
       this.listeners = this.listeners.filter(l => l !== listener);
     };
   }
+
+  emit(eventType: TEventType) {
+    this.listeners.forEach(listener => listener(eventType));
+  }
 }

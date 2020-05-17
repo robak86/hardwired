@@ -17,6 +17,10 @@ export class ImmutableSet<D extends Record<string, any>> {
     return !!this.records[key as string];
   }
 
+  reverse(): ImmutableSet<D> {
+    return new ImmutableSet(this.records, [...this.orderedKeys].reverse());
+  }
+
   get values(): Array<D[keyof D]> {
     return Object.values(this.records);
   }

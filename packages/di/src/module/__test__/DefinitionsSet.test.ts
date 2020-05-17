@@ -16,9 +16,9 @@ describe(`DefinitionsSet`, () => {
       def1.forEachModule(iterSpy);
       expect(iterSpy).toBeCalledTimes(4);
 
-      expect(iterSpy.mock.calls[0][0]).toEqual(childDef1);
-      expect(iterSpy.mock.calls[1][0]).toEqual(childDef2);
-      expect(iterSpy.mock.calls[2][0]).toEqual(childDef3);
+      expect(iterSpy.mock.calls[0][0]).toEqual(childDef2);
+      expect(iterSpy.mock.calls[1][0]).toEqual(childDef3);
+      expect(iterSpy.mock.calls[2][0]).toEqual(childDef1);
       expect(iterSpy.mock.calls[3][0]).toEqual(def1);
     });
   });
@@ -26,7 +26,7 @@ describe(`DefinitionsSet`, () => {
   describe(`forEachDefinition`, () => {
     it(`iterates over all definitions from bottom to the top`, async () => {
       const buildFakeResolver = (): DependencyResolver<any, any> => {
-        return { build: jest.fn(), onRegister: jest.fn() };
+        return { type: 'fake', id: Math.random(), build: jest.fn(), onRegister: jest.fn() };
       };
 
       const childDef1 = DefinitionsSet.empty('def1').extendDeclarations('a1', buildFakeResolver());
@@ -42,12 +42,17 @@ describe(`DefinitionsSet`, () => {
       const iterSpy = jest.fn();
       def1.forEachDefinition(iterSpy);
 
+      expect(iterSpy.mock.calls[0][0]).toEqual(childDef2.declarations.get('a2'));
+      expect(iterSpy.mock.calls[1][0]).toEqual(childDef3.declarations.get('a3'));
+      expect(iterSpy.mock.calls[2][0]).toEqual(childDef1.declarations.get('a1'));
     });
   });
 
   describe(`events`, () => {
     it(`calls onRegister hooks on DependencyResolver`, async () => {
       const resolver: DependencyResolver<any, any> = {
+        type: 'any',
+        id: Math.random(),
         build: jest.fn(),
         onRegister: jest.fn(),
       };

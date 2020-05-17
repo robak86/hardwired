@@ -16,6 +16,9 @@ type NextTransientModule<TKey extends string, TReturn, TRegistry extends ModuleR
 >;
 
 export class TransientModule<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
+
+
+
   constructor(registry: DefinitionsSet<TRegistry>) {
     super(registry);
   }

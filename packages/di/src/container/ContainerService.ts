@@ -1,10 +1,9 @@
-import { ModuleRegistry } from '../module/ModuleRegistry';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { unwrapThunk } from '../utils/thunk';
-import { proxyGetter } from './proxyGetter';
-import { DefinitionsSet } from '../module/DefinitionsSet';
-import { ContainerCache } from './container-cache';
-import { Container } from './Container';
+import { ModuleRegistry } from "../module/ModuleRegistry";
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { unwrapThunk } from "../utils/thunk";
+import { proxyGetter } from "./proxyGetter";
+import { DefinitionsSet } from "../module/DefinitionsSet";
+import { ContainerCache } from "./container-cache";
 
 export const ContainerService = {
   getChild<TRegistry extends ModuleRegistry>(
@@ -28,6 +27,14 @@ export const ContainerService = {
     }
 
     throw new Error(`Cannot find dependency for ${dependencyKey} key`);
+  },
+
+  callDefinitionsListeners<TRegistry extends ModuleRegistry>(registry: DefinitionsSet<TRegistry>) {
+    registry.forEachModule(definitionsSet => {
+      definitionsSet.forEachDefinition(dependencyResolver => {
+        definitionsSet.events.onDefinitionAppend.emit(dependencyResolver);
+      });
+    });
   },
 
   init(registry: DefinitionsSet<any>, cache: ContainerCache, context) {

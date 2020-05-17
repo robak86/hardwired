@@ -26,22 +26,18 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "@babel/preset-typescript": "^7.9.0",
-    "@types/jest": "^25.2.1",
+    "@types/jest": "^25.2.2",
     "@types/node": "^13.13.2",
-    "babel-jest": "^26.0.1",
     "concurrently": "^5.2.0",
     "nyc": "^15.0.1",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
-    "source-map-support": "^0.5.9",
+    "source-map-support": "^0.5.19",
     "ts-expect": "^1.1.0",
-    "ts-jest": "^25.4.0",
-    "ts-node": "^8.9.0",
-    "tslint": "^6.1.1",
-    "typescript": "^3.9.0-beta"
+    "ts-jest": "^26.0.0",
+    "ts-node": "^8.10.1",
+    "tslint": "^6.1.2",
+    "typescript": "^3.9.2"
   },
   "dependencies": {}
 }

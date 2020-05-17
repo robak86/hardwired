@@ -1,10 +1,10 @@
-import { StoreInstance } from '../StoreInstance';
+import { AlterableStore } from '../AlterableStore';
 import createSagaMiddleware from 'redux-saga';
 
 describe(`StoreInstance`, () => {
   function setup() {
     const state = { defaultState: 1 };
-    const store = new StoreInstance(state);
+    const store = new AlterableStore(state);
     const action = { type: 'SOME_ACTION_TYPE' };
 
     return { state, store, action };

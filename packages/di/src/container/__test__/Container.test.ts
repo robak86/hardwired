@@ -86,7 +86,7 @@ describe(`Container`, () => {
         .import('m2', m2);
 
       const c = container(parent);
-      c.init();
+      // c.init();
 
       expect(m1InitSpy).toBeCalledTimes(1);
       expect(m2InitSpy).toBeCalledTimes(1);
