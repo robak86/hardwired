@@ -30,6 +30,8 @@ describe(`Integration tests`, () => {
       return { container: c, appReducer1, appReducer2, defaultState };
     }
 
+
+
     it(`works`, async () => {
       const { container, appReducer1, appReducer2, defaultState } = setup();
       const { store } = container.asObject();

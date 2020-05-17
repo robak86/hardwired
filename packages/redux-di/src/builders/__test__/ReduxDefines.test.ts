@@ -12,7 +12,6 @@ describe(`ReduxDefines`, () => {
     const m = module('someName')
       .using(reduxDefines<AppState>())
       .store('store', () => ({ a: 1 }));
-    //.using(reducerDefines(c => c.store   ))
 
     const c = container(m);
     expect(c.get('store')).toBeInstanceOf(AlterableStore);
@@ -27,6 +26,7 @@ describe(`ReduxDefines`, () => {
       expect(a.registry.declarations.get('someReducer')).toBeInstanceOf(ReducerFactory);
     });
   });
+
 
   describe(`.saga`, () => {
     it(`register correct factory`, async () => {
