@@ -1,6 +1,6 @@
-import { Thunk, UnwrapThunk } from "../utils/thunk";
-import { ModuleBuilder } from "../builders/ModuleBuilder";
-import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { Thunk, UnwrapThunk } from '../utils/thunk';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
 
 export type Definition<T> = { definition: T };
 export type RequiresDefinition<T> = { requires: T };

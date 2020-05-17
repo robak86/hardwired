@@ -45,6 +45,14 @@ export class ReduxDefines<TRegistry extends ModuleRegistry, TState> extends Base
     return this.build(newRegistry);
   }
 
+  // middleware<TKey extends string>(
+  //   key: TKey,
+  //   saga: Saga,
+  // ): ReduxDefines<TRegistry & { [K in TKey]: Definition<AlterableStore<any>> }, TState> {
+  //   const newRegistry = this.registry.extendDeclarations(key, new SagaFactory<TRegistry, Saga>(() => saga));
+  //   return this.build(newRegistry);
+  // }
+
   protected build(ctx: DefinitionsSet<any>): ReduxDefines<any, TState> {
     return new ReduxDefines(ctx);
   }

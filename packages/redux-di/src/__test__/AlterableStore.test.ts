@@ -15,7 +15,7 @@ describe(`StoreInstance`, () => {
     const newState = { defaultState: 2 };
     const reducer = jest.fn().mockReturnValue(newState);
 
-    store.appendReducer(reducer);
+    store.replaceReducers([reducer]);
 
     store.dispatch(action);
     expect(reducer).toBeCalledWith(state, action);
@@ -45,7 +45,8 @@ describe(`StoreInstance`, () => {
     }
 
     const sagaMiddleware = createSagaMiddleware({ effectMiddlewares: [effectMiddleware] });
-    store.appendMiddleware(sagaMiddleware);
+    store.replaceMiddleware([sagaMiddleware]);
+    store.replaceMiddleware([sagaMiddleware]);
 
     sagaMiddleware.run(helloSaga);
     sagaMiddleware.run(helloSaga2);

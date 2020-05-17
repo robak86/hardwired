@@ -1,15 +1,18 @@
 import { compose, createStore, Dispatch, Middleware, Reducer, Store } from 'redux';
+import createSagaMiddleware, { SagaMiddleware } from 'redux-saga';
 
 export class AlterableStore<AppState> {
   private middlewares: ReturnType<Middleware>[] = [];
   private reducers: Reducer<AppState>[] = [];
   private store: Store<AppState>;
+  private sagaMiddleware: SagaMiddleware;
 
   public dispatch: Dispatch<any>;
   public getState: () => AppState;
 
   constructor(defaultState: AppState) {
     this.store = createStore<AppState, any, any, any>(this.appReducer, defaultState as any, this.storeEnhancer);
+    this.sagaMiddleware = createSagaMiddleware({ effectMiddlewares: [] });
     this.dispatch = this.store.dispatch;
     this.getState = this.store.getState;
   }
@@ -18,13 +21,7 @@ export class AlterableStore<AppState> {
     this.reducers = reducers;
   }
 
-  // TODO: maybe this should be idempotent ?
-  appendReducer(reducer: Reducer<AppState, any>) {
-    this.reducers.push(reducer);
-  }
-
-  // TODO: maybe this should be idempotent ?
-  appendMiddleware(middleware: Middleware) {
+  replaceMiddleware(middlewares: Middleware[]) {
     let dispatch: any = () => {
       throw new Error(
         'Dispatching while constructing your middleware is not allowed. ' +
@@ -37,7 +34,7 @@ export class AlterableStore<AppState> {
       dispatch: dispatch,
     };
 
-    this.middlewares.push(middleware(middlewareAPI));
+    this.middlewares = middlewares.map(m => m(middlewareAPI));
   }
 
   private appReducer: Reducer<AppState> = (state: AppState, action) => {

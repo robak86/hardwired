@@ -9,5 +9,10 @@ module.exports = {
   ],
   "setupFilesAfterEnv": [
     "./lib/test.setup.js"
-  ]
+  ],
+  "globals": {
+    "ts-jest": {
+      "diagnostics": false
+    }
+  }
 }

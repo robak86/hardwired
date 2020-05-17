@@ -10,13 +10,15 @@ import { ReducerFactory } from './ReducerFactory';
 import { ContainerCache } from '@hardwired/di/lib/container/container-cache';
 import { AlterableStore } from '../AlterableStore';
 import { proxyGetter } from '@hardwired/di/lib/container/proxyGetter';
+import { SagaFactory } from './SagaFactory';
 
 export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends BaseDependencyResolver<
   TRegistry,
   AlterableStore<AppState>
 > {
   public type = 'store';
-  public reducersResolvers: ReducerFactory<any, any>[] = [];
+  public reducersResolvers: ReducerFactory<TRegistry, any>[] = [];
+  public sagasResolvers: SagaFactory<TRegistry, any>[] = [];
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, AppState>) {
     super();
@@ -47,6 +49,10 @@ export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends Ba
   onChildDefinitionAppend = (resolver: DependencyResolver<any, any>) => {
     if (resolver.type === 'reducer') {
       this.reducersResolvers.push(resolver as any);
+    }
+
+    if (resolver.type === 'saga') {
+      this.sagasResolvers.push(resolver as any);
     }
   };
 }

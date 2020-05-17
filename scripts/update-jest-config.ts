@@ -16,6 +16,11 @@ packages.forEach(packageName => {
     rootDir: './',
     testPathIgnorePatterns: ['/lib/'],
     setupFilesAfterEnv: ['./lib/test.setup.js'],
+    globals: {
+      'ts-jest': {
+        diagnostics: false,
+      },
+    },
 
     // testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
   };

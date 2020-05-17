@@ -1,6 +1,3 @@
-import { ModuleRegistry } from './module/ModuleRegistry';
-import { BaseModuleBuilder } from './builders/BaseModuleBuilder';
-
 export * from './module/Module';
 export * from './container/Container';
 export * from './utils';
@@ -19,6 +16,8 @@ export { DefinitionsSet } from './module/DefinitionsSet';
 export { GlobalSingletonResolver } from './resolvers/global-singleton-resolver';
 
 export type { ModuleBuilder } from './builders/ModuleBuilder';
+
+export { ContainerCache } from './container/container-cache';
 
 export { BaseModuleBuilder } from './builders/BaseModuleBuilder';
 export type { FlattenModules } from './module/ModuleRegistry';
