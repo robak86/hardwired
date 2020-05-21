@@ -1,3 +1,5 @@
+* passing proxy object is tricky! we are hiding the fact when dependency would be instantiated
+    -it's called lazy instantiation.
 - investigate simpler api
 
 ```typescript

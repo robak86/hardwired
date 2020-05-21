@@ -10,7 +10,6 @@
     "postinstall": "yarn run purge && yarn run update:tsconfig.json && yarn run update:package.json",
     "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
     "update:package.json": "ts-node scripts/update-package-json.ts",
-    "update:jest.json": "ts-node scripts/update-jest-config.ts",
     "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
     "build:compile": "tsc",
     "build:link": "yarn run build:copy && cd ./packages/lib && yarn link && yarn install --production",

@@ -4,7 +4,7 @@ import createSagaMiddleware from 'redux-saga';
 describe(`StoreInstance`, () => {
   function setup() {
     const state = { defaultState: 1 };
-    const store = new AlterableStore(state);
+    const store: AlterableStore<any> = new AlterableStore(state);
     const action = { type: 'SOME_ACTION_TYPE' };
 
     return { state, store, action };
@@ -50,8 +50,6 @@ describe(`StoreInstance`, () => {
 
     sagaMiddleware.run(helloSaga);
     sagaMiddleware.run(helloSaga2);
-
-    sagaMiddleware.
 
     store.dispatch(action);
   });
