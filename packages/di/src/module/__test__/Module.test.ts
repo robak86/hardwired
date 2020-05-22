@@ -3,15 +3,24 @@ import { external } from '../../builders/RequireBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Container, container } from '../../container/Container';
 import { Definition, RequiresDefinition } from '../ModuleRegistry';
-import { singletonDefines, SingletonBuilder } from '../../builders/SingletonBuilder';
-import { imports } from '../../builders/ImportsBuilder';
+import { SingletonBuilder, singletonDefines } from '../../builders/SingletonBuilder';
+
 import { ModuleBuilder, ModuleBuilderRegistry } from '../../builders/ModuleBuilder';
+import { commonDefines } from '../../builders/CommonDefines';
 
 describe(`Module`, () => {
+  describe(`.using`, () => {
+    it(`creates module with correct TRegistry`, async () => {
+      const m: ModuleBuilder<{ a: Definition<number> }> = module('someModule') as any;
+      const nextModule = m.using(commonDefines);
+      expectType<TypeEqual<ModuleBuilderRegistry<typeof nextModule>, { a: Definition<number> }>>(true);
+    });
+  });
+
   describe(`.hasModule`, () => {
     it(`returns true if there is a module registered for given key`, async () => {
       let otherModule = module('someName');
-      let rootModule = module('someOtherModule').using(imports).import('otherModule', otherModule);
+      let rootModule = module('someOtherModule').import('otherModule', otherModule);
 
       expect(rootModule.hasModule('otherModule')).toEqual(true);
     });
@@ -29,7 +38,7 @@ describe(`Module`, () => {
       let childModule1 = module('child1');
       let childModule2 = module('child2');
 
-      let rootModule = module('someOtherModule').using(imports).import('c1', childModule1);
+      let rootModule = module('someOtherModule').import('c1', childModule1);
 
       let updatedRoot = rootModule.import('c2', childModule2);
 
@@ -38,9 +47,7 @@ describe(`Module`, () => {
 
     it(`supports thunks`, async () => {
       let childModule1 = module('child1');
-      let rootModule = module('someOtherModule')
-        .using(imports)
-        .import('c1', () => childModule1);
+      let rootModule = module('someOtherModule').import('c1', () => childModule1);
 
       expect(rootModule.hasModule('c1')).toEqual(true);
     });
@@ -104,8 +111,8 @@ describe(`Module`, () => {
       });
 
       it(`aggregates all dependencies from imported modules`, async () => {
-        const m = module('m').using(external).require<{ dependency1: number }>();
-        const m2 = module('m2').using(external).require<{ dependency2: number }>().using(imports).import('imported', m);
+        const m = module('m').external<{ dependency1: number }>();
+        const m2 = module('m2').external<{ dependency2: number }>().import('imported', m);
         expectType<
           TypeEqual<
             ModuleBuilderRegistry<typeof m2>,
@@ -184,10 +191,8 @@ describe(`Module`, () => {
           .define('t1', () => new T1());
 
         let b = module('1')
-          .using(imports)
           .import('a', a)
-          .using(singletonDefines)
-          .define('t1', () => new T1());
+          .singleton('t1', () => new T1());
 
         const t1 = container(b).deepGet(a, 't1');
 
@@ -203,16 +208,14 @@ describe(`Module`, () => {
           .define('t2', () => new T2());
 
         let m1 = module('2')
-          .using(imports)
           .import('childModule', childM)
-          .using(singletonDefines)
-          .define('sdf', ctx => ctx.childModule)
-          .define('t1', () => new T1())
-          .define('t2', () => new T2())
-          .define('t1FromChildModule', c => c.childModule.t1)
-          .define('t2FromChildModule', c => c.childModule.t2)
-          .define('t1WithChildT1', p => [p.t1, p.childModule.t1])
-          .define('t2WithChildT2', p => [p.t1, p.childModule.t2]);
+          .singleton('sdf', ctx => ctx.childModule)
+          .singleton('t1', () => new T1())
+          .singleton('t2', () => new T2())
+          .singleton('t1FromChildModule', c => c.childModule.t1)
+          .singleton('t2FromChildModule', c => c.childModule.t2)
+          .singleton('t1WithChildT1', p => [p.t1, p.childModule.t1])
+          .singleton('t2WithChildT2', p => [p.t1, p.childModule.t2]);
 
         let cont = container(m1, {});
         expect(cont.get('t1FromChildModule').id).toEqual(cont.deepGet(childM, 't1').id);
@@ -235,11 +238,9 @@ describe(`Module`, () => {
             .define('v2', () => 2);
 
           let m2 = module('m2')
-            .using(imports)
             .import('m1', () => m1)
-            .using(singletonDefines)
-            .define('ov1', () => 10)
-            .define('s2', () => 11);
+            .singleton('ov1', () => 10)
+            .singleton('s2', () => 11);
 
           const obj = container(m2).asObject();
           expect(obj.s2).toEqual(11);
@@ -250,9 +251,8 @@ describe(`Module`, () => {
       describe(`.getMany`, () => {
         it(`returns all dependencies`, async () => {
           let m1 = module('m1')
-            .using(singletonDefines)
-            .define('s1', () => 1)
-            .define('s2', () => 'str');
+            .singleton('s1', () => 1)
+            .singleton('s2', () => 'str');
 
           const [s1, s2] = container(m1).getMany('s1', 's2');
 
@@ -273,11 +273,9 @@ describe(`Module`, () => {
           .define('s4', f4);
 
         let m2 = module('m2') //breakme
-          .using(imports)
           .import('m1', m1)
-          .using(singletonDefines)
-          .define('s1', f1)
-          .define('s2', f2);
+          .singleton('s1', f1)
+          .singleton('s2', f2);
 
         let cnt = container(m2);
 
@@ -304,23 +302,19 @@ describe(`Module`, () => {
           .define('f1+f2', ({ f1, f2 }) => f1 + f2);
 
         let b = module('b')
-          .using(imports)
           .import('c', c)
-          .using(singletonDefines)
-          .define('f3', f3)
-          .define('f4', f4)
-          .define('f3+f4', ({ f3, f4 }) => f3 + f4)
-          .define('f1+f2+f3+f4', _ => _.c.f1 + _.c.f2 + _.f3 + _.f3);
+          .singleton('f3', f3)
+          .singleton('f4', f4)
+          .singleton('f3+f4', ({ f3, f4 }) => f3 + f4)
+          .singleton('f1+f2+f3+f4', _ => _.c.f1 + _.c.f2 + _.f3 + _.f3);
 
         let a = module('a')
-          .using(imports)
           .import('b', b)
           .import('c', c)
-          .using(singletonDefines)
-          .define('f5', f5)
-          .define('f6', f6)
-          .define('f5+f1', _ => _.c.f1 + _.f5)
-          .define('f6+f2', _ => _.c.f2 + _.f6);
+          .singleton('f5', f5)
+          .singleton('f6', f6)
+          .singleton('f5+f1', _ => _.c.f1 + _.f5)
+          .singleton('f6+f2', _ => _.c.f2 + _.f6);
 
         let cnt = container(a, {});
 
@@ -355,13 +349,11 @@ describe(`Module`, () => {
         let m1 = module('m1').using(singletonDefines).define('s3', f3).define('s4', f4);
 
         let m2 = module('m2')
-          .using(imports)
           .import('m1', m1)
-          .using(singletonDefines)
-          .define('s1', f1)
-          .define('s2', f2)
-          .define('s3_s1', c => [c.m1.s3, c.s1])
-          .define('s4_s2', c => [c.m1.s4, c.s2]);
+          .singleton('s1', f1)
+          .singleton('s2', f2)
+          .singleton('s3_s1', c => [c.m1.s3, c.s1])
+          .singleton('s4_s2', c => [c.m1.s4, c.s2]);
 
         let cnt = container(m2, { someCtxVal: 1 });
 
@@ -399,17 +391,13 @@ describe(`Module`, () => {
         .define('val', () => 1);
 
       let m2 = module('m2')
-        .using(imports)
         .import('child', m1)
-        .using(singletonDefines)
-        .define('valFromChild', c => c.child.val);
+        .singleton('valFromChild', c => c.child.val);
 
       let m3 = module('m3')
-        .using(imports)
         .import('child1', m1)
         .import('child2', m2)
-        .using(singletonDefines)
-        .define('val', c => c.child2.valFromChild);
+        .singleton('val', c => c.child2.valFromChild);
 
       // const a = m2.toContainer({}).flatten();
 

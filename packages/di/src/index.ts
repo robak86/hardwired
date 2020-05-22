@@ -5,7 +5,6 @@ export * from './utils';
 export { singletonDefines } from './builders/SingletonBuilder';
 export { value } from './builders/ValueBuilder';
 export { transient } from './builders/TransientBuilder';
-export { imports } from './builders/ImportsBuilder';
 export { tuple } from './utils/tuple';
 export { ContainerEvents } from './container/ContainerEvents';
 export type { DependencyResolver, DependencyResolverFunction } from './resolvers/DependencyResolver';

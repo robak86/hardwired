@@ -1,8 +1,9 @@
 import { Definition, MaterializedModuleEntries, ModuleRegistry } from './ModuleRegistry';
-import { DefinitionsSet, DependencyResolver, module } from '..';
+import { DefinitionsSet, DependencyResolver, Module, module, singletonDefines } from '..';
 import { DependencyResolverReturn } from '../resolvers/DependencyResolver';
 import { curry } from '../builder-fp/curry';
 import { singleton } from '../builder-fp/singleton';
+import { fun } from '../builders/FunctionBuilder';
 
 // type Define<TRegistry extends ModuleRegistry> = (
 //   ...args: any[]
@@ -71,11 +72,14 @@ const singleton22 = <TRegistry extends ModuleRegistry, TValue>(
 
 // prettier-ignore
 // const m = module('m1')
-const m = new ModuleNewApi<{}>()
-  .define2('a', singleton(ctx => 'sdf'))
-  .define2('b', singleton(ctx => ctx.a))
-  .define2('c', curry(someFunction, ctx => [1, 'dsf']))
-  // .define22('z', singleton22(ctx => 1))
+const m = new Module<{}>(null as any)
+  // .using2([singletonDefines, fun])
+
+// .define2('a', singleton(ctx => 'sdf'))
+// .define2('b', singleton(ctx => ctx.a))
+
+// .define2('c', curry(someFunction, ctx => [1, 'dsf']))
+// .define22('z', singleton22(ctx => 1))
 //
 // const m2 = mod
 //   .define2(

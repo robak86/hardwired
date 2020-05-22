@@ -13,17 +13,19 @@ import { TransientResolver } from '../resolvers/TransientResolver';
 export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
   protected constructor(public readonly registry: DefinitionsSet<TRegistry>) {}
 
-  // abstract define(...args: any[]): any;
-
-  // Maybe imports should be realized by separate builder ?
-  // abstract import(...args: any[]): any;
-
   protected abstract build<TNextModule extends this>(ctx: DefinitionsSet<any>);
 
   using<TNextBuilder extends ModuleBuilder<TRegistry>>(
     builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
   ): TNextBuilder {
     return builderFactory(this.registry);
+  }
+
+  using2<TNextBuilder1 extends ModuleBuilder<TRegistry>, TNextBuilder2 extends ModuleBuilder<TRegistry>>(
+    builders: [(ctx: DefinitionsSet<TRegistry>) => TNextBuilder1, (ctx: DefinitionsSet<TRegistry>) => TNextBuilder2],
+  ): TNextBuilder1 & TNextBuilder2 {
+    // return builderFactory(this.registry);
+    throw new Error('implement me');
   }
 
   // TODO: use Flatten to make this method type safe

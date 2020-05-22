@@ -5,6 +5,7 @@ import { Definition } from '../../module/ModuleRegistry';
 import { container } from '../../container/Container';
 import { singletonDefines } from '../SingletonBuilder';
 import { value } from '../ValueBuilder';
+import { CommonBuilder } from '../CommonDefines';
 
 describe(`ClassBuilder`, () => {
   class Class0 {}
@@ -17,30 +18,26 @@ describe(`ClassBuilder`, () => {
 
   describe(`types`, () => {
     it(`creates module with correct generic types for class with no constructor args`, async () => {
-      const m1 = module('m1').using(classInstance).define('class0', Class0);
-      expectType<TypeEqual<typeof m1, ClassBuilder<{ class0: Definition<Class0> }>>>(true);
+      const m1 = module('m1').class('class0', Class0);
+      expectType<TypeEqual<typeof m1, CommonBuilder<{ class0: Definition<Class0> }>>>(true);
     });
 
     it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
       const m1 = module('m1')
-        .using(singletonDefines)
-        .define('d1', () => 123)
-        .using(classInstance)
-        .define('class1', Class1, ctx => [ctx.d1]);
-      expectType<TypeEqual<typeof m1, ClassBuilder<{ class1: Definition<Class1>; d1: Definition<number> }>>>(true);
+        .singleton('d1', () => 123)
+        .class('class1', Class1, ctx => [ctx.d1]);
+      expectType<TypeEqual<typeof m1, CommonBuilder<{ class1: Definition<Class1>; d1: Definition<number> }>>>(true);
     });
 
     it(`creates module with correct generic types for class with 2 constructor arg`, async () => {
       const m1 = module('m1')
-        .using(singletonDefines)
-        .define('d1', () => 123)
-        .define('d2', () => '123')
-        .using(classInstance)
-        .define('class2', Class2, ctx => [ctx.d1, ctx.d2]);
+        .singleton('d1', () => 123)
+        .singleton('d2', () => '123')
+        .class('class2', Class2, ctx => [ctx.d1, ctx.d2]);
       expectType<
         TypeEqual<
           typeof m1,
-          ClassBuilder<{ class2: Definition<Class2>; d1: Definition<number>; d2: Definition<string> }>
+          CommonBuilder<{ class2: Definition<Class2>; d1: Definition<number>; d2: Definition<string> }>
         >
       >(true);
     });
@@ -48,11 +45,9 @@ describe(`ClassBuilder`, () => {
 
   describe(`instantiation`, () => {
     const m = module('m1')
-      .using(value)
-      .define('d1', 123)
-      .define('d2', '123')
-      .using(classInstance)
-      .define('class2', Class2, ctx => [ctx.d1, ctx.d2]);
+      .value('d1', 123)
+      .value('d2', '123')
+      .class('class2', Class2, ctx => [ctx.d1, ctx.d2]);
 
     const c = container(m);
 

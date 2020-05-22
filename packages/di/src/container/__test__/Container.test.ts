@@ -4,7 +4,6 @@ import { Definition, RequiresDefinition } from '../../module/ModuleRegistry';
 import { container, DeepGetReturnErrorMessage } from '../Container';
 import { expectType, TypeEqual } from 'ts-expect';
 import { lifecycle } from '../../builders/LifeCycle';
-import { imports } from '../../builders/ImportsBuilder';
 import { singletonDefines } from '../../builders/SingletonBuilder';
 
 describe(`Container`, () => {
@@ -45,11 +44,10 @@ describe(`Container`, () => {
 
       const parentInitSpy = jest.fn();
       const parent = module('parent') // breakme
-        .using(lifecycle())
-        .onInit(parentInitSpy)
-        .using(imports)
         .import('m1', m1)
-        .import('m2', m2);
+        .import('m2', m2)
+        .using(lifecycle())
+        .onInit(parentInitSpy);
 
       const c = container(parent);
       c.init();
@@ -65,25 +63,22 @@ describe(`Container`, () => {
 
       const m1InitSpy = jest.fn();
       const m1 = module('m1') // breakme
-        .using(imports)
         .import('sh', shared)
         .using(lifecycle())
         .onInit(m1InitSpy);
 
       const m2InitSpy = jest.fn();
       const m2 = module('m2') // breakme
-        .using(imports)
         .import('sh', shared)
         .using(lifecycle())
         .onInit(m2InitSpy);
 
       const parentInitSpy = jest.fn();
       const parent = module('parent') // breakme
-        .using(lifecycle())
-        .onInit(parentInitSpy)
-        .using(imports)
         .import('m1', m1)
-        .import('m2', m2);
+        .import('m2', m2)
+        .using(lifecycle())
+        .onInit(parentInitSpy);
 
       const c = container(parent);
       // c.init();

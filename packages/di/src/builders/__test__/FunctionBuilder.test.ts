@@ -4,8 +4,8 @@ import { expectType, TypeEqual } from 'ts-expect';
 import { Definition } from '../../module/ModuleRegistry';
 import { container } from '../../container/Container';
 import { ModuleBuilder, ModuleBuilderRegistry } from '../ModuleBuilder';
-import { imports } from '../ImportsBuilder';
 import { singletonDefines } from '../SingletonBuilder';
+import { CommonBuilder } from '../CommonDefines';
 
 describe(`FunctionBuilder`, () => {
   describe(`types`, () => {
@@ -17,16 +17,14 @@ describe(`FunctionBuilder`, () => {
 
     it(`creates correct module type for function without any dependencies`, async () => {
       const someFunction = () => 123;
-      const m = module('m1').using(fun).define('noDepsFunction', someFunction);
-      expectType<TypeEqual<typeof m, FunctionModuleBuilder<{ noDepsFunction: Definition<() => number> }>>>(true);
+      const m = module('m1').function('noDepsFunction', someFunction);
+      expectType<TypeEqual<typeof m, CommonBuilder<{ noDepsFunction: Definition<() => number> }>>>(true);
     });
 
     it(`creates correct module type for function with single parameter`, async () => {
       const someFunction = (someParam: string) => 123;
-      const m = module('m1').using(fun).define('noDepsFunction', someFunction);
-      expectType<TypeEqual<typeof m, FunctionModuleBuilder<{ noDepsFunction: Definition<(param: string) => number> }>>>(
-        true,
-      );
+      const m = module('m1').function('noDepsFunction', someFunction);
+      expectType<TypeEqual<typeof m, CommonBuilder<{ noDepsFunction: Definition<(param: string) => number> }>>>(true);
     });
 
     it(`creates correct types using dependencies from imported modules`, async () => {
@@ -40,10 +38,8 @@ describe(`FunctionBuilder`, () => {
         );
 
       const m = module('m1')
-        .using(imports)
         .import('otherModule', imported)
-        .using(fun)
-        .define('noDepsFunction', someFunction, c => [c.otherModule.importedFunction()]);
+        .function('noDepsFunction', someFunction, c => [c.otherModule.importedFunction()]);
 
       expectType<
         TypeEqual<
