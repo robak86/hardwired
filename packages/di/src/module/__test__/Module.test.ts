@@ -1,12 +1,10 @@
 import { Module, module } from '../Module';
-import { external } from '../../builders/RequireBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Container, container } from '../../container/Container';
 import { Definition, RequiresDefinition } from '../ModuleRegistry';
-import { SingletonBuilder, singletonDefines } from '../../builders/SingletonBuilder';
 
 import { ModuleBuilder, ModuleBuilderRegistry } from '../../builders/ModuleBuilder';
-import { commonDefines } from '../../builders/CommonDefines';
+import { CommonBuilder, commonDefines } from '../../builders/CommonDefines';
 
 describe(`Module`, () => {
   describe(`.using`, () => {
@@ -57,20 +55,18 @@ describe(`Module`, () => {
     describe(`types`, () => {
       it(`creates correct types`, async () => {
         const m = module('m1')
-          .using(singletonDefines)
-          .define('number', () => 123)
-          .define('string', () => 'str');
+          .singleton('number', () => 123)
+          .singleton('string', () => 'str');
 
-        expectType<TypeEqual<typeof m, SingletonBuilder<{ number: Definition<number>; string: Definition<string> }>>>(
+        expectType<TypeEqual<typeof m, CommonBuilder<{ number: Definition<number>; string: Definition<string> }>>>(
           true,
         );
       });
 
       it(`does not allow duplicates`, async () => {
         const m = module<{ externalDependency: number }>('m1')
-          .using(singletonDefines)
-          .define('number', () => 123)
-          .define('number', () => 'str');
+          .singleton('number', () => 123)
+          .singleton('number', () => 'str');
 
         expectType<TypeEqual<typeof m, 'Module contains duplicated definitions'>>(true);
       });
@@ -81,19 +77,15 @@ describe(`Module`, () => {
         public a!: string;
       }
 
-      let m1 = module('otherModule')
-        .using(singletonDefines)
-        .define('someType', () => new SomeType());
+      let m1 = module('otherModule').singleton('someType', () => new SomeType());
 
       expect(m1.isDeclared('someType')).toEqual(true);
     });
 
     it(`does not mutate original module`, async () => {
-      let m1 = module('m1')
-        .using(singletonDefines)
-        .define('someType', () => true);
+      let m1 = module('m1').singleton('someType', () => true);
 
-      let m2 = m1.define('someNewType', () => 123);
+      let m2 = m1.singleton('someNewType', () => 123);
 
       expect(m1.isDeclared('someNewType' as any)).toEqual(false);
       expect(m2.isDeclared('someNewType')).toEqual(true);
@@ -106,7 +98,7 @@ describe(`Module`, () => {
   describe(`.require`, () => {
     describe(`types`, () => {
       it(`creates modules with correct type`, async () => {
-        const m = module('m').using(external).require<{ dependency1: number }>();
+        const m = module('m').external<{ dependency1: number }>();
         expectType<TypeEqual<ModuleBuilderRegistry<typeof m>, { dependency1: RequiresDefinition<number> }>>(true);
       });
 
@@ -130,9 +122,8 @@ describe(`Module`, () => {
     describe(`types`, () => {
       it(`produces container with correct types`, async () => {
         let m = module('m1')
-          .using(singletonDefines)
-          .define('a', () => 1)
-          .define('b', () => '2');
+          .singleton('a', () => 1)
+          .singleton('b', () => '2');
 
         const c1 = container(m);
         expectType<TypeEqual<typeof c1, Container<{ a: Definition<number>; b: Definition<string> }>>>(true);
@@ -142,9 +133,7 @@ describe(`Module`, () => {
 
   describe(`.replace`, () => {
     it(`replaces declaration`, async () => {
-      let m1 = module('m1')
-        .using(singletonDefines)
-        .define('a', () => 1);
+      let m1 = module('m1').singleton('a', () => 1);
 
       let updated = m1.replace('a', () => 2);
       expect(container(updated).get('a')).toEqual(2);
@@ -165,10 +154,9 @@ describe(`Module`, () => {
     describe(`instances declared in current module`, () => {
       it(`returns registered dependency`, async () => {
         let m1 = module('m1')
-          .using(singletonDefines)
-          .define('t1', () => new T1())
-          .define('t2', () => new T2())
-          .define('t1_t2', c => {
+          .singleton('t1', () => new T1())
+          .singleton('t2', () => new T2())
+          .singleton('t1_t2', c => {
             return [c.t1, c.t2];
           });
 
@@ -186,9 +174,7 @@ describe(`Module`, () => {
 
     describe(`.getDeep`, () => {
       it(`returns instance from other module`, async () => {
-        let a = module('1')
-          .using(singletonDefines)
-          .define('t1', () => new T1());
+        let a = module('1').singleton('t1', () => new T1());
 
         let b = module('1')
           .import('a', a)
@@ -203,9 +189,8 @@ describe(`Module`, () => {
     describe(`instances fetched from submodules`, () => {
       it(`returns registered dependency`, async () => {
         let childM = module('1')
-          .using(singletonDefines)
-          .define('t1', () => new T1())
-          .define('t2', () => new T2());
+          .singleton('t1', () => new T1())
+          .singleton('t2', () => new T2());
 
         let m1 = module('2')
           .import('childModule', childM)
@@ -233,9 +218,8 @@ describe(`Module`, () => {
       describe(`.toObject`, () => {
         it(`returns proxy object able for getting all dependencies`, async () => {
           let m1 = module('m1')
-            .using(singletonDefines)
-            .define('v1', () => 1)
-            .define('v2', () => 2);
+            .singleton('v1', () => 1)
+            .singleton('v2', () => 2);
 
           let m2 = module('m2')
             .import('m1', () => m1)
@@ -268,9 +252,8 @@ describe(`Module`, () => {
         let f4 = jest.fn().mockReturnValue(() => 9);
 
         let m1 = module('m1') //breakme
-          .using(singletonDefines)
-          .define('s3', f3)
-          .define('s4', f4);
+          .singleton('s3', f3)
+          .singleton('s4', f4);
 
         let m2 = module('m2') //breakme
           .import('m1', m1)
@@ -296,10 +279,9 @@ describe(`Module`, () => {
         let f6 = jest.fn().mockReturnValue(() => 9);
 
         let c = module('c')
-          .using(singletonDefines)
-          .define('f1', f1)
-          .define('f2', f2)
-          .define('f1+f2', ({ f1, f2 }) => f1 + f2);
+          .singleton('f1', f1)
+          .singleton('f2', f2)
+          .singleton('f1+f2', ({ f1, f2 }) => f1 + f2);
 
         let b = module('b')
           .import('c', c)
@@ -346,7 +328,7 @@ describe(`Module`, () => {
         let f3 = jest.fn().mockReturnValue((...args: any[]) => 678);
         let f4 = jest.fn().mockReturnValue((...args: any[]) => 9);
 
-        let m1 = module('m1').using(singletonDefines).define('s3', f3).define('s4', f4);
+        let m1 = module('m1').singleton('s3', f3).singleton('s4', f4);
 
         let m2 = module('m2')
           .import('m1', m1)
@@ -373,10 +355,9 @@ describe(`Module`, () => {
       //TODO: Maximum call stack size exceeded
       it.skip(`properly resolvers circular dependencies`, async () => {
         let m1 = module('m1')
-          .using(singletonDefines)
-          .define('i', () => 1)
-          .define('a', (c: any) => c.i + c.b)
-          .define('b', (c: any) => c.i + c.a);
+          .singleton('i', () => 1)
+          .singleton('a', (c: any) => c.i + c.b)
+          .singleton('b', (c: any) => c.i + c.a);
 
         let container1 = container(m1, {});
         container1.get('a');
@@ -386,9 +367,7 @@ describe(`Module`, () => {
 
   describe(`.inject`, () => {
     it(`replaces all related modules in whole tree`, async () => {
-      let m1 = module('m1')
-        .using(singletonDefines)
-        .define('val', () => 1);
+      let m1 = module('m1').singleton('val', () => 1);
 
       let m2 = module('m2')
         .import('child', m1)

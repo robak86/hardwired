@@ -14,6 +14,7 @@ export class RequestSingletonResolver<TRegistry extends ModuleRegistry, TReturn>
   constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
 
   build = (registry, ctx, cache: ContainerCache) => {
+    //TODO: cache.forNewRequest scope!!
     if (cache.hasInRequestScope(this.id)) {
       return cache.getFromRequestScope(this.id);
     } else {

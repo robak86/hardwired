@@ -1,11 +1,9 @@
-import { container, module, value } from '@hardwired/di';
-import { render } from '@testing-library/react';
+import { container, module } from '@hardwired/di';
 import * as React from 'react';
-import { FunctionComponent } from 'react';
 
 describe(`It works`, () => {
   it(`does not not`, async () => {
-    const m = module('m1').using(value).define('a', 'a');
+    const m = module('m1').value('a', 'a');
     expect(container(m).get('a')).toEqual('a');
   });
 

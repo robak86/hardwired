@@ -21,13 +21,6 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
     return builderFactory(this.registry);
   }
 
-  using2<TNextBuilder1 extends ModuleBuilder<TRegistry>, TNextBuilder2 extends ModuleBuilder<TRegistry>>(
-    builders: [(ctx: DefinitionsSet<TRegistry>) => TNextBuilder1, (ctx: DefinitionsSet<TRegistry>) => TNextBuilder2],
-  ): TNextBuilder1 & TNextBuilder2 {
-    // return builderFactory(this.registry);
-    throw new Error('implement me');
-  }
-
   // TODO: use Flatten to make this method type safe
   inject<TNextR extends ModuleRegistry>(otherModule: ModuleBuilder<TNextR>): this {
     return this.build(this.registry.inject(otherModule.registry));
@@ -50,5 +43,11 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
   ): this {
     const newRegistry = this.registry.extendDeclarations(key as any, new TransientResolver(factory as any));
     return this.build(newRegistry) as any;
+  }
+
+  enhance<TNextBuilder extends ModuleBuilder<TRegistry>>(
+    builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
+  ): this & TNextBuilder {
+    throw new Error('implement me');
   }
 }

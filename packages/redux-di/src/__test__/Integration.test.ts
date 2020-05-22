@@ -1,4 +1,4 @@
-import { container, module, singletonDefines } from '@hardwired/di';
+import { container, module } from '@hardwired/di';
 
 import { reduxDefines } from '../builders/ReduxDefines';
 
@@ -19,8 +19,8 @@ describe(`Integration tests`, () => {
 
         const m = module('m')
           .import('childStoreModule', childModule)
-          .using(singletonDefines)
-          .define('defaultState', () => defaultState)
+
+          .singleton('defaultState', () => defaultState)
 
           .using(reduxDefines<AppState>())
           .store('store', ({ defaultState }) => defaultState)

@@ -1,10 +1,7 @@
 import { module } from '../../module/Module';
-import { ClassBuilder, classInstance } from '../ClassBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Definition } from '../../module/ModuleRegistry';
 import { container } from '../../container/Container';
-import { singletonDefines } from '../SingletonBuilder';
-import { value } from '../ValueBuilder';
 import { CommonBuilder } from '../CommonDefines';
 
 describe(`ClassBuilder`, () => {
