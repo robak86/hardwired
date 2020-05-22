@@ -11,9 +11,15 @@ export class Module<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<
 
   define<TKey extends string, TResolver extends DependencyResolver<TRegistry, any>>(
     key: TKey,
-    definer: (registry: TRegistry) => TResolver,
-  ): Module<TRegistry & { [K in TKey]: Definition<DependencyResolverReturn<TResolver>> }> {
-    throw new Error('Implement me');
+    // TODO: maybe we should call definer with some other class handling TRegistry than definitions set ?
+    definer: (registry: DefinitionsSet<TRegistry>) => TResolver,
+  ): Module<
+    {
+      [K in keyof (TRegistry & { [K in TKey]: Definition<DependencyResolverReturn<TResolver>> })]: (TRegistry &
+        { [K in TKey]: Definition<DependencyResolverReturn<TResolver>> })[K];
+    }
+  > {
+    return new Module(this.registry.extendDeclarations(key, definer(this.registry)));
   }
 
   protected build<TNextBuilder extends this>(ctx: any): TNextBuilder {

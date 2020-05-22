@@ -3,7 +3,7 @@ import { ClassBuilder, classInstance } from '../ClassBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Definition } from '../../module/ModuleRegistry';
 import { container } from '../../container/Container';
-import { singleton } from '../SingletonBuilder';
+import { singletonDefines } from '../SingletonBuilder';
 import { value } from '../ValueBuilder';
 
 describe(`ClassBuilder`, () => {
@@ -23,7 +23,7 @@ describe(`ClassBuilder`, () => {
 
     it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
       const m1 = module('m1')
-        .using(singleton)
+        .using(singletonDefines)
         .define('d1', () => 123)
         .using(classInstance)
         .define('class1', Class1, ctx => [ctx.d1]);
@@ -32,7 +32,7 @@ describe(`ClassBuilder`, () => {
 
     it(`creates module with correct generic types for class with 2 constructor arg`, async () => {
       const m1 = module('m1')
-        .using(singleton)
+        .using(singletonDefines)
         .define('d1', () => 123)
         .define('d2', () => '123')
         .using(classInstance)

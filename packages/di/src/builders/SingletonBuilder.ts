@@ -34,6 +34,6 @@ export class SingletonBuilder<TRegistry extends ModuleRegistry> extends BaseModu
   }
 }
 
-export const singleton = <TRegistry extends ModuleRegistry>(
+export const singletonDefines = <TRegistry extends ModuleRegistry>(
   registry: DefinitionsSet<TRegistry>,
 ): SingletonBuilder<TRegistry> => new SingletonBuilder(registry);

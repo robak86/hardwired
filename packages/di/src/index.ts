@@ -2,7 +2,7 @@ export * from './module/Module';
 export * from './container/Container';
 export * from './utils';
 
-export { singleton } from './builders/SingletonBuilder';
+export { singletonDefines } from './builders/SingletonBuilder';
 export { value } from './builders/ValueBuilder';
 export { transient } from './builders/TransientBuilder';
 export { imports } from './builders/ImportsBuilder';

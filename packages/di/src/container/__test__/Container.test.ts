@@ -5,7 +5,7 @@ import { container, DeepGetReturnErrorMessage } from '../Container';
 import { expectType, TypeEqual } from 'ts-expect';
 import { lifecycle } from '../../builders/LifeCycle';
 import { imports } from '../../builders/ImportsBuilder';
-import { singleton } from '../../builders/SingletonBuilder';
+import { singletonDefines } from '../../builders/SingletonBuilder';
 
 describe(`Container`, () => {
   describe(`.deepGet`, () => {
@@ -100,7 +100,7 @@ describe(`Container`, () => {
 
       const m2InitSpy = jest.fn();
       const m2 = module('m2')
-        .using(singleton)
+        .using(singletonDefines)
         .define('a', () => 123)
         .using(lifecycle())
         .onInit(m2InitSpy);
