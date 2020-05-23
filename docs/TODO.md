@@ -1,33 +1,81 @@
-- module collision detection does not work if duplicated dependencies are compatibile
-```
-const m = module('m')
-    .singleton('a', class {})
-    .singleton('a', class {})
-m is Module type instead of 'error message about colissions'
-```
+- investigate if we allow for context mutations ```const newContainer = container.setContext()``` ??
+    - should new container have empty cache ? or cache should contain singletons without any dependencies to context ?
+    - how user can use `newContainer` ? we don't use it as service locator, so what are possible use cases ?
+    - do we even should provide context feature ? maybe this feature should be implemented in a custom builders/resolvers
+        - the only use case I can see now is reqest scope (e.g. http request handler, where context is http request) 
+        
+        
+        
+- investigate if we should can use Symbol instead of unique `string` for ```moduleId.identity```
+- investigate if module name `module('name`)` can be/should be optional ? 
+- investigate how to implement container service without using proxy object!!!!
+- memory leaks ? shouldn't we use WeakMap ? What about compatibility ?
+- investigate idea of constructing Builders using traits like api
 
-- Add `singletonClass`, `transientClass`, `requestClass`, `singleton`, `transient`
-  - shouldn't we remove a `singleton` builder which allows for the registration of a function ?
-  - it opens for the user possibility to create some advanced (untestable?) logic for dependency creation
-  
-- specify rules for ```function``` builder
-  - should we use memoization for injected arguments (curried) ?
-  
-- use consistent naming for resolvers - resolvers | factory | something else? 
-  
-  
-- What if we just could remove the concept of singleton, request scope, transient and determine it
-  using change detection ?
+  ```typescript
+  const richModuleBuilder = moduleBuilder().enhance(SingletonBuilder).enhance(ReduxBuilder).enhance(ReactBuilder);
+  const myModule = richModuleBuilder('moduleName');
+  ```
 
-  - if no dependency of some item hasn't change, then it means that it can be a singleton.
-  - unfortunately it won't work for classes, because they can have mutable state
-  - it won't work for functions because they can have mutable state in closures
+- module collision detection does not work if duplicated dependencies are compatibile ??
+
+  ```
+  const m = module('m')
+      .singleton('a', class {})
+      .singleton('a', class {})
+  m is Module type instead of 'error message about colissions'
+  ```
+
+- Subclassing for DependencyResolvers is tricky, because we need to create both static id property and runtime id property
+
+  ```typescript
+  const a = (id: string) => {
+    abstract class A {
+      static id = id;
+      id = id;
+  
+      abstract build(): number;
+    }
+  
+    return A;
+  };
+  
+  class MyClass extends a('id') {
+    build(): number {
+      return 0;
+    }
+  } 
+  ```
+
+- ~~Add `singletonClass`, `transientClass`, `requestClass`, `singleton`, `transient`~~
+
+  - ~~shouldn't we remove a `singleton` builder which allows for the registration of a function ?~~
+  - ~~it opens for the user possibility to create some advanced (untestable?) logic for dependency creation~~
+
+- ~~specify rules for `function` builder+~~
+
+  - ~~should we use memoization for injected arguments (curried) ?~~
+
+- check if current implementation of .function memoization provides any gains in terms of performance
+
+  - if not, maybe this memoization is pointless??
+
+- use consistent naming for resolvers - resolvers | factory | something else?
+
+- ~~What if we just could remove the concept of singleton, request scope, transient and determine it
+  using change detection ?~~
+
+  - ~~if no dependency of some item hasn't change, then it means that it can be a singleton.~~
+  - ~~unfortunately it won't work for classes, because they can have mutable state~~
+  - ~~it won't work for functions because they can have mutable state in closures~~
+  - it can be only applied for `.function`
 
 - Create ImportsResolver?
 - passing proxy object is tricky! we are hiding the fact when dependency would be instantiated
   -it's called lazy instantiation.
 
 * investigate simpler api
+  - using types spread for arguments after `import()` makes typescript loosing types
 
 ```typescript
 const m = module('m').define('key', import(), otherModule).import(key, someModifier(), other);
