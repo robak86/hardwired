@@ -1,5 +1,5 @@
-import { GlobalSingletonResolver, ModuleRegistry } from '@hardwired/di';
+import { SingletonResolver, ModuleRegistry } from '@hardwired/di';
 
-export class ReducerFactory<TRegistry extends ModuleRegistry, TReturn> extends GlobalSingletonResolver<TRegistry, TReturn> {
+export class ReducerFactory<TRegistry extends ModuleRegistry, TReturn> extends SingletonResolver<TRegistry, TReturn> {
   public type = 'reducer';
 }

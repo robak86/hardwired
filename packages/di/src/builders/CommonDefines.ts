@@ -7,7 +7,7 @@ import { TransientResolver } from '../resolvers/TransientResolver';
 import { FunctionResolver } from '../resolvers/FunctionResolver';
 import { Thunk, unwrapThunk } from '../utils/thunk';
 import { ModuleBuilder } from './ModuleBuilder';
-
+import { ClassSingletonResolver } from '../resolvers/ClassSingletonResolver';
 
 // import { GlobalCommonResolver } from '../resolvers/global-common-resolver';
 
@@ -56,14 +56,7 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     klass: ClassType<TDeps, TResult>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): CommonBuilder<TRegistry & { [K in TKey]: Definition<TResult> }> {
-    const newRegistry = this.registry.extendDeclarations(
-      key,
-      new SingletonResolver(container => {
-        const selectDeps = depSelect ? depSelect : () => [];
-        return new klass(...(selectDeps(container as any) as any));
-      }),
-    );
-
+    const newRegistry = this.registry.extendDeclarations(key, new ClassSingletonResolver(klass, depSelect));
     return new CommonBuilder(newRegistry) as any;
   }
 

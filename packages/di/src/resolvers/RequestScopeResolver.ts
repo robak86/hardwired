@@ -5,12 +5,12 @@ import { DependencyResolver, DependencyResolverFunction } from './DependencyReso
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 
-export class RequestSingletonResolver<TRegistry extends ModuleRegistry, TReturn>
+export class RequestScopeResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TReturn> {
   static type = 'requestScope';
 
   public id: string = nextId(); //TODO: not sure if necessary
-  public type = RequestSingletonResolver.type;
+  public type = RequestScopeResolver.type;
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
 
