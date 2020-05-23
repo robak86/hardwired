@@ -7,7 +7,7 @@ import {
   ModuleRegistryImportsKeys,
 } from '../module/ModuleRegistry';
 import { ModuleBuilder } from './ModuleBuilder';
-import { FilterPrivateFields } from '../module/ModuleUtils';
+import { ClassType, FilterPrivateFields } from '../module/ModuleUtils';
 import { TransientResolver } from '../resolvers/TransientResolver';
 
 export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
@@ -50,4 +50,16 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
   ): this & TNextBuilder {
     throw new Error('implement me');
   }
+
+  applyTrait<TNextBuilder extends ModuleBuilder<TRegistry>>(
+    builderFactory: ClassType<any, TNextBuilder>,
+  ): this & TNextBuilder {
+    throw new Error('implement me');
+  }
+
+  // applyTrait<TNextBuilder extends ModuleBuilder<TRegistry>>(
+  //   builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
+  // ): this & TNextBuilder {
+  //   throw new Error('implement me');
+  // }
 }

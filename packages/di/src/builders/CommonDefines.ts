@@ -4,7 +4,7 @@ import { DefinitionsSet } from '../module/DefinitionsSet';
 import { ClassType, NotDuplicated, NotDuplicatedKeys } from '../module/ModuleUtils';
 import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
 import { TransientResolver } from '../resolvers/TransientResolver';
-import { CurriedFunctionResolver } from '../resolvers/CurriedFunctionResolver';
+import { FunctionResolver } from '../resolvers/FunctionResolver';
 import { Thunk, unwrapThunk } from '../utils/thunk';
 import { ModuleBuilder } from './ModuleBuilder';
 
@@ -115,7 +115,7 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => [TDep1, TDep2, TDep3],
   ): NextCommonBuilder<TKey, () => TResult, TRegistry>;
   function(key, fn, depSelect?): any {
-    const newRegistry = this.registry.extendDeclarations(key, new CurriedFunctionResolver(fn, depSelect));
+    const newRegistry = this.registry.extendDeclarations(key, new FunctionResolver(fn, depSelect));
     return new CommonBuilder(newRegistry);
   }
 

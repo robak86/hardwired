@@ -19,9 +19,7 @@ describe(`Integration tests`, () => {
 
         const m = module('m')
           .import('childStoreModule', childModule)
-
           .singleton('defaultState', () => defaultState)
-
           .using(reduxDefines<AppState>())
           .store('store', ({ defaultState }) => defaultState)
           .reducer('appReducer1', appReducer1);

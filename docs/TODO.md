@@ -1,12 +1,26 @@
-* Create ImportsResolver? 
-* passing proxy object is tricky! we are hiding the fact when dependency would be instantiated
-    -it's called lazy instantiation.
-- investigate simpler api
+- Add `singletonClass`, `transientClass`, `requestClass`, `singleton`, `transient`
+  - shouldn't we remove a `singleton` builder which allows for the registration of a function ?
+  - it opens for the user possibility to create some advanced (untestable?) logic for dependency creation
+  
+- specify rules for ```function``` builder
+  - should we use memoization for injected arguments (curried) ?
+  
+  
+- What if we just could remove the concept of singleton, request scope, transient and determine it
+  using change detection ?
+
+  - if no dependency of some item hasn't change, then it means that it can be a singleton.
+  - unfortunately it won't work for classes, because they can have mutable state
+  - it won't work for functions because they can have mutable state in closures
+
+- Create ImportsResolver?
+- passing proxy object is tricky! we are hiding the fact when dependency would be instantiated
+  -it's called lazy instantiation.
+
+* investigate simpler api
 
 ```typescript
-const m = module('m')
-  .define('key', import(), otherModule)
-  .import(key, someModifier(), other);
+const m = module('m').define('key', import(), otherModule).import(key, someModifier(), other);
 ```
 
 - listener which register to onDefinitionAppend - shouldn't be called with dependency resolver which registered given listener

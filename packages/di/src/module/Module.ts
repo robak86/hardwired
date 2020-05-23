@@ -1,7 +1,7 @@
 import { DefinitionsSet } from './DefinitionsSet';
 import { ModuleRegistry } from './ModuleRegistry';
 import { BaseModuleBuilder } from '../builders/BaseModuleBuilder';
-import { commonDefines } from '../builders/CommonDefines';
+import { CommonBuilder, commonDefines } from '../builders/CommonDefines';
 
 export class Module<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
   constructor(registry: DefinitionsSet<TRegistry>) {
@@ -27,6 +27,9 @@ export class Module<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<
 }
 
 export function module<CTX = {}>(name: string) {
-  // TODO: commonDefines could be split into smaller builders (traits like) and module could be composed using enhance
   return new Module<{}>(DefinitionsSet.empty(name)).using(commonDefines);
+
+  // TODO: commonDefines could be split into smaller builders (traits like) and module could be composed using enhance
+  // return new Module<{}>(DefinitionsSet.empty(name)).applyTrait((registry) => new CommonBuilder(registry));
+  // return new Module<{}>(DefinitionsSet.empty(name)).applyTrait(CommonBuilder);
 }

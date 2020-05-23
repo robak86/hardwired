@@ -3,23 +3,22 @@ import { ContainerCache } from '../container/container-cache';
 import { curry } from '../utils/curry';
 import { GlobalSingletonResolver } from './global-singleton-resolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
-import { Container } from '../container/Container';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { nextId } from '../utils/fastId';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
 //  or it shouldn't never be memoized ?
-export class CurriedFunctionResolver<TRegistry extends ModuleRegistry, TReturn>
+export class FunctionResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TReturn> {
   static type = 'function';
 
   public id: string = nextId();
-  public type = CurriedFunctionResolver.type;
+  public type = FunctionResolver.type;
 
   private readonly singletonResolver: GlobalSingletonResolver<TRegistry, TReturn>;
 
-  constructor(fn, depSelect) {
+  constructor(fn: (...args: any[]) => any, depSelect) {
     const curried = curry(fn);
     const select = depSelect ? depSelect : () => [];
 
