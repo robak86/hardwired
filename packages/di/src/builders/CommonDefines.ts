@@ -42,16 +42,16 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     super(registry);
   }
 
-  class<TKey extends string, TResult>(
+  singleton<TKey extends string, TResult>(
     key: TKey,
     klass: ClassType<[], TResult>,
   ): CommonBuilder<TRegistry & { [K in TKey]: Definition<TResult> }>;
-  class<TKey extends string, TDeps extends any[], TResult>(
+  singleton<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): CommonBuilder<TRegistry & { [K in TKey]: Definition<TResult> }>;
-  class<TKey extends string, TDeps extends any[], TResult>(
+  singleton<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
@@ -119,13 +119,13 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     return this.build(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any; //TODO: unwrap should happen at object construction - in other case it won't prevent for undefined values
   }
 
-  singleton<K extends string, V>(
-    key: K,
-    factory: (container: MaterializedModuleEntries<TRegistry>) => V,
-  ): NextCommonBuilder<K, V, TRegistry> {
-    const newRegistry = this.registry.extendDeclarations(key, new SingletonResolver(factory as any));
-    return new CommonBuilder(newRegistry) as any;
-  }
+  // singleton<K extends string, V>(
+  //   key: K,
+  //   factory: (container: MaterializedModuleEntries<TRegistry>) => V,
+  // ): NextCommonBuilder<K, V, TRegistry> {
+  //   const newRegistry = this.registry.extendDeclarations(key, new SingletonResolver(factory as any));
+  //   return new CommonBuilder(newRegistry) as any;
+  // }
 
   external<TNextContext extends object>(): NotDuplicatedKeys<
     TRegistry,

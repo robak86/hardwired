@@ -49,7 +49,7 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
     return ContainerService.getChild(this.registry, this.cache.forNewRequest(), this.context, key as any);
   };
 
-  getMany: GetMany<ModuleRegistryDefinitions<R>> = (...args: any[]) => {
+  getMany: GetMany<MaterializedDefinitions<R>> = (...args: any[]) => {
     const cache = this.cache.forNewRequest();
 
     return args.map(dep => {

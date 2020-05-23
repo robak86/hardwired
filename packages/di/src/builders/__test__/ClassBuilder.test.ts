@@ -15,22 +15,22 @@ describe(`ClassBuilder`, () => {
 
   describe(`types`, () => {
     it(`creates module with correct generic types for class with no constructor args`, async () => {
-      const m1 = module('m1').class('class0', Class0);
+      const m1 = module('m1').singleton('class0', Class0);
       expectType<TypeEqual<typeof m1, CommonBuilder<{ class0: Definition<Class0> }>>>(true);
     });
 
     it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
       const m1 = module('m1')
-        .singleton('d1', () => 123)
-        .class('class1', Class1, ctx => [ctx.d1]);
+        .value('d1', 123)
+        .singleton('class1', Class1, ctx => [ctx.d1]);
       expectType<TypeEqual<typeof m1, CommonBuilder<{ class1: Definition<Class1>; d1: Definition<number> }>>>(true);
     });
 
     it(`creates module with correct generic types for class with 2 constructor arg`, async () => {
       const m1 = module('m1')
-        .singleton('d1', () => 123)
-        .singleton('d2', () => '123')
-        .class('class2', Class2, ctx => [ctx.d1, ctx.d2]);
+        .value('d1', 123)
+        .value('d2', '123')
+        .singleton('class2', Class2, ctx => [ctx.d1, ctx.d2]);
       expectType<
         TypeEqual<
           typeof m1,
@@ -44,7 +44,7 @@ describe(`ClassBuilder`, () => {
     const m = module('m1')
       .value('d1', 123)
       .value('d2', '123')
-      .class('class2', Class2, ctx => [ctx.d1, ctx.d2]);
+      .singleton('class2', Class2, ctx => [ctx.d1, ctx.d2]);
 
     const c = container(m);
 

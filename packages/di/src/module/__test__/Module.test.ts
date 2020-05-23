@@ -7,6 +7,16 @@ import { ModuleBuilder, ModuleBuilderRegistry } from '../../builders/ModuleBuild
 import { CommonBuilder, commonDefines } from '../../builders/CommonDefines';
 
 describe(`Module`, () => {
+  class T1 {}
+  class T2 {}
+
+  class ConsumerAny {
+    public args: any[];
+    constructor(...args: any[]) {
+      this.args = args;
+    }
+  }
+
   describe(`.using`, () => {
     it(`creates module with correct TRegistry`, async () => {
       const m: ModuleBuilder<{ a: Definition<number> }> = module('someModule') as any;
@@ -54,19 +64,13 @@ describe(`Module`, () => {
   describe(`.define`, () => {
     describe(`types`, () => {
       it(`creates correct types`, async () => {
-        const m = module('m1')
-          .singleton('number', () => 123)
-          .singleton('string', () => 'str');
+        const m = module('m1').singleton('number', T1).singleton('string', T2);
 
-        expectType<TypeEqual<typeof m, CommonBuilder<{ number: Definition<number>; string: Definition<string> }>>>(
-          true,
-        );
+        expectType<TypeEqual<typeof m, CommonBuilder<{ number: Definition<T1>; string: Definition<T2> }>>>(true);
       });
 
       it(`does not allow duplicates`, async () => {
-        const m = module<{ externalDependency: number }>('m1')
-          .singleton('number', () => 123)
-          .singleton('number', () => 'str');
+        const m = module<{ externalDependency: number }>('m1').singleton('number', T1).singleton('number', T2);
 
         expectType<TypeEqual<typeof m, 'Module contains duplicated definitions'>>(true);
       });
@@ -121,22 +125,26 @@ describe(`Module`, () => {
   describe(`.toContainer`, () => {
     describe(`types`, () => {
       it(`produces container with correct types`, async () => {
-        let m = module('m1')
-          .singleton('a', () => 1)
-          .singleton('b', () => '2');
+        class A {}
+        class B {}
+
+        let m = module('m1').singleton('a', A).singleton('b', B);
 
         const c1 = container(m);
-        expectType<TypeEqual<typeof c1, Container<{ a: Definition<number>; b: Definition<string> }>>>(true);
+        expectType<TypeEqual<typeof c1, Container<{ a: Definition<A>; b: Definition<B> }>>>(true);
       });
     });
   });
 
   describe(`.replace`, () => {
     it(`replaces declaration`, async () => {
-      let m1 = module('m1').singleton('a', () => 1);
+      class A {}
+      class A2 {}
 
-      let updated = m1.replace('a', () => 2);
-      expect(container(updated).get('a')).toEqual(2);
+      let m1 = module('m1').singleton('a', A);
+
+      let updated = m1.replace('a', () => new A2());
+      expect(container(updated).get('a')).toBeInstanceOf(A2);
     });
   });
 
@@ -148,37 +156,39 @@ describe(`Module`, () => {
 
     class T2 {
       id = Math.random();
-      type: string = 't2';
+      type: number = 123;
+    }
+
+    class Consumer {
+      constructor(public t1: T1, public t2: T2) {}
     }
 
     describe(`instances declared in current module`, () => {
       it(`returns registered dependency`, async () => {
         let m1 = module('m1')
-          .singleton('t1', () => new T1())
-          .singleton('t2', () => new T2())
-          .singleton('t1_t2', c => {
-            return [c.t1, c.t2];
-          });
+          .singleton('t1', T1)
+          .singleton('t2', T2)
+          .singleton('t1_t2', Consumer, c => [c.t1, c.t2]);
 
         let materializedContainer = container(m1);
 
         expect(materializedContainer.get('t1').type).toEqual('t1');
         expect(materializedContainer.get('t2').type).toEqual('t2');
-        expect(materializedContainer.get('t1_t2').map(t => t.type)).toEqual(['t1', 't2']);
+        expect(materializedContainer.get('t1_t2').t1).toBeInstanceOf(T1);
+        expect(materializedContainer.get('t1_t2').t2).toBeInstanceOf(T2);
 
-        expect([materializedContainer.get('t1').id, materializedContainer.get('t2').id]).toEqual(
-          materializedContainer.get('t1_t2').map(t => t.id),
-        );
+        expect([materializedContainer.get('t1').id, materializedContainer.get('t2').id]).toEqual([
+          materializedContainer.get('t1_t2').t1.id,
+          materializedContainer.get('t1_t2').t2.id,
+        ]);
       });
     });
 
     describe(`.getDeep`, () => {
       it(`returns instance from other module`, async () => {
-        let a = module('1').singleton('t1', () => new T1());
+        let a = module('1').singleton('t1', T1);
 
-        let b = module('1')
-          .import('a', a)
-          .singleton('t1', () => new T1());
+        let b = module('1').import('a', a).singleton('t1', T1);
 
         const t1 = container(b).deepGet(a, 't1');
 
@@ -188,23 +198,21 @@ describe(`Module`, () => {
 
     describe(`instances fetched from submodules`, () => {
       it(`returns registered dependency`, async () => {
-        let childM = module('1')
-          .singleton('t1', () => new T1())
-          .singleton('t2', () => new T2());
+        let childM = module('1').singleton('t1', T1).singleton('t2', T2);
 
         let m1 = module('2')
           .import('childModule', childM)
-          .singleton('sdf', ctx => ctx.childModule)
-          .singleton('t1', () => new T1())
-          .singleton('t2', () => new T2())
-          .singleton('t1FromChildModule', c => c.childModule.t1)
-          .singleton('t2FromChildModule', c => c.childModule.t2)
-          .singleton('t1WithChildT1', p => [p.t1, p.childModule.t1])
-          .singleton('t2WithChildT2', p => [p.t1, p.childModule.t2]);
+          .singleton('sdf', ConsumerAny, ctx => [ctx.childModule])
+          .singleton('t1', T1)
+          .singleton('t2', T2)
+          .singleton('t1FromChildModule', ConsumerAny, c => [c.childModule.t1])
+          .singleton('t2FromChildModule', ConsumerAny, c => [c.childModule.t2])
+          .singleton('t1WithChildT1', ConsumerAny, p => [p.t1, p.childModule.t1])
+          .singleton('t2WithChildT2', ConsumerAny, p => [p.t1, p.childModule.t2]);
 
         let cont = container(m1, {});
-        expect(cont.get('t1FromChildModule').id).toEqual(cont.deepGet(childM, 't1').id);
-        expect(cont.get('t2FromChildModule').id).toEqual(cont.deepGet(childM, 't2').id);
+        expect(cont.get('t1FromChildModule').args[0].id).toEqual(cont.deepGet(childM, 't1').id);
+        expect(cont.get('t2FromChildModule').args[0].id).toEqual(cont.deepGet(childM, 't2').id);
       });
     });
 
@@ -217,31 +225,29 @@ describe(`Module`, () => {
     describe(`dependencies resolution`, () => {
       describe(`.toObject`, () => {
         it(`returns proxy object able for getting all dependencies`, async () => {
-          let m1 = module('m1')
-            .singleton('v1', () => 1)
-            .singleton('v2', () => 2);
+          let m1 = module('m1').singleton('v1', T1).singleton('v2', T2);
 
           let m2 = module('m2')
             .import('m1', () => m1)
-            .singleton('ov1', () => 10)
-            .singleton('s2', () => 11);
+            .singleton('ov1', T1)
+            .singleton('s2', T2);
 
           const obj = container(m2).asObject();
-          expect(obj.s2).toEqual(11);
-          expect(obj.m1.v1).toEqual(1);
+          expect(obj.s2).toBeInstanceOf(T1);
+          expect(obj.m1.v1).toBeInstanceOf(T1);
         });
       });
 
       describe(`.getMany`, () => {
         it(`returns all dependencies`, async () => {
           let m1 = module('m1')
-            .singleton('s1', () => 1)
-            .singleton('s2', () => 'str');
+            .singleton('s1', T1)
+            .singleton('s2', T2);
 
           const [s1, s2] = container(m1).getMany('s1', 's2');
 
-          expect(s1).toEqual(1);
-          expect(s2).toEqual('str');
+          expect(s1).toBeInstanceOf(T1);
+          expect(s2).toBeInstanceOf(T2);
         });
       });
 
