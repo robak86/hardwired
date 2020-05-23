@@ -5,12 +5,12 @@ import { DependencyResolver } from './DependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 
-export class ClassTransientResolverResolver<TRegistry extends ModuleRegistry, TReturn = any>
+export class ClassTransientResolver<TRegistry extends ModuleRegistry, TReturn = any>
   implements DependencyResolver<TRegistry, TReturn> {
-  static type = 'singleton';
+  static type = 'transient';
 
   public id: string = nextId();
-  public type = ClassTransientResolverResolver.type;
+  public type = ClassTransientResolver.type;
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {}
 

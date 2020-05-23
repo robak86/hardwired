@@ -3,13 +3,14 @@ import { BaseModuleBuilder } from './BaseModuleBuilder';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { ClassType, NotDuplicated, NotDuplicatedKeys } from '../module/ModuleUtils';
 import { SingletonResolver } from '../resolvers/SingletonResolver';
-import { TransientResolver } from '../resolvers/TransientResolver';
 import { FunctionResolver } from '../resolvers/FunctionResolver';
 import { Thunk, unwrapThunk } from '../utils/thunk';
 import { ModuleBuilder } from './ModuleBuilder';
 import { ClassSingletonResolver } from '../resolvers/ClassSingletonResolver';
+import { ClassTransientResolver } from '../resolvers/ClassTransientResolver';
+import { ClassRequestScopeResolver } from '../resolvers/ClassRequestScopeResolver';
 
-// import { GlobalCommonResolver } from '../resolvers/global-common-resolver';
+
 
 export type NextCommonBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
   TKey,
@@ -57,6 +58,42 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): NextCommonBuilder<TKey, TResult, TRegistry> {
     const newRegistry = this.registry.extendDeclarations(key, new ClassSingletonResolver(klass, depSelect));
+    return new CommonBuilder(newRegistry) as any;
+  }
+
+  transient<TKey extends string, TResult>(
+    key: TKey,
+    klass: ClassType<[], TResult>,
+  ): NextCommonBuilder<TKey, TResult, TRegistry>;
+  transient<TKey extends string, TDeps extends any[], TResult>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextCommonBuilder<TKey, TResult, TRegistry>;
+  transient<TKey extends string, TDeps extends any[], TResult>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextCommonBuilder<TKey, TResult, TRegistry> {
+    const newRegistry = this.registry.extendDeclarations(key, new ClassTransientResolver(klass, depSelect));
+    return new CommonBuilder(newRegistry) as any;
+  }
+
+  request<TKey extends string, TResult>(
+    key: TKey,
+    klass: ClassType<[], TResult>,
+  ): NextCommonBuilder<TKey, TResult, TRegistry>;
+  request<TKey extends string, TDeps extends any[], TResult>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextCommonBuilder<TKey, TResult, TRegistry>;
+  request<TKey extends string, TDeps extends any[], TResult>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextCommonBuilder<TKey, TResult, TRegistry> {
+    const newRegistry = this.registry.extendDeclarations(key, new ClassRequestScopeResolver(klass, depSelect));
     return new CommonBuilder(newRegistry) as any;
   }
 
@@ -119,28 +156,12 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     return this.build(this.registry.extendImports(key, unwrapThunk(mod2).registry)) as any; //TODO: unwrap should happen at object construction - in other case it won't prevent for undefined values
   }
 
-  // singleton<K extends string, V>(
-  //   key: K,
-  //   factory: (container: MaterializedModuleEntries<TRegistry>) => V,
-  // ): NextCommonBuilder<K, V, TRegistry> {
-  //   const newRegistry = this.registry.extendDeclarations(key, new SingletonResolver(factory as any));
-  //   return new CommonBuilder(newRegistry) as any;
-  // }
-
   external<TNextContext extends object>(): NotDuplicatedKeys<
     TRegistry,
     TNextContext,
     CommonBuilder<TRegistry & { [K in keyof TNextContext]: RequiresDefinition<TNextContext[K]> }>
   > {
     return this as any;
-  }
-
-  transient<K extends string, V>(
-    key: K,
-    factory: (container: MaterializedModuleEntries<TRegistry>) => V,
-  ): NextCommonBuilder<K, V, TRegistry> {
-    const newRegistry = this.registry.extendDeclarations(key, new TransientResolver(factory as any));
-    return new CommonBuilder(newRegistry) as any;
   }
 
   value<K extends string, V>(key: K, factory: V): NextCommonBuilder<K, V, TRegistry> {

@@ -10,7 +10,7 @@ export class ContainerCache {
   public requestScope: Record<string, ContainerCacheEntry> = {};
   public initializedModules: Record<string, any> = {};
 
-  constructor(public globalScope: Record<string, ContainerCacheEntry> = {}) {}
+  constructor(public globalScope: Record<string, ContainerCacheEntry> = {}, private _isScoped: boolean = false) {}
 
   setForGlobalScope(uuid: string, instance: any) {
     this.globalScope[uuid] = {
@@ -43,7 +43,11 @@ export class ContainerCache {
   }
 
   forNewRequest(): ContainerCache {
-    return new ContainerCache(this.globalScope);
+    return new ContainerCache(this.globalScope, true);
+  }
+
+  isScoped(): boolean {
+    return this._isScoped;
   }
 
   isModuleInitialized(moduleId: ModuleId): boolean {
