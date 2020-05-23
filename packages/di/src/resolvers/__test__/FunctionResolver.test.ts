@@ -1,5 +1,5 @@
 import { DefinitionsSet } from '../../module/DefinitionsSet';
-import { GlobalSingletonResolver } from '../global-singleton-resolver';
+import { SingletonResolver } from '../SingletonResolver';
 import { ContainerCache } from '../../container/container-cache';
 import { FunctionResolver } from '../FunctionResolver';
 import { ContainerService } from '../../container/ContainerService';
@@ -8,7 +8,7 @@ import { TransientResolver } from '../TransientResolver';
 describe(`FunctionResolver`, () => {
   function setup() {
     const singletonFactorySpy = jest.fn().mockImplementation(() => Math.random());
-    const singletonResolver = new GlobalSingletonResolver(singletonFactorySpy);
+    const singletonResolver = new SingletonResolver(singletonFactorySpy);
 
     const transientFactorySpy = jest.fn().mockImplementation(() => Math.random());
     const transientResolver = new TransientResolver(transientFactorySpy);

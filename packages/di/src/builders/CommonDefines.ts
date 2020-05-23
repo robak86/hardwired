@@ -2,7 +2,7 @@ import { Definition, MaterializedModuleEntries, ModuleRegistry, RequiresDefiniti
 import { BaseModuleBuilder } from './BaseModuleBuilder';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { ClassType, NotDuplicated, NotDuplicatedKeys } from '../module/ModuleUtils';
-import { GlobalSingletonResolver } from '../resolvers/global-singleton-resolver';
+import { SingletonResolver } from '../resolvers/SingletonResolver';
 import { TransientResolver } from '../resolvers/TransientResolver';
 import { FunctionResolver } from '../resolvers/FunctionResolver';
 import { Thunk, unwrapThunk } from '../utils/thunk';
@@ -58,7 +58,7 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
   ): CommonBuilder<TRegistry & { [K in TKey]: Definition<TResult> }> {
     const newRegistry = this.registry.extendDeclarations(
       key,
-      new GlobalSingletonResolver(container => {
+      new SingletonResolver(container => {
         const selectDeps = depSelect ? depSelect : () => [];
         return new klass(...(selectDeps(container as any) as any));
       }),
@@ -130,7 +130,7 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     key: K,
     factory: (container: MaterializedModuleEntries<TRegistry>) => V,
   ): NextCommonBuilder<K, V, TRegistry> {
-    const newRegistry = this.registry.extendDeclarations(key, new GlobalSingletonResolver(factory as any));
+    const newRegistry = this.registry.extendDeclarations(key, new SingletonResolver(factory as any));
     return new CommonBuilder(newRegistry) as any;
   }
 
@@ -151,7 +151,7 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
   }
 
   value<K extends string, V>(key: K, factory: V): NextCommonBuilder<K, V, TRegistry> {
-    const newRegistry = this.registry.extendDeclarations(key, new GlobalSingletonResolver(() => factory as any));
+    const newRegistry = this.registry.extendDeclarations(key, new SingletonResolver(() => factory as any));
 
     return new CommonBuilder(newRegistry) as any;
   }

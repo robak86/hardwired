@@ -9,7 +9,7 @@ export { BaseDependencyResolver } from './resolvers/BaseDependencyResolver';
 
 export { DefinitionsSet } from './module/DefinitionsSet';
 
-export { GlobalSingletonResolver } from './resolvers/global-singleton-resolver';
+export { SingletonResolver } from './resolvers/SingletonResolver';
 
 export type { ModuleBuilder } from './builders/ModuleBuilder';
 
