@@ -7,8 +7,30 @@ import { ModuleBuilder, ModuleBuilderRegistry } from '../../builders/ModuleBuild
 import { CommonBuilder, commonDefines } from '../../builders/CommonDefines';
 
 describe(`Module`, () => {
-  class T1 {}
-  class T2 {}
+  function createClass<TType extends string>(type: TType, randomizeInstance = true) {
+    const spy = jest.fn().mockReturnValue(type);
+    const Klass = class {
+      public type: TType = spy();
+      public id = randomizeInstance ? Math.random() : 0;
+      constructor() {}
+    };
+    return { Klass, spy };
+  }
+
+  class WildCardConsumer {
+    public deps: any[];
+
+    constructor(...deps: any[]) {
+      this.deps = deps;
+    }
+  }
+
+  class T1 {
+    t1 = 't1';
+  }
+  class T2 {
+    t2 = 't2';
+  }
 
   class ConsumerAny {
     public args: any[];
@@ -70,7 +92,12 @@ describe(`Module`, () => {
       });
 
       it(`does not allow duplicates`, async () => {
-        const m = module<{ externalDependency: number }>('m1').singleton('number', T1).singleton('number', T2);
+        const { Klass: F1Class } = createClass('1');
+        const { Klass: F2Class } = createClass('2');
+
+        const m = module<{ externalDependency: number }>('m1')
+          .singleton('number', F1Class)
+          .singleton('number', F2Class);
 
         expectType<TypeEqual<typeof m, 'Module contains duplicated definitions'>>(true);
       });
@@ -81,15 +108,17 @@ describe(`Module`, () => {
         public a!: string;
       }
 
-      let m1 = module('otherModule').singleton('someType', () => new SomeType());
+      let m1 = module('otherModule').singleton('someType', SomeType);
 
       expect(m1.isDeclared('someType')).toEqual(true);
     });
 
     it(`does not mutate original module`, async () => {
-      let m1 = module('m1').singleton('someType', () => true);
+      class SomeType {}
 
-      let m2 = m1.singleton('someNewType', () => 123);
+      let m1 = module('m1').singleton('someType', SomeType);
+
+      let m2 = m1.singleton('someNewType', SomeType);
 
       expect(m1.isDeclared('someNewType' as any)).toEqual(false);
       expect(m2.isDeclared('someNewType')).toEqual(true);
@@ -165,21 +194,24 @@ describe(`Module`, () => {
 
     describe(`instances declared in current module`, () => {
       it(`returns registered dependency`, async () => {
+        const { Klass: T1Class } = createClass('t1', false);
+        const { Klass: T2Class } = createClass('t2', false);
+
         let m1 = module('m1')
-          .singleton('t1', T1)
-          .singleton('t2', T2)
-          .singleton('t1_t2', Consumer, c => [c.t1, c.t2]);
+          .singleton('t1', T1Class)
+          .singleton('t2', T2Class)
+          .singleton('t1_t2', WildCardConsumer, c => [c.t1, c.t2]);
 
         let materializedContainer = container(m1);
 
         expect(materializedContainer.get('t1').type).toEqual('t1');
         expect(materializedContainer.get('t2').type).toEqual('t2');
-        expect(materializedContainer.get('t1_t2').t1).toBeInstanceOf(T1);
-        expect(materializedContainer.get('t1_t2').t2).toBeInstanceOf(T2);
+        expect(materializedContainer.get('t1_t2').deps[0]).toBeInstanceOf(T1Class);
+        expect(materializedContainer.get('t1_t2').deps[1]).toBeInstanceOf(T2Class);
 
         expect([materializedContainer.get('t1').id, materializedContainer.get('t2').id]).toEqual([
-          materializedContainer.get('t1_t2').t1.id,
-          materializedContainer.get('t1_t2').t2.id,
+          materializedContainer.get('t1_t2').deps[0].id,
+          materializedContainer.get('t1_t2').deps[1].id,
         ]);
       });
     });
@@ -233,16 +265,14 @@ describe(`Module`, () => {
             .singleton('s2', T2);
 
           const obj = container(m2).asObject();
-          expect(obj.s2).toBeInstanceOf(T1);
+          expect(obj.s2).toBeInstanceOf(T2);
           expect(obj.m1.v1).toBeInstanceOf(T1);
         });
       });
 
       describe(`.getMany`, () => {
         it(`returns all dependencies`, async () => {
-          let m1 = module('m1')
-            .singleton('s1', T1)
-            .singleton('s2', T2);
+          let m1 = module('m1').singleton('s1', T1).singleton('s2', T2);
 
           const [s1, s2] = container(m1).getMany('s1', 's2');
 
@@ -277,37 +307,35 @@ describe(`Module`, () => {
       });
 
       it(`caches all initialized dependencies`, async () => {
-        let f1 = jest.fn().mockReturnValue(() => 123);
-        let f2 = jest.fn().mockReturnValue(() => 456);
-        let f3 = jest.fn().mockReturnValue(() => 678);
-        let f4 = jest.fn().mockReturnValue(() => 9);
-        let f5 = jest.fn().mockReturnValue(() => 9);
-        let f6 = jest.fn().mockReturnValue(() => 9);
+        const { Klass: F1Class, spy: f1 } = createClass('123');
+        const { Klass: F2Class, spy: f2 } = createClass('456');
+        const { Klass: F3Class, spy: f3 } = createClass('678');
+        const { Klass: F4Class, spy: f4 } = createClass('9');
+        const { Klass: F5Class, spy: f5 } = createClass('9');
+        const { Klass: F6Class, spy: f6 } = createClass('9');
 
-        let c = module('c')
-          .singleton('f1', f1)
-          .singleton('f2', f2)
-          .singleton('f1+f2', ({ f1, f2 }) => f1 + f2);
+        const c = module('c')
+          .singleton('f1', F1Class)
+          .singleton('f2', F2Class)
+          .singleton('f1+f2', WildCardConsumer, ({ f1, f2 }) => [f1, f2]);
 
-        let b = module('b')
+        const b = module('b')
           .import('c', c)
-          .singleton('f3', f3)
-          .singleton('f4', f4)
-          .singleton('f3+f4', ({ f3, f4 }) => f3 + f4)
-          .singleton('f1+f2+f3+f4', _ => _.c.f1 + _.c.f2 + _.f3 + _.f3);
+          .singleton('f3', F3Class)
+          .singleton('f4', F4Class)
+          .singleton('f3+f4', WildCardConsumer, ({ f3, f4 }) => [f3, f4])
+          .singleton('f1+f2+f3+f4', WildCardConsumer, _ => [_.c.f1, _.c.f2, _.f3, _.f3]);
 
-        let a = module('a')
+        const a = module('a')
           .import('b', b)
           .import('c', c)
-          .singleton('f5', f5)
-          .singleton('f6', f6)
-          .singleton('f5+f1', _ => _.c.f1 + _.f5)
-          .singleton('f6+f2', _ => _.c.f2 + _.f6);
+          .singleton('f5', F5Class)
+          .singleton('f6', F6Class)
+          .singleton('f5+f1', WildCardConsumer, _ => [_.c.f1, _.f5])
+          .singleton('f6+f2', WildCardConsumer, _ => [_.c.f2, _.f6]);
 
-        let cnt = container(a, {});
+        const cnt = container(a, {});
 
-        // container.get("b");
-        // container.get("c");
         cnt.get('f5');
         cnt.get('f6');
         cnt.get('f5+f1');
@@ -329,19 +357,24 @@ describe(`Module`, () => {
       });
 
       it(`calls all dependencies factory functions with correct context`, async () => {
-        let f1 = jest.fn().mockReturnValue((...args: any[]) => 123);
-        let f2 = jest.fn().mockReturnValue((...args: any[]) => 456);
-        let f3 = jest.fn().mockReturnValue((...args: any[]) => 678);
-        let f4 = jest.fn().mockReturnValue((...args: any[]) => 9);
+        const { Klass: F1Class } = createClass('123');
+        const { Klass: F2Class } = createClass('456');
+        const { Klass: F3Class } = createClass('678');
+        const { Klass: F4Class } = createClass('9');
 
-        let m1 = module('m1').singleton('s3', f3).singleton('s4', f4);
+        const f1DepsSelect = jest.fn().mockReturnValue([]);
+        const f2DepsSelect = jest.fn().mockReturnValue([]);
+        const f3DepsSelect = jest.fn().mockReturnValue([]);
+        const f4DepsSelect = jest.fn().mockReturnValue([]);
+
+        let m1 = module('m1').singleton('s3', F3Class, f3DepsSelect).singleton('s4', F4Class, f4DepsSelect);
 
         let m2 = module('m2')
           .import('m1', m1)
-          .singleton('s1', f1)
-          .singleton('s2', f2)
-          .singleton('s3_s1', c => [c.m1.s3, c.s1])
-          .singleton('s4_s2', c => [c.m1.s4, c.s2]);
+          .singleton('s1', F1Class, f1DepsSelect)
+          .singleton('s2', F2Class, f2DepsSelect)
+          .singleton('s3_s1', WildCardConsumer, c => [c.m1.s3, c.s1])
+          .singleton('s4_s2', WildCardConsumer, c => [c.m1.s4, c.s2]);
 
         let cnt = container(m2, { someCtxVal: 1 });
 
@@ -352,56 +385,49 @@ describe(`Module`, () => {
         cnt.deepGet(m1, 's3');
         cnt.deepGet(m1, 's4');
 
-        expect(f1.mock.calls[0][0].someCtxVal).toEqual(1);
-        expect(f2.mock.calls[0][0].someCtxVal).toEqual(1);
-        expect(f3.mock.calls[0][0].someCtxVal).toEqual(1);
-        expect(f4.mock.calls[0][0].someCtxVal).toEqual(1);
+        expect(f1DepsSelect.mock.calls[0][0].someCtxVal).toEqual(1);
+        expect(f2DepsSelect.mock.calls[0][0].someCtxVal).toEqual(1);
+        expect(f3DepsSelect.mock.calls[0][0].someCtxVal).toEqual(1);
+        expect(f4DepsSelect.mock.calls[0][0].someCtxVal).toEqual(1);
       });
 
       //TODO: Maximum call stack size exceeded
-      it.skip(`properly resolvers circular dependencies`, async () => {
-        let m1 = module('m1')
-          .singleton('i', () => 1)
-          .singleton('a', (c: any) => c.i + c.b)
-          .singleton('b', (c: any) => c.i + c.a);
-
-        let container1 = container(m1, {});
-        container1.get('a');
-      });
+      // it.skip(`properly resolvers circular dependencies`, async () => {
+      //   let m1 = module('m1')
+      //     .singleton('i', () => 1)
+      //     .singleton('a', (c: any) => c.i + c.b)
+      //     .singleton('b', (c: any) => c.i + c.a);
+      //
+      //   let container1 = container(m1, {});
+      //   container1.get('a');
+      // });
     });
   });
 
   describe(`.inject`, () => {
     it(`replaces all related modules in whole tree`, async () => {
-      let m1 = module('m1').singleton('val', () => 1);
+      const { Klass: F1Class } = createClass('123', false);
+      const { Klass: F2Class } = createClass('456', false);
 
-      let m2 = module('m2')
+      const m1 = module('m1').singleton('val', F1Class);
+
+      const m2 = module('m2')
         .import('child', m1)
-        .singleton('valFromChild', c => c.child.val);
+        .singleton('valFromChild', WildCardConsumer, c => [c.child.val]);
 
-      let m3 = module('m3')
+      const m3 = module('m3')
         .import('child1', m1)
         .import('child2', m2)
-        .singleton('val', c => c.child2.valFromChild);
+        .singleton('val', WildCardConsumer, c => [c.child2.valFromChild]);
 
-      // const a = m2.toContainer({}).flatten();
+      const m1Overrides = m1.replace('val', c => new F2Class() as any);
 
-      // type ZZZ = FlattenModules<typeof m3.debug>;
-      // type ZZZZZ = ImportsKeys<typeof m3.debug>;
-      // type Def = Definitions<typeof m3.debug>;
-      // type Imp = Imports<typeof m3.debug>;
+      const mocked = m3.inject(m1Overrides);
 
-      // m2.toContainer({}).deepGet(m2, 'valFromChild');
-      // m2.toContainer({}).deepGet(m1, 'val');
-
-      let m1Overrides = m1.replace('val', c => 2);
-
-      let mocked = m3.inject(m1Overrides);
-
-      expect(container(mocked, {}).get('val')).toEqual(2);
-      expect(container(mocked, {}).deepGet(m1, 'val')).toEqual(2);
-      expect(container(mocked, {}).deepGet(m2, 'valFromChild')).toEqual(2);
-      expect(container(mocked, {}).deepGet(m1, 'val')).toEqual(2);
+      expect(container(mocked, {}).get('val')).toEqual({ deps: [{ deps: [new F2Class()] }] });
+      expect(container(mocked, {}).deepGet(m1, 'val')).toEqual(new F2Class());
+      expect(container(mocked, {}).deepGet(m2, 'valFromChild')).toEqual({ deps: [new F2Class()] });
+      expect(container(mocked, {}).deepGet(m1, 'val')).toEqual(new F2Class());
       expect(m3).not.toEqual(mocked);
     });
   });

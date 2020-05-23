@@ -89,14 +89,12 @@ describe(`Container`, () => {
     });
 
     it(`initialize module on deepGet call`, async () => {
+      class SomeClass {}
       const m1InitSpy = jest.fn();
       const m1 = module('m1').using(lifecycle()).onInit(m1InitSpy);
 
       const m2InitSpy = jest.fn();
-      const m2 = module('m2')
-        .singleton('a', () => 123)
-        .using(lifecycle())
-        .onInit(m2InitSpy);
+      const m2 = module('m2').singleton('a', SomeClass).using(lifecycle()).onInit(m2InitSpy);
 
       const c = container(m1);
       c.init();

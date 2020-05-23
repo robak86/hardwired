@@ -45,17 +45,17 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
   singleton<TKey extends string, TResult>(
     key: TKey,
     klass: ClassType<[], TResult>,
-  ): CommonBuilder<TRegistry & { [K in TKey]: Definition<TResult> }>;
+  ): NextCommonBuilder<TKey, TResult, TRegistry>;
   singleton<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): CommonBuilder<TRegistry & { [K in TKey]: Definition<TResult> }>;
+  ): NextCommonBuilder<TKey, TResult, TRegistry>;
   singleton<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): CommonBuilder<TRegistry & { [K in TKey]: Definition<TResult> }> {
+  ): NextCommonBuilder<TKey, TResult, TRegistry> {
     const newRegistry = this.registry.extendDeclarations(key, new ClassSingletonResolver(klass, depSelect));
     return new CommonBuilder(newRegistry) as any;
   }

@@ -45,7 +45,7 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with single parameter with all deps provided`, async () => {
       const someFunction = (someParam: string) => 123;
       const m = module('m1')
-        .singleton('someString', () => 'someString')
+        .value('someString', 'someString')
         .function('noDepsFunction', someFunction, ctx => [ctx.someString]);
 
       expectType<
@@ -56,8 +56,8 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with two parameters with no deps provided`, async () => {
       const someFunction = (someParam: string, someOtherParam: number) => 123;
       const m = module('m1')
-        .singleton('someString', () => 'someString')
-        .singleton('someNumber', () => 123)
+        .value('someString', 'someString')
+        .value('someNumber', 123)
         .function('noDepsFunction', someFunction);
 
       expectType<
@@ -75,8 +75,8 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with two parameters with all deps provided`, async () => {
       const someFunction = (someParam: string, someOtherParam: number) => 123;
       const m = module('m1')
-        .singleton('someString', () => 'someString')
-        .singleton('someNumber', () => 123)
+        .value('someString', 'someString')
+        .value('someNumber', 123)
         .function('noDepsFunction', someFunction, ctx => [ctx.someString, ctx.someNumber]);
 
       expectType<
@@ -95,8 +95,8 @@ describe(`FunctionBuilder`, () => {
   describe(`instantiation`, () => {
     const someFunction = (someParam: string, someOtherParam: number) => [someParam, someOtherParam];
     const m = module('m1')
-      .singleton('d1', () => 'dependency1')
-      .singleton('d2', () => 123)
+      .value('d1', 'dependency1')
+      .value('d2', 123)
       .function('curry0', someFunction)
       .function('curry1', someFunction, ctx => [ctx.d1])
       .function('curry2', someFunction, ctx => [ctx.d1, ctx.d2]);

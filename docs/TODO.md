@@ -1,3 +1,11 @@
+- module collision detection does not work if duplicated dependencies are compatibile
+```
+const m = module('m')
+    .singleton('a', class {})
+    .singleton('a', class {})
+m is Module type instead of 'error message about colissions'
+```
+
 - Add `singletonClass`, `transientClass`, `requestClass`, `singleton`, `transient`
   - shouldn't we remove a `singleton` builder which allows for the registration of a function ?
   - it opens for the user possibility to create some advanced (untestable?) logic for dependency creation
