@@ -3,6 +3,7 @@ import { ContainerCache } from '../container/container-cache';
 import { proxyGetter } from '../container/proxyGetter';
 import { DependencyResolver, DependencyResolverFunction } from './DependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
+import { DefinitionsSet } from '../module/DefinitionsSet';
 
 export class RequestSingletonResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TReturn> {
@@ -13,7 +14,7 @@ export class RequestSingletonResolver<TRegistry extends ModuleRegistry, TReturn>
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
 
-  build = (registry, ctx, cache: ContainerCache) => {
+  build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
     //TODO: cache.forNewRequest scope!!
     if (cache.hasInRequestScope(this.id)) {
       return cache.getFromRequestScope(this.id);

@@ -1,9 +1,9 @@
-import { ModuleRegistry } from "../module/ModuleRegistry";
-import { DependencyResolver } from "../resolvers/DependencyResolver";
-import { unwrapThunk } from "../utils/thunk";
-import { proxyGetter } from "./proxyGetter";
-import { DefinitionsSet } from "../module/DefinitionsSet";
-import { ContainerCache } from "./container-cache";
+import { ModuleRegistry } from '../module/ModuleRegistry';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { unwrapThunk } from '../utils/thunk';
+import { proxyGetter } from './proxyGetter';
+import { DefinitionsSet } from '../module/DefinitionsSet';
+import { ContainerCache } from './container-cache';
 
 export const ContainerService = {
   getChild<TRegistry extends ModuleRegistry>(
@@ -18,7 +18,7 @@ export const ContainerService = {
 
     if (registry.declarations.hasKey(dependencyKey)) {
       let declarationResolver: DependencyResolver<any, any> = registry.declarations.get(dependencyKey);
-      return declarationResolver.build(registry, context, cache);
+      return declarationResolver.build(registry, cache, context);
     }
 
     if (registry.imports.hasKey(dependencyKey)) {

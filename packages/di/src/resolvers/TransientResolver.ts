@@ -14,7 +14,7 @@ export class TransientResolver<TRegistry extends ModuleRegistry, TReturn>
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
 
-  build(registry: DefinitionsSet<TRegistry>, ctx, cache: ContainerCache): TReturn {
+  build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx): TReturn {
     return this.resolver(proxyGetter(registry, cache, ctx));
   }
 }

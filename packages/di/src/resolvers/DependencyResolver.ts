@@ -14,6 +14,6 @@ export type DependencyResolverReturn<T extends DependencyResolver<any, any>> = T
 export interface DependencyResolver<TRegistry extends ModuleRegistry, TReturn> {
   id: string | number;
   type: string;
-  build(container: DefinitionsSet<TRegistry>, ctx, cache: ContainerCache): TReturn;
+  build(container: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx): TReturn;
   onRegister?(events: ContainerEvents);
 }

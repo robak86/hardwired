@@ -5,6 +5,8 @@
 - specify rules for ```function``` builder
   - should we use memoization for injected arguments (curried) ?
   
+- use consistent naming for resolvers - resolvers | factory | something else? 
+  
   
 - What if we just could remove the concept of singleton, request scope, transient and determine it
   using change detection ?

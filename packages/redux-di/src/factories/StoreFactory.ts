@@ -24,15 +24,15 @@ export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends Ba
     super();
   }
 
-  build(registry: DefinitionsSet<TRegistry, any>, ctx: any, cache: ContainerCache) {
-    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.build(registry, ctx, cache));
+  build(registry: DefinitionsSet<TRegistry, any>, cache: ContainerCache, ctx) {
+    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.build(registry, cache, ctx));
     const store = this.buildStore(cache, registry, ctx);
     store.replaceReducers(reducers);
 
     return store;
   }
 
-  private buildStore(cache: ContainerCache, registry: DefinitionsSet<TRegistry, any>, ctx: any) {
+  private buildStore(cache: ContainerCache, registry: DefinitionsSet<TRegistry, any>, ctx) {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {

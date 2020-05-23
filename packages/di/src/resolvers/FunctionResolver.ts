@@ -32,7 +32,7 @@ export class FunctionResolver<TRegistry extends ModuleRegistry, TReturn>
     });
   }
 
-  build(registry: DefinitionsSet<TRegistry>, ctx, cache: ContainerCache) {
-    return this.singletonResolver.build(registry, ctx, cache);
+  build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) {
+    return this.singletonResolver.build(registry, cache, ctx);
   }
 }

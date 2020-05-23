@@ -3,6 +3,7 @@ import { ContainerCache } from '../container/container-cache';
 import { proxyGetter } from '../container/proxyGetter';
 import { DependencyResolver, DependencyResolverFunction } from './DependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
+import { DefinitionsSet } from '../module/DefinitionsSet';
 
 export class GlobalSingletonResolver<TRegistry extends ModuleRegistry, TReturn = any>
   implements DependencyResolver<TRegistry, TReturn> {
@@ -13,7 +14,7 @@ export class GlobalSingletonResolver<TRegistry extends ModuleRegistry, TReturn =
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
 
-  build = (registry, ctx, cache: ContainerCache) => {
+  build = (registry:DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
