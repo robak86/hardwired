@@ -9,3 +9,15 @@ export abstract class BaseDependencyResolver<TRegistry extends ModuleRegistry, T
   abstract readonly type: string;
   abstract build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx);
 }
+
+// export function buildBaseDependencyResolver<TType extends string>(type: TType) {
+//    const A = class <TRegistry extends ModuleRegistry, TReturn> extends BaseDependencyResolver<
+//       TRegistry,
+//       TReturn
+//       > {
+//     static type: TType = type;
+//     readonly type: TType = type;
+//   }
+//
+//   return NamedBaseDependencyResolver;
+// }
