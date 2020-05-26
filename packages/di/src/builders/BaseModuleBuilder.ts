@@ -13,7 +13,10 @@ import { TransientResolver } from '../resolvers/TransientResolver';
 export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
   protected constructor(public readonly registry: DefinitionsSet<TRegistry>) {}
 
-  protected abstract build<TNextModule extends this>(ctx: DefinitionsSet<any>);
+  protected build<TNextModule extends this>(ctx: DefinitionsSet<any>): this {
+    const Cls = this.constructor as new (registry: DefinitionsSet<TRegistry>) => this;
+    return new Cls(ctx);
+  }
 
   using<TNextBuilder extends ModuleBuilder<TRegistry>>(
     builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,

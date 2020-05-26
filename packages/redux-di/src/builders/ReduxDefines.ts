@@ -26,7 +26,7 @@ export class ReduxDefines<TRegistry extends ModuleRegistry, TState> extends Base
       key,
       new ReducerFactory<TRegistry, Reducer<TState, any>>(() => reducer),
     );
-    return this.build(newRegistry);
+    return new ReduxDefines(newRegistry);
   }
 
   store<TKey extends string>(
@@ -34,7 +34,7 @@ export class ReduxDefines<TRegistry extends ModuleRegistry, TState> extends Base
     defaultsState: (ctx: MaterializedModuleEntries<TRegistry>) => TState,
   ): ReduxDefines<TRegistry & { [K in TKey]: Definition<AlterableStore<any>> }, TState> {
     const newRegistry = this.registry.extendDeclarations(key, new StoreFactory<TRegistry, TState>(defaultsState));
-    return this.build(newRegistry);
+    return new ReduxDefines(newRegistry);
   }
 
   saga<TKey extends string>(
@@ -42,7 +42,7 @@ export class ReduxDefines<TRegistry extends ModuleRegistry, TState> extends Base
     saga: Saga,
   ): ReduxDefines<TRegistry & { [K in TKey]: Definition<AlterableStore<any>> }, TState> {
     const newRegistry = this.registry.extendDeclarations(key, new SagaFactory<TRegistry, Saga>(() => saga));
-    return this.build(newRegistry);
+    return new ReduxDefines(newRegistry);
   }
 
   // middleware<TKey extends string>(
@@ -52,10 +52,6 @@ export class ReduxDefines<TRegistry extends ModuleRegistry, TState> extends Base
   //   const newRegistry = this.registry.extendDeclarations(key, new SagaFactory<TRegistry, Saga>(() => saga));
   //   return this.build(newRegistry);
   // }
-
-  protected build(ctx: DefinitionsSet<any>): ReduxDefines<any, TState> {
-    return new ReduxDefines(ctx);
-  }
 }
 
 export const reduxDefines = <TState>() => <TRegistry extends ModuleRegistry>(

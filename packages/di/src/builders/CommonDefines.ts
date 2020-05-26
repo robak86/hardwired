@@ -10,8 +10,6 @@ import { ClassSingletonResolver } from '../resolvers/ClassSingletonResolver';
 import { ClassTransientResolver } from '../resolvers/ClassTransientResolver';
 import { ClassRequestScopeResolver } from '../resolvers/ClassRequestScopeResolver';
 
-
-
 export type NextCommonBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
   TKey,
   TRegistry,
@@ -166,12 +164,7 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
 
   value<K extends string, V>(key: K, factory: V): NextCommonBuilder<K, V, TRegistry> {
     const newRegistry = this.registry.extendDeclarations(key, new SingletonResolver(() => factory as any));
-
     return new CommonBuilder(newRegistry) as any;
-  }
-
-  protected build(ctx) {
-    return new CommonBuilder(ctx) as any;
   }
 }
 

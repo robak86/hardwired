@@ -6,6 +6,6 @@ export abstract class BaseDependencyResolver<TRegistry extends ModuleRegistry, T
   implements DependencyResolver<TRegistry, TRegistry> {
   public id: string = nextId();
 
-  abstract type: string;
-  abstract build(registry: DefinitionsSet<TRegistry>,  cache: ContainerCache, ctx);
+  abstract readonly type: string;
+  abstract build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx);
 }

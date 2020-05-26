@@ -13,10 +13,6 @@ export class LifeCycle<TRegistry extends ModuleRegistry> extends BaseModuleBuild
   ): this {
     return this.build(this.registry.appendInitializer('_____module', initFn));
   }
-
-  protected build(ctx) {
-    return new LifeCycle(ctx) as any;
-  }
 }
 
 export const lifecycle = () => <TRegistry extends ModuleRegistry>(
