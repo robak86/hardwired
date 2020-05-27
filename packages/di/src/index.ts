@@ -35,3 +35,4 @@ export type { NextModuleImport } from './module/ModuleUtils';
 export type { NextModuleDefinition } from './module/ModuleUtils';
 export type { NotDuplicatedKeys } from './module/ModuleUtils';
 export type { NotDuplicated } from './module/ModuleUtils';
+export { createResolverId } from './utils/fastId';

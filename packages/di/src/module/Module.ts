@@ -29,3 +29,5 @@ export function module<CTX = {}>(name: string) {
   // return new Module<{}>(DefinitionsSet.empty(name)).applyTrait((registry) => new CommonBuilder(registry));
   // return new Module<{}>(DefinitionsSet.empty(name)).applyTrait(CommonBuilder);
 }
+
+export const unit = module;

@@ -7,13 +7,16 @@ export type DependencyResolverFunction<TRegistry extends ModuleRegistry, TReturn
   container: MaterializedModuleEntries<TRegistry>,
 ) => TReturn;
 
-export type DependencyResolverReturn<T extends DependencyResolver<any, any>> = T extends DependencyResolver<any, infer TReturn>
+export type DependencyResolverReturn<T extends DependencyResolver<any, any>> = T extends DependencyResolver<
+  any,
+  infer TReturn
+>
   ? TReturn
   : never;
 
 export interface DependencyResolver<TRegistry extends ModuleRegistry, TReturn> {
   id: string | number;
-  type: string;
+  readonly type: string;
   build(container: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx): TReturn;
   onRegister?(events: ContainerEvents);
 }

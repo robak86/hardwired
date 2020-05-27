@@ -1,4 +1,4 @@
-import { nextId } from '../utils/fastId';
+import { createResolverId } from '../utils/fastId';
 import { ContainerCache } from '../container/container-cache';
 import { proxyGetter } from '../container/proxyGetter';
 import { DependencyResolver, DependencyResolverFunction } from './DependencyResolver';
@@ -9,7 +9,7 @@ export class SingletonResolver<TRegistry extends ModuleRegistry, TReturn = any>
   implements DependencyResolver<TRegistry, TReturn> {
   static type = 'singleton';
 
-  public id: string = nextId();
+  public id: string = createResolverId();
   public type = SingletonResolver.type;
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}

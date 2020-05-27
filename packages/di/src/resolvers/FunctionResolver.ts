@@ -3,7 +3,7 @@ import { ContainerCache } from '../container/container-cache';
 import { curry } from '../utils/curry';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
-import { nextId } from '../utils/fastId';
+import { createResolverId } from '../utils/fastId';
 import { proxyGetter } from '../container/proxyGetter';
 
 // TODO: not sure if this should be singleton ?
@@ -13,7 +13,7 @@ export class FunctionResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TReturn> {
   static type = 'function';
 
-  public id: string = nextId();
+  public id: string = createResolverId();
   public type = FunctionResolver.type;
 
   private readonly curriedFunction;

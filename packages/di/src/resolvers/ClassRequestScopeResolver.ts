@@ -1,4 +1,4 @@
-import { nextId } from '../utils/fastId';
+import { createResolverId } from '../utils/fastId';
 import { ContainerCache } from '../container/container-cache';
 import { proxyGetter } from '../container/proxyGetter';
 import { DependencyResolver } from './DependencyResolver';
@@ -7,10 +7,10 @@ import { DefinitionsSet } from '../module/DefinitionsSet';
 
 export class ClassRequestScopeResolver<TRegistry extends ModuleRegistry, TReturn = any>
   implements DependencyResolver<TRegistry, TReturn> {
-  static type = 'requestScope';
+  static readonly type = 'requestScope';
 
-  public id: string = nextId();
-  public type = ClassRequestScopeResolver.type;
+  public id: string = createResolverId();
+  readonly type = ClassRequestScopeResolver.type;
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {}
 
