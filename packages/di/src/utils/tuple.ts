@@ -1,3 +1,4 @@
+export function tuple<T1>(...args: [T1]): [T1];
 export function tuple<T1, T2>(...args: [T1, T2]): [T1, T2];
 export function tuple<T1, T2, T3>(...args: [T1, T2, T3]): [T1, T2, T3];
 export function tuple<T1, T2, T3, T4>(...args: [T1, T2, T3, T4]): [T1, T2, T3, T4];
