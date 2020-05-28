@@ -99,11 +99,20 @@ type MiddlewareSelectFunction<TRegistry extends ModuleRegistry, TInput extends o
   // ];
 };
 
-export function compose<TInput1 extends object, TOutput>(
-  ...middlewares: [IMiddleware<TInput1, TOutput, any>]
+export function compose<TInput1 extends object, TOutput extends object, TFinal extends object>(
+  ...middlewares: [IMiddleware<TInput1, TOutput, TFinal>]
 ): IMiddleware<TInput1, TOutput, any>;
-export function compose<TInput1 extends object, TInput2 extends object, TOutput>(
-  ...middlewares: [IMiddleware<TInput1, TInput2, any>, IMiddleware<TInput2, TOutput, any>]
+export function compose<
+  TInput1 extends object,
+  TInput2 extends object,
+  TOutput,
+  TFinal1 extends object,
+  TFinal2 extends object
+>(
+  ...middlewares: [
+    IMiddleware<TInput1, TInput2, TFinal1>,
+    IMiddleware<TInput1 & TInput2, TInput1 & TInput2 & TOutput, TFinal1 | TFinal2>,
+  ]
 ): IMiddleware<TInput1, TOutput, any>;
 export function compose(...args: any): any {
   throw new Error('Implmenet me');

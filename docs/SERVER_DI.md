@@ -1,4 +1,15 @@
 ```typescript
+interface IMiddleware<TOutput> {}
+
+
+
+
+
+
+```
+
+
+```typescript
 const module = moduleBuilder //breakme
   .trait(CommonDefinitions)
   .trait(backendDefinitions({ sideEffects: false })); // sideEffects = false uses more relaxed policy for creation items (everything as singleton ?)

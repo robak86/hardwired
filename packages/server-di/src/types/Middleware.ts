@@ -4,6 +4,10 @@ export interface IMiddleware<TInput extends object, TOutput, TFinalType> {
   // pipe(input: TInput): (TOutput & TInput) | TFinalType;
 }
 
+
+
+
+
 export interface IHandler<TInput extends object, TFinalType> extends IMiddleware<TInput, never, TFinalType> {}
 
 type MiddlewareSet = {
