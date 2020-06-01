@@ -1,5 +1,4 @@
 import { unwrapThunk } from '../utils/thunk';
-import { proxyGetter } from './proxyGetter';
 import { ContainerCache } from './container-cache';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import {
@@ -7,7 +6,6 @@ import {
   MaterializedModuleEntries,
   ModuleRegistry,
   ModuleRegistryContext,
-  ModuleRegistryDefinitions,
   ModuleRegistryDefinitionsKeys,
 } from '../module/ModuleRegistry';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
@@ -58,7 +56,7 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
   };
 
   asObject(): MaterializedModuleEntries<R> {
-    return proxyGetter(this.registry, this.cache.forNewRequest(), this.context);
+    return ContainerService.proxyGetter(this.registry, this.cache.forNewRequest(), this.context);
   }
 
   checkout(inherit: boolean): Container<R> {

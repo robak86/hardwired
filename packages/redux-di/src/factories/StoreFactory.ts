@@ -1,16 +1,16 @@
 import {
   BaseDependencyResolver,
   ContainerEvents,
+  DefinitionsSet,
   DependencyResolver,
   DependencyResolverFunction,
   ModuleRegistry,
-  DefinitionsSet,
 } from '@hardwired/di';
 import { ReducerFactory } from './ReducerFactory';
 import { ContainerCache } from '@hardwired/di/lib/container/container-cache';
 import { AlterableStore } from '../stack/AlterableStore';
-import { proxyGetter } from '@hardwired/di/lib/container/proxyGetter';
 import { SagaFactory } from './SagaFactory';
+import { ContainerService } from '../../../di/src/container/ContainerService';
 
 export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends BaseDependencyResolver<
   TRegistry,
@@ -36,7 +36,7 @@ export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends Ba
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const store = new AlterableStore(this.resolver(proxyGetter(registry, cache, ctx)));
+      const store = new AlterableStore(this.resolver(ContainerService.proxyGetter(registry, cache, ctx)));
       cache.setForGlobalScope(this.id, store);
       return store;
     }

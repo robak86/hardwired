@@ -1,9 +1,9 @@
 import { createResolverId } from '../utils/fastId';
 import { ContainerCache } from '../container/container-cache';
-import { proxyGetter } from '../container/proxyGetter';
 import { DependencyResolver } from './DependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
+import { ContainerService } from '../container/ContainerService';
 
 export class ClassSingletonResolver<TRegistry extends ModuleRegistry, TReturn = any>
   implements DependencyResolver<TRegistry, TReturn> {
@@ -18,7 +18,7 @@ export class ClassSingletonResolver<TRegistry extends ModuleRegistry, TReturn = 
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const constructorArgs = this.selectDependencies(proxyGetter(registry, cache, ctx)) as any;
+      const constructorArgs = this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx)) as any;
       const instance = new this.klass(...constructorArgs);
       cache.setForGlobalScope(this.id, instance);
       return instance;

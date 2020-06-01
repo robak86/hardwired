@@ -1,9 +1,9 @@
 import { createResolverId } from '../utils/fastId';
 import { ContainerCache } from '../container/container-cache';
-import { proxyGetter } from '../container/proxyGetter';
 import { DependencyResolver, DependencyResolverFunction } from './DependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
+import { ContainerService } from '../container/ContainerService';
 
 export class RequestScopeResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TReturn> {
@@ -19,7 +19,7 @@ export class RequestScopeResolver<TRegistry extends ModuleRegistry, TReturn>
     if (cache.hasInRequestScope(this.id)) {
       return cache.getFromRequestScope(this.id);
     } else {
-      let instance = this.resolver(proxyGetter(registry, cache, ctx));
+      let instance = this.resolver(ContainerService.proxyGetter(registry, cache, ctx));
       cache.setForRequestScope(this.id, instance);
       return instance;
     }

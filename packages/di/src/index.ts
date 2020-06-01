@@ -6,6 +6,8 @@ export { tuple } from './utils/tuple';
 export { ContainerEvents } from './container/ContainerEvents';
 export type { DependencyResolver, DependencyResolverFunction } from './resolvers/DependencyResolver';
 export { BaseDependencyResolver } from './resolvers/BaseDependencyResolver';
+export { commonDefines } from './builders/CommonDefines';
+export { ContainerService } from './container/ContainerService';
 
 export { DefinitionsSet } from './module/DefinitionsSet';
 

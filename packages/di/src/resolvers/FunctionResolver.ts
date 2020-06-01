@@ -4,7 +4,7 @@ import { curry } from '../utils/curry';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { createResolverId } from '../utils/fastId';
-import { proxyGetter } from '../container/proxyGetter';
+import { ContainerService } from '../container/ContainerService';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
@@ -29,7 +29,7 @@ export class FunctionResolver<TRegistry extends ModuleRegistry, TReturn>
 
   build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) {
     // TODO: not sure if this does not trigger all getter from the whole tree !!!!
-    const currentDependencies = this.selectDependencies(proxyGetter(registry, cache, ctx));
+    const currentDependencies = this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx));
     const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
 
     if (requiresRevalidation) {

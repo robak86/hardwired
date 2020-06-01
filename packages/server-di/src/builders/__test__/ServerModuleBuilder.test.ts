@@ -1,17 +1,18 @@
 import { DefinitionsSet } from '@hardwired/di';
 import { IApplication } from '../../types/App';
-import { IHandler, IMiddleware } from '../../types/Middleware';
-import { serverUnit } from '../../testing/helpers';
-import { compose, ServerModuleBuilder } from '../ServerModuleBuilder';
+import { HttpRequest, IMiddleware } from '../../types/Middleware';
+import { ServerModuleBuilder } from '../ServerModuleBuilder';
 import { ApplicationResolver } from '../../resolvers/ApplicationResolver';
+import { serverUnit } from '../../testing/helpers';
+import { MiddlewareResolver } from '../../resolvers/MiddlewareResolver';
 
 describe(`ServerModuleBuilder`, () => {
   class DummyApplication implements IApplication {
-    addRoute(method: any, path: string, handler: IHandler<any, any>) {
+    addRoute(method: any, path: string, handler: any) {
       throw new Error('Implement me');
     }
 
-    processRequest(input: any): any {
+    run(): any {
       throw new Error('Implement me');
     }
   }
@@ -22,7 +23,6 @@ describe(`ServerModuleBuilder`, () => {
         class WrongClass {}
 
         const m = serverUnit('test').app('app', DummyApplication);
-
         // @ts-expect-error
         const m2 = serverUnit('test').app('app', WrongClass);
       });
@@ -41,41 +41,49 @@ describe(`ServerModuleBuilder`, () => {
   describe(`.middleware`, () => {
     describe(`types`, () => {
       it(`requires class inheriting from IApplication`, async () => {
-        // class WrongClass {}
-        //
-        // const m = serverUnit('test').middleware('middleware', DummyApplication);
-        //
-        // // @ts-expect-error
-        // const m2 = serverUnit('test').middleware('middleware', WrongClass);
+        class WrongClass {}
+
+        const m = serverUnit('test').middleware('middleware', DummyApplication);
+
+        // @ts-expect-error
+        const m2 = serverUnit('test').middleware('middleware', WrongClass);
       });
     });
 
     it(`registers new ApplicationResolver`, async () => {
       const registry = DefinitionsSet.empty('empty');
-      // const builder = new ServerModuleBuilder(registry).middleware('middleware', DummyApplication);
+      const builder = new ServerModuleBuilder(registry).middleware('middleware', DummyApplication);
 
-      // expect(builder.registry.declarations.get('middleware')).toBeInstanceOf(MiddlewareResolver);
+      expect(builder.registry.declarations.get('middleware')).toBeInstanceOf(MiddlewareResolver);
     });
 
     it(`works`, async () => {
-      const a: IMiddleware<{ a: number }, { a: number }, any> = null as any;
-      const b: IMiddleware<{ a: number }, { a: number; b: number }, any> = null as any;
-      const c: IMiddleware<{ a: number }, { z: number }, any> = null as any;
+      class A implements IMiddleware<{ a: number }> {
+        constructor(private request: HttpRequest) {}
 
-      type MiddlewareInput = { z: number };
-
-      class Middleware implements IMiddleware<MiddlewareInput, { y: number }, any> {
-        processRequest(input: MiddlewareInput): { y: number } {
-          // return { ...input, y: 'sdf' };
-          // return undefined
-          return { y: 123 };
+        run() {
+          return { a: 1 };
         }
       }
-      const iMiddleware = compose(c);
 
-      const m = serverUnit('test')
-        .middleware('middleware', Middleware, ctx => compose(b, c))
-        .middleware('middleware', Middleware, ctx => compose(ctx.middleware, c));
+      class B implements IMiddleware<{ b: number }> {
+        run() {
+          return { b: 1 };
+        }
+      }
+
+      // type MiddlewareInput = { z: number };
+      //
+      // class Middleware implements IMiddleware<MiddlewareInput, { y: number }, any> {
+      //   processRequest(input: MiddlewareInput): { y: number } {
+      //     // return { ...input, y: 'sdf' };
+      //     // return undefined
+      //     return { y: 123 };
+      //   }
+      // }
+      // const iMiddleware = compose(c);
+
+      const m = serverUnit('test').middleware('middleware', A, ctx => [ctx.request]);
     });
   });
 });

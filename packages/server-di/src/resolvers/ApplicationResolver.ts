@@ -8,6 +8,8 @@ export class ApplicationResolver<TRegistry extends ModuleRegistry, TReturn exten
   public id: string = createResolverId();
   public type = ApplicationResolver.type;
 
+  private routes: Array<() => any> = [];
+
   constructor(private klass, private selectDependencies = container => [] as any[]) {}
 
   build(container: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any): TReturn {

@@ -9,8 +9,9 @@ import {
 } from '@hardwired/di';
 import { IApplication } from '../types/App';
 import { ApplicationResolver } from '../resolvers/ApplicationResolver';
-import { IMiddleware } from '../types/Middleware';
+import { ContainerHandler, HttpRequest, IMiddleware } from '../types/Middleware';
 import { MiddlewareResolver } from '../resolvers/MiddlewareResolver';
+import { HandlerResolver } from '../resolvers/HandlerResolver';
 
 export type NextServerBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
   TKey,
@@ -46,78 +47,46 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
     return new ServerModuleBuilder(newRegistry) as any;
   }
 
-  middleware<
-    TKey extends string,
-    TInput extends object,
-    TOutput extends TInput,
-    TResult extends IMiddleware<TInput, TOutput, any>
-  >(
+  middleware<TKey extends string, TResult>(
     key: TKey,
-
-    klass: ClassType<[], TResult>,
-    middlewareSelect: (ctx: MaterializedModuleEntries<TRegistry>) => IMiddleware<any, TInput, any>,
-  ): NextServerBuilder<TKey, TResult, TRegistry>;
-  middleware<
-    TKey extends string,
-    TDeps extends any[],
-    TInput extends object,
-    TOutput extends TInput,
-    TResult extends IMiddleware<TInput, TOutput, any>
-  >(
+    klass: ClassType<[], IMiddleware<TResult>>,
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry>;
+  middleware<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
-    klass: ClassType<TDeps, TResult>,
+    klass: ClassType<TDeps, IMiddleware<TResult>>,
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-    middlewareSelect: (ctx: MaterializedModuleEntries<TRegistry>) => IMiddleware<any, TInput, any>,
-  ): NextServerBuilder<TKey, TResult, TRegistry>;
-  middleware<
-    TKey extends string,
-    TDeps extends any[],
-    TInput extends object,
-    TOutput extends TInput,
-    TResult extends IMiddleware<TInput, TOutput, any>
-  >(
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry>;
+  middleware<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
-    klass: ClassType<TDeps, TResult>,
+    klass: ClassType<TDeps, IMiddleware<TResult>>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-    middlewareSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => IMiddleware<any, TInput, any>,
-  ): NextServerBuilder<TKey, TResult, TRegistry> {
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry> {
     const newRegistry = this.registry.extendDeclarations(key, new MiddlewareResolver(klass, depSelect));
+    return new ServerModuleBuilder(newRegistry) as any;
+  }
+
+  handler<TKey extends string, TResult>(
+    key: TKey,
+    routeDefinition: any,
+    klass: ClassType<[], IMiddleware<TResult>>,
+  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
+  handler<TKey extends string, TDeps extends any[], TResult>(
+    key: TKey,
+    routeDefinition: any,
+    klass: ClassType<TDeps, IMiddleware<TResult>>,
+    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
+  handler<TKey extends string, TDeps extends any[], TResult>(
+    key: TKey,
+    routeDefinition: any,
+    klass: ClassType<TDeps, IMiddleware<TResult>>,
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry> {
+    const newRegistry = this.registry.extendDeclarations(key, new HandlerResolver(klass, depSelect));
     return new ServerModuleBuilder(newRegistry) as any;
   }
 }
 
-type MiddlewareSelectFunction<TRegistry extends ModuleRegistry, TInput extends object, TOutput extends TInput> = {
-  <TTransitive1 extends object>(ctx: MaterializedModuleEntries<TRegistry>): [
-    IMiddleware<any, TTransitive1, any>,
-    IMiddleware<TTransitive1, TInput, any>,
-  ];
-  <TTransitive1 extends object>(ctx: MaterializedModuleEntries<TRegistry>): [IMiddleware<any, TInput, any>];
-
-  // <TInput2 extends object, TLastOutput extends TInput2 & TOutput>(ctx: MaterializedModuleEntries<TRegistry>): [
-  //   IMiddleware<any, TInput2, any>,
-  //   IMiddleware<TInput2, TLastOutput, any>,
-  // ];
-};
-
-export function compose<TInput1 extends object, TOutput extends object, TFinal extends object>(
-  ...middlewares: [IMiddleware<TInput1, TOutput, TFinal>]
-): IMiddleware<TInput1, TOutput, any>;
-export function compose<
-  TInput1 extends object,
-  TInput2 extends object,
-  TOutput,
-  TFinal1 extends object,
-  TFinal2 extends object
->(
-  ...middlewares: [
-    IMiddleware<TInput1, TInput2, TFinal1>,
-    IMiddleware<TInput1 & TInput2, TInput1 & TInput2 & TOutput, TFinal1 | TFinal2>,
-  ]
-): IMiddleware<TInput1, TOutput, any>;
-export function compose(...args: any): any {
-  throw new Error('Implmenet me');
-}
-
 export const serverDefinitions = <TRegistry extends ModuleRegistry>(
   registry: DefinitionsSet<TRegistry>,
-): ServerModuleBuilder<TRegistry> => new ServerModuleBuilder(registry);
+): ServerModuleBuilder<TRegistry & { request: Definition<HttpRequest> }> => new ServerModuleBuilder(registry) as any;

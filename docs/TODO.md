@@ -1,21 +1,19 @@
-- investigate if we allow for context mutations ```const newContainer = container.setContext()``` ??
-    - should new container have empty cache ? or cache should contain singletons without any dependencies to context ?
-    - how user can use `newContainer` ? we don't use it as service locator, so what are possible use cases ?
-    - do we even should provide context feature ? maybe this feature should be implemented in a custom builders/resolvers
-        - the only use case I can see now is reqest scope (e.g. http request handler, where context is http request) 
-        
-        
-        
-- investigate if we should can use Symbol instead of unique `string` for ```moduleId.identity```
-- investigate if module name `module('name`)` can be/should be optional ? 
+- investigate if we allow for context mutations `const newContainer = container.setContext()` ??
+  - should new container have empty cache ? or cache should contain singletons without any dependencies to context ?
+  - how user can use `newContainer` ? we don't use it as service locator, so what are possible use cases ?
+  - do we even should provide context feature ? maybe this feature should be implemented in a custom builders/resolvers
+    - the only use case I can see now is reqest scope (e.g. http request handler, where context is http request)
+- investigate if we should can use Symbol instead of unique `string` for `moduleId.identity`
+- investigate if module name `module('name`)` can be/should be optional ?
 - investigate how to implement container service without using proxy object!!!!
 - memory leaks ? shouldn't we use WeakMap ? What about compatibility ?
 - investigate idea of constructing Builders using traits like api
+- export types groupped in some namespace ? Hw.ModulesRegisty Hw.ContainerService  .. in order to minimize imports amount
 
-  ```typescript
-  const richModuleBuilder = moduleBuilder().enhance(SingletonBuilder).enhance(ReduxBuilder).enhance(ReactBuilder);
-  const myModule = richModuleBuilder('moduleName');
-  ```
+```typescript
+const richModuleBuilder = moduleBuilder().enhance(SingletonBuilder).enhance(ReduxBuilder).enhance(ReactBuilder);
+const myModule = richModuleBuilder('moduleName');
+```
 
 - module collision detection does not work if duplicated dependencies are compatibile ??
 
@@ -33,18 +31,18 @@
     abstract class A {
       static id = id;
       id = id;
-  
+
       abstract build(): number;
     }
-  
+
     return A;
   };
-  
+
   class MyClass extends a('id') {
     build(): number {
       return 0;
     }
-  } 
+  }
   ```
 
 - ~~Add `singletonClass`, `transientClass`, `requestClass`, `singleton`, `transient`~~
