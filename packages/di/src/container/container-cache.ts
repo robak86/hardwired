@@ -6,8 +6,33 @@ export type ContainerCacheEntry = {
   value: any;
 };
 
+class PushPromise<T> {
+  resolve!: (value: T) => void;
+  public readonly promise: Promise<T>;
+
+  constructor() {
+    this.promise = new Promise<T>((resolve, reject) => {
+      this.resolve = resolve;
+      setTimeout(() => {
+        reject('timeout');
+      }, 10000);
+    });
+  }
+
+  get(): Promise<T> {
+    return this.promise;
+  }
+
+  push(value: T) {
+    if (!this.resolve) {
+      throw new Error('race condition related to promise constructor');
+    }
+  }
+}
+
 export class ContainerCache {
   public requestScope: Record<string, ContainerCacheEntry> = {};
+  public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public initializedModules: Record<string, any> = {};
 
   constructor(public globalScope: Record<string, ContainerCacheEntry> = {}, private _isScoped: boolean = false) {}
@@ -30,6 +55,20 @@ export class ContainerCache {
 
   hasInRequestScope(uuid: string): boolean {
     return !!this.requestScope[uuid];
+  }
+
+  hasInAsyncRequestScope(uuid: string): boolean {
+    return !!this.requestScopeAsync[uuid];
+  }
+
+  usingAsyncScope(uuid: string, cacheValueFactory: () => any) {
+    this.requestScopeAsync[uuid] = new PushPromise();
+    this.requestScopeAsync[uuid].push(cacheValueFactory());
+  }
+
+  getFromAsyncRequestScope(uuid: string): Promise<any> {
+    invariant(!!this.requestScopeAsync[uuid], `Dependency with given uuid doesn't exists in request scope`);
+    return this.requestScopeAsync[uuid].get();
   }
 
   getFromRequestScope(uuid: string) {
