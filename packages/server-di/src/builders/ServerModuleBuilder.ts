@@ -9,7 +9,7 @@ import {
 } from '@hardwired/di';
 import { IApplication } from '../types/App';
 import { ApplicationResolver } from '../resolvers/ApplicationResolver';
-import { ContainerHandler, HttpRequest, IMiddleware } from '../types/Middleware';
+import { ContainerHandler, HttpRequest, IMiddleware, RouteDefinition } from '../types/Middleware';
 import { MiddlewareResolver } from '../resolvers/MiddlewareResolver';
 import { HandlerResolver } from '../resolvers/HandlerResolver';
 
@@ -65,24 +65,24 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
     return new ServerModuleBuilder(newRegistry) as any;
   }
 
-  handler<TKey extends string, TResult>(
+  handler<TKey extends string, TRequestParams extends object, TResult extends object>(
     key: TKey,
-    routeDefinition: any,
+    routeDefinition: RouteDefinition<TRequestParams, TResult>,
     klass: ClassType<[], IMiddleware<TResult>>,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
-  handler<TKey extends string, TDeps extends any[], TResult>(
+  handler<TKey extends string, TRequestParams extends object, TDeps extends any[], TResult extends object>(
     key: TKey,
-    routeDefinition: any,
+    routeDefinition: RouteDefinition<TRequestParams, TResult>,
     klass: ClassType<TDeps, IMiddleware<TResult>>,
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
-  handler<TKey extends string, TDeps extends any[], TResult>(
+  handler<TKey extends string, TRequestParams extends object, TDeps extends any[], TResult extends object>(
     key: TKey,
-    routeDefinition: any,
+    routeDefinition: RouteDefinition<TRequestParams, TResult>,
     klass: ClassType<TDeps, IMiddleware<TResult>>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry> {
-    const newRegistry = this.registry.extendDeclarations(key, new HandlerResolver(klass, depSelect));
+    const newRegistry = this.registry.extendDeclarations(key, new HandlerResolver(klass, depSelect, routeDefinition));
     return new ServerModuleBuilder(newRegistry) as any;
   }
 }

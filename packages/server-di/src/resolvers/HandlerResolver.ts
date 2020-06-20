@@ -7,16 +7,20 @@ import {
   ModuleRegistry,
   SingletonResolver,
 } from '@hardwired/di';
-import { ContainerHandler, HttpRequest } from '../types/Middleware';
+import { ContainerHandler, HttpRequest, RouteDefinition } from '../types/Middleware';
 
-export class HandlerResolver<TRegistry extends ModuleRegistry, TReturn>
+export class HandlerResolver<TRegistry extends ModuleRegistry, TReturn extends object>
   implements DependencyResolver<TRegistry, ContainerHandler<TReturn>> {
   static type = 'handler';
 
   public id: string = createResolverId();
   public type = HandlerResolver.type;
 
-  constructor(private klass, private selectDependencies = container => [] as any[]) {}
+  constructor(
+    private klass,
+    private selectDependencies = container => [] as any[],
+    private routeDefinition: RouteDefinition<any, TReturn>,
+  ) {}
 
   build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any) {
     const middlewareOutput: ContainerHandler<any> = {

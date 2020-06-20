@@ -1,5 +1,5 @@
-import { IMiddleware } from './Middleware';
+import { HttpMethod, HttpRequest, IMiddleware } from './Middleware';
 
 export interface IApplication extends IMiddleware<any> {
-  addRoute(method, path: string, handler: any);
+  addRoute(method: HttpMethod, path: string, handler: (request: HttpRequest) => any);
 }
