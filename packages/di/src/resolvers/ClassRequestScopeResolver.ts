@@ -1,18 +1,17 @@
 import { createResolverId } from '../utils/fastId';
 import { ContainerCache } from '../container/container-cache';
-import { DependencyResolver } from './DependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { ContainerService } from '../container/ContainerService';
+import { AbstractDependencyResolver } from './AbstractDependencyResolver';
 
-export class ClassRequestScopeResolver<TRegistry extends ModuleRegistry, TReturn = any>
-  implements DependencyResolver<TRegistry, TReturn> {
-  static readonly type = 'requestScope';
-
-  public id: string = createResolverId();
-  readonly type = ClassRequestScopeResolver.type;
-
-  constructor(private klass, private selectDependencies = container => [] as any[]) {}
+export class ClassRequestScopeResolver<
+  TRegistry extends ModuleRegistry,
+  TReturn = any
+> extends AbstractDependencyResolver<TRegistry, TReturn> {
+  constructor(private klass, private selectDependencies = container => [] as any[]) {
+    super();
+  }
 
   build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
     const scopedCache = cache.isScoped() ? cache : cache.forNewRequest();

@@ -1,18 +1,17 @@
 import { ModuleRegistry } from '../module/ModuleRegistry';
-import { DependencyResolver, DependencyResolverFunction } from './DependencyResolver';
+import { DependencyResolverFunction } from './DependencyResolver';
 import { ContainerCache } from '../container/container-cache';
 import { DefinitionsSet } from '../module/DefinitionsSet';
-import { createResolverId } from '../utils/fastId';
 import { ContainerService } from '../container/ContainerService';
+import { AbstractDependencyResolver } from './AbstractDependencyResolver';
 
-export class TransientResolver<TRegistry extends ModuleRegistry, TReturn>
-  implements DependencyResolver<TRegistry, TReturn> {
-  static type = 'transient';
-
-  public id: string = createResolverId();
-  public type = TransientResolver.type;
-
-  constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
+export class TransientResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
+  TRegistry,
+  TReturn
+> {
+  constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {
+    super();
+  }
 
   build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx): TReturn {
     return this.resolver(ContainerService.proxyGetter(registry, cache, ctx));

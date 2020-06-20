@@ -26,7 +26,7 @@ describe(`DefinitionsSet`, () => {
   describe(`forEachDefinition`, () => {
     it(`iterates over all definitions from bottom to the top`, async () => {
       const buildFakeResolver = (): DependencyResolver<any, any> => {
-        return { type: 'fake', id: Math.random(), build: jest.fn(), onRegister: jest.fn() };
+        return { id: Math.random(), build: jest.fn(), onRegister: jest.fn() };
       };
 
       const childDef1 = DefinitionsSet.empty('def1').extendDeclarations('a1', buildFakeResolver());
@@ -51,7 +51,6 @@ describe(`DefinitionsSet`, () => {
   describe(`events`, () => {
     it(`calls onRegister hooks on DependencyResolver`, async () => {
       const resolver: DependencyResolver<any, any> = {
-        type: 'any',
         id: Math.random(),
         build: jest.fn(),
         onRegister: jest.fn(),

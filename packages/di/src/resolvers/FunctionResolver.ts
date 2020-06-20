@@ -1,27 +1,25 @@
-import { DependencyResolver } from './DependencyResolver';
 import { ContainerCache } from '../container/container-cache';
 import { curry } from '../utils/curry';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { createResolverId } from '../utils/fastId';
 import { ContainerService } from '../container/ContainerService';
+import { AbstractDependencyResolver } from './AbstractDependencyResolver';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
 //  or it shouldn't never be memoized ?
-export class FunctionResolver<TRegistry extends ModuleRegistry, TReturn>
-  implements DependencyResolver<TRegistry, TReturn> {
-  static type = 'function';
-
-  public id: string = createResolverId();
-  public type = FunctionResolver.type;
-
+export class FunctionResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
+  TRegistry,
+  TReturn
+> {
   private readonly curriedFunction;
   private readonly uncurriedFunction;
   private readonly selectDependencies;
   private previousDependencies: any[] = [];
 
   constructor(fn: (...args: any[]) => any, depSelect) {
+    super();
     this.uncurriedFunction = fn;
     this.curriedFunction = curry(fn);
     this.selectDependencies = depSelect ? depSelect : () => [];

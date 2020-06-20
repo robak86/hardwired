@@ -1,18 +1,17 @@
-import { createResolverId } from '../utils/fastId';
 import { ContainerCache } from '../container/container-cache';
-import { DependencyResolver, DependencyResolverFunction } from './DependencyResolver';
+import { DependencyResolverFunction } from './DependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import { ContainerService } from '../container/ContainerService';
+import { AbstractDependencyResolver } from './AbstractDependencyResolver';
 
-export class SingletonResolver<TRegistry extends ModuleRegistry, TReturn = any>
-  implements DependencyResolver<TRegistry, TReturn> {
-  static type = 'singleton';
-
-  public id: string = createResolverId();
-  public type = SingletonResolver.type;
-
-  constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {}
+export class SingletonResolver<TRegistry extends ModuleRegistry, TReturn = any> extends AbstractDependencyResolver<
+  TRegistry,
+  TReturn
+> {
+  constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {
+    super();
+  }
 
   build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
     if (cache.hasInGlobalScope(this.id)) {

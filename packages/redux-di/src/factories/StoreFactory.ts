@@ -1,5 +1,5 @@
 import {
-  BaseDependencyResolver,
+  AbstractDependencyResolver,
   ContainerEvents,
   DefinitionsSet,
   DependencyResolver,
@@ -12,7 +12,7 @@ import { AlterableStore } from '../stack/AlterableStore';
 import { SagaFactory } from './SagaFactory';
 import { ContainerService } from '../../../di/src/container/ContainerService';
 
-export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends BaseDependencyResolver<
+export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends AbstractDependencyResolver<
   TRegistry,
   AlterableStore<AppState>
 > {
@@ -47,11 +47,11 @@ export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends Ba
   }
 
   onChildDefinitionAppend = (resolver: DependencyResolver<any, any>) => {
-    if (resolver.type === 'reducer') {
+    if (ReducerFactory.isConstructorFor(resolver)) {
       this.reducersResolvers.push(resolver as any);
     }
 
-    if (resolver.type === 'saga') {
+    if (SagaFactory.isConstructorFor(resolver)) {
       this.sagasResolvers.push(resolver as any);
     }
   };

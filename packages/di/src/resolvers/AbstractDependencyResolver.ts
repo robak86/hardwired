@@ -2,16 +2,20 @@ import { DefinitionsSet, DependencyResolver, ModuleRegistry } from '..';
 import { ContainerCache } from '../container/container-cache';
 import { createResolverId } from '../utils/fastId';
 
-export abstract class BaseDependencyResolver<TRegistry extends ModuleRegistry, TReturn>
+export abstract class AbstractDependencyResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, TRegistry> {
+
+  static isConstructorFor(param: DependencyResolver<any, any>): boolean {
+    return param.constructor === this;
+  }
+
   public id: string = createResolverId();
 
-  abstract type: string;
   abstract build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx);
 }
 
-// export function buildBaseDependencyResolver<TType extends string>(type: TType) {
-//    const A = class <TRegistry extends ModuleRegistry, TReturn> extends BaseDependencyResolver<
+// export function buildAbstractDependencyResolver<TType extends string>(type: TType) {
+//    const A = class <TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
 //       TRegistry,
 //       TReturn
 //       > {
@@ -19,5 +23,5 @@ export abstract class BaseDependencyResolver<TRegistry extends ModuleRegistry, T
 //     readonly type: TType = type;
 //   }
 //
-//   return NamedBaseDependencyResolver;
+//   return NamedAbstractDependencyResolver;
 // }
