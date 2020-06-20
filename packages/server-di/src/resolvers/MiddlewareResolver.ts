@@ -19,22 +19,17 @@ export class MiddlewareResolver<TRegistry extends ModuleRegistry, TReturn>
   constructor(private klass: ClassType<any, IMiddleware<any>>, private selectDependencies = container => [] as any[]) {}
 
   async build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any) {
-    console.log('checking cache for', this.id);
-
-    if (cache.hasInRequestScope(this.id)) {
-      return cache.getFromRequestScope(this.id);
+    if (cache.hasInAsyncRequestScope(this.id)) {
+      return cache.getFromAsyncRequestScope(this.id);
     } else {
-      const constructorArgs = await Promise.all(
-        this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx)) as any,
-      );
+      return cache.usingAsyncScope(this.id, async () => {
+        const constructorArgs = await Promise.all(
+          this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx)) as any,
+        );
 
-      console.log('creating new instance for', this.id);
-      const instance = new this.klass(...constructorArgs);
-      const middlewareOutput = await instance.run();
-
-      cache.setForRequestScope(this.id, middlewareOutput);
-
-      return middlewareOutput;
+        const instance = new this.klass(...constructorArgs);
+        return instance.run();
+      });
     }
   }
 }

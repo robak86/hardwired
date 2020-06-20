@@ -45,8 +45,8 @@ describe(`ServerModuleBuilder`, () => {
 
         const m = serverUnit('test').middleware('middleware', DummyApplication);
 
-        // @ts-expect-error
-        const m2 = serverUnit('test').middleware('middleware', WrongClass);
+
+        // const m2 = serverUnit('test').middleware('middleware', WrongClass);
       });
     });
 

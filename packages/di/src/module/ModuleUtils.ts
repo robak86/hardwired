@@ -7,14 +7,7 @@ export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
 export type NotDuplicatedKeys<TSource, TTarget, TReturn> = Extract<keyof TSource, keyof TTarget> extends never
   ? TReturn
   : 'Module contains duplicated definitions';
-export type NextModuleDefinition<TDefinitionKey extends string, V, R extends ModuleRegistry> = NotDuplicated<
-  TDefinitionKey,
-  R,
-  // Module<R & { [K in TDefinitionKey]: Definition<V> }>
-  Module<
-    { [K in keyof (R & { [K in TDefinitionKey]: Definition<V> })]: (R & { [K in TDefinitionKey]: Definition<V> })[K] }
-  >
->;
+
 export type NextModuleImport<
   TImportKey extends string,
   V extends ModuleRegistry,

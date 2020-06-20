@@ -10,3 +10,4 @@ export type ContainerHandler<TReturn> = {
   request(request: HttpRequest): TReturn | Promise<TReturn>;
   pathDefinition: string;
 };
+

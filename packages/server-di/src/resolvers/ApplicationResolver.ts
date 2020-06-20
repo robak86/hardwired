@@ -1,4 +1,4 @@
-import { ContainerCache, DefinitionsSet, DependencyResolver, ModuleRegistry, createResolverId } from '@hardwired/di';
+import { ContainerCache, createResolverId, DefinitionsSet, DependencyResolver, ModuleRegistry } from '@hardwired/di';
 import { IApplication } from '../types/App';
 
 export class ApplicationResolver<TRegistry extends ModuleRegistry, TReturn extends IApplication>

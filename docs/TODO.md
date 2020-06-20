@@ -1,14 +1,19 @@
-- investigate if we allow for context mutations `const newContainer = container.setContext()` ??
+- Type instantiation is excessively deep and possibly infinite
+  - apparently it was caused by types flattening
+  - `Module<Record<'a', number> & Record<'b', number>>` ->
+  - `Module<{[K in keyof (Record<'a', number> & Record<'b', number>)]: (Record<'a', number> & Record<'b', number>)[K]}>`
+
+* investigate if we allow for context mutations `const newContainer = container.setContext()` ??
   - should new container have empty cache ? or cache should contain singletons without any dependencies to context ?
   - how user can use `newContainer` ? we don't use it as service locator, so what are possible use cases ?
   - do we even should provide context feature ? maybe this feature should be implemented in a custom builders/resolvers
     - the only use case I can see now is reqest scope (e.g. http request handler, where context is http request)
-- investigate if we should can use Symbol instead of unique `string` for `moduleId.identity`
-- investigate if module name `module('name`)` can be/should be optional ?
-- investigate how to implement container service without using proxy object!!!!
-- memory leaks ? shouldn't we use WeakMap ? What about compatibility ?
-- investigate idea of constructing Builders using traits like api
-- export types groupped in some namespace ? Hw.ModulesRegisty Hw.ContainerService  .. in order to minimize imports amount
+* investigate if we should can use Symbol instead of unique `string` for `moduleId.identity`
+* investigate if module name `module('name`)` can be/should be optional ?
+* investigate how to implement container service without using proxy object!!!!
+* memory leaks ? shouldn't we use WeakMap ? What about compatibility ?
+* investigate idea of constructing Builders using traits like api
+* export types groupped in some namespace ? Hw.ModulesRegisty Hw.ContainerService .. in order to minimize imports amount
 
 ```typescript
 const richModuleBuilder = moduleBuilder().enhance(SingletonBuilder).enhance(ReduxBuilder).enhance(ReactBuilder);

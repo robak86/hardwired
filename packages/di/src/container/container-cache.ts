@@ -7,7 +7,7 @@ export type ContainerCacheEntry = {
 };
 
 class PushPromise<T> {
-  resolve!: (value: T) => void;
+  resolve!: (value: T | Promise<T>) => void;
   public readonly promise: Promise<T>;
 
   constructor() {
@@ -23,10 +23,12 @@ class PushPromise<T> {
     return this.promise;
   }
 
-  push(value: T) {
+  push(value: T | Promise<T>) {
     if (!this.resolve) {
       throw new Error('race condition related to promise constructor');
     }
+
+    this.resolve(value);
   }
 }
 
@@ -61,9 +63,10 @@ export class ContainerCache {
     return !!this.requestScopeAsync[uuid];
   }
 
-  usingAsyncScope(uuid: string, cacheValueFactory: () => any) {
+  usingAsyncScope(uuid: string, cacheValueFactory: () => any): Promise<any> {
     this.requestScopeAsync[uuid] = new PushPromise();
     this.requestScopeAsync[uuid].push(cacheValueFactory());
+    return this.requestScopeAsync[uuid].get();
   }
 
   getFromAsyncRequestScope(uuid: string): Promise<any> {

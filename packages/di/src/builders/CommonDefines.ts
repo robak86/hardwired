@@ -13,28 +13,14 @@ import { ClassRequestScopeResolver } from '../resolvers/ClassRequestScopeResolve
 export type NextCommonBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
   TKey,
   TRegistry,
-  CommonBuilder<
-    {
-      [K in keyof (TRegistry & { [K in TKey]: Definition<TReturn> })]: (TRegistry &
-        { [K in TKey]: Definition<TReturn> })[K];
-    }
-  >
+  CommonBuilder<TRegistry & { [K in TKey]: Definition<TReturn> }>
 >;
 
 export type NextImportsModuleBuilder<
   TKey extends string,
   TReturn extends ModuleRegistry,
   TRegistry extends ModuleRegistry
-> = NotDuplicated<
-  TKey,
-  TRegistry,
-  CommonBuilder<
-    {
-      [K in keyof (TRegistry & { [K in TKey]: ModuleBuilder<TReturn> })]: (TRegistry &
-        { [K in TKey]: ModuleBuilder<TReturn> })[K];
-    }
-  >
->;
+> = NotDuplicated<TKey, TRegistry, CommonBuilder<TRegistry & { [K in TKey]: ModuleBuilder<TReturn> }>>;
 
 export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
   constructor(registry: DefinitionsSet<TRegistry>) {

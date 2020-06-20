@@ -1,6 +1,7 @@
 import { serverUnit } from '../testing/helpers';
 import { IMiddleware } from '../types/Middleware';
-import { container } from '@hardwired/di';
+import { container, commonDefines } from '@hardwired/di';
+import { serverDefinitions } from '../builders/ServerModuleBuilder';
 
 describe(`.middleware`, () => {
   function buildMiddleware<Type extends string>(type: Type, outputFn?: (deps: any[]) => any) {
@@ -67,39 +68,151 @@ describe(`.middleware`, () => {
         expect(middlewareOutput).toEqual([{ request: 'dummyRequest' }, [{ request: 'dummyRequest' }]]);
       });
 
-      it(`caches output of middlewares`, async () => {
-        const {
-          Middleware: SharedMiddleware,
-          constructorSpy: sharedMiddlewareConstructor,
-          runSpy: sharedRunSpy,
-        } = buildMiddleware('shared', () => 'shared');
-        const { Middleware: M1, constructorSpy: m1ConstructorSpy, runSpy: m1RunSpy } = buildMiddleware('m1', deps => [
-          ...deps,
-          'm1',
-        ]);
-        const { Middleware: M2, constructorSpy: m2ConstructorSpy, runSpy: m2RunSpy } = buildMiddleware('m1', deps => [
-          ...deps,
-          'm2',
-        ]);
+      describe(`shared dependency is imported by the next level of middlewares`, () => {
+        it(`caches output of middlewares`, async () => {
+          const {
+            Middleware: SharedMiddleware,
+            constructorSpy: sharedMiddlewareConstructor,
+            runSpy: sharedRunSpy,
+          } = buildMiddleware('shared', () => 'shared');
+          const { Middleware: M1, constructorSpy: m1ConstructorSpy, runSpy: m1RunSpy } = buildMiddleware('m1', deps => [
+            ...deps,
+            'm1',
+          ]);
+          const { Middleware: M2, constructorSpy: m2ConstructorSpy, runSpy: m2RunSpy } = buildMiddleware('m1', deps => [
+            ...deps,
+            'm2',
+          ]);
 
-        const { Middleware: DummyHandler } = buildMiddleware('type');
+          const { Middleware: DummyHandler } = buildMiddleware('type');
 
-        const m = serverUnit('m')
-          .middleware('shared', SharedMiddleware)
-          .middleware('m1', M1, ctx => [ctx.shared])
-          .middleware('m2', M2, ctx => [ctx.shared])
-          .handler('h1', {}, DummyHandler, ctx => [ctx.m1, ctx.m2]);
+          const m = serverUnit('m')
+            .middleware('shared', SharedMiddleware)
+            .middleware('m1', M1, ctx => [ctx.shared])
+            .middleware('m2', M2, ctx => [ctx.shared])
+            .handler('h1', {}, DummyHandler, ctx => [ctx.m1, ctx.m2]);
 
-        const c = container(m);
-        const response = await c.get('h1').request({ request: 'request' });
-        expect(response).toEqual([
-          ['shared', 'm1'],
-          ['shared', 'm2'],
-        ]);
+          const c = container(m);
+          const response = await c.get('h1').request({ request: 'request' });
+          expect(response).toEqual([
+            ['shared', 'm1'],
+            ['shared', 'm2'],
+          ]);
 
-        expect(m1ConstructorSpy).toHaveBeenCalledTimes(1);
-        expect(m2ConstructorSpy).toHaveBeenCalledTimes(1);
-        expect(sharedMiddlewareConstructor).toHaveBeenCalledTimes(1);
+          expect(m1ConstructorSpy).toHaveBeenCalledTimes(1);
+          expect(m1RunSpy).toHaveBeenCalledTimes(1);
+          expect(m2ConstructorSpy).toHaveBeenCalledTimes(1);
+          expect(m2RunSpy).toHaveBeenCalledTimes(1);
+          expect(sharedMiddlewareConstructor).toHaveBeenCalledTimes(1);
+          expect(sharedRunSpy).toHaveBeenCalledTimes(1);
+        });
+      });
+
+      describe(`shared middleware is imported by multiple levels of next middlewares`, () => {
+        it(`caches output of middlewares`, async () => {
+          const {
+            Middleware: SharedMiddleware,
+            constructorSpy: sharedMiddlewareConstructor,
+            runSpy: sharedRunSpy,
+          } = buildMiddleware('shared', () => 'shared');
+          const { Middleware: M1, constructorSpy: m1ConstructorSpy, runSpy: m1RunSpy } = buildMiddleware('m1', deps => [
+            ...deps,
+            'm1',
+          ]);
+          const { Middleware: M2, constructorSpy: m2ConstructorSpy, runSpy: m2RunSpy } = buildMiddleware('m1', deps => [
+            ...deps,
+            'm2',
+          ]);
+
+          const { Middleware: M3, constructorSpy: m3ConstructorSpy, runSpy: m3RunSpy } = buildMiddleware('m3', deps => [
+            ...deps,
+            'm3',
+          ]);
+
+          const { Middleware: DummyHandler } = buildMiddleware('type');
+
+          const m = serverUnit('m')
+            .middleware('shared', SharedMiddleware)
+            .middleware('m1', M1, ctx => [ctx.shared])
+            .middleware('m2', M2, ctx => [ctx.shared])
+            .middleware('m3', M3, ctx => [ctx.m2])
+            .handler('h1', {}, DummyHandler, ctx => [ctx.m1, ctx.m3]);
+
+          const c = container(m);
+          const response = await c.get('h1').request({ request: 'request' });
+          expect(response).toEqual([
+            ['shared', 'm1'],
+            [['shared', 'm2'], 'm3'],
+          ]);
+
+          expect(m1ConstructorSpy).toHaveBeenCalledTimes(1);
+          expect(m1RunSpy).toHaveBeenCalledTimes(1);
+          expect(m2ConstructorSpy).toHaveBeenCalledTimes(1);
+          expect(m2RunSpy).toHaveBeenCalledTimes(1);
+          expect(m3ConstructorSpy).toHaveBeenCalledTimes(1);
+          expect(m3RunSpy).toHaveBeenCalledTimes(1);
+          expect(sharedMiddlewareConstructor).toHaveBeenCalledTimes(1);
+          expect(sharedRunSpy).toHaveBeenCalledTimes(1);
+        });
+      });
+
+      describe(`shared middleware is imported from other module`, () => {
+        it(`caches output of middlewares`, async () => {
+          const {
+            Middleware: SharedMiddleware,
+            constructorSpy: sharedMiddlewareConstructor,
+            runSpy: sharedRunSpy,
+          } = buildMiddleware('shared', () => 'shared');
+          const { Middleware: M1, constructorSpy: m1ConstructorSpy, runSpy: m1RunSpy } = buildMiddleware('m1', deps => [
+            ...deps,
+            'm1',
+          ]);
+          const { Middleware: M2, constructorSpy: m2ConstructorSpy, runSpy: m2RunSpy } = buildMiddleware('m1', deps => [
+            ...deps,
+            'm2',
+          ]);
+
+          const { Middleware: M3, constructorSpy: m3ConstructorSpy, runSpy: m3RunSpy } = buildMiddleware('m3', deps => [
+            ...deps,
+            'm3',
+          ]);
+
+          const { Middleware: DummyHandler } = buildMiddleware('type');
+
+          const sharedM = serverUnit('shared').middleware('shared', SharedMiddleware);
+
+          const m2Module = serverUnit('middlewares')
+            .using(commonDefines)
+            .import('otherModule', sharedM)
+            .using(serverDefinitions)
+            .middleware('m2', M2, ctx => [ctx.otherModule.shared]);
+
+          const m = serverUnit('m')
+            .using(commonDefines)
+            .import('otherModule', sharedM)
+            .import('otherMiddlewares', m2Module)
+            .using(serverDefinitions)
+            .middleware('m1', M1, ctx => [ctx.otherModule.shared])
+            .middleware('m3', M3, ctx => [ctx.otherMiddlewares.m2])
+            .handler('h1', {}, DummyHandler, ctx => [ctx.m1, ctx.m3]);
+
+          const c = container(m);
+          const response = await c.get('h1').request({ request: 'request' });
+          console.log(response);
+          expect(response).toEqual([
+            ['shared', 'm1'],
+            [['shared', 'm2'], 'm3'],
+          ]);
+
+          expect(m1ConstructorSpy).toHaveBeenCalledTimes(1);
+          expect(m1RunSpy).toHaveBeenCalledTimes(1);
+          expect(m2ConstructorSpy).toHaveBeenCalledTimes(1);
+          expect(m2RunSpy).toHaveBeenCalledTimes(1);
+          expect(m3ConstructorSpy).toHaveBeenCalledTimes(1);
+          expect(m3RunSpy).toHaveBeenCalledTimes(1);
+          expect(sharedMiddlewareConstructor).toHaveBeenCalledTimes(1);
+          expect(sharedRunSpy).toHaveBeenCalledTimes(1);
+        });
       });
     });
   });

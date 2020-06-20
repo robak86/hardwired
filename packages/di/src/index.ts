@@ -34,7 +34,6 @@ export type { MaterializedDefinitions } from './module/ModuleRegistry';
 export type { FilterPrivateFields } from './module/ModuleUtils';
 export type { ClassType } from './module/ModuleUtils';
 export type { NextModuleImport } from './module/ModuleUtils';
-export type { NextModuleDefinition } from './module/ModuleUtils';
 export type { NotDuplicatedKeys } from './module/ModuleUtils';
 export type { NotDuplicated } from './module/ModuleUtils';
 export { createResolverId } from './utils/fastId';

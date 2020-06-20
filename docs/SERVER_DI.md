@@ -1,3 +1,30 @@
+- allow early break for middlewares chaining
+
+  - it's definitely possible in theory, but may require some difficult implementation :D
+  - it may be problematic since they are run in parallel :/ - but they are run in parallel in layers, so we can filter constructor args
+
+    ```typescript
+    const constructorArgs = await Promise.all(
+      this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx)) as any,
+
+      // but what to do with final response from constructorArgs array ?
+      // filtering may hurt performance ?
+    );
+    ```
+
+    - or force always calling handler with null outputs from middleware ?
+
+* Memory leaks
+  - in PushPromise ?
+  - in loan pattern for requesting new ContainerCache scope ?
+* Add functional middleware
+
+```typescript
+const someFunction = ({ db, request }) => {};
+
+const m = unit().middlewareFunction('m1', someFunction, ctx => ({ db: ctx.database.connection, request: ctx.request }));
+```
+
 - deps select can be used for building dependencies graph and this will enable `next` callback for middleware
 
   - ...but having function as dependency select is tricky, because user can add some more complex expressions here
@@ -21,6 +48,8 @@
 * handler definition should return function (request) => Promise<IMiddlewareResponse>
 * how to implement request time logging without `next` ?
 * or we should implement `next` ?
+
+* split api in two builders set ? functional ? oop ?
 
 ```typescript
 interface IMiddleware<TOutput> {}
@@ -47,3 +76,5 @@ const serverApp = module('app')
     ctx => [ctx.session, ctx.auth], // middlewares TOutput has to valid for the
   );
 ```
+
+- injecting request object to handler shouldn't be mandatory. Instead of request one may import service which requires request object itself

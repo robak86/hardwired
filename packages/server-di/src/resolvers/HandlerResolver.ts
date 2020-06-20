@@ -20,7 +20,7 @@ export class HandlerResolver<TRegistry extends ModuleRegistry, TReturn>
 
   build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any) {
     const middlewareOutput: ContainerHandler<any> = {
-      pathDefinition: 'TODO',
+      pathDefinition: 'TODO', // TODO: why is it here ?
       request: async (request: HttpRequest) => {
         const requestCache = cache.forNewRequest();
         const requestRegistry = registry.extendDeclarations('request', new SingletonResolver(() => request));
