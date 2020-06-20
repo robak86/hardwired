@@ -37,8 +37,8 @@ export const ContainerService = {
   },
 
   callDefinitionsListeners<TRegistry extends ModuleRegistry>(registry: DefinitionsSet<TRegistry>) {
-    registry.forEachModule(definitionsSet => {
-      definitionsSet.forEachDefinition(dependencyResolver => {
+    registry.forEachModuleReversed(definitionsSet => {
+      definitionsSet.forEachDefinitionReversed(dependencyResolver => {
         definitionsSet.events.onDefinitionAppend.emit(dependencyResolver);
         definitionsSet.events.onSpecificDefinitionAppend.emit(dependencyResolver);
       });
@@ -46,7 +46,7 @@ export const ContainerService = {
   },
 
   init(registry: DefinitionsSet<any>, cache: ContainerCache, context) {
-    registry.forEachModule(registry => {
+    registry.forEachModuleReversed(registry => {
       if (cache.isModuleInitialized(registry.moduleId)) {
         return;
       }

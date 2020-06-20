@@ -49,13 +49,13 @@ describe(`ApplicationResolver`, () => {
         {
           handler: expect.any(Function),
           httpMethod: 'post',
-          pathDefinition: 'h1PathDefinition'
+          pathDefinition: 'h1PathDefinition',
         },
         {
           handler: expect.any(Function),
           httpMethod: 'post',
-          pathDefinition: 'h2PathDefinition'
-        }
+          pathDefinition: 'h2PathDefinition',
+        },
       ]);
     });
   });

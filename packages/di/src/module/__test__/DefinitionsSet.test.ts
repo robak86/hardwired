@@ -13,7 +13,7 @@ describe(`DefinitionsSet`, () => {
         .extendImports('childDef2', childDef3);
 
       const iterSpy = jest.fn();
-      def1.forEachModule(iterSpy);
+      def1.forEachModuleReversed(iterSpy);
       expect(iterSpy).toBeCalledTimes(4);
 
       expect(iterSpy.mock.calls[0][0]).toEqual(childDef2);
@@ -40,7 +40,7 @@ describe(`DefinitionsSet`, () => {
         .extendImports('childDef2', childDef3);
 
       const iterSpy = jest.fn();
-      def1.forEachDefinition(iterSpy);
+      def1.forEachDefinitionReversed(iterSpy);
 
       expect(iterSpy.mock.calls[0][0]).toEqual(childDef2.declarations.get('a2'));
       expect(iterSpy.mock.calls[1][0]).toEqual(childDef3.declarations.get('a3'));
