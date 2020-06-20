@@ -12,6 +12,10 @@ export interface IMiddleware<TOutput> {
   run(): TOutput | Promise<TOutput>;
 }
 
+export interface IHandler<TOutput> {
+  run(): HttpResponse<TOutput> | Promise<HttpResponse<TOutput>>;
+}
+
 /**
  * This class is returned by the container and encapsulates all the wiring. It requires as an input http request object
  */

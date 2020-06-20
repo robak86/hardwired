@@ -1,3 +1,4 @@
+- make sure that no Builder uses NextModule (with flattented types causing infinite types lookup)
 - Type instantiation is excessively deep and possibly infinite
   - apparently it was caused by types flattening
   - `Module<Record<'a', number> & Record<'b', number>>` ->

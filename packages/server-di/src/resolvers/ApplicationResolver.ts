@@ -24,8 +24,8 @@ export class ApplicationResolver<
     appInstance.replaceRoutes(
       this.handlers.map(handlerResolver => {
         return {
-          path: null as any,
-          method: null as any,
+          pathDefinition: handlerResolver.routeDefinition.pathDefinition,
+          httpMethod: handlerResolver.routeDefinition.httpMethod,
           handler: handlerResolver.build(registry, cache, ctx).request,
         };
       }),

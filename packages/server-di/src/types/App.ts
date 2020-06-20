@@ -1,8 +1,8 @@
 import { HttpMethod, HttpRequest, IMiddleware } from './Middleware';
 
 export type IApplicationRoute = {
-  method: HttpMethod;
-  path: string;
+  httpMethod: HttpMethod;
+  pathDefinition: string;
   handler: (request: HttpRequest) => any;
 };
 
