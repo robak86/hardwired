@@ -1,3 +1,5 @@
+- IApplication.addRoute should take `RouteDefinition` instead of pathname and httpMethod ? 
+
 - 100% typesafe response ?
 
 ```typescript
@@ -7,9 +9,9 @@
     const routeDefinition = routeDef<SuccessResponse | ValidationError | SomethingOther>()
         module.handler(routeDefinition, handler) // this is sufficient - the only edge case is that handler does not may not 
 // implement all return types, but it is still typesafe   
-
-
 ```
+
+- build.app should take an url under which the application will be mounted
 
 
 - it is tempting to provide `requestParams` for the context availble for handler creation... but this way the DI will have to

@@ -33,6 +33,9 @@
       "path": "./routing-client/tsconfig.json"
     },
     {
+      "path": "./s-app/tsconfig.json"
+    },
+    {
       "path": "./server-di/tsconfig.json"
     },
     {

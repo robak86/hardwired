@@ -47,7 +47,7 @@ describe(`.middleware`, () => {
       const m = serverUnit('m').handler('h1', RouteDefinition.empty(), DummyMiddleware, ctx => [ctx.request]);
       const c = container(m);
 
-      const middlewareOutput = await c.get('h1').request({ request: 'dummyRequest' });
+      const middlewareOutput = await c.get('h1').request({ request: 'dummyRequest' } as any);
       expect(middlewareOutput).toEqual([{ request: 'dummyRequest' }]);
     });
 
@@ -75,7 +75,7 @@ describe(`.middleware`, () => {
 
         const c = container(m);
 
-        const middlewareOutput = await c.get('h1').request({ request: 'dummyRequest' });
+        const middlewareOutput = await c.get('h1').request({ request: 'dummyRequest' } as any);
         expect(middlewareOutput).toEqual([{ request: 'dummyRequest' }, [{ request: 'dummyRequest' }]]);
       });
 
@@ -104,7 +104,7 @@ describe(`.middleware`, () => {
             .handler('h1', RouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m2]);
 
           const c = container(m);
-          const response = await c.get('h1').request({ request: 'request' });
+          const response = await c.get('h1').request({ request: 'request' } as any);
           expect(response).toEqual([
             ['shared', 'm1'],
             ['shared', 'm2'],
@@ -150,7 +150,7 @@ describe(`.middleware`, () => {
             .handler('h1', RouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m3]);
 
           const c = container(m);
-          const response = await c.get('h1').request({ request: 'request' });
+          const response = await c.get('h1').request({ request: 'request' } as any);
           expect(response).toEqual([
             ['shared', 'm1'],
             [['shared', 'm2'], 'm3'],
@@ -208,7 +208,7 @@ describe(`.middleware`, () => {
             .handler('h1', RouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m3]);
 
           const c = container(m);
-          const response = await c.get('h1').request({ request: 'request' });
+          const response = await c.get('h1').request({ request: 'request' } as any);
           console.log(response);
           expect(response).toEqual([
             ['shared', 'm1'],

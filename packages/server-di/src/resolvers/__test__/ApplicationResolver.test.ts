@@ -42,8 +42,8 @@ describe(`ApplicationResolver`, () => {
   describe(`handlers discovery`, () => {
     const m = serverUnit('test')
       .app('app', DummyApp)
-      .handler('h1', buildRouteDefinition('h1PathDefinition', 'post'), buildHandler('h1Response'))
-      .handler('h2', buildRouteDefinition('h2PathDefinition', 'post'), buildHandler('h2Response'));
+      .handler('h1', buildRouteDefinition('h1PathDefinition', HttpMethod.POST), buildHandler('h1Response'))
+      .handler('h2', buildRouteDefinition('h2PathDefinition', HttpMethod.POST), buildHandler('h2Response'));
     const c = container(m);
 
     it(`caches app instance`, async () => {
