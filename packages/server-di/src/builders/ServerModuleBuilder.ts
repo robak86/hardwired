@@ -9,7 +9,7 @@ import {
 } from '@hardwired/di';
 import { IApplication } from '../types/App';
 import { ApplicationResolver } from '../resolvers/ApplicationResolver';
-import { ContainerHandler, HttpRequest, IMiddleware, RouteDefinition } from '../types/Middleware';
+import { ContainerHandler, HttpRequest, HttpResponse, IMiddleware, RouteDefinition } from '../types/Middleware';
 import { MiddlewareResolver } from '../resolvers/MiddlewareResolver';
 import { HandlerResolver } from '../resolvers/HandlerResolver';
 
@@ -68,18 +68,18 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
   handler<TKey extends string, TRequestParams extends object, TResult extends object>(
     key: TKey,
     routeDefinition: RouteDefinition<TRequestParams, TResult>,
-    klass: ClassType<[], IMiddleware<TResult>>,
+    klass: ClassType<[], IMiddleware<HttpResponse<TResult>>>,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
   handler<TKey extends string, TRequestParams extends object, TDeps extends any[], TResult extends object>(
     key: TKey,
     routeDefinition: RouteDefinition<TRequestParams, TResult>,
-    klass: ClassType<TDeps, IMiddleware<TResult>>,
+    klass: ClassType<TDeps, IMiddleware<HttpResponse<TResult>>>,
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
   handler<TKey extends string, TRequestParams extends object, TDeps extends any[], TResult extends object>(
     key: TKey,
     routeDefinition: RouteDefinition<TRequestParams, TResult>,
-    klass: ClassType<TDeps, IMiddleware<TResult>>,
+    klass: ClassType<TDeps, IMiddleware<HttpResponse<TResult>>>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry> {
     const newRegistry = this.registry.extendDeclarations(key, new HandlerResolver(klass, depSelect, routeDefinition));

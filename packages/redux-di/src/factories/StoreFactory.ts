@@ -2,7 +2,6 @@ import {
   AbstractDependencyResolver,
   ContainerEvents,
   DefinitionsSet,
-  DependencyResolver,
   DependencyResolverFunction,
   ModuleRegistry,
 } from '@hardwired/di';
@@ -17,8 +16,8 @@ export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends Ab
   AlterableStore<AppState>
 > {
   public type = 'store';
-  public reducersResolvers: ReducerFactory<TRegistry, any>[] = [];
-  public sagasResolvers: SagaFactory<TRegistry, any>[] = [];
+  public reducersResolvers: ReducerFactory<any, any>[] = [];
+  public sagasResolvers: SagaFactory<any, any>[] = [];
 
   constructor(private resolver: DependencyResolverFunction<TRegistry, AppState>) {
     super();
@@ -43,16 +42,7 @@ export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends Ab
   }
 
   onRegister(events: ContainerEvents): any {
-    events.onDefinitionAppend.add(this.onChildDefinitionAppend);
+    events.onSpecificDefinitionAppend.add(ReducerFactory, resolver => this.reducersResolvers.push(resolver));
+    events.onSpecificDefinitionAppend.add(SagaFactory, resolver => this.sagasResolvers.push(resolver));
   }
-
-  onChildDefinitionAppend = (resolver: DependencyResolver<any, any>) => {
-    if (ReducerFactory.isConstructorFor(resolver)) {
-      this.reducersResolvers.push(resolver as any);
-    }
-
-    if (SagaFactory.isConstructorFor(resolver)) {
-      this.sagasResolvers.push(resolver as any);
-    }
-  };
 }

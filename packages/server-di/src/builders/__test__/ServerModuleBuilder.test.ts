@@ -1,5 +1,5 @@
 import { DefinitionsSet } from '@hardwired/di';
-import { IApplication } from '../../types/App';
+import { IApplication, IApplicationRoute } from '../../types/App';
 import { HttpRequest, IMiddleware } from '../../types/Middleware';
 import { ServerModuleBuilder } from '../ServerModuleBuilder';
 import { ApplicationResolver } from '../../resolvers/ApplicationResolver';
@@ -11,6 +11,8 @@ describe(`ServerModuleBuilder`, () => {
     addRoute(method: any, path: string, handler: any) {
       throw new Error('Implement me');
     }
+
+    replaceRoutes(routes: IApplicationRoute[]) {}
 
     run(): any {
       throw new Error('Implement me');
@@ -44,7 +46,6 @@ describe(`ServerModuleBuilder`, () => {
         class WrongClass {}
 
         const m = serverUnit('test').middleware('middleware', DummyApplication);
-
 
         // const m2 = serverUnit('test').middleware('middleware', WrongClass);
       });

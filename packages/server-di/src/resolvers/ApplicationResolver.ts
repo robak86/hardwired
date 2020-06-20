@@ -1,35 +1,52 @@
 import {
+  AbstractDependencyResolver,
   ContainerCache,
-  createResolverId,
-  DefinitionsSet,
-  DependencyResolver,
-  ModuleRegistry,
   ContainerEvents,
+  ContainerService,
+  DefinitionsSet,
+  ModuleRegistry,
 } from '@hardwired/di';
 import { IApplication } from '../types/App';
+import { HandlerResolver } from './HandlerResolver';
 
-export class ApplicationResolver<TRegistry extends ModuleRegistry, TReturn extends IApplication>
-  implements DependencyResolver<TRegistry, TReturn> {
-  static type = 'application';
+export class ApplicationResolver<
+  TRegistry extends ModuleRegistry,
+  TReturn extends IApplication
+> extends AbstractDependencyResolver<TRegistry, TReturn> {
+  private handlers: Array<HandlerResolver<any, any>> = [];
 
-  public id: string = createResolverId();
-  public type = ApplicationResolver.type;
+  constructor(private klass, private selectDependencies = container => [] as any[]) {
+    super();
+  }
 
-  private routes: Array<() => any> = [];
-
-  constructor(private klass, private selectDependencies = container => [] as any[]) {}
-
-  build(container: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any): TReturn {
-    // return undefined;
-    throw new Error('Implement me');
+  build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any): TReturn {
+    const appInstance = this.getInstance(registry, cache, ctx);
+    appInstance.replaceRoutes(
+      this.handlers.map(handlerResolver => {
+        return {
+          path: null as any,
+          method: null as any,
+          handler: handlerResolver.build(registry, cache, ctx).request,
+        };
+      }),
+    );
+    return appInstance;
   }
 
   onRegister(events: ContainerEvents) {
-    events.onDefinitionAppend.add(this.onDefinitionAppend);
+    events.onSpecificDefinitionAppend.add(HandlerResolver, (handlerResolver: HandlerResolver<any, any>) => {
+      this.handlers.push(handlerResolver);
+    });
   }
 
-  private onDefinitionAppend(resolver: DependencyResolver<any, any>) {
-    if (resolver.type === 'handler') {
+  private getInstance(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any): TReturn {
+    if (cache.hasInGlobalScope(this.id)) {
+      return cache.getFromGlobalScope(this.id);
+    } else {
+      const constructorArgs = this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx)) as any;
+      const instance = new this.klass(...constructorArgs);
+      cache.setForGlobalScope(this.id, instance);
+      return instance;
     }
   }
 }

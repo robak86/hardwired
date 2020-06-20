@@ -15,3 +15,4 @@ export class SignalEmitter<TEventType> {
     this.listeners.forEach(listener => listener(eventType));
   }
 }
+
