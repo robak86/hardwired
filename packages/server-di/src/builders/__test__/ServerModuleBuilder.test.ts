@@ -1,6 +1,5 @@
 import { DefinitionsSet } from '@hardwired/di';
-import { IApplication, IApplicationRoute } from '../../types/App';
-import { HttpRequest, IMiddleware } from '../../types/Middleware';
+import { HttpRequest, IApplication, IApplicationRoute, IMiddleware } from '@roro/s-middleware';
 import { ServerModuleBuilder } from '../ServerModuleBuilder';
 import { ApplicationResolver } from '../../resolvers/ApplicationResolver';
 import { serverUnit } from '../../testing/helpers';

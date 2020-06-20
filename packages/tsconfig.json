@@ -9,13 +9,10 @@
       "path": "./routing-contract/tsconfig.json"
     },
     {
-      "path": "./server/tsconfig.json"
-    },
-    {
-      "path": "./core/tsconfig.json"
-    },
-    {
       "path": "./resource/tsconfig.json"
+    },
+    {
+      "path": "./server/tsconfig.json"
     },
     {
       "path": "./di/tsconfig.json"

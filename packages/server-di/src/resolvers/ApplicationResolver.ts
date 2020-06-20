@@ -6,7 +6,7 @@ import {
   DefinitionsSet,
   ModuleRegistry,
 } from '@hardwired/di';
-import { IApplication } from '../types/App';
+import { IApplication } from '@roro/s-middleware';
 import { HandlerResolver } from './HandlerResolver';
 
 export class ApplicationResolver<

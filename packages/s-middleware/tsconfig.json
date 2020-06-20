@@ -5,17 +5,7 @@
     "rootDir": "./src",
     "composite": true
   },
-  "references": [
-    {
-      "path": "../routing-core/tsconfig.json"
-    },
-    {
-      "path": "../routing-contract/tsconfig.json"
-    },
-    {
-      "path": "../server/tsconfig.json"
-    }
-  ],
+  "references": [],
   "include": [
     "./src"
   ],

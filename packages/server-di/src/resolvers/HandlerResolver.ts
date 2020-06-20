@@ -6,7 +6,7 @@ import {
   ModuleRegistry,
   SingletonResolver,
 } from '@hardwired/di';
-import { ContainerHandler, HttpRequest, RouteDefinition } from '../types/Middleware';
+import { ContainerHandler, HttpRequest, RouteDefinition } from '@roro/s-middleware';
 
 export class HandlerResolver<
   TRegistry extends ModuleRegistry,

@@ -7,9 +7,15 @@ import {
   ModuleRegistry,
   NotDuplicated,
 } from '@hardwired/di';
-import { IApplication } from '../types/App';
+import {
+  ContainerHandler,
+  HttpRequest,
+  HttpResponse,
+  IApplication,
+  IMiddleware,
+  RouteDefinition
+} from '@roro/s-middleware';
 import { ApplicationResolver } from '../resolvers/ApplicationResolver';
-import { ContainerHandler, HttpRequest, HttpResponse, IMiddleware, RouteDefinition } from '../types/Middleware';
 import { MiddlewareResolver } from '../resolvers/MiddlewareResolver';
 import { HandlerResolver } from '../resolvers/HandlerResolver';
 

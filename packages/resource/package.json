@@ -5,8 +5,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "@roro/routing-contract": "*",
-    "@roro/core": "*"
+    "@roro/routing-contract": "*"
   },
   "devDependencies": {},
   "files": [

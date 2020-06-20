@@ -7,8 +7,7 @@
   "dependencies": {
     "@roro/resource": "*",
     "@roro/routing-contract": "*",
-    "@roro/server": "*",
-    "@roro/core": "*"
+    "@roro/server": "*"
   },
   "devDependencies": {},
   "files": [

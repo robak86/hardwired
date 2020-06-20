@@ -7,7 +7,7 @@ import {
   DependencyResolver,
   ModuleRegistry,
 } from '@hardwired/di';
-import { IMiddleware } from '../types/Middleware';
+import { IMiddleware } from '@roro/s-middleware';
 
 export class MiddlewareResolver<TRegistry extends ModuleRegistry, TReturn>
   implements DependencyResolver<TRegistry, Promise<TReturn>> {

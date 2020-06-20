@@ -1,5 +1,5 @@
 import { serverUnit } from '../testing/helpers';
-import { IMiddleware, RouteDefinition } from '../types/Middleware';
+import { IMiddleware, RouteDefinition } from '@roro/s-middleware';
 import { container, commonDefines } from '@hardwired/di';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
 

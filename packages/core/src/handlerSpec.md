@@ -1,3 +1,0 @@
-- app should be composed with many handlers where and handler can handle response and stop the pipe
-- handler has to be able to extend context or produce response
-- it has to have Runnable interface ? chaining trait -> handler -> trait ->handler

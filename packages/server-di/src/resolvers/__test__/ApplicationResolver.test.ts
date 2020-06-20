@@ -1,5 +1,11 @@
-import { IApplication, IApplicationRoute } from '../../types/App';
-import { HttpMethod, HttpRequest, IHandler, RouteDefinition } from '../../types/Middleware';
+import {
+  IApplication,
+  IApplicationRoute,
+  HttpMethod,
+  HttpRequest,
+  IHandler,
+  RouteDefinition,
+} from '@roro/s-middleware';
 import { serverUnit } from '../../testing/helpers';
 import { container } from '@hardwired/di';
 

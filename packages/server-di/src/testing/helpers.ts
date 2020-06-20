@@ -1,6 +1,6 @@
 import { unit, commonDefines } from '@hardwired/di';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
-import { HttpRequest, IMiddleware } from '../types/Middleware';
+import { HttpRequest, IMiddleware } from '@roro/s-middleware';
 
 export const serverUnit = (name: string) =>
   unit(name)

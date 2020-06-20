@@ -11,12 +11,6 @@
     },
     {
       "path": "../routing-contract/tsconfig.json"
-    },
-    {
-      "path": "../server/tsconfig.json"
-    },
-    {
-      "path": "../core/tsconfig.json"
     }
   ],
   "include": [
