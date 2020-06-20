@@ -21,6 +21,9 @@
       "path": "./di/tsconfig.json"
     },
     {
+      "path": "./s-middleware/tsconfig.json"
+    },
+    {
       "path": "./example/tsconfig.json"
     },
     {

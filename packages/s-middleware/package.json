@@ -1,17 +1,16 @@
 {
-  "name": "@hardwired/server",
-  "private": true,
-  "version": "1.0.0",
+  "name": "@roro/s-middleware",
+  "version": "0.0.1",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "dependencies": {
-    "@roro/s-middleware": "*"
-  },
-  "devDependencies": {},
   "files": [
     "lib",
     "src"
   ],
+  "dependencies": {
+    "@roro/routing-contract": "*",
+    "@roro/server": "*"
+  },
   "publishConfig": {
     "access": "public"
   },
