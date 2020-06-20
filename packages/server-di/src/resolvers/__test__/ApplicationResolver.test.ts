@@ -40,6 +40,10 @@ describe(`ApplicationResolver`, () => {
       .handler('h2', buildRouteDefinition('h2PathDefinition', 'post'), buildHandler('h2Response'));
     const c = container(m);
 
+    it(`caches app instance`, async () => {
+      expect(c.get('app')).toBe(c.get('app'));
+    });
+
     it(`calls replaceRoutes with correct params`, async () => {
       const app = c.get('app');
       jest.spyOn(app, 'replaceRoutes');
@@ -57,6 +61,13 @@ describe(`ApplicationResolver`, () => {
           pathDefinition: 'h2PathDefinition',
         },
       ]);
+    });
+
+    it(`returns correct responses`, async () => {
+      const app = c.get('app');
+
+      expect(await app.routes[0].handler({ request: 'request' })).toEqual({ data: 'h1Response' });
+      expect(await app.routes[1].handler({ request: 'request' })).toEqual({ data: 'h2Response' });
     });
   });
 });

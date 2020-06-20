@@ -66,9 +66,12 @@ export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
 
   // TODO: extract to iterator ?
   forEachModuleReversed(iterFn: (registry: DefinitionsSet<any>) => void) {
-    this.data.get('imports').reverse().forEach(importedRegistry => {
-      importedRegistry.forEachModuleReversed(iterFn);
-    });
+    this.data
+      .get('imports')
+      .reverse()
+      .forEach(importedRegistry => {
+        importedRegistry.forEachModuleReversed(iterFn);
+      });
     iterFn(this);
   }
 
@@ -76,6 +79,20 @@ export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
   forEachDefinitionReversed(iterFn: (resolver: DependencyResolver<any, any>) => void) {
     this.forEachModuleReversed(definitionsSet => {
       definitionsSet.declarations.reverse().forEach(iterFn);
+    });
+  }
+
+  forEachModule(iterFn: (registry: DefinitionsSet<any>) => void) {
+    iterFn(this);
+    this.data.get('imports').forEach(importedRegistry => {
+      importedRegistry.forEachModule(iterFn);
+    });
+  }
+
+  // TODO: extract to iterator ?
+  forEachDefinition(iterFn: (resolver: DependencyResolver<any, any>) => void) {
+    this.forEachModule(definitionsSet => {
+      definitionsSet.declarations.forEach(iterFn);
     });
   }
 

@@ -32,9 +32,9 @@ describe(`ContainerService`, () => {
           .extendDeclarations('listening', resolver);
 
         ContainerService.callDefinitionsListeners(d);
-        expect(onEvent.mock.calls[0][0]).toEqual(d.declarations.get('listening'));
+        expect(onEvent.mock.calls[0][0]).toEqual(d.declarations.get('a'));
         expect(onEvent.mock.calls[1][0]).toEqual(d.declarations.get('b'));
-        expect(onEvent.mock.calls[2][0]).toEqual(d.declarations.get('a'));
+        expect(onEvent.mock.calls[2][0]).toEqual(d.declarations.get('listening'));
       });
     });
 
@@ -56,17 +56,17 @@ describe(`ContainerService`, () => {
 
         ContainerService.callDefinitionsListeners(d);
 
-        expect(topLevelListeningResolver.onEvent.mock.calls[0][0]).toEqual(child.declarations.get('childListening'));
-        expect(topLevelListeningResolver.onEvent.mock.calls[1][0]).toEqual(child.declarations.get('childB'));
-        expect(topLevelListeningResolver.onEvent.mock.calls[2][0]).toEqual(child.declarations.get('childA'));
-        expect(topLevelListeningResolver.onEvent.mock.calls[3][0]).toEqual(d.declarations.get('listening'));
-        expect(topLevelListeningResolver.onEvent.mock.calls[4][0]).toEqual(d.declarations.get('b'));
-        expect(topLevelListeningResolver.onEvent.mock.calls[5][0]).toEqual(d.declarations.get('a'));
+        expect(topLevelListeningResolver.onEvent.mock.calls[0][0]).toEqual(d.declarations.get('a'));
+        expect(topLevelListeningResolver.onEvent.mock.calls[1][0]).toEqual(d.declarations.get('b'));
+        expect(topLevelListeningResolver.onEvent.mock.calls[2][0]).toEqual(d.declarations.get('listening'));
+        expect(topLevelListeningResolver.onEvent.mock.calls[3][0]).toEqual(child.declarations.get('childA'));
+        expect(topLevelListeningResolver.onEvent.mock.calls[4][0]).toEqual(child.declarations.get('childB'));
+        expect(topLevelListeningResolver.onEvent.mock.calls[5][0]).toEqual(child.declarations.get('childListening'));
         expect(topLevelListeningResolver.onEvent).toBeCalledTimes(6);
 
-        expect(childListeningResolver.onEvent.mock.calls[0][0]).toEqual(child.declarations.get('childListening'));
+        expect(childListeningResolver.onEvent.mock.calls[0][0]).toEqual(child.declarations.get('childA'));
         expect(childListeningResolver.onEvent.mock.calls[1][0]).toEqual(child.declarations.get('childB'));
-        expect(childListeningResolver.onEvent.mock.calls[2][0]).toEqual(child.declarations.get('childA'));
+        expect(childListeningResolver.onEvent.mock.calls[2][0]).toEqual(child.declarations.get('childListening'));
         expect(childListeningResolver.onEvent).toBeCalledTimes(3);
       });
     });

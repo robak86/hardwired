@@ -1,3 +1,42 @@
+- Add thunk support. Declaring parent module below child module sucks
+- currently container events don't care about the modules hierarchy, which means that child module resolvers will receive
+  events with parent module resolvers. Is it correct behavior ?
+
+- rename `onDefinitionAppend` to onResolverAppend
+
+- resolvers may require more sophisticated discovery order.
+
+  - consider adding multiple events (which knows about the order of the discovery)
+    - ```typescript
+        events.onDefinitionAppend('bottomUp', ResolverClass, () => void)
+        events.onDefinitionAppend('upBottom', ResolverClass, () => void)
+        events.onDefinitionAppend('descendantsBottomUp', ResolverClass, () => void)
+        events.onDefinitionAppend('descendantsUpBottom', ResolverClass, () => void)
+        events.onDefinitionAppend('ascendantsUpBottom', ResolverClass, () => void)
+        events.onDefinitionAppend('ascendantsBottomUp', ResolverClass, () => void)
+        // or split it 
+        events.onDefinitionAppend(direction, range, ResolverClass, () => void)
+        events.onDefinitionAppend(bottomUp, descendants, ResolverClass, () => void)
+        events.onDefinitionAppend(bottomUp, siblings, ResolverClass, () => void)
+      
+        // ranges should be mutually exclusive in order to allow composition in 
+      ```
+  - resolver returning iterator ? performance will suck, becuase it would be hard to optimize...
+    ...unless we will use fixed set of distinguishable iterators - it will allows grouping
+
+- onDefitionAppend should be called with self instance
+
+- add new base builder method for defining context slices/traits/partial/ ? usable for functional programming!!!
+
+```typescript
+const someFunction = ({ db, request }) => {};
+
+const m = unit()
+  .trait('store', ctx => ({ db: ctx.database.connection, s3: ctx.database.connection }))
+  .trait('migrationUtils', ctx => ({ db: ctx.databse.connection, migrator: ctx.someOtherClass }))
+  .middlewareFunction('m1', someFunction, ctx => ({ ...ctx.store, ...ctx.migrationUtils, request: ctx.request }));
+```
+
 - make sure that no Builder uses NextModule (with flattented types causing infinite types lookup)
 - Type instantiation is excessively deep and possibly infinite
   - apparently it was caused by types flattening
