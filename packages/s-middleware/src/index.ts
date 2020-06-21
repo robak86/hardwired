@@ -11,5 +11,5 @@ export type {
 } from './Middleware';
 
 export { response } from './Middleware';
-
 export * from '@roro/routing-contract';
+export { Router } from './Router';

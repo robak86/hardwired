@@ -1,20 +1,21 @@
-import { ContractRouteDefinition, IApplication } from '@roro/s-middleware';
-import { HttpRequest, HttpResponse } from '../../s-middleware/src/Middleware';
-import { IApplicationRoute } from '../../s-middleware/src/App';
+import { HttpRequest, HttpResponse } from './Middleware';
+import { IApplication, IApplicationRoute } from './App';
 import { IncomingMessage, ServerResponse } from 'http';
 import { PathDefinition } from '@roro/routing-core';
+import { ContractRouteDefinition } from '@roro/routing-contract';
 
-// TODO Application is basically an router :/
-export class Application implements IApplication {
+export class Router implements IApplication {
   private routes: IApplicationRoute<any, any>[] = [];
 
   addRoute<TResponseData extends object>(
     routeDefinition: ContractRouteDefinition<any, TResponseData>,
     handler: (request: HttpRequest) => Promise<HttpResponse<TResponseData>> | HttpResponse<TResponseData>,
   ) {}
+
   replaceRoutes(routes: IApplicationRoute<any, any>[]) {
     this.routes = [...routes];
   }
+
   run(httpRequest: IncomingMessage, response: ServerResponse) {}
 
   hasRoute(method: string | undefined, url: string | undefined): boolean {
