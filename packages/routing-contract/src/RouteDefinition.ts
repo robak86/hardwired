@@ -1,13 +1,14 @@
 import { HttpMethod } from './HttpMethod';
+import { CommandRouteDefinition } from './command-route/CommandRouteDefinition';
+import { QueryRouteDefinition } from './query-route/QueryRouteDefinition';
 
-export type RouteDefinition<TPayload extends object, TReturn extends object> = {
-  pathDefinition: string;
-  httpMethod: HttpMethod;
-};
+// TODO: this union could be probably implemented in s-middleware, because
+export type RouteDefinition<TPayload extends object, TReturn extends object> =
+  | CommandRouteDefinition<TPayload, TReturn>
+  | QueryRouteDefinition<TPayload, TReturn>;
 
 export const RouteDefinition = {
   empty(): RouteDefinition<any, any> {
-    return { pathDefinition: '__never', httpMethod: HttpMethod.POST };
+    return { type: 'query', pathDefinition: '__never', httpMethod: HttpMethod.POST, defaultQueryParams: []};
   },
 };
-

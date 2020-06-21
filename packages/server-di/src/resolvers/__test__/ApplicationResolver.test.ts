@@ -13,9 +13,9 @@ describe(`ApplicationResolver`, () => {
   class DummyApp implements IApplication {
     public routes: any[] = [];
 
-    addRoute(method: HttpMethod, path: string, handler: (request: HttpRequest) => any) {}
+    addRoute(routeDefinition: RouteDefinition<any, any>, handler: (request: HttpRequest) => any) {}
 
-    replaceRoutes(routes: IApplicationRoute[]) {
+    replaceRoutes(routes: IApplicationRoute<any, any>[]) {
       this.routes = [...routes];
     }
 
@@ -34,16 +34,21 @@ describe(`ApplicationResolver`, () => {
 
   function buildRouteDefinition(pathDefinition: string, httpMethod: HttpMethod): RouteDefinition<any, any> {
     return {
+      type: 'query',
       httpMethod,
       pathDefinition,
+      defaultQueryParams: [],
     };
   }
 
   describe(`handlers discovery`, () => {
+    const h1RouteDefinition = buildRouteDefinition('h1PathDefinition', HttpMethod.POST);
+    const h2RouteDefinition = buildRouteDefinition('h2PathDefinition', HttpMethod.POST);
+
     const m = serverUnit('test')
       .app('app', DummyApp)
-      .handler('h1', buildRouteDefinition('h1PathDefinition', HttpMethod.POST), buildHandler('h1Response'))
-      .handler('h2', buildRouteDefinition('h2PathDefinition', HttpMethod.POST), buildHandler('h2Response'));
+      .handler('h1', h1RouteDefinition, buildHandler('h1Response'))
+      .handler('h2', h2RouteDefinition, buildHandler('h2Response'));
     const c = container(m);
 
     it(`caches app instance`, async () => {
@@ -58,13 +63,11 @@ describe(`ApplicationResolver`, () => {
       expect(app.replaceRoutes).toHaveBeenCalledWith([
         {
           handler: expect.any(Function),
-          httpMethod: 'post',
-          pathDefinition: 'h1PathDefinition',
+          routeDefinition: h1RouteDefinition,
         },
         {
           handler: expect.any(Function),
-          httpMethod: 'post',
-          pathDefinition: 'h2PathDefinition',
+          routeDefinition: h2RouteDefinition,
         },
       ]);
     });

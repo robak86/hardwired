@@ -1,15 +1,17 @@
-import { HttpRequest } from './Middleware';
-import { HttpMethod } from '@roro/routing-contract';
+import { HttpRequest, HttpResponse } from './Middleware';
+import { RouteDefinition } from '@roro/routing-contract';
 import { ServerResponse } from 'http';
 
-export type IApplicationRoute = {
-  httpMethod: HttpMethod;
-  pathDefinition: string;
-  handler: (request: HttpRequest) => any;
+export type IApplicationRoute<TRequestParams extends object, TResponseData extends object> = {
+  routeDefinition: RouteDefinition<TRequestParams, TResponseData>;
+  handler: (request: HttpRequest) => Promise<HttpResponse<TResponseData>> | HttpResponse<TResponseData>;
 };
 
 export interface IApplication {
-  addRoute(method: HttpMethod, path: string, handler: (request: HttpRequest) => any);
-  replaceRoutes(routes: IApplicationRoute[]);
+  addRoute<TResponseData extends object>(
+    routeDefinition: RouteDefinition<any, TResponseData>,
+    handler: (request: HttpRequest) => Promise<HttpResponse<TResponseData>> | HttpResponse<TResponseData>,
+  );
+  replaceRoutes(routes: IApplicationRoute<any, any>[]);
   run(httpRequest: HttpRequest, response: ServerResponse);
 }

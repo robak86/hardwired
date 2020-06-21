@@ -1,5 +1,5 @@
 import { DefinitionsSet } from '@hardwired/di';
-import { HttpRequest, IApplication, IApplicationRoute, IMiddleware } from '@roro/s-middleware';
+import { HttpRequest, IApplication, IApplicationRoute, IMiddleware, RouteDefinition } from '@roro/s-middleware';
 import { ServerModuleBuilder } from '../ServerModuleBuilder';
 import { ApplicationResolver } from '../../resolvers/ApplicationResolver';
 import { serverUnit } from '../../testing/helpers';
@@ -7,11 +7,11 @@ import { MiddlewareResolver } from '../../resolvers/MiddlewareResolver';
 
 describe(`ServerModuleBuilder`, () => {
   class DummyApplication implements IApplication {
-    addRoute(method: any, path: string, handler: any) {
+    addRoute(routeDefinition: RouteDefinition<any, any>, handler: any) {
       throw new Error('Implement me');
     }
 
-    replaceRoutes(routes: IApplicationRoute[]) {}
+    replaceRoutes(routes: IApplicationRoute<any, any>[]) {}
 
     run(): any {
       throw new Error('Implement me');

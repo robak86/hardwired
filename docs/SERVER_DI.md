@@ -1,29 +1,33 @@
-- IApplication.addRoute should take `RouteDefinition` instead of pathname and httpMethod ? 
+- IApplication.addRoute should take `RouteDefinition` instead of pathname and httpMethod ?
+- Add versioning to RouteDefinition
+
+```typescript
+m.handler('h1', routeDefinition, handler1).handler('h1V2', routeDefinition.version('2'), handler2);
+```
 
 - 100% typesafe response ?
 
 ```typescript
-    const routeDefinition = routeDef<{200: SuccessType, 401: ValidationError}>()
-    module.handler(routeDefinition,'?????')
+const routeDefinition = routeDef<{ 200: SuccessType; 401: ValidationError }>();
+module.handler(routeDefinition, '?????');
 
-    const routeDefinition = routeDef<SuccessResponse | ValidationError | SomethingOther>()
-        module.handler(routeDefinition, handler) // this is sufficient - the only edge case is that handler does not may not 
-// implement all return types, but it is still typesafe   
+const routeDefinition = routeDef<SuccessResponse | ValidationError | SomethingOther>();
+module.handler(routeDefinition, handler); // this is sufficient - the only edge case is that handler does not may not
+// implement all return types, but it is still typesafe
 ```
 
 - build.app should take an url under which the application will be mounted
 
-
-- it is tempting to provide `requestParams` for the context availble for handler creation... but this way the DI will have to
+* it is tempting to provide `requestParams` for the context availble for handler creation... but this way the DI will have to
   know about requestParams processing... unles we will be able to create generic service for routdefinition - .handler() is already coupled with `routeDefinition`...
   maybe `routeDefinition` should take `httpRequest` and return `requestParams` available in context ?
-- what about multiple apps ? Application resolver should probably throw an error in case of other Application resolver
+* what about multiple apps ? Application resolver should probably throw an error in case of other Application resolver
   - ... or maybe it should merge the apps ?
   - currently listeners don't care about hierarchy
-- allow early break for middlewares chaining
+* allow early break for middlewares chaining
 
-* it's definitely possible in theory, but may require some difficult implementation :D
-* it may be problematic since they are run in parallel :/ - but they are run in parallel in layers, so we can filter constructor args
+- it's definitely possible in theory, but may require some difficult implementation :D
+- it may be problematic since they are run in parallel :/ - but they are run in parallel in layers, so we can filter constructor args
 
   ```typescript
   const constructorArgs = await Promise.all(
@@ -36,10 +40,10 @@
 
   - or force always calling handler with null outputs from middleware ?
 
-- Memory leaks
+* Memory leaks
   - in PushPromise ?
   - in loan pattern for requesting new ContainerCache scope ?
-- Add functional middleware
+* Add functional middleware
 
 ```typescript
 const someFunction = ({ db, request }) => {};
