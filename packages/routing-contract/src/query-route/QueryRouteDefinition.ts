@@ -3,14 +3,15 @@ import { HttpMethod } from '../HttpMethod';
 
 // TODO: consider renaming to ClientRouteDefinition
 
-export type QueryRouteDefinition<TPayload extends object, TResult> = {
-  type: 'query';
-} & PathDefinition<Partial<TPayload>> & // TODO: Partial<TPayload> is not the best type :/
-  QueryParamsDefinition<Partial<TPayload>> & {
-    httpMethod: HttpMethod;
-  };
+// prettier-ignore
+export type QueryRouteDefinition<TPayload extends object, TResult> =
+    {
+      type: 'query';
+      httpMethod: HttpMethod;
+    } &
+    PathDefinition<Partial<TPayload>> & // TODO: Partial<TPayload> is not the best type :/
+     QueryParamsDefinition<Partial<TPayload>>;
 
-//
 // type T1 = {
 //   t1: number;
 //   t2: number;

@@ -1,1 +1,1 @@
-export type { RouteDefinition } from './route-definition/RouteDefinition.js';
+export type { RouteDefinition } from './def/RouteDefinition';

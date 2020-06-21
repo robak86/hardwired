@@ -1,7 +1,6 @@
 import joinURL from 'url-join';
-
-import { RouteDefinition } from './RouteDefinition';
 import { ParsedQuery } from '@roro/routing-core';
+import { RouteDefinition } from '../RouteDefinition';
 
 type JoinFn = {
   <TPathParams1, TQueryParams1 extends ParsedQuery, TPathParams2, TQueryParams2 extends ParsedQuery>(

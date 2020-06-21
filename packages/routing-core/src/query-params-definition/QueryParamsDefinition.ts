@@ -5,13 +5,13 @@ export type MappableQueryParamsDefinition<TQueryParams extends ParsedQuery> = Qu
 };
 
 export type QueryParamsDefinition<TQueryParams extends ParsedQuery> = {
-  defaultQueryParams: Partial<TQueryParams>;
+  defaultQueryParams?: Partial<TQueryParams>;
 };
 
 export const QueryParamsDefinition = {
   buildMappable<TQueryParams extends ParsedQuery>(
     queryParamsKeys: Array<keyof TQueryParams>,
-    defaultQueryParams: Partial<TQueryParams>,
+    defaultQueryParams: Partial<TQueryParams> = {},
   ): MappableQueryParamsDefinition<TQueryParams> {
     return {
       queryParamsKeys,
@@ -20,7 +20,7 @@ export const QueryParamsDefinition = {
   },
 
   build<TQueryParams extends ParsedQuery>(
-    defaultQueryParams: Partial<TQueryParams>,
+    defaultQueryParams: Partial<TQueryParams> = {},
   ): QueryParamsDefinition<TQueryParams> {
     return {
       defaultQueryParams,

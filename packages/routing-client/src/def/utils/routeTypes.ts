@@ -1,7 +1,9 @@
-// prettier-ignore
-import {ParsedQuery} from "@roro/routing-core";
+import { ParsedQuery, PathDefinition, QueryParamsDefinition } from '@roro/routing-core';
 
-export type RouteParams<TPathParams, TQueryParams extends ParsedQuery> = PathParams<TPathParams> &
+
+// prettier-ignore
+export type RouteParams<TPathParams, TQueryParams extends ParsedQuery> =
+  PathParams<TPathParams> &
   QueryParams<TQueryParams>;
 
 export type PathParams<TPathParams> = {
@@ -18,6 +20,7 @@ export type InferAreParamsRequired<TTestSubject> =
     keyof TTestSubject extends [] ? 'notRequired':
     {} extends TTestSubject ? 'optional':
     'required';
+
 // prettier-ignore
 export type InferParamsObject<TKey extends string, TTestSubject> =
     InferAreParamsRequired<TTestSubject> extends 'required' ? {[K in TKey]: TTestSubject}:

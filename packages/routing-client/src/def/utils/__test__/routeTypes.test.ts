@@ -1,5 +1,5 @@
 import { expectType, TypeEqual } from 'ts-expect';
-import { BuildUrlRouteParamsArg, InferAreParamsRequired, InferParamsObject } from '../route-definition/routeTypes';
+import { InferAreParamsRequired, InferParamsObject, BuildUrlRouteParamsArg } from '../routeTypes';
 
 describe('InferAreParamsRequired', () => {
   it('returns optional type for all optional params', () => {

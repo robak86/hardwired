@@ -1,4 +1,4 @@
-import { RouteDefinition } from '../route-definition/RouteDefinition';
+import { RouteDefinition } from '../RouteDefinition';
 
 describe('RouteDefinition', () => {
   describe('build', () => {
@@ -12,10 +12,11 @@ describe('RouteDefinition', () => {
       const definition = '/a/b/c';
       const defaultRouteParams = { pathParams: { p1: 'a' } };
 
+
       const route = RouteDefinition.build<{ p1?: string }, {}>(definition, {
         defaultRouteParams,
       });
-      expect(route).toEqual({ definition, defaultRouteParams });
+      expect(route).toEqual({ definition, defaultRouteParams, defaultQueryParams: undefined });
     });
   });
 
