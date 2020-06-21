@@ -16,6 +16,10 @@ describe(`ServerModuleBuilder`, () => {
     run(): any {
       throw new Error('Implement me');
     }
+
+    hasRoute() {
+      return true;
+    }
   }
 
   describe(`.app`, () => {

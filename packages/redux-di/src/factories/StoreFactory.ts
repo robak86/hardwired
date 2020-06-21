@@ -1,15 +1,15 @@
 import {
   AbstractDependencyResolver,
+  ContainerCache,
   ContainerEvents,
   DefinitionsSet,
   DependencyResolverFunction,
   ModuleRegistry,
+  ContainerService,
 } from '@hardwired/di';
 import { ReducerFactory } from './ReducerFactory';
-import { ContainerCache } from '@hardwired/di/lib/container/container-cache';
 import { AlterableStore } from '../stack/AlterableStore';
 import { SagaFactory } from './SagaFactory';
-import { ContainerService } from '../../../di/src/container/ContainerService';
 
 export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends AbstractDependencyResolver<
   TRegistry,

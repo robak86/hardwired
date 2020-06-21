@@ -1,6 +1,7 @@
 import { HttpRequest, HttpResponse } from './Middleware';
 import { ContractRouteDefinition } from '@roro/routing-contract';
 import { ServerResponse } from 'http';
+import { HttpMethod } from "../../routing-contract/src/HttpMethod";
 
 export type IApplicationRoute<TRequestParams extends object, TResponseData extends object> = {
   routeDefinition: ContractRouteDefinition<TRequestParams, TResponseData>;
@@ -14,4 +15,5 @@ export interface IApplication {
   );
   replaceRoutes(routes: IApplicationRoute<any, any>[]);
   run(httpRequest: HttpRequest, response: ServerResponse);
+  hasRoute(method: HttpMethod, url: string): boolean
 }

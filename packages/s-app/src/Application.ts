@@ -3,6 +3,7 @@ import { HttpRequest, HttpResponse } from '../../s-middleware/src/Middleware';
 import { IApplicationRoute } from '../../s-middleware/src/App';
 import { ServerResponse } from 'http';
 import { PathDefinition } from '@roro/routing-core';
+import { HttpMethod } from '../../routing-contract/src/HttpMethod';
 
 // TODO Application is basically an router :/
 export class Application implements IApplication {
@@ -17,7 +18,7 @@ export class Application implements IApplication {
   }
   run(httpRequest: HttpRequest, response: ServerResponse) {}
 
-  matchRoute(url: string): IApplicationRoute<any, any> | undefined {
-    return this.routes.find(route => PathDefinition.match(url, route.routeDefinition));
+  hasRoute(method: HttpMethod, url: string): boolean {
+    return this.routes.some(route => PathDefinition.match(url, route.routeDefinition));
   }
 }

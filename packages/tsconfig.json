@@ -9,6 +9,9 @@
       "path": "./routing-contract/tsconfig.json"
     },
     {
+      "path": "./s-middleware/tsconfig.json"
+    },
+    {
       "path": "./resource/tsconfig.json"
     },
     {
@@ -18,7 +21,10 @@
       "path": "./di/tsconfig.json"
     },
     {
-      "path": "./s-middleware/tsconfig.json"
+      "path": "./server-di/tsconfig.json"
+    },
+    {
+      "path": "./s-app/tsconfig.json"
     },
     {
       "path": "./example/tsconfig.json"
@@ -33,10 +39,7 @@
       "path": "./routing-client/tsconfig.json"
     },
     {
-      "path": "./s-app/tsconfig.json"
-    },
-    {
-      "path": "./server-di/tsconfig.json"
+      "path": "./s-example/tsconfig.json"
     },
     {
       "path": "./server-testing/tsconfig.json"

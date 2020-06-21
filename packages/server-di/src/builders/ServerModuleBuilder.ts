@@ -10,17 +10,21 @@ import {
 import {
   ContainerHandler,
   ContractRouteDefinition,
-  HttpRequest,
   HttpResponse,
   IApplication,
+  Middleware,
   Task,
+  HttpRequest,
+  IServer,
 } from '@roro/s-middleware';
+
 import { ApplicationResolver } from '../resolvers/ApplicationResolver';
 import { TaskResolver } from '../resolvers/TaskResolver';
 import { HandlerResolver } from '../resolvers/HandlerResolver';
-import { Middleware } from '../../../s-middleware/src/Middleware';
 import { MiddlewareResolver } from '../resolvers/MiddlewareResolver';
 import { MiddlewarePipeResolver } from '../resolvers/MiddlewarePipeResolver';
+
+import { ServerResolver } from '../resolvers/ServerResolver';
 
 export type NextServerBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
   TKey,
@@ -36,6 +40,24 @@ export type NextServerBuilder<TKey extends string, TReturn, TRegistry extends Mo
 export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
   constructor(registry: DefinitionsSet<TRegistry>) {
     super(registry);
+  }
+
+  server<TKey extends string, TResult extends IServer>(
+    key: TKey,
+    klass: ClassType<[], TResult>,
+  ): NextServerBuilder<TKey, TResult, TRegistry>;
+  server<TKey extends string, TDeps extends any[], TResult extends IServer>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextServerBuilder<TKey, TResult, TRegistry>;
+  server<TKey extends string, TDeps extends any[], TResult extends IServer>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextServerBuilder<TKey, TResult, TRegistry> {
+    const newRegistry = this.registry.extendDeclarations(key, new ServerResolver(klass, depSelect));
+    return new ServerModuleBuilder(newRegistry) as any;
   }
 
   app<TKey extends string, TResult extends IApplication>(
@@ -123,5 +145,7 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
 }
 
 export const serverDefinitions = <TRegistry extends ModuleRegistry>(
-  registry: DefinitionsSet<TRegistry>,
-): ServerModuleBuilder<TRegistry & { request: Definition<HttpRequest> }> => new ServerModuleBuilder(registry) as any;
+  ctx: DefinitionsSet<TRegistry>,
+): ServerModuleBuilder<TRegistry & { request: Definition<HttpRequest> }> => {
+  return new ServerModuleBuilder<TRegistry & { request: Definition<HttpRequest> }>(ctx as any);
+};

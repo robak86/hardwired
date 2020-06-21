@@ -6,7 +6,7 @@ import {
   DefinitionsSet,
   ModuleRegistry,
 } from '@hardwired/di';
-import { Middleware } from '../../../s-middleware/src/Middleware';
+import { Middleware } from '@roro/s-middleware';
 
 export class MiddlewareResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
   TRegistry,

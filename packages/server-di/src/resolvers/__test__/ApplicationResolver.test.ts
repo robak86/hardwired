@@ -22,12 +22,16 @@ describe(`ApplicationResolver`, () => {
     run(): Promise<any> | any {
       return undefined;
     }
+
+    hasRoute() {
+      return true;
+    }
   }
 
   function buildHandler(data): new (...args: any[]) => IHandler<any> {
     return class {
       run() {
-        return { data, statusCode: 200};
+        return { data, statusCode: 200 };
       }
     };
   }

@@ -1,4 +1,4 @@
-import { IncomingMessage } from 'http';
+import { IncomingMessage, ServerResponse } from 'http';
 import { HttpMethod } from '@roro/routing-contract';
 
 export type HttpRequest = {
@@ -11,6 +11,33 @@ export type HttpResponse<T> = {
   readonly data: T; // TODO: consider freezing in order to prevent any mutations in middleware
 };
 
+export type ILogger = {
+  info(message: string):void
+}
+
+export type IServer = {
+  replaceListener(listener: (request: IncomingMessage, response: ServerResponse) => void);
+};
+
+export function response<T extends object>(response: T): HttpResponse<T>;
+export function response<T extends object>(statusCode: number, response: T): HttpResponse<T>;
+export function response<T extends object>(...args: any[]): HttpResponse<T> {
+  if (args.length === 1) {
+    return {
+      statusCode: 200,
+      data: args[0],
+    };
+  }
+
+  if (args.length === 2) {
+    return {
+      statusCode: 200,
+      data: args[0],
+    };
+  }
+
+  throw new Error('Unknown case');
+}
 
 /*
   It cannot mutate the response. It does not know any details about the response
@@ -20,7 +47,9 @@ export type HttpResponse<T> = {
   In the worst scenario it can be bound to specific response type
  */
 export type Middleware<T> = {
-  run: <T>(next: () => Promise<HttpResponse<T>> | HttpResponse<T>) => HttpResponse<T> | 'someErrorType?';
+  run: <T extends unknown>(
+    next: () => Promise<HttpResponse<T>> | HttpResponse<T>,
+  ) => HttpResponse<T> | 'someErrorType?'; //TODO: it should only return response received from next() or some error response (but how to express this in types ?)
 };
 
 export interface Task<TOutput> {

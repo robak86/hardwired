@@ -7,6 +7,15 @@
   },
   "references": [
     {
+      "path": "../routing-core/tsconfig.json"
+    },
+    {
+      "path": "../routing-contract/tsconfig.json"
+    },
+    {
+      "path": "../s-middleware/tsconfig.json"
+    },
+    {
       "path": "../server/tsconfig.json"
     }
   ],

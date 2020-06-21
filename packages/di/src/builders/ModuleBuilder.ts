@@ -3,9 +3,7 @@ import { DefinitionsSet } from '../module/DefinitionsSet';
 
 export interface ModuleBuilder<TRegistry extends ModuleRegistry> {
   readonly registry: DefinitionsSet<TRegistry>;
-  using<TNextBuilder extends ModuleBuilder<TRegistry>>(
-    builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
-  ): TNextBuilder;
+  using<TNextBuilder>(builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder): TNextBuilder;
 
   enhance<TNextBuilder extends ModuleBuilder<TRegistry>>(
     builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,

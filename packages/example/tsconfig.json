@@ -13,6 +13,9 @@
       "path": "../routing-contract/tsconfig.json"
     },
     {
+      "path": "../s-middleware/tsconfig.json"
+    },
+    {
       "path": "../resource/tsconfig.json"
     },
     {
