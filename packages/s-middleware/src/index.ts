@@ -4,7 +4,6 @@ export type {
   HttpRequest,
   Task,
   IHandler,
-  ContainerHandler,
   Middleware,
   IServer,
   ILogger,

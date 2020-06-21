@@ -1,9 +1,19 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { HttpMethod } from '@roro/routing-contract';
+import { ContractRouteDefinition } from '../../routing-contract/src/ContractRouteDefinition';
 
 export type HttpRequest = {
   request: IncomingMessage;
   version: '1' | '2';
+};
+
+export const HttpRequest = {
+  build(request: IncomingMessage): HttpRequest {
+    return {
+      request,
+      version: '1',
+    };
+  },
 };
 
 export type HttpResponse<T> = {
@@ -12,8 +22,8 @@ export type HttpResponse<T> = {
 };
 
 export type ILogger = {
-  info(message: string):void
-}
+  info(message: string): void;
+};
 
 export type IServer = {
   replaceListener(listener: (request: IncomingMessage, response: ServerResponse) => void);
@@ -60,11 +70,3 @@ export interface IHandler<TOutput> {
   run(): HttpResponse<TOutput> | Promise<HttpResponse<TOutput>>;
 }
 
-/**
- * This class is returned by the container and encapsulates all the wiring. It requires as an input http request object
- */
-export type ContainerHandler<TReturn extends object> = {
-  request(request: HttpRequest): HttpResponse<TReturn> | Promise<HttpResponse<TReturn>>;
-  httpMethod: HttpMethod;
-  pathDefinition: string;
-};

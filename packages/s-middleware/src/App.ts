@@ -14,5 +14,4 @@ export interface IApplication {
   );
   replaceRoutes(routes: IApplicationRoute<any, any>[]);
   run(httpRequest: IncomingMessage, response: ServerResponse);
-  hasRoute(method: string | undefined, url: string | undefined): boolean;
 }

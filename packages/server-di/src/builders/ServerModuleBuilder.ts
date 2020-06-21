@@ -8,7 +8,6 @@ import {
   NotDuplicated,
 } from '@hardwired/di';
 import {
-  ContainerHandler,
   ContractRouteDefinition,
   HttpResponse,
   IApplication,
@@ -24,7 +23,7 @@ import { HandlerResolver } from '../resolvers/HandlerResolver';
 import { MiddlewareResolver } from '../resolvers/MiddlewareResolver';
 import { MiddlewarePipeResolver } from '../resolvers/MiddlewarePipeResolver';
 
-import { ServerResolver } from '../resolvers/ServerResolver';
+import { ContainerHandler, ServerResolver } from '../resolvers/ServerResolver';
 
 export type NextServerBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
   TKey,

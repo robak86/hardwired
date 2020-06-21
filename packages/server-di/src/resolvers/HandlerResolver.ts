@@ -6,7 +6,8 @@ import {
   ModuleRegistry,
   SingletonResolver,
 } from '@hardwired/di';
-import { ContainerHandler, HttpRequest, ContractRouteDefinition } from '@roro/s-middleware';
+import { ContractRouteDefinition, HttpRequest } from '@roro/s-middleware';
+import { ContainerHandler } from './ServerResolver';
 
 export class HandlerResolver<
   TRegistry extends ModuleRegistry,
@@ -25,8 +26,7 @@ export class HandlerResolver<
       return cache.getFromGlobalScope(this.id);
     } else {
       const containerHandler: ContainerHandler<any> = {
-        pathDefinition: this.routeDefinition.pathDefinition,
-        httpMethod: this.routeDefinition.httpMethod,
+        routeDefinition: this.routeDefinition,
         request: async (request: HttpRequest) => {
           const requestCache = cache.forNewRequest();
           const requestRegistry = registry.extendDeclarations('request', new SingletonResolver(() => request));

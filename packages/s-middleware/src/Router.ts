@@ -16,13 +16,27 @@ export class Router implements IApplication {
     this.routes = [...routes];
   }
 
-  run(httpRequest: IncomingMessage, response: ServerResponse) {}
+  // TODO: Ideally run should have the same interface as IHandler in order to make it easily composeable
+  run = async (httpRequest: IncomingMessage, response: ServerResponse) => {
+    const { url, method } = httpRequest;
 
-  hasRoute(method: string | undefined, url: string | undefined): boolean {
     if (method === undefined || url === undefined) {
-      return false;
+      throw new Error('missing handler');
     }
 
-    return this.routes.some(route => PathDefinition.match(url, route.routeDefinition));
-  }
+    const handler: IApplicationRoute<any, any> | undefined = this.routes.find(route => {
+      console.log('matching', url, method, route.routeDefinition);
+      return PathDefinition.match(url, route.routeDefinition);
+    });
+
+    if (handler) {
+      const handlerResponse: HttpResponse<any> = await handler.handler(HttpRequest.build(httpRequest));
+
+      response.writeHead(200, { 'Content-type': 'application/json' });
+      response.end(JSON.stringify(handlerResponse.data));
+    } else {
+      response.writeHead(404, { 'Content-type': 'text/plain' });
+      response.end('Not Found\n');
+    }
+  };
 }
