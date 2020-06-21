@@ -1,3 +1,8 @@
+- in general there are two types of the middleware
+    - middleware extending context/request e.g. with parsed query params - we use for this `Task`
+    - middleware controling flow - we use for this `Middleware`, but it does not know anything about response. Althought
+    it may completely replace the response
+
 - serverModule needs to provide in addition to `request` also `errorMiddleware`
     - it may be a default middleware (which can be overriden only by `module.replace()`)
     - ... or we need to force the user to provide it in middlewares array for the handler 

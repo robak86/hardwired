@@ -1,5 +1,5 @@
 import { serverUnit } from '../testing/helpers';
-import { IMiddleware, ContractRouteDefinition } from '@roro/s-middleware';
+import { Task, ContractRouteDefinition } from '@roro/s-middleware';
 import { container, commonDefines } from '@hardwired/di';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
 
@@ -8,7 +8,7 @@ describe(`.task`, () => {
     const constructorSpy = jest.fn();
     const runSpy = jest.fn();
 
-    class Middleware implements IMiddleware<any> {
+    class Middleware implements Task<any> {
       type: Type = type;
       dependencies: any[];
 

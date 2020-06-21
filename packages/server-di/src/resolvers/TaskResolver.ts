@@ -1,20 +1,22 @@
 import {
-  AbstractDependencyResolver,
   ClassType,
   ContainerCache,
   ContainerService,
+  createResolverId,
   DefinitionsSet,
+  DependencyResolver,
   ModuleRegistry,
 } from '@hardwired/di';
-import { Middleware } from '../../../s-middleware/src/Middleware';
+import { Task } from '@roro/s-middleware';
 
-export class MiddlewareResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
-  TRegistry,
-  Promise<TReturn>
-> {
-  constructor(private klass: ClassType<any, Middleware<any>>, private selectDependencies = container => [] as any[]) {
-    super();
-  }
+export class TaskResolver<TRegistry extends ModuleRegistry, TReturn>
+  implements DependencyResolver<TRegistry, Promise<TReturn>> {
+  static readonly type = 'middleware';
+
+  public id: string = createResolverId();
+  public type = TaskResolver.type;
+
+  constructor(private klass: ClassType<any, Task<any>>, private selectDependencies = container => [] as any[]) {}
 
   async build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any) {
     if (cache.hasInAsyncRequestScope(this.id)) {
@@ -26,7 +28,7 @@ export class MiddlewareResolver<TRegistry extends ModuleRegistry, TReturn> exten
         );
 
         const instance = new this.klass(...constructorArgs);
-        return instance.run('TODO' as any);
+        return instance.run();
       });
     }
   }

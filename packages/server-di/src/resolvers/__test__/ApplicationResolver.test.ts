@@ -75,8 +75,8 @@ describe(`ApplicationResolver`, () => {
     it(`returns correct responses`, async () => {
       const app = c.get('app');
 
-      expect(await app.routes[0].handler({ request: 'request' })).toEqual({ data: 'h1Response' });
-      expect(await app.routes[1].handler({ request: 'request' })).toEqual({ data: 'h2Response' });
+      expect(await app.routes[0].handler({ request: 'request' })).toEqual({ data: 'h1Response', statusCode: 200 });
+      expect(await app.routes[1].handler({ request: 'request' })).toEqual({ data: 'h2Response', statusCode: 200 });
     });
   });
 });

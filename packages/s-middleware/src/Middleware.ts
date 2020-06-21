@@ -12,7 +12,6 @@ export type HttpResponse<T> = {
 };
 
 
-
 /*
   It cannot mutate the response. It does not know any details about the response
   It can return it's own response, like auth error
@@ -20,11 +19,11 @@ export type HttpResponse<T> = {
   It can have assumptions only on status the status code
   In the worst scenario it can be bound to specific response type
  */
-export type IRealMiddleware = {
+export type Middleware<T> = {
   run: <T>(next: () => Promise<HttpResponse<T>> | HttpResponse<T>) => HttpResponse<T> | 'someErrorType?';
 };
 
-export interface IMiddleware<TOutput> {
+export interface Task<TOutput> {
   run(): TOutput | Promise<TOutput>;
 }
 

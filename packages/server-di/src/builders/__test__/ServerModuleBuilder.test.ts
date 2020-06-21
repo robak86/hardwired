@@ -1,9 +1,9 @@
 import { DefinitionsSet } from '@hardwired/di';
-import { HttpRequest, IApplication, IApplicationRoute, IMiddleware, ContractRouteDefinition } from '@roro/s-middleware';
+import { HttpRequest, IApplication, IApplicationRoute, Task, ContractRouteDefinition } from '@roro/s-middleware';
 import { ServerModuleBuilder } from '../ServerModuleBuilder';
 import { ApplicationResolver } from '../../resolvers/ApplicationResolver';
 import { serverUnit } from '../../testing/helpers';
-import { MiddlewareResolver } from '../../resolvers/MiddlewareResolver';
+import { TaskResolver } from '../../resolvers/TaskResolver';
 
 describe(`ServerModuleBuilder`, () => {
   class DummyApplication implements IApplication {
@@ -54,11 +54,11 @@ describe(`ServerModuleBuilder`, () => {
       const registry = DefinitionsSet.empty('empty');
       const builder = new ServerModuleBuilder(registry).task('middleware', DummyApplication);
 
-      expect(builder.registry.declarations.get('middleware')).toBeInstanceOf(MiddlewareResolver);
+      expect(builder.registry.declarations.get('middleware')).toBeInstanceOf(TaskResolver);
     });
 
     it(`works`, async () => {
-      class A implements IMiddleware<{ a: number }> {
+      class A implements Task<{ a: number }> {
         constructor(private request: HttpRequest) {}
 
         run() {
@@ -66,7 +66,7 @@ describe(`ServerModuleBuilder`, () => {
         }
       }
 
-      class B implements IMiddleware<{ b: number }> {
+      class B implements Task<{ b: number }> {
         run() {
           return { b: 1 };
         }
@@ -74,14 +74,14 @@ describe(`ServerModuleBuilder`, () => {
 
       // type MiddlewareInput = { z: number };
       //
-      // class Middleware implements IMiddleware<MiddlewareInput, { y: number }, any> {
+      // class Middleware implements Task<MiddlewareInput, { y: number }, any> {
       //   processRequest(input: MiddlewareInput): { y: number } {
       //     // return { ...input, y: 'sdf' };
       //     // return undefined
       //     return { y: 123 };
       //   }
       // }
-      // const iMiddleware = compose(c);
+      // const Task = compose(c);
 
       const m = serverUnit('test').task('middleware', A, ctx => [ctx.request]);
     });
