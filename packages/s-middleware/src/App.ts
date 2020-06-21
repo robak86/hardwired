@@ -1,15 +1,15 @@
 import { HttpRequest, HttpResponse } from './Middleware';
-import { RouteDefinition } from '@roro/routing-contract';
+import { ContractRouteDefinition } from '@roro/routing-contract';
 import { ServerResponse } from 'http';
 
 export type IApplicationRoute<TRequestParams extends object, TResponseData extends object> = {
-  routeDefinition: RouteDefinition<TRequestParams, TResponseData>;
+  routeDefinition: ContractRouteDefinition<TRequestParams, TResponseData>;
   handler: (request: HttpRequest) => Promise<HttpResponse<TResponseData>> | HttpResponse<TResponseData>;
 };
 
 export interface IApplication {
   addRoute<TResponseData extends object>(
-    routeDefinition: RouteDefinition<any, TResponseData>,
+    routeDefinition: ContractRouteDefinition<any, TResponseData>,
     handler: (request: HttpRequest) => Promise<HttpResponse<TResponseData>> | HttpResponse<TResponseData>,
   );
   replaceRoutes(routes: IApplicationRoute<any, any>[]);

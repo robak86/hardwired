@@ -1,5 +1,5 @@
 import { serverUnit } from '../testing/helpers';
-import { IMiddleware, RouteDefinition } from '@roro/s-middleware';
+import { IMiddleware, ContractRouteDefinition } from '@roro/s-middleware';
 import { container, commonDefines } from '@hardwired/di';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
 
@@ -44,7 +44,7 @@ describe(`.middleware`, () => {
     it(`uses correctly injected request object`, async () => {
       const { Middleware: DummyMiddleware } = buildMiddleware('type');
 
-      const m = serverUnit('m').handler('h1', RouteDefinition.empty(), DummyMiddleware, ctx => [ctx.request]);
+      const m = serverUnit('m').handler('h1', ContractRouteDefinition.empty(), DummyMiddleware, ctx => [ctx.request]);
       const c = container(m);
 
       const middlewareOutput = await c.get('h1').request({ request: 'dummyRequest' } as any);
@@ -54,7 +54,7 @@ describe(`.middleware`, () => {
     it(`caches handlers`, async () => {
       const { Middleware: DummyMiddleware } = buildMiddleware('type');
 
-      const m = serverUnit('m').handler('h1', RouteDefinition.empty(), DummyMiddleware, ctx => [ctx.request]);
+      const m = serverUnit('m').handler('h1', ContractRouteDefinition.empty(), DummyMiddleware, ctx => [ctx.request]);
       const c = container(m);
 
       const handler = await c.get('h1');
@@ -71,7 +71,7 @@ describe(`.middleware`, () => {
 
         const m = serverUnit('m')
           .middleware('m1', DummyMiddleware, ctx => [ctx.request])
-          .handler('h1', RouteDefinition.empty(), DummyHandler, ctx => [ctx.request, ctx.m1]);
+          .handler('h1', ContractRouteDefinition.empty(), DummyHandler, ctx => [ctx.request, ctx.m1]);
 
         const c = container(m);
 
@@ -101,7 +101,7 @@ describe(`.middleware`, () => {
             .middleware('shared', SharedMiddleware)
             .middleware('m1', M1, ctx => [ctx.shared])
             .middleware('m2', M2, ctx => [ctx.shared])
-            .handler('h1', RouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m2]);
+            .handler('h1', ContractRouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m2]);
 
           const c = container(m);
           const response = await c.get('h1').request({ request: 'request' } as any);
@@ -147,7 +147,7 @@ describe(`.middleware`, () => {
             .middleware('m1', M1, ctx => [ctx.shared])
             .middleware('m2', M2, ctx => [ctx.shared])
             .middleware('m3', M3, ctx => [ctx.m2])
-            .handler('h1', RouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m3]);
+            .handler('h1', ContractRouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m3]);
 
           const c = container(m);
           const response = await c.get('h1').request({ request: 'request' } as any);
@@ -205,7 +205,7 @@ describe(`.middleware`, () => {
             .using(serverDefinitions)
             .middleware('m1', M1, ctx => [ctx.otherModule.shared])
             .middleware('m3', M3, ctx => [ctx.otherMiddlewares.m2])
-            .handler('h1', RouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m3]);
+            .handler('h1', ContractRouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m3]);
 
           const c = container(m);
           const response = await c.get('h1').request({ request: 'request' } as any);

@@ -10,7 +10,7 @@ export type QueryRouteDefinition<TPayload extends object, TResult> =
       httpMethod: HttpMethod;
     } &
     PathDefinition<Partial<TPayload>> & // TODO: Partial<TPayload> is not the best type :/
-     QueryParamsDefinition<Partial<TPayload>>;
+    QueryParamsDefinition<Partial<TPayload>>;
 
 // type T1 = {
 //   t1: number;

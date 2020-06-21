@@ -1,4 +1,4 @@
-import { IncomingMessage } from "http";
+import { IncomingMessage } from 'http';
 import { HttpMethod } from '@roro/routing-contract';
 
 export type HttpRequest = {
@@ -7,7 +7,21 @@ export type HttpRequest = {
 };
 
 export type HttpResponse<T> = {
-  data: T;
+  readonly statusCode: number;
+  readonly data: T; // TODO: consider freezing in order to prevent any mutations in middleware
+};
+
+
+
+/*
+  It cannot mutate the response. It does not know any details about the response
+  It can return it's own response, like auth error
+  It can catch errors and throw it's own response e.g. 500
+  It can have assumptions only on status the status code
+  In the worst scenario it can be bound to specific response type
+ */
+export type IRealMiddleware = {
+  run: <T>(next: () => Promise<HttpResponse<T>> | HttpResponse<T>) => HttpResponse<T> | 'someErrorType?';
 };
 
 export interface IMiddleware<TOutput> {

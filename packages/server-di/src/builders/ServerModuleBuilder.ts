@@ -13,7 +13,7 @@ import {
   HttpResponse,
   IApplication,
   IMiddleware,
-  RouteDefinition
+  ContractRouteDefinition
 } from '@roro/s-middleware';
 import { ApplicationResolver } from '../resolvers/ApplicationResolver';
 import { MiddlewareResolver } from '../resolvers/MiddlewareResolver';
@@ -73,18 +73,18 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
 
   handler<TKey extends string, TRequestParams extends object, TResult extends object>(
     key: TKey,
-    routeDefinition: RouteDefinition<TRequestParams, TResult>,
+    routeDefinition: ContractRouteDefinition<TRequestParams, TResult>,
     klass: ClassType<[], IMiddleware<HttpResponse<TResult>>>,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
   handler<TKey extends string, TRequestParams extends object, TDeps extends any[], TResult extends object>(
     key: TKey,
-    routeDefinition: RouteDefinition<TRequestParams, TResult>,
+    routeDefinition: ContractRouteDefinition<TRequestParams, TResult>,
     klass: ClassType<TDeps, IMiddleware<HttpResponse<TResult>>>,
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
   handler<TKey extends string, TRequestParams extends object, TDeps extends any[], TResult extends object>(
     key: TKey,
-    routeDefinition: RouteDefinition<TRequestParams, TResult>,
+    routeDefinition: ContractRouteDefinition<TRequestParams, TResult>,
     klass: ClassType<TDeps, IMiddleware<HttpResponse<TResult>>>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry> {

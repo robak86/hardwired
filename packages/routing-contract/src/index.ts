@@ -5,7 +5,7 @@ export { createCommandRoute } from './command-route/createCommandRoute';
 export { createQueryRoute } from './query-route/createQueryRoute';
 export { HttpMethod } from './HttpMethod';
 
-export * from './RouteDefinition';
+export * from './ContractRouteDefinition';
 
 //TODO: it would be tempting to use package.json versioning for api versioning, but the chosen approach need to support
 // monorepo files organization (no versioning!)

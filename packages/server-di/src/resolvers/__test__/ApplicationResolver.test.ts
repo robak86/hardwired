@@ -4,7 +4,7 @@ import {
   HttpMethod,
   HttpRequest,
   IHandler,
-  RouteDefinition,
+  ContractRouteDefinition,
 } from '@roro/s-middleware';
 import { serverUnit } from '../../testing/helpers';
 import { container } from '@hardwired/di';
@@ -13,7 +13,7 @@ describe(`ApplicationResolver`, () => {
   class DummyApp implements IApplication {
     public routes: any[] = [];
 
-    addRoute(routeDefinition: RouteDefinition<any, any>, handler: (request: HttpRequest) => any) {}
+    addRoute(routeDefinition: ContractRouteDefinition<any, any>, handler: (request: HttpRequest) => any) {}
 
     replaceRoutes(routes: IApplicationRoute<any, any>[]) {
       this.routes = [...routes];
@@ -27,12 +27,12 @@ describe(`ApplicationResolver`, () => {
   function buildHandler(data): new (...args: any[]) => IHandler<any> {
     return class {
       run() {
-        return { data };
+        return { data, statusCode: 200};
       }
     };
   }
 
-  function buildRouteDefinition(pathDefinition: string, httpMethod: HttpMethod): RouteDefinition<any, any> {
+  function buildRouteDefinition(pathDefinition: string, httpMethod: HttpMethod): ContractRouteDefinition<any, any> {
     return {
       type: 'query',
       httpMethod,
@@ -47,7 +47,7 @@ describe(`ApplicationResolver`, () => {
 
     const m = serverUnit('test')
       .app('app', DummyApp)
-      .handler('h1', h1RouteDefinition, buildHandler('h1Response'))
+      .handler('h1', h1RouteDefinition, buildHandler('h1Response'), ctx => [ctx.request])
       .handler('h2', h2RouteDefinition, buildHandler('h2Response'));
     const c = container(m);
 

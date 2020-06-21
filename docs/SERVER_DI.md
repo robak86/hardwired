@@ -1,5 +1,39 @@
-- IApplication.addRoute should take `RouteDefinition` instead of pathname and httpMethod ?
-- Add versioning to RouteDefinition
+- serverModule needs to provide in addition to `request` also `errorMiddleware`
+    - it may be a default middleware (which can be overriden only by `module.replace()`)
+    - ... or we need to force the user to provide it in middlewares array for the handler 
+     
+- how to inject logger ?
+    - current `.middleware` is not actually an middleware. Rename it to `Runnable` (consider implementing runnable in core ?)
+    - create reale `.middleware` which allows for including next
+        - what about typesafety ?
+        - how to pass `next`?
+
+
+
+- `IApplication` is basically router instance :/
+
+  - if we provide more advanced discorery features for resolvers we can get nice composeability
+
+  ```typescript
+  const usersModule = module('users')
+    .handler(usersListDef, usersListHandler)
+    .handler(usersListDef, usersListHandler)
+    .handler(usersListDef, usersListHandler);
+
+  const postsModule = module('posts')
+    .external<{isRestricted}>()
+    .handler(postsListDef, postsListHandler)
+    .handler(postsListDef, postsListHandler)
+    .handler(postsListDef, PostsListHandler, ctx => [ctx.isRestricted]);
+
+  const appModule = module('app')
+    .importApp('/users', usersModule)
+    .importApp('/restricted', postsModule, {restricted: true})        // restricted: true is passed as context for module
+    .importApp('/somethingElse', postsModule, {restricted: false});   // restricted: true is passed as context for module
+  ```
+
+* ~~Application.addRoute should take `RouteDefinition` instead of pathname and httpMethod ?~~
+* Add versioning to RouteDefinition
 
 ```typescript
 m.handler('h1', routeDefinition, handler1).handler('h1V2', routeDefinition.version('2'), handler2);

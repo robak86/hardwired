@@ -6,7 +6,7 @@ import {
   ModuleRegistry,
   SingletonResolver,
 } from '@hardwired/di';
-import { ContainerHandler, HttpRequest, RouteDefinition } from '@roro/s-middleware';
+import { ContainerHandler, HttpRequest, ContractRouteDefinition } from '@roro/s-middleware';
 
 export class HandlerResolver<
   TRegistry extends ModuleRegistry,
@@ -15,7 +15,7 @@ export class HandlerResolver<
   constructor(
     private klass,
     private selectDependencies = container => [] as any[],
-    public routeDefinition: RouteDefinition<any, TReturn>,
+    public routeDefinition: ContractRouteDefinition<any, TReturn>,
   ) {
     super();
   }

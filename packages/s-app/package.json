@@ -8,7 +8,8 @@
     "src"
   ],
   "dependencies": {
-    "@roro/s-middleware": "*"
+    "@roro/s-middleware": "*",
+    "@roro/routing-core": "*"
   },
   "publishConfig": {
     "access": "public"

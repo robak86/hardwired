@@ -7,7 +7,7 @@
     "start": "tsc -b packages/tsconfig.json --watch --pretty --synchronousWatchDirectory",
     "test": "yarn run jest --config jest.config.js",
     "test:watch": "yarn run jest --config jest.config.js --watch",
-    "postinstall": "yarn run purge && yarn run update:tsconfig.json && yarn run update:package.json",
+    "postinstall": "yarn run update:tsconfig.json && yarn run update:package.json",
     "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
     "update:package.json": "ts-node scripts/update-package-json.ts",
     "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
