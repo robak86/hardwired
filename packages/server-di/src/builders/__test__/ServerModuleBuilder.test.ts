@@ -39,20 +39,20 @@ describe(`ServerModuleBuilder`, () => {
     });
   });
 
-  describe(`.middleware`, () => {
+  describe(`.task`, () => {
     describe(`types`, () => {
       it(`requires class inheriting from IApplication`, async () => {
         class WrongClass {}
 
-        const m = serverUnit('test').middleware('middleware', DummyApplication);
+        const m = serverUnit('test').task('middleware', DummyApplication);
 
-        // const m2 = serverUnit('test').middleware('middleware', WrongClass);
+        // const m2 = serverUnit('test').task('middleware', WrongClass);
       });
     });
 
     it(`registers new ApplicationResolver`, async () => {
       const registry = DefinitionsSet.empty('empty');
-      const builder = new ServerModuleBuilder(registry).middleware('middleware', DummyApplication);
+      const builder = new ServerModuleBuilder(registry).task('middleware', DummyApplication);
 
       expect(builder.registry.declarations.get('middleware')).toBeInstanceOf(MiddlewareResolver);
     });
@@ -83,7 +83,7 @@ describe(`ServerModuleBuilder`, () => {
       // }
       // const iMiddleware = compose(c);
 
-      const m = serverUnit('test').middleware('middleware', A, ctx => [ctx.request]);
+      const m = serverUnit('test').task('middleware', A, ctx => [ctx.request]);
     });
   });
 });

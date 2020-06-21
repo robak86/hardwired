@@ -53,16 +53,16 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
     return new ServerModuleBuilder(newRegistry) as any;
   }
 
-  middleware<TKey extends string, TResult>(
+  task<TKey extends string, TResult>(
     key: TKey,
     klass: ClassType<[], IMiddleware<TResult>>,
   ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry>;
-  middleware<TKey extends string, TDeps extends any[], TResult>(
+  task<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, IMiddleware<TResult>>,
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
   ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry>;
-  middleware<TKey extends string, TDeps extends any[], TResult>(
+  task<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, IMiddleware<TResult>>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,

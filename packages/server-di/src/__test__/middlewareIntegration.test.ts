@@ -3,7 +3,7 @@ import { IMiddleware, ContractRouteDefinition } from '@roro/s-middleware';
 import { container, commonDefines } from '@hardwired/di';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
 
-describe(`.middleware`, () => {
+describe(`.task`, () => {
   function buildMiddleware<Type extends string>(type: Type, outputFn?: (deps: any[]) => any) {
     const constructorSpy = jest.fn();
     const runSpy = jest.fn();
@@ -32,7 +32,7 @@ describe(`.middleware`, () => {
 
       const m = serverUnit('m')
         .replace('request', () => 1 as any)
-        .middleware('m1', DummyMiddleware, ctx => [ctx.request]);
+        .task('m1', DummyMiddleware, ctx => [ctx.request]);
       const c = container(m);
 
       const middlewareOutput = await c.get('m1');
@@ -70,7 +70,7 @@ describe(`.middleware`, () => {
         const { Middleware: DummyMiddleware } = buildMiddleware('type');
 
         const m = serverUnit('m')
-          .middleware('m1', DummyMiddleware, ctx => [ctx.request])
+          .task('m1', DummyMiddleware, ctx => [ctx.request])
           .handler('h1', ContractRouteDefinition.empty(), DummyHandler, ctx => [ctx.request, ctx.m1]);
 
         const c = container(m);
@@ -98,9 +98,9 @@ describe(`.middleware`, () => {
           const { Middleware: DummyHandler } = buildMiddleware('type');
 
           const m = serverUnit('m')
-            .middleware('shared', SharedMiddleware)
-            .middleware('m1', M1, ctx => [ctx.shared])
-            .middleware('m2', M2, ctx => [ctx.shared])
+            .task('shared', SharedMiddleware)
+            .task('m1', M1, ctx => [ctx.shared])
+            .task('m2', M2, ctx => [ctx.shared])
             .handler('h1', ContractRouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m2]);
 
           const c = container(m);
@@ -143,10 +143,10 @@ describe(`.middleware`, () => {
           const { Middleware: DummyHandler } = buildMiddleware('type');
 
           const m = serverUnit('m')
-            .middleware('shared', SharedMiddleware)
-            .middleware('m1', M1, ctx => [ctx.shared])
-            .middleware('m2', M2, ctx => [ctx.shared])
-            .middleware('m3', M3, ctx => [ctx.m2])
+            .task('shared', SharedMiddleware)
+            .task('m1', M1, ctx => [ctx.shared])
+            .task('m2', M2, ctx => [ctx.shared])
+            .task('m3', M3, ctx => [ctx.m2])
             .handler('h1', ContractRouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m3]);
 
           const c = container(m);
@@ -190,21 +190,21 @@ describe(`.middleware`, () => {
 
           const { Middleware: DummyHandler } = buildMiddleware('type');
 
-          const sharedM = serverUnit('shared').middleware('shared', SharedMiddleware);
+          const sharedM = serverUnit('shared').task('shared', SharedMiddleware);
 
           const m2Module = serverUnit('middlewares')
             .using(commonDefines)
             .import('otherModule', sharedM)
             .using(serverDefinitions)
-            .middleware('m2', M2, ctx => [ctx.otherModule.shared]);
+            .task('m2', M2, ctx => [ctx.otherModule.shared]);
 
           const m = serverUnit('m')
             .using(commonDefines)
             .import('otherModule', sharedM)
             .import('otherMiddlewares', m2Module)
             .using(serverDefinitions)
-            .middleware('m1', M1, ctx => [ctx.otherModule.shared])
-            .middleware('m3', M3, ctx => [ctx.otherMiddlewares.m2])
+            .task('m1', M1, ctx => [ctx.otherModule.shared])
+            .task('m3', M3, ctx => [ctx.otherMiddlewares.m2])
             .handler('h1', ContractRouteDefinition.empty(), DummyHandler, ctx => [ctx.m1, ctx.m3]);
 
           const c = container(m);
