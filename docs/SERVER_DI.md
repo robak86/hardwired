@@ -1,21 +1,33 @@
+- in order to use contract approach, the exported contract object needs to have absolute paths!!!
+
+  - in order to mount whole application the package should provide factory
+
+  ```typescript
+  // contract.ts
+  const userAuthContract = buildContract('/users');
+
+  // backend.ts
+  const userAuthModule = buildUserAuthModule(userAuthContract);
+
+  const app = module().importModule('userAuth');
+  ```
+
 - in general there are two types of the middleware
-    - middleware extending context/request e.g. with parsed query params - we use for this `Task`
-    - middleware controling flow - we use for this `Middleware`, but it does not know anything about response. Althought
+
+  - middleware extending context/request e.g. with parsed query params - we use for this `Task`
+  - middleware controling flow - we use for this `Middleware`, but it does not know anything about response. Althought
     it may completely replace the response
 
 - serverModule needs to provide in addition to `request` also `errorMiddleware`
-    - it may be a default middleware (which can be overriden only by `module.replace()`)
-    - ... or we need to force the user to provide it in middlewares array for the handler 
-     
+  - it may be a default middleware (which can be overriden only by `module.replace()`)
+  - ... or we need to force the user to provide it in middlewares array for the handler
 - how to inject logger ?
-    - current `.middleware` is not actually an middleware. Rename it to `Runnable` (consider implementing runnable in core ?)
-    - create reale `.middleware` which allows for including next
-        - what about typesafety ?
-        - how to pass `next`?
+  - current `.middleware` is not actually an middleware. Rename it to `Runnable` (consider implementing runnable in core ?)
+  - create reale `.middleware` which allows for including next
+    - what about typesafety ?
+    - how to pass `next`?
 
-
-
-- `IApplication` is basically router instance :/
+* `IApplication` is basically router instance :/
 
   - if we provide more advanced discorery features for resolvers we can get nice composeability
 
@@ -26,19 +38,19 @@
     .handler(usersListDef, usersListHandler);
 
   const postsModule = module('posts')
-    .external<{isRestricted}>()
+    .external<{ isRestricted }>()
     .handler(postsListDef, postsListHandler)
     .handler(postsListDef, postsListHandler)
     .handler(postsListDef, PostsListHandler, ctx => [ctx.isRestricted]);
 
   const appModule = module('app')
     .importApp('/users', usersModule)
-    .importApp('/restricted', postsModule, {restricted: true})        // restricted: true is passed as context for module
-    .importApp('/somethingElse', postsModule, {restricted: false});   // restricted: true is passed as context for module
+    .importApp('/restricted', postsModule, { restricted: true }) // restricted: true is passed as context for module
+    .importApp('/somethingElse', postsModule, { restricted: false }); // restricted: true is passed as context for module
   ```
 
-* ~~Application.addRoute should take `RouteDefinition` instead of pathname and httpMethod ?~~
-* Add versioning to RouteDefinition
+- ~~Application.addRoute should take `RouteDefinition` instead of pathname and httpMethod ?~~
+- Add versioning to RouteDefinition
 
 ```typescript
 m.handler('h1', routeDefinition, handler1).handler('h1V2', routeDefinition.version('2'), handler2);

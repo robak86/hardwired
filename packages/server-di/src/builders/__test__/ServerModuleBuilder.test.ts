@@ -1,7 +1,7 @@
 import { DefinitionsSet } from '@hardwired/di';
-import { HttpRequest, IApplication, IApplicationRoute, Task, ContractRouteDefinition } from '@roro/s-middleware';
+import { ContractRouteDefinition, HttpRequest, IApplication, IApplicationRoute, Task } from '@roro/s-middleware';
 import { ServerModuleBuilder } from '../ServerModuleBuilder';
-import { ApplicationResolver } from '../../resolvers/ApplicationResolver';
+
 import { serverUnit } from '../../testing/helpers';
 import { TaskResolver } from '../../resolvers/TaskResolver';
 
@@ -21,27 +21,6 @@ describe(`ServerModuleBuilder`, () => {
       return true;
     }
   }
-
-  describe(`.app`, () => {
-    describe(`types`, () => {
-      it(`requires class inheriting from IApplication`, async () => {
-        class WrongClass {}
-
-        const m = serverUnit('test').app('app', DummyApplication);
-        // @ts-expect-error
-        const m2 = serverUnit('test').app('app', WrongClass);
-      });
-    });
-
-    it(`registers new ApplicationResolver`, async () => {
-      const registry = DefinitionsSet.empty('empty');
-      // const extendDeclarationsSpy = jest.spyOn(registry, 'extendDeclarations');
-
-      const builder = new ServerModuleBuilder(registry).app('app', DummyApplication);
-
-      expect(builder.registry.declarations.get('app')).toBeInstanceOf(ApplicationResolver);
-    });
-  });
 
   describe(`.task`, () => {
     describe(`types`, () => {

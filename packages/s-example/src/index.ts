@@ -42,6 +42,12 @@ class Logger implements ILogger {
   }
 }
 
+// TODO: maybe .using(serverDefinitions) should create implicitly and router ?
+// TODO: maybe .using(serverDefinitions) should create implicitly and errorHandler ?
+// TODO: having onChildDefinition, onOwnDefinition events would be helpful for precisely registering the handlers ?
+
+// TODO: implement builder.middleware and builder.
+
 export const domainModule = unit('server')
   .using(serverDefinitions)
   .task('helloWorldParams', paramsParser(helloWorldRoute))
