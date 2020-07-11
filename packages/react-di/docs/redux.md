@@ -25,3 +25,10 @@ const stateModule = module('stateModule')
   ```
 
 - add `appendModule` to container. It triggers initializers on module
+
+### redux resource integration ?
+
+`.resource('users', () => buidUsersResource()` - this needs to register underhood the saga
+
+### redux-saga-resource
+- consider if createResource shouldn't return also actions object!

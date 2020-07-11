@@ -1,9 +1,9 @@
 type CancelFunction = () => void;
 
-export class SignalEmitter<TEventType> {
-  private listeners: Array<(event: TEventType) => void> = [];
+export class SignalEmitter<TEventType extends any[]> {
+  private listeners: Array<(...event: TEventType) => void> = [];
 
-  add(listener: (event: TEventType) => void): CancelFunction {
+  add(listener: (...event: TEventType) => void): CancelFunction {
     this.listeners.push(listener);
 
     return () => {
@@ -11,8 +11,8 @@ export class SignalEmitter<TEventType> {
     };
   }
 
-  emit(eventType: TEventType) {
-    this.listeners.forEach(listener => listener(eventType));
+  emit(...eventType: TEventType) {
+    this.listeners.forEach(listener => listener(...eventType));
   }
 }
 

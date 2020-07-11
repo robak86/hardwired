@@ -40,7 +40,7 @@ export const ContainerService = {
     registry.forEachModule(definitionsSet => {
       definitionsSet.forEachDefinition(dependencyResolver => {
         definitionsSet.events.onDefinitionAppend.emit(dependencyResolver);
-        definitionsSet.events.onSpecificDefinitionAppend.emit(dependencyResolver);
+        definitionsSet.events.onSpecificDefinitionAppend.emit(dependencyResolver, registry);
       });
     });
   },

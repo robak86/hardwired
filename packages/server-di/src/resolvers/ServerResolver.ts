@@ -23,7 +23,7 @@ export class ServerResolver<
   TRegistry extends ModuleRegistry,
   TReturn extends IServer
 > extends AbstractDependencyResolver<TRegistry, TReturn> {
-  private handlersResolvers: HandlerResolver<any, any>[] = [];
+  private handlersResolvers: { resolver: HandlerResolver<any, any>; registry: DefinitionsSet<any> }[] = [];
   private router: Router = new Router();
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {
@@ -33,7 +33,7 @@ export class ServerResolver<
   build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
     const serverInstance = this.getInstance(cache, registry, ctx);
 
-    const handlersInstances: ContainerHandler<any>[] = this.handlersResolvers.map(resolver =>
+    const handlersInstances: ContainerHandler<any>[] = this.handlersResolvers.map(({ resolver, registry }) =>
       resolver.build(registry, cache, ctx),
     );
     this.router.replaceRoutes(
@@ -61,8 +61,8 @@ export class ServerResolver<
   }
 
   onRegister(events: ContainerEvents): any {
-    events.onSpecificDefinitionAppend.add(HandlerResolver, resolver => {
-      this.handlersResolvers.push(resolver);
+    events.onSpecificDefinitionAppend.add(HandlerResolver, (resolver, registry) => {
+      this.handlersResolvers.push({ resolver, registry });
     });
   }
 }
