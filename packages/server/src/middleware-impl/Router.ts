@@ -1,7 +1,6 @@
-import { IApplicationRoute, IRouter } from './App';
 import { IncomingMessage, ServerResponse } from 'http';
 import { PathDefinition } from '@roro/routing-core';
-import { HttpRequest, HttpResponse } from './response';
+import { HttpRequest, HttpResponse, IApplicationRoute, IRouter } from '@roro/s-middleware';
 
 export class Router implements IRouter {
   private routes: IApplicationRoute<any, any>[] = [];

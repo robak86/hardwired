@@ -6,7 +6,8 @@ import {
   DefinitionsSet,
   ModuleRegistry,
 } from '@hardwired/di';
-import { IServer, Router } from '@roro/s-middleware';
+import { IServer } from '@roro/s-middleware';
+import { Router } from '@roro/server';
 import { HandlerResolver } from './HandlerResolver';
 import { ContractRouteDefinition } from '../../../routing-contract/src/ContractRouteDefinition';
 import { HttpRequest, HttpResponse } from '../../../s-middleware/src/response';
