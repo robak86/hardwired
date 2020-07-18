@@ -1,12 +1,10 @@
 {
-  "name": "@hardwired/di",
+  "name": "@hardwired/di-core",
   "private": true,
   "version": "1.0.0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "dependencies": {
-    "@hardwired/di-core": "*"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "files": [
     "lib",

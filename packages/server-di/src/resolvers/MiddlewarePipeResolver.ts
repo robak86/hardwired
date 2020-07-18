@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, ContainerCache, DefinitionsSet, ModuleRegistry, } from '@hardwired/di';
+import { AbstractDependencyResolver, ContainerCache, DefinitionsSet, ModuleRegistry, } from '@hardwired/di-core';
 
 export class MiddlewarePipeResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
   TRegistry,

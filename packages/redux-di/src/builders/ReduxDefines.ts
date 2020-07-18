@@ -4,7 +4,7 @@ import {
   DefinitionsSet,
   MaterializedModuleEntries,
   ModuleRegistry,
-} from '@hardwired/di';
+} from '@hardwired/di-core';
 import { Reducer } from 'redux';
 import { ReducerFactory } from '../factories/ReducerFactory';
 import { AlterableStore } from '../stack/AlterableStore';

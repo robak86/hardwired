@@ -7,7 +7,7 @@
   },
   "references": [
     {
-      "path": "../di/tsconfig.json"
+      "path": "../di-core/tsconfig.json"
     }
   ],
   "include": [

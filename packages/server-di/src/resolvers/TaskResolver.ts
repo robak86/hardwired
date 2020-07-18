@@ -6,7 +6,7 @@ import {
   DefinitionsSet,
   DependencyResolver,
   ModuleRegistry,
-} from '@hardwired/di';
+} from '@hardwired/di-core';
 import { Task } from '@roro/s-middleware';
 
 export class TaskResolver<TRegistry extends ModuleRegistry, TReturn>

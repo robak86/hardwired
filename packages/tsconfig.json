@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "./di-core/tsconfig.json"
+    },
+    {
       "path": "./routing-core/tsconfig.json"
     },
     {
@@ -18,10 +21,10 @@
       "path": "./server/tsconfig.json"
     },
     {
-      "path": "./di/tsconfig.json"
+      "path": "./server-di/tsconfig.json"
     },
     {
-      "path": "./server-di/tsconfig.json"
+      "path": "./di/tsconfig.json"
     },
     {
       "path": "./example/tsconfig.json"

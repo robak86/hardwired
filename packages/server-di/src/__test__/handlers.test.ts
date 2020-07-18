@@ -3,7 +3,7 @@ import { IHandler, IServer, response, Task } from '@roro/s-middleware';
 
 import { IncomingMessage, ServerResponse } from 'http';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
-import { commonDefines, unit, container } from '@hardwired/di';
+import { commonDefines, unit, container } from '@hardwired/di-core';
 import { ContractRouteDefinition, HttpMethod } from '@roro/routing-contract';
 
 describe(`handlers`, () => {

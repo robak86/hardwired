@@ -1,4 +1,4 @@
-import { DefinitionsSet } from '@hardwired/di';
+import { DefinitionsSet } from '@hardwired/di-core';
 import { ContractRouteDefinition, HttpRequest, IApplicationRoute, IRouter, Task } from '@roro/s-middleware';
 import { ServerModuleBuilder } from '../ServerModuleBuilder';
 

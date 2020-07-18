@@ -1,4 +1,4 @@
-import { container, module } from '@hardwired/di';
+import { container, module } from '@hardwired/di-core';
 
 import { reduxDefines } from '../builders/ReduxDefines';
 

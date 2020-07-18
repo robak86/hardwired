@@ -10,7 +10,7 @@ import {
   ModuleBuilder,
   ModuleRegistry,
   ModuleRegistryContext,
-} from '@hardwired/di';
+} from '@hardwired/di-core';
 
 type HardwiredContext = {
   container: Container<any>;

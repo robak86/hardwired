@@ -6,7 +6,7 @@ import {
   DependencyResolverFunction,
   ModuleRegistry,
   ContainerService,
-} from '@hardwired/di';
+} from '@hardwired/di-core';
 import { ReducerFactory } from './ReducerFactory';
 import { AlterableStore } from '../stack/AlterableStore';
 import { SagaFactory } from './SagaFactory';

@@ -5,7 +5,7 @@ import {
   ContainerService,
   DefinitionsSet,
   ModuleRegistry,
-} from '@hardwired/di';
+} from '@hardwired/di-core';
 import { IServer } from '@roro/s-middleware';
 import { Router } from '@roro/server';
 import { HandlerResolver } from './HandlerResolver';

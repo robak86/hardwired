@@ -5,7 +5,7 @@ import {
   DefinitionsSet,
   ModuleRegistry,
   SingletonResolver,
-} from '@hardwired/di';
+} from '@hardwired/di-core';
 import { ContractRouteDefinition, HttpRequest } from '@roro/s-middleware';
 import { ContainerHandler } from './ServerResolver';
 

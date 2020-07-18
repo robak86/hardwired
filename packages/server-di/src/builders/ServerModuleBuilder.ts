@@ -6,7 +6,7 @@ import {
   MaterializedModuleEntries,
   ModuleRegistry,
   NotDuplicated,
-} from '@hardwired/di';
+} from '@hardwired/di-core';
 import { ContractRouteDefinition, HttpRequest, HttpResponse, IServer, Middleware, Task, } from '@roro/s-middleware';
 import { TaskResolver } from '../resolvers/TaskResolver';
 import { HandlerResolver } from '../resolvers/HandlerResolver';

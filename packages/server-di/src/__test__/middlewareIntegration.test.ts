@@ -1,6 +1,6 @@
 import { serverUnit } from '../testing/helpers';
 import { Task, ContractRouteDefinition } from '@roro/s-middleware';
-import { container, commonDefines } from '@hardwired/di';
+import { container, commonDefines } from '@hardwired/di-core';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
 
 describe(`.task`, () => {
