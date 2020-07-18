@@ -1,4 +1,4 @@
-- in order to use contract approach, the exported contract object needs to have absolute paths!!!
+- **in order to use contract approach, the exported contract object needs to have absolute paths**!!!
 
   - in order to mount whole application the package should provide factory
 
@@ -22,7 +22,7 @@
   - it may be a default middleware (which can be overriden only by `module.replace()`)
   - ... or we need to force the user to provide it in middlewares array for the handler
 - how to inject logger ?
-  - current `.middleware` is not actually an middleware. Rename it to `Runnable` (consider implementing runnable in core ?)
+  - ~~current `.middleware` is not actually an middleware. Rename it to `Runnable` (consider implementing runnable in core ?)~~ replaced with task
   - create reale `.middleware` which allows for including next
     - what about typesafety ?
     - how to pass `next`?

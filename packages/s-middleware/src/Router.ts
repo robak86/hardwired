@@ -1,16 +1,12 @@
-import { IApplication, IApplicationRoute } from './App';
+import { IApplicationRoute, IRouter } from './App';
 import { IncomingMessage, ServerResponse } from 'http';
 import { PathDefinition } from '@roro/routing-core';
-import { ContractRouteDefinition } from '@roro/routing-contract';
 import { HttpRequest, HttpResponse } from './response';
 
-export class Router implements IApplication {
+export class Router implements IRouter {
   private routes: IApplicationRoute<any, any>[] = [];
 
-  addRoute<TResponseData extends object>(
-    routeDefinition: ContractRouteDefinition<any, TResponseData>,
-    handler: (request: HttpRequest) => Promise<HttpResponse<TResponseData>> | HttpResponse<TResponseData>,
-  ) {}
+  addRoute<TResponseData extends object>(route: IApplicationRoute<any, TResponseData>) {}
 
   replaceRoutes(routes: IApplicationRoute<any, any>[]) {
     this.routes = [...routes];

@@ -1,13 +1,13 @@
 import { DefinitionsSet } from '@hardwired/di';
-import { ContractRouteDefinition, HttpRequest, IApplication, IApplicationRoute, Task } from '@roro/s-middleware';
+import { ContractRouteDefinition, HttpRequest, IApplicationRoute, IRouter, Task } from '@roro/s-middleware';
 import { ServerModuleBuilder } from '../ServerModuleBuilder';
 
 import { serverUnit } from '../../testing/helpers';
 import { TaskResolver } from '../../resolvers/TaskResolver';
 
 describe(`ServerModuleBuilder`, () => {
-  class DummyApplication implements IApplication {
-    addRoute(routeDefinition: ContractRouteDefinition<any, any>, handler: any) {
+  class DummyApplication implements IRouter {
+    addRoute(route: IApplicationRoute<any, any>) {
       throw new Error('Implement me');
     }
 

@@ -1,4 +1,4 @@
-export type { IApplication, IApplicationRoute } from './App';
+export type { IRouter, IApplicationRoute } from './App';
 export type { Task, IHandler, Middleware, IServer, ILogger } from './Middleware';
 
 export * from '@roro/routing-contract';
