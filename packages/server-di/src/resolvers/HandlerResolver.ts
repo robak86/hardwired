@@ -4,8 +4,10 @@ import {
   ContainerService,
   DefinitionsSet,
   ModuleRegistry,
-  SingletonResolver,
 } from '@hardwired/di-core';
+
+import { SingletonResolver } from '@hardwired/di';
+
 import { ContractRouteDefinition, HttpRequest } from '@roro/s-middleware';
 import { ContainerHandler } from './ServerResolver';
 

@@ -6,6 +6,7 @@ import {
   DefinitionsSet,
   ModuleRegistry,
 } from '@hardwired/di-core';
+import { ClassSingletonResolver } from '@hardwired/di';
 import { IServer } from '@roro/s-middleware';
 import { Router } from '@roro/server';
 import { HandlerResolver } from './HandlerResolver';
@@ -26,13 +27,15 @@ export class ServerResolver<
 > extends AbstractDependencyResolver<TRegistry, TReturn> {
   private handlersResolvers: { resolver: HandlerResolver<any, any>; registry: DefinitionsSet<any> }[] = [];
   private router: Router = new Router();
+  private serverInstanceResolver: ClassSingletonResolver<TRegistry, TReturn>;
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {
     super();
+    this.serverInstanceResolver = new ClassSingletonResolver(klass, selectDependencies);
   }
 
   build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
-    const serverInstance = this.getInstance(cache, registry, ctx);
+    const serverInstance = this.serverInstanceResolver.build(registry, cache, ctx);
 
     const handlersInstances: ContainerHandler<any>[] = this.handlersResolvers.map(({ resolver, registry }) =>
       resolver.build(registry, cache, ctx),
@@ -49,17 +52,7 @@ export class ServerResolver<
     serverInstance.replaceListener(this.router.run);
     return serverInstance;
   };
-
-  private getInstance(cache: ContainerCache, registry: DefinitionsSet<TRegistry>, ctx): TReturn {
-    if (cache.hasInGlobalScope(this.id)) {
-      return cache.getFromGlobalScope(this.id);
-    } else {
-      const constructorArgs = this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx)) as any;
-      const instance = new this.klass(...constructorArgs);
-      cache.setForGlobalScope(this.id, instance);
-      return instance;
-    }
-  }
+  
 
   onRegister(events: ContainerEvents): any {
     events.onSpecificDefinitionAppend.add(HandlerResolver, (resolver, registry) => {

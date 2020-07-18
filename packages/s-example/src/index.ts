@@ -1,6 +1,6 @@
 import 'source-map-support/register';
-import { container, unit } from '@hardwired/di-core';
-import { commonDefines } from '@hardwired/di';
+
+import { commonDefines, container, unit } from '@hardwired/di';
 import { serverDefinitions } from '@hardwired/server';
 import { createQueryRoute } from '@roro/routing-contract';
 import { HttpMethod, IHandler, ILogger, response } from '@roro/s-middleware';
