@@ -1,8 +1,8 @@
 import { ContractRouteDefinition, IApplication } from '@roro/s-middleware';
-import { HttpRequest, HttpResponse } from '../../s-middleware/src/Middleware';
 import { IApplicationRoute } from '../../s-middleware/src/App';
 import { IncomingMessage, ServerResponse } from 'http';
 import { PathDefinition } from '@roro/routing-core';
+import { HttpRequest, HttpResponse } from "../../s-middleware/src/response";
 
 // TODO Application is basically an router :/
 export class Application implements IApplication {

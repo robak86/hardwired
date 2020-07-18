@@ -1,6 +1,6 @@
-import { HttpRequest, HttpResponse } from './Middleware';
 import { ContractRouteDefinition } from '@roro/routing-contract';
 import { IncomingMessage, ServerResponse } from 'http';
+import { HttpRequest, HttpResponse } from "./response";
 
 export type IApplicationRoute<TRequestParams extends object, TResponseData extends object> = {
   routeDefinition: ContractRouteDefinition<TRequestParams, TResponseData>;

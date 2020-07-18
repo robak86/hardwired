@@ -9,7 +9,7 @@ import {
 import { IServer, Router } from '@roro/s-middleware';
 import { HandlerResolver } from './HandlerResolver';
 import { ContractRouteDefinition } from '../../../routing-contract/src/ContractRouteDefinition';
-import { HttpRequest, HttpResponse } from '../../../s-middleware/src/Middleware';
+import { HttpRequest, HttpResponse } from "../../../s-middleware/src/response";
 
 /**
  * This class is returned by the container and encapsulates all the wiring. It requires as an input http request object
