@@ -1,9 +1,9 @@
-import { ModuleRegistry } from '../module/ModuleRegistry';
-import { DependencyResolverFunction } from './DependencyResolver';
+import { AbstractDependencyResolver } from './AbstractDependencyResolver';
 import { ContainerCache } from '../container/container-cache';
 import { DefinitionsSet } from '../module/DefinitionsSet';
+import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ContainerService } from '../container/ContainerService';
-import { AbstractDependencyResolver } from './AbstractDependencyResolver';
+import { DependencyResolverFunction } from './DependencyResolver';
 
 export class TransientResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
   TRegistry,

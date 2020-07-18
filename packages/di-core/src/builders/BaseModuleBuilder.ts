@@ -18,9 +18,7 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
     return new Cls(ctx);
   }
 
-  using<TNextBuilder>(
-    builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
-  ): TNextBuilder {
+  using<TNextBuilder>(builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder): TNextBuilder {
     return builderFactory(this.registry);
   }
 

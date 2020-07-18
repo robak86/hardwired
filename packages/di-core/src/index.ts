@@ -10,12 +10,8 @@ export { ContainerService } from './container/ContainerService';
 
 export { DefinitionsSet } from './module/DefinitionsSet';
 
-export { SingletonResolver } from './resolvers/SingletonResolver';
-
 export type { ModuleBuilder, ModuleBuilderRegistry } from './builders/ModuleBuilder';
-
 export { ContainerCache } from './container/container-cache';
-
 export { BaseModuleBuilder } from './builders/BaseModuleBuilder';
 export type { FlattenModules } from './module/ModuleRegistry';
 export type { ModuleRegistryImports } from './module/ModuleRegistry';
