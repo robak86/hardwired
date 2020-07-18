@@ -1,7 +1,6 @@
 import { SignalEmitter } from '../utils/SignalEmitter';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { AbstractDependencyResolver } from '../resolvers/AbstractDependencyResolver';
-import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DefinitionsSet } from '../module/DefinitionsSet';
 
 class DefinitionsSignalEmitter {

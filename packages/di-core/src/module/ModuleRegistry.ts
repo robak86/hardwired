@@ -2,6 +2,13 @@ import { Thunk, UnwrapThunk } from '../utils/thunk';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 
+// TODO: group this types mess into namespaces - we don't wanna export so many unbound types
+declare namespace Test {
+  type Zonk = boolean;
+}
+
+type T = Test.Zonk;
+
 export type Definition<T> = { definition: T };
 export type RequiresDefinition<T> = { requires: T };
 export type ModuleRegistry = Record<string, Thunk<ModuleBuilder<any>> | Definition<any> | RequiresDefinition<any>>;

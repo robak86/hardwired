@@ -1,12 +1,7 @@
 import { unwrapThunk } from '../utils/thunk';
 import { ModuleId } from '../module-id';
 import { ImmutableSet } from '../ImmutableSet';
-import {
-  Definition,
-  MaterializedModuleEntries,
-  ModuleRegistry,
-  ModuleRegistryDefinitionsResolvers
-} from './ModuleRegistry';
+import { MaterializedModuleEntries, ModuleRegistry, ModuleRegistryDefinitionsResolvers } from './ModuleRegistry';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { ContainerEvents } from '../container/ContainerEvents';
 
