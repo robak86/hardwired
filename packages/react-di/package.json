@@ -5,7 +5,8 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "@hardwired/di-core": "*"
+    "@hardwired/di-core": "*",
+    "@hardwired/di": "*"
   },
   "devDependencies": {
     "@testing-library/react": "^10.0.4",

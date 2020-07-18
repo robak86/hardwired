@@ -1,9 +1,9 @@
-import { module } from '../../module/Module';
-import { expectType, TypeEqual } from 'ts-expect';
-import { Definition } from '../../module/ModuleRegistry';
-import { container } from '../../container/Container';
-import { ModuleBuilder, ModuleBuilderRegistry } from '../ModuleBuilder';
+import { container, Definition, ModuleBuilderRegistry, ModuleBuilder } from '@hardwired/di-core';
+
 import { CommonBuilder } from '../CommonDefines';
+import { module } from '../../module';
+
+import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`FunctionBuilder`, () => {
   describe(`types`, () => {

@@ -1,9 +1,9 @@
 import { serverUnit } from '../testing/helpers';
-import { IHandler, IServer, response, Task } from '@roro/s-middleware';
+import { IHandler, IServer, Task } from '@roro/s-middleware';
 
 import { IncomingMessage, ServerResponse } from 'http';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
-import { commonDefines, unit, container } from '@hardwired/di-core';
+import { commonDefines, container, unit } from '@hardwired/di';
 import { ContractRouteDefinition, HttpMethod } from '@roro/routing-contract';
 
 describe(`handlers`, () => {
@@ -51,7 +51,6 @@ describe(`handlers`, () => {
       const server = container(demoApp).get('server');
 
       server.onRequest({ url: '/hello', method: 'post' } as any, {} as any);
-
     });
   });
 });

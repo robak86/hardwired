@@ -1,4 +1,4 @@
-import { container, module } from '@hardwired/di-core';
+import { container, module } from '@hardwired/di';
 import { AlterableStore } from '../../stack/AlterableStore';
 import { reduxDefines } from '../ReduxDefines';
 import { ReducerFactory } from '../../factories/ReducerFactory';

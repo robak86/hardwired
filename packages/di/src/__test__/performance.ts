@@ -1,10 +1,11 @@
-import { unit } from '../module/Module';
-import { tuple } from '../utils/tuple';
+import { container } from '@hardwired/di-core';
+import { unit } from '../module';
+
 import * as b from 'benny';
-import { container } from '../container/Container';
+import { tuple } from '@hardwired/di-core';
 
 class DummyClass {
-  private count = 0
+  private count = 0;
   constructor(private a, private b) {}
 
   call() {

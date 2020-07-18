@@ -5,5 +5,7 @@ export { FunctionResolver } from './resolvers/FunctionResolver';
 export { SingletonResolver } from './resolvers/SingletonResolver';
 export { TransientResolver } from './resolvers/TransientResolver';
 
-export { unit } from './module';
+export { unit, module } from './module';
+
 export { container } from '@hardwired/di-core';
+export { commonDefines } from './builders/CommonDefines';

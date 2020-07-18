@@ -1,10 +1,15 @@
-import { Module, module } from '../Module';
-import { expectType, TypeEqual } from 'ts-expect';
-import { Container, container } from '../../container/Container';
-import { Definition, RequiresDefinition } from '../ModuleRegistry';
-
-import { ModuleBuilder, ModuleBuilderRegistry } from '../../builders/ModuleBuilder';
+import {
+  container,
+  Definition,
+  ModuleBuilderRegistry,
+  ModuleBuilder,
+  Container,
+  RequiresDefinition,
+} from '@hardwired/di-core';
 import { CommonBuilder, commonDefines } from '../../builders/CommonDefines';
+import { module } from '../../module';
+
+import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`Module`, () => {
   function createClass<TType extends string>(type: TType, randomizeInstance = true) {
@@ -427,7 +432,6 @@ describe(`Module`, () => {
       expect(container(mocked, {}).get('val')).toEqual({ deps: [{ deps: [new F2Class()] }] });
       expect(container(mocked, {}).deepGet(m1, 'val')).toEqual(new F2Class());
       expect(container(mocked, {}).deepGet(m2, 'valFromChild')).toEqual({ deps: [new F2Class()] });
-      expect(container(mocked, {}).deepGet(m1, 'val')).toEqual(new F2Class());
       expect(m3).not.toEqual(mocked);
     });
   });

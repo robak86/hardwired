@@ -1,19 +1,18 @@
-export * from './module/Module';
 export * from './container/Container';
+export { Module } from './module/Module';
 export * from './utils';
 
 export { tuple } from './utils/tuple';
 export { ContainerEvents } from './container/ContainerEvents';
 export type { DependencyResolver, DependencyResolverFunction } from './resolvers/DependencyResolver';
 export { AbstractDependencyResolver } from './resolvers/AbstractDependencyResolver';
-export { commonDefines } from './builders/CommonDefines';
 export { ContainerService } from './container/ContainerService';
 
 export { DefinitionsSet } from './module/DefinitionsSet';
 
 export { SingletonResolver } from './resolvers/SingletonResolver';
 
-export type { ModuleBuilder } from './builders/ModuleBuilder';
+export type { ModuleBuilder, ModuleBuilderRegistry } from './builders/ModuleBuilder';
 
 export { ContainerCache } from './container/container-cache';
 
@@ -38,4 +37,4 @@ export type { NotDuplicatedKeys } from './module/ModuleUtils';
 export type { NotDuplicated } from './module/ModuleUtils';
 export { createResolverId } from './utils/fastId';
 
-export * from './utils/thunk'
+export * from './utils/thunk';

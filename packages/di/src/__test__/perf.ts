@@ -1,4 +1,4 @@
-import { module } from './module/Module';
+import { module } from '../module';
 
 class SomeClass {
   constructor(...args: any[]) {}

@@ -5,12 +5,12 @@ import {
   Container,
   DeepGetReturn,
   MaterializedDefinitions,
-  Module,
-  module,
   ModuleBuilder,
   ModuleRegistry,
   ModuleRegistryContext,
+  Module,
 } from '@hardwired/di-core';
+import { module } from '@hardwired/di';
 
 type HardwiredContext = {
   container: Container<any>;

@@ -1,8 +1,8 @@
-import { module } from '../../module/Module';
-import { expectType, TypeEqual } from 'ts-expect';
-import { Definition } from '../../module/ModuleRegistry';
-import { container } from '../../container/Container';
+import { container, Definition } from '@hardwired/di-core';
 import { CommonBuilder } from '../CommonDefines';
+import { module } from '../../module';
+
+import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`ClassBuilder`, () => {
   class Class0 {}

@@ -1,4 +1,4 @@
-import { unit, commonDefines } from '@hardwired/di-core';
+import { unit, commonDefines } from '@hardwired/di';
 import { serverDefinitions } from '../builders/ServerModuleBuilder';
 import { HttpRequest, Task } from '@roro/s-middleware';
 

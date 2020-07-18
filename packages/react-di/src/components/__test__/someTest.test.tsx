@@ -1,4 +1,4 @@
-import { container, module } from '@hardwired/di-core';
+import { container, module } from '@hardwired/di';
 import * as React from 'react';
 
 describe(`It works`, () => {
