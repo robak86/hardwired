@@ -2,17 +2,13 @@ import {
   AbstractDependencyResolver,
   ContainerCache,
   ContainerEvents,
-  ContainerService,
   DefinitionsSet,
   ModuleRegistry,
 } from '@hardwired/di-core';
 import { ClassSingletonResolver } from '@hardwired/di';
-import { IServer } from '@roro/s-middleware';
-import { Router } from '@roro/server';
-import { HandlerResolver } from './HandlerResolver';
-import { ContractRouteDefinition } from '../../../routing-contract/src/ContractRouteDefinition';
-import { HttpRequest, HttpResponse } from '../../../s-middleware/src/response';
-
+import { IServer, ContractRouteDefinition, HttpRequest, HttpResponse } from '@roro/s-middleware';
+import { RouterResolver } from './RouterResolver';
+import invariant from 'tiny-invariant';
 /**
  * This class is returned by the container and encapsulates all the wiring. It requires as an input http request object
  */
@@ -25,8 +21,7 @@ export class ServerResolver<
   TRegistry extends ModuleRegistry,
   TReturn extends IServer
 > extends AbstractDependencyResolver<TRegistry, TReturn> {
-  private handlersResolvers: { resolver: HandlerResolver<any, any>; registry: DefinitionsSet<any> }[] = [];
-  private router: Router = new Router();
+  private routers: { resolver: RouterResolver<any, any>; registry: DefinitionsSet<any> }[] = [];
   private serverInstanceResolver: ClassSingletonResolver<TRegistry, TReturn>;
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {
@@ -37,26 +32,17 @@ export class ServerResolver<
   build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
     const serverInstance = this.serverInstanceResolver.build(registry, cache, ctx);
 
-    const handlersInstances: ContainerHandler<any>[] = this.handlersResolvers.map(({ resolver, registry }) =>
-      resolver.build(registry, cache, ctx),
-    );
-    this.router.replaceRoutes(
-      handlersInstances.map(h => {
-        return {
-          routeDefinition: h.routeDefinition,
-          handler: h.request,
-        };
-      }),
-    );
+    invariant(this.routers.length === 1, `Currently server di supports only single router instance`);
 
-    serverInstance.replaceListener(this.router.run);
+    const routerInstance = this.routers[0].resolver.build(this.routers[0].registry, cache, ctx);
+
+    serverInstance.replaceListener(routerInstance);
     return serverInstance;
   };
-  
 
   onRegister(events: ContainerEvents): any {
-    events.onSpecificDefinitionAppend.add(HandlerResolver, (resolver, registry) => {
-      this.handlersResolvers.push({ resolver, registry });
+    events.onSpecificDefinitionAppend.add(RouterResolver, (resolver, registry) => {
+      this.routers.push({ resolver, registry });
     });
   }
 }

@@ -7,13 +7,15 @@ import {
   ModuleRegistry,
   NotDuplicated,
 } from '@hardwired/di-core';
-import { ContractRouteDefinition, HttpRequest, HttpResponse, IServer, Middleware, Task, } from '@roro/s-middleware';
+import { ContractRouteDefinition, HttpRequest, HttpResponse, IServer, Middleware, Task } from '@roro/s-middleware';
 import { TaskResolver } from '../resolvers/TaskResolver';
 import { HandlerResolver } from '../resolvers/HandlerResolver';
 import { MiddlewareResolver } from '../resolvers/MiddlewareResolver';
 import { MiddlewarePipeResolver } from '../resolvers/MiddlewarePipeResolver';
 
 import { ContainerHandler, ServerResolver } from '../resolvers/ServerResolver';
+import { IRouter } from '../../../s-middleware/src/App';
+import { RouterResolver } from '../resolvers/RouterResolver';
 
 export type NextServerBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
   TKey,
@@ -29,6 +31,24 @@ export type NextServerBuilder<TKey extends string, TReturn, TRegistry extends Mo
 export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
   constructor(registry: DefinitionsSet<TRegistry>) {
     super(registry);
+  }
+
+  router<TKey extends string, TResult extends IRouter>(
+    key: TKey,
+    klass: ClassType<[], TResult>,
+  ): NextServerBuilder<TKey, TResult, TRegistry>;
+  router<TKey extends string, TDeps extends any[], TResult extends IRouter>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextServerBuilder<TKey, TResult, TRegistry>;
+  router<TKey extends string, TDeps extends any[], TResult extends IRouter>(
+    key: TKey,
+    klass: ClassType<TDeps, TResult>,
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
+  ): NextServerBuilder<TKey, TResult, TRegistry> {
+    const newRegistry = this.registry.extendDeclarations(key, new RouterResolver(klass, depSelect));
+    return new ServerModuleBuilder(newRegistry) as any;
   }
 
   server<TKey extends string, TResult extends IServer>(

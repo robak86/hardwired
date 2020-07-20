@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { HttpResponse } from "./response";
+import { HttpResponse } from './response';
 
 export type ILogger = {
   info(message: string): void;
@@ -29,4 +29,3 @@ export interface Task<TOutput> {
 export interface IHandler<TOutput> {
   run(): HttpResponse<TOutput> | Promise<HttpResponse<TOutput>>;
 }
-

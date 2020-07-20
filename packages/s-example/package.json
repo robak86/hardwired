@@ -9,6 +9,8 @@
   ],
   "dependencies": {
     "@hardwired/server": "*",
+    "@roro/s-middleware": "*",
+    "@roro/server": "*",
     "@roro/routing-contract": "*"
   },
   "publishConfig": {

@@ -17,6 +17,9 @@
     },
     {
       "path": "../server-di/tsconfig.json"
+    },
+    {
+      "path": "../server/tsconfig.json"
     }
   ],
   "include": [

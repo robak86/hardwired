@@ -1,3 +1,6 @@
+- `onSpecificDefinitionAppend` passes in the event resolver and the registry - idealy container should allow to find resolver in the hierarchy and run it with correct registry
+    - this would allow for using `Set` for storing resolvers received in events (no duplicates) 
+    
 - Add thunk support. Declaring parent module below child module sucks
 - currently container events don't care about the modules hierarchy, which means that child module resolvers will receive
   events with parent module resolvers. Is it correct behavior ?
