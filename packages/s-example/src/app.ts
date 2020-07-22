@@ -14,6 +14,3 @@ export const appModule = unit('app')
   .using(serverDefinitions)
   .server('server', Server, ctx => [ctx.config, ctx.logger]);
 
-export const appTestModule = appModule.replace('server', )
-
-

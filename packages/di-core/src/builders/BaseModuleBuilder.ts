@@ -22,6 +22,13 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
     return builderFactory(this.registry);
   }
 
+  using2<TNextBuilder, TOutput extends BaseModuleBuilder<any>>(
+    builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
+    builder: (m: TNextBuilder) => TOutput,
+  ): TOutput {
+    return builderFactory(this.registry) as any;
+  }
+
   // TODO: use Flatten to make this method type safe
   inject<TNextR extends ModuleRegistry>(otherModule: ModuleBuilder<TNextR>): this {
     return this.build(this.registry.inject(otherModule.registry));
