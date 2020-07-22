@@ -1,8 +1,7 @@
-import { container } from '@hardwired/di-core';
-import { unit } from '../module';
+import { container, tuple, module, unit } from '@hardwired/di-core';
 
 import * as b from 'benny';
-import { tuple } from '@hardwired/di-core';
+import { commonDefines } from '../builders/CommonDefines';
 
 class DummyClass {
   private count = 0;
@@ -14,6 +13,7 @@ class DummyClass {
 }
 
 const m = unit('a')
+  .using(commonDefines)
   .value('a', 1)
   .value('b', 2)
   .singleton('class', DummyClass, ctx => tuple(ctx.a, ctx.b))

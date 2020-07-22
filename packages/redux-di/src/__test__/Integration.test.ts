@@ -1,6 +1,7 @@
 import { container, module } from '@hardwired/di';
 
 import { reduxDefines } from '../builders/ReduxDefines';
+import { commonDefines } from '../../../di/src/builders/CommonDefines';
 
 describe(`Integration tests`, () => {
   type AppState = {
@@ -18,6 +19,7 @@ describe(`Integration tests`, () => {
         const childModule = module('childModule').using(reduxDefines<AppState>()).reducer('appReducer2', appReducer2);
 
         const m = module('m')
+          .using(commonDefines)
           .import('childStoreModule', childModule)
           .function('defaultState', () => defaultState)
           .using(reduxDefines<AppState>())

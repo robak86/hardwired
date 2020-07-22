@@ -1,10 +1,12 @@
-import { module } from '../module';
+import { module } from '@hardwired/di-core';
+import { commonDefines } from '../builders/CommonDefines';
 
 class SomeClass {
   constructor(...args: any[]) {}
 }
 
 const ab0 = module('a')
+  .using(commonDefines)
   .value('a', 1)
   .value('b', 1)
   .value('c', 1)
@@ -141,6 +143,7 @@ const ab0 = module('a')
   .singleton('aasas1123', SomeClass, c => [c.a]);
 
 const ab = module('a')
+  .using(commonDefines)
   .value('a', 1)
   .value('b', 1)
   .value('c', 1)
@@ -233,6 +236,7 @@ const ab = module('a')
   .value('ascba', 1);
 
 const ab1 = module('a')
+  .using(commonDefines)
   .value('a', 1)
   .value('b', 1)
   .value('c', 1)
@@ -325,6 +329,7 @@ const ab1 = module('a')
   .value('ascba', 1);
 
 const ab2 = module('a')
+  .using(commonDefines)
   .value('a', 1)
   .value('b', 1)
   .value('c', 1)
@@ -417,6 +422,7 @@ const ab2 = module('a')
   .value('ascba', 1);
 
 const a = module('a')
+  .using(commonDefines)
   .import('imported0', ab0)
   .import('imported', ab)
   .import('imported1', ab1)

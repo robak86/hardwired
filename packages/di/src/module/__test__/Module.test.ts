@@ -1,13 +1,13 @@
 import {
   container,
-  Definition,
-  ModuleBuilderRegistry,
-  ModuleBuilder,
   Container,
+  Definition,
+  ModuleBuilder,
+  ModuleBuilderRegistry,
   RequiresDefinition,
+  module,
 } from '@hardwired/di-core';
 import { CommonBuilder, commonDefines } from '../../builders/CommonDefines';
-import { module } from '../../module';
 
 import { expectType, TypeEqual } from 'ts-expect';
 
@@ -55,7 +55,7 @@ describe(`Module`, () => {
   describe(`.hasModule`, () => {
     it(`returns true if there is a module registered for given key`, async () => {
       let otherModule = module('someName');
-      let rootModule = module('someOtherModule').import('otherModule', otherModule);
+      let rootModule = module('someOtherModule').using(commonDefines).import('otherModule', otherModule);
 
       expect(rootModule.hasModule('otherModule')).toEqual(true);
     });
@@ -73,7 +73,7 @@ describe(`Module`, () => {
       let childModule1 = module('child1');
       let childModule2 = module('child2');
 
-      let rootModule = module('someOtherModule').import('c1', childModule1);
+      let rootModule = module('someOtherModule').using(commonDefines).import('c1', childModule1);
 
       let updatedRoot = rootModule.import('c2', childModule2);
 
@@ -82,7 +82,9 @@ describe(`Module`, () => {
 
     it(`supports thunks`, async () => {
       let childModule1 = module('child1');
-      let rootModule = module('someOtherModule').import('c1', () => childModule1);
+      let rootModule = module('someOtherModule')
+        .using(commonDefines)
+        .import('c1', () => childModule1);
 
       expect(rootModule.hasModule('c1')).toEqual(true);
     });
@@ -91,7 +93,7 @@ describe(`Module`, () => {
   describe(`.define`, () => {
     describe(`types`, () => {
       it(`creates correct types`, async () => {
-        const m = module('m1').singleton('number', T1).singleton('string', T2);
+        const m = module('m1').using(commonDefines).singleton('number', T1).singleton('string', T2);
 
         expectType<TypeEqual<typeof m, CommonBuilder<{ number: Definition<T1>; string: Definition<T2> }>>>(true);
       });
@@ -101,6 +103,7 @@ describe(`Module`, () => {
         const { Klass: F2Class } = createClass('2');
 
         const m = module<{ externalDependency: number }>('m1')
+          .using(commonDefines)
           .singleton('number', F1Class)
           .singleton('number', F2Class);
 
@@ -113,7 +116,7 @@ describe(`Module`, () => {
         public a!: string;
       }
 
-      let m1 = module('otherModule').singleton('someType', SomeType);
+      let m1 = module('otherModule').using(commonDefines).singleton('someType', SomeType);
 
       expect(m1.isDeclared('someType')).toEqual(true);
     });
@@ -121,7 +124,7 @@ describe(`Module`, () => {
     it(`does not mutate original module`, async () => {
       class SomeType {}
 
-      let m1 = module('m1').singleton('someType', SomeType);
+      let m1 = module('m1').using(commonDefines).singleton('someType', SomeType);
 
       let m2 = m1.singleton('someNewType', SomeType);
 
@@ -136,13 +139,13 @@ describe(`Module`, () => {
   describe(`.require`, () => {
     describe(`types`, () => {
       it(`creates modules with correct type`, async () => {
-        const m = module('m').external<{ dependency1: number }>();
+        const m = module('m').using(commonDefines).external<{ dependency1: number }>();
         expectType<TypeEqual<ModuleBuilderRegistry<typeof m>, { dependency1: RequiresDefinition<number> }>>(true);
       });
 
       it(`aggregates all dependencies from imported modules`, async () => {
-        const m = module('m').external<{ dependency1: number }>();
-        const m2 = module('m2').external<{ dependency2: number }>().import('imported', m);
+        const m = module('m').using(commonDefines).external<{ dependency1: number }>();
+        const m2 = module('m2').using(commonDefines).external<{ dependency2: number }>().import('imported', m);
         expectType<
           TypeEqual<
             ModuleBuilderRegistry<typeof m2>,
@@ -162,7 +165,7 @@ describe(`Module`, () => {
         class A {}
         class B {}
 
-        let m = module('m1').singleton('a', A).singleton('b', B);
+        let m = module('m1').using(commonDefines).singleton('a', A).singleton('b', B);
 
         const c1 = container(m);
         expectType<TypeEqual<typeof c1, Container<{ a: Definition<A>; b: Definition<B> }>>>(true);
@@ -175,7 +178,7 @@ describe(`Module`, () => {
       class A {}
       class A2 {}
 
-      let m1 = module('m1').singleton('a', A);
+      let m1 = module('m1').using(commonDefines).singleton('a', A);
 
       let updated = m1.replace('a', () => new A2());
       expect(container(updated).get('a')).toBeInstanceOf(A2);
@@ -203,6 +206,7 @@ describe(`Module`, () => {
         const { Klass: T2Class } = createClass('t2', false);
 
         let m1 = module('m1')
+          .using(commonDefines)
           .singleton('t1', T1Class)
           .singleton('t2', T2Class)
           .singleton('t1_t2', WildCardConsumer, c => [c.t1, c.t2]);
@@ -223,9 +227,9 @@ describe(`Module`, () => {
 
     describe(`.getDeep`, () => {
       it(`returns instance from other module`, async () => {
-        let a = module('1').singleton('t1', T1);
+        let a = module('1').using(commonDefines).singleton('t1', T1);
 
-        let b = module('1').import('a', a).singleton('t1', T1);
+        let b = module('1').using(commonDefines).import('a', a).singleton('t1', T1);
 
         const t1 = container(b).deepGet(a, 't1');
 
@@ -235,9 +239,10 @@ describe(`Module`, () => {
 
     describe(`instances fetched from submodules`, () => {
       it(`returns registered dependency`, async () => {
-        let childM = module('1').singleton('t1', T1).singleton('t2', T2);
+        let childM = module('1').using(commonDefines).singleton('t1', T1).singleton('t2', T2);
 
         let m1 = module('2')
+          .using(commonDefines)
           .import('childModule', childM)
           .singleton('sdf', ConsumerAny, ctx => [ctx.childModule])
           .singleton('t1', T1)
@@ -262,9 +267,10 @@ describe(`Module`, () => {
     describe(`dependencies resolution`, () => {
       describe(`.toObject`, () => {
         it(`returns proxy object able for getting all dependencies`, async () => {
-          let m1 = module('m1').singleton('v1', T1).singleton('v2', T2);
+          let m1 = module('m1').using(commonDefines).singleton('v1', T1).singleton('v2', T2);
 
           let m2 = module('m2')
+            .using(commonDefines)
             .import('m1', () => m1)
             .singleton('ov1', T1)
             .singleton('s2', T2);
@@ -277,7 +283,7 @@ describe(`Module`, () => {
 
       describe(`.getMany`, () => {
         it(`returns all dependencies`, async () => {
-          let m1 = module('m1').singleton('s1', T1).singleton('s2', T2);
+          let m1 = module('m1').using(commonDefines).singleton('s1', T1).singleton('s2', T2);
 
           const [s1, s2] = container(m1).getMany('s1', 's2');
 
@@ -293,10 +299,12 @@ describe(`Module`, () => {
         let f4 = jest.fn().mockReturnValue(() => 9);
 
         let m1 = module('m1') //breakme
+          .using(commonDefines)
           .singleton('s3', f3)
           .singleton('s4', f4);
 
         let m2 = module('m2') //breakme
+          .using(commonDefines)
           .import('m1', m1)
           .singleton('s1', f1)
           .singleton('s2', f2);
@@ -320,11 +328,13 @@ describe(`Module`, () => {
         const { Klass: F6Class, spy: f6 } = createClass('9');
 
         const c = module('c')
+          .using(commonDefines)
           .singleton('f1', F1Class)
           .singleton('f2', F2Class)
           .singleton('f1+f2', WildCardConsumer, ({ f1, f2 }) => [f1, f2]);
 
         const b = module('b')
+          .using(commonDefines)
           .import('c', c)
           .singleton('f3', F3Class)
           .singleton('f4', F4Class)
@@ -332,6 +342,7 @@ describe(`Module`, () => {
           .singleton('f1+f2+f3+f4', WildCardConsumer, _ => [_.c.f1, _.c.f2, _.f3, _.f3]);
 
         const a = module('a')
+          .using(commonDefines)
           .import('b', b)
           .import('c', c)
           .singleton('f5', F5Class)
@@ -372,9 +383,13 @@ describe(`Module`, () => {
         const f3DepsSelect = jest.fn().mockReturnValue([]);
         const f4DepsSelect = jest.fn().mockReturnValue([]);
 
-        let m1 = module('m1').singleton('s3', F3Class, f3DepsSelect).singleton('s4', F4Class, f4DepsSelect);
+        let m1 = module('m1')
+          .using(commonDefines)
+          .singleton('s3', F3Class, f3DepsSelect)
+          .singleton('s4', F4Class, f4DepsSelect);
 
         let m2 = module('m2')
+          .using(commonDefines)
           .import('m1', m1)
           .singleton('s1', F1Class, f1DepsSelect)
           .singleton('s2', F2Class, f2DepsSelect)
@@ -414,13 +429,15 @@ describe(`Module`, () => {
       const { Klass: F1Class } = createClass('123', false);
       const { Klass: F2Class } = createClass('456', false);
 
-      const m1 = module('m1').singleton('val', F1Class);
+      const m1 = module('m1').using(commonDefines).singleton('val', F1Class);
 
       const m2 = module('m2')
+        .using(commonDefines)
         .import('child', m1)
         .singleton('valFromChild', WildCardConsumer, c => [c.child.val]);
 
       const m3 = module('m3')
+        .using(commonDefines)
         .import('child1', m1)
         .import('child2', m2)
         .singleton('val', WildCardConsumer, c => [c.child2.valFromChild]);

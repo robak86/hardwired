@@ -1,6 +1,6 @@
-import { container, Definition } from '@hardwired/di-core';
-import { CommonBuilder } from '../CommonDefines';
-import { module } from '../../module';
+import { container, Definition, module } from '@hardwired/di-core';
+import { CommonBuilder, commonDefines } from '../CommonDefines';
+
 
 import { expectType, TypeEqual } from 'ts-expect';
 
@@ -15,12 +15,13 @@ describe(`ClassBuilder`, () => {
 
   describe(`types`, () => {
     it(`creates module with correct generic types for class with no constructor args`, async () => {
-      const m1 = module('m1').singleton('class0', Class0);
+      const m1 = module('m1').using(commonDefines).singleton('class0', Class0);
       expectType<TypeEqual<typeof m1, CommonBuilder<{ class0: Definition<Class0> }>>>(true);
     });
 
     it(`creates module with correct generic types for class with 1 constructor arg`, async () => {
       const m1 = module('m1')
+        .using(commonDefines)
         .value('d1', 123)
         .singleton('class1', Class1, ctx => [ctx.d1]);
       expectType<TypeEqual<typeof m1, CommonBuilder<{ class1: Definition<Class1>; d1: Definition<number> }>>>(true);
@@ -28,6 +29,7 @@ describe(`ClassBuilder`, () => {
 
     it(`creates module with correct generic types for class with 2 constructor arg`, async () => {
       const m1 = module('m1')
+        .using(commonDefines)
         .value('d1', 123)
         .value('d2', '123')
         .singleton('class2', Class2, ctx => [ctx.d1, ctx.d2]);
@@ -42,6 +44,7 @@ describe(`ClassBuilder`, () => {
 
   describe(`instantiation`, () => {
     const m = module('m1')
+      .using(commonDefines)
       .value('d1', 123)
       .value('d2', '123')
       .singleton('class2', Class2, ctx => [ctx.d1, ctx.d2]);

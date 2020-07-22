@@ -1,9 +1,9 @@
-import { container, module } from '@hardwired/di';
+import { container, module, commonDefines } from '@hardwired/di';
 import * as React from 'react';
 
 describe(`It works`, () => {
   it(`does not not`, async () => {
-    const m = module('m1').value('a', 'a');
+    const m = module('m1').using(commonDefines).value('a', 'a');
     expect(container(m).get('a')).toEqual('a');
   });
 

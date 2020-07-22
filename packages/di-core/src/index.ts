@@ -1,5 +1,5 @@
 export * from './container/Container';
-export { Module } from './module/Module';
+export { Module, unit, module } from './module/Module';
 export * from './utils';
 
 export { tuple } from './utils/tuple';

@@ -4,9 +4,9 @@ import {
   Definition,
   ModuleBuilder,
   RequiresDefinition,
+  module,
 } from '@hardwired/di-core';
 
-import { module } from '../module';
 import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`Container`, () => {

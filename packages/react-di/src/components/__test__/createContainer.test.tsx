@@ -1,11 +1,11 @@
-import { module } from '@hardwired/di';
+import { commonDefines, module } from '@hardwired/di';
 import { createContainer } from '../createContainer';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../DummyComponent';
 import * as React from 'react';
 
 describe(`createContainer`, () => {
-  const m1 = module('myModule').value('val1', 'val1').value('val2', 'val2');
+  const m1 = module('myModule').using(commonDefines).value('val1', 'val1').value('val2', 'val2');
 
   const { Container, useDependency, useContainer } = createContainer(m1);
 

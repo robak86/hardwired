@@ -1,7 +1,7 @@
-import { container, Definition, ModuleBuilderRegistry, ModuleBuilder } from '@hardwired/di-core';
+import { container, Definition, ModuleBuilder, ModuleBuilderRegistry, module } from '@hardwired/di-core';
 
-import { CommonBuilder } from '../CommonDefines';
-import { module } from '../../module';
+import { CommonBuilder, commonDefines } from '../CommonDefines';
+
 
 import { expectType, TypeEqual } from 'ts-expect';
 
@@ -9,25 +9,28 @@ describe(`FunctionBuilder`, () => {
   describe(`types`, () => {
     it(`creates correct module type for function without any dependencies`, async () => {
       const someFunction = () => 123;
-      const m = module('m1').function('noDepsFunction', someFunction);
+      const m = module('m1').using(commonDefines).function('noDepsFunction', someFunction);
       expectType<TypeEqual<typeof m, CommonBuilder<{ noDepsFunction: Definition<() => number> }>>>(true);
     });
 
     it(`creates correct module type for function with single parameter`, async () => {
       const someFunction = (someParam: string) => 123;
-      const m = module('m1').function('noDepsFunction', someFunction);
+      const m = module('m1').using(commonDefines).function('noDepsFunction', someFunction);
       expectType<TypeEqual<typeof m, CommonBuilder<{ noDepsFunction: Definition<(param: string) => number> }>>>(true);
     });
 
     it(`creates correct types using dependencies from imported modules`, async () => {
       const someFunction = (someParam: string) => 123;
-      const imported = module('imported').function(
-        'importedFunction',
-        () => 'someString',
-        ctx => ['someString'],
-      );
+      const imported = module('imported')
+        .using(commonDefines)
+        .function(
+          'importedFunction',
+          () => 'someString',
+          ctx => ['someString'],
+        );
 
       const m = module('m1')
+        .using(commonDefines)
         .import('otherModule', imported)
         .function('noDepsFunction', someFunction, c => [c.otherModule.importedFunction()]);
 
@@ -45,6 +48,7 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with single parameter with all deps provided`, async () => {
       const someFunction = (someParam: string) => 123;
       const m = module('m1')
+        .using(commonDefines)
         .value('someString', 'someString')
         .function('noDepsFunction', someFunction, ctx => [ctx.someString]);
 
@@ -56,6 +60,7 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with two parameters with no deps provided`, async () => {
       const someFunction = (someParam: string, someOtherParam: number) => 123;
       const m = module('m1')
+        .using(commonDefines)
         .value('someString', 'someString')
         .value('someNumber', 123)
         .function('noDepsFunction', someFunction);
@@ -75,6 +80,7 @@ describe(`FunctionBuilder`, () => {
     it(`creates correct module type for function with two parameters with all deps provided`, async () => {
       const someFunction = (someParam: string, someOtherParam: number) => 123;
       const m = module('m1')
+        .using(commonDefines)
         .value('someString', 'someString')
         .value('someNumber', 123)
         .function('noDepsFunction', someFunction, ctx => [ctx.someString, ctx.someNumber]);
@@ -95,6 +101,7 @@ describe(`FunctionBuilder`, () => {
   describe(`instantiation`, () => {
     const someFunction = (someParam: string, someOtherParam: number) => [someParam, someOtherParam];
     const m = module('m1')
+      .using(commonDefines)
       .value('d1', 'dependency1')
       .value('d2', 123)
       .function('curry0', someFunction)
