@@ -1,4 +1,4 @@
-import { DefinitionsSet } from '@hardwired/di-core';
+import { ModuleRegistry } from '@hardwired/di-core';
 import { ContractRouteDefinition, HttpRequest, IApplicationRoute, IRouter, Task } from '@roro/s-middleware';
 import { ServerModuleBuilder } from '../ServerModuleBuilder';
 
@@ -34,7 +34,7 @@ describe(`ServerModuleBuilder`, () => {
     });
 
     it(`registers new ApplicationResolver`, async () => {
-      const registry = DefinitionsSet.empty('empty');
+      const registry = ModuleRegistry.empty('empty');
       const builder = new ServerModuleBuilder(registry).task('middleware', DummyApplication);
 
       expect(builder.registry.declarations.get('middleware')).toBeInstanceOf(TaskResolver);

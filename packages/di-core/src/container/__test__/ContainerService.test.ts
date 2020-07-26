@@ -1,4 +1,4 @@
-import { DefinitionsSet } from '../..';
+import { ModuleRegistry } from '../..';
 import { DependencyResolver } from '../../resolvers/DependencyResolver';
 import { ContainerService } from '../ContainerService';
 
@@ -26,7 +26,7 @@ describe(`ContainerService`, () => {
       it(`calls all registered listeners from the bottom to the top`, async () => {
         const { resolver, onEvent } = buildListeningResolver();
 
-        const d = DefinitionsSet.empty('d')
+        const d = ModuleRegistry.empty('d')
           .extendDeclarations('a', buildFakeResolver())
           .extendDeclarations('b', buildFakeResolver())
           .extendDeclarations('listening', resolver);
@@ -43,12 +43,12 @@ describe(`ContainerService`, () => {
         const topLevelListeningResolver = buildListeningResolver();
         const childListeningResolver = buildListeningResolver();
 
-        const child = DefinitionsSet.empty('child')
+        const child = ModuleRegistry.empty('child')
           .extendDeclarations('childA', buildFakeResolver())
           .extendDeclarations('childB', buildFakeResolver())
           .extendDeclarations('childListening', childListeningResolver.resolver);
 
-        const d = DefinitionsSet.empty('d')
+        const d = ModuleRegistry.empty('d')
           .extendDeclarations('a', buildFakeResolver())
           .extendDeclarations('b', buildFakeResolver())
           .extendDeclarations('listening', topLevelListeningResolver.resolver)

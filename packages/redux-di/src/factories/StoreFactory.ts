@@ -2,28 +2,28 @@ import {
   AbstractDependencyResolver,
   ContainerCache,
   ContainerEvents,
-  DefinitionsSet,
-  DependencyResolverFunction,
   ModuleRegistry,
+  DependencyResolverFunction,
+  RegistryRecord,
   ContainerService,
 } from '@hardwired/di-core';
 import { ReducerFactory } from './ReducerFactory';
 import { AlterableStore } from '../stack/AlterableStore';
 import { SagaFactory } from './SagaFactory';
 
-export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends AbstractDependencyResolver<
-  TRegistry,
+export class StoreFactory<TRegistryRecord extends RegistryRecord, AppState> extends AbstractDependencyResolver<
+  TRegistryRecord,
   AlterableStore<AppState>
 > {
   public type = 'store';
   public reducersResolvers: ReducerFactory<any, any>[] = [];
   public sagasResolvers: SagaFactory<any, any>[] = [];
 
-  constructor(private resolver: DependencyResolverFunction<TRegistry, AppState>) {
+  constructor(private resolver: DependencyResolverFunction<TRegistryRecord, AppState>) {
     super();
   }
 
-  build(registry: DefinitionsSet<TRegistry, any>, cache: ContainerCache, ctx) {
+  build(registry: ModuleRegistry<TRegistryRecord, any>, cache: ContainerCache, ctx) {
     const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.build(registry, cache, ctx));
     const store = this.buildStore(cache, registry, ctx);
     store.replaceReducers(reducers);
@@ -31,7 +31,7 @@ export class StoreFactory<TRegistry extends ModuleRegistry, AppState> extends Ab
     return store;
   }
 
-  private buildStore(cache: ContainerCache, registry: DefinitionsSet<TRegistry, any>, ctx) {
+  private buildStore(cache: ContainerCache, registry: ModuleRegistry<TRegistryRecord, any>, ctx) {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {

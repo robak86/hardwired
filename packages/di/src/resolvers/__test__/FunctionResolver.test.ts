@@ -1,4 +1,4 @@
-import { ContainerCache, ContainerService, DefinitionsSet, } from '@hardwired/di-core';
+import { ContainerCache, ContainerService, ModuleRegistry, } from '@hardwired/di-core';
 import { FunctionResolver } from '../FunctionResolver';
 import { SingletonResolver } from '../SingletonResolver';
 import { TransientResolver } from '../TransientResolver';
@@ -11,22 +11,22 @@ describe(`FunctionResolver`, () => {
     const transientFactorySpy = jest.fn().mockImplementation(() => Math.random());
     const transientResolver = new TransientResolver(transientFactorySpy);
 
-    const definitionsSet = DefinitionsSet.empty('test')
+    const moduleRegistry = ModuleRegistry.empty('test')
       .extendDeclarations('singleton', singletonResolver)
       .extendDeclarations('transient', transientResolver);
 
     const cache = new ContainerCache();
 
-    return { definitionsSet, singletonFactorySpy, transientFactorySpy, cache };
+    return { moduleRegistry, singletonFactorySpy, transientFactorySpy, cache };
   }
 
   describe(`memoization`, () => {
     describe(`no partially applied arguments`, () => {
       it(`returns the same instance of the function`, async () => {
-        const { cache, definitionsSet } = setup();
+        const { cache, moduleRegistry } = setup();
         const someFunction = (a: number) => Math.random();
 
-        const set = definitionsSet.extendDeclarations('fn', new FunctionResolver(someFunction, ctx => []));
+        const set = moduleRegistry.extendDeclarations('fn', new FunctionResolver(someFunction, ctx => []));
 
         const fnBuild1 = ContainerService.getChild(set, cache, {}, 'fn');
         const fnBuild2 = ContainerService.getChild(set, cache, {}, 'fn');
@@ -37,10 +37,10 @@ describe(`FunctionResolver`, () => {
 
     describe(`using partially applied singleton dependency`, () => {
       it(`returns the same instance of the function`, async () => {
-        const { cache, definitionsSet, singletonFactorySpy } = setup();
+        const { cache, moduleRegistry, singletonFactorySpy } = setup();
         const someFunction = (a: number) => a;
 
-        const set = definitionsSet.extendDeclarations('fn', new FunctionResolver(someFunction, ctx => [ctx.singleton]));
+        const set = moduleRegistry.extendDeclarations('fn', new FunctionResolver(someFunction, ctx => [ctx.singleton]));
 
         const fnBuild1 = ContainerService.getChild(set, cache, {}, 'fn');
         const fnBuild2 = ContainerService.getChild(set, cache, {}, 'fn');
@@ -55,10 +55,10 @@ describe(`FunctionResolver`, () => {
 
     describe(`using partially applied transient dependency`, () => {
       it(`returns new instance of the function`, async () => {
-        const { cache, definitionsSet, transientFactorySpy } = setup();
+        const { cache, moduleRegistry, transientFactorySpy } = setup();
         const someFunction = (a: number) => a;
 
-        const set = definitionsSet.extendDeclarations('fn', new FunctionResolver(someFunction, ctx => [ctx.transient]));
+        const set = moduleRegistry.extendDeclarations('fn', new FunctionResolver(someFunction, ctx => [ctx.transient]));
 
         const fnBuild1 = ContainerService.getChild(set, cache, {}, 'fn');
         const fnBuild2 = ContainerService.getChild(set, cache, {}, 'fn');
@@ -71,10 +71,10 @@ describe(`FunctionResolver`, () => {
 
     describe(`using partially applied transient and singleton dependency`, () => {
       it(`returns new instance of the function`, async () => {
-        const { cache, definitionsSet, singletonFactorySpy, transientFactorySpy } = setup();
+        const { cache, moduleRegistry, singletonFactorySpy, transientFactorySpy } = setup();
         const someFunction = (a: number, b: number) => [a, b];
 
-        const set = definitionsSet.extendDeclarations(
+        const set = moduleRegistry.extendDeclarations(
           'fn',
           new FunctionResolver(someFunction, ctx => [ctx.transient, ctx.singleton]),
         );

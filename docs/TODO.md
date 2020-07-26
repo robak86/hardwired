@@ -153,7 +153,7 @@ const storeModule = module('store')
 
 - allow DependencyResovler registering for events
 - events will be lazyliy triggered by container, not before!!
-- events should be registered in DefinitionsSet
+- events should be registered in ModuleRegistry
 
 - StoreDependencyResolver registers listeners onDefinitionAppend
 

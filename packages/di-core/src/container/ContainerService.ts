@@ -1,15 +1,15 @@
-import { ModuleRegistry } from '../module/ModuleRegistry';
+import { RegistryRecord } from '../module/RegistryRecord';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { unwrapThunk } from '../utils/thunk';
-import { DefinitionsSet } from '../module/DefinitionsSet';
+import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ContainerCache } from './container-cache';
 
 export const ContainerService = {
-  getChild<TRegistry extends ModuleRegistry>(
-    registry: DefinitionsSet<TRegistry>,
+  getChild<TRegistryRecord extends RegistryRecord>(
+    registry: ModuleRegistry<TRegistryRecord>,
     cache: ContainerCache,
     context,
-    dependencyKey: keyof TRegistry,
+    dependencyKey: keyof TRegistryRecord,
   ) {
     if (context && context[dependencyKey]) {
       return context[dependencyKey];
@@ -28,7 +28,7 @@ export const ContainerService = {
     throw new Error(`Cannot find dependency for ${dependencyKey} key`);
   },
 
-  proxyGetter(registry: DefinitionsSet<any>, cache: ContainerCache, context) {
+  proxyGetter(registry: ModuleRegistry<any>, cache: ContainerCache, context) {
     return new Proxy({} as any, {
       get(target, property: string) {
         return ContainerService.getChild(registry, cache, context, property);
@@ -36,16 +36,16 @@ export const ContainerService = {
     });
   },
 
-  callDefinitionsListeners<TRegistry extends ModuleRegistry>(registry: DefinitionsSet<TRegistry>) {
-    registry.forEachModule(definitionsSet => {
-      definitionsSet.forEachDefinition(dependencyResolver => {
-        definitionsSet.events.onDefinitionAppend.emit(dependencyResolver);
-        definitionsSet.events.onSpecificDefinitionAppend.emit(dependencyResolver, definitionsSet);
+  callDefinitionsListeners<TRegistryRecord extends RegistryRecord>(registry: ModuleRegistry<TRegistryRecord>) {
+    registry.forEachModule(moduleRegistry => {
+      moduleRegistry.forEachDefinition(dependencyResolver => {
+        moduleRegistry.events.onDefinitionAppend.emit(dependencyResolver);
+        moduleRegistry.events.onSpecificDefinitionAppend.emit(dependencyResolver, moduleRegistry);
       });
     });
   },
 
-  init(registry: DefinitionsSet<any>, cache: ContainerCache, context) {
+  init(registry: ModuleRegistry<any>, cache: ContainerCache, context) {
     registry.forEachModuleReversed(registry => {
       if (cache.isModuleInitialized(registry.moduleId)) {
         return;

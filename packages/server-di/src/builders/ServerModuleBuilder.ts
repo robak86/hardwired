@@ -2,9 +2,9 @@ import {
   BaseModuleBuilder,
   ClassType,
   Definition,
-  DefinitionsSet,
-  MaterializedModuleEntries,
   ModuleRegistry,
+  MaterializedModuleEntries,
+  RegistryRecord,
   NotDuplicated,
 } from '@hardwired/di-core';
 import { ContractRouteDefinition, HttpRequest, HttpResponse, IServer, Middleware, Task } from '@roro/s-middleware';
@@ -17,36 +17,36 @@ import { ContainerHandler, ServerResolver } from '../resolvers/ServerResolver';
 import { IRouter } from '../../../s-middleware/src/App';
 import { RouterResolver } from '../resolvers/RouterResolver';
 
-export type NextServerBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
+export type NextServerBuilder<TKey extends string, TReturn, TRegistryRecord extends RegistryRecord> = NotDuplicated<
   TKey,
-  TRegistry,
+  TRegistryRecord,
   ServerModuleBuilder<
     {
-      [K in keyof (TRegistry & { [K in TKey]: Definition<TReturn> })]: (TRegistry &
+      [K in keyof (TRegistryRecord & { [K in TKey]: Definition<TReturn> })]: (TRegistryRecord &
         { [K in TKey]: Definition<TReturn> })[K];
     }
   >
 >;
 
-export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
-  constructor(registry: DefinitionsSet<TRegistry>) {
+export class ServerModuleBuilder<TRegistryRecord extends RegistryRecord> extends BaseModuleBuilder<TRegistryRecord> {
+  constructor(registry: ModuleRegistry<TRegistryRecord>) {
     super(registry);
   }
 
   router<TKey extends string, TResult extends IRouter>(
     key: TKey,
     klass: ClassType<[], TResult>,
-  ): NextServerBuilder<TKey, TResult, TRegistry>;
+  ): NextServerBuilder<TKey, TResult, TRegistryRecord>;
   router<TKey extends string, TDeps extends any[], TResult extends IRouter>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
-    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, TResult, TRegistry>;
+    depSelect: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, TResult, TRegistryRecord>;
   router<TKey extends string, TDeps extends any[], TResult extends IRouter>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
-    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, TResult, TRegistry> {
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, TResult, TRegistryRecord> {
     const newRegistry = this.registry.extendDeclarations(key, new RouterResolver(klass, depSelect));
     return new ServerModuleBuilder(newRegistry) as any;
   }
@@ -54,17 +54,17 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
   server<TKey extends string, TResult extends IServer>(
     key: TKey,
     klass: ClassType<[], TResult>,
-  ): NextServerBuilder<TKey, TResult, TRegistry>;
+  ): NextServerBuilder<TKey, TResult, TRegistryRecord>;
   server<TKey extends string, TDeps extends any[], TResult extends IServer>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
-    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, TResult, TRegistry>;
+    depSelect: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, TResult, TRegistryRecord>;
   server<TKey extends string, TDeps extends any[], TResult extends IServer>(
     key: TKey,
     klass: ClassType<TDeps, TResult>,
-    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, TResult, TRegistry> {
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, TResult, TRegistryRecord> {
     const newRegistry = this.registry.extendDeclarations(key, new ServerResolver(klass, depSelect));
     return new ServerModuleBuilder(newRegistry) as any;
   }
@@ -72,17 +72,17 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
   task<TKey extends string, TResult>(
     key: TKey,
     klass: ClassType<[], Task<TResult>>,
-  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry>;
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistryRecord>;
   task<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, Task<TResult>>,
-    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry>;
+    depSelect: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistryRecord>;
   task<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, Task<TResult>>,
-    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry> {
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistryRecord> {
     const newRegistry = this.registry.extendDeclarations(key, new TaskResolver(klass, depSelect));
     return new ServerModuleBuilder(newRegistry) as any;
   }
@@ -90,25 +90,25 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
   middleware<TKey extends string, TResult>(
     key: TKey,
     klass: ClassType<[], Middleware<TResult>>,
-  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry>;
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistryRecord>;
   middleware<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, Middleware<TResult>>,
-    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry>;
+    depSelect: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistryRecord>;
   middleware<TKey extends string, TDeps extends any[], TResult>(
     key: TKey,
     klass: ClassType<TDeps, Middleware<TResult>>,
-    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistry> {
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, TResult | Promise<TResult>, TRegistryRecord> {
     const newRegistry = this.registry.extendDeclarations(key, new MiddlewareResolver(klass, depSelect));
     return new ServerModuleBuilder(newRegistry) as any;
   }
 
   pipe<TKey extends string, TDeps extends Middleware<any>[]>(
     key: TKey,
-    middlewareSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, Middleware<any>, TRegistry> {
+    middlewareSelect: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, Middleware<any>, TRegistryRecord> {
     const newRegistry = this.registry.extendDeclarations(key, new MiddlewarePipeResolver(middlewareSelect));
     return new ServerModuleBuilder(newRegistry) as any;
   }
@@ -117,26 +117,26 @@ export class ServerModuleBuilder<TRegistry extends ModuleRegistry> extends BaseM
     key: TKey,
     routeDefinition: ContractRouteDefinition<TRequestParams, TResult>,
     klass: ClassType<[], Task<HttpResponse<TResult>>>,
-  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
+  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistryRecord>;
   handler<TKey extends string, TRequestParams extends object, TDeps extends any[], TResult extends object>(
     key: TKey,
     routeDefinition: ContractRouteDefinition<TRequestParams, TResult>,
     klass: ClassType<TDeps, Task<HttpResponse<TResult>>>,
-    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry>;
+    depSelect: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistryRecord>;
   handler<TKey extends string, TRequestParams extends object, TDeps extends any[], TResult extends object>(
     key: TKey,
     routeDefinition: ContractRouteDefinition<TRequestParams, TResult>,
     klass: ClassType<TDeps, Task<HttpResponse<TResult>>>,
-    depSelect?: (ctx: MaterializedModuleEntries<TRegistry>) => TDeps,
-  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistry> {
+    depSelect?: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
+  ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistryRecord> {
     const newRegistry = this.registry.extendDeclarations(key, new HandlerResolver(klass, depSelect, routeDefinition));
     return new ServerModuleBuilder(newRegistry) as any;
   }
 }
 
-export const serverDefinitions = <TRegistry extends ModuleRegistry>(
-  ctx: DefinitionsSet<TRegistry>,
-): ServerModuleBuilder<TRegistry & { request: Definition<HttpRequest> }> => {
-  return new ServerModuleBuilder<TRegistry & { request: Definition<HttpRequest> }>(ctx as any);
+export const serverDefinitions = <TRegistryRecord extends RegistryRecord>(
+  ctx: ModuleRegistry<TRegistryRecord>,
+): ServerModuleBuilder<TRegistryRecord & { request: Definition<HttpRequest> }> => {
+  return new ServerModuleBuilder<TRegistryRecord & { request: Definition<HttpRequest> }>(ctx as any);
 };

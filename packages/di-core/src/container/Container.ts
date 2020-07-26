@@ -1,13 +1,13 @@
 import { unwrapThunk } from '../utils/thunk';
 import { ContainerCache } from './container-cache';
-import { DefinitionsSet } from '../module/DefinitionsSet';
+import { ModuleRegistry } from '../module/ModuleRegistry';
 import {
   MaterializedDefinitions,
   MaterializedModuleEntries,
-  ModuleRegistry,
+  RegistryRecord,
   ModuleRegistryContext,
   ModuleRegistryDefinitionsKeys,
-} from '../module/ModuleRegistry';
+} from '../module/RegistryRecord';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { ContainerService } from './ContainerService';
 
@@ -30,15 +30,15 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 
 export type DeepGetReturn<
   K extends keyof MaterializedDefinitions<TModuleRegistry>,
-  TModuleRegistry extends ModuleRegistry,
-  TContainerRegistry extends ModuleRegistry
+  TModuleRegistry extends RegistryRecord,
+  TContainerRegistry extends RegistryRecord
 > = ModuleRegistryContext<TContainerRegistry> extends ModuleRegistryContext<TModuleRegistry>
   ? MaterializedModuleEntries<TModuleRegistry>[K]
   : DeepGetReturnErrorMessage;
 
-export class Container<R extends ModuleRegistry = {}, C = {}> {
+export class Container<R extends RegistryRecord = {}, C = {}> {
   constructor(
-    private registry: DefinitionsSet<R>,
+    private registry: ModuleRegistry<R>,
     private cache: ContainerCache = new ContainerCache(),
     private context?: C,
   ) {}
@@ -68,12 +68,12 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
   }
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
-  deepGet<TNextR extends ModuleRegistry, K extends keyof MaterializedDefinitions<TNextR>>(
+  deepGet<TNextR extends RegistryRecord, K extends keyof MaterializedDefinitions<TNextR>>(
     module: ModuleBuilder<TNextR>,
     key: K,
   ): DeepGetReturn<K, TNextR, R> {
     //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
-    let childModule: DefinitionsSet<any> | undefined = this.registry.isEqual(module.registry)
+    let childModule: ModuleRegistry<any> | undefined = this.registry.isEqual(module.registry)
       ? this.registry
       : unwrapThunk(this.findModule(module.registry));
 
@@ -87,7 +87,7 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
     return ContainerService.getChild(childModule, this.cache, this.context, key as string);
   }
 
-  private findModule(moduleIdentity: DefinitionsSet<any>): DefinitionsSet<any> | undefined {
+  private findModule(moduleIdentity: ModuleRegistry<any>): ModuleRegistry<any> | undefined {
     return this.registry.findModule(moduleIdentity);
   }
 
@@ -98,10 +98,10 @@ export class Container<R extends ModuleRegistry = {}, C = {}> {
   }
 }
 
-export function container<TRegistry extends ModuleRegistry>(
-  m: ModuleBuilder<TRegistry>,
+export function container<TRegistryRecord extends RegistryRecord>(
+  m: ModuleBuilder<TRegistryRecord>,
   ctx?: any,
-): Container<TRegistry> {
+): Container<TRegistryRecord> {
   let container = new Container((m as any).registry, new ContainerCache(), ctx);
   container.init();
   return container as any;

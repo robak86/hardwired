@@ -1,4 +1,4 @@
-import { Definition, ModuleRegistry, ModuleRegistryContext } from './ModuleRegistry';
+import { Definition, RegistryRecord, ModuleRegistryContext } from './RegistryRecord';
 import { Module } from './Module';
 
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
@@ -10,8 +10,8 @@ export type NotDuplicatedKeys<TSource, TTarget, TReturn> = Extract<keyof TSource
 
 export type NextModuleImport<
   TImportKey extends string,
-  V extends ModuleRegistry,
-  R extends ModuleRegistry
+  V extends RegistryRecord,
+  R extends RegistryRecord
 > = NotDuplicated<
   TImportKey,
   R,

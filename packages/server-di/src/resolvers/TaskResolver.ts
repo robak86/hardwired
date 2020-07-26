@@ -3,14 +3,14 @@ import {
   ContainerCache,
   ContainerService,
   createResolverId,
-  DefinitionsSet,
-  DependencyResolver,
   ModuleRegistry,
+  DependencyResolver,
+  RegistryRecord,
 } from '@hardwired/di-core';
 import { Task } from '@roro/s-middleware';
 
-export class TaskResolver<TRegistry extends ModuleRegistry, TReturn>
-  implements DependencyResolver<TRegistry, Promise<TReturn>> {
+export class TaskResolver<TRegistryRecord extends RegistryRecord, TReturn>
+  implements DependencyResolver<TRegistryRecord, Promise<TReturn>> {
   static readonly type = 'middleware';
 
   public id: string = createResolverId();
@@ -18,7 +18,7 @@ export class TaskResolver<TRegistry extends ModuleRegistry, TReturn>
 
   constructor(private klass: ClassType<any, Task<any>>, private selectDependencies = container => [] as any[]) {}
 
-  async build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any) {
+  async build(registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx: any) {
     if (cache.hasInAsyncRequestScope(this.id)) {
       return cache.getFromAsyncRequestScope(this.id);
     } else {

@@ -1,8 +1,8 @@
-import {  ModuleRegistry } from '@hardwired/di-core';
+import {  RegistryRecord } from '@hardwired/di-core';
 import { SingletonResolver } from '@hardwired/di';
 
 
-export class SagaFactory<TRegistry extends ModuleRegistry, TReturn> extends SingletonResolver<TRegistry, TReturn> {
+export class SagaFactory<TRegistryRecord extends RegistryRecord, TReturn> extends SingletonResolver<TRegistryRecord, TReturn> {
   public type = 'saga';
 }
 

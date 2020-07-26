@@ -1,55 +1,162 @@
-import { Thunk, UnwrapThunk } from '../utils/thunk';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { unwrapThunk } from '../utils/thunk';
+import { ModuleId } from '../module-id';
+import { ImmutableSet } from '../ImmutableSet';
+import { MaterializedModuleEntries, RegistryRecord, ModuleRegistryDefinitionsResolvers } from './RegistryRecord';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { ContainerEvents } from '../container/ContainerEvents';
 
-// TODO: group this types mess into namespaces - we don't wanna export so many unbound types
-declare namespace Test {
-  type Zonk = boolean;
+type RegistrySets<TRegistryRecord extends RegistryRecord> = ImmutableSet<{
+  definition: ImmutableSet<ModuleRegistryDefinitionsResolvers<TRegistryRecord>>;
+  // definition: ImmutableSet<Record<string, Definition<any>>>;
+  imports: ImmutableSet<Record<string, ModuleRegistry<any>>>;
+  initializers: ImmutableSet<Record<string, any>>;
+  events: ContainerEvents;
+}>;
+
+function initDefinitionSet<TRegistryRecord extends RegistryRecord>(): RegistrySets<TRegistryRecord> {
+  return ImmutableSet.empty()
+    .extend('definition', ImmutableSet.empty())
+    .extend('imports', ImmutableSet.empty())
+    .extend('initializers', ImmutableSet.empty())
+    .extend('events', new ContainerEvents()) as any;
 }
 
-type T = Test.Zonk;
+// TODO: rename => RegistryEntries ? RegistrySet ... or even something better than Registry ?
+export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
+  static empty(name: string): ModuleRegistry<{}> {
+    return new ModuleRegistry<any, any>(ModuleId.build(name), initDefinitionSet());
+  }
 
-export type Definition<T> = { definition: T };
-export type RequiresDefinition<T> = { requires: T };
-export type ModuleRegistry = Record<string, Thunk<ModuleBuilder<any>> | Definition<any> | RequiresDefinition<any>>;
+  protected constructor(public moduleId: ModuleId, public data: RegistrySets<TRegistryRecord> = initDefinitionSet()) {}
 
-export type ModuleRegistryDefinitionsKeys<T> = { [K in keyof T]: T[K] extends Definition<any> ? K : never }[keyof T];
-export type ModuleRegistryDefinitions<T> = { [K in ModuleRegistryDefinitionsKeys<T>]: T[K] };
-export type ModuleRegistryDefinitionsResolvers<TRegistry extends ModuleRegistry> = {
-  [K in ModuleRegistryDefinitionsKeys<TRegistry>]: TRegistry[K] extends Definition<infer TReturn>
-    ? DependencyResolver<TRegistry, TReturn>
-    : never;
-};
+  isEqual(other: ModuleRegistry<any>): boolean {
+    return this.moduleId.identity === other.moduleId.identity;
+  }
 
-export type ModuleRegistryContextKeys<T> = {
-  [K in keyof T]: T[K] extends RequiresDefinition<any> ? K : never;
-}[keyof T];
-export type ModuleRegistryContext<T> = { [K in ModuleRegistryContextKeys<T>]: T[K] };
-export type MaterializedModuleRegistryContext<TRegistry extends ModuleRegistry> = {
-  [K in keyof ModuleRegistryContextKeys<TRegistry>]: ModuleRegistryContextKeys<TRegistry>[K] extends RequiresDefinition<
-    infer TContext
-  >
-    ? TContext
-    : never;
-};
+  get declarations(): ImmutableSet<ModuleRegistryDefinitionsResolvers<TRegistryRecord>> {
+    return this.data.get('definition') as any;
+  }
 
-export type ModuleRegistryImportsKeys<T> = {
-  [K in keyof T]: UnwrapThunk<T[K]> extends ModuleBuilder<any> ? K : never;
-}[keyof T];
-export type ModuleRegistryImports<T> = {
-  [K in ModuleRegistryImportsKeys<T>]: UnwrapThunk<T[K]> extends ModuleBuilder<infer R> ? R : never;
-};
-export type FlattenModules<R extends ModuleRegistry> =
-  | R
-  | {
-      [K in keyof ModuleRegistryImports<R>]: FlattenModules<ModuleRegistryImports<R>[K]>;
-    }[keyof ModuleRegistryImports<R>];
-export type MaterializedDefinitions<R extends ModuleRegistry> = {
-  [K in ModuleRegistryDefinitionsKeys<R>]: ModuleRegistryDefinitions<R>[K] extends Definition<infer TDefinition>
-    ? TDefinition
-    : never;
-};
-export type MaterializedImports<R extends ModuleRegistry> = {
-  [K in ModuleRegistryImportsKeys<R>]: MaterializedDefinitions<ModuleRegistryImports<R>[K]>;
-};
-export type MaterializedModuleEntries<R extends ModuleRegistry> = MaterializedDefinitions<R> & MaterializedImports<R>;
+  get imports() {
+    return this.data.get('imports');
+  }
+
+  get initializers() {
+    return this.data.get('initializers');
+  }
+
+  get events(): ContainerEvents {
+    return this.data.get('events');
+  }
+
+  extendImports(key, resolver) {
+    return new ModuleRegistry(
+      ModuleId.next(this.moduleId),
+      this.data.update('imports', importsSet => importsSet.extend(key, resolver)),
+    ) as any; //TODO: fix types
+  }
+
+  appendInitializer(key, initializer: (ctx: MaterializedModuleEntries<TRegistryRecord>) => void) {
+    return new ModuleRegistry(
+      ModuleId.next(this.moduleId),
+      this.data.updateWithDefaults('initializers', [] as any, initializersSet =>
+        initializersSet.updateWithDefaults(key, [], initializers => [...initializers, initializer]),
+      ),
+    ) as any;
+  }
+
+  // TODO: extract to iterator ?
+  forEachModuleReversed(iterFn: (registry: ModuleRegistry<any>) => void) {
+    this.data
+      .get('imports')
+      .reverse()
+      .forEach(importedRegistry => {
+        importedRegistry.forEachModuleReversed(iterFn);
+      });
+    iterFn(this);
+  }
+
+  // TODO: extract to iterator ?
+  forEachDefinitionReversed(iterFn: (resolver: DependencyResolver<any, any>) => void) {
+    this.forEachModuleReversed(moduleRegistry => {
+      moduleRegistry.declarations.reverse().forEach(iterFn);
+    });
+  }
+
+  forEachModule(iterFn: (registry: ModuleRegistry<any>) => void) {
+    iterFn(this);
+    this.data.get('imports').forEach(importedRegistry => {
+      importedRegistry.forEachModule(iterFn);
+    });
+  }
+
+  // TODO: extract to iterator ?
+  forEachDefinition(iterFn: (resolver: DependencyResolver<any, any>) => void) {
+    this.forEachModule(moduleRegistry => {
+      moduleRegistry.declarations.forEach(iterFn);
+    });
+  }
+
+  extendDeclarations<TKey extends string>(key: TKey, resolver: DependencyResolver<any, any>) {
+    if (resolver.onRegister) {
+      resolver.onRegister(this.events);
+    }
+
+    return new ModuleRegistry(
+      ModuleId.next(this.moduleId),
+      this.data.update('definition', moduleRegistry => moduleRegistry.extend(key, resolver) as any),
+    ) as any; //TODO: fix types
+  }
+
+  // removeDeclaration(key) {
+  //   return new ModuleRegistry(
+  //     ModuleId.next(this.moduleId),
+  //     this.imports,
+  //     this.declarations.remove(key) as any,
+  //     this.initializers,
+  //   );
+  // }
+
+  inject(otherModule: ModuleRegistry<any>): ModuleRegistry<any> {
+    const nextImports = this.data.update('imports', importsSet => {
+      return importsSet.mapValues((importedModule: any) => {
+        const unwrappedImportedModule = unwrapThunk(importedModule);
+        return unwrappedImportedModule.isEqual(otherModule) ? otherModule : unwrappedImportedModule.inject(otherModule);
+      });
+    });
+
+    return new ModuleRegistry(ModuleId.next(this.moduleId), nextImports);
+  }
+
+  hasImport(key): boolean {
+    return this.data.get('imports').hasKey(key);
+  }
+
+  hasDeclaration(key): boolean {
+    return this.data.get('definition').hasKey(key);
+  }
+
+  findResolvers() {}
+
+  // TODO: extract to service ?
+  findModule(other: ModuleRegistry<any>) {
+    let found = this.data
+      .get('imports')
+      .values.map(unwrapThunk)
+      .find(m => m.isEqual(other));
+
+    if (found) {
+      return found;
+    }
+
+    for (let importKey in this.data.get('imports').keys) {
+      const targetContainer = unwrapThunk(this.data.get('imports').get(importKey));
+      let found = targetContainer.findModule(other);
+      if (found) {
+        return found;
+      }
+    }
+
+    return undefined;
+  }
+}

@@ -3,20 +3,20 @@ import {
   ClassType,
   ContainerCache,
   ContainerService,
-  DefinitionsSet,
   ModuleRegistry,
+  RegistryRecord,
 } from '@hardwired/di-core';
 import { Middleware } from '@roro/s-middleware';
 
-export class MiddlewareResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
-  TRegistry,
+export class MiddlewareResolver<TRegistryRecord extends RegistryRecord, TReturn> extends AbstractDependencyResolver<
+  TRegistryRecord,
   Promise<TReturn>
 > {
   constructor(private klass: ClassType<any, Middleware<any>>, private selectDependencies = container => [] as any[]) {
     super();
   }
 
-  async build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any) {
+  async build(registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx: any) {
     if (cache.hasInAsyncRequestScope(this.id)) {
       return cache.getFromAsyncRequestScope(this.id);
     } else {

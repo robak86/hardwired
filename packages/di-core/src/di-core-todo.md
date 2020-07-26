@@ -11,5 +11,5 @@
   need to return merged builder instance. This is not possible without higher order types
 
 
-DefinitionsSet -> ModuleRegistry
-TRegistry -> TModuleRegistryShape
+ModuleRegistry -> RegistryRecord
+TRegistryRecord -> TModuleRegistryShape

@@ -8,24 +8,24 @@ export type { DependencyResolver, DependencyResolverFunction } from './resolvers
 export { AbstractDependencyResolver } from './resolvers/AbstractDependencyResolver';
 export { ContainerService } from './container/ContainerService';
 
-export { DefinitionsSet } from './module/DefinitionsSet';
+export { ModuleRegistry } from './module/ModuleRegistry';
 
 export type { ModuleBuilder, ModuleBuilderRegistry } from './builders/ModuleBuilder';
 export { ContainerCache } from './container/container-cache';
 export { BaseModuleBuilder } from './builders/BaseModuleBuilder';
-export type { FlattenModules } from './module/ModuleRegistry';
-export type { ModuleRegistryImports } from './module/ModuleRegistry';
-export type { ModuleRegistryImportsKeys } from './module/ModuleRegistry';
-export type { ModuleRegistryContext } from './module/ModuleRegistry';
-export type { ModuleRegistryContextKeys } from './module/ModuleRegistry';
-export type { ModuleRegistryDefinitions } from './module/ModuleRegistry';
-export type { ModuleRegistryDefinitionsKeys } from './module/ModuleRegistry';
-export type { ModuleRegistry } from './module/ModuleRegistry';
-export type { RequiresDefinition } from './module/ModuleRegistry';
-export type { Definition } from './module/ModuleRegistry';
-export type { MaterializedModuleEntries } from './module/ModuleRegistry';
-export type { MaterializedImports } from './module/ModuleRegistry';
-export type { MaterializedDefinitions } from './module/ModuleRegistry';
+export type { FlattenModules } from './module/RegistryRecord';
+export type { ModuleRegistryImports } from './module/RegistryRecord';
+export type { ModuleRegistryImportsKeys } from './module/RegistryRecord';
+export type { ModuleRegistryContext } from './module/RegistryRecord';
+export type { ModuleRegistryContextKeys } from './module/RegistryRecord';
+export type { ModuleRegistryDefinitions } from './module/RegistryRecord';
+export type { ModuleRegistryDefinitionsKeys } from './module/RegistryRecord';
+export type { RegistryRecord } from './module/RegistryRecord';
+export type { RequiresDefinition } from './module/RegistryRecord';
+export type { Definition } from './module/RegistryRecord';
+export type { MaterializedModuleEntries } from './module/RegistryRecord';
+export type { MaterializedImports } from './module/RegistryRecord';
+export type { MaterializedDefinitions } from './module/RegistryRecord';
 export type { FilterPrivateFields } from './module/ModuleUtils';
 export type { ClassType } from './module/ModuleUtils';
 export type { NextModuleImport } from './module/ModuleUtils';

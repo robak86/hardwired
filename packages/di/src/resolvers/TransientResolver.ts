@@ -1,21 +1,21 @@
 import {
-  ModuleRegistry,
+  RegistryRecord,
   AbstractDependencyResolver,
-  DefinitionsSet,
+  ModuleRegistry,
   ContainerCache,
   ContainerService,
   DependencyResolverFunction,
 } from '@hardwired/di-core';
 
-export class TransientResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
-  TRegistry,
+export class TransientResolver<TRegistryRecord extends RegistryRecord, TReturn> extends AbstractDependencyResolver<
+  TRegistryRecord,
   TReturn
 > {
-  constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {
+  constructor(private resolver: DependencyResolverFunction<TRegistryRecord, TReturn>) {
     super();
   }
 
-  build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx): TReturn {
+  build(registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx): TReturn {
     return this.resolver(ContainerService.proxyGetter(registry, cache, ctx));
   }
 }

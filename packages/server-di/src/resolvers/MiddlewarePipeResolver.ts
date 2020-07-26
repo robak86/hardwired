@@ -1,14 +1,14 @@
-import { AbstractDependencyResolver, ContainerCache, DefinitionsSet, ModuleRegistry, } from '@hardwired/di-core';
+import { AbstractDependencyResolver, ContainerCache, ModuleRegistry, RegistryRecord, } from '@hardwired/di-core';
 
-export class MiddlewarePipeResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
-  TRegistry,
+export class MiddlewarePipeResolver<TRegistryRecord extends RegistryRecord, TReturn> extends AbstractDependencyResolver<
+  TRegistryRecord,
   Promise<TReturn>
 > {
   constructor(private selectDependencies = container => [] as any[]) {
     super();
   }
 
-  async build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any) {
+  async build(registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx: any) {
     throw new Error('Implement me');
     // if (cache.hasInAsyncRequestScope(this.id)) {
     //   return cache.getFromAsyncRequestScope(this.id);

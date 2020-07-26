@@ -1,10 +1,10 @@
 import { ContainerCache } from '../container/container-cache';
-import { MaterializedModuleEntries, ModuleRegistry } from '../module/ModuleRegistry';
-import { DefinitionsSet } from '../module/DefinitionsSet';
+import { MaterializedModuleEntries, RegistryRecord } from '../module/RegistryRecord';
+import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ContainerEvents } from '../container/ContainerEvents';
 
-export type DependencyResolverFunction<TRegistry extends ModuleRegistry, TReturn> = (
-  container: MaterializedModuleEntries<TRegistry>,
+export type DependencyResolverFunction<TRegistryRecord extends RegistryRecord, TReturn> = (
+  container: MaterializedModuleEntries<TRegistryRecord>,
 ) => TReturn;
 
 export type DependencyResolverReturn<T extends DependencyResolver<any, any>> = T extends DependencyResolver<
@@ -14,8 +14,8 @@ export type DependencyResolverReturn<T extends DependencyResolver<any, any>> = T
   ? TReturn
   : never;
 
-export interface DependencyResolver<TRegistry extends ModuleRegistry, TReturn> {
+export interface DependencyResolver<TRegistryRecord extends RegistryRecord, TReturn> {
   id: string | number;
-  build(container: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx): TReturn;
+  build(container: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx): TReturn;
   onRegister?(events: ContainerEvents);
 }

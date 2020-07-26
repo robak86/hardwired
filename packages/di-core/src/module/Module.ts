@@ -1,15 +1,15 @@
-import { DefinitionsSet } from './DefinitionsSet';
 import { ModuleRegistry } from './ModuleRegistry';
+import { RegistryRecord } from './RegistryRecord';
 import { BaseModuleBuilder } from '../builders/BaseModuleBuilder';
 
-export class Module<TRegistry extends ModuleRegistry> extends BaseModuleBuilder<TRegistry> {
-  constructor(registry: DefinitionsSet<TRegistry>) {
+export class Module<TRegistryRecord extends RegistryRecord> extends BaseModuleBuilder<TRegistryRecord> {
+  constructor(registry: ModuleRegistry<TRegistryRecord>) {
     super(registry);
   }
 }
 
 export function module<CTX = {}>(name: string) {
-  return new Module<{}>(DefinitionsSet.empty(name));
+  return new Module<{}>(ModuleRegistry.empty(name));
 }
 
 export const unit = module;

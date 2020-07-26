@@ -45,7 +45,7 @@ describe(`Module`, () => {
   }
 
   describe(`.using`, () => {
-    it(`creates module with correct TRegistry`, async () => {
+    it(`creates module with correct TRegistryRecord`, async () => {
       const m: ModuleBuilder<{ a: Definition<number> }> = module('someModule') as any;
       const nextModule = m.using(commonDefines);
       expectType<TypeEqual<ModuleBuilderRegistry<typeof nextModule>, { a: Definition<number> }>>(true);

@@ -1,20 +1,20 @@
 import {
-  ModuleRegistry,
+  RegistryRecord,
   AbstractDependencyResolver,
-  DefinitionsSet,
+  ModuleRegistry,
   ContainerCache,
   ContainerService,
 } from '@hardwired/di-core';
 
-export class ClassTransientResolver<TRegistry extends ModuleRegistry, TReturn = any> extends AbstractDependencyResolver<
-  TRegistry,
+export class ClassTransientResolver<TRegistryRecord extends RegistryRecord, TReturn = any> extends AbstractDependencyResolver<
+  TRegistryRecord,
   TReturn
 > {
   constructor(private klass, private selectDependencies = container => [] as any[]) {
     super();
   }
 
-  build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
+  build = (registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) => {
     const constructorArgs = this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx)) as any;
     return new this.klass(...constructorArgs);
   };

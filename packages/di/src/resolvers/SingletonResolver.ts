@@ -1,21 +1,21 @@
 import {
-  ModuleRegistry,
+  RegistryRecord,
   AbstractDependencyResolver,
-  DefinitionsSet,
+  ModuleRegistry,
   ContainerCache,
   ContainerService,
   DependencyResolverFunction
 } from '@hardwired/di-core';
 
-export class SingletonResolver<TRegistry extends ModuleRegistry, TReturn = any> extends AbstractDependencyResolver<
-  TRegistry,
+export class SingletonResolver<TRegistryRecord extends RegistryRecord, TReturn = any> extends AbstractDependencyResolver<
+  TRegistryRecord,
   TReturn
 > {
-  constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {
+  constructor(private resolver: DependencyResolverFunction<TRegistryRecord, TReturn>) {
     super();
   }
 
-  build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
+  build = (registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) => {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {

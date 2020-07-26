@@ -1,14 +1,14 @@
-import { DefinitionsSet } from '../DefinitionsSet';
+import { ModuleRegistry } from '../ModuleRegistry';
 import { DependencyResolver } from '../../resolvers/DependencyResolver';
 
-describe(`DefinitionsSet`, () => {
+describe(`ModuleRegistry`, () => {
   describe(`forEachModuleReversed`, () => {
     it(`iterates over all imports`, async () => {
-      const childDef1 = DefinitionsSet.empty('def1');
-      const childDef2 = DefinitionsSet.empty('def2');
-      const childDef3 = DefinitionsSet.empty('def3').extendImports('childDef3', childDef2);
+      const childDef1 = ModuleRegistry.empty('def1');
+      const childDef2 = ModuleRegistry.empty('def2');
+      const childDef3 = ModuleRegistry.empty('def3').extendImports('childDef3', childDef2);
 
-      const def1 = DefinitionsSet.empty('def1')
+      const def1 = ModuleRegistry.empty('def1')
         .extendImports('childDef1', childDef1)
         .extendImports('childDef2', childDef3);
 
@@ -25,11 +25,11 @@ describe(`DefinitionsSet`, () => {
 
   describe(`forEachModule`, () => {
     it(`iterates over all imports`, async () => {
-      const childDef1 = DefinitionsSet.empty('def1');
-      const childDef2 = DefinitionsSet.empty('def2');
-      const childDef3 = DefinitionsSet.empty('def3').extendImports('childDef3', childDef2);
+      const childDef1 = ModuleRegistry.empty('def1');
+      const childDef2 = ModuleRegistry.empty('def2');
+      const childDef3 = ModuleRegistry.empty('def3').extendImports('childDef3', childDef2);
 
-      const def1 = DefinitionsSet.empty('def1')
+      const def1 = ModuleRegistry.empty('def1')
           .extendImports('childDef1', childDef1)
           .extendImports('childDef2', childDef3);
 
@@ -50,13 +50,13 @@ describe(`DefinitionsSet`, () => {
         return { id: Math.random(), build: jest.fn(), onRegister: jest.fn() };
       };
 
-      const childDef1 = DefinitionsSet.empty('def1').extendDeclarations('a1', buildFakeResolver());
-      const childDef2 = DefinitionsSet.empty('def2').extendDeclarations('a2', buildFakeResolver());
-      const childDef3 = DefinitionsSet.empty('def3')
+      const childDef1 = ModuleRegistry.empty('def1').extendDeclarations('a1', buildFakeResolver());
+      const childDef2 = ModuleRegistry.empty('def2').extendDeclarations('a2', buildFakeResolver());
+      const childDef3 = ModuleRegistry.empty('def3')
         .extendDeclarations('a3', buildFakeResolver())
         .extendImports('childDef3', childDef2);
 
-      const def1 = DefinitionsSet.empty('def1')
+      const def1 = ModuleRegistry.empty('def1')
         .extendImports('childDef1', childDef1)
         .extendImports('childDef2', childDef3);
 
@@ -75,13 +75,13 @@ describe(`DefinitionsSet`, () => {
         return { id: Math.random(), build: jest.fn(), onRegister: jest.fn() };
       };
 
-      const childDef1 = DefinitionsSet.empty('def1').extendDeclarations('a1', buildFakeResolver());
-      const childDef2 = DefinitionsSet.empty('def2').extendDeclarations('a2', buildFakeResolver());
-      const childDef3 = DefinitionsSet.empty('def3')
+      const childDef1 = ModuleRegistry.empty('def1').extendDeclarations('a1', buildFakeResolver());
+      const childDef2 = ModuleRegistry.empty('def2').extendDeclarations('a2', buildFakeResolver());
+      const childDef3 = ModuleRegistry.empty('def3')
         .extendDeclarations('a3', buildFakeResolver())
         .extendImports('childDef3', childDef2);
 
-      const def1 = DefinitionsSet.empty('def1')
+      const def1 = ModuleRegistry.empty('def1')
         .extendImports('childDef1', childDef1)
         .extendImports('childDef2', childDef3);
 
@@ -101,10 +101,10 @@ describe(`DefinitionsSet`, () => {
         build: jest.fn(),
         onRegister: jest.fn(),
       };
-      const definitionsSet = DefinitionsSet.empty('someDefinitionsSet');
-      definitionsSet.extendDeclarations('someKey', resolver);
+      const moduleRegistry = ModuleRegistry.empty('someDefinitionsSet');
+      moduleRegistry.extendDeclarations('someKey', resolver);
 
-      expect(resolver.onRegister).toHaveBeenCalledWith(definitionsSet.events);
+      expect(resolver.onRegister).toHaveBeenCalledWith(moduleRegistry.events);
     });
   });
 });

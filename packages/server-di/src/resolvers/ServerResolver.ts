@@ -2,8 +2,8 @@ import {
   AbstractDependencyResolver,
   ContainerCache,
   ContainerEvents,
-  DefinitionsSet,
   ModuleRegistry,
+  RegistryRecord,
 } from '@hardwired/di-core';
 import { ClassSingletonResolver } from '@hardwired/di';
 import { ContractRouteDefinition, HttpRequest, HttpResponse, IServer } from '@roro/s-middleware';
@@ -19,18 +19,18 @@ export type ContainerHandler<TReturn extends object> = {
 };
 
 export class ServerResolver<
-  TRegistry extends ModuleRegistry,
+  TRegistryRecord extends RegistryRecord,
   TReturn extends IServer
-> extends AbstractDependencyResolver<TRegistry, TReturn> {
-  private routers: { resolver: RouterResolver<any, IRouter>; registry: DefinitionsSet<any> }[] = [];
-  private serverInstanceResolver: ClassSingletonResolver<TRegistry, TReturn>;
+> extends AbstractDependencyResolver<TRegistryRecord, TReturn> {
+  private routers: { resolver: RouterResolver<any, IRouter>; registry: ModuleRegistry<any> }[] = [];
+  private serverInstanceResolver: ClassSingletonResolver<TRegistryRecord, TReturn>;
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {
     super();
     this.serverInstanceResolver = new ClassSingletonResolver(klass, selectDependencies);
   }
 
-  build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
+  build = (registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) => {
     const serverInstance = this.serverInstanceResolver.build(registry, cache, ctx);
 
     if (this.routers.length === 0) {

@@ -2,8 +2,8 @@ import {
   AbstractDependencyResolver,
   ContainerCache,
   ContainerEvents,
-  DefinitionsSet,
   ModuleRegistry,
+  RegistryRecord,
 } from '@hardwired/di-core';
 import { ClassSingletonResolver } from '@hardwired/di';
 import { ContractRouteDefinition, HttpRequest, HttpResponse, IRouter } from '@roro/s-middleware';
@@ -18,19 +18,19 @@ export type ContainerHandler<TReturn extends object> = {
 };
 
 export class RouterResolver<
-  TRegistry extends ModuleRegistry,
+  TRegistryRecord extends RegistryRecord,
   TReturn extends IRouter
-> extends AbstractDependencyResolver<TRegistry, TReturn> {
-  private handlersResolvers: { resolver: HandlerResolver<any, any>; registry: DefinitionsSet<any> }[] = [];
+> extends AbstractDependencyResolver<TRegistryRecord, TReturn> {
+  private handlersResolvers: { resolver: HandlerResolver<any, any>; registry: ModuleRegistry<any> }[] = [];
 
-  private routerInstanceResolver: ClassSingletonResolver<TRegistry, TReturn>;
+  private routerInstanceResolver: ClassSingletonResolver<TRegistryRecord, TReturn>;
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {
     super();
     this.routerInstanceResolver = new ClassSingletonResolver(klass, selectDependencies);
   }
 
-  build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
+  build = (registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) => {
     const routerInstance = this.routerInstanceResolver.build(registry, cache, ctx);
 
     const handlersInstances: ContainerHandler<any>[] = this.handlersResolvers.map(({ resolver, registry }) => {

@@ -2,8 +2,8 @@ import {
   AbstractDependencyResolver,
   ContainerCache,
   ContainerService,
-  DefinitionsSet,
   ModuleRegistry,
+  RegistryRecord,
 } from '@hardwired/di-core';
 
 import { SingletonResolver } from '@hardwired/di';
@@ -12,9 +12,9 @@ import { ContractRouteDefinition, HttpRequest } from '@roro/s-middleware';
 import { ContainerHandler } from './ServerResolver';
 
 export class HandlerResolver<
-  TRegistry extends ModuleRegistry,
+  TRegistryRecord extends RegistryRecord,
   TReturn extends object
-> extends AbstractDependencyResolver<TRegistry, ContainerHandler<TReturn>> {
+> extends AbstractDependencyResolver<TRegistryRecord, ContainerHandler<TReturn>> {
   constructor(
     private klass,
     private selectDependencies = container => [] as any[],
@@ -23,7 +23,7 @@ export class HandlerResolver<
     super();
   }
 
-  build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx: any) {
+  build(registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx: any) {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {

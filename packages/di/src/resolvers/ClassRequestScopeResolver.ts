@@ -1,20 +1,20 @@
 import {
-  ModuleRegistry,
+  RegistryRecord,
   AbstractDependencyResolver,
-  DefinitionsSet,
+  ModuleRegistry,
   ContainerCache,
   ContainerService,
 } from '@hardwired/di-core';
 
 export class ClassRequestScopeResolver<
-  TRegistry extends ModuleRegistry,
+  TRegistryRecord extends RegistryRecord,
   TReturn = any
-> extends AbstractDependencyResolver<TRegistry, TReturn> {
+> extends AbstractDependencyResolver<TRegistryRecord, TReturn> {
   constructor(private klass, private selectDependencies = container => [] as any[]) {
     super();
   }
 
-  build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
+  build = (registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) => {
     const scopedCache = cache.isScoped() ? cache : cache.forNewRequest();
 
     if (scopedCache.hasInGlobalScope(this.id)) {

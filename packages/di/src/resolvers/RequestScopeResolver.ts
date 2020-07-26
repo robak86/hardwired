@@ -1,21 +1,21 @@
 import {
-  ModuleRegistry,
+  RegistryRecord,
   AbstractDependencyResolver,
-  DefinitionsSet,
+  ModuleRegistry,
   ContainerCache,
   ContainerService,
   DependencyResolverFunction
 } from '@hardwired/di-core';
 
-export class RequestScopeResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
-  TRegistry,
+export class RequestScopeResolver<TRegistryRecord extends RegistryRecord, TReturn> extends AbstractDependencyResolver<
+  TRegistryRecord,
   TReturn
 > {
-  constructor(private resolver: DependencyResolverFunction<TRegistry, TReturn>) {
+  constructor(private resolver: DependencyResolverFunction<TRegistryRecord, TReturn>) {
     super();
   }
 
-  build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
+  build = (registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) => {
     //TODO: cache.forNewRequest scope!!
     if (cache.hasInRequestScope(this.id)) {
       return cache.getFromRequestScope(this.id);

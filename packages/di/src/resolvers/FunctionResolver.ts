@@ -2,16 +2,16 @@ import {
   AbstractDependencyResolver,
   ContainerCache,
   ContainerService,
-  DefinitionsSet,
   ModuleRegistry,
+  RegistryRecord,
 } from '@hardwired/di-core';
 import { curry } from '../utils/curry';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
 //  or it shouldn't never be memoized ?
-export class FunctionResolver<TRegistry extends ModuleRegistry, TReturn> extends AbstractDependencyResolver<
-  TRegistry,
+export class FunctionResolver<TRegistryRecord extends RegistryRecord, TReturn> extends AbstractDependencyResolver<
+  TRegistryRecord,
   TReturn
 > {
   private readonly curriedFunction;
@@ -26,7 +26,7 @@ export class FunctionResolver<TRegistry extends ModuleRegistry, TReturn> extends
     this.selectDependencies = depSelect ? depSelect : () => [];
   }
 
-  build(registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) {
+  build(registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) {
     // TODO: not sure if this does not trigger all getter from the whole tree !!!!
     const currentDependencies = this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx));
     const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);

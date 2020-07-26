@@ -6,7 +6,7 @@ import {
   DeepGetReturn,
   MaterializedDefinitions,
   ModuleBuilder,
-  ModuleRegistry,
+  RegistryRecord,
   ModuleRegistryContext,
   Module,
 } from '@hardwired/di-core';
@@ -41,22 +41,22 @@ const useDependency = (module: any, key: any) => {
   return container.deepGet<any, any>(module, key); //TODO: leveraging only container cache. We have to be sure that it works
 };
 
-type ContainerComponents<TRegistry extends ModuleRegistry> = {
-  Container: FunctionComponent<{ context: ModuleRegistryContext<TRegistry> }>;
+type ContainerComponents<TRegistryRecord extends RegistryRecord> = {
+  Container: FunctionComponent<{ context: ModuleRegistryContext<TRegistryRecord> }>;
   useDependency: <
-    TModuleRegistry extends ModuleRegistry,
+    TModuleRegistry extends RegistryRecord,
     TModuleRegistryKey extends keyof MaterializedDefinitions<TModuleRegistry>
   >(
     module: ModuleBuilder<TModuleRegistry>,
     key: TModuleRegistryKey,
-  ) => DeepGetReturn<TModuleRegistryKey, TModuleRegistry, TRegistry>;
-  useContainer: () => MaterializedDefinitions<TRegistry>;
+  ) => DeepGetReturn<TModuleRegistryKey, TModuleRegistry, TRegistryRecord>;
+  useContainer: () => MaterializedDefinitions<TRegistryRecord>;
 };
 
 // TODO: allow thunk returning promise for lazy loading ?
-export function createContainer<TRegistry extends ModuleRegistry>(
-  module: ModuleBuilder<TRegistry>,
-): ContainerComponents<TRegistry> {
+export function createContainer<TRegistryRecord extends RegistryRecord>(
+  module: ModuleBuilder<TRegistryRecord>,
+): ContainerComponents<TRegistryRecord> {
   return {
     Container: createContainerProvider(module) as any,
     useDependency: useDependency as any,
