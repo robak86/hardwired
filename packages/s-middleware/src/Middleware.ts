@@ -16,10 +16,11 @@ export type IServer = {
   It can have assumptions only on status the status code
   In the worst scenario it can be bound to specific response type
  */
-export type Middleware<T> = {
-  run: <T extends unknown>(
-    next: () => Promise<HttpResponse<T>> | HttpResponse<T>,
-  ) => HttpResponse<T> | 'someErrorType?'; //TODO: it should only return response received from next() or some error response (but how to express this in types ?)
+export type Middleware = {
+  run(
+    prevResponse: HttpResponse<any>,
+    next: () => Promise<HttpResponse<any>> | HttpResponse<any>,
+  ): HttpResponse<any> | 'someErrorType?'; //TODO: it should only return response received from next() or some error response (but how to express this in types ?)
 };
 
 export interface Task<TOutput> {

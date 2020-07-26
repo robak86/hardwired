@@ -1,4 +1,4 @@
-import { unwrapThunk } from '../utils/thunk';
+import { Thunk, unwrapThunk } from '../utils/thunk';
 import { ModuleId } from '../module-id';
 import { ImmutableSet } from '../ImmutableSet';
 import { MaterializedModuleEntries, RegistryRecord, ModuleRegistryDefinitionsResolvers } from './RegistryRecord';
@@ -8,7 +8,7 @@ import { ContainerEvents } from '../container/ContainerEvents';
 type RegistrySets<TRegistryRecord extends RegistryRecord> = ImmutableSet<{
   definition: ImmutableSet<ModuleRegistryDefinitionsResolvers<TRegistryRecord>>;
   // definition: ImmutableSet<Record<string, Definition<any>>>;
-  imports: ImmutableSet<Record<string, ModuleRegistry<any>>>;
+  imports: ImmutableSet<Record<string, Thunk<ModuleRegistry<any>>>>;
   initializers: ImmutableSet<Record<string, any>>;
   events: ContainerEvents;
 }>;
@@ -49,10 +49,10 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
     return this.data.get('events');
   }
 
-  extendImports(key, resolver) {
+  extendImports(key, moduleRegistry: Thunk<ModuleRegistry<any>>) {
     return new ModuleRegistry(
       ModuleId.next(this.moduleId),
-      this.data.update('imports', importsSet => importsSet.extend(key, resolver)),
+      this.data.update('imports', importsSet => importsSet.extend(key, moduleRegistry)),
     ) as any; //TODO: fix types
   }
 
@@ -71,7 +71,7 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
       .get('imports')
       .reverse()
       .forEach(importedRegistry => {
-        importedRegistry.forEachModuleReversed(iterFn);
+        unwrapThunk(importedRegistry).forEachModuleReversed(iterFn);
       });
     iterFn(this);
   }
@@ -86,14 +86,14 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
   forEachModule(iterFn: (registry: ModuleRegistry<any>) => void) {
     iterFn(this);
     this.data.get('imports').forEach(importedRegistry => {
-      importedRegistry.forEachModule(iterFn);
+      unwrapThunk(importedRegistry).forEachModule(iterFn);
     });
   }
 
   // TODO: extract to iterator ?
-  forEachDefinition(iterFn: (resolver: DependencyResolver<any, any>) => void) {
+  forEachDefinition(iterFn: (resolver: DependencyResolver<any, any>, module: ModuleRegistry<any>) => void) {
     this.forEachModule(moduleRegistry => {
-      moduleRegistry.declarations.forEach(iterFn);
+      moduleRegistry.declarations.forEach(resolver => iterFn(resolver, moduleRegistry));
     });
   }
 
@@ -136,7 +136,37 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
     return this.data.get('definition').hasKey(key);
   }
 
-  findResolvers() {}
+  findResolvers<S extends DependencyResolver<any, any>>(
+    filterFn: (value: DependencyResolver<any, any>) => value is S,
+  ): S[] {
+    const resolvers: S[] = [];
+
+    this.forEachDefinition(resolver => {
+      filterFn(resolver) && resolvers.push(resolver);
+    });
+
+    return resolvers;
+  }
+
+  // TODO: consider recursive approach (merge flattened resolvers from child modules)
+  flattenResolvers(): Record<string, { resolver: DependencyResolver<any, any>; module: ModuleRegistry<any> }> {
+    const resolvers = {};
+
+    this.forEachDefinition((resolver, module) => {
+      resolvers[resolver.id] = { resolver, module };
+    });
+
+    return resolvers;
+  }
+
+  findOwningModule(resolver: DependencyResolver<any, any>) {
+    const resolvers = this.flattenResolvers();
+    return resolvers[resolver.id]?.module;
+  }
+
+  hasResolver(resolver: DependencyResolver<any, any>) {
+    this.declarations.find(registeredResolver => registeredResolver.id === resolver.id);
+  }
 
   // TODO: extract to service ?
   findModule(other: ModuleRegistry<any>) {

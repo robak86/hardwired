@@ -1,3 +1,5 @@
+import { DependencyResolver } from './resolvers/DependencyResolver';
+
 export class ImmutableSet<D extends Record<string, any>> {
   static empty(): ImmutableSet<{}> {
     return new ImmutableSet<{}>({}, []);
@@ -80,6 +82,10 @@ export class ImmutableSet<D extends Record<string, any>> {
     });
   }
 
+  find(filterFn: (value: any) => boolean) {
+    return this.values.find(filterFn);
+  }
+
   // extend<TKey extends string, TValue>(
   //   key: TKey,
   //   value: TValue
@@ -104,5 +110,3 @@ export class ImmutableSet<D extends Record<string, any>> {
     );
   }
 }
-
-

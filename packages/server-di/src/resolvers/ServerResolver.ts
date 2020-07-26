@@ -1,10 +1,4 @@
-import {
-  AbstractDependencyResolver,
-  ContainerCache,
-  ContainerEvents,
-  ModuleRegistry,
-  RegistryRecord,
-} from '@hardwired/di-core';
+import { AbstractDependencyResolver, ContainerCache, ModuleRegistry, RegistryRecord, } from '@hardwired/di-core';
 import { ClassSingletonResolver } from '@hardwired/di';
 import { ContractRouteDefinition, HttpRequest, HttpResponse, IServer } from '@roro/s-middleware';
 import { RouterResolver } from './RouterResolver';
@@ -22,7 +16,6 @@ export class ServerResolver<
   TRegistryRecord extends RegistryRecord,
   TReturn extends IServer
 > extends AbstractDependencyResolver<TRegistryRecord, TReturn> {
-  private routers: { resolver: RouterResolver<any, IRouter>; registry: ModuleRegistry<any> }[] = [];
   private serverInstanceResolver: ClassSingletonResolver<TRegistryRecord, TReturn>;
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {
@@ -32,26 +25,21 @@ export class ServerResolver<
 
   build = (registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) => {
     const serverInstance = this.serverInstanceResolver.build(registry, cache, ctx);
+    const routers = registry.findResolvers(RouterResolver.isType);
 
-    if (this.routers.length === 0) {
+    if (routers.length === 0) {
       throw new Error(
         '`Cannot instantiate server instance. Application module requires IRouter instance to be defined.`',
       );
     }
 
-    if (this.routers.length > 1) {
+    if (routers.length > 1) {
       throw new Error(`Currently server di supports only single router instance`);
     }
 
-    const routerInstance: IRouter = this.routers[0].resolver.build(this.routers[0].registry, cache, ctx);
+    const routerInstance: IRouter = routers[0].build(registry.findOwningModule(routers[0]), cache, ctx);
 
     serverInstance.replaceListener(routerInstance.run);
     return serverInstance;
   };
-
-  onRegister(events: ContainerEvents): any {
-    events.onSpecificDefinitionAppend.add(RouterResolver, (resolver, registry) => {
-      this.routers.push({ resolver, registry });
-    });
-  }
 }

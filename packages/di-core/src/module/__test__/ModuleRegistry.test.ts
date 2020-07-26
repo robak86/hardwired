@@ -1,7 +1,85 @@
 import { ModuleRegistry } from '../ModuleRegistry';
 import { DependencyResolver } from '../../resolvers/DependencyResolver';
+import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
 
 describe(`ModuleRegistry`, () => {
+  class Resolver1 extends AbstractDependencyResolver<any, any> {
+    constructor(public testId: string) {
+      super();
+    }
+    build() {
+      return null;
+    }
+  }
+
+  class Resolver2 extends AbstractDependencyResolver<any, any> {
+    constructor(public testId: string) {
+      super();
+    }
+
+    build() {
+      return null;
+    }
+  }
+
+  describe('findResolvers', () => {
+    it(`returns resolvers of given type`, async () => {
+      const parent = ModuleRegistry.empty('def3')
+        .extendImports('childDef1', () => childDef1)
+        .extendImports('childDef2', () => childDef2)
+        .extendDeclarations('parentResolver1', new Resolver1('parentResolver1'))
+        .extendDeclarations('parentResolver2', new Resolver2('parentResolver2'));
+
+      const childDef1 = ModuleRegistry.empty('def1')
+        .extendDeclarations('child1Resolver1', new Resolver1('child1Resolver1'))
+        .extendDeclarations('child1Resolver2', new Resolver2('child1Resolver2'));
+
+      const childDef2 = ModuleRegistry.empty('def2').extendDeclarations(
+        'child2Resolver1',
+        new Resolver1('child2Resolver1'),
+      );
+
+      const resolvers1 = parent.findResolvers(resolver => Resolver1.isConstructorFor(resolver));
+      const resolvers2 = parent.findResolvers(resolver => Resolver2.isConstructorFor(resolver));
+
+      expect(resolvers1.map(r => r.testId)).toEqual(['parentResolver1', 'child1Resolver1', 'child2Resolver1']);
+      expect(resolvers2.map(r => r.testId)).toEqual(['parentResolver2', 'child1Resolver2']);
+    });
+  });
+
+  describe(`findOwningModule`, () => {
+    it(`returns module holding given resolver`, async () => {
+      const parentResolver1 = new Resolver1('parentResolver1');
+      const parentResolver2 = new Resolver2('parentResolver2');
+      const child1Resolver1 = new Resolver1('child1Resolver1');
+      const child1Resolver2 = new Resolver2('child1Resolver2');
+      const child2Resolver1 = new Resolver1('child2Resolver1');
+
+      const parent = ModuleRegistry.empty('def3')
+        .extendImports('childDef1', () => childDef1)
+        .extendImports('childDef2', () => childDef2)
+        .extendDeclarations('parentResolver1', parentResolver1)
+        .extendDeclarations('parentResolver2', parentResolver2);
+
+      const childDef1 = ModuleRegistry.empty('def1')
+        .extendDeclarations('child1Resolver1', child1Resolver1)
+        .extendDeclarations('child1Resolver2', child1Resolver2);
+
+      const childDef2 = ModuleRegistry.empty('def2').extendDeclarations('child2Resolver1', child2Resolver1);
+
+      expect(parent.findOwningModule(parentResolver1)).toEqual(parent);
+      expect(parent.findOwningModule(parentResolver2)).toEqual(parent);
+
+      expect(parent.findOwningModule(child1Resolver1)).toEqual(childDef1);
+      expect(parent.findOwningModule(child1Resolver2)).toEqual(childDef1);
+      expect(childDef1.findOwningModule(child1Resolver1)).toEqual(childDef1);
+      expect(childDef1.findOwningModule(child1Resolver2)).toEqual(childDef1);
+
+      expect(parent.findOwningModule(child2Resolver1)).toEqual(childDef2);
+      expect(childDef2.findOwningModule(child2Resolver1)).toEqual(childDef2);
+    });
+  });
+
   describe(`forEachModuleReversed`, () => {
     it(`iterates over all imports`, async () => {
       const childDef1 = ModuleRegistry.empty('def1');
@@ -30,8 +108,8 @@ describe(`ModuleRegistry`, () => {
       const childDef3 = ModuleRegistry.empty('def3').extendImports('childDef3', childDef2);
 
       const def1 = ModuleRegistry.empty('def1')
-          .extendImports('childDef1', childDef1)
-          .extendImports('childDef2', childDef3);
+        .extendImports('childDef1', childDef1)
+        .extendImports('childDef2', childDef3);
 
       const iterSpy = jest.fn();
       def1.forEachModule(iterSpy);

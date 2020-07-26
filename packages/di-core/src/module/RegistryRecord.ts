@@ -44,6 +44,8 @@ export type FlattenModules<R extends RegistryRecord> =
   | {
       [K in keyof ModuleRegistryImports<R>]: FlattenModules<ModuleRegistryImports<R>[K]>;
     }[keyof ModuleRegistryImports<R>];
+
+
 export type MaterializedDefinitions<R extends RegistryRecord> = {
   [K in ModuleRegistryDefinitionsKeys<R>]: ModuleRegistryDefinitions<R>[K] extends Definition<infer TDefinition>
     ? TDefinition
@@ -52,4 +54,4 @@ export type MaterializedDefinitions<R extends RegistryRecord> = {
 export type MaterializedImports<R extends RegistryRecord> = {
   [K in ModuleRegistryImportsKeys<R>]: MaterializedDefinitions<ModuleRegistryImports<R>[K]>;
 };
-export type MaterializedModuleEntries<R extends RegistryRecord> = MaterializedDefinitions<R> & MaterializedImports<R>;
+export type MaterializedModuleEntries<TRegistryRecord extends RegistryRecord> = MaterializedDefinitions<TRegistryRecord> & MaterializedImports<TRegistryRecord>;

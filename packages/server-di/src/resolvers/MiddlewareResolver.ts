@@ -8,11 +8,11 @@ import {
 } from '@hardwired/di-core';
 import { Middleware } from '@roro/s-middleware';
 
-export class MiddlewareResolver<TRegistryRecord extends RegistryRecord, TReturn> extends AbstractDependencyResolver<
+export class MiddlewareResolver<TRegistryRecord extends RegistryRecord, TReturn extends Middleware> extends AbstractDependencyResolver<
   TRegistryRecord,
   Promise<TReturn>
 > {
-  constructor(private klass: ClassType<any, Middleware<any>>, private selectDependencies = container => [] as any[]) {
+  constructor(private klass: ClassType<any, Middleware>, private selectDependencies = container => [] as any[]) {
     super();
   }
 
@@ -26,7 +26,7 @@ export class MiddlewareResolver<TRegistryRecord extends RegistryRecord, TReturn>
         );
 
         const instance = new this.klass(...constructorArgs);
-        return instance.run('TODO' as any);
+        return instance.run('TODO' as any, 'TODO' as any);
       });
     }
   }

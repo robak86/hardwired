@@ -1,10 +1,4 @@
-import {
-  AbstractDependencyResolver,
-  ContainerCache,
-  ContainerEvents,
-  ModuleRegistry,
-  RegistryRecord,
-} from '@hardwired/di-core';
+import { AbstractDependencyResolver, ContainerCache, ModuleRegistry, RegistryRecord } from '@hardwired/di-core';
 import { ClassSingletonResolver } from '@hardwired/di';
 import { ContractRouteDefinition, HttpRequest, HttpResponse, IRouter } from '@roro/s-middleware';
 import { HandlerResolver } from './HandlerResolver';
@@ -21,9 +15,11 @@ export class RouterResolver<
   TRegistryRecord extends RegistryRecord,
   TReturn extends IRouter
 > extends AbstractDependencyResolver<TRegistryRecord, TReturn> {
-  private handlersResolvers: { resolver: HandlerResolver<any, any>; registry: ModuleRegistry<any> }[] = [];
-
   private routerInstanceResolver: ClassSingletonResolver<TRegistryRecord, TReturn>;
+
+  static isType(resolver: AbstractDependencyResolver<any, any>): resolver is RouterResolver<any, any> {
+    return resolver instanceof RouterResolver;
+  }
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {
     super();
@@ -33,8 +29,10 @@ export class RouterResolver<
   build = (registry: ModuleRegistry<TRegistryRecord>, cache: ContainerCache, ctx) => {
     const routerInstance = this.routerInstanceResolver.build(registry, cache, ctx);
 
-    const handlersInstances: ContainerHandler<any>[] = this.handlersResolvers.map(({ resolver, registry }) => {
-      return resolver. build(registry, cache, ctx);
+    const handlersResolvers = registry.findResolvers(HandlerResolver.isType);
+
+    const handlersInstances: ContainerHandler<any>[] = handlersResolvers.map(resolver => {
+      return resolver.build(registry.findOwningModule(resolver), cache, ctx);
     });
 
     routerInstance.replaceRoutes(
@@ -48,10 +46,4 @@ export class RouterResolver<
 
     return routerInstance;
   };
-
-  onRegister(events: ContainerEvents): any {
-    events.onSpecificDefinitionAppend.add(HandlerResolver, (resolver, registry) => {
-      this.handlersResolvers.push({ resolver, registry });
-    });
-  }
 }

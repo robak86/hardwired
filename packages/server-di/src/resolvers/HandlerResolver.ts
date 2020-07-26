@@ -15,6 +15,11 @@ export class HandlerResolver<
   TRegistryRecord extends RegistryRecord,
   TReturn extends object
 > extends AbstractDependencyResolver<TRegistryRecord, ContainerHandler<TReturn>> {
+
+  static isType(resolver: AbstractDependencyResolver<any, any>): resolver is HandlerResolver<any, any> {
+    return resolver instanceof HandlerResolver;
+  }
+
   constructor(
     private klass,
     private selectDependencies = container => [] as any[],
