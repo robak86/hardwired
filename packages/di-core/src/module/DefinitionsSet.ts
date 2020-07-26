@@ -136,6 +136,8 @@ export class DefinitionsSet<TRegistry extends ModuleRegistry, C = any> {
     return this.data.get('definition').hasKey(key);
   }
 
+  findResolvers() {}
+
   // TODO: extract to service ?
   findModule(other: DefinitionsSet<any>) {
     let found = this.data

@@ -1,5 +1,6 @@
 import { DefinitionsSet } from '../module/DefinitionsSet';
 import {
+  Definition,
   MaterializedDefinitions,
   MaterializedModuleEntries,
   ModuleRegistry,
@@ -7,8 +8,16 @@ import {
   ModuleRegistryImportsKeys,
 } from '../module/ModuleRegistry';
 import { ModuleBuilder } from './ModuleBuilder';
-import { ClassType, FilterPrivateFields } from '../module/ModuleUtils';
+import { ClassType, FilterPrivateFields, NotDuplicated } from '../module/ModuleUtils';
 import { TransientResolver } from '../resolvers/TransientResolver';
+
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+
+export type NextBaseModuleBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = NotDuplicated<
+  TKey,
+  TRegistry,
+  BaseModuleBuilder<TRegistry & { [K in TKey]: Definition<TReturn> }>
+>;
 
 export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implements ModuleBuilder<TRegistry> {
   protected constructor(public readonly registry: DefinitionsSet<TRegistry>) {}
@@ -22,12 +31,28 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
     return builderFactory(this.registry);
   }
 
-  define<TNextBuilder, TOutput extends BaseModuleBuilder<any>>(
-    builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
-    builder: (m: TNextBuilder) => TOutput,
-  ): TOutput {
-    return builderFactory(this.registry) as any;
+  define<K extends string, V>(
+    key: K,
+    factory: (ctx: MaterializedModuleEntries<TRegistry>) => V,
+  ): NextBaseModuleBuilder<K, V, TRegistry>;
+  define<K extends string, V>(
+    key: K,
+    resolver: DependencyResolver<TRegistry, V>,
+  ): NextBaseModuleBuilder<K, V, TRegistry>;
+  define<K extends string, V>(key: K, resolverOrFactory: any): NextBaseModuleBuilder<K, V, TRegistry> {
+    if (typeof resolverOrFactory === 'function') {
+      return this.registry.extendDeclarations(key, new TransientResolver(resolverOrFactory));
+    }
+
+    return this.registry.extendDeclarations(key, resolverOrFactory);
   }
+
+  // define<TNextBuilder, TOutput extends BaseModuleBuilder<any>>(
+  //   builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
+  //   builder: (m: TNextBuilder) => TOutput,
+  // ): TOutput {
+  //   return builderFactory(this.registry) as any;
+  // }
 
   // TODO: use Flatten to make this method type safe
   inject<TNextR extends ModuleRegistry>(otherModule: ModuleBuilder<TNextR>): this {
