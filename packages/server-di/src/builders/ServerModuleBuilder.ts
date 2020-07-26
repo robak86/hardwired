@@ -29,7 +29,11 @@ export type NextServerBuilder<TKey extends string, TReturn, TRegistryRecord exte
 >;
 
 export class ServerModuleBuilder<TRegistryRecord extends RegistryRecord> extends BaseModuleBuilder<TRegistryRecord> {
-  constructor(registry: ModuleRegistry<TRegistryRecord>, private selectMiddlewares = () => []) {
+  constructor(
+    registry: ModuleRegistry<TRegistryRecord>,
+    private selectMiddlewares: (ctx: MaterializedModuleEntries<TRegistryRecord>) => Middleware[] = () =>
+      [] as Middleware[],
+  ) {
     super(registry);
   }
 
@@ -118,7 +122,7 @@ export class ServerModuleBuilder<TRegistryRecord extends RegistryRecord> extends
     middlewareSelect: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TMiddlewares,
     define: (builder: ServerModuleBuilder<TRegistryRecord>) => ServerModuleBuilder<TNextRegistryRecord>,
   ): ServerModuleBuilder<TNextRegistryRecord> {
-    return define(new ServerModuleBuilder(this.registry));
+    return define(new ServerModuleBuilder(this.registry, middlewareSelect));
   }
 
   handler<TKey extends string, TRequestParams extends object, TResult extends object>(
@@ -138,7 +142,10 @@ export class ServerModuleBuilder<TRegistryRecord extends RegistryRecord> extends
     klass: ClassType<TDeps, Task<HttpResponse<TResult>>>,
     depSelect?: (ctx: MaterializedModuleEntries<TRegistryRecord>) => TDeps,
   ): NextServerBuilder<TKey, ContainerHandler<TResult>, TRegistryRecord> {
-    const newRegistry = this.registry.extendDeclarations(key, new HandlerResolver(klass, depSelect, routeDefinition));
+    const newRegistry = this.registry.extendDeclarations(
+      key,
+      new HandlerResolver(klass, depSelect, this.selectMiddlewares, routeDefinition),
+    );
     return new ServerModuleBuilder(newRegistry) as any;
   }
 }

@@ -2,20 +2,20 @@ import {
   AbstractDependencyResolver,
   ContainerCache,
   ContainerService,
+  MaterializedModuleEntries,
   ModuleRegistry,
   RegistryRecord,
 } from '@hardwired/di-core';
 
 import { SingletonResolver } from '@hardwired/di';
-
-import { ContractRouteDefinition, HttpRequest } from '@roro/s-middleware';
+import { ContractRouteDefinition, HttpRequest, Middleware } from '@roro/s-middleware';
 import { ContainerHandler } from './ServerResolver';
+import { composeMiddleware } from '../../../s-middleware/src/Middleware';
 
 export class HandlerResolver<
   TRegistryRecord extends RegistryRecord,
   TReturn extends object
 > extends AbstractDependencyResolver<TRegistryRecord, ContainerHandler<TReturn>> {
-
   static isType(resolver: AbstractDependencyResolver<any, any>): resolver is HandlerResolver<any, any> {
     return resolver instanceof HandlerResolver;
   }
@@ -23,6 +23,7 @@ export class HandlerResolver<
   constructor(
     private klass,
     private selectDependencies = container => [] as any[],
+    public selectMiddleware: (ctx: MaterializedModuleEntries<TRegistryRecord>) => Middleware[] = container => [],
     public routeDefinition: ContractRouteDefinition<any, TReturn>,
   ) {
     super();
@@ -42,7 +43,16 @@ export class HandlerResolver<
             this.selectDependencies(ContainerService.proxyGetter(requestRegistry, requestCache, ctx)) as any,
           );
           const instance = new this.klass(...constructorArgs);
-          return instance.run();
+          const middlewares = this.selectMiddleware(ContainerService.proxyGetter(requestRegistry, requestCache, ctx));
+
+          console.log('WERQWER', middlewares);
+          const composed = composeMiddleware(middlewares);
+          console.log('composed', composed);
+          const handlerResponse = instance.run();
+          console.log('handlerResponse', handlerResponse);
+          const middlewareResponse = composed.run(handlerResponse);
+          // TODO: use correct types
+          return middlewareResponse as any;
         },
       };
 

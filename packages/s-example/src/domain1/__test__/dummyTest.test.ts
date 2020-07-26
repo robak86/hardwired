@@ -11,6 +11,10 @@ describe(`dummyTest`, () => {
   it(`does request`, async () => {
     const client = setup();
     const response = await client.get('/hello');
-    console.log(response);
+    expect(response.headers).toEqual({})
+    expect(response.data).toEqual({
+      message: 'Hello world',
+      parsedParams: 'dummy value',
+    });
   });
 });

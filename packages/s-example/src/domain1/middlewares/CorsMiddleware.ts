@@ -1,4 +1,4 @@
-import { Middleware, HttpResponse } from '@roro/s-middleware';
+import { Middleware, HttpResponse, MiddlewareResult } from '@roro/s-middleware';
 
 export type CorsMiddlewareConfig = {
   allowedHosts: string;
@@ -7,7 +7,7 @@ export type CorsMiddlewareConfig = {
 export class CorsMiddleware implements Middleware {
   constructor(private config: CorsMiddlewareConfig) {}
 
-  run(response): HttpResponse<any> | 'someErrorType?' {
+  run(response): MiddlewareResult {
     return {
       ...response,
       headers: {

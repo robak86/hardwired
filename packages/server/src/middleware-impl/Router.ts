@@ -27,9 +27,10 @@ export class Router implements IRouter {
     if (handler) {
       const handlerResponse: HttpResponse<any> = await handler.handler(HttpRequest.build(httpRequest));
 
-      response.writeHead(200, { 'Content-type': 'application/json' });
+      response.writeHead(200, handlerResponse.headers);
       response.end(JSON.stringify(handlerResponse.data));
     } else {
+      // TODO: this should be also customizable
       response.writeHead(404, { 'Content-type': 'text/plain' });
       response.end('Not Found\n');
     }
