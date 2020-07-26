@@ -1,4 +1,5 @@
 - ~~instead of checking for duplicates, override existing key ?~~ - NOPE - this breaks type-safety 
+- rename `using` -> `extend` and ... `define` -> `using` ? not sure about the latter.
 
 - add method for finding registry in which given resolver is registered!
   - cache it

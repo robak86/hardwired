@@ -1,10 +1,7 @@
 import 'source-map-support/register';
 
 import { container } from '@hardwired/di';
-import { appModule } from "./app";
-
-
-
+import { appModule, appTestModule } from './app';
 
 // TODO: maybe .using(serverDefinitions) should create implicitly and router ?
 // TODO: maybe .using(serverDefinitions) should create implicitly and errorHandler ?
@@ -15,3 +12,8 @@ import { appModule } from "./app";
 const c = container(appModule);
 
 c.get('server').listen();
+
+// const c = container(appTestModule);
+// c.get('server').listen();
+//
+// c.get('client');

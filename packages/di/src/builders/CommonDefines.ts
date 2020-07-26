@@ -1,15 +1,15 @@
 import {
+  BaseModuleBuilder,
+  ClassType,
+  Definition,
+  DefinitionsSet,
+  MaterializedModuleEntries,
+  ModuleBuilder,
   ModuleRegistry,
   NotDuplicated,
-  Definition,
-  BaseModuleBuilder,
-  ModuleBuilder,
-  DefinitionsSet,
-  ClassType,
-  MaterializedModuleEntries,
-  Thunk,
   NotDuplicatedKeys,
   RequiresDefinition,
+  Thunk,
   unwrapThunk,
 } from '@hardwired/di-core';
 
@@ -24,6 +24,10 @@ export type NextCommonBuilder<TKey extends string, TReturn, TRegistry extends Mo
   TRegistry,
   CommonBuilder<TRegistry & { [K in TKey]: Definition<TReturn> }>
 >;
+
+// export type NextCommonBuilder<TKey extends string, TReturn, TRegistry extends ModuleRegistry> = CommonBuilder<
+//   TRegistry & { [K in TKey]: Definition<TReturn> }
+// >;
 
 export type NextImportsModuleBuilder<
   TKey extends string,
@@ -90,6 +94,7 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     return new CommonBuilder(newRegistry) as any;
   }
 
+  //TODO: use tuples with non limited TDeps?
   function<TKey extends string, TResult>(
     key: TKey,
     fn: () => TResult,
@@ -137,6 +142,11 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
     depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => [TDep1, TDep2, TDep3],
   ): NextCommonBuilder<TKey, () => TResult, TRegistry>;
+  function<TKey extends string, TDep1, TDep2, TDep3, TDep4, TResult>(
+    key: TKey,
+    fn: (d1: TDep1, d2: TDep2, d3: TDep3, d4: TDep4) => TResult,
+    depSelect: (ctx: MaterializedModuleEntries<TRegistry>) => [TDep1, TDep2, TDep3, TDep4],
+  ): NextCommonBuilder<TKey, () => TResult, TRegistry>;
   function(key, fn, depSelect?): any {
     const newRegistry = this.registry.extendDeclarations(key, new FunctionResolver(fn, depSelect));
     return new CommonBuilder(newRegistry);
@@ -159,6 +169,14 @@ export class CommonBuilder<TRegistry extends ModuleRegistry> extends BaseModuleB
 
   value<K extends string, V>(key: K, factory: V): NextCommonBuilder<K, V, TRegistry> {
     const newRegistry = this.registry.extendDeclarations(key, new SingletonResolver(() => factory as any));
+    return new CommonBuilder(newRegistry) as any;
+  }
+
+  factory<K extends string, V>(
+    key: K,
+    factory: (ctx: MaterializedModuleEntries<TRegistry>) => V,
+  ): NextCommonBuilder<K, V, TRegistry> {
+    const newRegistry = this.registry.extendDeclarations(key, new SingletonResolver(factory));
     return new CommonBuilder(newRegistry) as any;
   }
 }

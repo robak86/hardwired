@@ -22,7 +22,7 @@ export abstract class BaseModuleBuilder<TRegistry extends ModuleRegistry> implem
     return builderFactory(this.registry);
   }
 
-  using2<TNextBuilder, TOutput extends BaseModuleBuilder<any>>(
+  define<TNextBuilder, TOutput extends BaseModuleBuilder<any>>(
     builderFactory: (ctx: DefinitionsSet<TRegistry>) => TNextBuilder,
     builder: (m: TNextBuilder) => TOutput,
   ): TOutput {

@@ -9,9 +9,12 @@
   ],
   "dependencies": {
     "@hardwired/server": "*",
+    "@hardwired/di": "*",
+    "@hardwired/di-core": "*",
     "@roro/s-middleware": "*",
     "@roro/server": "*",
-    "@roro/routing-contract": "*"
+    "@roro/routing-contract": "*",
+    "axios": "^0.19.2"
   },
   "publishConfig": {
     "access": "public"

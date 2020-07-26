@@ -1,9 +1,9 @@
-import { IServer, ILogger } from '@roro/s-middleware';
-import { IncomingMessage, ServerResponse } from 'http';
+import { ILogger, IServer } from '@roro/s-middleware';
 import * as http from 'http';
+import { IncomingMessage, ServerResponse } from 'http';
 
 export type ServerConfig = {
-  port: number;
+  port?: number;
 };
 
 export class Server implements IServer {
@@ -18,8 +18,8 @@ export class Server implements IServer {
     this.requestListener = listener;
   }
 
-  listen() {
-    http.createServer(this.requestListener).listen(this.config.port, () => {
+  listen(): http.Server {
+    return http.createServer(this.requestListener).listen(this.config.port, () => {
       this.logger.info(`Server listening on port ${this.config.port}`);
     });
   }

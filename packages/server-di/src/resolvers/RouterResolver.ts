@@ -6,7 +6,7 @@ import {
   ModuleRegistry,
 } from '@hardwired/di-core';
 import { ClassSingletonResolver } from '@hardwired/di';
-import { HttpRequest, HttpResponse, IServer, ContractRouteDefinition } from '@roro/s-middleware';
+import { ContractRouteDefinition, HttpRequest, HttpResponse, IRouter } from '@roro/s-middleware';
 import { HandlerResolver } from './HandlerResolver';
 
 /**
@@ -19,7 +19,7 @@ export type ContainerHandler<TReturn extends object> = {
 
 export class RouterResolver<
   TRegistry extends ModuleRegistry,
-  TReturn extends IServer
+  TReturn extends IRouter
 > extends AbstractDependencyResolver<TRegistry, TReturn> {
   private handlersResolvers: { resolver: HandlerResolver<any, any>; registry: DefinitionsSet<any> }[] = [];
 
@@ -33,9 +33,9 @@ export class RouterResolver<
   build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
     const routerInstance = this.routerInstanceResolver.build(registry, cache, ctx);
 
-    const handlersInstances: ContainerHandler<any>[] = this.handlersResolvers.map(({ resolver, registry }) =>
-      resolver.build(registry, cache, ctx),
-    );
+    const handlersInstances: ContainerHandler<any>[] = this.handlersResolvers.map(({ resolver, registry }) => {
+      return resolver. build(registry, cache, ctx);
+    });
 
     routerInstance.replaceRoutes(
       handlersInstances.map(h => {

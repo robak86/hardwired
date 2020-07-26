@@ -13,7 +13,13 @@
       "path": "../routing-contract/tsconfig.json"
     },
     {
+      "path": "../di-core/tsconfig.json"
+    },
+    {
       "path": "../s-middleware/tsconfig.json"
+    },
+    {
+      "path": "../di/tsconfig.json"
     },
     {
       "path": "../server-di/tsconfig.json"

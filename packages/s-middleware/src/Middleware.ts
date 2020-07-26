@@ -1,8 +1,8 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { HttpResponse } from './response';
 
-export type ILogger = {
-  info(message: string): void;
+export type ILogger<TMessageType = any> = {
+  info(message: TMessageType): void;
 };
 
 export type IServer = {

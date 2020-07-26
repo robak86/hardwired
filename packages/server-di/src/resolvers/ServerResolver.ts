@@ -6,9 +6,10 @@ import {
   ModuleRegistry,
 } from '@hardwired/di-core';
 import { ClassSingletonResolver } from '@hardwired/di';
-import { IServer, ContractRouteDefinition, HttpRequest, HttpResponse } from '@roro/s-middleware';
+import { ContractRouteDefinition, HttpRequest, HttpResponse, IServer } from '@roro/s-middleware';
 import { RouterResolver } from './RouterResolver';
-import invariant from 'tiny-invariant';
+import { IRouter } from '../../../s-middleware/src/App';
+
 /**
  * This class is returned by the container and encapsulates all the wiring. It requires as an input http request object
  */
@@ -21,7 +22,7 @@ export class ServerResolver<
   TRegistry extends ModuleRegistry,
   TReturn extends IServer
 > extends AbstractDependencyResolver<TRegistry, TReturn> {
-  private routers: { resolver: RouterResolver<any, any>; registry: DefinitionsSet<any> }[] = [];
+  private routers: { resolver: RouterResolver<any, IRouter>; registry: DefinitionsSet<any> }[] = [];
   private serverInstanceResolver: ClassSingletonResolver<TRegistry, TReturn>;
 
   constructor(private klass, private selectDependencies = container => [] as any[]) {
@@ -32,11 +33,19 @@ export class ServerResolver<
   build = (registry: DefinitionsSet<TRegistry>, cache: ContainerCache, ctx) => {
     const serverInstance = this.serverInstanceResolver.build(registry, cache, ctx);
 
-    invariant(this.routers.length === 1, `Currently server di supports only single router instance`);
+    if (this.routers.length === 0) {
+      throw new Error(
+        '`Cannot instantiate server instance. Application module requires IRouter instance to be defined.`',
+      );
+    }
 
-    const routerInstance = this.routers[0].resolver.build(this.routers[0].registry, cache, ctx);
+    if (this.routers.length > 1) {
+      throw new Error(`Currently server di supports only single router instance`);
+    }
 
-    serverInstance.replaceListener(routerInstance);
+    const routerInstance: IRouter = this.routers[0].resolver.build(this.routers[0].registry, cache, ctx);
+
+    serverInstance.replaceListener(routerInstance.run);
     return serverInstance;
   };
 
