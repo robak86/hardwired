@@ -27,6 +27,9 @@
       "path": "./server-di/tsconfig.json"
     },
     {
+      "path": "./di-next/tsconfig.json"
+    },
+    {
       "path": "./example/tsconfig.json"
     },
     {
