@@ -169,7 +169,7 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
     return resolvers[resolver.id]?.module;
   }
 
-  hasResolver(resolver: DependencyResolver<any, any>):boolean {
+  hasResolver(resolver: DependencyResolver<any, any>): boolean {
     // this.declarations.find(registeredResolver => registeredResolver.id === resolver.id);
     throw new Error('Implement me');
   }

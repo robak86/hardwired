@@ -3,7 +3,6 @@ import { ContainerCache } from '../container/container-cache';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ContainerService } from '../container/ContainerService';
 
-
 export class TransientResolver<TKey extends string, TReturn> extends AbstractDependencyResolver<TKey, TReturn> {
   constructor(key: TKey, private resolver: any) {
     super(key);
@@ -14,6 +13,9 @@ export class TransientResolver<TKey extends string, TReturn> extends AbstractDep
   }
 }
 
-export const transient = <TKey extends string, TValue>(key: TKey, value: () => TValue): TransientResolver<TKey, TValue> => {
+export const transient = <TKey extends string, TValue>(
+  key: TKey,
+  value: () => TValue,
+): TransientResolver<TKey, TValue> => {
   return new TransientResolver(key, value);
 };

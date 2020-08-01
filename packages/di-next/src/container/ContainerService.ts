@@ -5,7 +5,7 @@ import { ContainerCache } from './container-cache';
 import { unwrapThunk } from '../utils/thunk';
 
 export const ContainerService = {
-  getChild<TRegistryRecord extends RegistryRecord>(
+   getChild<TRegistryRecord extends RegistryRecord>(
     registry: ModuleRegistry<TRegistryRecord>,
     cache: ContainerCache,
     context,

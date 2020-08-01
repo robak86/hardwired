@@ -1,7 +1,6 @@
 import { container, Definition, module } from '@hardwired/di-core';
 import { CommonBuilder, commonDefines } from '../CommonDefines';
 
-
 import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`ClassBuilder`, () => {

@@ -3,6 +3,7 @@ import { createResolverId } from '../utils/fastId';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DependencyResolver } from './DependencyResolver';
 import { ContainerEvents } from '../container/ContainerEvents';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
 
 export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
   protected constructor(public key: TKey) {}
@@ -17,6 +18,7 @@ export abstract class AbstractRegistryDependencyResolver<TKey extends string, TR
   static isComposite(val: DependencyResolver<any, any>): val is AbstractRegistryDependencyResolver<any, any> {
     return val instanceof AbstractRegistryDependencyResolver;
   }
+
   // static isConstructorFor(param: DependencyResolver<any, any>): boolean {
   //   return param.constructor === this;
   // }

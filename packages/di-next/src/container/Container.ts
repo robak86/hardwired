@@ -1,14 +1,9 @@
-import { unwrapThunk } from '../utils/thunk';
 import { ContainerCache } from './container-cache';
 import { ModuleRegistry } from '../module/ModuleRegistry';
-import {
-  MaterializedDefinitions,
-  ModuleRegistryContext,
-  ModuleRegistryDefinitionsKeys,
-  RegistryRecord,
-} from '../module/RegistryRecord';
+import { MaterializedDefinitions, ModuleRegistryDefinitionsKeys, RegistryRecord } from '../module/RegistryRecord';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { ContainerService } from './ContainerService';
+import { ImportResolver } from '../resolvers/ImportResolver';
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -36,11 +31,15 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 //   : DeepGetReturnErrorMessage;
 
 export class Container<R extends RegistryRecord = {}, C = {}> {
+  private rootResolver: ImportResolver<any, any>;
+
   constructor(
     private registry: ModuleRegistry<R>,
     private cache: ContainerCache = new ContainerCache(),
     private context?: C,
-  ) {}
+  ) {
+    this.rootResolver = new ImportResolver<any, any>('root', this.registry);
+  }
 
   get = <K extends ModuleRegistryDefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
     return ContainerService.getChild(this.registry, this.cache.forNewRequest(), this.context, key as any);
@@ -72,20 +71,21 @@ export class Container<R extends RegistryRecord = {}, C = {}> {
     module: ModuleBuilder<TNextR>,
     key: K,
   ): any {
-    // ): DeepGetReturn<K, TNextR, R> {
-    //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
-    let childModule: ModuleRegistry<any> | undefined = this.registry.isEqual(module.registry)
-      ? this.registry
-      : unwrapThunk(this.findModule(module.registry));
-
-    // TODO: we probably be explicit (add method appendModule) and throw an error for an unknown module here
-    if (!childModule) {
-      console.warn('deepGet called with module which is not imported by any descendant module');
-      childModule = module.registry;
-    }
-
-    ContainerService.init(childModule, this.cache, this.context);
-    return ContainerService.getChild(childModule, this.cache, this.context, key as string);
+    throw new Error('Implement me');
+    // // ): DeepGetReturn<K, TNextR, R> {
+    // //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
+    // let childModule: ModuleRegistry<any> | undefined = this.registry.isEqual(module.registry)
+    //   ? this.registry
+    //   : unwrapThunk(this.findModule(module.registry));
+    //
+    // // TODO: we probably be explicit (add method appendModule) and throw an error for an unknown module here
+    // if (!childModule) {
+    //   console.warn('deepGet called with module which is not imported by any descendant module');
+    //   childModule = module.registry;
+    // }
+    //
+    // ContainerService.init(childModule, this.cache, this.context);
+    // return ContainerService.getChild(childModule, this.cache, this.context, key as string);
   }
 
   private findModule(moduleIdentity: ModuleRegistry<any>): ModuleRegistry<any> | undefined {
