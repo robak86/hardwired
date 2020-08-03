@@ -3,12 +3,12 @@ import { AbstractDependencyResolver, AbstractRegistryDependencyResolver } from '
 import { ModuleBuilder } from './builders/ModuleBuilder';
 import { ContainerCache } from './container/container-cache';
 
-export type DefinitionProvider<T> = (containerCache: ContainerCache) => T;
+export type DependencyFactory<T> = (containerCache: ContainerCache) => T;
 
 // prettier-ignore
 export type ItemFactory<T> =
   T extends AbstractRegistryDependencyResolver<infer TKey, infer TValue> ? Record<TKey, TValue> :
-  T extends AbstractDependencyResolver<infer TKey, infer TValue> ? Record<TKey, DefinitionProvider<TValue>> : never
+  T extends AbstractDependencyResolver<infer TKey, infer TValue> ? Record<TKey, DependencyFactory<TValue>> : never
 
 // export type ItemFactory<T> = T extends DependencyResolver<infer TKey, infer TValue>
 //   ? Record<TKey, (cache: ContainerCache) => TValue>

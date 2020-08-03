@@ -3,9 +3,13 @@ import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ContainerCache } from './container-cache';
 import { unwrapThunk } from '../utils/thunk';
+import {
+  AbstractDependencyResolver,
+  AbstractRegistryDependencyResolver,
+} from '../resolvers/AbstractDependencyResolver';
 
 export const ContainerService = {
-   getChild<TRegistryRecord extends RegistryRecord>(
+  getChild<TRegistryRecord extends RegistryRecord>(
     registry: ModuleRegistry<TRegistryRecord>,
     cache: ContainerCache,
     context,
@@ -17,7 +21,12 @@ export const ContainerService = {
 
     if (registry.data.hasKey(dependencyKey)) {
       let declarationResolver: DependencyResolver<any, any> = unwrapThunk(registry.data.get(dependencyKey));
-      return declarationResolver.build(registry, cache, context);
+
+      if (AbstractRegistryDependencyResolver.isComposite(declarationResolver)) {
+        throw new Error('Implement me');
+      } else {
+        return declarationResolver.build(registry)(cache);
+      }
     }
 
     throw new Error(`Cannot find dependency for ${dependencyKey} key`);

@@ -8,7 +8,7 @@ describe(`ModuleRegistry`, () => {
     constructor(public testId: string) {
       super(testId);
     }
-    build() {
+    build(): any {
       return null;
     }
 
@@ -20,7 +20,7 @@ describe(`ModuleRegistry`, () => {
       super(testId);
     }
 
-    build() {
+    build(): any {
       return null;
     }
     forEach(iterFn: (resolver: DependencyResolver<any, any>) => any) {}

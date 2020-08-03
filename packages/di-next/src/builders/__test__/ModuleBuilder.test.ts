@@ -1,8 +1,9 @@
-import { ModuleBuilder, ModuleBuilderMaterialized } from "../ModuleBuilder";
-import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
-import { ModuleRegistry } from "../../module/ModuleRegistry";
-import { ContainerCache } from "../../container/container-cache";
-import { expectType, TypeEqual } from "ts-expect";
+import { ModuleBuilder, ModuleBuilderMaterialized } from '../ModuleBuilder';
+import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
+import { ModuleRegistry } from '../../module/ModuleRegistry';
+import { ContainerCache } from '../../container/container-cache';
+import { expectType, TypeEqual } from 'ts-expect';
+import { DependencyFactory } from "../../draft";
 
 describe(`ModuleBuilder`, () => {
   class DummyResolver<TKey extends string, TValue> extends AbstractDependencyResolver<TKey, TValue> {
@@ -10,7 +11,7 @@ describe(`ModuleBuilder`, () => {
       super(key);
     }
 
-    build(registry: ModuleRegistry<any>, cache: ContainerCache, ctx): TValue {
+    build(registry: ModuleRegistry<any>): DependencyFactory<TValue> {
       throw new Error('Implement me');
     }
   }

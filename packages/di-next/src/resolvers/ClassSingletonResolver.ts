@@ -1,9 +1,10 @@
-import { AbstractRegistryDependencyResolver } from './AbstractDependencyResolver';
+import { AbstractDependencyResolver, AbstractRegistryDependencyResolver } from './AbstractDependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ContainerCache } from '../container/container-cache';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { DependencyResolver } from './DependencyResolver';
 import { ClassType } from '../../../di-core/src/module/ModuleUtils';
+import { DependencyFactory } from '../draft';
 
 // export class ClassSingletonResolver<
 //   TRegistryRecord extends RegistryRecord,
@@ -25,15 +26,12 @@ import { ClassType } from '../../../di-core/src/module/ModuleUtils';
 //   };
 // }
 
-export class ClassSingletonResolver<TKey extends string, TReturn> extends AbstractRegistryDependencyResolver<
-  TKey,
-  TReturn
-> {
-  constructor(key: TKey, registry: ModuleBuilder<any>) {
-    super(key, registry as any);
+export class ClassSingletonResolver<TKey extends string, TReturn> extends AbstractDependencyResolver<TKey, TReturn> {
+  constructor(key: TKey) {
+    super(key);
   }
 
-  build(registry: ModuleRegistry<any>, cache: ContainerCache, ctx): TReturn {
+  build(registry: ModuleRegistry<any>): DependencyFactory<TReturn> {
     // const context = {};
     //
     // const byKey = this.registry.entries.reduce((grouped, entry) => {
@@ -54,6 +52,10 @@ export class ClassSingletonResolver<TKey extends string, TReturn> extends Abstra
     // this.registry.forEachDefinition(iterFn);
   }
 }
+
+export type MaterializedDependencies<TDeps extends any[]> = {
+  [K in keyof TDeps]: (container: ContainerCache) => TDeps[K];
+};
 
 type ClassSingletonBuilder = {
   <TKey extends string, TResult>(key: TKey, klass: ClassType<[], TResult>): ClassSingletonResolver<TKey, TResult>;

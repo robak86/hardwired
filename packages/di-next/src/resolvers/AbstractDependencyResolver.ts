@@ -3,7 +3,7 @@ import { createResolverId } from '../utils/fastId';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DependencyResolver } from './DependencyResolver';
 import { ContainerEvents } from '../container/ContainerEvents';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { DependencyFactory } from '../draft';
 
 export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
   // public type: 'dependency' = 'dependency';
@@ -11,7 +11,8 @@ export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
 
   public id: string = createResolverId();
 
-  abstract build(registry: ModuleRegistry<any>, cache: ContainerCache, ctx): TReturn;
+  // TODO: splitting build into two steps solves problem of providing registry by the container. AbstractDependencyResolver may cache
+  abstract build(registry: ModuleRegistry<any>): DependencyFactory<TReturn>;
   onRegister?(events: ContainerEvents);
 }
 
@@ -30,7 +31,7 @@ export abstract class AbstractRegistryDependencyResolver<TKey extends string, TR
 
   public id: string = createResolverId();
 
-  abstract build(registry: ModuleRegistry<any>, cache: ContainerCache, ctx): TReturn;
+  abstract build(registry: ModuleRegistry<any>): TReturn;
   abstract forEach(iterFn: (resolver: DependencyResolver<any, any>) => any);
   onRegister?(events: ContainerEvents);
 }

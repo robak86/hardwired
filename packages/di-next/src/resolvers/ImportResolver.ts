@@ -1,5 +1,4 @@
 import { AbstractRegistryDependencyResolver } from "./AbstractDependencyResolver";
-import { ContainerCache } from "../container/container-cache";
 import { ModuleRegistry } from "../module/ModuleRegistry";
 import { ModuleBuilder } from "../builders/ModuleBuilder";
 import { DependencyResolver } from "./DependencyResolver";
@@ -9,7 +8,7 @@ export class ImportResolver<TKey extends string, TReturn> extends AbstractRegist
     super(key, registry);
   }
 
-  build(registry: ModuleRegistry<any>, cache: ContainerCache, ctx): TReturn {
+  build(registry: ModuleRegistry<any>): TReturn {
     const context = {};
 
     // const byKey = this.registry.entries.reduce((grouped, entry) => {
