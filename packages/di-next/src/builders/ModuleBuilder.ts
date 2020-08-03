@@ -27,7 +27,7 @@ export class ModuleBuilder<TRegistryRecord> {
 
   append: ComposeDependencyResolvers<TRegistryRecord> = (
     ...entries: Array<(...args: any[]) => DependencyResolver<any, any>>
-  ) => {
+  ): any => {
     return new ModuleBuilder(ModuleId.next(this.moduleId), [...this.entries, ...entries]);
   };
 
@@ -67,8 +67,8 @@ const mod0 = ModuleBuilder.empty('someModule').append(
 const mod = ModuleBuilder.empty('someModule').append(
   use => importModule('imported', mod0),
   use => transient('b', () => true),
-  use => transient('c', () => 'str'),
-  // use => singleton('sing', DummyClass, () => [use.imported, use.b]),
+  use => transient('c', () => use.imported.a),
+  use => singleton('sing', DummyClass, [use.imported.a, use.b]),
 );
 
 // const kurwa:WTF = null;

@@ -24,7 +24,6 @@ describe(`ModuleRegistry`, () => {
       return null;
     }
     forEach(iterFn: (resolver: DependencyResolver<any, any>) => any) {}
-
   }
 
   // describe('findResolvers', () => {

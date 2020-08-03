@@ -6,6 +6,7 @@ import { ContainerEvents } from '../container/ContainerEvents';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 
 export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
+  // public type: 'dependency' = 'dependency';
   protected constructor(public key: TKey) {}
 
   public id: string = createResolverId();
@@ -15,6 +16,8 @@ export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
 }
 
 export abstract class AbstractRegistryDependencyResolver<TKey extends string, TReturn> {
+  // public type: 'registry' = 'registry';
+
   static isComposite(val: DependencyResolver<any, any>): val is AbstractRegistryDependencyResolver<any, any> {
     return val instanceof AbstractRegistryDependencyResolver;
   }

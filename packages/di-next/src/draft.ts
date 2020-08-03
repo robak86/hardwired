@@ -3,14 +3,16 @@ import { AbstractDependencyResolver, AbstractRegistryDependencyResolver } from '
 import { ModuleBuilder } from './builders/ModuleBuilder';
 import { ContainerCache } from './container/container-cache';
 
-// prettier-ignore
-// export type ItemFactory<T> =
-//   T extends AbstractRegistryDependencyResolver<infer TKey, infer TValue> ? Record<TKey, TValue> :
-//   T extends AbstractDependencyResolver<infer TKey, infer TValue> ? Record<TKey, (containerCache: ContainerCache) => TValue> : never
+export type DefinitionProvider<T> = (containerCache: ContainerCache) => T;
 
-export type ItemFactory<T> = T extends DependencyResolver<infer TKey, infer TValue>
-  ? Record<TKey, (cache: ContainerCache) => TValue>
-  : any;
+// prettier-ignore
+export type ItemFactory<T> =
+  T extends AbstractRegistryDependencyResolver<infer TKey, infer TValue> ? Record<TKey, TValue> :
+  T extends AbstractDependencyResolver<infer TKey, infer TValue> ? Record<TKey, DefinitionProvider<TValue>> : never
+
+// export type ItemFactory<T> = T extends DependencyResolver<infer TKey, infer TValue>
+//   ? Record<TKey, (cache: ContainerCache) => TValue>
+//   : any;
 
 const item = <TKey extends string, TValue>(key: TKey, value: TValue): DependencyResolver<TKey, TValue> => {
   return null as any;
