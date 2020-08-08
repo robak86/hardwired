@@ -1,10 +1,11 @@
-import { ModuleBuilder, ModuleBuilderMaterialized } from '../ModuleBuilder';
+import { ModuleBuilder, ModuleBuilderMaterialized, RegistryRecordDependencyResolverKeys } from '../ModuleBuilder';
 import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
 import { ModuleRegistry } from '../../module/ModuleRegistry';
 import { ContainerCache } from '../../container/container-cache';
 import { expectType, TypeEqual } from 'ts-expect';
 import { DependencyFactory } from '../../draft';
 import { importModule } from '../../resolvers/ImportResolver';
+import { DependencyResolver } from '../../resolvers/DependencyResolver';
 
 describe(`ModuleBuilder`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -71,11 +72,7 @@ describe(`ModuleBuilder`, () => {
   });
 
   it(`creates correct types for imports`, async () => {
-    const m1 = ModuleBuilder.empty('someModule')
-      .define('key1', ctx => dummy(123))
-      .define('key2', ctx => dummy(true))
-      .define('key3', ctx => dummy('string'))
-      .define('key4', ctx => dummy(() => 'someString'));
+    const m1 = ModuleBuilder.empty('someModule').define('key1', ctx => dummy(123));
 
     const m2 = ModuleBuilder.empty('someModule')
       .define('imported', ctx => importModule(m1))
@@ -84,5 +81,29 @@ describe(`ModuleBuilder`, () => {
 
         return dummy(123);
       });
+  });
+
+  it(`creates correct types for replace`, async () => {
+    const m1 = ModuleBuilder.empty('someModule').define('key1', ctx => dummy(123));
+
+    const m2 = ModuleBuilder.empty('someModule')
+      .define('imported', ctx => importModule(m1))
+      .define('key2', ctx => dummy('string'))
+      .define('key1', _ => {
+        expectType<
+          TypeEqual<typeof _, { imported: ModuleBuilderMaterialized<typeof m1>; key2: DependencyFactory<string> }>
+        >(true);
+
+        return dummy(123);
+      });
+
+    type Expected = (key: 'key1' | 'key2', factory: (ctx: any) => DependencyResolver<number>) => typeof m2;
+
+    m2.replace('key1', ctx => {
+      // ctx.key2
+      return dummy('string');
+    });
+
+    expectType<TypeEqual<typeof m2.replace, Expected>>(true);
   });
 });

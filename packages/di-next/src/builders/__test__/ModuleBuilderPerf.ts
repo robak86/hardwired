@@ -1,8 +1,8 @@
-import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
-import { ModuleRegistry } from "../../module/ModuleRegistry";
-import { DependencyFactory } from "../../draft";
-import { ModuleBuilder } from "../ModuleBuilder";
-import { importModule } from "../../resolvers/ImportResolver";
+import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
+import { ModuleRegistry } from '../../module/ModuleRegistry';
+import { DependencyFactory } from '../../draft';
+import { ModuleBuilder } from '../ModuleBuilder';
+import { importModule } from '../../resolvers/ImportResolver';
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {
@@ -440,5 +440,8 @@ const a = ModuleBuilder.empty('a')
   .define('imported1', _ => importModule(ab1))
   .define('imported2', _ => importModule(ab2))
   .define('asdf', _ => dummy(1))
-  .define('cba', _ => dummy(_.imported.a));
-// .replace('cba', ctx => ctx.imported.a);
+  .define('cba', _ => dummy(_.imported.a))
+  .replace('cba', ctx => {
+    ctx.cba;
+    return dummy('sdf');
+  });

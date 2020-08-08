@@ -40,6 +40,7 @@ export type MaterializedModuleRegistryContext<TRegistryRecord extends RegistryRe
 export type ModuleRegistryImportsKeys<T> = {
   [K in keyof T]: UnwrapThunk<T[K]> extends ModuleBuilder<any> ? K : never;
 }[keyof T];
+
 export type ModuleRegistryImports<T> = {
   [K in ModuleRegistryImportsKeys<T>]: UnwrapThunk<T[K]> extends ModuleBuilder<infer R> ? R : never;
 };

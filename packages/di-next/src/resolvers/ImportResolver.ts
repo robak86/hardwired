@@ -1,8 +1,8 @@
-import { AbstractRegistryDependencyResolver } from './AbstractDependencyResolver';
-import { ModuleRegistry } from '../module/ModuleRegistry';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
-import { DependencyResolver } from './DependencyResolver';
-import { RegistryRecord } from '../module/RegistryRecord';
+import { AbstractRegistryDependencyResolver } from "./AbstractDependencyResolver";
+import { ModuleRegistry } from "../module/ModuleRegistry";
+import { ModuleBuilder } from "../builders/ModuleBuilder";
+import { DependencyResolver } from "./DependencyResolver";
+import { RegistryRecord } from "../module/RegistryRecord";
 
 // TODO: how to implement module.replace() ?!?!?
 // prepending entries won't work, because we wont' have the correct materialized object
