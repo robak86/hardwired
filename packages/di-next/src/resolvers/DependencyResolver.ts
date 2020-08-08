@@ -19,6 +19,6 @@ import { AbstractDependencyResolver, AbstractRegistryDependencyResolver } from '
 //   onRegister?(events: ContainerEvents);
 // };
 
-export type DependencyResolver<TKey extends string, TValue> =
-  | AbstractDependencyResolver<TKey, TValue>
-  | AbstractRegistryDependencyResolver<TKey, TValue>;
+export type DependencyResolver<TKey extends string, TValue = any> =
+  | AbstractDependencyResolver<TKey, any>
+  | AbstractRegistryDependencyResolver<TKey, any>;

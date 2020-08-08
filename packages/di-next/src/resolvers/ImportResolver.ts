@@ -1,16 +1,23 @@
-import { AbstractRegistryDependencyResolver } from "./AbstractDependencyResolver";
-import { ModuleRegistry } from "../module/ModuleRegistry";
-import { ModuleBuilder } from "../builders/ModuleBuilder";
-import { DependencyResolver } from "./DependencyResolver";
+import { AbstractRegistryDependencyResolver } from './AbstractDependencyResolver';
+import { ModuleRegistry } from '../module/ModuleRegistry';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { DependencyResolver } from './DependencyResolver';
+import { RegistryRecord } from '../module/RegistryRecord';
 
-export class ImportResolver<TKey extends string, TReturn> extends AbstractRegistryDependencyResolver<TKey, TReturn> {
-  constructor(key: TKey, registry: any) {
+// TODO: how to implement module.replace() ?!?!?
+// prepending entries won't work, because we wont' have the correct materialized object
+// appending entries may work, but we need to make sure that any reference is not bind during reducing entries
+export class ImportResolver<
+  TKey extends string,
+  TReturn extends RegistryRecord
+> extends AbstractRegistryDependencyResolver<TKey, TReturn> {
+  constructor(key: TKey, registry: ModuleBuilder<TReturn>) {
     super(key, registry);
   }
 
-  build(registry: ModuleRegistry<any>): TReturn {
-    const context = {};
-
+  build(): ModuleRegistry<TReturn> {
+    // const context = ModuleRegistry.empty(this.registry.moduleId.name);
+    //
     // const byKey = this.registry.entries.reduce((grouped, entry) => {
     //   const resolver = entry(context);
     //
@@ -30,7 +37,7 @@ export class ImportResolver<TKey extends string, TReturn> extends AbstractRegist
   }
 }
 
-export const importModule = <TKey extends string, TValue>(
+export const importModule = <TKey extends string, TValue extends RegistryRecord>(
   key: TKey,
   value: ModuleBuilder<TValue>,
 ): ImportResolver<TKey, TValue> => {

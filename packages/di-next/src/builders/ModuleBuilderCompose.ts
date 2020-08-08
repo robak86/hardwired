@@ -1,8 +1,8 @@
-import { ModuleBuilder } from "./ModuleBuilder";
-import { ItemFactory, ItemsRecords } from "../draft";
-import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { ModuleBuilder } from './ModuleBuilder';
+import { ItemFactory, ItemsRecords } from '../draft';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
 
-export type ComposeDependencyResolvers<TPrev, TKey extends string= any> = {
+export type ComposeDependencyResolvers<TPrev, TKey extends string = any> = {
   <
     T1 extends (ctx: {}) => DependencyResolver<TKey, any> //breakme
   >(

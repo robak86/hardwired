@@ -32,13 +32,15 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 
 export class Container<R extends RegistryRecord = {}, C = {}> {
   private rootResolver: ImportResolver<any, any>;
+  private registry: ModuleRegistry<R>;
 
   constructor(
-    private registry: ModuleRegistry<R>,
+    moduleBuilder: ModuleBuilder<R>,
     private cache: ContainerCache = new ContainerCache(),
     private context?: C,
   ) {
-    this.rootResolver = new ImportResolver<any, any>('root', this.registry);
+    this.rootResolver = new ImportResolver<any, any>('root', moduleBuilder);
+    this.registry = this.rootResolver.build();
   }
 
   get = <K extends ModuleRegistryDefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
@@ -58,13 +60,13 @@ export class Container<R extends RegistryRecord = {}, C = {}> {
     return ContainerService.proxyGetter(this.registry, this.cache.forNewRequest(), this.context);
   }
 
-  checkout(inherit: boolean): Container<R> {
-    if (inherit) {
-      return new Container(this.registry, this.cache, this.context); // TODO: we should return this.cache.clone() otherwise this checkout without inheritance does not make any sense
-    } else {
-      return new Container(this.registry, new ContainerCache(), this.context);
-    }
-  }
+  // checkout(inherit: boolean): Container<R> {
+  //   if (inherit) {
+  //     return new Container(this.registry, this.cache, this.context); // TODO: we should return this.cache.clone() otherwise this checkout without inheritance does not make any sense
+  //   } else {
+  //     return new Container(this.registry, new ContainerCache(), this.context);
+  //   }
+  // }
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
   deepGet<TNextR extends RegistryRecord, K extends keyof MaterializedDefinitions<TNextR>>(

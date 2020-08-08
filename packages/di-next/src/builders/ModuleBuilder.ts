@@ -1,12 +1,12 @@
-import { transient } from '../resolvers/TransientResolver';
-import { ComposeDependencyResolvers } from './ModuleBuilderCompose';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { ModuleId } from '../module-id';
-import { RegistryRecord } from '../module/RegistryRecord';
-import { FilterPrivateFields } from '../module/ModuleUtils';
-import { singleton } from '../resolvers/ClassSingletonResolver';
-import { importModule } from '../resolvers/ImportResolver';
-import { fun } from '../resolvers/FunctionResolver';
+import { transient } from "../resolvers/TransientResolver";
+import { ComposeDependencyResolvers } from "./ModuleBuilderCompose";
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { ModuleId } from "../module-id";
+import { RegistryRecord } from "../module/RegistryRecord";
+import { FilterPrivateFields } from "../module/ModuleUtils";
+import { singleton } from "../resolvers/ClassSingletonResolver";
+import { importModule } from "../resolvers/ImportResolver";
+import { fun } from "../resolvers/FunctionResolver";
 
 export type ModuleBuilderMaterialized<T extends ModuleBuilder<any>> = T extends ModuleBuilder<infer TShape>
   ? TShape
@@ -60,8 +60,6 @@ class DummyClass {
 const modX = ModuleBuilder.empty('someModule').append(
   use => transient('a', () => 1),
   use => transient('b', () => true),
-  use => transient('c', () => 'str'),
-  use => singleton('sing', DummyClass, [use.a, use.b]),
 );
 
 const mod0 = ModuleBuilder.empty('someModule').append(
@@ -77,7 +75,7 @@ const mod = ModuleBuilder.empty('someModule').append(
   use => fun('someFunction', (p: number) => true, [use.imported.a]),
   use => transient('b', () => true),
   use => transient('c', () => use.imported.a),
-  use => singleton('sing', DummyClass, [use.imported.imported2.a, use.b]),
+  use => singleton('sing', DummyClass, [use.imported.a, use.b]),
 );
 
 // const kurwa:WTF = null;

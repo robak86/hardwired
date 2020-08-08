@@ -4,6 +4,8 @@ import { ModuleRegistry } from '../module/ModuleRegistry';
 import { DependencyResolver } from './DependencyResolver';
 import { ContainerEvents } from '../container/ContainerEvents';
 import { DependencyFactory } from '../draft';
+import { RegistryRecord } from "../module/RegistryRecord";
+import { ModuleBuilder } from "../builders/ModuleBuilder";
 
 export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
   // public type: 'dependency' = 'dependency';
@@ -16,7 +18,7 @@ export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
   onRegister?(events: ContainerEvents);
 }
 
-export abstract class AbstractRegistryDependencyResolver<TKey extends string, TReturn> {
+export abstract class AbstractRegistryDependencyResolver<TKey extends string, TReturn extends RegistryRecord> {
   // public type: 'registry' = 'registry';
 
   static isComposite(val: DependencyResolver<any, any>): val is AbstractRegistryDependencyResolver<any, any> {
@@ -27,11 +29,11 @@ export abstract class AbstractRegistryDependencyResolver<TKey extends string, TR
   //   return param.constructor === this;
   // }
 
-  protected constructor(public key: TKey, public registry: ModuleRegistry<any>) {}
+  protected constructor(public key: TKey, public registry: ModuleBuilder<any>) {}
 
   public id: string = createResolverId();
 
-  abstract build(registry: ModuleRegistry<any>): TReturn;
+  abstract build(): ModuleRegistry<TReturn>;
   abstract forEach(iterFn: (resolver: DependencyResolver<any, any>) => any);
   onRegister?(events: ContainerEvents);
 }
