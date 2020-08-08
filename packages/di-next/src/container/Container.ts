@@ -31,7 +31,7 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 //   : DeepGetReturnErrorMessage;
 
 export class Container<R extends RegistryRecord = {}, C = {}> {
-  private rootResolver: ImportResolver<any, any>;
+  private rootResolver: ImportResolver<any>;
   private registry: ModuleRegistry<R>;
 
   constructor(
@@ -39,7 +39,7 @@ export class Container<R extends RegistryRecord = {}, C = {}> {
     private cache: ContainerCache = new ContainerCache(),
     private context?: C,
   ) {
-    this.rootResolver = new ImportResolver<any, any>('root', moduleBuilder);
+    this.rootResolver = new ImportResolver<any>(moduleBuilder);
     this.registry = this.rootResolver.build();
   }
 

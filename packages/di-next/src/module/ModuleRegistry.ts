@@ -10,7 +10,7 @@ import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { AbstractRegistryDependencyResolver } from '../resolvers/AbstractDependencyResolver';
 import { ContainerEvents } from '../container/ContainerEvents';
 
-export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
+export class ModuleRegistry<TRegistryRecord, C = any> {
   static empty(name: string): ModuleRegistry<{}> {
     return new ModuleRegistry<any, any>(ModuleId.build(name));
   }
@@ -29,7 +29,7 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
     return this.data;
   }
 
-  append<TKey extends string, TResolver extends DependencyResolver<any, any>>(
+  append<TKey extends string, TResolver extends DependencyResolver<any>>(
     key: TKey,
     value: Thunk<TResolver>,
   ): ModuleRegistry<TRegistryRecord & Record<TKey, TResolver>> {
@@ -58,52 +58,56 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
 
   // TODO: extract to iterator ?
   forEachModuleReversed(iterFn: (registry: ModuleRegistry<any>) => void) {
-    this.data.reverse().forEach(importedRegistry => {
-      const unwrappedResolver = unwrapThunk(importedRegistry);
-      if (AbstractRegistryDependencyResolver.isComposite(unwrappedResolver)) {
-        unwrappedResolver.registry.forEachModuleReversed(iterFn);
-        iterFn(unwrappedResolver.registry);
-      }
-    });
-    iterFn(this);
+    throw new Error('implement me');
+    // this.data.reverse().forEach(importedRegistry => {
+    //   const unwrappedResolver = unwrapThunk(importedRegistry);
+    //   if (AbstractRegistryDependencyResolver.isComposite(unwrappedResolver)) {
+    //     unwrappedResolver.registry.forEachModuleReversed(iterFn);
+    //     iterFn(unwrappedResolver.registry);
+    //   }
+    // });
+    // iterFn(this);
   }
 
   // TODO: extract to iterator ?
-  forEachDefinitionReversed(iterFn: (resolver: DependencyResolver<any, any>) => void) {
-    this.resolvers.reverse().forEach(resolver => {
-      const unwrappedResolver = unwrapThunk(resolver);
-      if (AbstractRegistryDependencyResolver.isComposite(unwrappedResolver)) {
-        unwrappedResolver.forEach(iterFn);
-      } else {
-        iterFn(unwrappedResolver);
-      }
-    });
+  forEachDefinitionReversed(iterFn: (resolver: DependencyResolver<any>) => void) {
+    throw new Error('implement me');
+    // this.resolvers.reverse().forEach(resolver => {
+    //   const unwrappedResolver = unwrapThunk(resolver);
+    //   if (AbstractRegistryDependencyResolver.isComposite(unwrappedResolver)) {
+    //     unwrappedResolver.forEach(iterFn);
+    //   } else {
+    //     iterFn(unwrappedResolver);
+    //   }
+    // });
   }
 
   forEachModule(iterFn: (registry: ModuleRegistry<any>) => void) {
+    throw new Error('implement me');
     iterFn(this);
-    this.data.reverse().forEach(importedRegistry => {
-      const unwrappedResolver = unwrapThunk(importedRegistry);
-      if (AbstractRegistryDependencyResolver.isComposite(unwrappedResolver)) {
-        iterFn(unwrappedResolver.registry);
-        unwrappedResolver.registry.forEachModuleReversed(iterFn);
-      }
-    });
+    // this.data.reverse().forEach(importedRegistry => {
+    //   const unwrappedResolver = unwrapThunk(importedRegistry);
+    //   if (AbstractRegistryDependencyResolver.isComposite(unwrappedResolver)) {
+    //     iterFn(unwrappedResolver.registry);
+    //     unwrappedResolver.registry.forEachModuleReversed(iterFn);
+    //   }
+    // });
   }
 
   // TODO: extract to iterator ?
-  forEachDefinition(iterFn: (resolver: DependencyResolver<any, any>) => void) {
-    this.resolvers.forEach(resolver => {
-      const unwrappedResolver = unwrapThunk(resolver);
-      if (AbstractRegistryDependencyResolver.isComposite(unwrappedResolver)) {
-        unwrappedResolver.forEach(iterFn);
-      } else {
-        iterFn(unwrappedResolver);
-      }
-    });
+  forEachDefinition(iterFn: (resolver: DependencyResolver<any>) => void) {
+    throw new Error('implement me');
+    // this.resolvers.forEach(resolver => {
+    //   const unwrappedResolver = unwrapThunk(resolver);
+    //   if (AbstractRegistryDependencyResolver.isComposite(unwrappedResolver)) {
+    //     unwrappedResolver.forEach(iterFn);
+    //   } else {
+    //     iterFn(unwrappedResolver);
+    //   }
+    // });
   }
 
-  extendDeclarations<TKey extends string>(key: TKey, resolver: DependencyResolver<any, any>) {
+  extendDeclarations<TKey extends string>(key: TKey, resolver: DependencyResolver<any>) {
     // if (resolver.onRegister) {
     //   resolver.onRegister(this.events);
     // }
@@ -140,9 +144,7 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
   //   return this.data.get('definition').hasKey(key);
   // }
 
-  findResolvers<S extends DependencyResolver<any, any>>(
-    filterFn: (value: DependencyResolver<any, any>) => value is S,
-  ): S[] {
+  findResolvers<S extends DependencyResolver<any>>(filterFn: (value: DependencyResolver<any>) => value is S): S[] {
     const resolvers: S[] = [];
 
     this.forEachDefinition(resolver => {
@@ -153,7 +155,7 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
   }
 
   // TODO: consider recursive approach (merge flattened resolvers from child modules)
-  flattenResolvers(): Record<string, { resolver: DependencyResolver<any, any>; module: ModuleRegistry<any> }> {
+  flattenResolvers(): Record<string, { resolver: DependencyResolver<any>; module: ModuleRegistry<any> }> {
     // const resolvers = {};
     //
     // this.forEachDefinition((resolver, module) => {
@@ -164,12 +166,12 @@ export class ModuleRegistry<TRegistryRecord extends RegistryRecord, C = any> {
     throw new Error('Implement me');
   }
 
-  findOwningModule(resolver: DependencyResolver<any, any>) {
+  findOwningModule(resolver: DependencyResolver<any>) {
     const resolvers = this.flattenResolvers();
     return resolvers[resolver.id]?.module;
   }
 
-  hasResolver(resolver: DependencyResolver<any, any>): boolean {
+  hasResolver(resolver: DependencyResolver<any>): boolean {
     // this.declarations.find(registeredResolver => registeredResolver.id === resolver.id);
     throw new Error('Implement me');
   }

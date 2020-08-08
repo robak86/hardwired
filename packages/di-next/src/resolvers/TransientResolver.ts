@@ -3,9 +3,9 @@ import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ContainerService } from '../container/ContainerService';
 import { DependencyFactory } from '../draft';
 
-export class TransientResolver<TKey extends string, TReturn> extends AbstractDependencyResolver<TKey, TReturn> {
-  constructor(key: TKey, private resolver: any) {
-    super(key);
+export class TransientResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
+  constructor(private resolver: any) {
+    super();
   }
 
   build(registry: ModuleRegistry<any>): DependencyFactory<TReturn> {
@@ -16,6 +16,6 @@ export class TransientResolver<TKey extends string, TReturn> extends AbstractDep
 export const transient = <TKey extends string, TValue>(
   key: TKey,
   value: () => TValue,
-): TransientResolver<TKey, TValue> => {
-  return new TransientResolver(key, value);
+): TransientResolver<TValue> => {
+  return new TransientResolver(value);
 };

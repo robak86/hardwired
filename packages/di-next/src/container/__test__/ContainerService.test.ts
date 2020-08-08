@@ -1,18 +1,17 @@
-
-import { DependencyResolver } from '../../resolvers/DependencyResolver';
-import { ContainerService } from '../ContainerService';
+import { DependencyResolver } from "../../resolvers/DependencyResolver";
+import { ContainerService } from "../ContainerService";
 import { ModuleRegistry } from "../../module/ModuleRegistry";
 
 describe(`ContainerService`, () => {
   describe(`callDefinitionsListeners`, () => {
     let id = 0;
-    const buildFakeResolver = (): DependencyResolver<any, any> => {
+    const buildFakeResolver = (): DependencyResolver<any> => {
       return { id: id += 1, build: jest.fn(), onRegister: jest.fn() } as any;
     };
 
     const buildListeningResolver = () => {
       const onEvent = jest.fn();
-      const resolver: DependencyResolver<any, any> = {
+      const resolver: DependencyResolver<any> = {
         id: id += 1,
         build: jest.fn(),
         onRegister(events) {

@@ -3,30 +3,29 @@ import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyRe
 import { ModuleRegistry } from '../../module/ModuleRegistry';
 import { ContainerCache } from '../../container/container-cache';
 import { expectType, TypeEqual } from 'ts-expect';
-import { DependencyFactory } from "../../draft";
+import { DependencyFactory } from '../../draft';
+import { importModule } from '../../resolvers/ImportResolver';
 
 describe(`ModuleBuilder`, () => {
-  class DummyResolver<TKey extends string, TValue> extends AbstractDependencyResolver<TKey, TValue> {
-    constructor(key: TKey, value: TValue) {
-      super(key);
+  class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
+    constructor(value: TValue) {
+      super();
     }
 
     build(registry: ModuleRegistry<any>): DependencyFactory<TValue> {
       throw new Error('Implement me');
     }
   }
-
-  const dummy = <TKey extends string, TValue>(key: TKey, value: TValue): DummyResolver<TKey, TValue> => {
-    return dummy<TKey, TValue>(key, value);
+  const dummy = <TValue>(value: TValue): DummyResolver<TValue> => {
+    return new DummyResolver<TValue>(value);
   };
 
   it(`creates correct type`, async () => {
-    const m = ModuleBuilder.empty('someModule').append(
-      _ => dummy('key1', 123),
-      _ => dummy('key2', true),
-      _ => dummy('key3', 'string'),
-      _ => dummy('key4', () => 'someString'),
-    );
+    const m = ModuleBuilder.empty('someModule')
+      .define('key1', ctx => dummy(123))
+      .define('key2', ctx => dummy(true))
+      .define('key3', ctx => dummy('string'))
+      .define('key4', ctx => dummy(() => 'someString'));
 
     type ExpectedType = {
       key1: (c: ContainerCache) => number;
@@ -46,27 +45,44 @@ describe(`ModuleBuilder`, () => {
       key4: (c: ContainerCache) => () => 'someString';
     };
 
-    const m = ModuleBuilder.empty('someModule').append(
-      _ => {
+    const m = ModuleBuilder.empty('someModule') // breakme
+      .define('key1', _ => {
         expectType<TypeEqual<typeof _, {}>>(true);
 
-        return dummy('key1', 123);
-      },
-      _ => {
+        return dummy(123);
+      })
+      .define('key2', _ => {
         expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1'>>>(true);
 
-        return dummy('key2', true);
-      },
-      _ => {
+        return dummy(true);
+      })
+
+      .define('key3', _ => {
         expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1' | 'key2'>>>(true);
 
-        return dummy('key3', 'string');
-      },
-      _ => {
+        return dummy('string');
+      })
+
+      .define('key4', _ => {
         expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1' | 'key2' | 'key3'>>>(true);
 
-        return dummy('key4', () => 'someString');
-      },
-    );
+        return dummy(() => 'someString');
+      });
+  });
+
+  it(`creates correct types for imports`, async () => {
+    const m1 = ModuleBuilder.empty('someModule')
+      .define('key1', ctx => dummy(123))
+      .define('key2', ctx => dummy(true))
+      .define('key3', ctx => dummy('string'))
+      .define('key4', ctx => dummy(() => 'someString'));
+
+    const m2 = ModuleBuilder.empty('someModule')
+      .define('imported', ctx => importModule(m1))
+      .define('key1', _ => {
+        expectType<TypeEqual<typeof _, { imported: ModuleBuilderMaterialized<typeof m1> }>>(true);
+
+        return dummy(123);
+      });
   });
 });

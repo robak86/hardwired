@@ -1,29 +1,28 @@
-import { ModuleRegistry } from '../ModuleRegistry';
-import { DependencyResolver } from '../../resolvers/DependencyResolver';
-import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
-import { ImportResolver } from '../../resolvers/ImportResolver';
+import { ModuleRegistry } from "../ModuleRegistry";
+import { DependencyResolver } from "../../resolvers/DependencyResolver";
+import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
 
 describe(`ModuleRegistry`, () => {
-  class Resolver1 extends AbstractDependencyResolver<any, any> {
-    constructor(public testId: string) {
-      super(testId);
+  class Resolver1 extends AbstractDependencyResolver<any> {
+    constructor() {
+      super();
     }
     build(): any {
       return null;
     }
 
-    forEach(iterFn: (resolver: DependencyResolver<any, any>) => any) {}
+    forEach(iterFn: (resolver: DependencyResolver<any>) => any) {}
   }
 
-  class Resolver2 extends AbstractDependencyResolver<any, any> {
-    constructor(public testId: string) {
-      super(testId);
+  class Resolver2 extends AbstractDependencyResolver<any> {
+    constructor() {
+      super();
     }
 
     build(): any {
       return null;
     }
-    forEach(iterFn: (resolver: DependencyResolver<any, any>) => any) {}
+    forEach(iterFn: (resolver: DependencyResolver<any>) => any) {}
   }
 
   // describe('findResolvers', () => {

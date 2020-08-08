@@ -1,15 +1,14 @@
-import { ContainerCache } from '../container/container-cache';
-import { createResolverId } from '../utils/fastId';
-import { ModuleRegistry } from '../module/ModuleRegistry';
-import { DependencyResolver } from './DependencyResolver';
-import { ContainerEvents } from '../container/ContainerEvents';
-import { DependencyFactory } from '../draft';
+import { createResolverId } from "../utils/fastId";
+import { ModuleRegistry } from "../module/ModuleRegistry";
+import { DependencyResolver } from "./DependencyResolver";
+import { ContainerEvents } from "../container/ContainerEvents";
+import { DependencyFactory } from "../draft";
 import { RegistryRecord } from "../module/RegistryRecord";
 import { ModuleBuilder } from "../builders/ModuleBuilder";
 
-export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
+export abstract class AbstractDependencyResolver<TReturn> {
   // public type: 'dependency' = 'dependency';
-  protected constructor(public key: TKey) {}
+  protected constructor() {}
 
   public id: string = createResolverId();
 
@@ -18,10 +17,10 @@ export abstract class AbstractDependencyResolver<TKey extends string, TReturn> {
   onRegister?(events: ContainerEvents);
 }
 
-export abstract class AbstractRegistryDependencyResolver<TKey extends string, TReturn extends RegistryRecord> {
+export abstract class AbstractRegistryDependencyResolver<TReturn extends RegistryRecord> {
   // public type: 'registry' = 'registry';
 
-  static isComposite(val: DependencyResolver<any, any>): val is AbstractRegistryDependencyResolver<any, any> {
+  static isComposite(val: DependencyResolver<any>): val is AbstractRegistryDependencyResolver<any> {
     return val instanceof AbstractRegistryDependencyResolver;
   }
 
@@ -29,11 +28,11 @@ export abstract class AbstractRegistryDependencyResolver<TKey extends string, TR
   //   return param.constructor === this;
   // }
 
-  protected constructor(public key: TKey, public registry: ModuleBuilder<any>) {}
+  protected constructor(public registry: ModuleBuilder<any>) {}
 
   public id: string = createResolverId();
 
   abstract build(): ModuleRegistry<TReturn>;
-  abstract forEach(iterFn: (resolver: DependencyResolver<any, any>) => any);
+  abstract forEach(iterFn: (resolver: DependencyResolver<any>) => any);
   onRegister?(events: ContainerEvents);
 }

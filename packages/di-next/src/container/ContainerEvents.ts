@@ -4,12 +4,12 @@ import { AbstractDependencyResolver } from '../resolvers/AbstractDependencyResol
 import { ModuleRegistry } from '../module/ModuleRegistry';
 
 class DefinitionsSignalEmitter {
-  private emitter = new SignalEmitter<[DependencyResolver<any, any>, ModuleRegistry<any>]>();
+  private emitter = new SignalEmitter<[DependencyResolver<any>, ModuleRegistry<any>]>();
 
   add<
     T extends {
-      new (...args: any[]): AbstractDependencyResolver<any, any>;
-      isConstructorFor: (resolver: DependencyResolver<any, any>) => boolean;
+      new (...args: any[]): AbstractDependencyResolver<any>;
+      isConstructorFor: (resolver: DependencyResolver<any>) => boolean;
     }
   >(resolver: T, listener: (event: InstanceType<T>, module: ModuleRegistry<any>) => void): () => void {
     return this.emitter.add((event, module) => {
@@ -19,12 +19,12 @@ class DefinitionsSignalEmitter {
     });
   }
 
-  emit(eventType: DependencyResolver<any, any>, registry: ModuleRegistry<any>) {
+  emit(eventType: DependencyResolver<any>, registry: ModuleRegistry<any>) {
     this.emitter.emit(eventType, registry);
   }
 }
 
 export class ContainerEvents {
-  onDefinitionAppend: SignalEmitter<[DependencyResolver<any, any>]> = new SignalEmitter();
+  onDefinitionAppend: SignalEmitter<[DependencyResolver<any>]> = new SignalEmitter();
   onSpecificDefinitionAppend: DefinitionsSignalEmitter = new DefinitionsSignalEmitter();
 }

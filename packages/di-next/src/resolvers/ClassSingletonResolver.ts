@@ -26,9 +26,9 @@ import { DependencyFactory } from '../draft';
 //   };
 // }
 
-export class ClassSingletonResolver<TKey extends string, TReturn> extends AbstractDependencyResolver<TKey, TReturn> {
-  constructor(key: TKey) {
-    super(key);
+export class ClassSingletonResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
+  constructor() {
+    super();
   }
 
   build(registry: ModuleRegistry<any>): DependencyFactory<TReturn> {
@@ -48,7 +48,7 @@ export class ClassSingletonResolver<TKey extends string, TReturn> extends Abstra
     throw new Error('Implement me');
   }
 
-  forEach(iterFn: (resolver: DependencyResolver<any, any>) => any) {
+  forEach(iterFn: (resolver: DependencyResolver<any>) => any) {
     // this.registry.forEachDefinition(iterFn);
   }
 }
@@ -58,12 +58,11 @@ export type MaterializedDependencies<TDeps extends any[]> = {
 };
 
 type ClassSingletonBuilder = {
-  <TKey extends string, TResult>(key: TKey, klass: ClassType<[], TResult>): ClassSingletonResolver<TKey, TResult>;
-  <TKey extends string, TDeps extends any[], TResult>(
-    key: TKey,
+  <TResult>(klass: ClassType<[], TResult>): ClassSingletonResolver<TResult>;
+  <TDeps extends any[], TResult>(
     klass: ClassType<TDeps, TResult>,
     depSelect: { [K in keyof TDeps]: (container: ContainerCache) => TDeps[K] },
-  ): ClassSingletonResolver<TKey, TResult>;
+  ): ClassSingletonResolver<TResult>;
 };
 
 export const singleton: ClassSingletonBuilder = (...args: any[]) => {
