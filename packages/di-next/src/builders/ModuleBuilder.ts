@@ -1,12 +1,12 @@
-import { transient } from "../resolvers/TransientResolver";
-import { ComposeDependencyResolvers } from "./ModuleBuilderCompose";
-import { DependencyResolver } from "../resolvers/DependencyResolver";
-import { ModuleId } from "../module-id";
-import { RegistryRecord } from "../module/RegistryRecord";
-import { FilterPrivateFields } from "../module/ModuleUtils";
-import { singleton } from "../resolvers/ClassSingletonResolver";
-import { importModule } from "../resolvers/ImportResolver";
-import { fun } from "../resolvers/FunctionResolver";
+import { transient } from '../resolvers/TransientResolver';
+import { ComposeDependencyResolvers } from './ModuleBuilderCompose';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { ModuleId } from '../module-id';
+import { RegistryRecord } from '../module/RegistryRecord';
+import { FilterPrivateFields } from '../module/ModuleUtils';
+import { singleton } from '../resolvers/ClassSingletonResolver';
+import { importModule } from '../resolvers/ImportResolver';
+import { fun } from '../resolvers/FunctionResolver';
 
 export type ModuleBuilderMaterialized<T extends ModuleBuilder<any>> = T extends ModuleBuilder<infer TShape>
   ? TShape
@@ -57,7 +57,15 @@ class DummyClass {
   constructor(private a: number, private b: boolean) {}
 }
 
+const entry = <TKey extends string, T1 extends (ctx: TContext) => DependencyResolver<TKey, any>, TContext>(
+  key: TKey,
+  factory: T1,
+) => (ctx: TContext): T1 => {
+  throw new Error('implement me');
+};
+
 const modX = ModuleBuilder.empty('someModule').append(
+  use => transient('a', () => 1),
   use => transient('a', () => 1),
   use => transient('b', () => true),
 );
@@ -101,3 +109,4 @@ const mod = ModuleBuilder.empty('someModule').append(
 // const mod2: any = null as any;
 
 // const zz = mod(_ => ['name', transient(() => 1)]);
+

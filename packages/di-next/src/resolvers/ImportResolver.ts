@@ -3,6 +3,7 @@ import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { DependencyResolver } from './DependencyResolver';
 import { RegistryRecord } from '../module/RegistryRecord';
+import { ContainerCache } from '../container/container-cache';
 
 // TODO: how to implement module.replace() ?!?!?
 // prepending entries won't work, because we wont' have the correct materialized object
@@ -11,22 +12,28 @@ export class ImportResolver<
   TKey extends string,
   TReturn extends RegistryRecord
 > extends AbstractRegistryDependencyResolver<TKey, TReturn> {
+  private resolvers = {};
+
   constructor(key: TKey, registry: ModuleBuilder<TReturn>) {
     super(key, registry);
   }
 
   build(): ModuleRegistry<TReturn> {
-    // const context = ModuleRegistry.empty(this.registry.moduleId.name);
-    //
-    // const byKey = this.registry.entries.reduce((grouped, entry) => {
-    //   const resolver = entry(context);
-    //
-    //   context[resolver.key] = (cache: ContainerCache) => {
-    //     resolver.build(registry, cache, ctx);
-    //   };
-    //
-    //   return grouped;
-    // }, {});
+    const context = ModuleRegistry.empty(this.registry.moduleId.name);
+    const implementations = {};
+
+    const byKey = this.registry.entries.reduce((grouped, entry) => {
+      const resolver = entry(context);
+      implementations[resolver.key] = resolver;
+
+      if (!context[resolver.key]) {
+        context[resolver.key] = (cache: ContainerCache) => {
+          implementations[resolver.key].build(this.registry)(cache);
+        };
+      }
+
+      return grouped;
+    }, {});
 
     // return this.resolver(ContainerService.proxyGetter(registry, cache, ctx));
     throw new Error('Implement me');
