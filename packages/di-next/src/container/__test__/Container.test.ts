@@ -1,7 +1,7 @@
 import { module } from "../../builders/ModuleBuilder";
 import { dependency } from "../../testing/TestResolvers";
 import { container } from "../Container";
-import { importModule } from "../../resolvers/ModuleResolver";
+import { moduleImport } from "../../resolvers/ModuleResolver";
 
 // TODO: write correct tests not depending on any DependencyResolver implementation
 describe(`Container`, () => {
@@ -24,8 +24,8 @@ describe(`Container`, () => {
       .define('d', _ => dependency('dValue'));
 
     const parent = module('parent')
-      .define('child1', _ => importModule(child))
-      .define('child2', _ => importModule(child2));
+      .define('child1', _ => moduleImport(child))
+      .define('child2', _ => moduleImport(child2));
 
     it(`returns correct value`, async () => {
       const c = container(parent);

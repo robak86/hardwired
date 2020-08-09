@@ -56,7 +56,8 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
   }
 }
 
-export const importModule = <TValue extends RegistryRecord>(value: ModuleBuilder<TValue>): ModuleResolver<TValue> => {
+export const moduleImport = <TValue extends RegistryRecord>(value: ModuleBuilder<TValue>): ModuleResolver<TValue> => {
   return new ModuleResolver(value);
 };
+
 

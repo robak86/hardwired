@@ -1,7 +1,7 @@
 import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
 import { ModuleRegistry } from "../../module/ModuleRegistry";
 import { ModuleBuilder } from "../ModuleBuilder";
-import { importModule } from "../../resolvers/ModuleResolver";
+import { moduleImport } from "../../resolvers/ModuleResolver";
 import { ContainerCache } from "../../container/container-cache";
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -435,10 +435,10 @@ const ab2 = ModuleBuilder.empty('a')
 
 const a = ModuleBuilder.empty('a')
 
-  .define('imported0', _ => importModule(ab0))
-  .define('imported', _ => importModule(ab))
-  .define('imported1', _ => importModule(ab1))
-  .define('imported2', _ => importModule(ab2))
+  .define('imported0', _ => moduleImport(ab0))
+  .define('imported', _ => moduleImport(ab))
+  .define('imported1', _ => moduleImport(ab1))
+  .define('imported2', _ => moduleImport(ab2))
   .define('asdf', _ => dummy(1))
   .define('cba', _ => dummy(_.imported.a))
   .replace('cba', ctx => {

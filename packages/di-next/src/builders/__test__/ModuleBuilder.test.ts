@@ -3,7 +3,7 @@ import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyRe
 import { ContainerCache } from "../../container/container-cache";
 import { expectType, TypeEqual } from "ts-expect";
 import { DependencyFactory } from "../../draft";
-import { importModule } from "../../resolvers/ModuleResolver";
+import { moduleImport } from "../../resolvers/ModuleResolver";
 import { DependencyResolver } from "../../resolvers/DependencyResolver";
 
 describe(`ModuleBuilder`, () => {
@@ -74,7 +74,7 @@ describe(`ModuleBuilder`, () => {
     const m1 = ModuleBuilder.empty('someModule').define('key1', ctx => dummy(123));
 
     const m2 = ModuleBuilder.empty('someModule')
-      .define('imported', ctx => importModule(m1))
+      .define('imported', ctx => moduleImport(m1))
       .define('key1', _ => {
         expectType<TypeEqual<typeof _, { imported: ModuleBuilder.RegistryRecord<typeof m1> }>>(true);
 
@@ -86,7 +86,7 @@ describe(`ModuleBuilder`, () => {
     const m1 = ModuleBuilder.empty('someModule').define('key1', ctx => dummy(123));
 
     const m2 = ModuleBuilder.empty('someModule')
-      .define('imported', ctx => importModule(m1))
+      .define('imported', ctx => moduleImport(m1))
       .define('key2', ctx => dummy('string'))
       .define('key1', _ => {
         expectType<
