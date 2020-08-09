@@ -1,8 +1,8 @@
-import { AbstractDependencyResolver } from "../AbstractDependencyResolver";
-import { ModuleRegistry } from "../../module/ModuleRegistry";
-import { ModuleBuilder } from "../../builders/ModuleBuilder";
-import { ModuleResolver } from "../ModuleResolver";
-import { ContainerCache } from "../../container/container-cache";
+import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
+import { ModuleRegistry } from '../../module/ModuleRegistry';
+import { ModuleBuilder } from '../../builders/ModuleBuilder';
+import { ModuleResolver } from '../ModuleResolver';
+import { ContainerCache } from '../../container/container-cache';
 
 describe(`ModuleResolver`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -14,7 +14,7 @@ describe(`ModuleResolver`, () => {
       return this.value;
     }
 
-    onInit(registry: ModuleRegistry<any>) {}
+    onInit(registry: ModuleRegistry) {}
   }
 
   const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
@@ -30,7 +30,7 @@ describe(`ModuleResolver`, () => {
       .define('b', ctx => dependencyB);
 
     const resolver = new ModuleResolver(m);
-    const registry = resolver.build();
+    const [registry, _] = resolver.build();
     expect(Object.keys(registry)).toEqual(['a', 'b']);
     expect(registry.a).toBeInstanceOf(Function);
     expect(registry.b).toBeInstanceOf(Function);
@@ -67,7 +67,7 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const containerCache = new ContainerCache();
-    const registry = resolver.build();
+    const [registry, _] = resolver.build();
 
     registry.a(containerCache);
     registry.b(containerCache);
@@ -89,7 +89,7 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const containerCache = new ContainerCache();
-    const registry = resolver.build();
+    const [registry, _] = resolver.build();
 
     expect(registry.a(containerCache)).toEqual(123);
     expect(registry.b(containerCache)).toEqual(false);
@@ -101,7 +101,8 @@ describe(`ModuleResolver`, () => {
       .replace('a', ctx => dependency(2));
 
     const resolver = new ModuleResolver(m);
-    const replacedValue = resolver.build().a(new ContainerCache());
+    const [registry, _] = resolver.build();
+    const replacedValue = registry.a(new ContainerCache());
     expect(replacedValue).toEqual(2);
   });
 });

@@ -2,26 +2,79 @@
 
 // export class ModuleRegistry<TRegistryRecord extends RegistryRecord> extends ImmutableSet<TRegistryRecord> {}
 
-import { ModuleId } from "../module-id";
-import { ImmutableSet } from "../ImmutableSet";
-import { Thunk } from "../utils/thunk";
-import { DependencyResolver } from "../resolvers/DependencyResolver";
-import { ContainerEvents } from "../container/ContainerEvents";
+import { ModuleId } from '../module-id';
+import { DependencyFactory } from '../draft';
 
-export class ModuleRegistry<TRegistryRecord, C = any> {
-  static empty(name: string): ModuleRegistry<{}> {
-    return new ModuleRegistry<any, any>(ModuleId.build(name));
+// TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
+export class ModuleRegistry {
+  static empty(name: string): ModuleRegistry {
+    return new ModuleRegistry(ModuleId.build(name));
   }
 
-  protected constructor(
-    public moduleId: ModuleId,
-    public data: ImmutableSet<TRegistryRecord> = ImmutableSet.empty() as any,
-    public events = new ContainerEvents(),
-  ) {}
+  private dependenciesByResolverId: Record<string, DependencyFactory<any>> = {};
+  private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
+  private dependenciesByName: Record<string, DependencyFactory<any>> = {};
+  private childModuleRegistriesByModuleId: Record<string, ModuleRegistry> = {};
+
+  protected constructor(private moduleId: ModuleId) {}
+
+  appendDependencyFactory(resolverId: string, name: string, moduleId: ModuleId, factory: DependencyFactory<any>) {
+    this.dependenciesByName[name] = factory;
+    this.dependenciesByResolverId[resolverId] = factory;
+    this.dependenciesByModuleId[moduleId.identity] = {
+      [name]: factory,
+    };
+  }
+
+  appendChildModuleRegistry(registry: ModuleRegistry) {
+    this.childModuleRegistriesByModuleId[registry.moduleId.identity] = registry;
+  }
+
+  protected findOwnDependencyResolver(moduleId: ModuleId, name: string): DependencyFactory<any> | undefined {
+    return this.dependenciesByModuleId[moduleId.identity]?.[name];
+  }
+
+  getDependencyResolver(name: string): DependencyFactory<any> | undefined {
+    return this.dependenciesByName[name];
+  }
+
+  flattenModules(): Record<string, ModuleRegistry> {
+    let result = {
+      [this.moduleId.identity]: this,
+      ...this.childModuleRegistriesByModuleId,
+    };
+    this.forEachModule(childModuleRegistry => {
+      result = { ...result, ...childModuleRegistry.flattenModules() };
+    });
+
+    return result;
+  }
+
+  forEachModule(iterFn: (m: ModuleRegistry) => void) {
+    Object.values(this.childModuleRegistriesByModuleId).forEach(iterFn);
+  }
+
+  // findDependencyFactory(moduleId: ModuleId, name: string): DependencyFactory<any> | undefined {
+  //   const ownDependencyResolver = this.findOwnDependencyResolver(moduleId, name);
+  //   if (ownDependencyResolver) {
+  //     return ownDependencyResolver;
+  //   }
   //
-  // isEqual(other: ModuleRegistry<any>): boolean {
-  //   return this.moduleId.identity === other.moduleId.identity;
+  //   const moduleHavingDependencyFactory =  Object.values(this.childModuleRegistries).find((moduleRegistry:Modul) => );
   // }
+
+  freeze() {
+    // TODO: It's probably faster than immutable, but are we sure that we won't extend this object?
+    // TODO: without immutability memoization of methods like flatten may be difficult (without manual invalidation managing)?
+    Object.freeze(this.dependenciesByResolverId);
+    Object.freeze(this.dependenciesByName);
+    Object.freeze(this.childModuleRegistriesByModuleId);
+  }
+
+  isEqual(other: ModuleRegistry): boolean {
+    return this.moduleId.identity === other.moduleId.identity;
+  }
+
   //
   // get resolvers() {
   //   return this.data;
@@ -175,7 +228,7 @@ export class ModuleRegistry<TRegistryRecord, C = any> {
   // }
   //
   // // TODO: extract to service ?
-  findModule(other: ModuleRegistry<any>): any {
+  findModule(other: ModuleRegistry): any {
     throw new Error('Implement me');
     // let found = this.data
     //   .get('imports')

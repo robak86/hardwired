@@ -1,13 +1,13 @@
-import { createResolverId } from "../utils/fastId";
-import { ModuleRegistry } from "../module/ModuleRegistry";
-import { DependencyResolver } from "./DependencyResolver";
-import { ContainerEvents } from "../container/ContainerEvents";
-import { RegistryRecord } from "../module/RegistryRecord";
-import { ModuleBuilder } from "../builders/ModuleBuilder";
-import { ContainerCache } from "../container/container-cache";
+import { createResolverId } from '../utils/fastId';
+import { ModuleRegistry } from '../module/ModuleRegistry';
+import { DependencyResolver } from './DependencyResolver';
+import { ContainerEvents } from '../container/ContainerEvents';
+import { RegistryRecord } from '../module/RegistryRecord';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { ContainerCache } from '../container/container-cache';
 
 export abstract class AbstractDependencyResolver<TReturn> {
-  public id: string = createResolverId();
+  public readonly id: string = createResolverId();
   public readonly type: 'dependency' = 'dependency';
 
   protected constructor() {}
@@ -16,10 +16,11 @@ export abstract class AbstractDependencyResolver<TReturn> {
   abstract build(cache: ContainerCache): TReturn;
   // abstract onInit?(registry: ModuleRegistry<any>): void;
 
-  onInit?(registry: ModuleRegistry<any>);
+  onInit?(registry: ModuleRegistry);
 }
 
 export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
+  public readonly id: string = createResolverId();
   public readonly type: 'module' = 'module';
 
   static isModuleResolver(val: DependencyResolver<any>): val is AbstractModuleResolver<any> {
@@ -32,9 +33,7 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
 
   protected constructor(public registry: ModuleBuilder<any>) {}
 
-  public id: string = createResolverId();
-
-  abstract build(injections?): TReturn;
+  abstract build(injections?): [TReturn, ModuleRegistry];
 
   onRegister?(events: ContainerEvents);
 }

@@ -7,29 +7,29 @@ import { AbstractModuleResolver } from "../resolvers/AbstractDependencyResolver"
 
 export const ContainerService = {
   getChild<TRegistryRecord extends RegistryRecord>(
-    registry: ModuleRegistry<TRegistryRecord>,
+    registry: ModuleRegistry,
     cache: ContainerCache,
     context,
     dependencyKey: keyof TRegistryRecord,
   ) {
-    if (context && context[dependencyKey]) {
-      return context[dependencyKey];
-    }
-
-    if (registry.data.hasKey(dependencyKey)) {
-      let declarationResolver: DependencyResolver<any> = unwrapThunk(registry.data.get(dependencyKey));
-
-      if (AbstractModuleResolver.isModuleResolver(declarationResolver)) {
-        throw new Error('Implement me');
-      } else {
-        return declarationResolver.build(cache);
-      }
-    }
+    // if (context && context[dependencyKey]) {
+    //   return context[dependencyKey];
+    // }
+    //
+    // if (registry.data.hasKey(dependencyKey)) {
+    //   let declarationResolver: DependencyResolver<any> = unwrapThunk(registry.data.get(dependencyKey));
+    //
+    //   if (AbstractModuleResolver.isModuleResolver(declarationResolver)) {
+    //     throw new Error('Implement me');
+    //   } else {
+    //     return declarationResolver.build(cache);
+    //   }
+    // }
 
     throw new Error(`Cannot find dependency for ${dependencyKey} key`);
   },
 
-  proxyGetter(registry: ModuleRegistry<any>, cache: ContainerCache, context) {
+  proxyGetter(registry: ModuleRegistry, cache: ContainerCache, context) {
     return new Proxy({} as any, {
       get(target, property: string) {
         return ContainerService.getChild(registry, cache, context, property);
@@ -37,7 +37,7 @@ export const ContainerService = {
     });
   },
 
-  callDefinitionsListeners<TRegistryRecord extends RegistryRecord>(registry: ModuleRegistry<TRegistryRecord>) {
+  callDefinitionsListeners<TRegistryRecord extends RegistryRecord>(registry: ModuleRegistry) {
     // registry.forEachModule(moduleRegistry => {
     //   moduleRegistry.forEachDefinition(dependencyResolver => {
     //     moduleRegistry.events.onDefinitionAppend.emit(dependencyResolver);

@@ -36,7 +36,7 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 // or for sake of compatibility, EagerModuleResolver, ProxyModuleResolver, etc
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
-  private registry: ModuleRegistry<TRegistryRecord>;
+  private registry: ModuleRegistry;
 
   constructor(
     moduleBuilder: ModuleBuilder<TRegistryRecord>,
@@ -44,7 +44,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     private context?: C,
   ) {
     this.rootResolver = new ModuleResolver<any>(moduleBuilder);
-    this.registry = this.rootResolver.build();
+    this.registry = this.rootResolver.build()[0];
   }
 
   get = <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
@@ -96,7 +96,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     // return ContainerService.getChild(childModule, this.cache, this.context, key as string);
   }
 
-  private findModule(moduleIdentity: ModuleRegistry<any>): ModuleRegistry<any> | undefined {
+  private findModule(moduleIdentity: ModuleRegistry): ModuleRegistry | undefined {
     return this.registry.findModule(moduleIdentity);
   }
 

@@ -1,16 +1,15 @@
-import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
-import { ModuleRegistry } from '../../module/ModuleRegistry';
-import { DependencyFactory } from '../../draft';
-import { ModuleBuilder } from '../ModuleBuilder';
-import { importModule } from '../../resolvers/ModuleResolver';
-import { ContainerCache } from '../../container/container-cache';
+import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
+import { ModuleRegistry } from "../../module/ModuleRegistry";
+import { ModuleBuilder } from "../ModuleBuilder";
+import { importModule } from "../../resolvers/ModuleResolver";
+import { ContainerCache } from "../../container/container-cache";
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {
     super();
   }
 
-  build(cache: ContainerCache): TValue {
+  build(cache: ContainerCache): TValue  {
     throw new Error('Implement me');
   }
 }

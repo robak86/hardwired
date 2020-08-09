@@ -3,6 +3,7 @@ import { ContainerCache } from "../../container/container-cache";
 import { AbstractDependencyResolver, AbstractModuleResolver } from "../../resolvers/AbstractDependencyResolver";
 import { DependencyResolver } from "../../resolvers/DependencyResolver";
 import { expectType, TypeEqual } from "ts-expect";
+import { ModuleRegistry } from "../ModuleRegistry";
 
 describe(`RegistryRecord`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -20,7 +21,7 @@ describe(`RegistryRecord`, () => {
       super(registry);
     }
 
-    build(): TValue {
+    build(): [TValue, ModuleRegistry] {
       throw new Error('Implement me');
     }
 
