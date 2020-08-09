@@ -1,8 +1,6 @@
-import { Thunk, UnwrapThunk } from '../utils/thunk';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { DependencyFactory } from '../draft';
-import { AbstractRegistryDependencyResolver } from '../resolvers/AbstractDependencyResolver';
+import { UnwrapThunk } from "../utils/thunk";
+import { ModuleBuilder } from "../builders/ModuleBuilder";
+import { DependencyFactory } from "../draft";
 
 // TODO: group this types mess into namespaces - we don't wanna export so many unbound types
 declare namespace Test {
@@ -41,10 +39,10 @@ export type ModuleRegistryImportsKeys<T> = {
   [K in keyof T]: UnwrapThunk<T[K]> extends ModuleBuilder<any> ? K : never;
 }[keyof T];
 
-export type ModuleRegistryImports<T> = {
-  [K in ModuleRegistryImportsKeys<T>]: UnwrapThunk<T[K]> extends ModuleBuilder<infer R> ? R : never;
-};
-// export type FlattenModules<R extends RegistryRecord> =
+// export type ModuleRegistryImports<T> = {
+//   [K in ModuleRegistryImportsKeys<T>]: UnwrapThunk<T[K]> extends ModuleBuilder<infer R> ? R : never;
+// };
+// // export type FlattenModules<R extends RegistryRecord> =
 //   | R
 //   | {
 //       [K in keyof ModuleRegistryImports<R>]: FlattenModules<ModuleRegistryImports<R>[K]>;

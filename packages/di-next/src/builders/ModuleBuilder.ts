@@ -27,9 +27,11 @@ type Filter<T extends Record<any, any>, TExtends> = {
 export type RegistryRecordDependencyResolverKeys<T extends RegistryRecord> = {
   [K in keyof T]: T[K] extends DependencyFactory<any> ? K : never
 }[keyof T]
-// export type DependencyFactories<T> = {
-//   [K in keyof T]: DependencyFactory<T[K]>;
-// };
+
+export type RegistryRecordRegistryResolverKeys<T extends RegistryRecord> = {
+  [K in keyof T]: T[K] extends Record<string, DependencyFactory<any>> ? K : never;
+}[keyof T];
+
 
 type RegistryRecordResolvers<T extends RegistryRecord> = {
   [K in keyof T]: (...args: any[]) => DependencyResolver<any>;
