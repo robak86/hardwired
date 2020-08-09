@@ -8,7 +8,6 @@ import { ModuleRegistry } from "../ModuleRegistry";
 import { DependencyFactory } from "../../draft";
 import { DependencyResolver } from "../../resolvers/DependencyResolver";
 import { expectType, TypeEqual } from "ts-expect";
-import { RegistryRecordDependencyResolverKeys, RegistryRecordRegistryResolverKeys } from "../../builders/ModuleBuilder";
 
 describe(`RegistryRecord`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -41,7 +40,7 @@ describe(`RegistryRecord`, () => {
     return new RegistryResolver<TValue>(value);
   };
 
-  describe(`RegistryRecordDependencyResolverKeys`, () => {
+  describe(`RegistryRecord.DependencyResolversKeys`, () => {
     it(`returns correct type`, async () => {
       const registry = {
         a: (ctx: ContainerCache) => 123,
@@ -50,13 +49,13 @@ describe(`RegistryRecord`, () => {
         },
       };
 
-      type Keys = RegistryRecordDependencyResolverKeys<typeof registry>;
+      type Keys = RegistryRecord.DependencyResolversKeys<typeof registry>;
 
       expectType<TypeEqual<Keys, 'a'>>(true);
     });
   });
 
-  describe(`RegistryRecordRegistryResolverKeys`, () => {
+  describe(`RegistryRecord.ModuleResolversKeys`, () => {
     it(`returns correct type`, async () => {
       const registry = {
         a: (ctx: ContainerCache) => 123,
@@ -65,7 +64,7 @@ describe(`RegistryRecord`, () => {
         },
       };
 
-      type Keys = RegistryRecordRegistryResolverKeys<typeof registry>;
+      type Keys = RegistryRecord.ModuleResolversKeys<typeof registry>;
 
       expectType<TypeEqual<Keys, 'imported'>>(true);
     });

@@ -1,13 +1,13 @@
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { ModuleId } from '../module-id';
-import { ImmutableSet } from '../ImmutableSet';
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { ModuleId } from "../module-id";
+import { ImmutableSet } from "../ImmutableSet";
 import {
   AbstractDependencyResolver,
-  AbstractRegistryDependencyResolver,
-} from '../resolvers/AbstractDependencyResolver';
-import { DependencyFactory } from '../draft';
-import { RegistryRecord } from '../module/RegistryRecord';
-import invariant from 'tiny-invariant';
+  AbstractRegistryDependencyResolver
+} from "../resolvers/AbstractDependencyResolver";
+import { DependencyFactory } from "../draft";
+import { RegistryRecord } from "../module/RegistryRecord";
+import invariant from "tiny-invariant";
 
 export type ModuleBuilderMaterialized<T extends ModuleBuilder<any>> = T extends ModuleBuilder<infer TShape>
   ? TShape
@@ -18,25 +18,6 @@ export type DependencyResolverValue<TResolver extends DependencyResolver<any>> =
   TResolver extends AbstractDependencyResolver<infer TType> ? DependencyFactory<TType>  :
   TResolver extends AbstractRegistryDependencyResolver<infer TType> ? TType : never;
 
-type Filter<T extends Record<any, any>, TExtends> = {
-  [K in keyof T]: T[K] extends TExtends ? K : never;
-}[keyof T];
-
-// prettier-ignore
-// export type RegistryRecordDependencyResolverKeys<T extends RegistryRecord> = Filter<T, DependencyFactory<any>>;
-export type RegistryRecordDependencyResolverKeys<T extends RegistryRecord> = {
-  [K in keyof T]: T[K] extends DependencyFactory<any> ? K : never
-}[keyof T]
-
-export type RegistryRecordRegistryResolverKeys<T extends RegistryRecord> = {
-  [K in keyof T]: T[K] extends Record<string, DependencyFactory<any>> ? K : never;
-}[keyof T];
-
-
-type RegistryRecordResolvers<T extends RegistryRecord> = {
-  [K in keyof T]: (...args: any[]) => DependencyResolver<any>;
-};
-
 // TODO: add some constraint on TRegistryRecord ?
 export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
   static empty(name: string): ModuleBuilder<{}> {
@@ -45,7 +26,7 @@ export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
 
   protected constructor(
     public moduleId: ModuleId,
-    public registry: ImmutableSet<RegistryRecordResolvers<TRegistryRecord>> = ImmutableSet.empty() as any,
+    public registry: ImmutableSet<RegistryRecord.Resolvers<TRegistryRecord>> = ImmutableSet.empty() as any,
   ) {}
 
   define<TKey extends string, T1 extends (ctx: TRegistryRecord) => DependencyResolver<any>>(
@@ -62,9 +43,9 @@ export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
   // }
 
   replace<
-    K extends RegistryRecordDependencyResolverKeys<TRegistryRecord>,
+    K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>,
     T1 extends (
-      ctx: Pick<TRegistryRecord, RegistryRecordDependencyResolverKeys<TRegistryRecord>>,
+      ctx: Pick<TRegistryRecord, RegistryRecord.DependencyResolversKeys<TRegistryRecord>>,
     ) => DependencyResolver<ReturnType<TRegistryRecord[K]>>
   >(name: K, resolver: T1): this {
     invariant(this.registry.hasKey(name), `Cannot replace dependency with name: ${name}. It does not exists `);

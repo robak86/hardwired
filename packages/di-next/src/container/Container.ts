@@ -1,9 +1,10 @@
 import { ContainerCache } from './container-cache';
 import { ModuleRegistry } from '../module/ModuleRegistry';
-import { MaterializedDefinitions, ModuleRegistryDefinitionsKeys, RegistryRecord } from '../module/RegistryRecord';
+
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { ContainerService } from './ContainerService';
 import { ImportResolver } from '../resolvers/ImportResolver';
+import { RegistryRecord } from '../module/RegistryRecord';
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -30,12 +31,12 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 //   ? MaterializedModuleEntries<TModuleRegistry>[K]
 //   : DeepGetReturnErrorMessage;
 
-export class Container<R extends RegistryRecord = {}, C = {}> {
+export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ImportResolver<any>;
-  private registry: ModuleRegistry<R>;
+  private registry: ModuleRegistry<TRegistryRecord>;
 
   constructor(
-    moduleBuilder: ModuleBuilder<R>,
+    moduleBuilder: ModuleBuilder<TRegistryRecord>,
     private cache: ContainerCache = new ContainerCache(),
     private context?: C,
   ) {
@@ -43,11 +44,13 @@ export class Container<R extends RegistryRecord = {}, C = {}> {
     this.registry = this.rootResolver.build();
   }
 
-  get = <K extends ModuleRegistryDefinitionsKeys<R>>(key: K): MaterializedDefinitions<R>[K] => {
+  get = <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
+    key: K,
+  ): RegistryRecord.Materialized<TRegistryRecord>[K] => {
     return ContainerService.getChild(this.registry, this.cache.forNewRequest(), this.context, key as any);
   };
 
-  getMany: GetMany<MaterializedDefinitions<R>> = (...args: any[]) => {
+  getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {
     const cache = this.cache.forNewRequest();
 
     return args.map(dep => {
@@ -56,7 +59,7 @@ export class Container<R extends RegistryRecord = {}, C = {}> {
   };
 
   // asObject(): MaterializedModuleEntries<R> {
-  asObject(): R {
+  asObject(): TRegistryRecord {
     return ContainerService.proxyGetter(this.registry, this.cache.forNewRequest(), this.context);
   }
 
@@ -69,7 +72,7 @@ export class Container<R extends RegistryRecord = {}, C = {}> {
   // }
 
   // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
-  deepGet<TNextR extends RegistryRecord, K extends keyof MaterializedDefinitions<TNextR>>(
+  deepGet<TNextR extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TNextR>>(
     module: ModuleBuilder<TNextR>,
     key: K,
   ): any {

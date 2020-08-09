@@ -1,5 +1,3 @@
-import { Definition, RegistryRecord, ModuleRegistryContext } from './RegistryRecord';
-
 export type NotDuplicated<K, OBJ, RETURN> = Extract<keyof OBJ, K> extends never
   ? RETURN
   : 'Module contains duplicated definitions';
@@ -25,6 +23,3 @@ export type FilterPrivateFields<T> = T extends Function
   : {
       [K in keyof T]: T[K];
     };
-type DefinitionsUnion<T> = {
-  [K in keyof T]: T[K] extends Definition<any> ? T[K] : never;
-}[keyof T];

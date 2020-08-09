@@ -1,11 +1,11 @@
-import { ModuleBuilder, ModuleBuilderMaterialized, RegistryRecordDependencyResolverKeys } from '../ModuleBuilder';
-import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
-import { ModuleRegistry } from '../../module/ModuleRegistry';
-import { ContainerCache } from '../../container/container-cache';
-import { expectType, TypeEqual } from 'ts-expect';
-import { DependencyFactory } from '../../draft';
-import { importModule } from '../../resolvers/ImportResolver';
-import { DependencyResolver } from '../../resolvers/DependencyResolver';
+import { ModuleBuilder, ModuleBuilderMaterialized } from "../ModuleBuilder";
+import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
+import { ModuleRegistry } from "../../module/ModuleRegistry";
+import { ContainerCache } from "../../container/container-cache";
+import { expectType, TypeEqual } from "ts-expect";
+import { DependencyFactory } from "../../draft";
+import { importModule } from "../../resolvers/ImportResolver";
+import { DependencyResolver } from "../../resolvers/DependencyResolver";
 
 describe(`ModuleBuilder`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
