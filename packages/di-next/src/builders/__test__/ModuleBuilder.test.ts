@@ -1,6 +1,5 @@
 import { ModuleBuilder, ModuleBuilderMaterialized } from "../ModuleBuilder";
 import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
-import { ModuleRegistry } from "../../module/ModuleRegistry";
 import { ContainerCache } from "../../container/container-cache";
 import { expectType, TypeEqual } from "ts-expect";
 import { DependencyFactory } from "../../draft";
@@ -13,7 +12,7 @@ describe(`ModuleBuilder`, () => {
       super();
     }
 
-    build(registry: ModuleRegistry<any>): DependencyFactory<TValue> {
+    build(registry: ContainerCache): TValue {
       throw new Error('Implement me');
     }
   }

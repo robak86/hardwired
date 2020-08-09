@@ -22,7 +22,7 @@ export const ContainerService = {
       if (AbstractModuleResolver.isModuleResolver(declarationResolver)) {
         throw new Error('Implement me');
       } else {
-        return declarationResolver.build(registry)(cache);
+        return declarationResolver.build(cache);
       }
     }
 

@@ -1,9 +1,9 @@
-import { Thunk, unwrapThunk } from '../utils/thunk';
-import { ModuleId } from '../module-id';
-import { ImmutableSet } from '../ImmutableSet';
-import { MaterializedModuleEntries, RegistryRecord, ModuleRegistryDefinitionsResolvers } from './RegistryRecord';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { ContainerEvents } from '../container/ContainerEvents';
+import { Thunk, unwrapThunk } from "../utils/thunk";
+import { ModuleId } from "../module-id";
+import { ImmutableSet } from "../ImmutableSet";
+import { MaterializedModuleEntries, ModuleRegistryDefinitionsResolvers, RegistryRecord } from "./RegistryRecord";
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { ContainerEvents } from "../container/ContainerEvents";
 
 type RegistrySets<TRegistryRecord extends RegistryRecord> = ImmutableSet<{
   definition: ImmutableSet<ModuleRegistryDefinitionsResolvers<TRegistryRecord>>;

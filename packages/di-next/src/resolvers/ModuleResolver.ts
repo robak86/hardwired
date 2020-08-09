@@ -1,10 +1,10 @@
-import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
-import { ModuleRegistry } from '../module/ModuleRegistry';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
-import { DependencyResolver } from './DependencyResolver';
-import { RegistryRecord } from '../module/RegistryRecord';
-import { DependencyFactory, DependencyResolverFactory } from '../draft';
-import { ContainerCache } from '../container/container-cache';
+import { AbstractDependencyResolver, AbstractModuleResolver } from "./AbstractDependencyResolver";
+import { ModuleRegistry } from "../module/ModuleRegistry";
+import { ModuleBuilder } from "../builders/ModuleBuilder";
+import { DependencyResolver } from "./DependencyResolver";
+import { RegistryRecord } from "../module/RegistryRecord";
+import { DependencyFactory, DependencyResolverFactory } from "../draft";
+import { ContainerCache } from "../container/container-cache";
 
 // TODO: how to implement module.replace() ?!?!?
 // prepending entries won't work, because we wont' have the correct materialized object
@@ -42,7 +42,10 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
     });
 
     Object.keys(dependencyResolvers).forEach(key => {
-      dependencyFactories[key] = dependencyResolvers[key].build(moduleRegistry);
+      const onInit = dependencyResolvers?.[key]?.onInit;
+      onInit && onInit.call(dependencyResolvers?.[key], moduleRegistry);
+      // dependencyResolvers?.[key]?.onInit(moduleRegistry);
+      dependencyFactories[key] = dependencyResolvers[key].build.bind(dependencyResolvers[key]);
     });
 
     return context as TReturn;

@@ -1,9 +1,8 @@
-import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
-import { ModuleRegistry } from '../../module/ModuleRegistry';
-import { DependencyFactory } from '../../draft';
-import { ModuleBuilder } from '../../builders/ModuleBuilder';
-import { ModuleResolver } from '../ModuleResolver';
-import { ContainerCache } from '../../container/container-cache';
+import { AbstractDependencyResolver } from "../AbstractDependencyResolver";
+import { ModuleRegistry } from "../../module/ModuleRegistry";
+import { ModuleBuilder } from "../../builders/ModuleBuilder";
+import { ModuleResolver } from "../ModuleResolver";
+import { ContainerCache } from "../../container/container-cache";
 
 describe(`ModuleResolver`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -11,9 +10,11 @@ describe(`ModuleResolver`, () => {
       super();
     }
 
-    build(registry: ModuleRegistry<any>): DependencyFactory<TValue> {
-      return () => this.value;
+    build(containerCache: ContainerCache): TValue {
+      return this.value;
     }
+
+    onInit(registry: ModuleRegistry<any>) {}
   }
 
   const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
@@ -35,12 +36,12 @@ describe(`ModuleResolver`, () => {
     expect(registry.b).toBeInstanceOf(Function);
   });
 
-  it(`calls dependencyResolver.build with parameter of type ModuleRegistry`, async () => {
+  it(`calls dependencyResolver.onInit with parameter of type ModuleRegistry`, async () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 
-    const buildASpy = jest.spyOn(dependencyA, 'build');
-    const buildBSpy = jest.spyOn(dependencyB, 'build');
+    const buildASpy = jest.spyOn(dependencyA, 'onInit');
+    const buildBSpy = jest.spyOn(dependencyB, 'onInit');
 
     const m = ModuleBuilder.empty('someName')
       .define('a', ctx => dependencyA)
@@ -57,11 +58,8 @@ describe(`ModuleResolver`, () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 
-    const buildAFactorySpy = jest.fn();
-    const buildBFactorySpy = jest.fn();
-
-    jest.spyOn(dependencyA, 'build').mockReturnValue(buildAFactorySpy);
-    jest.spyOn(dependencyB, 'build').mockReturnValue(buildBFactorySpy);
+    const buildAFactorySpy = jest.spyOn(dependencyA, 'build');
+    const buildBFactorySpy = jest.spyOn(dependencyB, 'build');
 
     const m = ModuleBuilder.empty('someName')
       .define('a', ctx => dependencyA)
@@ -82,8 +80,8 @@ describe(`ModuleResolver`, () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 
-    jest.spyOn(dependencyA, 'build').mockReturnValue(() => 123);
-    jest.spyOn(dependencyB, 'build').mockReturnValue(() => false);
+    jest.spyOn(dependencyA, 'build').mockReturnValue(123);
+    jest.spyOn(dependencyB, 'build').mockReturnValue(false);
 
     const m = ModuleBuilder.empty('someName')
       .define('a', ctx => dependencyA)
@@ -103,7 +101,7 @@ describe(`ModuleResolver`, () => {
       .replace('a', ctx => dependency(2));
 
     const resolver = new ModuleResolver(m);
-    const replacedValue = resolver.build().a(new ContainerCache())
-    expect(replacedValue).toEqual(2)
+    const replacedValue = resolver.build().a(new ContainerCache());
+    expect(replacedValue).toEqual(2);
   });
 });

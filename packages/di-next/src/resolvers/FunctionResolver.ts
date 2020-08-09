@@ -15,13 +15,13 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
   private previousDependencies: any[] = [];
 
   constructor(fn: (...args: any[]) => any, depSelect) {
-    super()
+    super();
     this.uncurriedFunction = fn;
     this.curriedFunction = curry(fn);
     this.selectDependencies = depSelect ? depSelect : () => [];
   }
 
-  build(registry: ModuleRegistry<any>): DependencyFactory<TReturn> {
+  build(cache: ContainerCache): TReturn {
     // TODO: not sure if this does not trigger all getter from the whole tree !!!!
     // const currentDependencies = this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx));
     // const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);

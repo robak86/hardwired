@@ -1,10 +1,8 @@
-import { RegistryRecord } from '../RegistryRecord';
-import { ContainerCache } from '../../container/container-cache';
-import { AbstractDependencyResolver, AbstractModuleResolver } from '../../resolvers/AbstractDependencyResolver';
-import { ModuleRegistry } from '../ModuleRegistry';
-import { DependencyFactory } from '../../draft';
-import { DependencyResolver } from '../../resolvers/DependencyResolver';
-import { expectType, TypeEqual } from 'ts-expect';
+import { RegistryRecord } from "../RegistryRecord";
+import { ContainerCache } from "../../container/container-cache";
+import { AbstractDependencyResolver, AbstractModuleResolver } from "../../resolvers/AbstractDependencyResolver";
+import { DependencyResolver } from "../../resolvers/DependencyResolver";
+import { expectType, TypeEqual } from "ts-expect";
 
 describe(`RegistryRecord`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -12,7 +10,7 @@ describe(`RegistryRecord`, () => {
       super();
     }
 
-    build(registry: ModuleRegistry<any>): DependencyFactory<TValue> {
+    build(cache: ContainerCache): TValue {
       throw new Error('Implement me');
     }
   }

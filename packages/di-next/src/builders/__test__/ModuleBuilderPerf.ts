@@ -3,13 +3,14 @@ import { ModuleRegistry } from '../../module/ModuleRegistry';
 import { DependencyFactory } from '../../draft';
 import { ModuleBuilder } from '../ModuleBuilder';
 import { importModule } from '../../resolvers/ModuleResolver';
+import { ContainerCache } from '../../container/container-cache';
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {
     super();
   }
 
-  build(registry: ModuleRegistry<any>): DependencyFactory<TValue> {
+  build(cache: ContainerCache): TValue {
     throw new Error('Implement me');
   }
 }

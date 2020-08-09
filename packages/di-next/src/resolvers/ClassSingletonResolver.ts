@@ -31,7 +31,7 @@ export class ClassSingletonResolver<TReturn> extends AbstractDependencyResolver<
     super();
   }
 
-  build(registry: ModuleRegistry<any>): DependencyFactory<TReturn> {
+  build(cache:ContainerCache): TReturn {
     // const context = {};
     //
     // const byKey = this.registry.entries.reduce((grouped, entry) => {
