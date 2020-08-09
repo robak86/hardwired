@@ -33,6 +33,6 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
   public id: string = createResolverId();
 
   abstract build(injections?): TReturn;
-  abstract forEach(iterFn: (resolver: DependencyResolver<any>) => any);
+
   onRegister?(events: ContainerEvents);
 }

@@ -1,10 +1,10 @@
-import { AbstractDependencyResolver, AbstractModuleResolver } from "./AbstractDependencyResolver";
-import { ModuleRegistry } from "../module/ModuleRegistry";
-import { ModuleBuilder } from "../builders/ModuleBuilder";
-import { DependencyResolver } from "./DependencyResolver";
-import { RegistryRecord } from "../module/RegistryRecord";
-import { DependencyFactory, DependencyResolverFactory } from "../draft";
-import { ContainerCache } from "../container/container-cache";
+import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
+import { ModuleRegistry } from '../module/ModuleRegistry';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { DependencyResolver } from './DependencyResolver';
+import { RegistryRecord } from '../module/RegistryRecord';
+import { DependencyFactory, DependencyResolverFactory } from '../draft';
+import { ContainerCache } from '../container/container-cache';
 
 // TODO: how to implement module.replace() ?!?!?
 // prepending entries won't work, because we wont' have the correct materialized object
@@ -16,6 +16,7 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
     super(moduleBuilder);
   }
 
+  // TODO: accept custom module resolverClass ? in order to select ModuleResolver instance at container creation?
   build(injections?): TReturn {
     // TODO: merge injections with own this.registry injections
     // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
@@ -45,10 +46,6 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
     });
 
     return context as TReturn;
-  }
-
-  forEach(iterFn: (resolver: DependencyResolver<any>) => any) {
-    // this.registry.forEachDefinition(iterFn);
   }
 }
 

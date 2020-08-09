@@ -31,6 +31,9 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 //   ? MaterializedModuleEntries<TModuleRegistry>[K]
 //   : DeepGetReturnErrorMessage;
 
+
+// TODO: accept custom ModuleResolver (may be necessary, e.g. for react containers ?)
+// or for sake of compatibility, EagerModuleResolver, ProxyModuleResolver, etc
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
   private registry: ModuleRegistry<TRegistryRecord>;
