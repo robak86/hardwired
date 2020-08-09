@@ -1,5 +1,3 @@
-import { DependencyResolver } from './resolvers/DependencyResolver';
-
 export class ImmutableSet<D extends Record<string, any>> {
   static empty(): ImmutableSet<{}> {
     return new ImmutableSet<{}>({}, []);

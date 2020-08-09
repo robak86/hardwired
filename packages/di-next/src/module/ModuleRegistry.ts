@@ -1,7 +1,3 @@
-// TODO: rename => RegistryEntries ? RegistrySet ... or even something better than Registry ?
-
-// export class ModuleRegistry<TRegistryRecord extends RegistryRecord> extends ImmutableSet<TRegistryRecord> {}
-
 import { ModuleId } from '../module-id';
 import { DependencyFactory } from '../draft';
 
@@ -49,7 +45,7 @@ export class ModuleRegistry {
 
   findDependencyFactory(moduleId: ModuleId, name: string): DependencyFactory<any> | undefined {
     const modules = this.flattenModules();
-    return modules[moduleId.identity]?.getDependencyResolver(name)
+    return modules[moduleId.identity]?.getDependencyResolver(name);
   }
 
   freeze() {

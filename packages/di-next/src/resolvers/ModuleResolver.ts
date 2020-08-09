@@ -1,10 +1,10 @@
-import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
-import { ModuleRegistry } from '../module/ModuleRegistry';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
-import { DependencyResolver } from './DependencyResolver';
-import { RegistryRecord } from '../module/RegistryRecord';
-import { DependencyFactory, DependencyResolverFactory } from '../draft';
-import { ContainerCache } from '../container/container-cache';
+import { AbstractDependencyResolver, AbstractModuleResolver } from "./AbstractDependencyResolver";
+import { ModuleRegistry } from "../module/ModuleRegistry";
+import { ModuleBuilder } from "../builders/ModuleBuilder";
+import { DependencyResolver } from "./DependencyResolver";
+import { RegistryRecord } from "../module/RegistryRecord";
+import { DependencyFactory, DependencyResolverFactory } from "../draft";
+import { ContainerCache } from "../container/container-cache";
 
 // TODO: how to implement module.replace() ?!?!?
 // prepending entries won't work, because we wont' have the correct materialized object
@@ -59,5 +59,3 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
 export const moduleImport = <TValue extends RegistryRecord>(value: ModuleBuilder<TValue>): ModuleResolver<TValue> => {
   return new ModuleResolver(value);
 };
-
-
