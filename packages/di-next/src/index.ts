@@ -1,1 +1,1 @@
-export {unit, module, ModuleBuilder} from './builders/ModuleBuilder'
+export { unit, module, ModuleBuilder } from './builders/ModuleBuilder';

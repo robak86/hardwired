@@ -1,8 +1,8 @@
-import { RegistryRecord } from '../module/RegistryRecord';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { unwrapThunk } from '../utils/thunk';
-import { ModuleRegistry } from '../module/ModuleRegistry';
-import { ContainerCache } from './container-cache';
+import { RegistryRecord } from "../module/RegistryRecord";
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { unwrapThunk } from "../utils/thunk";
+import { ModuleRegistry } from "../module/ModuleRegistry";
+import { ContainerCache } from "./container-cache";
 
 export const ContainerService = {
   getChild<TRegistryRecord extends RegistryRecord>(

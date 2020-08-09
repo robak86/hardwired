@@ -1,4 +1,4 @@
-import { ModuleBuilder, ModuleBuilderMaterialized } from "../ModuleBuilder";
+import { ModuleBuilder } from "../ModuleBuilder";
 import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
 import { ContainerCache } from "../../container/container-cache";
 import { expectType, TypeEqual } from "ts-expect";
@@ -34,7 +34,7 @@ describe(`ModuleBuilder`, () => {
       key4: (c: ContainerCache) => () => 'someString';
     };
 
-    expectType<TypeEqual<ModuleBuilderMaterialized<typeof m>, ExpectedType>>(true);
+    expectType<TypeEqual<ModuleBuilder.RegistryRecord<typeof m>, ExpectedType>>(true);
   });
 
   it(`creates correct types for deps`, async () => {
@@ -76,7 +76,7 @@ describe(`ModuleBuilder`, () => {
     const m2 = ModuleBuilder.empty('someModule')
       .define('imported', ctx => importModule(m1))
       .define('key1', _ => {
-        expectType<TypeEqual<typeof _, { imported: ModuleBuilderMaterialized<typeof m1> }>>(true);
+        expectType<TypeEqual<typeof _, { imported: ModuleBuilder.RegistryRecord<typeof m1> }>>(true);
 
         return dummy(123);
       });
@@ -90,7 +90,7 @@ describe(`ModuleBuilder`, () => {
       .define('key2', ctx => dummy('string'))
       .define('key1', _ => {
         expectType<
-          TypeEqual<typeof _, { imported: ModuleBuilderMaterialized<typeof m1>; key2: DependencyFactory<string> }>
+          TypeEqual<typeof _, { imported: ModuleBuilder.RegistryRecord<typeof m1>; key2: DependencyFactory<string> }>
         >(true);
 
         return dummy(123);
