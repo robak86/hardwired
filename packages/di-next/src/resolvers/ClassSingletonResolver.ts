@@ -1,7 +1,7 @@
-import { AbstractDependencyResolver } from './AbstractDependencyResolver';
-import { ContainerCache } from '../container/container-cache';
-import { ClassType } from '../../../di-core/src/module/ModuleUtils';
-import { DependencyFactory } from '../draft';
+import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
+import { ContainerCache } from "../container/container-cache";
+import { DependencyFactory } from "../draft";
+import { ClassType } from "../utils/ClassType";
 
 export class ClassSingletonResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
   constructor(private klass, private selectDependencies: Array<DependencyFactory<any>> = []) {
