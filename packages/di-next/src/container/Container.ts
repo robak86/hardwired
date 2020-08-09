@@ -103,7 +103,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   // TODO: add flag - for preventing getting instances from uninitialized container
   public init() {
     ContainerService.callDefinitionsListeners(this.registry);
-    ContainerService.init(this.registry, this.cache, this.context);
+    // ContainerService.init(this.registry, this.cache, this.context);
   }
 }
 

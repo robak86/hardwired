@@ -38,27 +38,27 @@ export const ContainerService = {
   },
 
   callDefinitionsListeners<TRegistryRecord extends RegistryRecord>(registry: ModuleRegistry<TRegistryRecord>) {
-    registry.forEachModule(moduleRegistry => {
-      moduleRegistry.forEachDefinition(dependencyResolver => {
-        moduleRegistry.events.onDefinitionAppend.emit(dependencyResolver);
-        moduleRegistry.events.onSpecificDefinitionAppend.emit(dependencyResolver, moduleRegistry);
-      });
-    });
+    // registry.forEachModule(moduleRegistry => {
+    //   moduleRegistry.forEachDefinition(dependencyResolver => {
+    //     moduleRegistry.events.onDefinitionAppend.emit(dependencyResolver);
+    //     moduleRegistry.events.onSpecificDefinitionAppend.emit(dependencyResolver, moduleRegistry);
+    //   });
+    // });
   },
 
-  init(registry: ModuleRegistry<any>, cache: ContainerCache, context) {
-    registry.forEachModuleReversed(registry => {
-      if (cache.isModuleInitialized(registry.moduleId)) {
-        return;
-      }
-
-      // const moduleContainer = new Container(registry, cache);
-      // registry.initializers.forEach(initializers =>
-      //   initializers.forEach(init => {
-      //     init(ContainerService.proxyGetter(registry, cache, context));
-      //   }),
-      // );
-      cache.markModuleAsInitialized(registry.moduleId);
-    });
-  },
+  // init(registry: ModuleRegistry<any>, cache: ContainerCache, context) {
+  //   registry.forEachModuleReversed(registry => {
+  //     if (cache.isModuleInitialized(registry.moduleId)) {
+  //       return;
+  //     }
+  //
+  //     // const moduleContainer = new Container(registry, cache);
+  //     // registry.initializers.forEach(initializers =>
+  //     //   initializers.forEach(init => {
+  //     //     init(ContainerService.proxyGetter(registry, cache, context));
+  //     //   }),
+  //     // );
+  //     cache.markModuleAsInitialized(registry.moduleId);
+  //   });
+  // },
 };

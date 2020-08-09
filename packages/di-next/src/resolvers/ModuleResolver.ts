@@ -27,9 +27,12 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
     const dependencyFactories: Record<string, DependencyFactory<any>> = {};
 
     this.registry.registry.forEach((resolverFactory: DependencyResolverFactory<any>, key: string) => {
+      // TODO: by calling resolverFactory with proxy object, we could automatically track all dependencies for change detection
+      //  ...but we probably don't wanna have this feature in the responsibility of this DI solution?? What about compatibility(proxy object) ?
       const resolver: DependencyResolver<any> = resolverFactory(context);
 
       if (resolver.type === 'dependency') {
+        //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
         context[key] = (cache: ContainerCache) => dependencyFactories[key](cache);
         dependencyResolvers[key] = resolver;
       }
