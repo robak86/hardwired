@@ -3,7 +3,7 @@ import { DependencyResolver } from "../resolvers/DependencyResolver";
 import { ModuleRegistry } from "../module/ModuleRegistry";
 import { ContainerCache } from "./container-cache";
 import { unwrapThunk } from "../utils/thunk";
-import { AbstractRegistryDependencyResolver } from "../resolvers/AbstractDependencyResolver";
+import { AbstractModuleResolver } from "../resolvers/AbstractDependencyResolver";
 
 export const ContainerService = {
   getChild<TRegistryRecord extends RegistryRecord>(
@@ -19,7 +19,7 @@ export const ContainerService = {
     if (registry.data.hasKey(dependencyKey)) {
       let declarationResolver: DependencyResolver<any> = unwrapThunk(registry.data.get(dependencyKey));
 
-      if (AbstractRegistryDependencyResolver.isComposite(declarationResolver)) {
+      if (AbstractModuleResolver.isModuleResolver(declarationResolver)) {
         throw new Error('Implement me');
       } else {
         return declarationResolver.build(registry)(cache);

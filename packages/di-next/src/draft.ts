@@ -1,9 +1,11 @@
 import { DependencyResolver } from './resolvers/DependencyResolver';
-import { AbstractDependencyResolver, AbstractRegistryDependencyResolver } from './resolvers/AbstractDependencyResolver';
+import { AbstractDependencyResolver, AbstractModuleResolver } from './resolvers/AbstractDependencyResolver';
 import { ModuleBuilder } from './builders/ModuleBuilder';
 import { ContainerCache } from './container/container-cache';
+import { RegistryRecord } from './module/RegistryRecord';
 
 export type DependencyFactory<T> = (containerCache: ContainerCache) => T;
+export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;
 
 // // prettier-ignore
 // export type ItemFactory<T> =

@@ -1,6 +1,6 @@
-import { AbstractDependencyResolver, AbstractRegistryDependencyResolver } from './AbstractDependencyResolver';
+import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
 
 // prettier-ignore
 export type DependencyResolver<TValue> =
   | AbstractDependencyResolver<any>
-  | AbstractRegistryDependencyResolver<any>;
+  | AbstractModuleResolver<any>;

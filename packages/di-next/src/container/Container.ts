@@ -3,7 +3,7 @@ import { ModuleRegistry } from '../module/ModuleRegistry';
 
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { ContainerService } from './ContainerService';
-import { ImportResolver } from '../resolvers/ImportResolver';
+import { ModuleResolver } from '../resolvers/ModuleResolver';
 import { RegistryRecord } from '../module/RegistryRecord';
 
 interface GetMany<D> {
@@ -32,7 +32,7 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 //   : DeepGetReturnErrorMessage;
 
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
-  private rootResolver: ImportResolver<any>;
+  private rootResolver: ModuleResolver<any>;
   private registry: ModuleRegistry<TRegistryRecord>;
 
   constructor(
@@ -40,7 +40,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     private cache: ContainerCache = new ContainerCache(),
     private context?: C,
   ) {
-    this.rootResolver = new ImportResolver<any>(moduleBuilder);
+    this.rootResolver = new ModuleResolver<any>(moduleBuilder);
     this.registry = this.rootResolver.build();
   }
 

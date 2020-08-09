@@ -2,13 +2,11 @@
 
 // export class ModuleRegistry<TRegistryRecord extends RegistryRecord> extends ImmutableSet<TRegistryRecord> {}
 
-import { ModuleId } from '../module-id';
-import { ImmutableSet } from '../ImmutableSet';
-import { RegistryRecord } from './RegistryRecord';
-import { Thunk, unwrapThunk } from '../utils/thunk';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { AbstractRegistryDependencyResolver } from '../resolvers/AbstractDependencyResolver';
-import { ContainerEvents } from '../container/ContainerEvents';
+import { ModuleId } from "../module-id";
+import { ImmutableSet } from "../ImmutableSet";
+import { Thunk } from "../utils/thunk";
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { ContainerEvents } from "../container/ContainerEvents";
 
 export class ModuleRegistry<TRegistryRecord, C = any> {
   static empty(name: string): ModuleRegistry<{}> {

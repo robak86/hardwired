@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, AbstractRegistryDependencyResolver } from './AbstractDependencyResolver';
+import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ContainerCache } from '../container/container-cache';
 import { ModuleBuilder } from '../builders/ModuleBuilder';

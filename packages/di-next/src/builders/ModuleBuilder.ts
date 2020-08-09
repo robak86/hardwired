@@ -3,7 +3,7 @@ import { ModuleId } from "../module-id";
 import { ImmutableSet } from "../ImmutableSet";
 import {
   AbstractDependencyResolver,
-  AbstractRegistryDependencyResolver
+  AbstractModuleResolver
 } from "../resolvers/AbstractDependencyResolver";
 import { DependencyFactory } from "../draft";
 import { RegistryRecord } from "../module/RegistryRecord";
@@ -16,7 +16,7 @@ export type ModuleBuilderMaterialized<T extends ModuleBuilder<any>> = T extends 
 // prettier-ignore
 export type DependencyResolverValue<TResolver extends DependencyResolver<any>> =
   TResolver extends AbstractDependencyResolver<infer TType> ? DependencyFactory<TType>  :
-  TResolver extends AbstractRegistryDependencyResolver<infer TType> ? TType : never;
+  TResolver extends AbstractModuleResolver<infer TType> ? TType : never;
 
 // TODO: add some constraint on TRegistryRecord ?
 export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {

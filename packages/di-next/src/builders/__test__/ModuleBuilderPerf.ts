@@ -2,7 +2,7 @@ import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyRe
 import { ModuleRegistry } from '../../module/ModuleRegistry';
 import { DependencyFactory } from '../../draft';
 import { ModuleBuilder } from '../ModuleBuilder';
-import { importModule } from '../../resolvers/ImportResolver';
+import { importModule } from '../../resolvers/ModuleResolver';
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {
