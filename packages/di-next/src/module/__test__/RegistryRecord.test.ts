@@ -1,41 +1,8 @@
-import { RegistryRecord } from "../RegistryRecord";
-import { ContainerCache } from "../../container/container-cache";
-import { AbstractDependencyResolver, AbstractModuleResolver } from "../../resolvers/AbstractDependencyResolver";
-import { DependencyResolver } from "../../resolvers/DependencyResolver";
-import { expectType, TypeEqual } from "ts-expect";
-import { ModuleRegistry } from "../ModuleRegistry";
+import { RegistryRecord } from '../RegistryRecord';
+import { ContainerCache } from '../../container/container-cache';
+import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`RegistryRecord`, () => {
-  class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
-    constructor(value: TValue) {
-      super();
-    }
-
-    build(cache: ContainerCache): TValue {
-      throw new Error('Implement me');
-    }
-  }
-
-  class RegistryResolver<TValue extends RegistryRecord> extends AbstractModuleResolver<TValue> {
-    constructor(registry) {
-      super(registry);
-    }
-
-    build(): [TValue, ModuleRegistry] {
-      throw new Error('Implement me');
-    }
-
-    forEach(iterFn: (resolver: DependencyResolver<any>) => any) {}
-  }
-
-  const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
-    return new DummyResolver<TValue>(value);
-  };
-
-  const registryDependency = <TValue extends RegistryRecord>(value: TValue): RegistryResolver<TValue> => {
-    return new RegistryResolver<TValue>(value);
-  };
-
   describe(`RegistryRecord.DependencyResolversKeys`, () => {
     it(`returns correct type`, async () => {
       const registry = {

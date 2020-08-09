@@ -1,14 +1,13 @@
-import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
-import { ContainerCache } from "../container/container-cache";
+import { AbstractDependencyResolver } from './AbstractDependencyResolver';
+import { ContainerCache } from '../container/container-cache';
 
 export class TransientResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
-  constructor(private resolver: any) {
+  constructor(private resolver: () => TReturn) {
     super();
   }
 
   build(cache: ContainerCache): TReturn {
-    throw new Error('implement me');
-    // return this.resolver(ContainerService.proxyGetter(registry, cache, {}));
+    return this.resolver();
   }
 }
 

@@ -11,37 +11,33 @@ import { DependencyFactory } from '../draft';
 export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
   private readonly curriedFunction;
   private readonly uncurriedFunction;
-  private readonly selectDependencies;
   private previousDependencies: any[] = [];
 
-  constructor(fn: (...args: any[]) => any, depSelect) {
+  constructor(fn: (...args: any[]) => any, private depSelect: Array<DependencyFactory<any>> = []) {
     super();
     this.uncurriedFunction = fn;
     this.curriedFunction = curry(fn);
-    this.selectDependencies = depSelect ? depSelect : () => [];
   }
 
   build(cache: ContainerCache): TReturn {
     // TODO: not sure if this does not trigger all getter from the whole tree !!!!
-    // const currentDependencies = this.selectDependencies(ContainerService.proxyGetter(registry, cache, ctx));
-    // const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
-    //
-    // if (requiresRevalidation) {
-    //   this.previousDependencies = currentDependencies;
-    //   const instance = this.buildFunction(currentDependencies);
-    //   cache.setForGlobalScope(this.id, instance);
-    //   return instance;
-    // }
-    //
-    // if (cache.hasInGlobalScope(this.id)) {
-    //   return cache.getFromGlobalScope(this.id);
-    // } else {
-    //   let instance = this.buildFunction(currentDependencies);
-    //   cache.setForGlobalScope(this.id, instance);
-    //   return instance;
-    // }
+    const currentDependencies = this.depSelect.map(factory => factory(cache));
+    const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
 
-    throw new Error('Implement me');
+    if (requiresRevalidation) {
+      this.previousDependencies = currentDependencies;
+      const instance = this.buildFunction(currentDependencies);
+      cache.setForGlobalScope(this.id, instance);
+      return instance;
+    }
+
+    if (cache.hasInGlobalScope(this.id)) {
+      return cache.getFromGlobalScope(this.id);
+    } else {
+      let instance = this.buildFunction(currentDependencies);
+      cache.setForGlobalScope(this.id, instance);
+      return instance;
+    }
   }
 
   private buildFunction(params) {
@@ -54,55 +50,40 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
 }
 
 type FunctionResolverBuilder = {
-  <TKey extends string, TResult>(key: TKey, fn: () => TResult): FunctionResolver<() => TResult>;
-  <TKey extends string, TDep1, TResult>(key: TKey, fn: (d1: TDep1) => TResult): FunctionResolver<
-    (d1: TDep1) => TResult
-  >;
-  <TKey extends string, TDep1, TResult>(
-    key: TKey,
-    fn: (d1: TDep1) => TResult,
-    depSelect: [DependencyFactory<TDep1>],
-  ): FunctionResolver<() => TResult>;
-  <TKey extends string, TDep1, TDep2, TResult>(key: TKey, fn: (d1: TDep1, d2: TDep2) => TResult): FunctionResolver<
-    (d1: TDep1, d2: TDep2) => TResult
-  >;
-  <TKey extends string, TDep1, TDep2, TResult>(
-    key: TKey,
+  <TResult>(fn: () => TResult): FunctionResolver<() => TResult>;
+  <TDep1, TResult>(fn: (d1: TDep1) => TResult): FunctionResolver<(d1: TDep1) => TResult>;
+  <TDep1, TResult>(fn: (d1: TDep1) => TResult, depSelect: [DependencyFactory<TDep1>]): FunctionResolver<() => TResult>;
+  <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult): FunctionResolver<(d1: TDep1, d2: TDep2) => TResult>;
+  <TDep1, TDep2, TResult>(
     fn: (d1: TDep1, d2: TDep2) => TResult,
     depSelect: [DependencyFactory<TDep1>],
   ): FunctionResolver<(dep2: TDep2) => TResult>;
-  <TKey extends string, TDep1, TDep2, TResult>(
-    key: TKey,
+  <TDep1, TDep2, TResult>(
     fn: (d1: TDep1, d2: TDep2) => TResult,
     depSelect: [DependencyFactory<TDep1>, DependencyFactory<TDep2>],
   ): FunctionResolver<() => TResult>;
   // 3 args
-  <TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    key: TKey,
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-  ): FunctionResolver<(d1: TDep1, d2: TDep2, d3: TDep3) => TResult>;
-  <TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    key: TKey,
+  <TDep1, TDep2, TDep3, TResult>(fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult): FunctionResolver<
+    (d1: TDep1, d2: TDep2, d3: TDep3) => TResult
+  >;
+  <TDep1, TDep2, TDep3, TResult>(
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
     depSelect: [DependencyFactory<TDep1>],
   ): FunctionResolver<(dep2: TDep2, dep3: TDep3) => TResult>;
-  <TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    key: TKey,
+  <TDep1, TDep2, TDep3, TResult>(
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
     depSelect: [DependencyFactory<TDep1>, DependencyFactory<TDep2>],
   ): FunctionResolver<(dep3: TDep3) => TResult>;
-  <TKey extends string, TDep1, TDep2, TDep3, TResult>(
-    key: TKey,
+  <TDep1, TDep2, TDep3, TResult>(
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
     depSelect: [DependencyFactory<TDep1>, DependencyFactory<TDep2>, DependencyFactory<TDep3>],
   ): FunctionResolver<() => TResult>;
-  <TKey extends string, TDep1, TDep2, TDep3, TDep4, TResult>(
-    key: TKey,
+  <TDep1, TDep2, TDep3, TDep4, TResult>(
     fn: (d1: TDep1, d2: TDep2, d3: TDep3, d4: TDep4) => TResult,
     depSelect: [DependencyFactory<TDep1>, DependencyFactory<TDep2>, DependencyFactory<TDep3>, DependencyFactory<TDep4>],
   ): FunctionResolver<() => TResult>;
 };
 
-export const fun: FunctionResolverBuilder = (...args: any[]) => {
-  return null as any;
+export const func: FunctionResolverBuilder = (fn, deps?) => {
+  return new FunctionResolver(fn, deps) as any;
 };

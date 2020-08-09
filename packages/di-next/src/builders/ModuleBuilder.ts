@@ -1,13 +1,10 @@
-import { DependencyResolver } from "../resolvers/DependencyResolver";
-import { ModuleId } from "../module-id";
-import { ImmutableSet } from "../ImmutableSet";
-import {
-  AbstractDependencyResolver,
-  AbstractModuleResolver
-} from "../resolvers/AbstractDependencyResolver";
-import { DependencyFactory } from "../draft";
-import { RegistryRecord } from "../module/RegistryRecord";
-import invariant from "tiny-invariant";
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { ModuleId } from '../module-id';
+import { ImmutableSet } from '../ImmutableSet';
+import { AbstractDependencyResolver, AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
+import { DependencyFactory } from '../draft';
+import { RegistryRecord } from '../module/RegistryRecord';
+import invariant from 'tiny-invariant';
 
 export type ModuleBuilderMaterialized<T extends ModuleBuilder<any>> = T extends ModuleBuilder<infer TShape>
   ? TShape
@@ -17,6 +14,9 @@ export type ModuleBuilderMaterialized<T extends ModuleBuilder<any>> = T extends 
 export type DependencyResolverValue<TResolver extends DependencyResolver<any>> =
   TResolver extends AbstractDependencyResolver<infer TType> ? DependencyFactory<TType>  :
   TResolver extends AbstractModuleResolver<infer TType> ? TType : never;
+
+export const module = (name: string) => ModuleBuilder.empty(name);
+export const unit = module;
 
 // TODO: add some constraint on TRegistryRecord ?
 export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {

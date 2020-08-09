@@ -5,7 +5,7 @@ export type RegistryRecord = Record<string, DependencyFactory<any> | Record<stri
 
 export declare namespace RegistryRecord {
   type Materialized<T extends RegistryRecord> = {
-    [K in keyof T]: {};
+    [K in keyof T]: T[K] extends DependencyFactory<infer TValue> ? TValue : never;
   };
 
   type ModuleResolversKeys<T extends RegistryRecord> = {

@@ -5,6 +5,7 @@ import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { ContainerService } from './ContainerService';
 import { ModuleResolver } from '../resolvers/ModuleResolver';
 import { RegistryRecord } from '../module/RegistryRecord';
+import invariant from 'tiny-invariant';
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -31,7 +32,6 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 //   ? MaterializedModuleEntries<TModuleRegistry>[K]
 //   : DeepGetReturnErrorMessage;
 
-
 // TODO: accept custom ModuleResolver (may be necessary, e.g. for react containers ?)
 // or for sake of compatibility, EagerModuleResolver, ProxyModuleResolver, etc
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
@@ -44,13 +44,17 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     private context?: C,
   ) {
     this.rootResolver = new ModuleResolver<any>(moduleBuilder);
-    this.registry = this.rootResolver.build()[0];
+    this.registry = this.rootResolver.build()[1];
   }
 
   get = <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
     key: K,
   ): RegistryRecord.Materialized<TRegistryRecord>[K] => {
-    return ContainerService.getChild(this.registry, this.cache.forNewRequest(), this.context, key as any);
+    const dependencyFactory = this.registry.getDependencyResolver(key as any);
+
+    invariant(dependencyFactory, `Dependency with name: ${key} does not exist`);
+
+    return dependencyFactory(this.cache.forNewRequest());
   };
 
   getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {
@@ -79,7 +83,14 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     module: ModuleBuilder<TNextR>,
     key: K,
   ): any {
-    throw new Error('Implement me');
+    const dependencyResolver = this.registry.findDependencyFactory(module.moduleId, key as string);
+    invariant(
+      dependencyResolver,
+      `Cannot find dependency resolver for name: ${key} and module: ${module.moduleId.name}`,
+    );
+
+    return dependencyResolver(this.cache.forNewRequest());
+
     // // ): DeepGetReturn<K, TNextR, R> {
     // //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
     // let childModule: ModuleRegistry<any> | undefined = this.registry.isEqual(module.registry)
@@ -111,7 +122,7 @@ export function container<TRegistryRecord extends RegistryRecord>(
   m: ModuleBuilder<TRegistryRecord>,
   ctx?: any,
 ): Container<TRegistryRecord> {
-  let container = new Container((m as any).registry, new ContainerCache(), ctx);
+  let container = new Container(m, new ContainerCache(), ctx);
   container.init();
   return container as any;
 }

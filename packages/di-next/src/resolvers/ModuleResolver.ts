@@ -21,7 +21,7 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
     const context: RegistryRecord = {};
     const dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
     const moduleResolvers: Record<string, AbstractModuleResolver<any>> = {};
-    const moduleRegistry: ModuleRegistry = ModuleRegistry.empty('');
+    const moduleRegistry: ModuleRegistry = new ModuleRegistry(this.registry.moduleId);
     const dependencyFactories: Record<string, DependencyFactory<any>> = {};
 
     this.registry.registry.forEach((resolverFactory: DependencyResolverFactory<any>, key: string) => {
@@ -33,12 +33,7 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
         //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
         context[key] = (cache: ContainerCache) => dependencyFactories[key](cache);
         dependencyResolvers[key] = resolver;
-        moduleRegistry.appendDependencyFactory(
-          resolver.id,
-          key,
-          this.registry.moduleId,
-          context[key] as DependencyFactory<any>,
-        );
+        moduleRegistry.appendDependencyFactory(resolver.id, key, context[key] as DependencyFactory<any>);
       }
 
       if (resolver.type === 'module') {
@@ -62,6 +57,5 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
 }
 
 export const importModule = <TValue extends RegistryRecord>(value: ModuleBuilder<TValue>): ModuleResolver<TValue> => {
-  throw new Error('implement me');
-  // return new ImportResolver(key, value.registry);
+  return new ModuleResolver(value);
 };

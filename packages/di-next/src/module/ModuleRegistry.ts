@@ -7,23 +7,16 @@ import { DependencyFactory } from '../draft';
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 export class ModuleRegistry {
-  static empty(name: string): ModuleRegistry {
-    return new ModuleRegistry(ModuleId.build(name));
-  }
-
   private dependenciesByResolverId: Record<string, DependencyFactory<any>> = {};
   private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
   private dependenciesByName: Record<string, DependencyFactory<any>> = {};
   private childModuleRegistriesByModuleId: Record<string, ModuleRegistry> = {};
 
-  protected constructor(private moduleId: ModuleId) {}
+  constructor(private moduleId: ModuleId) {}
 
-  appendDependencyFactory(resolverId: string, name: string, moduleId: ModuleId, factory: DependencyFactory<any>) {
+  appendDependencyFactory(resolverId: string, name: string, factory: DependencyFactory<any>) {
     this.dependenciesByName[name] = factory;
     this.dependenciesByResolverId[resolverId] = factory;
-    this.dependenciesByModuleId[moduleId.identity] = {
-      [name]: factory,
-    };
   }
 
   appendChildModuleRegistry(registry: ModuleRegistry) {
@@ -54,14 +47,10 @@ export class ModuleRegistry {
     Object.values(this.childModuleRegistriesByModuleId).forEach(iterFn);
   }
 
-  // findDependencyFactory(moduleId: ModuleId, name: string): DependencyFactory<any> | undefined {
-  //   const ownDependencyResolver = this.findOwnDependencyResolver(moduleId, name);
-  //   if (ownDependencyResolver) {
-  //     return ownDependencyResolver;
-  //   }
-  //
-  //   const moduleHavingDependencyFactory =  Object.values(this.childModuleRegistries).find((moduleRegistry:Modul) => );
-  // }
+  findDependencyFactory(moduleId: ModuleId, name: string): DependencyFactory<any> | undefined {
+    const modules = this.flattenModules();
+    return modules[moduleId.identity]?.getDependencyResolver(name)
+  }
 
   freeze() {
     // TODO: It's probably faster than immutable, but are we sure that we won't extend this object?

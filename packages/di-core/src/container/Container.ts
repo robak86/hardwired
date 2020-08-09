@@ -1,15 +1,15 @@
-import { unwrapThunk } from '../utils/thunk';
-import { ContainerCache } from './container-cache';
-import { ModuleRegistry } from '../module/ModuleRegistry';
+import { unwrapThunk } from "../utils/thunk";
+import { ContainerCache } from "./container-cache";
+import { ModuleRegistry } from "../module/ModuleRegistry";
 import {
   MaterializedDefinitions,
   MaterializedModuleEntries,
-  RegistryRecord,
   ModuleRegistryContext,
   ModuleRegistryDefinitionsKeys,
-} from '../module/RegistryRecord';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
-import { ContainerService } from './ContainerService';
+  RegistryRecord
+} from "../module/RegistryRecord";
+import { ModuleBuilder } from "../builders/ModuleBuilder";
+import { ContainerService } from "./ContainerService";
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
