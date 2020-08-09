@@ -2,7 +2,6 @@ import { ContainerCache } from './container-cache';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 
 import { ModuleBuilder } from '../builders/ModuleBuilder';
-import { ContainerService } from './ContainerService';
 import { ModuleResolver } from '../resolvers/ModuleResolver';
 import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';
@@ -60,14 +59,19 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {
     const cache = this.cache.forNewRequest();
 
-    return args.map(dep => {
-      return ContainerService.getChild(this.registry, cache, this.context, dep);
+    return args.map(key => {
+      const dependencyFactory = this.registry.getDependencyResolver(key as any);
+
+      invariant(dependencyFactory, `Dependency with name: ${key} does not exist`);
+
+      return dependencyFactory(cache);
     }) as any;
   };
 
   // asObject(): MaterializedModuleEntries<R> {
   asObject(): TRegistryRecord {
-    return ContainerService.proxyGetter(this.registry, this.cache.forNewRequest(), this.context);
+    throw new Error('Implement me');
+    // return ContainerService.proxyGetter(this.registry, this.cache.forNewRequest(), this.context);
   }
 
   // checkout(inherit: boolean): Container<R> {
@@ -90,31 +94,6 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     );
 
     return dependencyResolver(this.cache.forNewRequest());
-
-    // // ): DeepGetReturn<K, TNextR, R> {
-    // //TODO: it should be compared using id - because identity doesn't give any guarantee that given dependency is already registered
-    // let childModule: ModuleRegistry<any> | undefined = this.registry.isEqual(module.registry)
-    //   ? this.registry
-    //   : unwrapThunk(this.findModule(module.registry));
-    //
-    // // TODO: we probably be explicit (add method appendModule) and throw an error for an unknown module here
-    // if (!childModule) {
-    //   console.warn('deepGet called with module which is not imported by any descendant module');
-    //   childModule = module.registry;
-    // }
-    //
-    // ContainerService.init(childModule, this.cache, this.context);
-    // return ContainerService.getChild(childModule, this.cache, this.context, key as string);
-  }
-
-  private findModule(moduleIdentity: ModuleRegistry): ModuleRegistry | undefined {
-    return this.registry.findModule(moduleIdentity);
-  }
-
-  // TODO: add flag - for preventing getting instances from uninitialized container
-  public init() {
-    ContainerService.callDefinitionsListeners(this.registry);
-    // ContainerService.init(this.registry, this.cache, this.context);
   }
 }
 
@@ -123,6 +102,5 @@ export function container<TRegistryRecord extends RegistryRecord>(
   ctx?: any,
 ): Container<TRegistryRecord> {
   let container = new Container(m, new ContainerCache(), ctx);
-  container.init();
   return container as any;
 }
