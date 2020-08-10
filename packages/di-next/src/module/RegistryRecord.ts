@@ -2,7 +2,18 @@ import { DependencyFactory } from '../draft';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
 
-export type RegistryRecord = Record<string, DependencyFactory<any> | Record<string, DependencyFactory<any>>>;
+// export type RegistryRecord = {
+//   [K in keyof string]: DependencyFactory<any> | RegistryRecord
+// }
+
+// export type RegistryRecord = Record<string, DependencyFactory<any> | Record<string, DependencyFactory<any>>>;
+// export type RegistryRecord = Record<string, DependencyFactory<any> | RegistryRecord>;
+
+export interface RegistryRecord {
+  [property: string]:  DependencyFactory<any> | RegistryRecord;
+}
+
+
 
 export declare namespace RegistryRecord {
   type Materialized<T extends RegistryRecord> = {

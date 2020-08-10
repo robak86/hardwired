@@ -128,10 +128,26 @@ describe(`ModuleResolver`, () => {
       expect(container(parentWithInjectedChild).get('aFromImported').value).toEqual(456);
     });
 
+    it(`resolves correct dependencies using deepGet`, async () => {
+      const parent = unit('parent')
+        .define('imported', _ => moduleImport(child))
+        .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
+
+      const child = unit('child') //breakme
+        .define('a', _ => value(123));
+
+      const updatedChild = child.replace('a', _ => value(456));
+      const parentWithInjectedChild = parent.inject(updatedChild);
+
+      expect(container(parentWithInjectedChild).deepGet(updatedChild, 'a')).toEqual(456);
+    });
+
     it(`resolves correct dependencies replacing multiple modules with injections`, async () => {
       const parent = unit('parent')
+        // imports
         .define('child', _ => moduleImport(child))
         .define('grandChild', _ => moduleImport(grandChild))
+
         .define('ownGrandChild', _ => singleton(ValueWrapper, [_.grandChild.a]))
         .define('transientGrandChild', _ => singleton(ValueWrapper, [_.child.grandChildValue]));
 
@@ -144,7 +160,6 @@ describe(`ModuleResolver`, () => {
 
       expect(container(parent).get('ownGrandChild').value).toEqual(123);
       expect(container(parent).get('transientGrandChild').value.value).toEqual(123);
-
 
       const updatedChild = grandChild.replace('a', _ => value(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
