@@ -1,10 +1,10 @@
-import { ContainerCache } from './container-cache';
-import { ModuleRegistry } from '../module/ModuleRegistry';
+import { ContainerCache } from "./container-cache";
+import { ModuleRegistry } from "../module/ModuleRegistry";
 
-import { ModuleBuilder } from '../builders/ModuleBuilder';
-import { ModuleResolver } from '../resolvers/ModuleResolver';
-import { RegistryRecord } from '../module/RegistryRecord';
-import invariant from 'tiny-invariant';
+import { ModuleBuilder } from "../builders/ModuleBuilder";
+import { ModuleResolver } from "../resolvers/ModuleResolver";
+import { RegistryRecord } from "../module/RegistryRecord";
+import invariant from "tiny-invariant";
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -43,7 +43,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     private context?: C,
   ) {
     this.rootResolver = new ModuleResolver<any>(moduleBuilder);
-    this.registry = this.rootResolver.build()[1];
+    this.registry = this.rootResolver.build(moduleBuilder.injections)[1];
   }
 
   get = <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(

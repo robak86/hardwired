@@ -1,8 +1,11 @@
 import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
 import { ModuleRegistry } from '../../module/ModuleRegistry';
-import { ModuleBuilder } from '../../builders/ModuleBuilder';
-import { ModuleResolver } from '../ModuleResolver';
+import { ModuleBuilder, unit } from '../../builders/ModuleBuilder';
+import { moduleImport, ModuleResolver } from '../ModuleResolver';
 import { ContainerCache } from '../../container/container-cache';
+import { singleton } from '../ClassSingletonResolver';
+import { value } from '../ValueResolver';
+import { container } from '../../container/Container';
 
 describe(`ModuleResolver`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -104,5 +107,50 @@ describe(`ModuleResolver`, () => {
     const [registry, _] = resolver.build();
     const replacedValue = registry.a(new ContainerCache());
     expect(replacedValue).toEqual(2);
+  });
+
+  describe(`injections`, () => {
+    class ValueWrapper {
+      constructor(public value) {}
+    }
+
+    it(`resolves correct dependencies using injections`, async () => {
+      const parent = unit('parent')
+        .define('imported', _ => moduleImport(child))
+        .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
+
+      const child = unit('child') //breakme
+        .define('a', _ => value(123));
+
+      const updatedChild = child.replace('a', _ => value(456));
+      const parentWithInjectedChild = parent.inject(updatedChild);
+
+      expect(container(parentWithInjectedChild).get('aFromImported').value).toEqual(456);
+    });
+
+    it(`resolves correct dependencies replacing multiple modules with injections`, async () => {
+      const parent = unit('parent')
+        .define('child', _ => moduleImport(child))
+        .define('grandChild', _ => moduleImport(grandChild))
+        .define('ownGrandChild', _ => singleton(ValueWrapper, [_.grandChild.a]))
+        .define('transientGrandChild', _ => singleton(ValueWrapper, [_.child.grandChildValue]));
+
+      const child = unit('child') //breakme
+        .define('grandChild', _ => moduleImport(grandChild))
+        .define('grandChildValue', _ => singleton(ValueWrapper, [_.grandChild.a]));
+
+      const grandChild = unit('grandChild') //breakme
+        .define('a', _ => value(123));
+
+      expect(container(parent).get('ownGrandChild').value).toEqual(123);
+      expect(container(parent).get('transientGrandChild').value.value).toEqual(123);
+
+
+      const updatedChild = grandChild.replace('a', _ => value(456));
+      const parentWithInjectedChild = parent.inject(updatedChild);
+
+      expect(container(parentWithInjectedChild).get('ownGrandChild').value).toEqual(456);
+      expect(container(parentWithInjectedChild).get('transientGrandChild').value.value).toEqual(456);
+    });
   });
 });

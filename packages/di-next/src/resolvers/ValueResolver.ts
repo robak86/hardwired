@@ -11,6 +11,6 @@ export class ValueResolver<TReturn> extends AbstractDependencyResolver<TReturn> 
   }
 }
 
-export const value = <TKey extends string, TValue>(key: TKey, value: TValue): ValueResolver<TValue> => {
+export const value = <TValue>(value: TValue): ValueResolver<TValue> => {
   return new ValueResolver(value);
 };

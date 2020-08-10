@@ -1,8 +1,8 @@
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { ModuleId } from '../module-id';
-import { ImmutableSet } from '../ImmutableSet';
-import { RegistryRecord } from '../module/RegistryRecord';
-import invariant from 'tiny-invariant';
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { ModuleId } from "../module-id";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import { RegistryRecord } from "../module/RegistryRecord";
+import invariant from "tiny-invariant";
 
 export namespace ModuleBuilder {
   export type RegistryRecord<T extends ModuleBuilder<any>> = T extends ModuleBuilder<infer TShape> ? TShape : never;
@@ -14,13 +14,13 @@ export const unit = module;
 // TODO: add some constraint on TRegistryRecord ?
 export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
   static empty(name: string): ModuleBuilder<{}> {
-    return new ModuleBuilder<{}>(ModuleId.build(name));
+    return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
   }
 
   protected constructor(
     public moduleId: ModuleId,
-    public registry: ImmutableSet<RegistryRecord.Resolvers<TRegistryRecord>> = ImmutableSet.empty() as any,
-    public injections: ImmutableSet<Record<string, ModuleBuilder<any>>> = ImmutableSet.empty() as any,
+    public registry: ImmutableSet<RegistryRecord.Resolvers<TRegistryRecord>>,
+    public injections: ImmutableSet<Record<string, ModuleBuilder<any>>>,
   ) {}
 
   define<TKey extends string, T1 extends (ctx: TRegistryRecord) => DependencyResolver<any>>(
@@ -52,6 +52,10 @@ export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
   >(name: K, resolver: T1): this {
     invariant(this.registry.hasKey(name), `Cannot replace dependency with name: ${name}. It does not exists `);
 
-    return new ModuleBuilder(ModuleId.next(this.moduleId), this.registry.replace(name, resolver) as any) as this;
+    return new ModuleBuilder(
+      this.moduleId,
+      this.registry.replace(name, resolver) as any,
+      this.injections,
+    ) as this;
   }
 }

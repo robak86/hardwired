@@ -1,9 +1,9 @@
 import { createResolverId } from "./utils/fastId";
 
 export type ModuleId = {
-    name:string,
-    id:string,
-    identity:string
+    readonly name:string,
+    readonly id:string,
+    readonly identity:string
 }
 export const ModuleId = {
     build(name:string):ModuleId {

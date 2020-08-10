@@ -106,6 +106,10 @@ export class ImmutableSet<D extends Record<string, any>> {
     return new ImmutableSet<T & D>(mergedRecords, otherKeys as any);
   }
 
+  get entries(): Array<[string, any]> {
+    return this.keys.map(key => [key, this.records[key]]) as any;
+  }
+
   // extend<TKey extends string, TValue>(
   //   key: TKey,
   //   value: TValue

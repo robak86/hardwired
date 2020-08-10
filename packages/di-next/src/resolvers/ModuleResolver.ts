@@ -5,7 +5,7 @@ import { DependencyResolver } from './DependencyResolver';
 import { RegistryRecord } from '../module/RegistryRecord';
 import { DependencyFactory, DependencyResolverFactory } from '../draft';
 import { ContainerCache } from '../container/container-cache';
-import { ImmutableSet } from '../ImmutableSet';
+import { ImmutableSet } from '../collections/ImmutableSet';
 
 // TODO: how to implement module.replace() ?!?!?
 // prepending entries won't work, because we wont' have the correct materialized object
@@ -13,6 +13,7 @@ import { ImmutableSet } from '../ImmutableSet';
 export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModuleResolver<TReturn> {
   constructor(moduleBuilder: ModuleBuilder<TReturn>) {
     super(moduleBuilder);
+    console.log('Constructing module resolver with', moduleBuilder.moduleId)
   }
 
   // TODO: accept custom module resolverClass ? in order to select ModuleResolver instance at container creation?
@@ -24,6 +25,7 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
     const moduleResolvers: Record<string, AbstractModuleResolver<any>> = {};
     const moduleRegistry: ModuleRegistry = new ModuleRegistry(this.registry.moduleId);
     const dependencyFactories: Record<string, DependencyFactory<any>> = {};
+    const mergedInjections = this.registry.injections.merge(injections);
 
     this.registry.registry.forEach((resolverFactory: DependencyResolverFactory<any>, key: string) => {
       // TODO: by calling resolverFactory with proxy object, we could automatically track all dependencies for change detection
@@ -38,9 +40,16 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
       }
 
       if (resolver.type === 'module') {
-        // TODO: use injections
-        moduleResolvers[key] = resolver;
-        const [registry, childModuleRegistry] = resolver.build();
+        if (mergedInjections.hasKey(resolver.moduleId.identity)) {
+          console.log('injecting', resolver.moduleId, 'instead of', resolver.moduleId)
+          const injectedModuleBuilder = mergedInjections.get(resolver.moduleId.identity);
+          moduleResolvers[key] = new ModuleResolver(injectedModuleBuilder);
+        } else {
+          moduleResolvers[key] = resolver;
+        }
+
+        const [registry, childModuleRegistry] = moduleResolvers[key].build(mergedInjections);
+
         context[key] = registry;
         moduleRegistry.appendChildModuleRegistry(childModuleRegistry);
       }

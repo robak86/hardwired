@@ -9,7 +9,7 @@ export class ModuleRegistry {
   private dependenciesByName: Record<string, DependencyFactory<any>> = {};
   private childModuleRegistriesByModuleId: Record<string, ModuleRegistry> = {};
 
-  constructor(private moduleId: ModuleId) {}
+  constructor(public moduleId: ModuleId) {}
 
   appendDependencyFactory(resolverId: string, name: string, factory: DependencyFactory<any>) {
     this.dependenciesByName[name] = factory;
