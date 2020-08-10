@@ -1,8 +1,9 @@
-import { createResolverId } from "../utils/fastId";
-import { ModuleRegistry } from "../module/ModuleRegistry";
-import { RegistryRecord } from "../module/RegistryRecord";
-import { ModuleBuilder } from "../builders/ModuleBuilder";
-import { ContainerCache } from "../container/container-cache";
+import { createResolverId } from '../utils/fastId';
+import { ModuleRegistry } from '../module/ModuleRegistry';
+import { RegistryRecord } from '../module/RegistryRecord';
+import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { ContainerCache } from '../container/container-cache';
+import { ImmutableSet } from '../ImmutableSet';
 
 export abstract class AbstractDependencyResolver<TReturn> {
   public readonly id: string = createResolverId();
@@ -21,5 +22,5 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
 
   protected constructor(public registry: ModuleBuilder<any>) {}
 
-  abstract build(injections?): [TReturn, ModuleRegistry];
+  abstract build(injections?: ImmutableSet<any>): [TReturn, ModuleRegistry];
 }

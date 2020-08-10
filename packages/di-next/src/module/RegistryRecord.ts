@@ -1,5 +1,6 @@
 import { DependencyFactory } from '../draft';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
 
 export type RegistryRecord = Record<string, DependencyFactory<any> | Record<string, DependencyFactory<any>>>;
 
@@ -18,5 +19,9 @@ export declare namespace RegistryRecord {
 
   type Resolvers<T extends RegistryRecord> = {
     [K in keyof T]: (...args: any[]) => DependencyResolver<any>;
+  };
+
+  type ModuleResolvers<T extends RegistryRecord> = {
+    [K in keyof ModuleResolversKeys<T>]: AbstractModuleResolver<any>;
   };
 }

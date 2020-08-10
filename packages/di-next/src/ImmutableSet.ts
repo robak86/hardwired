@@ -3,7 +3,7 @@ export class ImmutableSet<D extends Record<string, any>> {
     return new ImmutableSet<{}>({}, []);
   }
 
-  protected constructor(private records: D, private orderedKeys: string[]) {}
+  protected constructor(protected readonly records: D, protected readonly orderedKeys: string[]) {}
 
   get<K extends keyof D>(key: K): D[K] {
     return this.records[key];
@@ -86,6 +86,24 @@ export class ImmutableSet<D extends Record<string, any>> {
 
   find(filterFn: (value: any) => boolean) {
     return this.values.find(filterFn);
+  }
+
+  merge<T extends Record<string, any>>(other: ImmutableSet<T>): ImmutableSet<T & D> {
+    const mergedRecords = {
+      ...this.records,
+      ...other.records,
+    };
+
+    const ownKeys = [...this.keys];
+    const otherKeys = [...other.keys];
+
+    ownKeys.reverse().forEach((ownKey: any) => {
+      if (!otherKeys.includes(ownKey)) {
+        otherKeys.unshift(ownKey);
+      }
+    });
+
+    return new ImmutableSet<T & D>(mergedRecords, otherKeys as any);
   }
 
   // extend<TKey extends string, TValue>(

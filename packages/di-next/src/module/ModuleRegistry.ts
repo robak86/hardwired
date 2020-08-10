@@ -2,6 +2,7 @@ import { ModuleId } from '../module-id';
 import { DependencyFactory } from '../draft';
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
+// TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
 export class ModuleRegistry {
   private dependenciesByResolverId: Record<string, DependencyFactory<any>> = {};
   private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
