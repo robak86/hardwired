@@ -1,8 +1,8 @@
-import { container, module } from '@hardwired/di';
-import { AlterableStore } from '../../stack/AlterableStore';
-import { reduxDefines } from '../ReduxDefines';
-import { ReducerFactory } from '../../factories/ReducerFactory';
-import { SagaFactory } from '../../factories/SagaFactory';
+import { container, module, value } from "@hardwired/di-next";
+import { AlterableStore } from "../../stack/AlterableStore";
+import { reducer, ReducerResolver } from "../../factories/ReducerResolver";
+import { saga, SagaResolver } from "../../factories/SagaResolver";
+import { store } from "../../factories/StoreResolver";
 
 describe(`ReduxDefines`, () => {
   it(`sdf`, async () => {
@@ -10,8 +10,8 @@ describe(`ReduxDefines`, () => {
       a: number;
     };
     const m = module('someName')
-      .using(reduxDefines<AppState>())
-      .store('store', () => ({ a: 1 }));
+      .define('defaultState', _ => value({ a: 1 }))
+      .define('store', _ => store(_.defaultState));
 
     const c = container(m);
     expect(c.get('store')).toBeInstanceOf(AlterableStore);
@@ -19,22 +19,17 @@ describe(`ReduxDefines`, () => {
 
   describe(`.reducer`, () => {
     it(`register correct factory`, async () => {
-      const a = module('a')
-        .using(reduxDefines())
-        .reducer('someReducer', () => null);
+      const a = module('a').define('someReducer', _ => reducer(() => null));
 
-      expect(a.registry.declarations.get('someReducer')).toBeInstanceOf(ReducerFactory);
+      expect(a.registry.get('someReducer')).toBeInstanceOf(ReducerResolver);
     });
   });
 
-
   describe(`.saga`, () => {
     it(`register correct factory`, async () => {
-      const a = module('a')
-        .using(reduxDefines())
-        .saga('someSaga', function* saga() {});
+      const a = module('a').define('someSaga', _ => saga(function* saga() {}));
 
-      expect(a.registry.declarations.get('someSaga')).toBeInstanceOf(SagaFactory);
+      expect(a.registry.get('someSaga')).toBeInstanceOf(SagaResolver);
     });
   });
 });

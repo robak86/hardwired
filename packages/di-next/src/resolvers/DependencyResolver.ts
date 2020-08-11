@@ -1,5 +1,5 @@
 import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
-import { DependencyFactory } from '../draft';
+import { DependencyFactory } from "../module/RegistryRecord";
 
 // prettier-ignore
 export type DependencyResolver<TValue> =

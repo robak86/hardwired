@@ -1,7 +1,7 @@
 import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
 import { ContainerCache } from "../container/container-cache";
-import { DependencyFactory } from "../draft";
 import { ClassType } from "../utils/ClassType";
+import { DependencyFactory } from "../module/RegistryRecord";
 
 export class ClassTransientResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
   constructor(private klass, private selectDependencies: Array<DependencyFactory<any>> = []) {

@@ -2,9 +2,9 @@ import { ModuleBuilder } from "../ModuleBuilder";
 import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
 import { ContainerCache } from "../../container/container-cache";
 import { expectType, TypeEqual } from "ts-expect";
-import { DependencyFactory } from "../../draft";
 import { moduleImport } from "../../resolvers/ModuleResolver";
 import { DependencyResolver } from "../../resolvers/DependencyResolver";
+import { DependencyFactory } from "../../module/RegistryRecord";
 
 describe(`ModuleBuilder`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {

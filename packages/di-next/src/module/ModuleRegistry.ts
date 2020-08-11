@@ -1,5 +1,6 @@
 import { ModuleId } from '../module-id';
-import { DependencyFactory } from '../draft';
+import { DependencyFactory } from './RegistryRecord';
+import { DependencyResolver } from '../resolvers/DependencyResolver';
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
@@ -54,6 +55,15 @@ export class ModuleRegistry {
     const modules = this.flattenModules();
     return modules[moduleId.identity]?.getDependencyResolver(name);
   }
+
+  // protected findResolversByType(resolver): DependencyResolver[] {
+  //   this.
+  // }
+  //
+  // findResolversByType(resolver): DependencyResolver[] {
+  //
+  //   th
+  // }
 
   freeze() {
     // TODO: It's probably faster than immutable, but are we sure that we won't extend this object?

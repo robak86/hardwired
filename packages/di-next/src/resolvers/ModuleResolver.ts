@@ -2,8 +2,7 @@ import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDe
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { DependencyResolver } from './DependencyResolver';
-import { RegistryRecord } from '../module/RegistryRecord';
-import { DependencyFactory, DependencyResolverFactory } from '../draft';
+import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from "../module/RegistryRecord";
 import { ContainerCache } from '../container/container-cache';
 import { ImmutableSet } from '../collections/ImmutableSet';
 

@@ -1,7 +1,7 @@
 import { curry } from "../utils/curry";
 import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
 import { ContainerCache } from "../container/container-cache";
-import { DependencyFactory } from "../draft";
+import { DependencyFactory } from "../module/RegistryRecord";
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1

@@ -1,7 +1,6 @@
-import { container, module } from '@hardwired/di';
-
-import { reduxDefines } from '../builders/ReduxDefines';
-import { commonDefines } from '../../../di/src/builders/CommonDefines';
+import { container, func, module, moduleImport, value } from '@hardwired/di-next';
+import { reducer } from '../factories/ReducerResolver';
+import { store } from '../factories/StoreResolver';
 
 describe(`Integration tests`, () => {
   type AppState = {
@@ -16,15 +15,13 @@ describe(`Integration tests`, () => {
 
         const defaultState = { userName: 'Tomasz' };
 
-        const childModule = module('childModule').using(reduxDefines<AppState>()).reducer('appReducer2', appReducer2);
+        const childModule = module('childModule').define('appReducer2', _ => reducer(appReducer2));
 
         const m = module('m')
-          .using(commonDefines)
-          .import('childStoreModule', childModule)
-          .function('defaultState', () => defaultState)
-          .using(reduxDefines<AppState>())
-          .store('store', ({ defaultState }) => defaultState())
-          .reducer('appReducer1', appReducer1);
+          .define('childStoreModule', _ => moduleImport(childModule))
+          .define('defaultState', _ => value(defaultState))
+          .define('store', _ => store(_.defaultState))
+          .define('appReducer1', _ => reducer(appReducer1));
 
         const c = container(m);
 
