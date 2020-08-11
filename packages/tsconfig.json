@@ -21,13 +21,13 @@
       "path": "./server/tsconfig.json"
     },
     {
+      "path": "./di-next/tsconfig.json"
+    },
+    {
       "path": "./di/tsconfig.json"
     },
     {
       "path": "./server-di/tsconfig.json"
-    },
-    {
-      "path": "./di-next/tsconfig.json"
     },
     {
       "path": "./example/tsconfig.json"

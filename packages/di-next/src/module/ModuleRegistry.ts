@@ -40,6 +40,12 @@ export class ModuleRegistry {
     return result;
   }
 
+  forEachDependency(iterFn: (key: string, d: DependencyFactory<any>) => void) {
+    Object.keys(this.dependenciesByName).forEach(key => {
+      iterFn(key, this.dependenciesByName[key]);
+    });
+  }
+
   forEachModule(iterFn: (m: ModuleRegistry) => void) {
     Object.values(this.childModuleRegistriesByModuleId).forEach(iterFn);
   }

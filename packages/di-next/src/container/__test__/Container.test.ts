@@ -30,7 +30,7 @@ describe(`Container`, () => {
     it(`returns correct value`, async () => {
       const c = container(parent);
 
-      const cValue = c.deepGet(child2, 'c');
+      const cValue = c.get(child2, 'c');
       expect(cValue).toEqual('cValue');
     });
 
@@ -40,7 +40,7 @@ describe(`Container`, () => {
 
       const c = container(parent);
 
-      expect(() => c.deepGet(notRegistered, 'a')).toThrow();
+      expect(() => c.get(notRegistered, 'a')).toThrow();
     });
   });
 });

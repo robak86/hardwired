@@ -1,16 +1,8 @@
 import * as React from 'react';
 import { FunctionComponent, useContext, useMemo } from 'react';
-import {
-  container,
-  Container,
-  DeepGetReturn,
-  MaterializedDefinitions,
-  ModuleBuilder,
-  RegistryRecord,
-  ModuleRegistryContext,
-  Module,
-} from '@hardwired/di-core';
-import { module } from '@hardwired/di';
+import { container, module, ModuleBuilder } from '@hardwired/di-next';
+import { Container } from '../../../di-next/src/container/Container';
+import { RegistryRecord } from '../../../di-next/src/module/RegistryRecord';
 
 type HardwiredContext = {
   container: Container<any>;
@@ -27,8 +19,12 @@ const useContainer = () => {
 };
 
 export type ContainerProviderProps = {
-  module: Module<any>;
+  module: ModuleBuilder<any>;
 };
+//
+// type ModuleRegistryContext<T> = any;
+// type DeepGetReturn<T, T2, T3> = any;
+// type MaterializedDefinitions<T> = any;
 
 export const createContainerProvider = module => ({ children }) => {
   const containerInstance = useMemo(() => container(module), [module]);
@@ -36,21 +32,27 @@ export const createContainerProvider = module => ({ children }) => {
   return <ContainerContext.Provider value={{ container: containerInstance }}>{children}</ContainerContext.Provider>;
 };
 
-const useDependency = (module: any, key: any) => {
+const useDependency = <
+  TRegistryRecord extends RegistryRecord,
+  K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>
+>(
+  module: ModuleBuilder<TRegistryRecord>,
+  key: K,
+) => {
   const { container } = useContainerContext();
-  return container.deepGet<any, any>(module, key); //TODO: leveraging only container cache. We have to be sure that it works
+  return container.get(module, key); //TODO: leveraging only container cache. We have to be sure that it works
 };
 
 type ContainerComponents<TRegistryRecord extends RegistryRecord> = {
-  Container: FunctionComponent<{ context: ModuleRegistryContext<TRegistryRecord> }>;
+  Container: FunctionComponent<{ context: any }>;
   useDependency: <
-    TModuleRegistry extends RegistryRecord,
-    TModuleRegistryKey extends keyof MaterializedDefinitions<TModuleRegistry>
+    TRegistryRecord extends RegistryRecord,
+    K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>
   >(
-    module: ModuleBuilder<TModuleRegistry>,
-    key: TModuleRegistryKey,
-  ) => DeepGetReturn<TModuleRegistryKey, TModuleRegistry, TRegistryRecord>;
-  useContainer: () => MaterializedDefinitions<TRegistryRecord>;
+    module: ModuleBuilder<TRegistryRecord>,
+    key: K,
+  ) => RegistryRecord.Materialized<TRegistryRecord>[K];
+  useContainer: () =>  RegistryRecord.Materialized<TRegistryRecord>;
 };
 
 // TODO: allow thunk returning promise for lazy loading ?

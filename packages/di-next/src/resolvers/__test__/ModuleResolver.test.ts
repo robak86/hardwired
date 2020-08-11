@@ -139,7 +139,7 @@ describe(`ModuleResolver`, () => {
       const updatedChild = child.replace('a', _ => value(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
 
-      expect(container(parentWithInjectedChild).deepGet(updatedChild, 'a')).toEqual(456);
+      expect(container(parentWithInjectedChild).get(updatedChild, 'a')).toEqual(456);
     });
 
     it(`resolves correct dependencies replacing multiple modules with injections`, async () => {

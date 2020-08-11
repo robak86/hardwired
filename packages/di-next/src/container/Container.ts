@@ -1,10 +1,10 @@
-import { ContainerCache } from "./container-cache";
-import { ModuleRegistry } from "../module/ModuleRegistry";
+import { ContainerCache } from './container-cache';
+import { ModuleRegistry } from '../module/ModuleRegistry';
 
-import { ModuleBuilder } from "../builders/ModuleBuilder";
-import { ModuleResolver } from "../resolvers/ModuleResolver";
-import { RegistryRecord } from "../module/RegistryRecord";
-import invariant from "tiny-invariant";
+import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { ModuleResolver } from '../resolvers/ModuleResolver';
+import { RegistryRecord } from '../module/RegistryRecord';
+import invariant from 'tiny-invariant';
 
 interface GetMany<D> {
   <K extends keyof D>(key: K): [D[K]];
@@ -33,6 +33,17 @@ export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGe
 
 // TODO: accept custom ModuleResolver (may be necessary, e.g. for react containers ?)
 // or for sake of compatibility, EagerModuleResolver, ProxyModuleResolver, etc
+
+type ContainerGet<TRegistryRecord extends RegistryRecord> = {
+  <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(key: K): RegistryRecord.Materialized<
+    TRegistryRecord
+  >[K];
+  <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
+    module: ModuleBuilder<TRegistryRecord>,
+    key: K,
+  ): RegistryRecord.Materialized<TRegistryRecord>[K];
+};
+
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
   private registry: ModuleRegistry;
@@ -46,14 +57,22 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     this.registry = this.rootResolver.build(moduleBuilder.injections)[1];
   }
 
-  get = <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
-    key: K,
-  ): RegistryRecord.Materialized<TRegistryRecord>[K] => {
-    const dependencyFactory = this.registry.getDependencyResolver(key as any);
+  get: ContainerGet<TRegistryRecord> = (nameOrModule, name?) => {
+    if (typeof nameOrModule === 'string') {
+      const dependencyFactory = this.registry.getDependencyResolver(nameOrModule as any);
 
-    invariant(dependencyFactory, `Dependency with name: ${key} does not exist`);
+      invariant(dependencyFactory, `Dependency with name: ${nameOrModule} does not exist`);
 
-    return dependencyFactory(this.cache.forNewRequest());
+      return dependencyFactory(this.cache.forNewRequest());
+    } else {
+      const dependencyResolver = this.registry.findDependencyFactory(nameOrModule.moduleId, name as string);
+      invariant(
+        dependencyResolver,
+        `Cannot find dependency resolver for name: ${name} and module: ${nameOrModule.moduleId.name}`,
+      );
+
+      return dependencyResolver(this.cache.forNewRequest());
+    }
   };
 
   getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {
@@ -68,32 +87,14 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     }) as any;
   };
 
-  // asObject(): MaterializedModuleEntries<R> {
-  asObject(): TRegistryRecord {
-    throw new Error('Implement me');
-    // return ContainerService.proxyGetter(this.registry, this.cache.forNewRequest(), this.context);
-  }
+  asObject(): RegistryRecord.Materialized<TRegistryRecord> {
+    const obj = {};
+    const cache = this.cache.forNewRequest();
+    this.registry.forEachDependency((key, factory) => {
+      obj[key] = factory(cache);
+    });
 
-  // checkout(inherit: boolean): Container<R> {
-  //   if (inherit) {
-  //     return new Container(this.registry, this.cache, this.context); // TODO: we should return this.cache.clone() otherwise this checkout without inheritance does not make any sense
-  //   } else {
-  //     return new Container(this.registry, new ContainerCache(), this.context);
-  //   }
-  // }
-
-  // TODO: this may breaks the encapsulation!!! is this really required ? it's not type safe!
-  deepGet<TNextR extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TNextR>>(
-    module: ModuleBuilder<TNextR>,
-    key: K,
-  ): any {
-    const dependencyResolver = this.registry.findDependencyFactory(module.moduleId, key as string);
-    invariant(
-      dependencyResolver,
-      `Cannot find dependency resolver for name: ${key} and module: ${module.moduleId.name}`,
-    );
-
-    return dependencyResolver(this.cache.forNewRequest());
+    return obj as any;
   }
 }
 

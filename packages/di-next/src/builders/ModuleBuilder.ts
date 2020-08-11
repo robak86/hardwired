@@ -4,21 +4,13 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';
 
+// TODO rename to Module (no need to highlight builder pattern)
 export namespace ModuleBuilder {
   export type RegistryRecord<T extends ModuleBuilder<any>> = T extends ModuleBuilder<infer TShape> ? TShape : never;
 }
 
 export const module = (name: string) => ModuleBuilder.empty(name);
 export const unit = module;
-
-type NextModuleBuilder<
-  TRegistryRecord extends RegistryRecord,
-  TKey extends string,
-  T1 extends (ctx: TRegistryRecord) => DependencyResolver<any>
-> = {
-  [K in keyof (TRegistryRecord & Record<TKey, DependencyResolver.Value<ReturnType<T1>>>)]: (TRegistryRecord &
-    Record<TKey, DependencyResolver.Value<ReturnType<T1>>>)[K];
-};
 
 // TODO: add some constraint on TRegistryRecord ?
 export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
@@ -36,8 +28,6 @@ export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
     name: TKey,
     resolver: T1,
   ): ModuleBuilder<TRegistryRecord & Record<TKey, DependencyResolver.Value<ReturnType<T1>>>> {
-    // ): ModuleBuilder<NextModuleBuilder<TRegistryRecord, TKey, T1>> {
-    // ): ModuleBuilder<NextModuleBuilder<TRegistryRecord, TKey, T1>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
 
     return new ModuleBuilder(
@@ -55,6 +45,7 @@ export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
     ) as any;
   }
 
+  // TODO: consider forcing that replaced T1 returns the same kind of resolver that original T1
   replace<
     K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>,
     T1 extends (
