@@ -1,8 +1,8 @@
-import { container, module, value } from "@hardwired/di-next";
-import { AlterableStore } from "../../stack/AlterableStore";
-import { reducer, ReducerResolver } from "../../factories/ReducerResolver";
-import { saga, SagaResolver } from "../../factories/SagaResolver";
-import { store } from "../../factories/StoreResolver";
+import { container, module, value } from '@hardwired/di-next';
+import { AlterableStore } from '../../stack/AlterableStore';
+import { reducer, ReducerResolver } from '../../factories/ReducerResolver';
+import { saga, SagaResolver } from '../../factories/SagaResolver';
+import { store } from '../../factories/StoreResolver';
 
 describe(`ReduxDefines`, () => {
   it(`sdf`, async () => {
@@ -21,7 +21,8 @@ describe(`ReduxDefines`, () => {
     it(`register correct factory`, async () => {
       const a = module('a').define('someReducer', _ => reducer(() => null));
 
-      expect(a.registry.get('someReducer')).toBeInstanceOf(ReducerResolver);
+      // TODO: hack :/
+      expect(a.registry.get('someReducer')({})).toBeInstanceOf(ReducerResolver);
     });
   });
 
@@ -29,7 +30,8 @@ describe(`ReduxDefines`, () => {
     it(`register correct factory`, async () => {
       const a = module('a').define('someSaga', _ => saga(function* saga() {}));
 
-      expect(a.registry.get('someSaga')).toBeInstanceOf(SagaResolver);
+      // TODO: hack :/
+      expect(a.registry.get('someSaga')({})).toBeInstanceOf(SagaResolver);
     });
   });
 });

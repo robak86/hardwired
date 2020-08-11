@@ -1,18 +1,18 @@
-import { AbstractDependencyResolver, ContainerCache, DependencyFactory, ModuleRegistry } from '@hardwired/di-next';
-import { ReducerResolver } from './ReducerResolver';
-import { AlterableStore } from '../stack/AlterableStore';
-import { SagaResolver } from './SagaResolver';
+import { AbstractDependencyResolver, ContainerCache, DependencyFactory, ModuleRegistry } from "@hardwired/di-next";
+import { ReducerResolver } from "./ReducerResolver";
+import { AlterableStore } from "../stack/AlterableStore";
+import { SagaResolver } from "./SagaResolver";
 
 export class StoreResolver<AppState> extends AbstractDependencyResolver<AlterableStore<AppState>> {
-  public reducersResolvers: ReducerResolver<any>[] = [];
-  public sagasResolvers: SagaResolver<any>[] = [];
+  public reducersResolvers: DependencyFactory<any>[] = [];
+  public sagasResolvers: DependencyFactory<any>[] = [];
 
   constructor(private resolver: DependencyFactory<AppState>) {
     super();
   }
 
   build(cache: ContainerCache) {
-    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.build(cache));
+    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver(cache));
     const store = this.buildStore(cache);
     store.replaceReducers(reducers);
 
@@ -31,8 +31,8 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
   }
 
   onInit(registry: ModuleRegistry): any {
-
-    // TODO: discover all reducer and sagas resolvers
+    this.reducersResolvers = registry.findFactoriesByResolverClass(ReducerResolver);
+    this.sagasResolvers = registry.findFactoriesByResolverClass(SagaResolver);
   }
 
   // onRegister(events: ): any {

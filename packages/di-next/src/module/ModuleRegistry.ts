@@ -1,6 +1,8 @@
 import { ModuleId } from '../module-id';
 import { DependencyFactory } from './RegistryRecord';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { AbstractDependencyResolver } from '../resolvers/AbstractDependencyResolver';
+import invariant from 'tiny-invariant';
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
@@ -9,12 +11,14 @@ export class ModuleRegistry {
   private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
   private dependenciesByName: Record<string, DependencyFactory<any>> = {};
   private childModuleRegistriesByModuleId: Record<string, ModuleRegistry> = {};
+  private resolvers: DependencyResolver<any>[] = [];
 
   constructor(public moduleId: ModuleId) {}
 
-  appendDependencyFactory(resolverId: string, name: string, factory: DependencyFactory<any>) {
+  appendDependencyFactory(name: string, resolver: AbstractDependencyResolver<any>, factory: DependencyFactory<any>) {
     this.dependenciesByName[name] = factory;
-    this.dependenciesByResolverId[resolverId] = factory;
+    this.dependenciesByResolverId[resolver.id] = factory;
+    this.resolvers.push(resolver);
   }
 
   appendChildModuleRegistry(registry: ModuleRegistry) {
@@ -56,14 +60,16 @@ export class ModuleRegistry {
     return modules[moduleId.identity]?.getDependencyResolver(name);
   }
 
-  // protected findResolversByType(resolver): DependencyResolver[] {
-  //   this.
-  // }
-  //
-  // findResolversByType(resolver): DependencyResolver[] {
-  //
-  //   th
-  // }
+  protected findOwnResolversByType(type): DependencyFactory<any>[] {
+    return this.resolvers
+      .filter(resolver => resolver instanceof type)
+      .map(resolver => this.dependenciesByResolverId[resolver.id]);
+  }
+
+  findFactoriesByResolverClass(resolverClass): DependencyFactory<any>[] {
+    const modules = this.flattenModules();
+    return Object.values(modules).flatMap(moduleRegistry => moduleRegistry.findOwnResolversByType(resolverClass));
+  }
 
   freeze() {
     // TODO: It's probably faster than immutable, but are we sure that we won't extend this object?

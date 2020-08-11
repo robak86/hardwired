@@ -2,7 +2,7 @@ import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDe
 import { ModuleRegistry } from '../module/ModuleRegistry';
 import { ModuleBuilder } from '../builders/ModuleBuilder';
 import { DependencyResolver } from './DependencyResolver';
-import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from "../module/RegistryRecord";
+import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
 import { ContainerCache } from '../container/container-cache';
 import { ImmutableSet } from '../collections/ImmutableSet';
 
@@ -12,7 +12,7 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModuleResolver<TReturn> {
   constructor(moduleBuilder: ModuleBuilder<TReturn>) {
     super(moduleBuilder);
-    console.log('Constructing module resolver with', moduleBuilder.moduleId)
+    console.log('Constructing module resolver with', moduleBuilder.moduleId);
   }
 
   // TODO: accept custom module resolverClass ? in order to select ModuleResolver instance at container creation?
@@ -35,12 +35,12 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
         //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
         context[key] = (cache: ContainerCache) => dependencyFactories[key](cache);
         dependencyResolvers[key] = resolver;
-        moduleRegistry.appendDependencyFactory(resolver.id, key, context[key] as DependencyFactory<any>);
+        moduleRegistry.appendDependencyFactory(key, resolver, context[key] as DependencyFactory<any>);
       }
 
       if (resolver.type === 'module') {
         if (mergedInjections.hasKey(resolver.moduleId.identity)) {
-          console.log('injecting', resolver.moduleId, 'instead of', resolver.moduleId)
+          console.log('injecting', resolver.moduleId, 'instead of', resolver.moduleId);
           const injectedModuleBuilder = mergedInjections.get(resolver.moduleId.identity);
           moduleResolvers[key] = new ModuleResolver(injectedModuleBuilder);
         } else {
