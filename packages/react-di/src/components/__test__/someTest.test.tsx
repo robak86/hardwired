@@ -1,4 +1,4 @@
-import { container, module, value } from "@hardwired/di-next";
+import { container, module, value } from "@hardwired/core";
 import * as React from "react";
 
 describe(`It works`, () => {

@@ -1,11 +1,10 @@
 {
   "name": "@hardwired/react-di",
-  "private": true,
   "version": "1.0.0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "@hardwired/di-next": "*"
+    "@hardwired/core": "*"
   },
   "devDependencies": {
     "@testing-library/react": "^10.0.4",

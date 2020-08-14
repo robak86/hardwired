@@ -1,12 +1,9 @@
 {
-  "name": "@roro/server-testing",
-  "private": true,
+  "name": "@hardwired/core",
   "version": "1.0.0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
-  "dependencies": {
-    "@roro/server": "*"
-  },
+  "dependencies": {},
   "devDependencies": {},
   "files": [
     "lib",

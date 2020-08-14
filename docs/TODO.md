@@ -1,35 +1,5 @@
-- `onSpecificDefinitionAppend` passes in the event resolver and the registry - idealy container should allow to find resolver in the hierarchy and run it with correct registry
-    - this would allow for using `Set` for storing resolvers received in events (no duplicates) 
-    
-- Add thunk support. Declaring parent module below child module sucks
-- currently container events don't care about the modules hierarchy, which means that child module resolvers will receive
-  events with parent module resolvers. Is it correct behavior ?
-
-- rename `onDefinitionAppend` to onResolverAppend
-
-- resolvers may require more sophisticated discovery order.
-
-  - consider adding multiple events (which knows about the order of the discovery)
-    - ```typescript
-        events.onDefinitionAppend('bottomUp', ResolverClass, () => void)
-        events.onDefinitionAppend('upBottom', ResolverClass, () => void)
-        events.onDefinitionAppend('descendantsBottomUp', ResolverClass, () => void)
-        events.onDefinitionAppend('descendantsUpBottom', ResolverClass, () => void)
-        events.onDefinitionAppend('ascendantsUpBottom', ResolverClass, () => void)
-        events.onDefinitionAppend('ascendantsBottomUp', ResolverClass, () => void)
-        // or split it 
-        events.onDefinitionAppend(direction, range, ResolverClass, () => void)
-        events.onDefinitionAppend(bottomUp, descendants, ResolverClass, () => void)
-        events.onDefinitionAppend(bottomUp, siblings, ResolverClass, () => void)
-      
-        // ranges should be mutually exclusive in order to allow composition in 
-      ```
-  - resolver returning iterator ? performance will suck, becuase it would be hard to optimize...
-    ...unless we will use fixed set of distinguishable iterators - it will allows grouping
-
-- onDefitionAppend should be called with self instance
-
-- add new base builder method for defining context slices/traits/partial/ ? usable for functional programming!!!
+- add new base builder method for defining context slices/traits/partial/ ? usable for passing dependencies to functions 
+as context object
 
 ```typescript
 const someFunction = ({ db, request }) => {};

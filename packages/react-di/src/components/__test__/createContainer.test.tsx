@@ -1,4 +1,4 @@
-import { module, value } from '@hardwired/di-next';
+import { module, value } from '@hardwired/core';
 import { createContainer } from '../createContainer';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../DummyComponent';

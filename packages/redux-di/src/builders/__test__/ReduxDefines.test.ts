@@ -1,4 +1,4 @@
-import { container, module, value } from '@hardwired/di-next';
+import { container, module, value } from '@hardwired/core';
 import { AlterableStore } from '../../stack/AlterableStore';
 import { reducer, ReducerResolver } from '../../factories/ReducerResolver';
 import { saga, SagaResolver } from '../../factories/SagaResolver';

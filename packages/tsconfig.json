@@ -3,49 +3,13 @@
   "include": [],
   "references": [
     {
-      "path": "./di-core/tsconfig.json"
-    },
-    {
-      "path": "./routing-core/tsconfig.json"
-    },
-    {
-      "path": "./routing-contract/tsconfig.json"
-    },
-    {
-      "path": "./s-middleware/tsconfig.json"
-    },
-    {
-      "path": "./resource/tsconfig.json"
-    },
-    {
-      "path": "./server/tsconfig.json"
-    },
-    {
-      "path": "./di-next/tsconfig.json"
-    },
-    {
-      "path": "./di/tsconfig.json"
-    },
-    {
-      "path": "./server-di/tsconfig.json"
-    },
-    {
-      "path": "./example/tsconfig.json"
+      "path": "./core/tsconfig.json"
     },
     {
       "path": "./react-di/tsconfig.json"
     },
     {
       "path": "./redux-di/tsconfig.json"
-    },
-    {
-      "path": "./routing-client/tsconfig.json"
-    },
-    {
-      "path": "./s-example/tsconfig.json"
-    },
-    {
-      "path": "./server-testing/tsconfig.json"
     }
   ]
 }

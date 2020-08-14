@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { FunctionComponent, useContext, useMemo } from 'react';
-import { container, module, ModuleBuilder } from '@hardwired/di-next';
-import { Container } from '../../../di-next/src/container/Container';
-import { RegistryRecord } from '../../../di-next/src/module/RegistryRecord';
+import { container, module, ModuleBuilder } from '@hardwired/core';
+import { Container } from '../../../core/src/container/Container';
+import { RegistryRecord } from '../../../core/src/module/RegistryRecord';
 
 type HardwiredContext = {
   container: Container<any>;

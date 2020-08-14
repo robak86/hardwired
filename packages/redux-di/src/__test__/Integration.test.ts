@@ -1,4 +1,4 @@
-import { container, func, module, moduleImport, value } from '@hardwired/di-next';
+import { container, func, module, moduleImport, value } from '@hardwired/core';
 import { reducer } from '../factories/ReducerResolver';
 import { store } from '../factories/StoreResolver';
 

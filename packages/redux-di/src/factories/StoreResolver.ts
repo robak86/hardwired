@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, ContainerCache, DependencyFactory, ModuleRegistry } from "@hardwired/di-next";
+import { AbstractDependencyResolver, ContainerCache, DependencyFactory, ModuleRegistry } from "@hardwired/core";
 import { ReducerResolver } from "./ReducerResolver";
 import { AlterableStore } from "../stack/AlterableStore";
 import { SagaResolver } from "./SagaResolver";
