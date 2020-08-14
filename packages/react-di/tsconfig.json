@@ -7,9 +7,6 @@
   },
   "references": [
     {
-      "path": "../di-core/tsconfig.json"
-    },
-    {
       "path": "../di-next/tsconfig.json"
     }
   ],

@@ -5,8 +5,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "@hardwired/di-core": "*",
-    "@hardwired/di": "*"
+    "@hardwired/di-next": "*"
   },
   "peerDependencies": {
     "redux": "^4.0.5",
