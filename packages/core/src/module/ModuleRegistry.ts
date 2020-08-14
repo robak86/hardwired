@@ -1,8 +1,7 @@
-import { ModuleId } from '../module-id';
-import { DependencyFactory } from './RegistryRecord';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { AbstractDependencyResolver } from '../resolvers/AbstractDependencyResolver';
-import invariant from 'tiny-invariant';
+import { ModuleId } from "../module-id";
+import { DependencyFactory } from "./RegistryRecord";
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { AbstractDependencyResolver } from "../resolvers/AbstractDependencyResolver";
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup

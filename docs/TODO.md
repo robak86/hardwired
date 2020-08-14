@@ -1,5 +1,6 @@
 - add new base builder method for defining context slices/traits/partial/ ? usable for passing dependencies to functions 
 as context object
+- prevent accessing properties through multiple levels of modules hierarchy
 
 ```typescript
 const someFunction = ({ db, request }) => {};

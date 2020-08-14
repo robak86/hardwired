@@ -1,12 +1,12 @@
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { ModuleId } from '../module-id';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import { RegistryRecord } from '../module/RegistryRecord';
-import invariant from 'tiny-invariant';
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { ModuleId } from "../module-id";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import { RegistryRecord } from "../module/RegistryRecord";
+import invariant from "tiny-invariant";
 
 // TODO rename to Module (no need to highlight builder pattern)
 export namespace ModuleBuilder {
-  export type RegistryRecord<T extends ModuleBuilder<any>> = T extends ModuleBuilder<infer TShape> ? TShape : never;
+  export type Registry<T extends ModuleBuilder<any>> = T extends ModuleBuilder<infer TShape> ? TShape : never;
 }
 
 export const module = (name: string) => ModuleBuilder.empty(name);

@@ -1,17 +1,15 @@
 # HardWired [WIP]
 
-TODO: compositions of modules using imports forces Law of Demeter
-
 Minimalistic, type-safe dependency injection solution for TypeScript.
 
 - [x] No decorators, no reflection
-- [ ] Type-safe, all definitions checked at compile time [TODO: add typesafety for context, Create gifs ]
+- [x] Type-safe, all definitions checked at compile time
 - [x] Lazy instantiation of dependencies
-- [ ] Handling circular definitions
 - [x] Easy mocking and testing
 - [x] Suitable for backend servers
-- [ ] Fast [TODO: measure it]
 - [x] Allows writing code which is not coupled to DI container
+- [?] Handling circular dependencies
+- [?] Lightweight & fast
 
   - You can write your classes using constructor dependency injection without polluting them with DI
     dependencies like @decorators, service locator, etc. All dependency injection definitions are implemented in a separate layer.
@@ -30,16 +28,16 @@ The library consists of two main components
 
 ## Module
 
-Module is object containing all registered dependencies. It "knows" how to instantiate all registered dependencies, but it doesn't directly instantiates them.
+Module is an immutable object containing all registered dependencies. It contains instantiation details of each entry, but it is stateless - all created instances lives in the container.
 
 ## Container
 
-It is responsible for instantiating all dependencies(lazy) and it's an object where all instances lives.
+It is responsible for instantiating all dependencies, and it's an object where all instances lives.
 
 ### Creating Empty Module
 
 ```typescript
-import { module } from 'hardwired';
+import { module } from '@hardwired/di';
 
 const someModule = module('someModuleName');
 ```
@@ -47,29 +45,23 @@ const someModule = module('someModuleName');
 ### Registering Dependencies
 
 ```typescript
-//core/Configuration.ts
-export class Configuration {
-  logLevel: 0;
-  dbConnectionString: string;
+// core/Configuration.ts
+export class LoggerConfiguration {
+  logLevel =  0;
 }
 
-//core/ILogger.ts
-export interface ILogger {
-  log(message: string);
-}
-
-//core/Logger.ts
-export class Logger implements ILogger {
-  constructor(private logLevel: number) {}
+// core/Logger.ts
+export class Logger {
+  constructor(private configuration: LoggerConfiguration) {}
   log(message: string) {}
 }
 
-//core.module.ts
-import { module } from 'hardwired';
+// core.module.ts
+import { module, singleton } from 'hardwired';
 
-export const coreModule = module('coreModule')
-  .define('configuration', () => new Configuration())
-  .define('logger', ({ configuration }) => new Logger(configuration.logLevel));
+export const coreModule = module('loggingModule')
+  .define('configuration', _ => singleton(LoggerConfiguration))
+  .define('logger', ({ configuration }) => singleton(Logger, [configuration]));
 ```
 
 ### Importing dependencies from other modules
