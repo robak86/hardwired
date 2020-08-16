@@ -17,7 +17,7 @@
     "access": "public"
   },
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
-  "homepage": "https://github.com/robak86/hardwired",
+  "homepage": "https://github.com/robak86/hardwired/tree/master/packages/core",
   "repository": {
     "type": "git",
     "url": "git@github.com:robak86/hardwired.git"
