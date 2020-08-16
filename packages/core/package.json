@@ -7,7 +7,10 @@
     "container",
     "type-safe"
   ],
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "dependencies": {
+    "tiny-invariant": "^1.1.0"
+  },
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "files": [
@@ -18,7 +21,7 @@
     "access": "public"
   },
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
-  "homepage": "https://github.com/robak86/hardwired/tree/master/packages/core",
+  "homepage": "https://github.com/robak86/hardwired",
   "repository": {
     "type": "git",
     "url": "git@github.com:robak86/hardwired.git"
