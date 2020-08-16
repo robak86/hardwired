@@ -19,9 +19,6 @@
   },
   "author": "Tomasz Robaczewski",
   "license": "ISC",
-  "peerDependencies": {
-    "lodash": "^4.17.11"
-  },
   "workspaces": [
     "packages/*"
   ],
