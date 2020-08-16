@@ -5,11 +5,11 @@ import { AbstractDependencyResolver } from "../resolvers/AbstractDependencyResol
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
-export class ModuleRegistry {
+export class RegistryLookup {
   private dependenciesByResolverId: Record<string, DependencyFactory<any>> = {};
   private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
   private dependenciesByName: Record<string, DependencyFactory<any>> = {};
-  private childModuleRegistriesByModuleId: Record<string, ModuleRegistry> = {};
+  private childModuleRegistriesByModuleId: Record<string, RegistryLookup> = {};
   private resolvers: DependencyResolver<any>[] = [];
 
   constructor(public moduleId: ModuleId) {}
@@ -20,7 +20,7 @@ export class ModuleRegistry {
     this.resolvers.push(resolver);
   }
 
-  appendChildModuleRegistry(registry: ModuleRegistry) {
+  appendChildModuleRegistry(registry: RegistryLookup) {
     this.childModuleRegistriesByModuleId[registry.moduleId.identity] = registry;
   }
 
@@ -32,7 +32,7 @@ export class ModuleRegistry {
     return this.dependenciesByName[name];
   }
 
-  flattenModules(): Record<string, ModuleRegistry> {
+  flattenModules(): Record<string, RegistryLookup> {
     let result = {
       [this.moduleId.identity]: this,
       ...this.childModuleRegistriesByModuleId,
@@ -50,7 +50,7 @@ export class ModuleRegistry {
     });
   }
 
-  forEachModule(iterFn: (m: ModuleRegistry) => void) {
+  forEachModule(iterFn: (m: RegistryLookup) => void) {
     Object.values(this.childModuleRegistriesByModuleId).forEach(iterFn);
   }
 
@@ -78,7 +78,7 @@ export class ModuleRegistry {
     Object.freeze(this.childModuleRegistriesByModuleId);
   }
 
-  isEqual(other: ModuleRegistry): boolean {
+  isEqual(other: RegistryLookup): boolean {
     return this.moduleId.identity === other.moduleId.identity;
   }
 
@@ -235,7 +235,7 @@ export class ModuleRegistry {
   // }
   //
   // // TODO: extract to service ?
-  findModule(other: ModuleRegistry): any {
+  findModule(other: RegistryLookup): any {
     throw new Error('Implement me');
     // let found = this.data
     //   .get('imports')

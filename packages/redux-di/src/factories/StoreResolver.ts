@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, ContainerCache, DependencyFactory, ModuleRegistry } from "@hardwired/core";
+import { AbstractDependencyResolver, ContainerCache, DependencyFactory, RegistryLookup } from "@hardwired/core";
 import { ReducerResolver } from "./ReducerResolver";
 import { AlterableStore } from "../stack/AlterableStore";
 import { SagaResolver } from "./SagaResolver";
@@ -30,7 +30,7 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
     }
   }
 
-  onInit(registry: ModuleRegistry): any {
+  onInit(registry: RegistryLookup): any {
     this.reducersResolvers = registry.findFactoriesByResolverClass(ReducerResolver);
     this.sagasResolvers = registry.findFactoriesByResolverClass(SagaResolver);
   }

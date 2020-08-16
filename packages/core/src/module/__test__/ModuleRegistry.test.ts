@@ -1,4 +1,4 @@
-import { ModuleRegistry } from '../ModuleRegistry';
+import { RegistryLookup } from '../RegistryLookup';
 import { ModuleId } from '../../module-id';
 import { dependency } from '../../testing/TestResolvers';
 
@@ -9,11 +9,11 @@ function setup() {
   const dId = ModuleId.build('d');
   const eId = ModuleId.build('e');
 
-  const m = new ModuleRegistry(aId);
-  const child1 = new ModuleRegistry(bId);
-  const child2 = new ModuleRegistry(cId);
-  const grandChild1 = new ModuleRegistry(dId);
-  const grandChild2 = new ModuleRegistry(eId);
+  const m = new RegistryLookup(aId);
+  const child1 = new RegistryLookup(bId);
+  const child2 = new RegistryLookup(cId);
+  const grandChild1 = new RegistryLookup(dId);
+  const grandChild2 = new RegistryLookup(eId);
   return { aId, bId, cId, dId, eId, m, child1, child2, grandChild1, grandChild2 };
 }
 

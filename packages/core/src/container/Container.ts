@@ -1,5 +1,5 @@
 import { ContainerCache } from './container-cache';
-import { ModuleRegistry } from '../module/ModuleRegistry';
+import { RegistryLookup } from '../module/RegistryLookup';
 
 import { Module } from '../builders/Module';
 import { ModuleResolver } from '../resolvers/ModuleResolver';
@@ -46,7 +46,7 @@ type ContainerGet<TRegistryRecord extends RegistryRecord> = {
 
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
-  private registry: ModuleRegistry;
+  private registry: RegistryLookup;
 
   constructor(
     Module: Module<TRegistryRecord>,

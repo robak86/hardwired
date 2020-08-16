@@ -1,7 +1,7 @@
 export { unit, module, Module } from './builders/Module';
 export { container } from './container/Container';
 
-export { ModuleRegistry } from './module/ModuleRegistry';
+export { RegistryLookup } from './module/RegistryLookup';
 export { ContainerCache } from './container/container-cache';
 export type { DependencyFactory, RegistryRecord, DependencyResolverFactory } from './module/RegistryRecord';
 export type { DependencyResolver } from './resolvers/DependencyResolver';

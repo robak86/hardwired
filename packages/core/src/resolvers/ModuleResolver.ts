@@ -1,5 +1,5 @@
 import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
-import { ModuleRegistry } from '../module/ModuleRegistry';
+import { RegistryLookup } from '../module/RegistryLookup';
 import { Module } from '../builders/Module';
 import { DependencyResolver } from './DependencyResolver';
 import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
@@ -16,13 +16,13 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
   }
 
   // TODO: accept custom module resolverClass ? in order to select ModuleResolver instance at container creation?
-  build(injections = ImmutableSet.empty()): [TReturn, ModuleRegistry] {
+  build(injections = ImmutableSet.empty()): [TReturn, RegistryLookup] {
     // TODO: merge injections with own this.registry injections
     // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
     const context: RegistryRecord = {};
     const dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
     const moduleResolvers: Record<string, AbstractModuleResolver<any>> = {};
-    const moduleRegistry: ModuleRegistry = new ModuleRegistry(this.registry.moduleId);
+    const moduleRegistry: RegistryLookup = new RegistryLookup(this.registry.moduleId);
     const dependencyFactories: Record<string, DependencyFactory<any>> = {};
     const mergedInjections = this.registry.injections.merge(injections);
 

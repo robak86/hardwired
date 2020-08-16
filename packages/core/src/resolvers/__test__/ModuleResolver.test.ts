@@ -1,5 +1,5 @@
 import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
-import { ModuleRegistry } from '../../module/ModuleRegistry';
+import { RegistryLookup } from '../../module/RegistryLookup';
 import { Module, unit } from '../../builders/Module';
 import { moduleImport, ModuleResolver } from '../ModuleResolver';
 import { ContainerCache } from '../../container/container-cache';
@@ -17,7 +17,7 @@ describe(`ModuleResolver`, () => {
       return this.value;
     }
 
-    onInit(registry: ModuleRegistry) {}
+    onInit(registry: RegistryLookup) {}
   }
 
   const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
@@ -53,8 +53,8 @@ describe(`ModuleResolver`, () => {
     const resolver = new ModuleResolver(m);
 
     resolver.build();
-    expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(ModuleRegistry);
-    expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(ModuleRegistry);
+    expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(RegistryLookup);
+    expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(RegistryLookup);
   });
 
   it(`returns DependencyFactory functions delegating to resolvers`, async () => {

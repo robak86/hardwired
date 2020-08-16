@@ -1,5 +1,5 @@
 import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
-import { ModuleRegistry } from '../../module/ModuleRegistry';
+import { RegistryLookup } from '../../module/RegistryLookup';
 import { Module } from '../Module';
 import { moduleImport } from '../../resolvers/ModuleResolver';
 import { ContainerCache } from '../../container/container-cache';
