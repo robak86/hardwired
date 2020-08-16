@@ -22,21 +22,6 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
-    - name: Yarn install
-      run: yarn install
-      
-    - name: Yarn build
-      run: yarn build
-      
-    - name: Yarn test
-      run: yarn test
-
-    # Runs a set of commands using the runners shell
-    - name: yarn build
-      run: |
-        yarn install
-        echo test, and deploy your project.
-        
     - name: Setup Node.js environment
       uses: actions/setup-node@v1.4.3
       with:
@@ -50,3 +35,13 @@ jobs:
         #scope: # optional
         # Deprecated. Use node-version instead. Will not be supported after October 1, 2019
         #version: # optional
+
+    - name: Yarn install
+      run: yarn install
+
+    - name: Yarn build
+      run: yarn build
+
+    - name: Yarn test
+      run: yarn test
+
