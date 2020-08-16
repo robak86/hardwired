@@ -11,7 +11,6 @@ packages.forEach(packageName => {
   const packageJSONData = JSON.parse(fs.readFileSync(packageJSONPath).toString());
   delete packageJSONData.scripts;
   packageJSONData.author = 'Tomasz Robaczewski <robak86@gmail.com>';
-  packageJSONData.homepage = 'https://github.com/robak86/hardwired';
   packageJSONData.repository = {
     type: 'git',
     url: 'git@github.com:robak86/hardwired.git',

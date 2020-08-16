@@ -4,7 +4,8 @@
   "keywords": [
     "ioc",
     "dependency injection",
-    "container"
+    "container",
+    "type-safe"
   ],
   "version": "0.0.1",
   "main": "./lib/index.js",
