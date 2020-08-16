@@ -1,6 +1,6 @@
 import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
 import { ModuleRegistry } from '../../module/ModuleRegistry';
-import { ModuleBuilder, unit } from '../../builders/ModuleBuilder';
+import { Module, unit } from '../../builders/Module';
 import { moduleImport, ModuleResolver } from '../ModuleResolver';
 import { ContainerCache } from '../../container/container-cache';
 import { singleton } from '../ClassSingletonResolver';
@@ -28,7 +28,7 @@ describe(`ModuleResolver`, () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 
-    const m = ModuleBuilder.empty('someName')
+    const m = Module.empty('someName')
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
@@ -46,7 +46,7 @@ describe(`ModuleResolver`, () => {
     const buildASpy = jest.spyOn(dependencyA, 'onInit');
     const buildBSpy = jest.spyOn(dependencyB, 'onInit');
 
-    const m = ModuleBuilder.empty('someName')
+    const m = Module.empty('someName')
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
@@ -64,7 +64,7 @@ describe(`ModuleResolver`, () => {
     const buildAFactorySpy = jest.spyOn(dependencyA, 'build');
     const buildBFactorySpy = jest.spyOn(dependencyB, 'build');
 
-    const m = ModuleBuilder.empty('someName')
+    const m = Module.empty('someName')
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
@@ -86,7 +86,7 @@ describe(`ModuleResolver`, () => {
     jest.spyOn(dependencyA, 'build').mockReturnValue(123);
     jest.spyOn(dependencyB, 'build').mockReturnValue(false);
 
-    const m = ModuleBuilder.empty('someName')
+    const m = Module.empty('someName')
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
@@ -99,7 +99,7 @@ describe(`ModuleResolver`, () => {
   });
 
   it(`returns correct value for replaced value`, async () => {
-    const m = ModuleBuilder.empty('someName')
+    const m = Module.empty('someName')
       .define('a', ctx => dependency(1))
       .replace('a', ctx => dependency(2));
 

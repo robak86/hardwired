@@ -1,4 +1,4 @@
-import { ModuleBuilder } from "../ModuleBuilder";
+import { Module } from "../Module";
 import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
 import { ContainerCache } from "../../container/container-cache";
 import { expectType, TypeEqual } from "ts-expect";
@@ -6,7 +6,7 @@ import { moduleImport } from "../../resolvers/ModuleResolver";
 import { DependencyResolver } from "../../resolvers/DependencyResolver";
 import { DependencyFactory } from "../../module/RegistryRecord";
 
-describe(`ModuleBuilder`, () => {
+describe(`Module`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
     constructor(value: TValue) {
       super();
@@ -21,7 +21,7 @@ describe(`ModuleBuilder`, () => {
   };
 
   it(`creates correct type`, async () => {
-    const m = ModuleBuilder.empty('someModule')
+    const m = Module.empty('someModule')
       .define('key1', ctx => dummy(123))
       .define('key2', ctx => dummy(true))
       .define('key3', ctx => dummy('string'))
@@ -34,7 +34,7 @@ describe(`ModuleBuilder`, () => {
       key4: (c: ContainerCache) => () => 'someString';
     };
 
-    expectType<TypeEqual<ModuleBuilder.Registry<typeof m>, ExpectedType>>(true);
+    expectType<TypeEqual<Module.Registry<typeof m>, ExpectedType>>(true);
   });
 
   it(`creates correct types for deps`, async () => {
@@ -45,7 +45,7 @@ describe(`ModuleBuilder`, () => {
       key4: (c: ContainerCache) => () => 'someString';
     };
 
-    const m = ModuleBuilder.empty('someModule') // breakme
+    const m = Module.empty('someModule') // breakme
       .define('key1', _ => {
         expectType<TypeEqual<typeof _, {}>>(true);
 
@@ -71,26 +71,26 @@ describe(`ModuleBuilder`, () => {
   });
 
   it(`creates correct types for imports`, async () => {
-    const m1 = ModuleBuilder.empty('someModule').define('key1', ctx => dummy(123));
+    const m1 = Module.empty('someModule').define('key1', ctx => dummy(123));
 
-    const m2 = ModuleBuilder.empty('someModule')
+    const m2 = Module.empty('someModule')
       .define('imported', ctx => moduleImport(m1))
       .define('key1', _ => {
-        expectType<TypeEqual<typeof _, { imported: ModuleBuilder.Registry<typeof m1> }>>(true);
+        expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1> }>>(true);
 
         return dummy(123);
       });
   });
 
   it(`creates correct types for replace`, async () => {
-    const m1 = ModuleBuilder.empty('someModule').define('key1', ctx => dummy(123));
+    const m1 = Module.empty('someModule').define('key1', ctx => dummy(123));
 
-    const m2 = ModuleBuilder.empty('someModule')
+    const m2 = Module.empty('someModule')
       .define('imported', ctx => moduleImport(m1))
       .define('key2', ctx => dummy('string'))
       .define('key1', _ => {
         expectType<
-          TypeEqual<typeof _, { imported: ModuleBuilder.Registry<typeof m1>; key2: DependencyFactory<string> }>
+          TypeEqual<typeof _, { imported: Module.Registry<typeof m1>; key2: DependencyFactory<string> }>
         >(true);
 
         return dummy(123);

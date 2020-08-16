@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FunctionComponent, useContext, useMemo } from 'react';
-import { container, module, ModuleBuilder } from '@hardwired/core';
+import { container, module, Module } from '@hardwired/core';
 import { Container } from '../../../core/src/container/Container';
 import { RegistryRecord } from '../../../core/src/module/RegistryRecord';
 
@@ -19,7 +19,7 @@ const useContainer = () => {
 };
 
 export type ContainerProviderProps = {
-  module: ModuleBuilder<any>;
+  module: Module<any>;
 };
 //
 // type ModuleRegistryContext<T> = any;
@@ -36,7 +36,7 @@ const useDependency = <
   TRegistryRecord extends RegistryRecord,
   K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>
 >(
-  module: ModuleBuilder<TRegistryRecord>,
+  module: Module<TRegistryRecord>,
   key: K,
 ) => {
   const { container } = useContainerContext();
@@ -49,7 +49,7 @@ type ContainerComponents<TRegistryRecord extends RegistryRecord> = {
     TRegistryRecord extends RegistryRecord,
     K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>
   >(
-    module: ModuleBuilder<TRegistryRecord>,
+    module: Module<TRegistryRecord>,
     key: K,
   ) => RegistryRecord.Materialized<TRegistryRecord>[K];
   useContainer: () =>  RegistryRecord.Materialized<TRegistryRecord>;
@@ -57,7 +57,7 @@ type ContainerComponents<TRegistryRecord extends RegistryRecord> = {
 
 // TODO: allow thunk returning promise for lazy loading ?
 export function createContainer<TRegistryRecord extends RegistryRecord>(
-  module: ModuleBuilder<TRegistryRecord>,
+  module: Module<TRegistryRecord>,
 ): ContainerComponents<TRegistryRecord> {
   return {
     Container: createContainerProvider(module) as any,

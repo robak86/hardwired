@@ -1,6 +1,6 @@
 import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
 import { ModuleRegistry } from '../module/ModuleRegistry';
-import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { Module } from '../builders/Module';
 import { DependencyResolver } from './DependencyResolver';
 import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
 import { ContainerCache } from '../container/container-cache';
@@ -10,9 +10,9 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 // prepending entries won't work, because we wont' have the correct materialized object
 // appending entries may work, but we need to make sure that any reference is not bind during reducing entries
 export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModuleResolver<TReturn> {
-  constructor(moduleBuilder: ModuleBuilder<TReturn>) {
-    super(moduleBuilder);
-    console.log('Constructing module resolver with', moduleBuilder.moduleId);
+  constructor(Module: Module<TReturn>) {
+    super(Module);
+    console.log('Constructing module resolver with', Module.moduleId);
   }
 
   // TODO: accept custom module resolverClass ? in order to select ModuleResolver instance at container creation?
@@ -41,8 +41,8 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
       if (resolver.type === 'module') {
         if (mergedInjections.hasKey(resolver.moduleId.identity)) {
           console.log('injecting', resolver.moduleId, 'instead of', resolver.moduleId);
-          const injectedModuleBuilder = mergedInjections.get(resolver.moduleId.identity);
-          moduleResolvers[key] = new ModuleResolver(injectedModuleBuilder);
+          const injectedModule = mergedInjections.get(resolver.moduleId.identity);
+          moduleResolvers[key] = new ModuleResolver(injectedModule);
         } else {
           moduleResolvers[key] = resolver;
         }
@@ -65,6 +65,6 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
   }
 }
 
-export const moduleImport = <TValue extends RegistryRecord>(value: ModuleBuilder<TValue>): ModuleResolver<TValue> => {
+export const moduleImport = <TValue extends RegistryRecord>(value: Module<TValue>): ModuleResolver<TValue> => {
   return new ModuleResolver(value);
 };

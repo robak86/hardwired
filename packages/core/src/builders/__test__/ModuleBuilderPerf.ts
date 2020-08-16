@@ -1,6 +1,6 @@
 import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
 import { ModuleRegistry } from '../../module/ModuleRegistry';
-import { ModuleBuilder } from '../ModuleBuilder';
+import { Module } from '../Module';
 import { moduleImport } from '../../resolvers/ModuleResolver';
 import { ContainerCache } from '../../container/container-cache';
 
@@ -18,7 +18,7 @@ const dummy = <TValue>(value: TValue): DummyResolver<TValue> => {
   return new DummyResolver<TValue>(value);
 };
 
-const ab0 = ModuleBuilder.empty('a')
+const ab0 = Module.empty('a')
   .define('a', _ => dummy(1))
   .define('b', _ => dummy(1))
   .define('c', _ => dummy(1))
@@ -154,7 +154,7 @@ const ab0 = ModuleBuilder.empty('a')
 // .singleton('aasas110', SomeClass, c => [c.a])
 // .singleton('aasas1123', SomeClass, c => [c.a]);
 
-const ab = ModuleBuilder.empty('a')
+const ab = Module.empty('a')
   // .using(commonDefines)
   .define('a', _ => dummy(1))
   .define('b', _ => dummy(1))
@@ -247,7 +247,7 @@ const ab = ModuleBuilder.empty('a')
   .define('asbak', _ => dummy(1))
   .define('ascba', _ => dummy(1));
 
-const ab1 = ModuleBuilder.empty('a')
+const ab1 = Module.empty('a')
   // .using(commonDefines)
   .define('a', _ => dummy(1))
   .define('b', _ => dummy(1))
@@ -340,7 +340,7 @@ const ab1 = ModuleBuilder.empty('a')
   .define('asbak', _ => dummy(1))
   .define('ascba', _ => dummy(1));
 
-const ab2 = ModuleBuilder.empty('a')
+const ab2 = Module.empty('a')
   // .using(commonDefines)
   .define('a', _ => dummy(1))
   .define('b', _ => dummy(1))
@@ -433,7 +433,7 @@ const ab2 = ModuleBuilder.empty('a')
   .define('asbak', _ => dummy(1))
   .define('ascba', _ => dummy(1));
 
-const a = ModuleBuilder.empty('a')
+const a = Module.empty('a')
 
   .define('imported0', _ => moduleImport(ab0))
   .define('imported', _ => moduleImport(ab))

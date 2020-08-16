@@ -1,4 +1,4 @@
-export { unit, module, ModuleBuilder } from './builders/ModuleBuilder';
+export { unit, module, Module } from './builders/Module';
 export { container } from './container/Container';
 
 export { ModuleRegistry } from './module/ModuleRegistry';

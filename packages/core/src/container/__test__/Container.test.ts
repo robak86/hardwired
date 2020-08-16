@@ -1,4 +1,4 @@
-import { module } from "../../builders/ModuleBuilder";
+import { module } from "../../builders/Module";
 import { dependency } from "../../testing/TestResolvers";
 import { container } from "../Container";
 import { moduleImport } from "../../resolvers/ModuleResolver";

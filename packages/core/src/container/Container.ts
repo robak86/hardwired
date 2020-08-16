@@ -1,7 +1,7 @@
 import { ContainerCache } from './container-cache';
 import { ModuleRegistry } from '../module/ModuleRegistry';
 
-import { ModuleBuilder } from '../builders/ModuleBuilder';
+import { Module } from '../builders/Module';
 import { ModuleResolver } from '../resolvers/ModuleResolver';
 import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';
@@ -39,7 +39,7 @@ type ContainerGet<TRegistryRecord extends RegistryRecord> = {
     TRegistryRecord
   >[K];
   <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
-    module: ModuleBuilder<TRegistryRecord>,
+    module: Module<TRegistryRecord>,
     key: K,
   ): RegistryRecord.Materialized<TRegistryRecord>[K];
 };
@@ -49,12 +49,12 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private registry: ModuleRegistry;
 
   constructor(
-    moduleBuilder: ModuleBuilder<TRegistryRecord>,
+    Module: Module<TRegistryRecord>,
     private cache: ContainerCache = new ContainerCache(),
     private context?: C,
   ) {
-    this.rootResolver = new ModuleResolver<any>(moduleBuilder);
-    this.registry = this.rootResolver.build(moduleBuilder.injections)[1];
+    this.rootResolver = new ModuleResolver<any>(Module);
+    this.registry = this.rootResolver.build(Module.injections)[1];
   }
 
   get: ContainerGet<TRegistryRecord> = (nameOrModule, name?) => {
@@ -99,7 +99,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 }
 
 export function container<TRegistryRecord extends RegistryRecord>(
-  m: ModuleBuilder<TRegistryRecord>,
+  m: Module<TRegistryRecord>,
   ctx?: any,
 ): Container<TRegistryRecord> {
   let container = new Container(m, new ContainerCache(), ctx);
