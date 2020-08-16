@@ -29,18 +29,14 @@ describe(`StoreInstance`, () => {
     }
 
     const effectMiddleware = next => effect => {
-      console.log(effect);
-
       return next(effect);
     };
 
     function* helloSaga() {
       const wtf = yield* test('123');
-      console.log('Hello Sagas!', wtf);
     }
 
     function* helloSaga2() {
-      console.log('Hello Sagas!');
       yield { wtf: 1 };
     }
 

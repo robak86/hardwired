@@ -12,7 +12,6 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModuleResolver<TReturn> {
   constructor(Module: Module<TReturn>) {
     super(Module);
-    console.log('Constructing module resolver with', Module.moduleId);
   }
 
   // TODO: accept custom module resolverClass ? in order to select ModuleResolver instance at container creation?
@@ -40,7 +39,6 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
 
       if (resolver.type === 'module') {
         if (mergedInjections.hasKey(resolver.moduleId.identity)) {
-          console.log('injecting', resolver.moduleId, 'instead of', resolver.moduleId);
           const injectedModule = mergedInjections.get(resolver.moduleId.identity);
           moduleResolvers[key] = new ModuleResolver(injectedModule);
         } else {
