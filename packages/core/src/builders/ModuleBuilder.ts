@@ -1,8 +1,8 @@
-import { DependencyResolver } from "../resolvers/DependencyResolver";
-import { ModuleId } from "../module-id";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import { RegistryRecord } from "../module/RegistryRecord";
-import invariant from "tiny-invariant";
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { ModuleId } from '../module-id';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { RegistryRecord } from '../module/RegistryRecord';
+import invariant from 'tiny-invariant';
 
 // TODO rename to Module (no need to highlight builder pattern)
 export namespace ModuleBuilder {
@@ -12,7 +12,6 @@ export namespace ModuleBuilder {
 export const module = (name: string) => ModuleBuilder.empty(name);
 export const unit = module;
 
-// TODO: add some constraint on TRegistryRecord ?
 export class ModuleBuilder<TRegistryRecord extends RegistryRecord> {
   static empty(name: string): ModuleBuilder<{}> {
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);

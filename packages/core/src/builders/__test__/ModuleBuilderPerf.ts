@@ -1,24 +1,24 @@
-import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
-import { ModuleRegistry } from "../../module/ModuleRegistry";
-import { ModuleBuilder } from "../ModuleBuilder";
-import { moduleImport } from "../../resolvers/ModuleResolver";
-import { ContainerCache } from "../../container/container-cache";
+import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
+import { ModuleRegistry } from '../../module/ModuleRegistry';
+import { ModuleBuilder } from '../ModuleBuilder';
+import { moduleImport } from '../../resolvers/ModuleResolver';
+import { ContainerCache } from '../../container/container-cache';
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {
     super();
   }
 
-  build(cache: ContainerCache): TValue  {
+  build(cache: ContainerCache): TValue {
     throw new Error('Implement me');
   }
 }
+
 const dummy = <TValue>(value: TValue): DummyResolver<TValue> => {
   return new DummyResolver<TValue>(value);
 };
 
 const ab0 = ModuleBuilder.empty('a')
-
   .define('a', _ => dummy(1))
   .define('b', _ => dummy(1))
   .define('c', _ => dummy(1))
