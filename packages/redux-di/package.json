@@ -1,10 +1,10 @@
 {
-  "name": "@hardwired/redux-di",
+  "name": "hardwired-redux",
   "version": "0.0.1",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "@hardwired/core": "*"
+    "hardwired": "*"
   },
   "peerDependencies": {
     "redux": "^4.0.5",
@@ -18,10 +18,16 @@
   },
   "files": [
     "lib",
-    "src"
+    "README.md"
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "author": "Tomasz Robaczewski <robak86@gmail.com>",
+  "homepage": "https://github.com/robak86/hardwired",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:robak86/hardwired.git"
   },
   "scripts": {
     "build": "tsc -b ./tsconfig.json",

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FunctionComponent, useContext, useMemo } from 'react';
-import { container, module, Module } from '@hardwired/core';
+import { container, module, Module } from 'hardwired';
 import { Container } from '../../../core/src/container/Container';
 import { RegistryRecord } from '../../../core/src/module/RegistryRecord';
 

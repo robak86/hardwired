@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, ContainerCache, DependencyFactory, RegistryLookup } from "@hardwired/core";
+import { AbstractDependencyResolver, ContainerCache, DependencyFactory, RegistryLookup } from "hardwired";
 import { ReducerResolver } from "./ReducerResolver";
 import { AlterableStore } from "../stack/AlterableStore";
 import { SagaResolver } from "./SagaResolver";

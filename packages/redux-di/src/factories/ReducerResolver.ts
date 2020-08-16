@@ -1,4 +1,4 @@
-import { ValueResolver } from '@hardwired/core';
+import { ValueResolver } from 'hardwired';
 import { Reducer } from 'redux';
 
 export class ReducerResolver<TReturn> extends ValueResolver<TReturn> {}

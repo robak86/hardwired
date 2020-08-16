@@ -1,5 +1,5 @@
 import { RegistryLookup } from '../RegistryLookup';
-import { ModuleId } from '../../module-id';
+import { ModuleId } from '../../utils/module-id';
 import { dependency } from '../../testing/TestResolvers';
 
 function setup() {

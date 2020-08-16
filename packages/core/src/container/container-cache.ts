@@ -1,5 +1,5 @@
 import { invariant } from '../utils';
-import { ModuleId } from '../module-id';
+import { ModuleId } from '../utils/module-id';
 
 export type ContainerCacheEntry = {
   // requestId:string;

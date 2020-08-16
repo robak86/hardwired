@@ -10,16 +10,19 @@ packages.forEach(packageName => {
 
   const packageJSONData = JSON.parse(fs.readFileSync(packageJSONPath).toString());
   delete packageJSONData.scripts;
+  packageJSONData.author = 'Tomasz Robaczewski <robak86@gmail.com>';
+  packageJSONData.homepage = 'https://github.com/robak86/hardwired';
+  packageJSONData.repository = {
+    type: 'git',
+    url: 'git@github.com:robak86/hardwired.git',
+  };
+
   packageJSONData.main = './lib/index.js';
   packageJSONData.types = './lib/index.d.ts';
-  packageJSONData.files = ['lib', 'src'];
+  packageJSONData.files = ['lib', 'README.md'];
   packageJSONData.scripts = {
     build: 'tsc -b ./tsconfig.json',
     test: 'yarn test',
-    // prepublish: 'npm run build',
   };
-  // packageJSONData.publishConfig = {
-  //   access: 'public',
-  // };
   fs.writeFileSync(packageJSONPath, JSON.stringify(packageJSONData, null, '  '));
 });

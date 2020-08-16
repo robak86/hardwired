@@ -1,4 +1,4 @@
-import { module, value } from '@hardwired/core';
+import { module, value } from 'hardwired';
 import { createContainer } from '../createContainer';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../DummyComponent';

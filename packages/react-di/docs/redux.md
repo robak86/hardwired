@@ -1,7 +1,7 @@
 ### Redux integration
 
 ```typescript
-import {module} from '@hardwired/core-core'
+import {module} from 'hardwired-core'
 
 const stateModule = module('stateModule')
     .using(storeDefinition) //storeDefines , storeDefiner ?

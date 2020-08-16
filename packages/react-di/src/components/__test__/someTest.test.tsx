@@ -1,4 +1,4 @@
-import { container, module, value } from "@hardwired/core";
+import { container, module, value } from "hardwired";
 import * as React from "react";
 
 describe(`It works`, () => {

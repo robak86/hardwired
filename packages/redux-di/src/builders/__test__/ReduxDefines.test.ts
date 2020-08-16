@@ -1,4 +1,4 @@
-import { container, module, value } from '@hardwired/core';
+import { container, module, value } from 'hardwired';
 import { AlterableStore } from '../../stack/AlterableStore';
 import { reducer, ReducerResolver } from '../../factories/ReducerResolver';
 import { saga, SagaResolver } from '../../factories/SagaResolver';

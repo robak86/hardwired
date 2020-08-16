@@ -19,13 +19,13 @@ Minimalistic, type-safe dependency injection solution for TypeScript.
 yarn
 
 ```
-yarn add @hardwired/core
+yarn add hardwired
 ```
 
 npm
 
 ```
-npm install @hardwired/core
+npm install hardwired
 ```
 
 #### Overview

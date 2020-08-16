@@ -1,5 +1,5 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { ModuleId } from '../module-id';
+import { ModuleId } from '../utils/module-id';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';

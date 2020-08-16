@@ -4,7 +4,7 @@ import { RegistryRecord } from '../module/RegistryRecord';
 import { Module } from '../builders/Module';
 import { ContainerCache } from '../container/container-cache';
 import { ImmutableSet } from '../collections/ImmutableSet';
-import { ModuleId } from '../module-id';
+import { ModuleId } from '../utils/module-id';
 
 export abstract class AbstractDependencyResolver<TReturn> {
   public readonly id: string = createResolverId();

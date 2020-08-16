@@ -1,4 +1,4 @@
-import { ModuleId } from "../module-id";
+import { ModuleId } from "../utils/module-id";
 import { DependencyFactory } from "./RegistryRecord";
 import { DependencyResolver } from "../resolvers/DependencyResolver";
 import { AbstractDependencyResolver } from "../resolvers/AbstractDependencyResolver";
