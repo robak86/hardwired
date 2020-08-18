@@ -2,7 +2,7 @@ import { createResolverId } from '../utils/fastId';
 import { RegistryLookup } from '../module/RegistryLookup';
 import { RegistryRecord } from '../module/RegistryRecord';
 import { Module } from '../builders/Module';
-import { ContainerCache } from '../container/container-cache';
+import { ContainerContext } from '../container/ContainerContext';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { ModuleId } from '../utils/module-id';
 
@@ -13,7 +13,7 @@ export abstract class AbstractDependencyResolver<TReturn> {
   protected constructor() {}
 
   // TODO: splitting build into two steps solves problem of providing registry by the container. AbstractDependencyResolver may cache
-  abstract build(cache: ContainerCache): TReturn;
+  abstract build(cache: ContainerContext): TReturn;
   onInit?(registry: RegistryLookup);
 }
 

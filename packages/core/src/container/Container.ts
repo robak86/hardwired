@@ -1,4 +1,4 @@
-import { ContainerCache } from './container-cache';
+import { ContainerContext } from './ContainerContext';
 import { RegistryLookup } from '../module/RegistryLookup';
 
 import { Module } from '../builders/Module';
@@ -50,7 +50,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 
   constructor(
     Module: Module<TRegistryRecord>,
-    private cache: ContainerCache = new ContainerCache(),
+    private cache: ContainerContext = new ContainerContext(),
     private context?: C,
   ) {
     this.rootResolver = new ModuleResolver<any>(Module);
@@ -102,6 +102,6 @@ export function container<TRegistryRecord extends RegistryRecord>(
   m: Module<TRegistryRecord>,
   ctx?: any,
 ): Container<TRegistryRecord> {
-  let container = new Container(m, new ContainerCache(), ctx);
+  let container = new Container(m, new ContainerContext(), ctx);
   return container as any;
 }

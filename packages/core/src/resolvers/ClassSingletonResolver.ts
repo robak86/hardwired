@@ -1,5 +1,5 @@
 import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
-import { ContainerCache } from "../container/container-cache";
+import { ContainerContext } from "../container/ContainerContext";
 import { ClassType } from "../utils/ClassType";
 import { DependencyFactory } from "../module/RegistryRecord";
 
@@ -8,7 +8,7 @@ export class ClassSingletonResolver<TReturn> extends AbstractDependencyResolver<
     super();
   }
 
-  build(cache: ContainerCache): TReturn {
+  build(cache: ContainerContext): TReturn {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
@@ -24,7 +24,7 @@ export type ClassSingletonBuilder = {
   <TResult>(klass: ClassType<[], TResult>): ClassSingletonResolver<TResult>;
   <TDeps extends any[], TResult>(
     klass: ClassType<TDeps, TResult>,
-    depSelect: { [K in keyof TDeps]: (container: ContainerCache) => TDeps[K] },
+    depSelect: { [K in keyof TDeps]: (container: ContainerContext) => TDeps[K] },
   ): ClassSingletonResolver<TResult>;
 };
 

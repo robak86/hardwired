@@ -1,19 +1,19 @@
 import { RegistryRecord } from '../RegistryRecord';
-import { ContainerCache } from '../../container/container-cache';
+import { ContainerContext } from '../../container/ContainerContext';
 import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`RegistryRecord`, () => {
   describe(`Module`, () => {
     it(`returns correct type`, async () => {
       const registry = {
-        a: (ctx: ContainerCache) => 123,
+        a: (ctx: ContainerContext) => 123,
         imported: {
-          b: (ctx: ContainerCache) => true,
+          b: (ctx: ContainerContext) => true,
         },
         imported2: {
-          c: (ctx: ContainerCache) => 123,
+          c: (ctx: ContainerContext) => 123,
           nested: {
-            d: (ctx: ContainerCache) => 'somestring',
+            d: (ctx: ContainerContext) => 'somestring',
           },
         },
       };
@@ -22,16 +22,16 @@ describe(`RegistryRecord`, () => {
 
       type Expected =
         | {
-            b: (ctx: ContainerCache) => boolean;
+            b: (ctx: ContainerContext) => boolean;
           }
         | {
-            c: (ctx: ContainerCache) => number;
+            c: (ctx: ContainerContext) => number;
             nested: {
-              d: (ctx: ContainerCache) => string;
+              d: (ctx: ContainerContext) => string;
             };
           }
         | {
-            d: (ctx: ContainerCache) => string;
+            d: (ctx: ContainerContext) => string;
           };
 
       expectType<TypeEqual<Modules, Expected>>(true);
@@ -41,9 +41,9 @@ describe(`RegistryRecord`, () => {
   describe(`RegistryRecord.DependencyResolversKeys`, () => {
     it(`returns correct type`, async () => {
       const registry = {
-        a: (ctx: ContainerCache) => 123,
+        a: (ctx: ContainerContext) => 123,
         imported: {
-          b: (ctx: ContainerCache) => true,
+          b: (ctx: ContainerContext) => true,
         },
       };
 
@@ -56,9 +56,9 @@ describe(`RegistryRecord`, () => {
   describe(`RegistryRecord.ModuleResolversKeys`, () => {
     it(`returns correct type`, async () => {
       const registry = {
-        a: (ctx: ContainerCache) => 123,
+        a: (ctx: ContainerContext) => 123,
         imported: {
-          b: (ctx: ContainerCache) => true,
+          b: (ctx: ContainerContext) => true,
         },
       };
 

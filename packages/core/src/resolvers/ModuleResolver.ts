@@ -3,7 +3,7 @@ import { RegistryLookup } from '../module/RegistryLookup';
 import { Module } from '../builders/Module';
 import { DependencyResolver } from './DependencyResolver';
 import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
-import { ContainerCache } from '../container/container-cache';
+import { ContainerContext } from '../container/ContainerContext';
 import { ImmutableSet } from '../collections/ImmutableSet';
 
 // TODO: how to implement module.replace() ?!?!?
@@ -32,7 +32,7 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
 
       if (resolver.type === 'dependency') {
         //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
-        context[key] = (cache: ContainerCache) => dependencyFactories[key](cache);
+        context[key] = (cache: ContainerContext) => dependencyFactories[key](cache);
         dependencyResolvers[key] = resolver;
         moduleRegistry.appendDependencyFactory(key, resolver, context[key] as DependencyFactory<any>);
       }

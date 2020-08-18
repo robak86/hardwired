@@ -1,6 +1,6 @@
 import { curry } from "../utils/curry";
 import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
-import { ContainerCache } from "../container/container-cache";
+import { ContainerContext } from "../container/ContainerContext";
 import { DependencyFactory } from "../module/RegistryRecord";
 
 // TODO: not sure if this should be singleton ?
@@ -17,7 +17,7 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
     this.curriedFunction = curry(fn);
   }
 
-  build(cache: ContainerCache): TReturn {
+  build(cache: ContainerContext): TReturn {
     // TODO: not sure if this does not trigger all getter from the whole tree !!!!
     const currentDependencies = this.depSelect.map(factory => factory(cache));
     const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);

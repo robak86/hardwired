@@ -2,14 +2,14 @@ import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyRe
 import { RegistryLookup } from '../../module/RegistryLookup';
 import { Module } from '../Module';
 import { moduleImport } from '../../resolvers/ModuleResolver';
-import { ContainerCache } from '../../container/container-cache';
+import { ContainerContext } from '../../container/ContainerContext';
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {
     super();
   }
 
-  build(cache: ContainerCache): TValue {
+  build(cache: ContainerContext): TValue {
     throw new Error('Implement me');
   }
 }

@@ -1,6 +1,6 @@
 import { Module } from "../Module";
 import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
-import { ContainerCache } from "../../container/container-cache";
+import { ContainerContext } from "../../container/ContainerContext";
 import { expectType, TypeEqual } from "ts-expect";
 import { moduleImport } from "../../resolvers/ModuleResolver";
 import { DependencyResolver } from "../../resolvers/DependencyResolver";
@@ -12,7 +12,7 @@ describe(`Module`, () => {
       super();
     }
 
-    build(registry: ContainerCache): TValue {
+    build(registry: ContainerContext): TValue {
       throw new Error('Implement me');
     }
   }
@@ -28,10 +28,10 @@ describe(`Module`, () => {
       .define('key4', ctx => dummy(() => 'someString'));
 
     type ExpectedType = {
-      key1: (c: ContainerCache) => number;
-      key2: (c: ContainerCache) => boolean;
-      key3: (c: ContainerCache) => string;
-      key4: (c: ContainerCache) => () => 'someString';
+      key1: (c: ContainerContext) => number;
+      key2: (c: ContainerContext) => boolean;
+      key3: (c: ContainerContext) => string;
+      key4: (c: ContainerContext) => () => 'someString';
     };
 
     expectType<TypeEqual<Module.Registry<typeof m>, ExpectedType>>(true);
@@ -39,10 +39,10 @@ describe(`Module`, () => {
 
   it(`creates correct types for deps`, async () => {
     type ExpectedType = {
-      key1: (c: ContainerCache) => number;
-      key2: (c: ContainerCache) => boolean;
-      key3: (c: ContainerCache) => string;
-      key4: (c: ContainerCache) => () => 'someString';
+      key1: (c: ContainerContext) => number;
+      key2: (c: ContainerContext) => boolean;
+      key3: (c: ContainerContext) => string;
+      key4: (c: ContainerContext) => () => 'someString';
     };
 
     const m = Module.empty('someModule') // breakme
