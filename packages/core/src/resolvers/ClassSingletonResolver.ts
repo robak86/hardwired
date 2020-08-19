@@ -1,7 +1,7 @@
-import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
-import { ContainerContext } from "../container/ContainerContext";
-import { ClassType } from "../utils/ClassType";
-import { DependencyFactory } from "../module/RegistryRecord";
+import { AbstractDependencyResolver } from './AbstractDependencyResolver';
+import { ContainerContext } from '../container/ContainerContext';
+import { ClassType } from '../utils/ClassType';
+import { DependencyFactory } from '../module/RegistryRecord';
 
 export class ClassSingletonResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
   constructor(private klass, private selectDependencies: Array<DependencyFactory<any>> = []) {

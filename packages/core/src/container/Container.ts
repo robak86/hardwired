@@ -6,7 +6,7 @@ import { ModuleResolver } from '../resolvers/ModuleResolver';
 import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';
 
-interface GetMany<D> {
+type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
 
   <K extends keyof D, K2 extends keyof D>(key: K, key2: K2): [D[K], D[K2]];
@@ -19,20 +19,7 @@ interface GetMany<D> {
     key3: K3,
     key4: K4,
   ): [D[K], D[K2], D[K3], D[K4]];
-}
-
-export type DeepGetReturnErrorMessage = `Given module cannot be used with deepGet because module's context is missing in the container`;
-//
-// export type DeepGetReturn<
-//   K extends keyof MaterializedDefinitions<TModuleRegistry>,
-//   TModuleRegistry extends RegistryRecord,
-//   TContainerRegistry extends RegistryRecord
-// > = ModuleRegistryContext<TContainerRegistry> extends ModuleRegistryContext<TModuleRegistry>
-//   ? MaterializedModuleEntries<TModuleRegistry>[K]
-//   : DeepGetReturnErrorMessage;
-
-// TODO: accept custom ModuleResolver (may be necessary, e.g. for react containers ?)
-// or for sake of compatibility, EagerModuleResolver, ProxyModuleResolver, etc
+};
 
 type ContainerGet<TRegistryRecord extends RegistryRecord> = {
   <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(key: K): RegistryRecord.Materialized<

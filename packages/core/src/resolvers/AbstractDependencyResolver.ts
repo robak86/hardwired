@@ -12,7 +12,6 @@ export abstract class AbstractDependencyResolver<TReturn> {
 
   protected constructor() {}
 
-  // TODO: splitting build into two steps solves problem of providing registry by the container. AbstractDependencyResolver may cache
   abstract build(cache: ContainerContext): TReturn;
   onInit?(registry: RegistryLookup);
 }

@@ -1,10 +1,10 @@
-import { Module } from "../Module";
-import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
-import { ContainerContext } from "../../container/ContainerContext";
-import { expectType, TypeEqual } from "ts-expect";
-import { moduleImport } from "../../resolvers/ModuleResolver";
-import { DependencyResolver } from "../../resolvers/DependencyResolver";
-import { DependencyFactory } from "../RegistryRecord";
+import { Module } from '../Module';
+import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
+import { ContainerContext } from '../../container/ContainerContext';
+import { expectType, TypeEqual } from 'ts-expect';
+import { moduleImport } from '../../resolvers/ModuleResolver';
+import { DependencyResolver } from '../../resolvers/DependencyResolver';
+import { DependencyFactory } from '../RegistryRecord';
 
 describe(`Module`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -89,9 +89,9 @@ describe(`Module`, () => {
       .define('imported', ctx => moduleImport(m1))
       .define('key2', ctx => dummy('string'))
       .define('key1', _ => {
-        expectType<
-          TypeEqual<typeof _, { imported: Module.Registry<typeof m1>; key2: DependencyFactory<string> }>
-        >(true);
+        expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1>; key2: DependencyFactory<string> }>>(
+          true,
+        );
 
         return dummy(123);
       });

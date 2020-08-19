@@ -1,5 +1,5 @@
-let c:number = 0;
+let c: number = 0;
 
-export function createResolverId():string {
-    return `id_${c += 1}`;
+export function createResolverId(): string {
+  return `id_${(c += 1)}`;
 }

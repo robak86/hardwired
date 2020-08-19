@@ -4,7 +4,6 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 import { RegistryRecord } from './RegistryRecord';
 import invariant from 'tiny-invariant';
 
-// TODO rename to Module (no need to highlight builder pattern)
 export namespace Module {
   export type Registry<T extends Module<any>> = T extends Module<infer TShape> ? TShape : never;
 }

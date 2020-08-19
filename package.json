@@ -7,13 +7,10 @@
     "start": "tsc -b packages/tsconfig.json --watch --pretty",
     "build": "tsc -b packages/tsconfig.json --pretty",
     "test": "yarn run jest --config jest.config.js",
-    "test:watch": "yarn run jest --config jest.config.js --watch",
     "postinstall": "yarn run update:tsconfig.json && yarn run update:package.json",
     "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
     "update:package.json": "ts-node scripts/update-package-json.ts",
     "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
-    "build:compile": "tsc",
-    "build:link": "yarn run build:copy && cd ./packages/lib && yarn link && yarn install --production",
     "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec packages/**/__test__/*.test.js | coveralls",
     "build:coverage:local": "nyc mocha -- -- spec packages/**/__test__/*.test.js"
   },

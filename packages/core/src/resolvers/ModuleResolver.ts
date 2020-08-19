@@ -6,9 +6,6 @@ import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '..
 import { ContainerContext } from '../container/ContainerContext';
 import { ImmutableSet } from '../collections/ImmutableSet';
 
-// TODO: how to implement module.replace() ?!?!?
-// prepending entries won't work, because we wont' have the correct materialized object
-// appending entries may work, but we need to make sure that any reference is not bind during reducing entries
 export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModuleResolver<TReturn> {
   constructor(Module: Module<TReturn>) {
     super(Module);
