@@ -1,8 +1,8 @@
 import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
 import { RegistryLookup } from '../../module/RegistryLookup';
-import { Module, unit } from '../../builders/Module';
+import { Module, unit } from '../../module/Module';
 import { moduleImport, ModuleResolver } from '../ModuleResolver';
-import { ContainerCache } from '../../container/container-cache';
+import { ContainerContext } from '../../container/ContainerContext';
 import { singleton } from '../ClassSingletonResolver';
 import { value } from '../ValueResolver';
 import { container } from '../../container/Container';
@@ -13,7 +13,7 @@ describe(`ModuleResolver`, () => {
       super();
     }
 
-    build(containerCache: ContainerCache): TValue {
+    build(containerCache: ContainerContext): TValue {
       return this.value;
     }
 
@@ -69,7 +69,7 @@ describe(`ModuleResolver`, () => {
       .define('b', ctx => dependencyB);
 
     const resolver = new ModuleResolver(m);
-    const containerCache = new ContainerCache();
+    const containerCache = new ContainerContext();
     const [registry, _] = resolver.build();
 
     registry.a(containerCache);
@@ -91,7 +91,7 @@ describe(`ModuleResolver`, () => {
       .define('b', ctx => dependencyB);
 
     const resolver = new ModuleResolver(m);
-    const containerCache = new ContainerCache();
+    const containerCache = new ContainerContext();
     const [registry, _] = resolver.build();
 
     expect(registry.a(containerCache)).toEqual(123);
@@ -105,7 +105,7 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const [registry, _] = resolver.build();
-    const replacedValue = registry.a(new ContainerCache());
+    const replacedValue = registry.a(new ContainerContext());
     expect(replacedValue).toEqual(2);
   });
 

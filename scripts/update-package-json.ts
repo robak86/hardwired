@@ -21,7 +21,6 @@ packages.forEach(packageName => {
   packageJSONData.files = ['lib', 'README.md'];
   packageJSONData.scripts = {
     build: 'tsc -b ./tsconfig.json',
-    test: 'yarn test',
   };
   fs.writeFileSync(packageJSONPath, JSON.stringify(packageJSONData, null, '  '));
 });

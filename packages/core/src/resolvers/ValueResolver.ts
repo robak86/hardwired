@@ -1,12 +1,12 @@
 import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
-import { ContainerCache } from "../container/container-cache";
+import { ContainerContext } from "../container/ContainerContext";
 
 export class ValueResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
   constructor(private value: TReturn) {
     super();
   }
 
-  build(cache: ContainerCache): TReturn {
+  build(cache: ContainerContext): TReturn {
     return this.value;
   }
 }

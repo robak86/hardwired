@@ -1,5 +1,5 @@
-import { invariant } from '../utils';
-import { ModuleId } from '../utils/module-id';
+import { ModuleId } from '../module/ModuleId';
+import invariant from 'tiny-invariant';
 
 export type ContainerCacheEntry = {
   // requestId:string;
@@ -32,7 +32,7 @@ class PushPromise<T> {
   }
 }
 
-export class ContainerCache {
+export class ContainerContext {
   public requestScope: Record<string, ContainerCacheEntry> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public initializedModules: Record<string, any> = {};
@@ -84,8 +84,8 @@ export class ContainerCache {
     return this.globalScope[uuid].value;
   }
 
-  forNewRequest(): ContainerCache {
-    return new ContainerCache(this.globalScope, true);
+  forNewRequest(): ContainerContext {
+    return new ContainerContext(this.globalScope, true);
   }
 
   isScoped(): boolean {

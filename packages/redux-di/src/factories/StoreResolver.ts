@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, ContainerCache, DependencyFactory, RegistryLookup } from "hardwired";
+import { AbstractDependencyResolver, ContainerContext, DependencyFactory, RegistryLookup } from "hardwired";
 import { ReducerResolver } from "./ReducerResolver";
 import { AlterableStore } from "../stack/AlterableStore";
 import { SagaResolver } from "./SagaResolver";
@@ -11,7 +11,7 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
     super();
   }
 
-  build(cache: ContainerCache) {
+  build(cache: ContainerContext) {
     const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver(cache));
     const store = this.buildStore(cache);
     store.replaceReducers(reducers);
@@ -19,7 +19,7 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
     return store;
   }
 
-  private buildStore(cache: ContainerCache) {
+  private buildStore(cache: ContainerContext) {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {

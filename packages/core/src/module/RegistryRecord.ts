@@ -1,15 +1,8 @@
-import { DependencyResolver } from "../resolvers/DependencyResolver";
-import { AbstractModuleResolver } from "../resolvers/AbstractDependencyResolver";
-import { ContainerCache } from "../container/container-cache";
+import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
+import { ContainerContext } from '../container/ContainerContext';
 
-// export type RegistryRecord = {
-//   [K in keyof string]: DependencyFactory<any> | RegistryRecord
-// }
-
-// export type RegistryRecord = Record<string, DependencyFactory<any> | Record<string, DependencyFactory<any>>>;
-// export type RegistryRecord = Record<string, DependencyFactory<any> | RegistryRecord>;
-
-export type DependencyFactory<T> = (containerCache: ContainerCache) => T;
+export type DependencyFactory<T> = (containerCache: ContainerContext) => T;
 export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;
 
 export interface RegistryRecord {

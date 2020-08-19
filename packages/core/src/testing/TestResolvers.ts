@@ -1,5 +1,5 @@
 import { AbstractDependencyResolver, AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
-import { ContainerCache } from '../container/container-cache';
+import { ContainerContext } from '../container/ContainerContext';
 import { RegistryRecord } from '../module/RegistryRecord';
 import { RegistryLookup } from '../module/RegistryLookup';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
@@ -9,7 +9,7 @@ export class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
     super();
   }
 
-  build(cache: ContainerCache): TValue {
+  build(cache: ContainerContext): TValue {
     return this.value;
   }
 }
