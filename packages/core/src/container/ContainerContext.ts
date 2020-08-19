@@ -1,5 +1,5 @@
-import { invariant } from '../utils';
-import { ModuleId } from '../utils/module-id';
+import { ModuleId } from '../module/ModuleId';
+import invariant from 'tiny-invariant';
 
 export type ContainerCacheEntry = {
   // requestId:string;

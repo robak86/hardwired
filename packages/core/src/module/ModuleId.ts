@@ -1,4 +1,4 @@
-import { createResolverId } from './fastId';
+import { createResolverId } from '../utils/fastId';
 
 export type ModuleId = {
   readonly name: string;

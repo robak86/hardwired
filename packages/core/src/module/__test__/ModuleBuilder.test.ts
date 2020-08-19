@@ -4,7 +4,7 @@ import { ContainerContext } from "../../container/ContainerContext";
 import { expectType, TypeEqual } from "ts-expect";
 import { moduleImport } from "../../resolvers/ModuleResolver";
 import { DependencyResolver } from "../../resolvers/DependencyResolver";
-import { DependencyFactory } from "../../module/RegistryRecord";
+import { DependencyFactory } from "../RegistryRecord";
 
 describe(`Module`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {

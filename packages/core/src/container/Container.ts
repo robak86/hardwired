@@ -1,7 +1,7 @@
 import { ContainerContext } from './ContainerContext';
 import { RegistryLookup } from '../module/RegistryLookup';
 
-import { Module } from '../builders/Module';
+import { Module } from '../module/Module';
 import { ModuleResolver } from '../resolvers/ModuleResolver';
 import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';

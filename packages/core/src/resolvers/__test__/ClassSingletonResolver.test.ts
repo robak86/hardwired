@@ -2,7 +2,7 @@ import { singleton } from "../ClassSingletonResolver";
 import { dependency } from "../../testing/TestResolvers";
 import { container } from "../../container/Container";
 import { createResolverId } from "../../utils/fastId";
-import { unit } from "../../builders/Module";
+import { unit } from "../../module/Module";
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {

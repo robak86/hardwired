@@ -1,10 +1,10 @@
 import { createResolverId } from '../utils/fastId';
 import { RegistryLookup } from '../module/RegistryLookup';
 import { RegistryRecord } from '../module/RegistryRecord';
-import { Module } from '../builders/Module';
+import { Module } from '../module/Module';
 import { ContainerContext } from '../container/ContainerContext';
 import { ImmutableSet } from '../collections/ImmutableSet';
-import { ModuleId } from '../utils/module-id';
+import { ModuleId } from '../module/ModuleId';
 
 export abstract class AbstractDependencyResolver<TReturn> {
   public readonly id: string = createResolverId();

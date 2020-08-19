@@ -1,6 +1,6 @@
 import { func, FunctionResolver } from '../FunctionResolver';
 import { TransientResolver } from '../TransientResolver';
-import { unit } from '../../builders/Module';
+import { unit } from '../../module/Module';
 import { dependency } from '../../testing/TestResolvers';
 import { container } from '../../container/Container';
 

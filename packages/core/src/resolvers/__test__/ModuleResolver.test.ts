@@ -1,6 +1,6 @@
 import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
 import { RegistryLookup } from '../../module/RegistryLookup';
-import { Module, unit } from '../../builders/Module';
+import { Module, unit } from '../../module/Module';
 import { moduleImport, ModuleResolver } from '../ModuleResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import { singleton } from '../ClassSingletonResolver';

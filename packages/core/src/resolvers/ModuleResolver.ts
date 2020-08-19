@@ -1,6 +1,6 @@
 import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
 import { RegistryLookup } from '../module/RegistryLookup';
-import { Module } from '../builders/Module';
+import { Module } from '../module/Module';
 import { DependencyResolver } from './DependencyResolver';
 import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
 import { ContainerContext } from '../container/ContainerContext';

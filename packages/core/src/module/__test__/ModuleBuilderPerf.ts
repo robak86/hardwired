@@ -1,8 +1,7 @@
-import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
-import { RegistryLookup } from '../../module/RegistryLookup';
-import { Module } from '../Module';
-import { moduleImport } from '../../resolvers/ModuleResolver';
-import { ContainerContext } from '../../container/ContainerContext';
+import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
+import { Module } from "../Module";
+import { moduleImport } from "../../resolvers/ModuleResolver";
+import { ContainerContext } from "../../container/ContainerContext";
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {

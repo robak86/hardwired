@@ -1,7 +1,7 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { ModuleId } from '../utils/module-id';
+import { ModuleId } from './ModuleId';
 import { ImmutableSet } from '../collections/ImmutableSet';
-import { RegistryRecord } from '../module/RegistryRecord';
+import { RegistryRecord } from './RegistryRecord';
 import invariant from 'tiny-invariant';
 
 // TODO rename to Module (no need to highlight builder pattern)
