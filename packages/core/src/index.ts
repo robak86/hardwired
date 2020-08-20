@@ -10,6 +10,9 @@ export { AbstractModuleResolver, AbstractDependencyResolver } from './resolvers/
 export { singleton, ClassSingletonResolver } from './resolvers/ClassSingletonResolver';
 export type { ClassSingletonBuilder } from './resolvers/ClassSingletonResolver';
 
+export { factory, FactoryResolver } from './resolvers/FactoryResolver';
+export type { Factory } from './resolvers/FactoryResolver';
+
 export { transient, ClassTransientResolver } from './resolvers/ClassTransientResolver';
 export { value, ValueResolver } from './resolvers/ValueResolver';
 export { func, FunctionResolver } from './resolvers/FunctionResolver';
