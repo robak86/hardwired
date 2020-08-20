@@ -1,6 +1,6 @@
-import { FactoryResolver, Factory } from '../FactoryResolver';
-import { ContainerContext } from '../../container/ContainerContext';
-import { createResolverId } from '../../utils/fastId';
+import { Factory, FactoryResolver } from "../FactoryResolver";
+import { ContainerContext } from "../../container/ContainerContext";
+import { createResolverId } from "../../utils/fastId";
 
 describe(`FactoryResolver`, () => {
   it(`returns value produced by the factory`, async () => {

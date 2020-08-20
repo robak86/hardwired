@@ -1,14 +1,17 @@
-import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
-import { ContainerContext } from "../container/ContainerContext";
-import { DependencyFactory } from "../module/RegistryRecord";
-import { ClassType } from "../utils/ClassType";
+import { AbstractDependencyResolver } from './AbstractDependencyResolver';
+import { ContainerContext } from '../container/ContainerContext';
+import { DependencyFactory } from '../module/RegistryRecord';
+import { ClassType } from '../utils/ClassType';
 
 export interface Factory<TReturn> {
   build(): TReturn;
 }
 
-export class FactoryResolver<TReturn extends Factory<any>> extends AbstractDependencyResolver<TReturn> {
-  constructor(private klass, private selectDependencies: Array<DependencyFactory<any>> = []) {
+export class FactoryResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
+  constructor(
+    private klass: ClassType<any, Factory<TReturn>>,
+    private selectDependencies: Array<DependencyFactory<any>> = [],
+  ) {
     super();
   }
 
@@ -26,9 +29,9 @@ export class FactoryResolver<TReturn extends Factory<any>> extends AbstractDepen
 }
 
 export type ClassFactoryBuilder = {
-  <TResult extends Factory<any>>(klass: ClassType<[], TResult>): FactoryResolver<TResult>;
-  <TDeps extends any[], TResult extends Factory<any>>(
-    klass: ClassType<TDeps, TResult>,
+  <TResult>(klass: ClassType<[], Factory<TResult>>): FactoryResolver<TResult>;
+  <TDeps extends any[], TResult>(
+    klass: ClassType<TDeps, Factory<TResult>>,
     depSelect: { [K in keyof TDeps]: (container: ContainerContext) => TDeps[K] },
   ): FactoryResolver<TResult>;
 };
