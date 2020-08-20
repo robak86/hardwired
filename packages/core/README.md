@@ -163,7 +163,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   const ct2 = container(someModule);
 
   ct2.get('spy1').args[0]; // equals to 1
-  ct2.get('spy2').args[1]; // equals to 1
+  ct2.get('spy2').args[0]; // equals to 1
   ct2.get('createByFactory'); // returns 1
   ```
 
