@@ -128,7 +128,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   ct.get('someValue') === ct.get('someValue'); // true
   ```
 
-- `factory` - creates singleton instance of factory class and returns value returned by factory for each request
+- `factory` - creates an instance of factory class and returns value produced by `build` method. The value acts like singleton.
 
   ```typescript
   import { module, factory } from 'hardwired';
@@ -136,10 +136,9 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   class NumberFactory {
     private count = 0;
 
-    // optional memoization should be implemented by the user, as this function is called multiple times - once for each
-    // class having this factory as an dependency
     build(): number {
-      return (count += 1);
+      this.count += 1;
+      return this.count;
     }
   }
 
@@ -147,7 +146,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   const ct = container(someModule);
 
   ct.get('createdByFactory'); // returns 1
-  ct.get('createdByFactory'); // returns 2
+  ct.get('createdByFactory'); // returns 1
 
   class ArgsSpy {
     args: any[];
@@ -163,11 +162,9 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 
   const ct2 = container(someModule);
 
-  ct2.get('spy1').args[0]     // equals to 1
-  ct2.get('spy2').args[1];    // equals to 2
-  ct2.get('createByFactory'); // returns 3
-  
-  
+  ct2.get('spy1').args[0]; // equals to 1
+  ct2.get('spy2').args[1]; // equals to 1
+  ct2.get('createByFactory'); // returns 1
   ```
 
 - `func` - creates function with partially applied arguments

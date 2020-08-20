@@ -1,5 +1,4 @@
 import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
-import { ClassSingletonResolver } from "./ClassSingletonResolver";
 import { ContainerContext } from "../container/ContainerContext";
 import { DependencyFactory } from "../module/RegistryRecord";
 import { ClassType } from "../utils/ClassType";
@@ -9,16 +8,20 @@ export interface Factory<TReturn> {
 }
 
 export class FactoryResolver<TReturn extends Factory<any>> extends AbstractDependencyResolver<TReturn> {
-  private factoryResolver: ClassSingletonResolver<Factory<any>>;
-
   constructor(private klass, private selectDependencies: Array<DependencyFactory<any>> = []) {
     super();
-    this.factoryResolver = new ClassSingletonResolver(klass, selectDependencies);
   }
 
   build(cache: ContainerContext): TReturn {
-    const factory = this.factoryResolver.build(cache);
-    return factory.build();
+    if (cache.hasInGlobalScope(this.id)) {
+      return cache.getFromGlobalScope(this.id);
+    } else {
+      const constructorArgs = this.selectDependencies.map(factory => factory(cache));
+      const factory = new this.klass(...constructorArgs);
+      const instance = factory.build();
+      cache.setForGlobalScope(this.id, instance);
+      return instance;
+    }
   }
 }
 

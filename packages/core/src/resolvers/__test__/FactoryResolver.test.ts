@@ -14,14 +14,14 @@ describe(`FactoryResolver`, () => {
     expect(value).toEqual('built by factory');
   });
 
-  it(`does not cache value returned by factory`, async () => {
+  it(`cache value returned by factory`, async () => {
     class DummyFactory implements Factory<any> {
       build = jest.fn().mockImplementation(createResolverId);
     }
 
     const factoryResolver = new FactoryResolver(DummyFactory);
     const context = new ContainerContext();
-    expect(factoryResolver.build(context)).not.toEqual(factoryResolver.build(context));
+    expect(factoryResolver.build(context)).toEqual(factoryResolver.build(context));
   });
 
   it(`caches factory instance`, async () => {
