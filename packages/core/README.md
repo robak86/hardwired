@@ -128,6 +128,45 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   ct.get('someValue') === ct.get('someValue'); // true
   ```
 
+- `factory` - creates an instance of factory class and returns value produced by `build` method. The value acts like singleton.
+
+  ```typescript
+  import { module, factory } from 'hardwired';
+
+  class NumberFactory {
+    private count = 0;
+
+    build(): number {
+      this.count += 1;
+      return this.count;
+    }
+  }
+
+  const someModule = module('example').define('createdByFactory', _ => factory(NumberFactory));
+  const ct = container(someModule);
+
+  ct.get('createdByFactory'); // returns 1
+  ct.get('createdByFactory'); // returns 1
+
+  class ArgsSpy {
+    args: any[];
+    constructor(...args: []) {
+      this.args = args;
+    }
+  }
+
+  const otherModule = module('example')
+    .define('createdByFactory', _ => factory(NumberFactory))
+    .define('spy1', _ => singleton(ArgsSpy))
+    .define('spy2', _ => singleton(ArgsSpy));
+
+  const ct2 = container(someModule);
+
+  ct2.get('spy1').args[0]; // equals to 1
+  ct2.get('spy2').args[1]; // equals to 1
+  ct2.get('createByFactory'); // returns 1
+  ```
+
 - `func` - creates function with partially applied arguments
 
   ```typescript
