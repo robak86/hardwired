@@ -1,7 +1,7 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory, RegistryLookup } from "hardwired";
-import { ReducerResolver } from "./ReducerResolver";
-import { AlterableStore } from "../stack/AlterableStore";
-import { SagaResolver } from "./SagaResolver";
+import { AbstractDependencyResolver, ContainerContext, DependencyFactory, RegistryLookup } from 'hardwired';
+import { ReducerResolver } from './ReducerResolver';
+import { AlterableStore } from '../stack/AlterableStore';
+import { SagaResolver } from './SagaResolver';
 
 export class StoreResolver<AppState> extends AbstractDependencyResolver<AlterableStore<AppState>> {
   public reducersResolvers: DependencyFactory<any>[] = [];

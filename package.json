@@ -12,22 +12,31 @@
     "update:package.json": "ts-node scripts/update-package-json.ts",
     "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
     "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec packages/**/__test__/*.test.js | coveralls",
-    "build:coverage:local": "nyc mocha -- -- spec packages/**/__test__/*.test.js"
+    "build:coverage:local": "nyc mocha -- -- spec packages/**/__test__/*.test.js",
+    "format": "cross-env prettier --write 'packages/**/*.{ts,tsx,js}'",
+    "format-staged": "pretty-quick --staged"
   },
   "author": "Tomasz Robaczewski",
   "license": "ISC",
   "workspaces": [
     "packages/*"
   ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn format-staged && lint-staged"
+    }
+  },
   "devDependencies": {
     "@types/benchmark": "^1.0.33",
     "@types/jest": "^25.2.2",
     "@types/node": "^13.13.2",
     "benny": "^3.6.14",
     "concurrently": "^5.2.0",
+    "husky": "^4.2.5",
     "jest": "^26.0.1",
     "nyc": "^15.0.1",
     "prettier": "^2.0.5",
+    "pretty-quick": "^3.0.0",
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.19",
     "ts-expect": "^1.1.0",

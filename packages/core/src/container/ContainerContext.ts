@@ -1,6 +1,6 @@
-import { ModuleId } from "../module/ModuleId";
-import invariant from "tiny-invariant";
-import { RegistryLookup } from "../module/RegistryLookup";
+import { ModuleId } from '../module/ModuleId';
+import invariant from 'tiny-invariant';
+import { RegistryLookup } from '../module/RegistryLookup';
 
 export type ContainerCacheEntry = {
   // requestId:string;
