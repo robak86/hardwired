@@ -33,7 +33,7 @@ type ContainerGet<TRegistryRecord extends RegistryRecord> = {
 
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
-  private registry: RegistryLookup;
+  private registry: RegistryLookup<TRegistryRecord>;
 
   constructor(
     Module: Module<TRegistryRecord>,
@@ -41,7 +41,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     private context?: C,
   ) {
     this.rootResolver = new ModuleResolver<any>(Module);
-    this.registry = this.rootResolver.build(this.containerContext, Module.injections)[1];
+    this.registry = this.rootResolver.build(this.containerContext, Module.injections);
   }
 
   get: ContainerGet<TRegistryRecord> = (nameOrModule, name?) => {

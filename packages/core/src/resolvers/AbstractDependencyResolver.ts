@@ -1,10 +1,10 @@
-import { createResolverId } from '../utils/fastId';
-import { RegistryLookup } from '../module/RegistryLookup';
-import { RegistryRecord } from '../module/RegistryRecord';
-import { Module } from '../module/Module';
-import { ContainerContext } from '../container/ContainerContext';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import { ModuleId } from '../module/ModuleId';
+import { createResolverId } from "../utils/fastId";
+import { RegistryLookup } from "../module/RegistryLookup";
+import { RegistryRecord } from "../module/RegistryRecord";
+import { Module } from "../module/Module";
+import { ContainerContext } from "../container/ContainerContext";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import { ModuleId } from "../module/ModuleId";
 
 export abstract class AbstractDependencyResolver<TReturn> {
   public readonly id: string = createResolverId();
@@ -13,10 +13,8 @@ export abstract class AbstractDependencyResolver<TReturn> {
   protected constructor() {}
 
   abstract build(cache: ContainerContext): TReturn;
-  onInit?(registry: RegistryLookup);
+  onInit?(registry: RegistryLookup<any>);
 }
-
-export type MaterializedModule<TRegistryRecord extends RegistryRecord> = [TRegistryRecord, RegistryLookup];
 
 export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
   public readonly id: string = createResolverId();
@@ -24,7 +22,7 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
 
   protected constructor(public registry: Module<any>) {}
 
-  abstract build(cache: ContainerContext, injections?: ImmutableSet<any>): MaterializedModule<TReturn>;
+  abstract build(cache: ContainerContext, injections?: ImmutableSet<any>): RegistryLookup<TReturn>;
 
   get moduleId(): ModuleId {
     return this.registry.moduleId;

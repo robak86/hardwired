@@ -30,7 +30,7 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
     }
   }
 
-  onInit(registry: RegistryLookup): any {
+  onInit(registry: RegistryLookup<any>): any {
     this.reducersResolvers = registry.findFactoriesByResolverClass(ReducerResolver);
     this.sagasResolvers = registry.findFactoriesByResolverClass(SagaResolver);
   }

@@ -17,7 +17,7 @@ describe(`ModuleResolver`, () => {
       return this.value;
     }
 
-    onInit(registry: RegistryLookup) {}
+    onInit(registry: RegistryLookup<any>) {}
   }
 
   const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
@@ -33,7 +33,7 @@ describe(`ModuleResolver`, () => {
       .define('b', ctx => dependencyB);
 
     const resolver = new ModuleResolver(m);
-    const [registry, _] = resolver.build(ContainerContext.empty());
+    const {registry} = resolver.build(ContainerContext.empty());
     expect(Object.keys(registry)).toEqual(['a', 'b']);
     expect(registry.a).toBeInstanceOf(Function);
     expect(registry.b).toBeInstanceOf(Function);
@@ -70,7 +70,7 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    const [registry, _] = resolver.build(containerContext);
+    const {registry} = resolver.build(containerContext);
 
     registry.a(containerContext);
     registry.b(containerContext);
@@ -92,7 +92,7 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    const [registry, _] = resolver.build(containerContext);
+    const {registry} = resolver.build(containerContext);
 
     expect(registry.a(containerContext)).toEqual(123);
     expect(registry.b(containerContext)).toEqual(false);
@@ -105,7 +105,7 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    const [registry, _] = resolver.build(containerContext);
+    const {registry} = resolver.build(containerContext);
     const replacedValue = registry.a(containerContext);
     expect(replacedValue).toEqual(2);
   });

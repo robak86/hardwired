@@ -1,25 +1,25 @@
-import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
-import { RegistryLookup } from '../module/RegistryLookup';
-import { Module } from '../module/Module';
-import { DependencyResolver } from './DependencyResolver';
-import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
-import { ContainerContext } from '../container/ContainerContext';
-import { ImmutableSet } from '../collections/ImmutableSet';
+import { AbstractDependencyResolver, AbstractModuleResolver } from "./AbstractDependencyResolver";
+import { RegistryLookup } from "../module/RegistryLookup";
+import { Module } from "../module/Module";
+import { DependencyResolver } from "./DependencyResolver";
+import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from "../module/RegistryRecord";
+import { ContainerContext } from "../container/ContainerContext";
+import { ImmutableSet } from "../collections/ImmutableSet";
 
-export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModuleResolver<TReturn> {
-  constructor(Module: Module<TReturn>) {
+export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
+  constructor(Module: Module<TRegistryRecord>) {
     super(Module);
   }
 
   // TODO: accept custom module resolverClass ? in order to select ModuleResolver instance at container creation?
-  build(containerContext: ContainerContext, injections = ImmutableSet.empty()): [TReturn, RegistryLookup] {
+  build(containerContext: ContainerContext, injections = ImmutableSet.empty()): RegistryLookup<TRegistryRecord> {
     return containerContext.usingMaterializedModule(this.moduleId, () => {
       // TODO: merge injections with own this.registry injections
       // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
       const context: RegistryRecord = {};
       const dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
       const moduleResolvers: Record<string, AbstractModuleResolver<any>> = {};
-      const moduleRegistry: RegistryLookup = new RegistryLookup(this.registry.moduleId);
+      const moduleRegistry: RegistryLookup<any> = new RegistryLookup(this.registry.moduleId);
       const dependencyFactories: Record<string, DependencyFactory<any>> = {};
       const mergedInjections = this.registry.injections.merge(injections);
 
@@ -43,10 +43,10 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
             moduleResolvers[key] = resolver;
           }
 
-          const [registry, childModuleRegistry] = moduleResolvers[key].build(containerContext, mergedInjections);
+          const registryLookup = moduleResolvers[key].build(containerContext, mergedInjections);
 
-          context[key] = registry;
-          moduleRegistry.appendChildModuleRegistry(childModuleRegistry);
+          context[key] = registryLookup.registry;
+          moduleRegistry.appendChildModuleRegistry(registryLookup);
         }
       });
 
@@ -57,7 +57,7 @@ export class ModuleResolver<TReturn extends RegistryRecord> extends AbstractModu
         dependencyFactories[key] = dependencyResolvers[key].build.bind(dependencyResolvers[key]);
       });
 
-      return [context as TReturn, moduleRegistry];
+      return moduleRegistry;
     });
   }
 }

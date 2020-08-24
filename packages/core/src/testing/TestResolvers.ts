@@ -19,7 +19,7 @@ export class RegistryResolver<TValue extends RegistryRecord> extends AbstractMod
     super(registry);
   }
 
-  build(): [TValue, RegistryLookup] {
+  build(): RegistryLookup<any> {
     throw new Error('Implement me');
   }
 

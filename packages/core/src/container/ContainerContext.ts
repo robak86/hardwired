@@ -1,6 +1,6 @@
-import { ModuleId } from '../module/ModuleId';
-import invariant from 'tiny-invariant';
-import { MaterializedModule } from '../resolvers/AbstractDependencyResolver';
+import { ModuleId } from "../module/ModuleId";
+import invariant from "tiny-invariant";
+import { RegistryLookup } from "../module/RegistryLookup";
 
 export type ContainerCacheEntry = {
   // requestId:string;
@@ -41,14 +41,14 @@ export class ContainerContext {
   public requestScope: Record<string, ContainerCacheEntry> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public initializedModules: Record<string, any> = {};
-  public materializedModules: Record<string, MaterializedModule<any>> = {};
+  public materializedModules: Record<string, RegistryLookup<any>> = {};
 
   protected constructor(
     public globalScope: Record<string, ContainerCacheEntry> = {},
     private _isScoped: boolean = false,
   ) {}
 
-  usingMaterializedModule(moduleId: ModuleId, buildFn: () => MaterializedModule<any>): MaterializedModule<any> {
+  usingMaterializedModule(moduleId: ModuleId, buildFn: () => RegistryLookup<any>): RegistryLookup<any> {
     if (!this.materializedModules[moduleId.id]) {
       this.materializedModules[moduleId.id] = buildFn();
     }
