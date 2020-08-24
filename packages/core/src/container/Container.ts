@@ -36,12 +36,12 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private registry: RegistryLookup<TRegistryRecord>;
 
   constructor(
-    Module: Module<TRegistryRecord>,
+    module: Module<TRegistryRecord>,
     private containerContext: ContainerContext = ContainerContext.empty(),
     private context?: C,
   ) {
-    this.rootResolver = new ModuleResolver<any>(Module);
-    this.registry = this.rootResolver.build(this.containerContext, Module.injections);
+    this.rootResolver = new ModuleResolver<any>(module);
+    this.registry = this.rootResolver.build(this.containerContext, module.injections);
   }
 
   get: ContainerGet<TRegistryRecord> = (nameOrModule, name?) => {

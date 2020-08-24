@@ -175,7 +175,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   ct.get('partiallyApplied3'); // () => string
   ```
 
-- `request` - creates new singleton instance for each new request [TODO]
+- `request` - creates new singleton instance for each new request
 
   ```typescript
   import { module, request } from 'hardwired';

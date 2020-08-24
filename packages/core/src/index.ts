@@ -17,4 +17,7 @@ export { transient, ClassTransientResolver } from './resolvers/ClassTransientRes
 export { value, ValueResolver } from './resolvers/ValueResolver';
 export { func, FunctionResolver } from './resolvers/FunctionResolver';
 export { moduleImport, ModuleResolver } from './resolvers/ModuleResolver';
+export { request, ClassRequestResolver } from './resolvers/ClassRequestResolver';
+export { serviceLocator, ServiceLocatorResolver } from './resolvers/ServiceLocatorResolver';
+
 export type { ClassType } from './utils/ClassType';

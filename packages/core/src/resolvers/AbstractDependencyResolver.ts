@@ -7,10 +7,9 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 import { ModuleId } from '../module/ModuleId';
 
 export abstract class AbstractDependencyResolver<TReturn> {
-  public readonly id: string = createResolverId();
   public readonly type: 'dependency' = 'dependency';
 
-  protected constructor() {}
+  protected constructor(public readonly id: string = createResolverId()) {}
 
   abstract build(cache: ContainerContext): TReturn;
   onInit?(registry: RegistryLookup<any>);
