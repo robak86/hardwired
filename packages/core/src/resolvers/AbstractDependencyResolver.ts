@@ -13,7 +13,7 @@ export abstract class AbstractDependencyResolver<TReturn> {
   protected constructor() {}
 
   abstract build(cache: ContainerContext): TReturn;
-  onInit?(registry: RegistryLookup);
+  onInit?(registry: RegistryLookup<any>);
 }
 
 export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
@@ -22,7 +22,7 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
 
   protected constructor(public registry: Module<any>) {}
 
-  abstract build(injections?: ImmutableSet<any>): [TReturn, RegistryLookup];
+  abstract build(cache: ContainerContext, injections?: ImmutableSet<any>): RegistryLookup<TReturn>;
 
   get moduleId(): ModuleId {
     return this.registry.moduleId;

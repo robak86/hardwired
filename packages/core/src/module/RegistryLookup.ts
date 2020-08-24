@@ -1,18 +1,22 @@
 import { ModuleId } from './ModuleId';
-import { DependencyFactory } from './RegistryRecord';
+import { DependencyFactory, RegistryRecord } from './RegistryRecord';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { AbstractDependencyResolver } from '../resolvers/AbstractDependencyResolver';
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
-export class RegistryLookup {
+export class RegistryLookup<TRegistryRecord extends RegistryRecord> {
   private dependenciesByResolverId: Record<string, DependencyFactory<any>> = {};
   private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
   private dependenciesByName: Record<string, DependencyFactory<any>> = {};
-  private childModuleRegistriesByModuleId: Record<string, RegistryLookup> = {};
+  private childModuleRegistriesByModuleId: Record<string, RegistryLookup<any>> = {};
   private resolvers: DependencyResolver<any>[] = [];
 
   constructor(public moduleId: ModuleId) {}
+
+  get registry(): Record<string, DependencyFactory<any>> {
+    return this.dependenciesByName;
+  }
 
   appendDependencyFactory(name: string, resolver: AbstractDependencyResolver<any>, factory: DependencyFactory<any>) {
     this.dependenciesByName[name] = factory;
@@ -20,7 +24,7 @@ export class RegistryLookup {
     this.resolvers.push(resolver);
   }
 
-  appendChildModuleRegistry(registry: RegistryLookup) {
+  appendChildModuleRegistry(registry: RegistryLookup<any>) {
     this.childModuleRegistriesByModuleId[registry.moduleId.identity] = registry;
   }
 
@@ -32,7 +36,7 @@ export class RegistryLookup {
     return this.dependenciesByName[name];
   }
 
-  flattenModules(): Record<string, RegistryLookup> {
+  flattenModules(): Record<string, RegistryLookup<any>> {
     let result = {
       [this.moduleId.identity]: this,
       ...this.childModuleRegistriesByModuleId,
@@ -50,7 +54,7 @@ export class RegistryLookup {
     });
   }
 
-  forEachModule(iterFn: (m: RegistryLookup) => void) {
+  forEachModule(iterFn: (m: RegistryLookup<any>) => void) {
     Object.values(this.childModuleRegistriesByModuleId).forEach(iterFn);
   }
 
@@ -78,7 +82,7 @@ export class RegistryLookup {
     Object.freeze(this.childModuleRegistriesByModuleId);
   }
 
-  isEqual(other: RegistryLookup): boolean {
+  isEqual(other: RegistryLookup<any>): boolean {
     return this.moduleId.identity === other.moduleId.identity;
   }
 }

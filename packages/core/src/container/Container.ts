@@ -33,15 +33,15 @@ type ContainerGet<TRegistryRecord extends RegistryRecord> = {
 
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
-  private registry: RegistryLookup;
+  private registry: RegistryLookup<TRegistryRecord>;
 
   constructor(
     Module: Module<TRegistryRecord>,
-    private cache: ContainerContext = new ContainerContext(),
+    private containerContext: ContainerContext = ContainerContext.empty(),
     private context?: C,
   ) {
     this.rootResolver = new ModuleResolver<any>(Module);
-    this.registry = this.rootResolver.build(Module.injections)[1];
+    this.registry = this.rootResolver.build(this.containerContext, Module.injections);
   }
 
   get: ContainerGet<TRegistryRecord> = (nameOrModule, name?) => {
@@ -50,7 +50,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 
       invariant(dependencyFactory, `Dependency with name: ${nameOrModule} does not exist`);
 
-      return dependencyFactory(this.cache.forNewRequest());
+      return dependencyFactory(this.containerContext.forNewRequest());
     } else {
       const dependencyResolver = this.registry.findDependencyFactory(nameOrModule.moduleId, name as string);
       invariant(
@@ -58,12 +58,12 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
         `Cannot find dependency resolver for name: ${name} and module: ${nameOrModule.moduleId.name}`,
       );
 
-      return dependencyResolver(this.cache.forNewRequest());
+      return dependencyResolver(this.containerContext.forNewRequest());
     }
   };
 
   getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {
-    const cache = this.cache.forNewRequest();
+    const cache = this.containerContext.forNewRequest();
 
     return args.map(key => {
       const dependencyFactory = this.registry.getDependencyResolver(key as any);
@@ -76,7 +76,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 
   asObject(): RegistryRecord.Materialized<TRegistryRecord> {
     const obj = {};
-    const cache = this.cache.forNewRequest();
+    const cache = this.containerContext.forNewRequest();
     this.registry.forEachDependency((key, factory) => {
       obj[key] = factory(cache);
     });
@@ -89,6 +89,6 @@ export function container<TRegistryRecord extends RegistryRecord>(
   m: Module<TRegistryRecord>,
   ctx?: any,
 ): Container<TRegistryRecord> {
-  let container = new Container(m, new ContainerContext(), ctx);
+  let container = new Container(m, ContainerContext.empty(), ctx);
   return container as any;
 }
