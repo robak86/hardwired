@@ -1,5 +1,6 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
+import { MaterializedModule } from '../resolvers/AbstractDependencyResolver';
 
 export type ContainerCacheEntry = {
   // requestId:string;
@@ -33,11 +34,27 @@ class PushPromise<T> {
 }
 
 export class ContainerContext {
+  static empty(): ContainerContext {
+    return new ContainerContext();
+  }
+
   public requestScope: Record<string, ContainerCacheEntry> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public initializedModules: Record<string, any> = {};
+  public materializedModules: Record<string, MaterializedModule<any>> = {};
 
-  constructor(public globalScope: Record<string, ContainerCacheEntry> = {}, private _isScoped: boolean = false) {}
+  protected constructor(
+    public globalScope: Record<string, ContainerCacheEntry> = {},
+    private _isScoped: boolean = false,
+  ) {}
+
+  usingMaterializedModule(moduleId: ModuleId, buildFn: () => MaterializedModule<any>): MaterializedModule<any> {
+    if (!this.materializedModules[moduleId.id]) {
+      this.materializedModules[moduleId.id] = buildFn();
+    }
+
+    return this.materializedModules[moduleId.id];
+  }
 
   setForGlobalScope(uuid: string, instance: any) {
     this.globalScope[uuid] = {

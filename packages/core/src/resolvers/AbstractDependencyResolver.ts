@@ -16,13 +16,15 @@ export abstract class AbstractDependencyResolver<TReturn> {
   onInit?(registry: RegistryLookup);
 }
 
+export type MaterializedModule<TRegistryRecord extends RegistryRecord> = [TRegistryRecord, RegistryLookup];
+
 export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
   public readonly id: string = createResolverId();
   public readonly type: 'module' = 'module';
 
   protected constructor(public registry: Module<any>) {}
 
-  abstract build(injections?: ImmutableSet<any>): [TReturn, RegistryLookup];
+  abstract build(cache: ContainerContext, injections?: ImmutableSet<any>): MaterializedModule<TReturn>;
 
   get moduleId(): ModuleId {
     return this.registry.moduleId;

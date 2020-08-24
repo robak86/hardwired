@@ -33,3 +33,13 @@ export const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
 export const registryDependency = <TValue extends RegistryRecord>(value: TValue): RegistryResolver<TValue> => {
   return new RegistryResolver<TValue>(value);
 };
+
+export class TestTransientResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
+  constructor(private resolver: () => TReturn) {
+    super();
+  }
+
+  build(cache: ContainerContext): TReturn {
+    return this.resolver();
+  }
+}

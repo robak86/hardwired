@@ -1,7 +1,6 @@
 import { func, FunctionResolver } from '../FunctionResolver';
-import { TransientResolver } from '../TransientResolver';
 import { unit } from '../../module/Module';
-import { dependency } from '../../testing/TestResolvers';
+import { dependency, TestTransientResolver } from '../../testing/TestResolvers';
 import { container } from '../../container/Container';
 
 describe(`FunctionResolver`, () => {
@@ -10,7 +9,7 @@ describe(`FunctionResolver`, () => {
     const singletonFactorySpy = jest.spyOn(singletonResolver, 'build');
 
     const transientFactorySpy = jest.fn().mockImplementation(() => Math.random());
-    const transientResolver = new TransientResolver(transientFactorySpy);
+    const transientResolver = new TestTransientResolver(transientFactorySpy);
 
     const m = unit('test')
       .define('singleton', _ => singletonResolver)
