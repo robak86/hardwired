@@ -41,10 +41,10 @@ export class ContainerContext {
   public requestScope: Record<string, ContainerCacheEntry> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public initializedModules: Record<string, any> = {};
-  public materializedModules: Record<string, RegistryLookup<any>> = {};
 
   protected constructor(
     public globalScope: Record<string, ContainerCacheEntry> = {},
+    public materializedModules: Record<string, RegistryLookup<any>> = {},
     private _isScoped: boolean = false,
   ) {}
 
@@ -63,7 +63,7 @@ export class ContainerContext {
   }
 
   setForRequestScope(uuid: string, instance: any) {
-    this.globalScope[uuid] = {
+    this.requestScope[uuid] = {
       value: instance,
     };
   }
@@ -102,7 +102,7 @@ export class ContainerContext {
   }
 
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, true);
+    return new ContainerContext(this.globalScope, this.materializedModules, true);
   }
 
   isScoped(): boolean {
