@@ -1,3 +1,4 @@
+- add `link` | 'export' resolver. For exporting definition from imported modules.
 - prevent accessing properties through multiple levels of modules hierarchy
 
   ```typescript
