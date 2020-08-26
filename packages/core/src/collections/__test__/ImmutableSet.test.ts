@@ -23,7 +23,7 @@ describe(`ImmutableSet`, () => {
     it(`adds replaced key at the end of keys`, async () => {
       const a = ImmutableSet.empty().extend('a', 1).extend('b', 2);
       const updated = a.replace('a', 2);
-      expect(updated.keys).toEqual(['a', 'b']);
+      expect(updated.keys).toEqual(['a', 'b', 'a']);
     });
   });
 
@@ -52,8 +52,9 @@ describe(`ImmutableSet`, () => {
 
       updated.forEach(iterSpy);
       expect(iterSpy.mock.calls).toEqual([
-        ['aReplaced', 'a'],
+        ['aVal', 'a'],
         ['bVal', 'b'],
+        ['aReplaced', 'a'],
       ]);
     });
   });
