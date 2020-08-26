@@ -441,6 +441,6 @@ const a = Module.empty('a')
   .define('asdf', _ => dummy(1))
   .define('cba', _ => dummy(_.imported.a))
   .replace('cba', ctx => {
-    ctx.cba;
+    ctx.asdf;
     return dummy('sdf');
   });

@@ -13,4 +13,66 @@ describe(`ImmutableSet`, () => {
       ]);
     });
   });
+
+  describe(`replace`, () => {
+    it(`replaces entry`, async () => {
+      const a = ImmutableSet.empty().extend('a', 1);
+      expect(a.replace('a', 2).get('a')).toEqual(2);
+    });
+
+    it(`adds replaced key at the end of keys`, async () => {
+      const a = ImmutableSet.empty().extend('a', 1).extend('b', 2);
+      const updated = a.replace('a', 2);
+      expect(updated.keys).toEqual(['a', 'b', 'a']);
+    });
+  });
+
+  describe(`extend`, () => {
+    it(`adds new value to the set`, async () => {
+      const a = ImmutableSet.empty().extend('a', 1);
+      expect(a.get('a')).toEqual(1);
+    });
+  });
+
+  describe(`forEach`, () => {
+    it(`iterates over all items`, async () => {
+      const a = ImmutableSet.empty().extend('a', 'aVal').extend('b', 'bVal');
+      const iterSpy = jest.fn();
+      a.forEach(iterSpy);
+      expect(iterSpy.mock.calls).toEqual([
+        ['aVal', 'a'],
+        ['bVal', 'b'],
+      ]);
+    });
+
+    it(`iterates over replaced keys`, async () => {
+      const a = ImmutableSet.empty().extend('a', 'aVal').extend('b', 'bVal');
+      const updated = a.replace('a', 'aReplaced');
+      const iterSpy = jest.fn();
+
+      updated.forEach(iterSpy);
+      expect(iterSpy.mock.calls).toEqual([
+        ['aVal', 'a'],
+        ['bVal', 'b'],
+        ['aReplaced', 'a'],
+      ]);
+    });
+  });
+
+  describe(`entries`, () => {
+    it(`returns array of key value objects`, async () => {
+      const a = ImmutableSet.empty().extend('a', 'aVal').extend('b', 'bVal');
+      expect(a.entries).toEqual([
+        ['a', 'aVal'],
+        ['b', 'bVal'],
+      ]);
+    });
+  });
+
+  describe(`set`, () => {
+    it(`replaces existing value`, async () => {
+      const a = ImmutableSet.empty().extend('a', 1);
+      expect(a.set('a', 2).get('a')).toEqual(2);
+    });
+  });
 });

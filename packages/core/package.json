@@ -7,7 +7,7 @@
     "container",
     "type-safe"
   ],
-  "version": "0.0.9",
+  "version": "0.0.10",
   "dependencies": {
     "tiny-invariant": "^1.1.0"
   },

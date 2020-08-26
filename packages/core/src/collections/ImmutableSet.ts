@@ -1,16 +1,21 @@
+import invariant from 'tiny-invariant';
+
 export class ImmutableSet<D extends Record<string, any>> {
   static empty(): ImmutableSet<{}> {
     return new ImmutableSet<{}>({}, []);
   }
 
-  protected constructor(protected readonly records: D, protected readonly orderedKeys: string[]) {}
+  protected constructor(
+    protected readonly records: { [K in keyof D]: Array<D[K]> },
+    protected readonly orderedKeys: string[],
+  ) {}
 
   get<K extends keyof D>(key: K): D[K] {
-    return this.records[key];
+    return this.records?.[key]?.[0] as D[K];
   }
 
   getOr<K extends keyof D>(key: K, defaultValue: D[K]): D[K] {
-    return this.records[key] || defaultValue;
+    return this.get(key) || defaultValue;
   }
 
   hasKey<TKey>(key: string | number | symbol): key is keyof D {
@@ -21,32 +26,12 @@ export class ImmutableSet<D extends Record<string, any>> {
     return new ImmutableSet(this.records, [...this.orderedKeys].reverse());
   }
 
-  get values(): Array<D[keyof D]> {
-    return Object.values(this.records);
-  }
-
   get keys(): Array<keyof D> {
-    return Object.keys(this.records);
-  }
-
-  update<TKey extends keyof D>(key: TKey, updateFn: (val: D[TKey]) => D[TKey]): ImmutableSet<D> {
-    if (!this.hasKey(key)) {
-      throw new Error(`Key ${key} does not exist`);
-    }
-
-    return this.set(key, updateFn(this.get(key)));
-  }
-
-  updateWithDefaults<TKey extends keyof D>(
-    key: TKey,
-    defaults: D[TKey],
-    updateFn: (val: D[TKey]) => D[TKey],
-  ): ImmutableSet<D> {
-    return this.set(key, updateFn(this.getOr(key, defaults)));
+    return this.orderedKeys;
   }
 
   remove<TKey extends keyof D>(key: TKey): ImmutableSet<Omit<D, TKey>> {
-    const cloned: D = { ...this.records };
+    const cloned: D = { ...this.records } as any;
 
     delete cloned[key];
     return new ImmutableSet(
@@ -56,36 +41,37 @@ export class ImmutableSet<D extends Record<string, any>> {
   }
 
   set<TKey extends keyof D, TValue extends D[TKey]>(key: TKey, value: TValue): ImmutableSet<D> {
+    invariant(this.records[key], `Cannot set value for non existing key. Use .extend to extend the set with new key`);
+
     return new ImmutableSet(
       {
         ...this.records,
-        [key]: value,
+        [key]: [value, ...this.records[key]] as any,
+      },
+      [...this.orderedKeys, key as any],
+    ) as any;
+  }
+
+  replace<TKey extends keyof D, TValue extends D[TKey]>(key: TKey, value: TValue): ImmutableSet<D> {
+    invariant(this.records[key], `Cannot replaced not existing value: ${key}`);
+
+    return new ImmutableSet<D>(
+      {
+        ...this.records,
+        [key]: [value, ...this.records[key]],
       },
       [...this.orderedKeys, key as any],
     );
   }
 
-  replace<TKey extends keyof D, TValue extends D[TKey]>(key: TKey, value: TValue): ImmutableSet<D> {
-    return this.remove(key).extend(key as any, value) as any;
-  }
-
-  mapValues<TNext>(mapFn: (value: D[keyof D], key: keyof D) => TNext): ImmutableSet<TNext> {
-    const next: any = {};
-    this.orderedKeys.forEach(key => {
-      next[key] = mapFn(this.get(key), key);
-    });
-
-    return new ImmutableSet(next, this.orderedKeys);
-  }
-
   forEach(iterFn: (val: D[keyof D], key: keyof D) => void) {
-    this.orderedKeys.forEach(key => {
-      iterFn(this.get(key), key);
-    });
-  }
+    const idx = {};
+    this.orderedKeys.forEach(key => (idx[key] = this.records[key].length - 1));
 
-  find(filterFn: (value: any) => boolean) {
-    return this.values.find(filterFn);
+    this.orderedKeys.forEach(key => {
+      iterFn(this.records[key][idx[key]], key);
+      idx[key] -= 1;
+    });
   }
 
   merge<T extends Record<string, any>>(other: ImmutableSet<T>): ImmutableSet<T & D> {
@@ -103,34 +89,24 @@ export class ImmutableSet<D extends Record<string, any>> {
       }
     });
 
-    return new ImmutableSet<T & D>(mergedRecords, otherKeys as any);
+    return new ImmutableSet<T & D>(mergedRecords as any, otherKeys as any);
   }
 
   get entries(): Array<[string, any]> {
-    return this.keys.map(key => [key, this.records[key]]) as any;
+    return this.keys.map(key => [key, this.records[key][0]]) as any;
   }
 
-  // extend<TKey extends string, TValue>(
-  //   key: TKey,
-  //   value: TValue
-  // ): NotDuplicated<
-  //   TKey,
-  //   TValue,
-  //   ImmutableSet<D & { [K in keyof TKey]: TValue }>
-  // > {
-  //   return new ImmutableSet({
-  //     ...this.records,
-  //     [key]: value,
-  //   }) as any;
-  // }
-
   extend<TKey extends string, TValue>(key: TKey, value: TValue): ImmutableSet<D & { [K in TKey]: TValue }> {
+    invariant(!this.records[key], `Cannot extend set with key: ${key}. It already exists`);
+
+    this.records[key] = [];
+
     return new ImmutableSet(
       {
         ...this.records,
-        [key]: value,
+        [key]: [value, ...this.records[key]],
       },
       [...this.orderedKeys, key],
-    );
+    ) as any;
   }
 }
