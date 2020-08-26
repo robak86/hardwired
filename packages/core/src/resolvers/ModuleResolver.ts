@@ -1,10 +1,10 @@
-import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
-import { RegistryLookup } from '../module/RegistryLookup';
-import { Module } from '../module/Module';
-import { DependencyResolver } from './DependencyResolver';
-import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
-import { ContainerContext } from '../container/ContainerContext';
-import { ImmutableSet } from '../collections/ImmutableSet';
+import { AbstractDependencyResolver, AbstractModuleResolver } from "./AbstractDependencyResolver";
+import { RegistryLookup } from "../module/RegistryLookup";
+import { Module } from "../module/Module";
+import { DependencyResolver } from "./DependencyResolver";
+import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from "../module/RegistryRecord";
+import { ContainerContext } from "../container/ContainerContext";
+import { ImmutableSet } from "../collections/ImmutableSet";
 
 export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
   constructor(Module: Module<TRegistryRecord>) {

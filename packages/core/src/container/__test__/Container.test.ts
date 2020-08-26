@@ -1,9 +1,11 @@
-import { module } from "../../module/Module";
-import { dependency } from "../../testing/TestResolvers";
-import { container } from "../Container";
-import { moduleImport } from "../../resolvers/ModuleResolver";
+import { module } from '../../module/Module';
+import { dependency } from '../../testing/TestResolvers';
+import { container } from '../Container';
+import { moduleImport } from '../../resolvers/ModuleResolver';
+import { value } from '../../resolvers/ValueResolver';
+import { singleton } from '../../resolvers/ClassSingletonResolver';
+import { ArgsDebug } from '../../testing/ArgsDebug';
 
-// TODO: write correct tests not depending on any DependencyResolver implementation
 describe(`Container`, () => {
   describe(`.get`, () => {
     it(`return correct value`, async () => {
@@ -14,7 +16,7 @@ describe(`Container`, () => {
     });
   });
 
-  describe(`.deepGet`, () => {
+  describe(`.get using module-key pairs`, () => {
     const child = module('child')
       .define('a', _ => dependency('aValue'))
       .define('b', _ => dependency('bValue'));
@@ -41,6 +43,36 @@ describe(`Container`, () => {
       const c = container(parent);
 
       expect(() => c.get(notRegistered, 'a')).toThrow();
+    });
+  });
+
+  describe(`replacing definitions`, () => {
+    describe(`using module.replace`, () => {
+      it(`returns replaced value`, async () => {
+        const m = module('m').define('a', _ => value(1));
+        const updated = m.replace('a', _ => value(2));
+        expect(container(updated).get('a')).toEqual(2);
+      });
+
+      it(`does not affect other definitions`, async () => {
+        const m = module('m')
+          .define('a', _ => value(1))
+          .define('b', _ => value('b'));
+        const updated = m.replace('a', _ => value(2));
+        expect(container(updated).get('b')).toEqual('b');
+      });
+
+      it(`can use all previously registered definitions`, async () => {
+        const m = module('m')
+          .define('a', _ => value('a'))
+          .define('b', _ => singleton(ArgsDebug, [_.a]))
+          .define('c', _ => value('c'));
+
+        expect(container(m).get('b').args).toEqual(['a']);
+
+        const updated = m.replace('b', _ => singleton(ArgsDebug, [_.a, _.b, _.c]));
+        expect(container(updated).get('b')).toEqual('b');
+      });
     });
   });
 });

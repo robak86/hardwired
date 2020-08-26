@@ -3,9 +3,16 @@ export class ImmutableSet<D extends Record<string, any>> {
     return new ImmutableSet<{}>({}, []);
   }
 
-  protected constructor(protected readonly records: D, protected readonly orderedKeys: string[]) {}
+  protected constructor(
+    protected readonly records: D,
+    protected readonly orderedKeys: string[],
+    protected readonly replaced: Partial<{ [K in keyof D]: Array<D[K]> }> = {},
+  ) {}
 
   get<K extends keyof D>(key: K): D[K] {
+    if (this.replaced[key] && (this.replaced[key] as any).hasOwnProperty(0)) {
+      return this.replaced[key][0];
+    }
     return this.records[key];
   }
 
@@ -66,7 +73,13 @@ export class ImmutableSet<D extends Record<string, any>> {
   }
 
   replace<TKey extends keyof D, TValue extends D[TKey]>(key: TKey, value: TValue): ImmutableSet<D> {
-    return this.remove(key).extend(key as any, value) as any;
+    return new ImmutableSet<D>(
+      {
+        ...this.records,
+        [key]: value,
+      },
+      [...this.orderedKeys],
+    );
   }
 
   mapValues<TNext>(mapFn: (value: D[keyof D], key: keyof D) => TNext): ImmutableSet<TNext> {
