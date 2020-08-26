@@ -30,7 +30,7 @@ export class Module<TRegistryRecord extends RegistryRecord> {
 
     return new Module(
       ModuleId.next(this.moduleId),
-      this.registry.set(name, resolver) as any,
+      this.registry.extend(name, resolver) as any,
       this.injections as any,
     );
   }
@@ -39,7 +39,7 @@ export class Module<TRegistryRecord extends RegistryRecord> {
     return new Module(
       ModuleId.next(this.moduleId),
       this.registry as any,
-      this.injections.set(otherModule.moduleId.identity as any, otherModule) as any,
+      this.injections.extend(otherModule.moduleId.identity as any, otherModule) as any,
     ) as any;
   }
 
@@ -47,7 +47,7 @@ export class Module<TRegistryRecord extends RegistryRecord> {
   replace<
     K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>,
     T1 extends (
-      ctx: Pick<TRegistryRecord, RegistryRecord.DependencyResolversKeys<TRegistryRecord>>,
+      ctx: Omit<Pick<TRegistryRecord, RegistryRecord.DependencyResolversKeys<TRegistryRecord>>, K>,
     ) => DependencyResolver<ReturnType<TRegistryRecord[K]>>
   >(name: K, resolver: T1): this {
     invariant(this.registry.hasKey(name), `Cannot replace dependency with name: ${name}. It does not exists `);

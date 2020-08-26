@@ -1,10 +1,10 @@
-import { module } from '../../module/Module';
-import { dependency } from '../../testing/TestResolvers';
-import { container } from '../Container';
-import { moduleImport } from '../../resolvers/ModuleResolver';
-import { value } from '../../resolvers/ValueResolver';
-import { singleton } from '../../resolvers/ClassSingletonResolver';
-import { ArgsDebug } from '../../testing/ArgsDebug';
+import { module } from "../../module/Module";
+import { dependency } from "../../testing/TestResolvers";
+import { container } from "../Container";
+import { moduleImport } from "../../resolvers/ModuleResolver";
+import { value } from "../../resolvers/ValueResolver";
+import { singleton } from "../../resolvers/ClassSingletonResolver";
+import { ArgsDebug } from "../../testing/ArgsDebug";
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -66,12 +66,16 @@ describe(`Container`, () => {
         const m = module('m')
           .define('a', _ => value('a'))
           .define('b', _ => singleton(ArgsDebug, [_.a]))
-          .define('c', _ => value('c'));
+          .define('c', _ => singleton(ArgsDebug, [_.b]));
 
         expect(container(m).get('b').args).toEqual(['a']);
 
-        const updated = m.replace('b', _ => singleton(ArgsDebug, [_.a, _.b, _.c]));
-        expect(container(updated).get('b')).toEqual('b');
+        const updated = m.replace('b', _ => value('bReplaced'));
+
+        expect(container(updated).get('b')).toEqual('bReplaced');
+        expect(container(updated).get('c')).toEqual({
+          args: ['bReplaced'],
+        });
       });
     });
   });

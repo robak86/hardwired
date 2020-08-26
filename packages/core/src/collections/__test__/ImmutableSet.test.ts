@@ -20,7 +20,7 @@ describe(`ImmutableSet`, () => {
       expect(a.replace('a', 2).get('a')).toEqual(2);
     });
 
-    it(`preserves original keys order`, async () => {
+    it(`adds replaced key at the end of keys`, async () => {
       const a = ImmutableSet.empty().extend('a', 1).extend('b', 2);
       const updated = a.replace('a', 2);
       expect(updated.keys).toEqual(['a', 'b']);
@@ -41,6 +41,18 @@ describe(`ImmutableSet`, () => {
       a.forEach(iterSpy);
       expect(iterSpy.mock.calls).toEqual([
         ['aVal', 'a'],
+        ['bVal', 'b'],
+      ]);
+    });
+
+    it(`iterates over replaced keys`, async () => {
+      const a = ImmutableSet.empty().extend('a', 'aVal').extend('b', 'bVal');
+      const updated = a.replace('a', 'aReplaced');
+      const iterSpy = jest.fn();
+
+      updated.forEach(iterSpy);
+      expect(iterSpy.mock.calls).toEqual([
+        ['aReplaced', 'a'],
         ['bVal', 'b'],
       ]);
     });
