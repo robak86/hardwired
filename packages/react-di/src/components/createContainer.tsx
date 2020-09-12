@@ -3,6 +3,7 @@ import { FunctionComponent, useContext, useMemo } from 'react';
 import { container, module, Module } from 'hardwired';
 import { Container } from '../../../core/src/container/Container';
 import { RegistryRecord } from '../../../core/src/module/RegistryRecord';
+import { Component, ComponentProps, ComponentsDefinitionsKeys } from './Component';
 
 type HardwiredContext = {
   container: Container<any>;
@@ -18,13 +19,8 @@ const useContainer = () => {
   return useContainerContext().container.asObject();
 };
 
-//
-// type ModuleRegistryContext<T> = any;
-// type DeepGetReturn<T, T2, T3> = any;
-// type MaterializedDefinitions<T> = any;
-
-export const createContainerProvider = module => ({ children }) => {
-  const containerInstance = useMemo(() => container(module), [module]);
+export const createContainerProvider = () => ({ children }) => {
+  const containerInstance = useMemo(() => container(Module.empty('root')), []);
 
   return <ContainerContext.Provider value={{ container: containerInstance }}>{children}</ContainerContext.Provider>;
 };
@@ -50,14 +46,20 @@ type ContainerComponents<TRegistryRecord extends RegistryRecord> = {
     key: K,
   ) => RegistryRecord.Materialized<TRegistryRecord>[K];
   useContainer: () => RegistryRecord.Materialized<TRegistryRecord>;
+  Component: <
+    TRegistryRecord extends RegistryRecord,
+    TComponentName extends ComponentsDefinitionsKeys<TRegistryRecord>
+  >({
+    module,
+    name,
+    ...rest
+  }: ComponentProps<TRegistryRecord, TComponentName>) => React.ReactElement;
 };
 
-// TODO: allow thunk returning promise for lazy loading ?
-export function createContainer<TRegistryRecord extends RegistryRecord>(
-  module: Module<TRegistryRecord>,
-): ContainerComponents<TRegistryRecord> {
+export function createContainer<TRegistryRecord extends RegistryRecord>(): ContainerComponents<TRegistryRecord> {
   return {
-    Container: createContainerProvider(module) as any,
+    Container: createContainerProvider() as any,
+    Component,
     useDependency: useDependency as any,
     useContainer: useContainer as any,
   };

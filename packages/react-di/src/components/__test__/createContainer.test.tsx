@@ -9,7 +9,7 @@ describe(`createContainer`, () => {
     .define('val1', _ => value('val1'))
     .define('val2', _ => value('val2'));
 
-  const { Container, useDependency, useContainer } = createContainer(m1);
+  const { Container, useDependency, useContainer } = createContainer();
 
   describe(`useDependency`, () => {
     function setup() {

@@ -15,7 +15,7 @@ class PushPromise<T> {
     this.promise = new Promise<T>((resolve, reject) => {
       this.resolve = resolve;
       setTimeout(() => {
-        reject('timeout');
+        reject('timeout'); // TODO: add correct errors handling
       }, 10000);
     });
   }
