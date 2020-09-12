@@ -1,31 +1,65 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { Module, module, DependencyFactory, value } from 'hardwired';
 import { DummyComponent } from '../DummyComponent';
-import { component } from '../resolvers/ComponentResolver';
+import { component, MaterializedComponent } from '../resolvers/ComponentResolver';
 import { Component, ComponentsDefinitions } from '../Component';
 import { render } from '@testing-library/react';
 import * as React from 'react';
 import { createContainer } from '../createContainer';
 
 describe(`Component`, () => {
-  function setup() {
-    const m1 = module('myModule')
-      .define('val1', _ => value('val1'))
-      .define('someComponent', _ => component(DummyComponent, { value: _.val1 }));
+  describe(`using dependencies from root module`, () => {
+    function setup() {
+      const m1 = module('myModule')
+        .define('val1', _ => value('val1'))
+        .define('someComponent', _ => component(DummyComponent, { value: _.val1 }));
 
-    const { Container } = createContainer(m1);
+      const { Container } = createContainer(m1);
 
-    return render(
-      <Container context={{}}>
-        {/*<Component module={m1} name={'someComponent'} props={{ value: 'sdf' }} />*/}
-        <Component module={m1} name={'someComponent'} />
-      </Container>,
-    );
-  }
+      return render(
+        <Container context={{}}>
+          <Component module={m1} name={'someComponent'} optionalValue={'extra'} />
+        </Container>,
+      );
+    }
 
-  it(`renders inner component`, async () => {
-    const wrapper = setup();
-    expect(wrapper.getByTestId('value').textContent).toEqual('val1');
+    it(`renders inner component`, async () => {
+      const wrapper = setup();
+      expect(wrapper.getByTestId('value').textContent).toEqual('val1');
+    });
+
+    it(`propagates props to the underlying component`, async () => {
+      const wrapper = setup();
+      expect(wrapper.getByTestId('optional-value').textContent).toEqual('extra');
+    });
+  });
+
+  describe(`using lazy loaded module`, () => {
+    function setup() {
+      const rootModule = module('root');
+
+      const m1 = module('myModule')
+        .define('val1', _ => value('val1'))
+        .define('someComponent', _ => component(DummyComponent, { value: _.val1 }));
+
+      const { Container } = createContainer(rootModule);
+
+      return render(
+        <Container context={{}}>
+          <Component module={m1} name={'someComponent'} optionalValue={'extra'} />
+        </Container>,
+      );
+    }
+
+    it(`renders inner component`, async () => {
+      const wrapper = setup();
+      expect(wrapper.getByTestId('value').textContent).toEqual('val1');
+    });
+
+    it(`propagates props to the underlying component`, async () => {
+      const wrapper = setup();
+      expect(wrapper.getByTestId('optional-value').textContent).toEqual('extra');
+    });
   });
 });
 
@@ -37,7 +71,7 @@ describe(`ComponentDefinitions`, () => {
 
     type Actual = ComponentsDefinitions<Module.Registry<typeof m>>;
     type Expected = {
-      someComponent: DependencyFactory<typeof DummyComponent>;
+      someComponent: DependencyFactory<MaterializedComponent<typeof DummyComponent>>;
     };
 
     expectType<TypeEqual<Actual, Expected>>(true);

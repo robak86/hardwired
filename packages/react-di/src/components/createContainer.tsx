@@ -18,9 +18,6 @@ const useContainer = () => {
   return useContainerContext().container.asObject();
 };
 
-export type ContainerProviderProps = {
-  module: Module<any>;
-};
 //
 // type ModuleRegistryContext<T> = any;
 // type DeepGetReturn<T, T2, T3> = any;
@@ -52,7 +49,7 @@ type ContainerComponents<TRegistryRecord extends RegistryRecord> = {
     module: Module<TRegistryRecord>,
     key: K,
   ) => RegistryRecord.Materialized<TRegistryRecord>[K];
-  useContainer: () =>  RegistryRecord.Materialized<TRegistryRecord>;
+  useContainer: () => RegistryRecord.Materialized<TRegistryRecord>;
 };
 
 // TODO: allow thunk returning promise for lazy loading ?

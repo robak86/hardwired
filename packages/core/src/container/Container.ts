@@ -34,6 +34,7 @@ type ContainerGet<TRegistryRecord extends RegistryRecord> = {
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
   private registry: RegistryLookup<TRegistryRecord>;
+  private lazyLoadedModules: RegistryLookup<TRegistryRecord>[] = [];
 
   constructor(
     module: Module<TRegistryRecord>,
@@ -51,15 +52,35 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
       invariant(dependencyFactory, `Dependency with name: ${nameOrModule} does not exist`);
 
       return dependencyFactory(this.containerContext.forNewRequest());
-    } else {
+    }
+
+    if (nameOrModule instanceof Module) {
       const dependencyResolver = this.registry.findDependencyFactory(nameOrModule.moduleId, name as string);
-      invariant(
-        dependencyResolver,
-        `Cannot find dependency resolver for name: ${name} and module: ${nameOrModule.moduleId.name}`,
-      );
+
+      if (!dependencyResolver) {
+        let moduleResolver = this.lazyLoadedModules.find(m => m.moduleId.id === nameOrModule.moduleId.id);
+        if (!moduleResolver) {
+          moduleResolver = new ModuleResolver(nameOrModule).build(this.containerContext, nameOrModule.injections);
+          this.lazyLoadedModules.push(moduleResolver);
+        }
+
+        const lazyLoadedDependencyResolver = moduleResolver.findDependencyFactory(
+          nameOrModule.moduleId,
+          name as string,
+        );
+
+        invariant(
+          lazyLoadedDependencyResolver,
+          `Cannot find lazy loaded dependency resolver for name: ${name} and module: ${nameOrModule.moduleId.name}`,
+        );
+
+        return lazyLoadedDependencyResolver(this.containerContext.forNewRequest());
+      }
 
       return dependencyResolver(this.containerContext.forNewRequest());
     }
+
+    invariant('Invalid module or name');
   };
 
   getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {

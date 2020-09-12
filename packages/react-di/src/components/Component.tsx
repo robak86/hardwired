@@ -2,9 +2,10 @@ import React from 'react';
 import { Module, RegistryRecord } from 'hardwired';
 import { DependencyFactory } from '../../../core/src/module/RegistryRecord';
 import { useContainerContext } from './createContainer';
+import { MaterializedComponent } from './resolvers/ComponentResolver';
 
 export type ComponentsDefinitionsKeys<TRegistryRecord extends RegistryRecord> = {
-  [K in keyof TRegistryRecord]: TRegistryRecord[K] extends DependencyFactory<React.ComponentType> ? K : never;
+  [K in keyof TRegistryRecord]: TRegistryRecord[K] extends DependencyFactory<MaterializedComponent<any>> ? K : never;
 }[keyof TRegistryRecord];
 
 export type ComponentsDefinitions<TRegistryRecord extends RegistryRecord> = {
@@ -17,7 +18,7 @@ export type ComponentProps<
 > = {
   module: Module<TRegistryRecord>;
   name: ComponentsDefinitionsKeys<TRegistryRecord>;
-} & (TRegistryRecord[TComponentName] extends DependencyFactory<React.ComponentType<infer TProps>>
+} & (TRegistryRecord[TComponentName] extends DependencyFactory<MaterializedComponent<React.ComponentType<infer TProps>>>
   ? Partial<TProps>
   : {});
 
@@ -26,7 +27,7 @@ export function Component<
   TComponentName extends ComponentsDefinitionsKeys<TRegistryRecord>
 >({ module, name, ...rest }: ComponentProps<TRegistryRecord, TComponentName>) {
   const { container } = useContainerContext();
-  const InnerComponent: any = container.get(module, name as any);
+  const { component: InnerComponent, props } = container.get(module, name as any) as any;
 
-  return <InnerComponent {...rest} />;
+  return <InnerComponent {...props} {...rest} />;
 }

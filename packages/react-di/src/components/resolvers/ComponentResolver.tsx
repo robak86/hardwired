@@ -1,23 +1,27 @@
 import { AbstractDependencyResolver, ContainerContext, DependencyFactory } from 'hardwired';
 import React from 'react';
 
-export class ComponentResolver<TComponent extends React.ComponentType> extends AbstractDependencyResolver<TComponent> {
+// TODO: probably TProps (instead of TComponent) should be sufficient
+export type MaterializedComponent<TComponent extends React.ComponentType> = {
+  component: TComponent extends React.ComponentType<infer TProps> ? React.ComponentType<TProps> : never;
+  props: TComponent extends React.ComponentType<infer TProps> ? Partial<TProps> : never;
+};
+
+export class ComponentResolver<TComponent extends React.ComponentType> extends AbstractDependencyResolver<
+  MaterializedComponent<TComponent>
+> {
   constructor(private component: TComponent, private propsDependencies: Record<string, DependencyFactory<any>>) {
     super();
   }
 
-  build(cache: ContainerContext): TComponent {
+  // TODO: should we apply some cache ?
+  build(cache: ContainerContext): MaterializedComponent<TComponent> {
     const props = Object.keys(this.propsDependencies).reduce((props, currentKey) => {
       props[currentKey] = this.propsDependencies[currentKey](cache);
       return props;
     }, {});
 
-    const Component: any = this.component;
-    let WrappedComponent: any = () => {
-      return <Component />;
-    };
-
-    return WrappedComponent;
+    return { component: this.component, props } as any;
   }
 }
 
