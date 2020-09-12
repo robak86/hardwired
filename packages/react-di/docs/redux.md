@@ -1,5 +1,15 @@
 ### Redux integration
 
+- context value used by container should be readonly in order to prevent unnecessary rerenders
+
+```
+const App = () => {
+    return <Container module={appModule}>
+        <Component module={appModule} name={someName} />
+    </Container>
+}
+```
+
 ```typescript
 import {module} from 'hardwired-core'
 
@@ -31,4 +41,5 @@ const stateModule = module('stateModule')
 `.resource('users', () => buidUsersResource()` - this needs to register underhood the saga
 
 ### redux-saga-resource
+
 - consider if createResource shouldn't return also actions object!

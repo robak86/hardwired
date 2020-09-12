@@ -5,6 +5,7 @@ import { ContainerContext } from '../container/ContainerContext';
 export type DependencyFactory<T> = (containerCache: ContainerContext) => T;
 export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;
 
+// TODO: rename to ModuleEntries | ModuleDefinitions ?
 export interface RegistryRecord {
   [property: string]: DependencyFactory<any> | RegistryRecord;
 }
