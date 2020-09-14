@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Module, RegistryRecord } from 'hardwired';
 import { DependencyFactory } from '../../../core/src/module/RegistryRecord';
-import { useContainerContext } from './createContainer';
-import { MaterializedComponent } from './resolvers/ComponentResolver';
+import { useContainerContext } from './ContainerContext';
+import { MaterializedComponent } from '../resolvers/ComponentResolver';
 
 export type ComponentsDefinitionsKeys<TRegistryRecord extends RegistryRecord> = {
   [K in keyof TRegistryRecord]: TRegistryRecord[K] extends DependencyFactory<MaterializedComponent<any>> ? K : never;
@@ -27,7 +27,12 @@ export function Component<
   TComponentName extends ComponentsDefinitionsKeys<TRegistryRecord>
 >({ module, name, ...rest }: ComponentProps<TRegistryRecord, TComponentName>) {
   const { container } = useContainerContext();
+
   const { component: InnerComponent, props } = container.get(module, name as any) as any;
+
+  // const { component: InnerComponent, props } = useMemo(() => {
+  //   return container.get(module, name as any) as any;
+  // }, [rest]);
 
   return <InnerComponent {...props} {...rest} />;
 }

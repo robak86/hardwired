@@ -1,11 +1,11 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { Module, module, DependencyFactory, value } from 'hardwired';
-import { DummyComponent } from '../DummyComponent';
-import { component, MaterializedComponent } from '../resolvers/ComponentResolver';
-import { ComponentsDefinitions } from '../Component';
+import { DummyComponent } from '../../testing/DummyComponent';
+import { component, MaterializedComponent } from '../../resolvers/ComponentResolver';
+import { Component, ComponentsDefinitions } from '../Component';
 import { render } from '@testing-library/react';
 import * as React from 'react';
-import { createContainer } from '../createContainer';
+import { Container } from '../Container';
 
 describe(`Component`, () => {
   describe(`using dependencies from root module`, () => {
@@ -14,10 +14,8 @@ describe(`Component`, () => {
         .define('val1', _ => value('val1'))
         .define('someComponent', _ => component(DummyComponent, { value: _.val1 }));
 
-      const { Container, Component } = createContainer();
-
       return render(
-        <Container context={{}}>
+        <Container>
           <Component module={m1} name={'someComponent'} optionalValue={'extra'} />
         </Container>,
       );

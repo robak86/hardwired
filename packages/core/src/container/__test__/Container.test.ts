@@ -1,10 +1,10 @@
-import { module } from "../../module/Module";
-import { dependency } from "../../testing/TestResolvers";
-import { container } from "../Container";
-import { moduleImport } from "../../resolvers/ModuleResolver";
-import { value } from "../../resolvers/ValueResolver";
-import { singleton } from "../../resolvers/ClassSingletonResolver";
-import { ArgsDebug } from "../../testing/ArgsDebug";
+import { module } from '../../module/Module';
+import { dependency } from '../../testing/TestResolvers';
+import { container } from '../Container';
+import { moduleImport } from '../../resolvers/ModuleResolver';
+import { value } from '../../resolvers/ValueResolver';
+import { singleton } from '../../resolvers/ClassSingletonResolver';
+import { ArgsDebug } from '../../testing/ArgsDebug';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -36,13 +36,13 @@ describe(`Container`, () => {
       expect(cValue).toEqual('cValue');
     });
 
-    it(`throws if module cannot be found`, async () => {
+    it(`lazily appends new module if module cannot be found`, async () => {
       const notRegistered = module('notUsed') // breakme
         .define('a', _ => dependency(1));
 
       const c = container(parent);
 
-      expect(() => c.get(notRegistered, 'a')).toThrow();
+      expect(c.get(notRegistered, 'a')).toEqual(1);
     });
   });
 

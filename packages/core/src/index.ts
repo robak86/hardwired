@@ -1,5 +1,5 @@
 export { unit, module, Module } from './module/Module';
-export { container } from './container/Container';
+export { container, Container } from './container/Container';
 
 export { RegistryLookup } from './module/RegistryLookup';
 export { ContainerContext } from './container/ContainerContext';

@@ -10,6 +10,11 @@ export type MaterializedComponent<TComponent extends React.ComponentType> = {
 export class ComponentResolver<TComponent extends React.ComponentType> extends AbstractDependencyResolver<
   MaterializedComponent<TComponent>
 > {
+  // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // TODO: Here we should be able to determine type of DependencyFactory :/
+  // TODO: e.g. when dependency factory returns mobx we would like to enable watching... but on the other hand
+  // this resolver should be agnostic from such details
+  // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   constructor(private component: TComponent, private propsDependencies: Record<string, DependencyFactory<any>>) {
     super();
   }
@@ -29,6 +34,8 @@ export type ComponentDependencies<TProps> = {
   [K in keyof TProps]: DependencyFactory<TProps[K]>;
 };
 
+// TODO: should subtract props provided by container from final component props
+// ComponentResolver<TComponentProps - props>
 export const component = <TProps, TComponent extends React.ComponentType<TProps>>(
   component: TComponent,
   props: Partial<ComponentDependencies<TProps>> = {},
