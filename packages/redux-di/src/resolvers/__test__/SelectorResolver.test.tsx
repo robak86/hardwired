@@ -1,8 +1,7 @@
 import { module, value } from 'hardwired';
 import { store } from '../StoreResolver';
 import { selector } from '../SelectorResolver';
-import { component, Component, Container } from 'hardwired-react';
-
+import { component, Component, ContainerProvider } from 'hardwired-react';
 import { render } from '@testing-library/react';
 import React, { FunctionComponent } from 'react';
 import { dispatch } from '../DispatchResolver';
@@ -40,9 +39,9 @@ describe(`SelectorResolver`, () => {
       );
 
     return render(
-      <Container>
+      <ContainerProvider>
         <Component module={m} name={'DummyComponentContainer'} />
-      </Container>,
+      </ContainerProvider>,
     );
   }
 

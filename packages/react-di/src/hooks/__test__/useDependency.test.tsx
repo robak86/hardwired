@@ -2,7 +2,7 @@ import { module, value } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../testing/DummyComponent';
 import * as React from 'react';
-import { Container } from '../../components/Container';
+import { ContainerProvider } from '../../components/ContainerProvider';
 import { useDependency } from '../useDependency';
 
 describe(`useDependency`, () => {
@@ -17,9 +17,9 @@ describe(`useDependency`, () => {
     };
 
     return render(
-      <Container>
+      <ContainerProvider>
         <Consumer />
-      </Container>,
+      </ContainerProvider>,
     );
   }
 

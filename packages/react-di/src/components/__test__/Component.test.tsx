@@ -5,7 +5,7 @@ import { component, MaterializedComponent } from '../../resolvers/ComponentResol
 import { Component, ComponentsDefinitions } from '../Component';
 import { render } from '@testing-library/react';
 import * as React from 'react';
-import { Container } from '../Container';
+import { ContainerProvider } from '../ContainerProvider';
 
 describe(`Component`, () => {
   describe(`using dependencies from root module`, () => {
@@ -15,9 +15,9 @@ describe(`Component`, () => {
         .define('someComponent', _ => component(DummyComponent, { value: _.val1 }));
 
       return render(
-        <Container>
+        <ContainerProvider>
           <Component module={m1} name={'someComponent'} optionalValue={'extra'} />
-        </Container>,
+        </ContainerProvider>,
       );
     }
 
