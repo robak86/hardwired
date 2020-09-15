@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Module, RegistryRecord } from 'hardwired';
-import { DependencyFactory } from '../../../core/src/module/RegistryRecord';
-import { useContainerContext } from './ContainerContext';
-import { MaterializedComponent } from '../resolvers/ComponentResolver';
+import React, { useEffect, useState } from "react";
+import { Module, RegistryRecord } from "hardwired";
+import { DependencyFactory } from "../../../core/src/module/RegistryRecord";
+import { useContainerContext } from "./ContainerContext";
+import { MaterializedComponent } from "../resolvers/ComponentResolver";
 
 export type ComponentsDefinitionsKeys<TRegistryRecord extends RegistryRecord> = {
   [K in keyof TRegistryRecord]: TRegistryRecord[K] extends DependencyFactory<MaterializedComponent<any>> ? K : never;

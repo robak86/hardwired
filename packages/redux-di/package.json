@@ -4,7 +4,9 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "hardwired": "*"
+    "hardwired": "*",
+    "hardwired-react": "*",
+    "reselect": "^4.0.0"
   },
   "peerDependencies": {
     "redux": "^4.0.5",
