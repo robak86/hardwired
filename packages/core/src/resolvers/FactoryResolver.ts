@@ -19,7 +19,7 @@ export class FactoryResolver<TReturn> extends AbstractDependencyResolver<TReturn
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const constructorArgs = this.selectDependencies.map(factory => factory(cache));
+      const constructorArgs = this.selectDependencies.map(factory => factory.get(cache));
       const factory = new this.klass(...constructorArgs);
       const instance = factory.build();
       cache.setForGlobalScope(this.id, instance);
@@ -32,7 +32,7 @@ export type ClassFactoryBuilder = {
   <TResult>(klass: ClassType<[], Factory<TResult>>): FactoryResolver<TResult>;
   <TDeps extends any[], TResult>(
     klass: ClassType<TDeps, Factory<TResult>>,
-    depSelect: { [K in keyof TDeps]: (container: ContainerContext) => TDeps[K] },
+    depSelect: { [K in keyof TDeps]: DependencyFactory<TDeps[K]> },
   ): FactoryResolver<TResult>;
 };
 

@@ -1,10 +1,10 @@
-import { AbstractDependencyResolver, AbstractModuleResolver } from "./AbstractDependencyResolver";
-import { RegistryLookup } from "../module/RegistryLookup";
-import { Module } from "../module/Module";
-import { DependencyResolver } from "./DependencyResolver";
-import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from "../module/RegistryRecord";
-import { ContainerContext } from "../container/ContainerContext";
-import { ImmutableSet } from "../collections/ImmutableSet";
+import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
+import { RegistryLookup } from '../module/RegistryLookup';
+import { Module } from '../module/Module';
+import { DependencyResolver } from './DependencyResolver';
+import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
+import { ContainerContext } from '../container/ContainerContext';
+import { ImmutableSet } from '../collections/ImmutableSet';
 
 export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
   constructor(Module: Module<TRegistryRecord>) {
@@ -30,7 +30,9 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
 
         if (resolver.type === 'dependency') {
           //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
-          context[key] = (cache: ContainerContext) => dependencyFactories[key](cache);
+          context[key] = {
+            get: (cache: ContainerContext) => dependencyFactories[key].get(cache),
+          };
           dependencyResolvers[key] = resolver;
           moduleRegistry.appendDependencyFactory(key, resolver, context[key] as DependencyFactory<any>);
         }
@@ -54,7 +56,9 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
         const onInit = dependencyResolvers?.[key]?.onInit;
         onInit && onInit.call(dependencyResolvers?.[key], moduleRegistry);
         // dependencyResolvers?.[key]?.onInit(moduleRegistry);
-        dependencyFactories[key] = dependencyResolvers[key].build.bind(dependencyResolvers[key]);
+        dependencyFactories[key] = {
+          get: dependencyResolvers[key].build.bind(dependencyResolvers[key]),
+        };
       });
 
       return moduleRegistry;

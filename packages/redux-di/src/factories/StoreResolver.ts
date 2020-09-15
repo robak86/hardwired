@@ -12,7 +12,7 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
   }
 
   build(cache: ContainerContext) {
-    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver(cache));
+    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.get(cache));
     const store = this.buildStore(cache);
     store.replaceReducers(reducers);
 
@@ -23,7 +23,7 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const initialState = this.resolver(cache);
+      const initialState = this.resolver.get(cache);
       const store = new AlterableStore(initialState);
       cache.setForGlobalScope(this.id, store);
       return store;

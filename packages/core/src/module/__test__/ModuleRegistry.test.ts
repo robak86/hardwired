@@ -46,9 +46,9 @@ describe(`ModuleRegistry`, () => {
       child2.appendChildModuleRegistry(grandChild2);
 
       const d1 = dependency(123);
-      grandChild1.appendDependencyFactory('d1', d1, d1.build);
+      grandChild1.appendDependencyFactory('d1', d1, { get: d1.build });
       const dependencyFactory = m.findDependencyFactory(dId, 'd1');
-      expect(dependencyFactory).toEqual(d1.build);
+      expect(dependencyFactory!.get).toEqual(d1.build);
     });
 
     // describe('findResolvers', () => {

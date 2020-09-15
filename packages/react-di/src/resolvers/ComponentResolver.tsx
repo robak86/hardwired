@@ -5,6 +5,7 @@ import React from 'react';
 export type MaterializedComponent<TComponent extends React.ComponentType> = {
   component: TComponent extends React.ComponentType<infer TProps> ? React.ComponentType<TProps> : never;
   props: TComponent extends React.ComponentType<infer TProps> ? Partial<TProps> : never;
+  subscribe: (onchangeListener: () => void) => void;
 };
 
 export class ComponentResolver<TComponent extends React.ComponentType> extends AbstractDependencyResolver<
@@ -17,16 +18,22 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
   // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   constructor(private component: TComponent, private propsDependencies: Record<string, DependencyFactory<any>>) {
     super();
+
+    Object.keys(this.propsDependencies).forEach(currentKey => {
+      const dependencyFactory = this.propsDependencies[currentKey];
+      if (dependencyFactory.onInvalidate) {
+      }
+    }, {});
   }
 
   // TODO: should we apply some cache ?
   build(cache: ContainerContext): MaterializedComponent<TComponent> {
     const props = Object.keys(this.propsDependencies).reduce((props, currentKey) => {
-      props[currentKey] = this.propsDependencies[currentKey](cache);
+      props[currentKey] = this.propsDependencies[currentKey].get(cache);
       return props;
     }, {});
 
-    return { component: this.component, props } as any;
+    return { component: this.component, props, subscribe: () => () => null } as MaterializedComponent<any>;
   }
 }
 

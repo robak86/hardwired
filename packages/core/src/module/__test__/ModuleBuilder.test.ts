@@ -28,10 +28,10 @@ describe(`Module`, () => {
       .define('key4', ctx => dummy(() => 'someString'));
 
     type ExpectedType = {
-      key1: (c: ContainerContext) => number;
-      key2: (c: ContainerContext) => boolean;
-      key3: (c: ContainerContext) => string;
-      key4: (c: ContainerContext) => () => 'someString';
+      key1: DependencyFactory<number>;
+      key2: DependencyFactory<boolean>;
+      key3: DependencyFactory<string>;
+      key4: DependencyFactory<() => 'someString'>;
     };
 
     expectType<TypeEqual<Module.Registry<typeof m>, ExpectedType>>(true);
@@ -39,10 +39,10 @@ describe(`Module`, () => {
 
   it(`creates correct types for deps`, async () => {
     type ExpectedType = {
-      key1: (c: ContainerContext) => number;
-      key2: (c: ContainerContext) => boolean;
-      key3: (c: ContainerContext) => string;
-      key4: (c: ContainerContext) => () => 'someString';
+      key1: DependencyFactory<number>;
+      key2: DependencyFactory<boolean>;
+      key3: DependencyFactory<string>;
+      key4: DependencyFactory<() => 'someString'>;
     };
 
     const m = Module.empty('someModule') // breakme

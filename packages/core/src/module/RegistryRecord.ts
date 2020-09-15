@@ -2,7 +2,11 @@ import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 
-export type DependencyFactory<T> = (containerCache: ContainerContext) => T;
+// TODO: rename -> Instance|Definition|Def (the shorter the better for types errors messages?)
+export type DependencyFactory<T> = {
+  get(containerCache: ContainerContext): T;
+  onInvalidate?(listener: () => void): () => void;
+};
 export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;
 
 // TODO: rename to ModuleEntries | ModuleDefinitions ?

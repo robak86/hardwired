@@ -1,8 +1,8 @@
-import { ContainerContext } from "./ContainerContext";
-import { RegistryRecord } from "../module/RegistryRecord";
-import { Module } from "../module/Module";
-import { ModuleResolver } from "../resolvers/ModuleResolver";
-import invariant from "tiny-invariant";
+import { ContainerContext } from './ContainerContext';
+import { RegistryRecord } from '../module/RegistryRecord';
+import { Module } from '../module/Module';
+import { ModuleResolver } from '../resolvers/ModuleResolver';
+import invariant from 'tiny-invariant';
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
@@ -22,7 +22,7 @@ export class ServiceLocator {
         const resolver = new ModuleResolver(module);
         const dependencyFactory = resolver.build(requestContext).getDependencyResolver(key as string);
         invariant(dependencyFactory, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
-        return dependencyFactory(requestContext);
+        return dependencyFactory.get(requestContext);
       },
     });
   }

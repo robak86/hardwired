@@ -51,7 +51,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 
       invariant(dependencyFactory, `Dependency with name: ${nameOrModule} does not exist`);
 
-      return dependencyFactory(this.containerContext.forNewRequest());
+      return dependencyFactory.get(this.containerContext.forNewRequest());
     }
 
     if (nameOrModule instanceof Module) {
@@ -74,10 +74,10 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
           `Cannot find lazy loaded dependency resolver for name: ${name} and module: ${nameOrModule.moduleId.name}`,
         );
 
-        return lazyLoadedDependencyResolver(this.containerContext.forNewRequest());
+        return lazyLoadedDependencyResolver.get(this.containerContext.forNewRequest());
       }
 
-      return dependencyResolver(this.containerContext.forNewRequest());
+      return dependencyResolver.get(this.containerContext.forNewRequest());
     }
 
     invariant('Invalid module or name');
@@ -91,7 +91,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 
       invariant(dependencyFactory, `Dependency with name: ${key} does not exist`);
 
-      return dependencyFactory(cache);
+      return dependencyFactory.get(cache);
     }) as any;
   };
 
@@ -99,7 +99,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     const obj = {};
     const cache = this.containerContext.forNewRequest();
     this.registry.forEachDependency((key, factory) => {
-      obj[key] = factory(cache);
+      obj[key] = factory.get(cache);
     });
 
     return obj as any;

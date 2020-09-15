@@ -35,8 +35,8 @@ describe(`ModuleResolver`, () => {
     const resolver = new ModuleResolver(m);
     const { registry } = resolver.build(ContainerContext.empty());
     expect(Object.keys(registry)).toEqual(['a', 'b']);
-    expect(registry.a).toBeInstanceOf(Function);
-    expect(registry.b).toBeInstanceOf(Function);
+    expect(registry.a.get).toBeInstanceOf(Function);
+    expect(registry.b.get).toBeInstanceOf(Function);
   });
 
   it(`calls dependencyResolver.onInit with parameter of type ModuleRegistry`, async () => {
@@ -72,8 +72,8 @@ describe(`ModuleResolver`, () => {
     const containerContext = ContainerContext.empty();
     const { registry } = resolver.build(containerContext);
 
-    registry.a(containerContext);
-    registry.b(containerContext);
+    registry.a.get(containerContext);
+    registry.b.get(containerContext);
 
     expect(buildAFactorySpy).toHaveBeenCalledWith(containerContext);
     expect(buildBFactorySpy).toHaveBeenCalledWith(containerContext);
@@ -94,8 +94,8 @@ describe(`ModuleResolver`, () => {
     const containerContext = ContainerContext.empty();
     const { registry } = resolver.build(containerContext);
 
-    expect(registry.a(containerContext)).toEqual(123);
-    expect(registry.b(containerContext)).toEqual(false);
+    expect(registry.a.get(containerContext)).toEqual(123);
+    expect(registry.b.get(containerContext)).toEqual(false);
   });
 
   it(`returns correct value for replaced value`, async () => {
@@ -106,7 +106,7 @@ describe(`ModuleResolver`, () => {
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
     const { registry } = resolver.build(containerContext);
-    const replacedValue = registry.a(containerContext);
+    const replacedValue = registry.a.get(containerContext);
     expect(replacedValue).toEqual(2);
   });
 

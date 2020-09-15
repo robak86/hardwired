@@ -12,7 +12,7 @@ export class ClassSingletonResolver<TReturn> extends AbstractDependencyResolver<
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const constructorArgs = this.selectDependencies.map(factory => factory(cache));
+      const constructorArgs = this.selectDependencies.map(factory => factory.get(cache));
       const instance = new this.klass(...constructorArgs);
       cache.setForGlobalScope(this.id, instance);
       return instance;
@@ -24,7 +24,7 @@ export type ClassSingletonBuilder = {
   <TResult>(klass: ClassType<[], TResult>): ClassSingletonResolver<TResult>;
   <TDeps extends any[], TResult>(
     klass: ClassType<TDeps, TResult>,
-    depSelect: { [K in keyof TDeps]: (container: ContainerContext) => TDeps[K] },
+    depSelect: { [K in keyof TDeps]: DependencyFactory<TDeps[K]> },
   ): ClassSingletonResolver<TResult>;
 };
 

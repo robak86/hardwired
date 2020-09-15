@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Module, RegistryRecord } from 'hardwired';
 import { DependencyFactory } from '../../../core/src/module/RegistryRecord';
 import { useContainerContext } from './ContainerContext';
@@ -27,12 +27,15 @@ export function Component<
   TComponentName extends ComponentsDefinitionsKeys<TRegistryRecord>
 >({ module, name, ...rest }: ComponentProps<TRegistryRecord, TComponentName>) {
   const { container } = useContainerContext();
+  const [invalidateCount, setInvalidateCount] = useState(0);
 
-  const { component: InnerComponent, props } = container.get(module, name as any) as any;
+  const { component: InnerComponent, props, subscribe } = container.get(module, name as any) as MaterializedComponent<
+    any
+  >;
 
-  // const { component: InnerComponent, props } = useMemo(() => {
-  //   return container.get(module, name as any) as any;
-  // }, [rest]);
+  useEffect(() => {
+    return subscribe(() => setInvalidateCount(invalidateCount + 1));
+  }, []);
 
   return <InnerComponent {...props} {...rest} />;
 }
