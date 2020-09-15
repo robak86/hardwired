@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory } from 'hardwired';
+import { AbstractDependencyResolver, ContainerContext, DependencyFactory, EventsEmitter } from 'hardwired';
 import React from 'react';
 
 // TODO: probably TProps (instead of TComponent) should be sufficient
@@ -11,18 +11,14 @@ export type MaterializedComponent<TComponent extends React.ComponentType> = {
 export class ComponentResolver<TComponent extends React.ComponentType> extends AbstractDependencyResolver<
   MaterializedComponent<TComponent>
 > {
-  // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // TODO: Here we should be able to determine type of DependencyFactory :/
-  // TODO: e.g. when dependency factory returns mobx we would like to enable watching... but on the other hand
-  // this resolver should be agnostic from such details
-  // TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  private onDependencyInvalidated = new EventsEmitter();
+
   constructor(private component: TComponent, private propsDependencies: Record<string, DependencyFactory<any>>) {
     super();
 
     Object.keys(this.propsDependencies).forEach(currentKey => {
       const dependencyFactory = this.propsDependencies[currentKey];
-      if (dependencyFactory.onInvalidate) {
-      }
+      dependencyFactory.onInvalidate(this.onDependencyInvalidated.emit);
     }, {});
   }
 
@@ -33,7 +29,9 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
       return props;
     }, {});
 
-    return { component: this.component, props, subscribe: () => () => null } as MaterializedComponent<any>;
+    return { component: this.component, props, subscribe: this.onDependencyInvalidated.add } as MaterializedComponent<
+      any
+    >;
   }
 }
 

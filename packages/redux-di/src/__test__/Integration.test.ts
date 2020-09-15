@@ -1,6 +1,6 @@
-import { container, func, module, moduleImport, value } from 'hardwired';
-import { reducer } from '../factories/ReducerResolver';
-import { store } from '../factories/StoreResolver';
+import { container, module, moduleImport, value } from "hardwired";
+import { reducer } from "../resolvers/ReducerResolver";
+import { store } from "../resolvers/StoreResolver";
 
 describe(`Integration tests`, () => {
   type AppState = {

@@ -1,12 +1,21 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 import { AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
+import { EventsEmitter } from '../utils/EventsEmitter';
 
 // TODO: rename -> Instance|Definition|Def (the shorter the better for types errors messages?)
-export type DependencyFactory<T> = {
-  get(containerCache: ContainerContext): T;
-  onInvalidate?(listener: () => void): () => void;
-};
+export class DependencyFactory<T> {
+  private invalidateEvents = new EventsEmitter();
+  constructor(public get: (context: ContainerContext) => T) {}
+
+  notifyInvalidated() {
+    this.invalidateEvents.emit();
+  }
+  onInvalidate(listener: () => void): () => void {
+    return this.invalidateEvents.add(listener);
+  }
+}
+
 export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;
 
 // TODO: rename to ModuleEntries | ModuleDefinitions ?

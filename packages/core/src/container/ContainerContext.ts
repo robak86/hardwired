@@ -1,6 +1,6 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
-import { RegistryLookup } from '../module/RegistryLookup';
+import { ModuleLookup } from '../module/ModuleLookup';
 
 export type ContainerCacheEntry = {
   // requestId:string;
@@ -44,11 +44,11 @@ export class ContainerContext {
 
   protected constructor(
     public globalScope: Record<string, ContainerCacheEntry> = {},
-    public materializedModules: Record<string, RegistryLookup<any>> = {},
+    public materializedModules: Record<string, ModuleLookup<any>> = {},
     private _isScoped: boolean = false,
   ) {}
 
-  usingMaterializedModule(moduleId: ModuleId, buildFn: () => RegistryLookup<any>): RegistryLookup<any> {
+  usingMaterializedModule(moduleId: ModuleId, buildFn: () => ModuleLookup<any>): ModuleLookup<any> {
     if (!this.materializedModules[moduleId.id]) {
       this.materializedModules[moduleId.id] = buildFn();
     }

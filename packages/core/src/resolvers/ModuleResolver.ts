@@ -1,5 +1,5 @@
 import { AbstractDependencyResolver, AbstractModuleResolver } from './AbstractDependencyResolver';
-import { RegistryLookup } from '../module/RegistryLookup';
+import { ModuleLookup } from '../module/ModuleLookup';
 import { Module } from '../module/Module';
 import { DependencyResolver } from './DependencyResolver';
 import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
@@ -11,15 +11,15 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
     super(Module);
   }
 
-  // TODO: accept custom module resolverClass ? in order to select ModuleResolver instance at container creation?
-  build(containerContext: ContainerContext, injections = ImmutableSet.empty()): RegistryLookup<TRegistryRecord> {
+  // TODO: accept custom module resolverClass? in order to select ModuleResolver instance at container creation?
+  build(containerContext: ContainerContext, injections = ImmutableSet.empty()): ModuleLookup<TRegistryRecord> {
     return containerContext.usingMaterializedModule(this.moduleId, () => {
       // TODO: merge injections with own this.registry injections
       // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
       const context: RegistryRecord = {};
       const dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
       const moduleResolvers: Record<string, AbstractModuleResolver<any>> = {};
-      const moduleRegistry: RegistryLookup<any> = new RegistryLookup(this.registry.moduleId);
+      const moduleRegistry: ModuleLookup<any> = new ModuleLookup(this.registry.moduleId);
       const dependencyFactories: Record<string, DependencyFactory<any>> = {};
       const mergedInjections = this.registry.injections.merge(injections);
 
@@ -30,9 +30,7 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
 
         if (resolver.type === 'dependency') {
           //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
-          context[key] = {
-            get: (cache: ContainerContext) => dependencyFactories[key].get(cache),
-          };
+          context[key] = new DependencyFactory((cache: ContainerContext) => dependencyFactories[key].get(cache));
           dependencyResolvers[key] = resolver;
           moduleRegistry.appendDependencyFactory(key, resolver, context[key] as DependencyFactory<any>);
         }
@@ -48,17 +46,14 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
           const registryLookup = moduleResolvers[key].build(containerContext, mergedInjections);
 
           context[key] = registryLookup.registry;
-          moduleRegistry.appendChildModuleRegistry(registryLookup);
+          moduleRegistry.appendChild(registryLookup);
         }
       });
 
       Object.keys(dependencyResolvers).forEach(key => {
         const onInit = dependencyResolvers?.[key]?.onInit;
         onInit && onInit.call(dependencyResolvers?.[key], moduleRegistry);
-        // dependencyResolvers?.[key]?.onInit(moduleRegistry);
-        dependencyFactories[key] = {
-          get: dependencyResolvers[key].build.bind(dependencyResolvers[key]),
-        };
+        dependencyFactories[key] = new DependencyFactory(dependencyResolvers[key].build.bind(dependencyResolvers[key]));
       });
 
       return moduleRegistry;

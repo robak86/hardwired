@@ -1,5 +1,5 @@
 import { ContainerContext } from './ContainerContext';
-import { RegistryLookup } from '../module/RegistryLookup';
+import { ModuleLookup } from '../module/ModuleLookup';
 
 import { Module } from '../module/Module';
 import { ModuleResolver } from '../resolvers/ModuleResolver';
@@ -33,8 +33,8 @@ type ContainerGet<TRegistryRecord extends RegistryRecord> = {
 
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
-  private registry: RegistryLookup<TRegistryRecord>;
-  private lazyLoadedModules: RegistryLookup<TRegistryRecord>[] = [];
+  private registry: ModuleLookup<TRegistryRecord>;
+  private lazyLoadedModules: ModuleLookup<TRegistryRecord>[] = [];
 
   constructor(
     module: Module<TRegistryRecord>,

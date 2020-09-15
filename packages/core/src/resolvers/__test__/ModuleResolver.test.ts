@@ -1,11 +1,11 @@
-import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
-import { RegistryLookup } from '../../module/RegistryLookup';
-import { Module, unit } from '../../module/Module';
-import { moduleImport, ModuleResolver } from '../ModuleResolver';
-import { ContainerContext } from '../../container/ContainerContext';
-import { singleton } from '../ClassSingletonResolver';
-import { value } from '../ValueResolver';
-import { container } from '../../container/Container';
+import { AbstractDependencyResolver } from "../AbstractDependencyResolver";
+import { ModuleLookup } from "../../module/ModuleLookup";
+import { Module, unit } from "../../module/Module";
+import { moduleImport, ModuleResolver } from "../ModuleResolver";
+import { ContainerContext } from "../../container/ContainerContext";
+import { singleton } from "../ClassSingletonResolver";
+import { value } from "../ValueResolver";
+import { container } from "../../container/Container";
 
 describe(`ModuleResolver`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -17,7 +17,7 @@ describe(`ModuleResolver`, () => {
       return this.value;
     }
 
-    onInit(registry: RegistryLookup<any>) {}
+    onInit(registry: ModuleLookup<any>) {}
   }
 
   const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
@@ -53,8 +53,8 @@ describe(`ModuleResolver`, () => {
     const resolver = new ModuleResolver(m);
 
     resolver.build(ContainerContext.empty());
-    expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(RegistryLookup);
-    expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(RegistryLookup);
+    expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
+    expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
   });
 
   it(`returns DependencyFactory functions delegating to resolvers`, async () => {

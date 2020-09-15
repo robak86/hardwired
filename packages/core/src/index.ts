@@ -1,7 +1,7 @@
 export { unit, module, Module } from './module/Module';
 export { container, Container } from './container/Container';
 
-export { RegistryLookup } from './module/RegistryLookup';
+export { ModuleLookup } from './module/ModuleLookup';
 export { ContainerContext } from './container/ContainerContext';
 export type { DependencyFactory, RegistryRecord, DependencyResolverFactory } from './module/RegistryRecord';
 export type { DependencyResolver } from './resolvers/DependencyResolver';
@@ -22,3 +22,4 @@ export { serviceLocator, ServiceLocatorResolver } from './resolvers/ServiceLocat
 export { ServiceLocator } from './container/ServiceLocator';
 
 export type { ClassType } from './utils/ClassType';
+export { EventsEmitter } from './utils/EventsEmitter';

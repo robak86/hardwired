@@ -1,5 +1,5 @@
-import { compose, createStore, Dispatch, Middleware, Reducer, Store } from 'redux';
-import createSagaMiddleware, { SagaMiddleware } from 'redux-saga';
+import { compose, createStore, Dispatch, Middleware, Reducer, Store, Unsubscribe } from "redux";
+import createSagaMiddleware, { SagaMiddleware } from "redux-saga";
 
 export class AlterableStore<AppState> {
   private middlewares: ReturnType<Middleware>[] = [];
@@ -37,6 +37,10 @@ export class AlterableStore<AppState> {
     };
 
     this.middlewares = middlewares.map(m => m(middlewareAPI));
+  }
+
+  subscribe(listener: () => void): Unsubscribe {
+    return this.store.subscribe(listener);
   }
 
   private appReducer: Reducer<AppState> = (state: AppState, action) => {

@@ -1,6 +1,5 @@
-import { DependencyFactory, RegistryRecord } from '../RegistryRecord';
-import { ContainerContext } from '../../container/ContainerContext';
-import { expectType, TypeEqual } from 'ts-expect';
+import { DependencyFactory, RegistryRecord } from "../RegistryRecord";
+import { expectType, TypeEqual } from "ts-expect";
 
 describe(`RegistryRecord`, () => {
   describe(`Module`, () => {

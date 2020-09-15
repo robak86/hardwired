@@ -1,7 +1,7 @@
 import { AbstractDependencyResolver, AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 import { RegistryRecord } from '../module/RegistryRecord';
-import { RegistryLookup } from '../module/RegistryLookup';
+import { ModuleLookup } from '../module/ModuleLookup';
 import { DependencyResolver } from '../resolvers/DependencyResolver';
 
 export class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -19,7 +19,7 @@ export class RegistryResolver<TValue extends RegistryRecord> extends AbstractMod
     super(registry);
   }
 
-  build(): RegistryLookup<any> {
+  build(): ModuleLookup<any> {
     throw new Error('Implement me');
   }
 
