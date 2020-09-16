@@ -3,7 +3,14 @@
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",
-    "composite": true
+    "composite": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "noEmit": true
   },
   "references": [
     {
@@ -11,6 +18,9 @@
     },
     {
       "path": "../react-di/tsconfig.json"
+    },
+    {
+      "path": "../redux-di/tsconfig.json"
     }
   ],
   "include": [

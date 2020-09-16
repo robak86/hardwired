@@ -35,6 +35,7 @@ export function Component<
 
   useEffect(() => {
     return subscribe(() => {
+      // TODO: add equality check
       setInvalidateCount(invalidateCount + 1);
     });
   }, []);

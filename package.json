@@ -33,6 +33,7 @@
     "benny": "^3.6.14",
     "concurrently": "^5.2.0",
     "husky": "^4.2.5",
+    "identity-obj-proxy": "^3.0.0",
     "jest": "^26.0.1",
     "nyc": "^15.0.1",
     "prettier": "^2.0.5",

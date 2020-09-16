@@ -1,9 +1,9 @@
-import { ModuleLookup } from "../ModuleLookup";
-import { ModuleId } from "../ModuleId";
-import { dependency } from "../../testing/TestResolvers";
-import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
-import { ContainerContext } from "../../container/ContainerContext";
-import { DependencyFactory } from "../RegistryRecord";
+import { ModuleLookup } from '../ModuleLookup';
+import { ModuleId } from '../ModuleId';
+import { dependency } from '../../testing/TestResolvers';
+import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
+import { ContainerContext } from '../../container/ContainerContext';
+import { DependencyFactory } from '../RegistryRecord';
 
 function setup() {
   const rootId = ModuleId.build('a');
@@ -78,7 +78,11 @@ describe(`ModuleLookup`, () => {
       const { root, child1, child2 } = setup();
 
       const discoverable = new DiscoverableResolver();
-      const dependencyFactory = new DependencyFactory(discoverable.build);
+      const dependencyFactory = new DependencyFactory(
+        discoverable.build,
+        () => undefined,
+        () => () => undefined,
+      );
 
       root.appendDependencyFactory('discoverable', discoverable, dependencyFactory);
       const discoveredFromChild1 = child1.findAncestorResolvers(DiscoverableResolver);
@@ -92,7 +96,11 @@ describe(`ModuleLookup`, () => {
       const { root, grandChild1, grandChild2 } = setup();
 
       const discoverable = new DiscoverableResolver();
-      const dependencyFactory = new DependencyFactory(discoverable.build);
+      const dependencyFactory = new DependencyFactory(
+        discoverable.build,
+        () => undefined,
+        () => () => undefined,
+      );
 
       root.appendDependencyFactory('discoverable', discoverable, dependencyFactory);
       const discoveredFromGrandChild1 = grandChild1.findAncestorResolvers(DiscoverableResolver);
@@ -106,10 +114,18 @@ describe(`ModuleLookup`, () => {
       const { root, grandChild1, grandChild2, child1, child2 } = setup();
 
       const discoverable = new DiscoverableResolver();
-      const dependencyFactory = new DependencyFactory(discoverable.build);
+      const dependencyFactory = new DependencyFactory(
+        discoverable.build,
+        () => undefined,
+        () => () => undefined,
+      );
 
       const discoverable2 = new DiscoverableResolver();
-      const dependencyFactory2 = new DependencyFactory(discoverable.build);
+      const dependencyFactory2 = new DependencyFactory(
+        discoverable.build,
+        () => undefined,
+        () => () => undefined,
+      );
 
       root.appendDependencyFactory('discoverable', discoverable, dependencyFactory);
       child1.appendDependencyFactory('discoverable2', discoverable2, dependencyFactory2);
@@ -128,7 +144,15 @@ describe(`ModuleLookup`, () => {
       const { grandChild1Id, root, grandChild1 } = setup();
 
       const d1 = dependency(123);
-      grandChild1.appendDependencyFactory('d1', d1, new DependencyFactory(d1.build));
+      grandChild1.appendDependencyFactory(
+        'd1',
+        d1,
+        new DependencyFactory(
+          d1.build,
+          () => undefined,
+          () => () => undefined,
+        ),
+      );
       const dependencyFactory = root.findDependencyFactory(grandChild1Id, 'd1');
       expect(dependencyFactory!.get).toEqual(d1.build);
     });

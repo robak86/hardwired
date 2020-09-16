@@ -5,6 +5,37 @@ import { DependencyResolver } from './DependencyResolver';
 import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
 import { ContainerContext } from '../container/ContainerContext';
 import { ImmutableSet } from '../collections/ImmutableSet';
+import invariant from 'tiny-invariant';
+
+class InstancesProxy {
+  private buildFunctions: Record<string, (context: ContainerContext) => any> = {};
+  private notifyFunctions: Record<string, () => any> = {};
+  private addListenerFunctions: Record<string, (listener: () => void) => () => void> = {};
+
+  getReference(key: string) {
+    return new DependencyFactory(
+      (cache: ContainerContext) => this.buildFunctions[key](cache),
+      () => {
+        invariant(this.notifyFunctions[key], 'notifyInvalidated called before modules initialization complete');
+        this.notifyFunctions[key]();
+      },
+      listener => {
+        invariant(
+          this.addListenerFunctions[key],
+          'registering onInvalidate listeners called before modules initialization complete',
+        );
+
+        return this.addListenerFunctions[key](listener);
+      },
+    );
+  }
+
+  replaceImplementation(key, resolver: AbstractDependencyResolver<any>) {
+    this.buildFunctions[key] = resolver.build.bind(resolver);
+    this.notifyFunctions[key] = resolver.notifyInvalidated;
+    this.addListenerFunctions[key] = resolver.onInvalidate;
+  }
+}
 
 export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
   constructor(Module: Module<TRegistryRecord>) {
@@ -19,8 +50,10 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
       const context: RegistryRecord = {};
       const dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
       const moduleResolvers: Record<string, AbstractModuleResolver<any>> = {};
-      const moduleRegistry: ModuleLookup<any> = new ModuleLookup(this.registry.moduleId);
-      const dependencyFactories: Record<string, DependencyFactory<any>> = {};
+      const moduleLookup: ModuleLookup<any> = new ModuleLookup(this.registry.moduleId);
+
+      const instancesProxy = new InstancesProxy();
+
       const mergedInjections = this.registry.injections.merge(injections);
 
       this.registry.registry.forEach((resolverFactory: DependencyResolverFactory<any>, key: string) => {
@@ -30,9 +63,9 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
 
         if (resolver.type === 'dependency') {
           //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
-          context[key] = new DependencyFactory((cache: ContainerContext) => dependencyFactories[key].get(cache));
+          context[key] = instancesProxy.getReference(key);
           dependencyResolvers[key] = resolver;
-          moduleRegistry.appendDependencyFactory(key, resolver, context[key] as DependencyFactory<any>);
+          moduleLookup.appendDependencyFactory(key, resolver, context[key] as DependencyFactory<any>);
         }
 
         if (resolver.type === 'module') {
@@ -46,17 +79,18 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
           const registryLookup = moduleResolvers[key].build(containerContext, mergedInjections);
 
           context[key] = registryLookup.registry;
-          moduleRegistry.appendChild(registryLookup);
+          moduleLookup.appendChild(registryLookup);
         }
       });
 
       Object.keys(dependencyResolvers).forEach(key => {
+        instancesProxy.replaceImplementation(key, dependencyResolvers[key]);
+
         const onInit = dependencyResolvers?.[key]?.onInit;
-        onInit && onInit.call(dependencyResolvers?.[key], moduleRegistry);
-        dependencyFactories[key] = new DependencyFactory(dependencyResolvers[key].build.bind(dependencyResolvers[key]));
+        onInit && onInit.call(dependencyResolvers?.[key], moduleLookup);
       });
 
-      return moduleRegistry;
+      return moduleLookup;
     });
   }
 }

@@ -3,12 +3,15 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js'],
   modulePathIgnorePatterns: ['lib'],
   moduleNameMapper: {
-    '@taxi/(.+)$': '<rootDir>packages/$1/src',
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': 'identity-obj-proxy',
+    '\\.(css|less)$': 'identity-obj-proxy',
   },
   notify: true,
   notifyMode: 'always',
   rootDir: './',
   roots: ['<rootDir>packages'],
+  testEnvironment: 'jsdom-fourteen',
+  // setupFilesAfterEnv: ['<rootDir>jest.setup.js'],
   testMatch: ['**/__tests__/*.+(ts|tsx|js)', '**/*.test.+(ts|tsx|js)'],
   preset: 'ts-jest',
   globals: {

@@ -14,25 +14,21 @@ export class SelectorResolver<T> extends AbstractDependencyResolver<T> {
 
   build(context: ContainerContext): T {
     const storeInstance = this.storeResolver[0];
-    console.log('storeInstance', storeInstance);
     const store = storeInstance.get(context);
 
     if (!this.hasSubscription) {
-      // TODO: implement unsubscribe
       store.subscribe(() => {
-        console.log('notify', (storeInstance as any).invalidateEvents.listeners);
-        storeInstance.notifyInvalidated();
+        this.notifyInvalidated();
       });
       this.hasSubscription = true;
 
       const depsSelectors = this.deps.map(selector => selector.build(context));
       const finalSelector = depsSelectors.length > 0 ? createSelector(depsSelectors, this.select) : this.select;
       context.setForGlobalScope(this.id, finalSelector);
-
-      return finalSelector(store.getState());
     }
+    const selectedState = context.getFromGlobalScope(this.id)(store.getState());
 
-    return context.getFromGlobalScope(this.id)(store.getState());
+    return selectedState;
   }
 
   onInit(registry: ModuleLookup<any>): any {

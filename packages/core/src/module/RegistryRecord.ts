@@ -8,17 +8,13 @@ import { EventsEmitter } from '../utils/EventsEmitter';
 let id = 1;
 
 export class DependencyFactory<T> {
-  private invalidateEvents = new EventsEmitter();
   private id = (id += 1);
 
-  constructor(public get: (context: ContainerContext) => T) {}
-
-  notifyInvalidated() {
-    this.invalidateEvents.emit();
-  }
-  onInvalidate(listener: () => void): () => void {
-    return this.invalidateEvents.add(listener);
-  }
+  constructor(
+    public get: (context: ContainerContext) => T,
+    public notifyInvalidated: () => void,
+    public onInvalidate: (listener: () => void) => () => void,
+  ) {}
 }
 
 export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;

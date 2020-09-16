@@ -1,5 +1,11 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory, EventsEmitter } from 'hardwired';
-import React from 'react';
+import {
+  AbstractDependencyResolver,
+  ContainerContext,
+  DependencyFactory,
+  EventsEmitter,
+  ModuleLookup
+} from "hardwired";
+import React from "react";
 
 // TODO: probably TProps (instead of TComponent) should be sufficient
 export type MaterializedComponent<TComponent extends React.ComponentType> = {
@@ -15,10 +21,11 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
 
   constructor(private component: TComponent, private propsDependencies: Record<string, DependencyFactory<any>>) {
     super();
+  }
 
+  onInit(lookup: ModuleLookup<any>) {
     Object.keys(this.propsDependencies).forEach(currentKey => {
       const dependencyFactory = this.propsDependencies[currentKey];
-      console.log('dependencyFactory', dependencyFactory);
       dependencyFactory.onInvalidate(() => {
         this.onDependencyInvalidated.emit();
       });
@@ -27,7 +34,6 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
 
   // TODO: should we apply some cache ?
   build(cache: ContainerContext): MaterializedComponent<TComponent> {
-    console.log('build component');
     const props = Object.keys(this.propsDependencies).reduce((props, currentKey) => {
       props[currentKey] = this.propsDependencies[currentKey].get(cache);
       return props;
