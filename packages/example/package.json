@@ -46,5 +46,8 @@
   ],
   "scripts": {
     "build": "tsc -b ./tsconfig.json"
+  },
+  "devDependencies": {
+    "imitation": "^3.0.0"
   }
 }
