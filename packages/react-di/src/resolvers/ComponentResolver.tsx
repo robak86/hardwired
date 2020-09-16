@@ -18,12 +18,16 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
 
     Object.keys(this.propsDependencies).forEach(currentKey => {
       const dependencyFactory = this.propsDependencies[currentKey];
-      dependencyFactory.onInvalidate(this.onDependencyInvalidated.emit);
+      console.log('dependencyFactory', dependencyFactory);
+      dependencyFactory.onInvalidate(() => {
+        this.onDependencyInvalidated.emit();
+      });
     }, {});
   }
 
   // TODO: should we apply some cache ?
   build(cache: ContainerContext): MaterializedComponent<TComponent> {
+    console.log('build component');
     const props = Object.keys(this.propsDependencies).reduce((props, currentKey) => {
       props[currentKey] = this.propsDependencies[currentKey].get(cache);
       return props;

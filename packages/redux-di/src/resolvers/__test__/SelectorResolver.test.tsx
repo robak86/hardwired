@@ -5,6 +5,7 @@ import { component, Component, ContainerProvider } from 'hardwired-react';
 import { render } from '@testing-library/react';
 import React, { FunctionComponent } from 'react';
 import { dispatch } from '../DispatchResolver';
+import { reducer } from '../ReducerResolver';
 
 export type DummyComponentProps = {
   value: string;
@@ -25,10 +26,12 @@ describe(`SelectorResolver`, () => {
   function setup() {
     const selectStateValue = state => state.value;
     const updateAction = (newValue: string) => ({ type: 'update', newValue });
+    const updateReducer = state => ({ value: 'updated' });
 
     const m = module('someModule')
       .define('initialState', _ => value({ value: 'initialValue' }))
-      .define('store', _ => store(_.initialState, state => ({ value: 'updated' })))
+      .define('store', _ => store(_.initialState))
+      .define('rootReducer', _ => reducer(updateReducer))
       .define('someSelector', _ => selector(selectStateValue))
       .define('updateValue', _ => dispatch(updateAction))
       .define('DummyComponentContainer', _ =>

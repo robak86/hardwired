@@ -4,8 +4,13 @@ import { ContainerContext } from '../container/ContainerContext';
 import { EventsEmitter } from '../utils/EventsEmitter';
 
 // TODO: rename -> Instance|Definition|Def (the shorter the better for types errors messages?)
+
+let id = 1;
+
 export class DependencyFactory<T> {
   private invalidateEvents = new EventsEmitter();
+  private id = (id += 1);
+
   constructor(public get: (context: ContainerContext) => T) {}
 
   notifyInvalidated() {

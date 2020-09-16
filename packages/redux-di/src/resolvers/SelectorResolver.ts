@@ -14,11 +14,13 @@ export class SelectorResolver<T> extends AbstractDependencyResolver<T> {
 
   build(context: ContainerContext): T {
     const storeInstance = this.storeResolver[0];
+    console.log('storeInstance', storeInstance);
     const store = storeInstance.get(context);
 
     if (!this.hasSubscription) {
       // TODO: implement unsubscribe
       store.subscribe(() => {
+        console.log('notify', (storeInstance as any).invalidateEvents.listeners);
         storeInstance.notifyInvalidated();
       });
       this.hasSubscription = true;

@@ -1,24 +1,20 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory, ModuleLookup } from 'hardwired';
-import { ReducerResolver } from './ReducerResolver';
-import { AlterableStore } from '../stack/AlterableStore';
-import { SagaResolver } from './SagaResolver';
-import { Action } from 'redux';
+import { AbstractDependencyResolver, ContainerContext, DependencyFactory, ModuleLookup } from "hardwired";
+import { ReducerResolver } from "./ReducerResolver";
+import { AlterableStore } from "../stack/AlterableStore";
+import { SagaResolver } from "./SagaResolver";
 
 export class StoreResolver<AppState> extends AbstractDependencyResolver<AlterableStore<AppState>> {
   public reducersResolvers: DependencyFactory<any>[] = [];
   public sagasResolvers: DependencyFactory<any>[] = [];
 
-  constructor(
-    private resolver: DependencyFactory<AppState>,
-    private reducer: (state: AppState, action: Action) => AppState = state => state,
-  ) {
+  constructor(private resolver: DependencyFactory<AppState>) {
     super();
   }
 
   build(cache: ContainerContext) {
     const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.get(cache));
     const store = this.buildStore(cache);
-    store.replaceReducers([this.reducer, ...reducers]);
+    store.replaceReducers(reducers);
 
     return store;
   }
@@ -47,7 +43,6 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
 
 export const store = <TAppState extends Record<any, any>>(
   defaultsState: DependencyFactory<TAppState>,
-  reducer?: (state: TAppState, action: Action) => TAppState,
 ): StoreResolver<TAppState> => {
-  return new StoreResolver<TAppState>(defaultsState, reducer);
+  return new StoreResolver<TAppState>(defaultsState);
 };
