@@ -4,13 +4,9 @@
     "outDir": "./lib",
     "rootDir": "./src",
     "composite": true,
-    "allowJs": true,
-    "skipLibCheck": true,
+    "jsx": "react",
     "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "resolveJsonModule": true,
-    "noEmit": true
+    "esModuleInterop": true
   },
   "references": [
     {

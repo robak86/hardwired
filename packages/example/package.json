@@ -12,11 +12,11 @@
     "hardwired": "*",
     "hardwired-react": "*",
     "hardwired-redux": "*",
+    "parcel-bundler": "^1.12.4",
+    "preact": "^10.4.8",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.3",
-    "redux": "^4.0.5",
-    "typescript": "~3.7.2"
+    "redux": "^4.0.5"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -44,10 +44,10 @@
     "lib",
     "README.md"
   ],
-  "scripts": {
-    "build": "tsc -b ./tsconfig.json"
-  },
   "devDependencies": {
     "imitation": "^3.0.0"
+  },
+  "scripts": {
+    "start": "parcel public/index.html"
   }
 }

@@ -30,8 +30,5 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:robak86/hardwired.git"
-  },
-  "scripts": {
-    "build": "tsc -b ./tsconfig.json"
   }
 }

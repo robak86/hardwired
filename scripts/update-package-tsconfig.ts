@@ -60,12 +60,15 @@ function resolveInternalDependencies(dependencies: string[]): string[] {
 
 packageDirnameMap.forEach((packageDirname, packageName) => {
   const tsconfigPath = path.join(packagesRoot, packageDirname, PACKAGE_TSCONFIG);
+  const existingConfigData = fs.readFileSync(tsconfigPath);
+  const existingConfig = JSON.parse(existingConfigData.toString());
 
   const internalDependencies = resolveInternalDependencies(internalDependencyMap.get(packageName)!);
 
   const tsconfigData = {
     extends: '../../tsconfig.json',
     compilerOptions: {
+      ...existingConfig.compilerOptions,
       outDir: './lib',
       rootDir: './src',
       composite: true,

@@ -33,6 +33,7 @@ export function Component<
     any
   >;
 
+  InnerComponent.displayName = name as string;
   useEffect(() => {
     return subscribe(() => {
       // TODO: add equality check

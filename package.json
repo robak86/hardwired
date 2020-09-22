@@ -44,7 +44,7 @@
     "ts-jest": "^26.0.0",
     "ts-node": "^9.0.0",
     "tslint": "^6.1.2",
-    "typescript": "^4.0.2"
+    "typescript": "^4.1.0-beta"
   },
   "dependencies": {
     "tiny-invariant": "^1.1.0",
