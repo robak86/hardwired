@@ -1,10 +1,10 @@
-import { module } from '../../module/Module';
-import { dependency } from '../../testing/TestResolvers';
-import { container } from '../Container';
-import { moduleImport } from '../../resolvers/ModuleResolver';
-import { value } from '../../resolvers/ValueResolver';
-import { singleton } from '../../resolvers/ClassSingletonResolver';
-import { ArgsDebug } from '../../testing/ArgsDebug';
+import { module } from "../../module/Module";
+import { dependency } from "../../testing/TestResolvers";
+import { container } from "../Container";
+import { moduleImport } from "../../resolvers/ModuleResolver";
+import { value } from "../../resolvers/ValueResolver";
+import { singleton } from "../../resolvers/ClassSingletonResolver";
+import { ArgsDebug } from "../../testing/ArgsDebug";
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -78,5 +78,98 @@ describe(`Container`, () => {
         });
       });
     });
+  });
+
+  describe(`lazy loading`, () => {
+    function setup() {
+      const c = container(module('emptyRoot'));
+
+      const parentChildValue = dependency('parentChild');
+      const parentChild = module('parentChild').define('value', _ => parentChildValue);
+
+      const parentSiblingChildValue = dependency('parentSiblingChild');
+      const parentSiblingChild = module('parentSiblingChild').define('value', _ => parentSiblingChildValue);
+
+      const parentValue = dependency('parent');
+      const parent = module('parent')
+        .define('child', _ => moduleImport(parentChild))
+        .define('value', _ => parentValue);
+
+      const parentSiblingValue = dependency('parentSibling');
+      const parentSibling = module('parentSibling')
+        .define('child', _ => moduleImport(parentSiblingChild))
+        .define('value', _ => parentSiblingValue);
+
+      return {
+        c,
+        parent,
+        parentValue,
+        parentSibling,
+        parentSiblingValue,
+        parentChild,
+        parentChildValue,
+        parentSiblingChild,
+        parentSiblingChildValue,
+      };
+    }
+
+    it(`calls onInit on parent definitions`, async () => {
+      const { c, parent, parentValue } = setup();
+      jest.spyOn(parentValue, 'onInit');
+      c.get(parent, 'value');
+      expect(parentValue.onInit).toHaveBeenCalled();
+    });
+
+    it(`calls onInit on child definition`, async () => {
+      const { c, parentChild, parentChildValue } = setup();
+      jest.spyOn(parentChildValue, 'onInit');
+      c.get(parentChild, 'value');
+      expect(parentChildValue.onInit).toHaveBeenCalled();
+    });
+
+    it(`does not call onInit on parent module while instantiating definitions from child`, async () => {
+      const { c, parentValue, parentChild } = setup();
+      jest.spyOn(parentValue, 'onInit');
+      c.get(parentChild, 'value');
+
+      expect(parentValue.onInit).not.toHaveBeenCalled();
+    });
+
+    it(`calls on init on child definitions while instantiating definitions from parent`, async () => {
+      const { c, parent, parentValue, parentChildValue } = setup();
+      jest.spyOn(parentValue, 'onInit');
+      jest.spyOn(parentChildValue, 'onInit');
+
+      c.get(parent, 'value');
+
+      expect(parentValue.onInit).toHaveBeenCalled();
+      expect(parentChildValue.onInit).toHaveBeenCalled();
+    });
+
+    it(`does not reinitialize definitions after the module is lazily loaded for the firs time`, async () => {
+      const { c, parent, parentChild, parentValue, parentChildValue } = setup();
+      jest.spyOn(parentValue, 'onInit');
+      jest.spyOn(parentChildValue, 'onInit');
+
+      c.get(parent, 'value');
+      c.get(parentChild, 'value');
+
+      expect(parentValue.onInit).toHaveBeenCalledTimes(1);
+      expect(parentChildValue.onInit).toHaveBeenCalledTimes(1);
+    });
+
+    it(`initializes child module definitions while initializing definitions from parent referencing child module`, async () => {
+      const { c, parent, parentChild, parentValue, parentChildValue } = setup();
+      jest.spyOn(parentValue, 'onInit');
+      jest.spyOn(parentChildValue, 'onInit');
+
+      c.get(parentChild, 'value');
+      c.get(parent, 'value');
+
+      expect(parentValue.onInit).toHaveBeenCalledTimes(1);
+      expect(parentChildValue.onInit).toHaveBeenCalledTimes(2);
+    });
+
+    it.todo(`Eagerly initializes parent module while instantiating definition from child module?? `);
   });
 });

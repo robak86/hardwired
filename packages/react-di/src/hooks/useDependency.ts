@@ -4,7 +4,7 @@ import { useContainerContext } from '../components/ContainerContext';
 
 export const useDependency = <
   TRegistryRecord extends RegistryRecord,
-  K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>
+  K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string
 >(
   module: Module<TRegistryRecord>,
   key: K,

@@ -12,6 +12,9 @@ export class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   build(cache: ContainerContext): TValue {
     return this.value;
   }
+  onInit(lookup: ModuleLookup<any>) {
+    return undefined;
+  }
 }
 
 export class RegistryResolver<TValue extends RegistryRecord> extends AbstractModuleResolver<TValue> {
@@ -22,6 +25,7 @@ export class RegistryResolver<TValue extends RegistryRecord> extends AbstractMod
   build(): ModuleLookup<any> {
     throw new Error('Implement me');
   }
+  onInit() {}
 
   forEach(iterFn: (resolver: DependencyResolver<any>) => any) {}
 }

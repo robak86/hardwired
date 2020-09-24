@@ -7,8 +7,10 @@ export type ContainerContextValue = {
   container: Container<any>;
 };
 
+const rootContainer = container(module('emptyModule'));
+
 export const ContainerContext = React.createContext<ContainerContextValue>({
-  container: container(module('emptyModule')),
+  container: rootContainer,
 });
 
 export const useContainerContext = (): ContainerContextValue => {

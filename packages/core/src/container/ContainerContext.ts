@@ -1,6 +1,7 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { ModuleLookup } from '../module/ModuleLookup';
+import { InstancesProxy } from '../resolvers/ModuleResolver';
 
 export type ContainerCacheEntry = {
   // requestId:string;
@@ -48,12 +49,23 @@ export class ContainerContext {
     private _isScoped: boolean = false,
   ) {}
 
-  usingMaterializedModule(moduleId: ModuleId, buildFn: () => ModuleLookup<any>): ModuleLookup<any> {
-    if (!this.materializedModules[moduleId.id]) {
-      this.materializedModules[moduleId.id] = buildFn();
-    }
+  hasModule(moduleId: ModuleId): boolean {
+    return !!this.materializedModules[moduleId.id];
+  }
 
+  getModule(moduleId: ModuleId): ModuleLookup<any> {
+    const lookup = this.materializedModules[moduleId.id];
+    invariant(lookup, `Cannot get module with id: ${moduleId.id}. Module does not exists with container context`);
+    return lookup;
+  }
+
+  findModule(moduleId: ModuleId): ModuleLookup<any> | undefined {
     return this.materializedModules[moduleId.id];
+  }
+
+  addModule(moduleId: ModuleId, lookup: ModuleLookup<any>) {
+    invariant(!this.materializedModules[moduleId.id], `Module with id ${moduleId.id} already exists`);
+    this.materializedModules[moduleId.id] = lookup;
   }
 
   setForGlobalScope(uuid: string, instance: any) {

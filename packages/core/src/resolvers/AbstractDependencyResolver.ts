@@ -17,6 +17,7 @@ export abstract class AbstractDependencyResolver<TReturn> {
   onInvalidate = this.invalidateEvents.add;
 
   onInit?(lookup: ModuleLookup<any>): void;
+  onAppend?(lookup: ModuleLookup<any>): void;
 
   abstract build(context: ContainerContext): TReturn;
 }
@@ -25,11 +26,13 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
   public readonly id: string = createResolverId();
   public readonly type: 'module' = 'module';
 
-  protected constructor(public registry: Module<any>) {}
+  protected constructor(public module: Module<any>) {}
 
   abstract build(cache: ContainerContext, injections?: ImmutableSet<any>): ModuleLookup<TReturn>;
 
   get moduleId(): ModuleId {
-    return this.registry.moduleId;
+    return this.module.moduleId;
   }
+
+  abstract onInit(containerContext: ContainerContext): void;
 }

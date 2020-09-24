@@ -52,7 +52,9 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
 
-    resolver.build(ContainerContext.empty());
+    const context = ContainerContext.empty();
+    resolver.build(context);
+    resolver.onInit(context);
     expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
     expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
   });

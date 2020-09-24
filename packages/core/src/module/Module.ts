@@ -43,7 +43,6 @@ export class Module<TRegistryRecord extends RegistryRecord> {
     ) as any;
   }
 
-  // TODO: consider forcing that replaced T1 returns the same kind of resolver that original T1
   replace<
     K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>,
     T1 extends (

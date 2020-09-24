@@ -1,10 +1,10 @@
-import { ContainerContext } from './ContainerContext';
-import { ModuleLookup } from '../module/ModuleLookup';
+import { ContainerContext } from "./ContainerContext";
+import { ModuleLookup } from "../module/ModuleLookup";
 
-import { Module } from '../module/Module';
-import { ModuleResolver } from '../resolvers/ModuleResolver';
-import { RegistryRecord } from '../module/RegistryRecord';
-import invariant from 'tiny-invariant';
+import { Module } from "../module/Module";
+import { ModuleResolver } from "../resolvers/ModuleResolver";
+import { RegistryRecord } from "../module/RegistryRecord";
+import invariant from "tiny-invariant";
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -22,10 +22,10 @@ type GetMany<D> = {
 };
 
 type ContainerGet<TRegistryRecord extends RegistryRecord> = {
-  <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(key: K): RegistryRecord.Materialized<
+  <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string>(key: K): RegistryRecord.Materialized<
     TRegistryRecord
   >[K];
-  <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
+  <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string>(
     module: Module<TRegistryRecord>,
     key: K,
   ): RegistryRecord.Materialized<TRegistryRecord>[K];
@@ -33,8 +33,7 @@ type ContainerGet<TRegistryRecord extends RegistryRecord> = {
 
 export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   private rootResolver: ModuleResolver<any>;
-  private registry: ModuleLookup<TRegistryRecord>;
-  private lazyLoadedModules: ModuleLookup<TRegistryRecord>[] = [];
+  private rootModuleLookup: ModuleLookup<TRegistryRecord>;
 
   constructor(
     module: Module<TRegistryRecord>,
@@ -42,12 +41,13 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     private context?: C,
   ) {
     this.rootResolver = new ModuleResolver<any>(module);
-    this.registry = this.rootResolver.build(this.containerContext, module.injections);
+    this.rootModuleLookup = this.rootResolver.build(this.containerContext, module.injections);
+    this.rootResolver.onInit(this.containerContext);
   }
 
   get: ContainerGet<TRegistryRecord> = (nameOrModule, name?) => {
     if (typeof nameOrModule === 'string') {
-      const dependencyFactory = this.registry.getDependencyResolver(nameOrModule as any);
+      const dependencyFactory = this.rootModuleLookup.getDependencyResolver(nameOrModule as any);
 
       invariant(dependencyFactory, `Dependency with name: ${nameOrModule} does not exist`);
 
@@ -55,27 +55,20 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     }
 
     if (nameOrModule instanceof Module) {
-      const dependencyResolver = this.registry.findDependencyFactory(nameOrModule.moduleId, name as string);
+      if (!this.containerContext.hasModule(nameOrModule.moduleId)) {
+        const moduleResolver = new ModuleResolver(nameOrModule);
 
-      if (!dependencyResolver) {
-        let moduleResolver = this.lazyLoadedModules.find(m => m.moduleId.id === nameOrModule.moduleId.id);
-        if (!moduleResolver) {
-          moduleResolver = new ModuleResolver(nameOrModule).build(this.containerContext, nameOrModule.injections);
-          this.lazyLoadedModules.push(moduleResolver);
-        }
-
-        const lazyLoadedDependencyResolver = moduleResolver.findDependencyFactory(
-          nameOrModule.moduleId,
-          name as string,
-        );
-
-        invariant(
-          lazyLoadedDependencyResolver,
-          `Cannot find lazy loaded dependency resolver for name: ${name} and module: ${nameOrModule.moduleId.name}`,
-        );
-
-        return lazyLoadedDependencyResolver.get(this.containerContext.forNewRequest());
+        let lookup = moduleResolver.build(this.containerContext, nameOrModule.injections);
+        this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
+        moduleResolver.onInit(this.containerContext);
       }
+
+      const moduleLookup = this.containerContext.getModule(nameOrModule.moduleId);
+      const dependencyResolver = moduleLookup.findDependencyFactory(nameOrModule.moduleId, name);
+      invariant(
+        dependencyResolver,
+        `Cannot find dependency resolver for module name ${nameOrModule.moduleId.name} and id ${nameOrModule.moduleId.id} while getting definition named: ${name}`,
+      );
 
       return dependencyResolver.get(this.containerContext.forNewRequest());
     }
@@ -87,7 +80,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     const cache = this.containerContext.forNewRequest();
 
     return args.map(key => {
-      const dependencyFactory = this.registry.getDependencyResolver(key as any);
+      const dependencyFactory = this.rootModuleLookup.getDependencyResolver(key as any);
 
       invariant(dependencyFactory, `Dependency with name: ${key} does not exist`);
 
@@ -98,7 +91,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   asObject(): RegistryRecord.Materialized<TRegistryRecord> {
     const obj = {};
     const cache = this.containerContext.forNewRequest();
-    this.registry.forEachDependency((key, factory) => {
+    this.rootModuleLookup.forEachDependency((key, factory) => {
       obj[key] = factory.get(cache);
     });
 

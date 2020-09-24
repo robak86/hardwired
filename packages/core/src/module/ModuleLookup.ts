@@ -1,8 +1,9 @@
-import { ModuleId } from './ModuleId';
-import { DependencyFactory, RegistryRecord } from './RegistryRecord';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { AbstractDependencyResolver } from '../resolvers/AbstractDependencyResolver';
-import { ClassType } from '../utils/ClassType';
+import { ModuleId } from "./ModuleId";
+import { DependencyFactory, RegistryRecord } from "./RegistryRecord";
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { AbstractDependencyResolver, AbstractModuleResolver } from "../resolvers/AbstractDependencyResolver";
+import { ClassType } from "../utils/ClassType";
+import { InstancesProxy } from "../resolvers/ModuleResolver";
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
@@ -14,10 +15,42 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
   private resolvers: DependencyResolver<any>[] = [];
   protected parent?: ModuleLookup<any>;
 
+  // TODO: encapsulate
+  public instancesProxy = new InstancesProxy();
+  public dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
+  public moduleResolvers: Record<string, AbstractModuleResolver<any>> = {};
+
   constructor(public moduleId: ModuleId) {}
 
   get registry(): Record<string, DependencyFactory<any>> {
     return this.dependenciesByName;
+  }
+
+
+  // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
+  // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
+  // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
+  // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
+  // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
+  // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
+  // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
+
+  freezeImplementations() {
+    Object.keys(this.dependencyResolvers).forEach(key => {
+      this.instancesProxy.replaceImplementation(key, this.dependencyResolvers[key]);
+    });
+  }
+
+  forEachModuleResolver(iterFn: (resolver: AbstractModuleResolver<any>) => void) {
+    Object.keys(this.moduleResolvers).forEach(key => {
+      iterFn(this.moduleResolvers[key]);
+    });
+  }
+
+  forEachDependencyResolver(iterFn: (resolver: AbstractDependencyResolver<any>) => void) {
+    Object.keys(this.dependencyResolvers).forEach(key => {
+      iterFn(this.dependencyResolvers[key]);
+    });
   }
 
   appendDependencyFactory(name: string, resolver: AbstractDependencyResolver<any>, factory: DependencyFactory<any>) {
