@@ -1,4 +1,4 @@
-import { module, value } from 'hardwired';
+import { container, module, unit, value } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../testing/DummyComponent';
 import * as React from 'react';
@@ -16,8 +16,10 @@ describe(`useDependency`, () => {
       return <DummyComponent value={val1} />;
     };
 
+    const c = container(unit('empty'));
+
     return render(
-      <ContainerProvider>
+      <ContainerProvider container={c}>
         <Consumer />
       </ContainerProvider>,
     );

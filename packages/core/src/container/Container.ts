@@ -1,10 +1,11 @@
-import { ContainerContext } from "./ContainerContext";
-import { ModuleLookup } from "../module/ModuleLookup";
+import { ContainerContext } from './ContainerContext';
+import { ModuleLookup } from '../module/ModuleLookup';
 
-import { Module } from "../module/Module";
-import { ModuleResolver } from "../resolvers/ModuleResolver";
-import { RegistryRecord } from "../module/RegistryRecord";
-import invariant from "tiny-invariant";
+import { Module } from '../module/Module';
+import { ModuleResolver } from '../resolvers/ModuleResolver';
+import { RegistryRecord } from '../module/RegistryRecord';
+import invariant from 'tiny-invariant';
+import { DependencyResolverEvents } from '../resolvers/AbstractDependencyResolver';
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -76,10 +77,10 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     invariant('Invalid module or name');
   };
 
-  getResolver <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string>(
-    module: Module<TRegistryRecord>,
-    key: K,
-  ): RegistryRecord.Materialized<TRegistryRecord>[K] {
+  getEvents<
+    TRegistryRecord extends RegistryRecord,
+    K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string
+  >(module: Module<TRegistryRecord>, key: K): DependencyResolverEvents {
     if (!this.containerContext.hasModule(module.moduleId)) {
       const moduleResolver = new ModuleResolver(module);
 
@@ -95,7 +96,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
       `Cannot find dependency resolver for module name ${module.moduleId.name} and id ${module.moduleId.id} while getting definition named: ${key}`,
     );
 
-    return dependencyResolver.get(this.containerContext.forNewRequest());
+    return dependencyResolver.events;
   }
 
   getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {

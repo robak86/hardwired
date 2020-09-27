@@ -1,8 +1,8 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory, ModuleLookup } from 'hardwired';
-import { StoreResolver } from './StoreResolver';
-import invariant from 'tiny-invariant';
-import { AlterableStore } from '../stack/AlterableStore';
-import { createSelector } from 'reselect';
+import { AbstractDependencyResolver, ContainerContext, DependencyFactory, ModuleLookup } from "hardwired";
+import { StoreResolver } from "./StoreResolver";
+import invariant from "tiny-invariant";
+import { AlterableStore } from "../stack/AlterableStore";
+import { createSelector } from "reselect";
 
 export class SelectorResolver<T> extends AbstractDependencyResolver<T> {
   private storeResolver: DependencyFactory<AlterableStore<any>>[] | [DependencyFactory<AlterableStore<any>>] = [];
@@ -14,12 +14,12 @@ export class SelectorResolver<T> extends AbstractDependencyResolver<T> {
 
   build(context: ContainerContext): T {
     const storeInstance = this.storeResolver[0];
-    invariant(storeInstance, `Cannot find store instance`) // TODO: maybe we should provide
+    invariant(storeInstance, `Cannot find store instance`); // TODO: maybe we should provide
     const store = storeInstance.get(context);
 
     if (!this.hasSubscription) {
       store.subscribe(() => {
-        this.notifyInvalidated();
+        this.events.invalidateEvents.emit();
       });
       this.hasSubscription = true;
 

@@ -1,16 +1,19 @@
-import { AbstractDependencyResolver, AbstractModuleResolver } from "./AbstractDependencyResolver";
-import { ModuleLookup } from "../module/ModuleLookup";
-import { Module } from "../module/Module";
-import { DependencyResolver } from "./DependencyResolver";
-import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from "../module/RegistryRecord";
-import { ContainerContext } from "../container/ContainerContext";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import invariant from "tiny-invariant";
+import {
+  AbstractDependencyResolver,
+  AbstractModuleResolver,
+  DependencyResolverEvents,
+} from './AbstractDependencyResolver';
+import { ModuleLookup } from '../module/ModuleLookup';
+import { Module } from '../module/Module';
+import { DependencyResolver } from './DependencyResolver';
+import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
+import { ContainerContext } from '../container/ContainerContext';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import invariant from 'tiny-invariant';
 
 export class InstancesProxy {
   private buildFunctions: Record<string, (context: ContainerContext) => any> = {};
-  private notifyFunctions: Record<string, () => any> = {};
-  private addListenerFunctions: Record<string, (listener: () => void) => () => void> = {};
+  private events: Record<string, DependencyResolverEvents> = {};
 
   getReference(key: string) {
     const self = this;
@@ -25,24 +28,17 @@ export class InstancesProxy {
         return build(cache);
       },
       () => {
-        invariant(self.notifyFunctions[key], 'notifyInvalidated called before modules initialization complete');
-        self.notifyFunctions[key]();
-      },
-      listener => {
-        invariant(
-          self.addListenerFunctions[key],
-          'registering onInvalidate listeners called before modules initialization complete',
-        );
+        const events = self.events[key];
 
-        return self.addListenerFunctions[key](listener);
+        invariant(events, 'notifyInvalidated called before modules initialization complete');
+        return events;
       },
     );
   }
 
   replaceImplementation(key, resolver: AbstractDependencyResolver<any>) {
     this.buildFunctions[key] = resolver.build.bind(resolver);
-    this.notifyFunctions[key] = resolver.notifyInvalidated;
-    this.addListenerFunctions[key] = resolver.onInvalidate;
+    this.events[key] = resolver.events;
   }
 }
 

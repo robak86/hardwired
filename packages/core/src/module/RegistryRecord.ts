@@ -1,5 +1,5 @@
 import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
+import { AbstractModuleResolver, DependencyResolverEvents } from '../resolvers/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 import { EventsEmitter } from '../utils/EventsEmitter';
 
@@ -10,11 +10,11 @@ let id = 1;
 export class DependencyFactory<T> {
   private id = (id += 1);
 
-  constructor(
-    public get: (context: ContainerContext) => T,
-    public notifyInvalidated: () => void,
-    public onInvalidate: (listener: () => void) => () => void,
-  ) {}
+  constructor(public get: (context: ContainerContext) => T, private getEvents: () => DependencyResolverEvents) {}
+
+  get events(): DependencyResolverEvents {
+    return this.getEvents();
+  }
 }
 
 export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;

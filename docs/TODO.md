@@ -21,6 +21,7 @@ expect(container(updated).get('c')).toEqual({
 ```
 
 - Find better names for the `RegistryRecord`
+- narrow key types to strings (keyof S & string)
 
 - add `link` | 'export' resolver. For exporting definition from imported modules.
 

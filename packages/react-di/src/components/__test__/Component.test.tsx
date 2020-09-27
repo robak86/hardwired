@@ -1,5 +1,5 @@
 import { expectType, TypeEqual } from 'ts-expect';
-import { Module, module, DependencyFactory, value } from 'hardwired';
+import { Module, module, DependencyFactory, value, container, unit } from "hardwired";
 import { DummyComponent } from '../../testing/DummyComponent';
 import { component, MaterializedComponent } from '../../resolvers/ComponentResolver';
 import { Component, ComponentsDefinitions } from '../Component';
@@ -14,8 +14,10 @@ describe(`Component`, () => {
         .define('val1', _ => value('val1'))
         .define('someComponent', _ => component(DummyComponent, { value: _.val1 }));
 
+      const c = container(unit('empty'));
+
       return render(
-        <ContainerProvider>
+        <ContainerProvider container={c}>
           <Component module={m1} name={'someComponent'} optionalValue={'extra'} />
         </ContainerProvider>,
       );

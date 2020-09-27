@@ -13,12 +13,9 @@ export class DependencyResolverEvents {
 
 export abstract class AbstractDependencyResolver<TReturn> {
   public readonly type: 'dependency' = 'dependency';
-  private invalidateEvents: EventsEmitter<any> = new EventsEmitter<any>();
+  public readonly events = new DependencyResolverEvents();
 
   protected constructor(public readonly id: string = createResolverId()) {}
-
-  notifyInvalidated = this.invalidateEvents.emit;
-  onInvalidate = this.invalidateEvents.add;
 
   onInit?(lookup: ModuleLookup<any>): void;
   onAppend?(lookup: ModuleLookup<any>): void;

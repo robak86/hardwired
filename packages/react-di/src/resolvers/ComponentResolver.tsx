@@ -26,7 +26,7 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
   onInit(lookup: ModuleLookup<any>) {
     Object.keys(this.propsDependencies).forEach(currentKey => {
       const dependencyFactory = this.propsDependencies[currentKey];
-      dependencyFactory.onInvalidate(() => {
+      dependencyFactory.events.invalidateEvents.add(() => {
         this.onDependencyInvalidated.emit();
       });
     }, {});
