@@ -72,5 +72,15 @@ describe(`ClassSingletonResolver`, () => {
       expect(consumerFromChild2.testClassInstance.id).toEqual(theSingleton.id);
       expect(consumerFromRoot.testClassInstance.id).toEqual(theSingleton.id);
     });
+
+    it(`reuses the same instance for lazily loaded modules`, async () => {
+      const c = container(unit('emptyModule'));
+
+      const consumerFromChild1 = c.get(child1, 'singletonConsumer');
+      const consumerFromChild2 = c.get(child2, 'singletonConsumer');
+      const theSingleton = c.get(singletonModule, 'theSingleton');
+      expect(consumerFromChild1.testClassInstance.id).toEqual(theSingleton.id);
+      expect(consumerFromChild2.testClassInstance.id).toEqual(theSingleton.id);
+    });
   });
 });

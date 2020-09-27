@@ -1,13 +1,18 @@
-import { module, value } from 'hardwired';
-
-import { component } from 'hardwired-react';
-import { dispatch, reducer, selector, store } from 'hardwired-redux';
-import React from 'react';
-import { FunctionComponent } from 'react';
+import { module, value } from "hardwired";
+import { component } from "hardwired-react";
+import React, { FunctionComponent } from "react";
+import { dispatch, reducer, selector, store } from "./state/reduxResolvers";
+import { AppState } from "./state/AppState";
+import { rootReducer } from "./state/rootReducer";
+import { MatrixState } from "./matrix/state/MatrixState";
 
 const selectStateValue = state => state.value;
 const updateAction = (newValue: string) => ({ type: 'update', newValue });
-const updateReducer = state => ({ value: 'updated' });
+const updateReducer = (state: AppState) => {
+  return {
+    ...state,
+  };
+};
 
 export type DummyComponentProps = {
   value: string;
@@ -25,9 +30,10 @@ export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, 
 };
 
 export const appModule = module('app')
+
   .define('initialState', _ => value({ value: 'initialValue' }))
   .define('store', _ => store(_.initialState))
-  .define('rootReducer', _ => reducer(updateReducer))
+  .define('rootReducer', _ => reducer(rootReducer))
   .define('someSelector', _ => selector(selectStateValue))
   .define('updateValue', _ => dispatch(updateAction))
   .define('DummyComponentContainer', _ =>

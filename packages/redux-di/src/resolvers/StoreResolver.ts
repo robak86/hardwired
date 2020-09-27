@@ -1,7 +1,7 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory, ModuleLookup } from "hardwired";
-import { ReducerResolver } from "./ReducerResolver";
-import { AlterableStore } from "../stack/AlterableStore";
-import { SagaResolver } from "./SagaResolver";
+import { AbstractDependencyResolver, ContainerContext, DependencyFactory, ModuleLookup } from 'hardwired';
+import { ReducerResolver } from './ReducerResolver';
+import { AlterableStore } from '../stack/AlterableStore';
+import { SagaResolver } from './SagaResolver';
 
 export class StoreResolver<AppState> extends AbstractDependencyResolver<AlterableStore<AppState>> {
   public reducersResolvers: DependencyFactory<any>[] = [];
@@ -13,6 +13,8 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
 
   build(cache: ContainerContext) {
     const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.get(cache));
+    const sagas = this.sagasResolvers.map(sagaResolver => sagaResolver.get(cache));
+
     const store = this.buildStore(cache);
     store.replaceReducers(reducers);
 

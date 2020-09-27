@@ -7,6 +7,10 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 import { ModuleId } from '../module/ModuleId';
 import { EventsEmitter } from '../utils/EventsEmitter';
 
+export class DependencyResolverEvents {
+  invalidateEvents: EventsEmitter<any> = new EventsEmitter<any>();
+}
+
 export abstract class AbstractDependencyResolver<TReturn> {
   public readonly type: 'dependency' = 'dependency';
   private invalidateEvents: EventsEmitter<any> = new EventsEmitter<any>();

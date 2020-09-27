@@ -14,6 +14,7 @@ export class SelectorResolver<T> extends AbstractDependencyResolver<T> {
 
   build(context: ContainerContext): T {
     const storeInstance = this.storeResolver[0];
+    invariant(storeInstance, `Cannot find store instance`) // TODO: maybe we should provide
     const store = storeInstance.get(context);
 
     if (!this.hasSubscription) {

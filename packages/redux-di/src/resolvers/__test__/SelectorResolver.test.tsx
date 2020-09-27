@@ -1,4 +1,4 @@
-import { container, module, moduleImport, value } from "hardwired";
+import { module, moduleImport, value } from "hardwired";
 import { store } from "../StoreResolver";
 import { selector } from "../SelectorResolver";
 import { component, Component, ContainerProvider } from "hardwired-react";
@@ -83,11 +83,6 @@ describe(`SelectorResolver`, () => {
             onUpdateClick: _.updateValue,
           }),
         );
-
-      // const c = container(m)
-      // c.get(m, 'DummyComponentContainer')
-      //
-      // console.log(m)
 
       return render(
         <ContainerProvider>

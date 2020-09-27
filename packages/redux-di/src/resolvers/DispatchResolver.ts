@@ -26,12 +26,10 @@ export class DispatchResolver<TActionArgs extends any[]> extends AbstractDepende
   }
 }
 
-export type DispatchResolverParams = {
-  <TActionArgs extends any[], TAction extends Action>(
-    actionCreator: (...args: TActionArgs) => Action,
-  ): DispatchResolver<any>;
+export type DispatchResolverParams<TAction extends Action> = {
+  <TActionArgs extends any[]>(actionCreator: (...args: TActionArgs) => TAction): DispatchResolver<any>;
 };
 
-export const dispatch: DispatchResolverParams = actionCreator => {
+export const dispatch: DispatchResolverParams<Action> = actionCreator => {
   return new DispatchResolver(actionCreator);
 };

@@ -76,6 +76,28 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     invariant('Invalid module or name');
   };
 
+  getResolver <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string>(
+    module: Module<TRegistryRecord>,
+    key: K,
+  ): RegistryRecord.Materialized<TRegistryRecord>[K] {
+    if (!this.containerContext.hasModule(module.moduleId)) {
+      const moduleResolver = new ModuleResolver(module);
+
+      let lookup = moduleResolver.build(this.containerContext, module.injections);
+      this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
+      moduleResolver.onInit(this.containerContext);
+    }
+
+    const moduleLookup = this.containerContext.getModule(module.moduleId);
+    const dependencyResolver = moduleLookup.findDependencyFactory(module.moduleId, key);
+    invariant(
+      dependencyResolver,
+      `Cannot find dependency resolver for module name ${module.moduleId.name} and id ${module.moduleId.id} while getting definition named: ${key}`,
+    );
+
+    return dependencyResolver.get(this.containerContext.forNewRequest());
+  }
+
   getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {
     const cache = this.containerContext.forNewRequest();
 
