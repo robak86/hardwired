@@ -62,6 +62,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
         let lookup = moduleResolver.build(this.containerContext, nameOrModule.injections);
         this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
         moduleResolver.onInit(this.containerContext);
+        // this.rootResolver.onInit(this.containerContext);
       }
 
       const moduleLookup = this.containerContext.getModule(nameOrModule.moduleId);

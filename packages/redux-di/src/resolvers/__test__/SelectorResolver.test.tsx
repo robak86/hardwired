@@ -78,8 +78,7 @@ describe(`SelectorResolver`, () => {
         .define('initialState', _ => value({ value: 'initialValue' }))
         .define('store', _ => store(_.initialState))
         .define('rootReducer', _ => reducer(updateReducer))
-        .define('updateValue', _ => dispatch(updateAction))
-
+        .define('updateValue', _ => dispatch(updateAction));
 
       const Container = () => {
         const value = useWatchable(selectorsModule, 'someSelector');
@@ -94,8 +93,6 @@ describe(`SelectorResolver`, () => {
           <Container />
         </ContainerProvider>,
       );
-
-
     }
 
     it(`correctly select initial state value`, async () => {

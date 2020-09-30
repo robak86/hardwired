@@ -1,6 +1,6 @@
-import { RegistryRecord } from '../../../core/src/module/RegistryRecord';
-import { Module } from 'hardwired';
-import { useContainerContext } from '../components/ContainerContext';
+import { RegistryRecord } from "../../../core/src/module/RegistryRecord";
+import { Module } from "hardwired";
+import { useContainer } from "../components/ContainerContext";
 
 export const useDependency = <
   TRegistryRecord extends RegistryRecord,
@@ -9,6 +9,6 @@ export const useDependency = <
   module: Module<TRegistryRecord>,
   key: K,
 ) => {
-  const { container } = useContainerContext();
+  const container = useContainer();
   return container.get(module, key); //TODO: leveraging only container cache. We have to be sure that it works
 };
