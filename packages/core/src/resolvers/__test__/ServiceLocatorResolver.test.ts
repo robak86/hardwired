@@ -2,7 +2,6 @@ import { unit } from "../../module/Module";
 import { value } from "../ValueResolver";
 import { createResolverId } from "../../utils/fastId";
 import { request } from "../ClassRequestResolver";
-import { moduleImport } from "../ModuleResolver";
 import { singleton } from "../ClassSingletonResolver";
 import { serviceLocator } from "../ServiceLocatorResolver";
 import { container } from "../../container/Container";
@@ -28,7 +27,7 @@ describe(`ServiceLocatorResolver`, () => {
   const root = unit('root')
     .define('locator', _ => serviceLocator())
 
-    .define('singletonModule', _ => moduleImport(singletonModule))
+    .define('singletonModule', _ => singletonModule)
     .define('producedByFactory', _ => factory(DummyFactory))
     .define('singletonConsumer', _ => request(TestClassConsumer, [_.singletonModule.reqScoped]));
 

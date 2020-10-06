@@ -1,10 +1,9 @@
-import { module } from "../../module/Module";
-import { dependency } from "../../testing/TestResolvers";
-import { container } from "../Container";
-import { moduleImport } from "../../resolvers/ModuleResolver";
-import { value } from "../../resolvers/ValueResolver";
-import { singleton } from "../../resolvers/ClassSingletonResolver";
-import { ArgsDebug } from "../../testing/ArgsDebug";
+import { module } from '../../module/Module';
+import { dependency } from '../../testing/TestResolvers';
+import { container } from '../Container';
+import { value } from '../../resolvers/ValueResolver';
+import { singleton } from '../../resolvers/ClassSingletonResolver';
+import { ArgsDebug } from '../../testing/ArgsDebug';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -26,8 +25,8 @@ describe(`Container`, () => {
       .define('d', _ => dependency('dValue'));
 
     const parent = module('parent')
-      .define('child1', _ => moduleImport(child))
-      .define('child2', _ => moduleImport(child2));
+      .define('child1', _ => child)
+      .define('child2', _ => child2);
 
     it(`returns correct value`, async () => {
       const c = container(parent);
@@ -92,12 +91,12 @@ describe(`Container`, () => {
 
       const parentValue = dependency('parent');
       const parent = module('parent')
-        .define('child', _ => moduleImport(parentChild))
+        .define('child', _ => parentChild)
         .define('value', _ => parentValue);
 
       const parentSiblingValue = dependency('parentSibling');
       const parentSibling = module('parentSibling')
-        .define('child', _ => moduleImport(parentSiblingChild))
+        .define('child', _ => parentSiblingChild)
         .define('value', _ => parentSiblingValue);
 
       return {

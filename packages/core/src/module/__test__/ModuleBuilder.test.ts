@@ -2,7 +2,6 @@ import { Module } from '../Module';
 import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import { expectType, TypeEqual } from 'ts-expect';
-import { moduleImport } from '../../resolvers/ModuleResolver';
 import { DependencyResolver } from '../../resolvers/DependencyResolver';
 import { DependencyFactory } from '../RegistryRecord';
 
@@ -74,7 +73,7 @@ describe(`Module`, () => {
     const m1 = Module.empty('someModule').define('key1', ctx => dummy(123));
 
     const m2 = Module.empty('someModule')
-      .define('imported', ctx => moduleImport(m1))
+      .define('imported', ctx => m1)
       .define('key1', _ => {
         expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1> }>>(true);
 
@@ -86,7 +85,7 @@ describe(`Module`, () => {
     const m1 = Module.empty('someModule').define('key1', ctx => dummy(123));
 
     const m2 = Module.empty('someModule')
-      .define('imported', ctx => moduleImport(m1))
+      .define('imported', ctx => m1)
       .define('key2', ctx => dummy('string'))
       .define('key1', _ => {
         expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1>; key2: DependencyFactory<string> }>>(
@@ -96,7 +95,7 @@ describe(`Module`, () => {
         return dummy(123);
       });
 
-    type Expected = (key: 'key1' | 'key2', factory: (ctx: any) => DependencyResolver<number>) => typeof m2;
+    type Expected = (key: 'key1' | 'key2', factory: (ctx: any) => AbstractDependencyResolver<number>) => typeof m2;
 
     m2.replace('key1', ctx => {
       // ctx.key2

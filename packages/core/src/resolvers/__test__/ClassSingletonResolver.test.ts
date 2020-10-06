@@ -4,7 +4,6 @@ import { container } from '../../container/Container';
 import { createResolverId } from '../../utils/fastId';
 import { unit } from '../../module/Module';
 import { value } from '../ValueResolver';
-import { moduleImport } from '../ModuleResolver';
 import { transient } from '../ClassTransientResolver';
 
 describe(`ClassSingletonResolver`, () => {
@@ -44,18 +43,18 @@ describe(`ClassSingletonResolver`, () => {
 
   describe(`singleton shared across multiple modules hierarchy`, () => {
     const root = unit('root')
-      .define('child1', _ => moduleImport(child1))
-      .define('child2', _ => moduleImport(child2))
+      .define('child1', _ => child1)
+      .define('child2', _ => child2)
 
-      .define('singletonModule', _ => moduleImport(singletonModule))
+      .define('singletonModule', _ => singletonModule)
       .define('singletonConsumer', _ => transient(TestClassConsumer, [_.singletonModule.theSingleton]));
 
     const child1 = unit('child1')
-      .define('singletonModule', _ => moduleImport(singletonModule))
+      .define('singletonModule', _ => singletonModule)
       .define('singletonConsumer', _ => transient(TestClassConsumer, [_.singletonModule.theSingleton]));
 
     const child2 = unit('child2')
-      .define('singletonModule', _ => moduleImport(singletonModule))
+      .define('singletonModule', _ => singletonModule)
       .define('singletonConsumer', _ => transient(TestClassConsumer, [_.singletonModule.theSingleton]));
 
     const singletonModule = unit('child1')

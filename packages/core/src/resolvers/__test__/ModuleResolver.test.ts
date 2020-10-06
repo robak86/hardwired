@@ -1,7 +1,7 @@
 import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
 import { ModuleLookup } from '../../module/ModuleLookup';
 import { Module, unit } from '../../module/Module';
-import { moduleImport, ModuleResolver } from '../ModuleResolver';
+import { ModuleResolver } from '../ModuleResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import { singleton } from '../ClassSingletonResolver';
 import { value } from '../ValueResolver';
@@ -136,7 +136,7 @@ describe(`ModuleResolver`, () => {
 
     it(`resolves correct dependencies using injections`, async () => {
       const parent = unit('parent')
-        .define('imported', _ => moduleImport(child))
+        .define('imported', _ => child)
         .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
 
       const child = unit('child') //breakme
@@ -150,7 +150,7 @@ describe(`ModuleResolver`, () => {
 
     it(`resolves correct dependencies using deepGet`, async () => {
       const parent = unit('parent')
-        .define('imported', _ => moduleImport(child))
+        .define('imported', _ => child)
         .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
 
       const child = unit('child') //breakme
@@ -165,14 +165,14 @@ describe(`ModuleResolver`, () => {
     it(`resolves correct dependencies replacing multiple modules with injections`, async () => {
       const parent = unit('parent')
         // imports
-        .define('child', _ => moduleImport(child))
-        .define('grandChild', _ => moduleImport(grandChild))
+        .define('child', _ => child)
+        .define('grandChild', _ => grandChild)
 
         .define('ownGrandChild', _ => singleton(ValueWrapper, [_.grandChild.a]))
         .define('transientGrandChild', _ => singleton(ValueWrapper, [_.child.grandChildValue]));
 
       const child = unit('child') //breakme
-        .define('grandChild', _ => moduleImport(grandChild))
+        .define('grandChild', _ => grandChild)
         .define('grandChildValue', _ => singleton(ValueWrapper, [_.grandChild.a]));
 
       const grandChild = unit('grandChild') //breakme

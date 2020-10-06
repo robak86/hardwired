@@ -1,8 +1,9 @@
-import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { DependencyResolver, ModuleDefinition } from '../resolvers/DependencyResolver';
 import { ModuleId } from './ModuleId';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { RegistryRecord } from './RegistryRecord';
 import invariant from 'tiny-invariant';
+import { AbstractDependencyResolver } from '../resolvers/AbstractDependencyResolver';
 
 export namespace Module {
   export type Registry<T extends Module<any>> = T extends Module<infer TShape> ? TShape : never;
@@ -22,7 +23,7 @@ export class Module<TRegistryRecord extends RegistryRecord> {
     public injections: ImmutableSet<Record<string, Module<any>>>,
   ) {}
 
-  define<TKey extends string, T1 extends (ctx: TRegistryRecord) => DependencyResolver<any>>(
+  define<TKey extends string, T1 extends (ctx: TRegistryRecord) => ModuleDefinition>(
     name: TKey,
     resolver: T1,
   ): Module<TRegistryRecord & Record<TKey, DependencyResolver.Value<ReturnType<T1>>>> {
@@ -47,7 +48,7 @@ export class Module<TRegistryRecord extends RegistryRecord> {
     K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>,
     T1 extends (
       ctx: Omit<Pick<TRegistryRecord, RegistryRecord.DependencyResolversKeys<TRegistryRecord>>, K>,
-    ) => DependencyResolver<ReturnType<TRegistryRecord[K]>>
+    ) => AbstractDependencyResolver<ReturnType<TRegistryRecord[K]>>
   >(name: K, resolver: T1): this {
     invariant(this.registry.hasKey(name), `Cannot replace dependency with name: ${name}. It does not exists `);
 

@@ -1,6 +1,7 @@
-import { DependencyResolver } from "../resolvers/DependencyResolver";
-import { AbstractModuleResolver, DependencyResolverEvents } from "../resolvers/AbstractDependencyResolver";
+import { ModuleDefinition } from "../resolvers/DependencyResolver";
+import { DependencyResolverEvents } from "../resolvers/AbstractDependencyResolver";
 import { ContainerContext } from "../container/ContainerContext";
+import { Module } from "./Module";
 
 // TODO: rename -> Instance|Definition|Def (the shorter the better for types errors messages?)
 
@@ -16,7 +17,7 @@ export class DependencyFactory<T> {
   }
 }
 
-export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;
+// export type DependencyResolverFactory<T> = (ctx: RegistryRecord) => DependencyResolver<T>;
 
 // TODO: rename to ModuleEntries | ModuleDefinitions ?
 export interface RegistryRecord {
@@ -45,10 +46,12 @@ export declare namespace RegistryRecord {
   }[keyof T];
 
   type Resolvers<T extends RegistryRecord> = {
-    [K in keyof T]: (...args: any[]) => DependencyResolver<any>;
+    [K in keyof T]: (...args: any[]) => ModuleDefinition;
   };
 
+  type DefinitionsResolvers<T extends RegistryRecord> = T;
+
   type ModuleResolvers<T extends RegistryRecord> = {
-    [K in keyof ModuleResolversKeys<T>]: AbstractModuleResolver<any>;
+    [K in keyof ModuleResolversKeys<T>]: Module<any>;
   };
 }

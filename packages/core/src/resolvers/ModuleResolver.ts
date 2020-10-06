@@ -118,6 +118,6 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
   }
 }
 
-export const moduleImport = <TValue extends RegistryRecord>(value: Module<TValue>): ModuleResolver<TValue> => {
-  return new ModuleResolver(value);
-};
+// export const moduleImport = <TValue extends RegistryRecord>(value: Module<TValue>): ModuleResolver<TValue> => {
+//   return new ModuleResolver(value);
+// };

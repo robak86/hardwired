@@ -27,7 +27,7 @@ export class RegistryResolver<TValue extends RegistryRecord> extends AbstractMod
   }
   onInit() {}
 
-  forEach(iterFn: (resolver: DependencyResolver<any>) => any) {}
+  forEach(iterFn: (resolver: any) => any) {}
 }
 
 export const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
