@@ -1,5 +1,5 @@
 import { ServiceLocator } from "../container/ServiceLocator";
-import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
+import { AbstractDependencyResolver } from "./abstract/AbstractDependencyResolver";
 import { ContainerContext } from "../container/ContainerContext";
 
 export class ServiceLocatorResolver extends AbstractDependencyResolver<ServiceLocator> {

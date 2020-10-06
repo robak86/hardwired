@@ -1,5 +1,5 @@
 import { DefinitionResolver } from "../resolvers/DependencyResolver";
-import { DependencyResolverEvents } from "../resolvers/AbstractDependencyResolver";
+import { DependencyResolverEvents } from "../resolvers/abstract/AbstractDependencyResolver";
 import { ContainerContext } from "../container/ContainerContext";
 import { Module } from "./Module";
 

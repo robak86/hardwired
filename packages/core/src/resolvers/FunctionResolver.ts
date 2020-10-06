@@ -1,5 +1,5 @@
 import { curry } from '../utils/curry';
-import { AbstractDependencyResolver } from './AbstractDependencyResolver';
+import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 import { DependencyFactory } from '../module/RegistryRecord';
 

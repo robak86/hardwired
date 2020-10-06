@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver } from './AbstractDependencyResolver';
+import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 import { ClassType } from '../utils/ClassType';
 import { DependencyFactory } from '../module/RegistryRecord';

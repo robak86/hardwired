@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, DependencyResolverEvents } from "./AbstractDependencyResolver";
+import { AbstractDependencyResolver, DependencyResolverEvents } from "./abstract/AbstractDependencyResolver";
 import { DependencyFactory } from "../module/RegistryRecord";
 import { ContainerContext } from "../container/ContainerContext";
 import invariant from "tiny-invariant";

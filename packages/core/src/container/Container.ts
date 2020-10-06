@@ -5,7 +5,8 @@ import { Module } from "../module/Module";
 import { ModuleResolver } from "../resolvers/ModuleResolver";
 import { RegistryRecord } from "../module/RegistryRecord";
 import invariant from "tiny-invariant";
-import { DependencyResolverEvents } from "../resolvers/AbstractDependencyResolver";
+import { DependencyResolverEvents } from "../resolvers/abstract/AbstractDependencyResolver";
+import { AbstractModuleResolver } from "../resolvers/abstract/AbstractModuleResolver";
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];

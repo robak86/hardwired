@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
+import { AbstractDependencyResolver } from '../abstract/AbstractDependencyResolver';
 import { ModuleLookup } from '../../module/ModuleLookup';
 import { Module, unit } from '../../module/Module';
 import { ModuleResolver } from '../ModuleResolver';

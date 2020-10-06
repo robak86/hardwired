@@ -1,9 +1,10 @@
 import { ModuleId } from "./ModuleId";
 import { DependencyFactory, RegistryRecord } from "./RegistryRecord";
 import { DefinitionResolver, DependencyResolver } from "../resolvers/DependencyResolver";
-import { AbstractDependencyResolver, AbstractModuleResolver } from "../resolvers/AbstractDependencyResolver";
+import { AbstractDependencyResolver} from "../resolvers/abstract/AbstractDependencyResolver";
 import { ClassType } from "../utils/ClassType";
 import { InstancesProxy } from "../resolvers/InstancesProxy";
+import { AbstractModuleResolver } from "../resolvers/abstract/AbstractModuleResolver";
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup

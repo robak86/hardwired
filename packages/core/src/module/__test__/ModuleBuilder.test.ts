@@ -1,5 +1,5 @@
 import { Module } from "../Module";
-import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
+import { AbstractDependencyResolver } from "../../resolvers/abstract/AbstractDependencyResolver";
 import { ContainerContext } from "../../container/ContainerContext";
 import { expectType, TypeEqual } from "ts-expect";
 import { DependencyFactory } from "../RegistryRecord";

@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
+import { AbstractDependencyResolver } from '../../resolvers/abstract/AbstractDependencyResolver';
 import { Module } from '../Module';
 import { ContainerContext } from '../../container/ContainerContext';
 

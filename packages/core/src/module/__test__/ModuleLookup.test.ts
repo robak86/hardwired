@@ -1,7 +1,7 @@
 import { ModuleLookup } from '../ModuleLookup';
 import { ModuleId } from '../ModuleId';
 import { dependency } from '../../testing/TestResolvers';
-import { AbstractDependencyResolver, DependencyResolverEvents } from '../../resolvers/AbstractDependencyResolver';
+import { AbstractDependencyResolver, DependencyResolverEvents } from '../../resolvers/abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import { DependencyFactory } from '../RegistryRecord';
 

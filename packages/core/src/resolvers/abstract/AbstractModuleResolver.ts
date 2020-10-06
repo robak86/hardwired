@@ -1,28 +1,11 @@
-import { createResolverId } from "../utils/fastId";
-import { ModuleLookup } from "../module/ModuleLookup";
-import { DependencyFactory, RegistryRecord } from "../module/RegistryRecord";
-import { Module } from "../module/Module";
-import { ContainerContext } from "../container/ContainerContext";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import { ModuleId } from "../module/ModuleId";
-import { EventsEmitter } from "../utils/EventsEmitter";
-import { DefinitionResolver, DefinitionResolverFactory } from "./DependencyResolver";
-
-export class DependencyResolverEvents {
-  invalidateEvents: EventsEmitter<any> = new EventsEmitter<any>();
-}
-
-export abstract class AbstractDependencyResolver<TReturn> {
-  public readonly type: 'dependency' = 'dependency';
-  public readonly events = new DependencyResolverEvents();
-
-  protected constructor(public readonly id: string = createResolverId()) {}
-
-  onInit?(lookup: ModuleLookup<any>): void;
-  onAppend?(lookup: ModuleLookup<any>): void;
-
-  abstract build(context: ContainerContext): TReturn;
-}
+import { DependencyFactory, RegistryRecord } from '../../module/RegistryRecord';
+import { createResolverId } from '../../utils/fastId';
+import { ModuleId } from '../../module/ModuleId';
+import { ImmutableSet } from '../../collections/ImmutableSet';
+import { Module } from '../../module/Module';
+import { ContainerContext } from '../../container/ContainerContext';
+import { ModuleLookup } from '../../module/ModuleLookup';
+import { DefinitionResolver, DefinitionResolverFactory } from '../DependencyResolver';
 
 export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
   public readonly id: string = createResolverId();
@@ -30,7 +13,13 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
 
   private keepType!: TReturn; // We need to fake that TReturn is used by class, otherwise type is generalized to RegistryRecord
 
+  protected parentModules: Record<string, AbstractModuleResolver<any>> = {};
+
   protected constructor(public moduleId: ModuleId, public injections: ImmutableSet<Record<string, Module<any>>>) {}
+
+  protected appendParent(other: AbstractModuleResolver<any>) {
+    this.parentModules[other.moduleId.id] = other;
+  }
 
   build(containerContext: ContainerContext, injections: ImmutableSet<any> = this.injections): ModuleLookup<TReturn> {
     if (!containerContext.hasModule(this.moduleId)) {
@@ -60,6 +49,7 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
             moduleLookup.moduleResolvers[key] = resolver;
           }
 
+          moduleLookup.moduleResolvers[key].appendParent(this);
           const registryLookup = moduleLookup.moduleResolvers[key].build(containerContext, mergedInjections);
 
           context[key] = registryLookup.registry;

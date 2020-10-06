@@ -3,9 +3,10 @@ import { ModuleId } from './ModuleId';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { DependencyFactory, RegistryRecord } from './RegistryRecord';
 import invariant from 'tiny-invariant';
-import { AbstractDependencyResolver, AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
+import { AbstractDependencyResolver} from '../resolvers/abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 import { ModuleLookup } from './ModuleLookup';
+import { AbstractModuleResolver } from "../resolvers/abstract/AbstractModuleResolver";
 
 export namespace Module {
   export type Registry<T extends Module<any>> = T extends Module<infer TShape> ? TShape : never;

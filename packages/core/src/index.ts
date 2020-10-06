@@ -5,7 +5,7 @@ export { ModuleLookup } from './module/ModuleLookup';
 export { ContainerContext } from './container/ContainerContext';
 export type { DependencyFactory, RegistryRecord } from './module/RegistryRecord';
 export type { DependencyResolver } from './resolvers/DependencyResolver';
-export { AbstractModuleResolver, AbstractDependencyResolver } from './resolvers/AbstractDependencyResolver';
+export { AbstractDependencyResolver } from './resolvers/abstract/AbstractDependencyResolver';
 
 export { singleton, ClassSingletonResolver } from './resolvers/ClassSingletonResolver';
 export type { ClassSingletonBuilder } from './resolvers/ClassSingletonResolver';
@@ -22,3 +22,4 @@ export { ServiceLocator } from './container/ServiceLocator';
 
 export type { ClassType } from './utils/ClassType';
 export { EventsEmitter } from './utils/EventsEmitter';
+export { AbstractModuleResolver } from "./resolvers/abstract/AbstractModuleResolver";
