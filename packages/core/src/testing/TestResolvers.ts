@@ -17,26 +17,24 @@ export class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   }
 }
 
-export class RegistryResolver<TValue extends RegistryRecord> extends AbstractModuleResolver<TValue> {
-  constructor(registry) {
-    super(registry);
-  }
-
-  load(): ModuleLookup<any> {
-    throw new Error('Implement me');
-  }
-  onInit() {}
-
-  forEach(iterFn: (resolver: any) => any) {}
-}
+// export class RegistryResolver<TValue extends RegistryRecord> extends AbstractModuleResolver<TValue> {
+//   constructor(registry) {
+//     super(registry);
+//   }
+//
+//   build(): ModuleLookup<any> {
+//     throw new Error('Implement me');
+//   }
+//   onInit() {}
+//
+//   forEach(iterFn: (resolver: any) => any) {}
+// }
 
 export const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
   return new DummyResolver<TValue>(value);
 };
 
-export const registryDependency = <TValue extends RegistryRecord>(value: TValue): RegistryResolver<TValue> => {
-  return new RegistryResolver<TValue>(value);
-};
+
 
 export class TestTransientResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
   constructor(private resolver: () => TReturn) {

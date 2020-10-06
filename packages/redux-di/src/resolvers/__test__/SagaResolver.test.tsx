@@ -1,6 +1,5 @@
 import { saga } from '../SagaResolver';
 import { container, module, value } from 'hardwired';
-import _default from 'benny';
 import { store } from '../StoreResolver';
 
 describe(`SagaResolver`, () => {
@@ -16,7 +15,5 @@ describe(`SagaResolver`, () => {
     return { c };
   }
 
-  it(`registers`, async () => {
-
-  });
+  it(`registers`, async () => {});
 });

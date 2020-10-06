@@ -16,7 +16,6 @@ export type { Factory } from './resolvers/FactoryResolver';
 export { transient, ClassTransientResolver } from './resolvers/ClassTransientResolver';
 export { value, ValueResolver } from './resolvers/ValueResolver';
 export { func, FunctionResolver } from './resolvers/FunctionResolver';
-export { ModuleResolver } from './resolvers/ModuleResolver';
 export { request, ClassRequestResolver } from './resolvers/ClassRequestResolver';
 export { serviceLocator, ServiceLocatorResolver } from './resolvers/ServiceLocatorResolver';
 export { ServiceLocator } from './container/ServiceLocator';

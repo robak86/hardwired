@@ -1,4 +1,4 @@
-import { ModuleDefinition } from "../resolvers/DependencyResolver";
+import { DefinitionResolver } from "../resolvers/DependencyResolver";
 import { DependencyResolverEvents } from "../resolvers/AbstractDependencyResolver";
 import { ContainerContext } from "../container/ContainerContext";
 import { Module } from "./Module";
@@ -46,7 +46,7 @@ export declare namespace RegistryRecord {
   }[keyof T];
 
   type Resolvers<T extends RegistryRecord> = {
-    [K in keyof T]: (...args: any[]) => ModuleDefinition;
+    [K in keyof T]: (...args: any[]) => DefinitionResolver;
   };
 
   type DefinitionsResolvers<T extends RegistryRecord> = T;

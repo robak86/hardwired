@@ -1,9 +1,9 @@
 import { ModuleId } from "./ModuleId";
 import { DependencyFactory, RegistryRecord } from "./RegistryRecord";
-import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { DefinitionResolver, DependencyResolver } from "../resolvers/DependencyResolver";
 import { AbstractDependencyResolver, AbstractModuleResolver } from "../resolvers/AbstractDependencyResolver";
 import { ClassType } from "../utils/ClassType";
-import { InstancesProxy } from "../resolvers/ModuleResolver";
+import { InstancesProxy } from "../resolvers/InstancesProxy";
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
@@ -12,7 +12,7 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
   private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
   private dependenciesByName: Record<string, DependencyFactory<any>> = {};
   private childModuleRegistriesByModuleId: Record<string, ModuleLookup<any>> = {};
-  private resolvers: DependencyResolver<any>[] = [];
+  private resolvers: DefinitionResolver[] = [];
   protected parent?: ModuleLookup<any>;
 
   // TODO: encapsulate

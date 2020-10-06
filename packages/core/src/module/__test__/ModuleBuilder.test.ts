@@ -1,9 +1,8 @@
-import { Module } from '../Module';
-import { AbstractDependencyResolver } from '../../resolvers/AbstractDependencyResolver';
-import { ContainerContext } from '../../container/ContainerContext';
-import { expectType, TypeEqual } from 'ts-expect';
-import { DependencyResolver } from '../../resolvers/DependencyResolver';
-import { DependencyFactory } from '../RegistryRecord';
+import { Module } from "../Module";
+import { AbstractDependencyResolver } from "../../resolvers/AbstractDependencyResolver";
+import { ContainerContext } from "../../container/ContainerContext";
+import { expectType, TypeEqual } from "ts-expect";
+import { DependencyFactory } from "../RegistryRecord";
 
 describe(`Module`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {

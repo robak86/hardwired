@@ -1,7 +1,7 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { ModuleLookup } from '../module/ModuleLookup';
-import { ModuleResolverService } from '../resolvers/ModuleResolver';
+import { ModuleResolverService } from '../resolvers/InstancesProxy';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { Module } from '../module/Module';
 

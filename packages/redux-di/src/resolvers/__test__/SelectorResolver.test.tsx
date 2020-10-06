@@ -1,4 +1,4 @@
-import { container, module, moduleImport, unit, value } from 'hardwired';
+import { container, module, unit, value } from 'hardwired';
 import { store } from '../StoreResolver';
 import { selector } from '../SelectorResolver';
 import { ContainerProvider, useWatchable } from 'hardwired-react';
@@ -74,7 +74,7 @@ describe(`SelectorResolver`, () => {
       const selectorsModule = module('selectors').define('someSelector', _ => selector(selectStateValue));
 
       const m = module('someModule')
-        .define('selectors', _ => moduleImport(selectorsModule))
+        .define('selectors', _ => selectorsModule)
         .define('initialState', _ => value({ value: 'initialValue' }))
         .define('store', _ => store(_.initialState))
         .define('rootReducer', _ => reducer(updateReducer))

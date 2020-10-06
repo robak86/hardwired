@@ -7,11 +7,12 @@ import { Module } from '../module/Module';
 //   | AbstractDependencyResolver<any>
 //   | AbstractModuleResolver<any>;
 
-export type ModuleDefinition = Module<any> | AbstractDependencyResolver<any>
+export type DefinitionResolver = AbstractModuleResolver<any> | AbstractDependencyResolver<any>
+export type DefinitionResolverFactory = (context: any) => DefinitionResolver;
 
 export namespace DependencyResolver {
   // prettier-ignore
-  export type Value<TResolver extends ModuleDefinition> =
+  export type Value<TResolver extends DefinitionResolver> =
     TResolver extends AbstractDependencyResolver<infer TType> ? DependencyFactory<TType>  :
-    TResolver extends Module<infer TType> ? TType : never;
+    TResolver extends AbstractModuleResolver<infer TType> ? TType : never;
 }
