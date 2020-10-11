@@ -49,6 +49,7 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
   }
 
   // TODO: accept custom module resolverClass? in order to select ModuleResolver instance at container creation?
+  // TODO: module resolver shouldn't use containerContext - there is no need that resolver should store something
   build(containerContext: ContainerContext, injections = ImmutableSet.empty()): ModuleLookup<TRegistryRecord> {
     console.log('calling build for', this.moduleId);
     if (!containerContext.hasModule(this.moduleId)) {
@@ -79,10 +80,10 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
             moduleLookup.moduleResolvers[key] = resolver;
           }
 
-          const registryLookup = moduleLookup.moduleResolvers[key].build(containerContext, mergedInjections);
+          const childModuleLookup = moduleLookup.moduleResolvers[key].build(containerContext, mergedInjections);
 
-          context[key] = registryLookup.registry;
-          moduleLookup.appendChild(registryLookup);
+          context[key] = childModuleLookup.registry;
+          moduleLookup.appendChild(childModuleLookup);
         }
       });
 
