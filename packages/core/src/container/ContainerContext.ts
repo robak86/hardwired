@@ -1,7 +1,9 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { ModuleLookup } from '../module/ModuleLookup';
-import { InstancesProxy } from '../resolvers/ModuleResolver';
+import { ModuleResolverService } from '../resolvers/ModuleResolver';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { Module } from '../module/Module';
 
 export type ContainerCacheEntry = {
   // requestId:string;
@@ -34,6 +36,7 @@ class PushPromise<T> {
   }
 }
 
+// TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
   static empty(): ContainerContext {
     return new ContainerContext();
@@ -127,5 +130,13 @@ export class ContainerContext {
 
   markModuleAsInitialized(moduleId: ModuleId) {
     this.initializedModules[moduleId.id] = true;
+  }
+
+  loadModule(module: Module<any>, injections = ImmutableSet.empty()) {
+    ModuleResolverService.load(module, this, injections);
+  }
+
+  initModule(module: Module<any>) {
+    ModuleResolverService.onInit(module, this);
   }
 }

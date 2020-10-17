@@ -1,15 +1,15 @@
 import {
   AbstractDependencyResolver,
   AbstractModuleResolver,
-  DependencyResolverEvents
-} from "./AbstractDependencyResolver";
-import { ModuleLookup } from "../module/ModuleLookup";
-import { Module } from "../module/Module";
-import { DependencyResolver } from "./DependencyResolver";
-import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from "../module/RegistryRecord";
-import { ContainerContext } from "../container/ContainerContext";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import invariant from "tiny-invariant";
+  DependencyResolverEvents,
+} from './AbstractDependencyResolver';
+import { ModuleLookup } from '../module/ModuleLookup';
+import { Module } from '../module/Module';
+import { DependencyResolver } from './DependencyResolver';
+import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
+import { ContainerContext } from '../container/ContainerContext';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import invariant from 'tiny-invariant';
 
 export class InstancesProxy {
   private buildFunctions: Record<string, (context: ContainerContext) => any> = {};
@@ -42,7 +42,8 @@ export class InstancesProxy {
   }
 }
 
-const ModuleResolverService = {
+// This looks like responsibility of the ContainerContext
+export const ModuleResolverService = {
   load(module: Module<any>, containerContext: ContainerContext, injections = ImmutableSet.empty()) {
     if (!containerContext.hasModule(module.moduleId)) {
       // TODO: merge injections with own this.registry injections
@@ -85,6 +86,7 @@ const ModuleResolverService = {
     }
   },
 
+  // TODO: should be somehow memoized ? don't wanna initialized already initialized module ?
   onInit(module: Module<any>, containerContext: ContainerContext) {
     const moduleLookup = containerContext.getModule(module.moduleId);
 
