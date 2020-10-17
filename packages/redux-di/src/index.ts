@@ -2,7 +2,7 @@ import { SelectorResolver, SelectorResolverParams } from './resolvers/SelectorRe
 import { Action, Reducer } from 'redux';
 import { ReducerResolver } from './resolvers/ReducerResolver';
 import { DispatchResolver, DispatchResolverParams } from './resolvers/DispatchResolver';
-import { DependencyFactory } from 'hardwired';
+import { Instance } from 'hardwired';
 import { StoreResolver } from './resolvers/StoreResolver';
 
 export function init<TState extends object, TAction extends Action = any>() {
@@ -18,7 +18,7 @@ export function init<TState extends object, TAction extends Action = any>() {
     return new DispatchResolver(actionCreator);
   };
 
-  const store = <TState>(defaultsState: DependencyFactory<TState>): StoreResolver<TState> => {
+  const store = <TState>(defaultsState: Instance<TState>): StoreResolver<TState> => {
     return new StoreResolver<TState>(defaultsState);
   };
 

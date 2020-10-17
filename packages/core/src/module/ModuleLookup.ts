@@ -1,16 +1,17 @@
 import { ModuleId } from "./ModuleId";
-import { DependencyFactory, RegistryRecord } from "./RegistryRecord";
+import { RegistryRecord } from "./RegistryRecord";
 import { AbstractDependencyResolver } from "../resolvers/abstract/AbstractDependencyResolver";
 import { ClassType } from "../utils/ClassType";
-import { InstancesProxy } from "../resolvers/InstancesProxy";
+import { InstancesProxy } from "../resolvers/abstract/InstancesProxy";
 import { Module } from "./Module";
+import { Instance } from "../resolvers/abstract/Instance";
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
 export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
-  private dependenciesByResolverId: Record<string, DependencyFactory<any>> = {};
-  private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
-  private dependenciesByName: Record<string, DependencyFactory<any>> = {};
+  private dependenciesByResolverId: Record<string, Instance<any>> = {};
+  private dependenciesByModuleId: Record<string, Record<string, Instance<any>>> = {};
+  private dependenciesByName: Record<string, Instance<any>> = {};
   private childModuleRegistriesByModuleId: Record<string, ModuleLookup<any>> = {};
   private resolvers: AbstractDependencyResolver<any>[] = [];
   protected parent?: ModuleLookup<any>;
@@ -22,7 +23,7 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
 
   constructor(public moduleId: ModuleId) {}
 
-  get registry(): Record<string, DependencyFactory<any>> {
+  get registry(): Record<string, Instance<any>> {
     return this.dependenciesByName;
   }
 
@@ -52,7 +53,7 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
     });
   }
 
-  appendDependencyFactory(name: string, resolver: AbstractDependencyResolver<any>, factory: DependencyFactory<any>) {
+  appendDependencyFactory(name: string, resolver: AbstractDependencyResolver<any>, factory: Instance<any>) {
     this.dependenciesByName[name] = factory;
     this.dependenciesByResolverId[resolver.id] = factory;
     this.resolvers.push(resolver);
@@ -63,11 +64,11 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
     registry.parent = this;
   }
 
-  // protected findOwnDependencyResolver(moduleId: ModuleId, name: string): DependencyFactory<any> | undefined {
+  // protected findOwnDependencyResolver(moduleId: ModuleId, name: string): Instance<any> | undefined {
   //   return this.dependenciesByModuleId[moduleId.identity]?.[name];
   // }
 
-  getDependencyResolver(name: string): DependencyFactory<any> | undefined {
+  getDependencyResolver(name: string): Instance<any> | undefined {
     return this.dependenciesByName[name];
   }
 
@@ -83,7 +84,7 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
     return result;
   }
 
-  forEachDependency(iterFn: (key: string, d: DependencyFactory<any>) => void) {
+  forEachDependency(iterFn: (key: string, d: Instance<any>) => void) {
     Object.keys(this.dependenciesByName).forEach(key => {
       iterFn(key, this.dependenciesByName[key]);
     });
@@ -93,12 +94,12 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
     Object.values(this.childModuleRegistriesByModuleId).forEach(iterFn);
   }
 
-  findDependencyFactory(moduleId: ModuleId, name: string): DependencyFactory<any> | undefined {
+  findDependencyFactory(moduleId: ModuleId, name: string): Instance<any> | undefined {
     const modules = this.flattenModules();
     return modules[moduleId.identity]?.getDependencyResolver(name);
   }
 
-  // findAncestorResolvers(resolverClass: ClassType<any, AbstractDependencyResolver<any>>): DependencyFactory<any>[] {
+  // findAncestorResolvers(resolverClass: ClassType<any, AbstractDependencyResolver<any>>): Instance<any>[] {
   //   const own = this.findOwnResolversByType(resolverClass);
   //   if (own.length) {
   //     return own;
@@ -111,20 +112,20 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
   //   return this.parent.findAncestorResolvers(resolverClass);
   // }
 
-  findAncestorResolvers(resolverClass: ClassType<any, AbstractDependencyResolver<any>>): DependencyFactory<any>[] {
+  findAncestorResolvers(resolverClass: ClassType<any, AbstractDependencyResolver<any>>): Instance<any>[] {
     const own = this.findOwnResolversByType(resolverClass);
     const fromParent = this.parent ? this.parent.findAncestorResolvers(resolverClass) : [];
 
     return [...fromParent, ...own];
   }
 
-  protected findOwnResolversByType(type): DependencyFactory<any>[] {
+  protected findOwnResolversByType(type): Instance<any>[] {
     return this.resolvers
       .filter(resolver => resolver instanceof type)
       .map(resolver => this.dependenciesByResolverId[resolver.id]);
   }
 
-  findFactoriesByResolverClass(resolverClass): DependencyFactory<any>[] {
+  findFactoriesByResolverClass(resolverClass): Instance<any>[] {
     const modules = this.flattenModules();
     return Object.values(modules).flatMap(moduleRegistry => moduleRegistry.findOwnResolversByType(resolverClass));
   }

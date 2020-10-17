@@ -1,9 +1,10 @@
 import { ModuleLookup } from '../module/ModuleLookup';
 import { Module } from '../module/Module';
 import { DefinitionResolver, DefinitionResolverFactory } from './DependencyResolver';
-import { DependencyFactory, RegistryRecord } from '../module/RegistryRecord';
+import { RegistryRecord } from '../module/RegistryRecord';
 import { ContainerContext } from '../container/ContainerContext';
 import { ImmutableSet } from '../collections/ImmutableSet';
+import { Instance } from "./abstract/Instance";
 
 //TODO: This looks like responsibility of the ContainerContext ?
 export const ModuleResolverService = {
@@ -24,7 +25,7 @@ export const ModuleResolverService = {
           //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
           context[key] = moduleLookup.instancesProxy.getReference(key);
           moduleLookup.dependencyResolvers[key] = resolver;
-          moduleLookup.appendDependencyFactory(key, resolver, context[key] as DependencyFactory<any>);
+          moduleLookup.appendDependencyFactory(key, resolver, context[key] as Instance<any>);
         }
 
         if (resolver.type === 'module') {

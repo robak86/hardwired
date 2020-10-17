@@ -1,18 +1,19 @@
-import { DependencyFactory, RegistryRecord } from "../RegistryRecord";
+import { RegistryRecord } from "../RegistryRecord";
 import { expectType, TypeEqual } from "ts-expect";
+import { Instance } from "../../resolvers/abstract/Instance";
 
 describe(`RegistryRecord`, () => {
   describe(`Module`, () => {
     it(`returns correct type`, async () => {
       type Registry = {
-        a: DependencyFactory<number>;
+        a: Instance<number>;
         imported: {
-          b: DependencyFactory<boolean>;
+          b: Instance<boolean>;
         };
         imported2: {
-          c: DependencyFactory<number>;
+          c: Instance<number>;
           nested: {
-            d: DependencyFactory<string>;
+            d: Instance<string>;
           };
         };
       };
@@ -21,16 +22,16 @@ describe(`RegistryRecord`, () => {
 
       type Expected =
         | {
-            b: DependencyFactory<boolean>;
+            b: Instance<boolean>;
           }
         | {
-            c: DependencyFactory<number>;
+            c: Instance<number>;
             nested: {
-              d: DependencyFactory<string>;
+              d: Instance<string>;
             };
           }
         | {
-            d: DependencyFactory<string>;
+            d: Instance<string>;
           };
 
       expectType<TypeEqual<Modules, Expected>>(true);
@@ -40,9 +41,9 @@ describe(`RegistryRecord`, () => {
   describe(`RegistryRecord.DependencyResolversKeys`, () => {
     it(`returns correct type`, async () => {
       type Registry = {
-        a: DependencyFactory<123>;
+        a: Instance<123>;
         imported: {
-          b: DependencyFactory<true>;
+          b: Instance<true>;
         };
       };
 
@@ -55,9 +56,9 @@ describe(`RegistryRecord`, () => {
   describe(`RegistryRecord.ModuleResolversKeys`, () => {
     it(`returns correct type`, async () => {
       type Registry = {
-        a: DependencyFactory<123>;
+        a: Instance<123>;
         imported: {
-          b: DependencyFactory<true>;
+          b: Instance<true>;
         };
       };
 

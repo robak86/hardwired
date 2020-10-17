@@ -1,10 +1,10 @@
 import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 import { ClassType } from '../utils/ClassType';
-import { DependencyFactory } from '../module/RegistryRecord';
+import { Instance } from "./abstract/Instance";
 
 export class ClassTransientResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
-  constructor(private klass, private selectDependencies: Array<DependencyFactory<any>> = []) {
+  constructor(private klass, private selectDependencies: Array<Instance<any>> = []) {
     super();
   }
 
@@ -18,7 +18,7 @@ export type ClassTransientBuilder = {
   <TResult>(klass: ClassType<[], TResult>): ClassTransientResolver<TResult>;
   <TDeps extends any[], TResult>(
     klass: ClassType<TDeps, TResult>,
-    depSelect: { [K in keyof TDeps]: DependencyFactory<TDeps[K]> },
+    depSelect: { [K in keyof TDeps]: Instance<TDeps[K]> },
   ): ClassTransientResolver<TResult>;
 };
 

@@ -1,7 +1,7 @@
 import {
   AbstractDependencyResolver,
   ContainerContext,
-  DependencyFactory,
+  Instance,
   EventsEmitter,
   ModuleLookup
 } from "hardwired";
@@ -19,7 +19,7 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
 > {
   private onDependencyInvalidated = new EventsEmitter();
 
-  constructor(private component: TComponent, private propsDependencies: Record<string, DependencyFactory<any>>) {
+  constructor(private component: TComponent, private propsDependencies: Record<string, Instance<any>>) {
     super();
   }
 
@@ -46,7 +46,7 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
 }
 
 export type ComponentDependencies<TProps> = {
-  [K in keyof TProps]: DependencyFactory<TProps[K]>;
+  [K in keyof TProps]: Instance<TProps[K]>;
 };
 
 // TODO: should subtract props provided by container from final component props

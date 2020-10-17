@@ -2,7 +2,7 @@ import { Module } from "../Module";
 import { AbstractDependencyResolver } from "../../resolvers/abstract/AbstractDependencyResolver";
 import { ContainerContext } from "../../container/ContainerContext";
 import { expectType, TypeEqual } from "ts-expect";
-import { DependencyFactory } from "../RegistryRecord";
+import { Instance } from "../../resolvers/abstract/Instance";
 
 describe(`Module`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -26,10 +26,10 @@ describe(`Module`, () => {
       .define('key4', ctx => dummy(() => 'someString'));
 
     type ExpectedType = {
-      key1: DependencyFactory<number>;
-      key2: DependencyFactory<boolean>;
-      key3: DependencyFactory<string>;
-      key4: DependencyFactory<() => 'someString'>;
+      key1: Instance<number>;
+      key2: Instance<boolean>;
+      key3: Instance<string>;
+      key4: Instance<() => 'someString'>;
     };
 
     expectType<TypeEqual<Module.Registry<typeof m>, ExpectedType>>(true);
@@ -37,10 +37,10 @@ describe(`Module`, () => {
 
   it(`creates correct types for deps`, async () => {
     type ExpectedType = {
-      key1: DependencyFactory<number>;
-      key2: DependencyFactory<boolean>;
-      key3: DependencyFactory<string>;
-      key4: DependencyFactory<() => 'someString'>;
+      key1: Instance<number>;
+      key2: Instance<boolean>;
+      key3: Instance<string>;
+      key4: Instance<() => 'someString'>;
     };
 
     const m = Module.empty('someModule') // breakme
@@ -87,7 +87,7 @@ describe(`Module`, () => {
       .define('imported', ctx => m1)
       .define('key2', ctx => dummy('string'))
       .define('key1', _ => {
-        expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1>; key2: DependencyFactory<string> }>>(
+        expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1>; key2: Instance<string> }>>(
           true,
         );
 

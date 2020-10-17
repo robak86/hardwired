@@ -1,11 +1,11 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory, ModuleLookup } from 'hardwired';
+import { AbstractDependencyResolver, ContainerContext, Instance, ModuleLookup } from 'hardwired';
 import { StoreResolver } from './StoreResolver';
 import invariant from 'tiny-invariant';
 import { AlterableStore } from '../stack/AlterableStore';
 import { createSelector } from 'reselect';
 
 export class SelectorResolver<T> extends AbstractDependencyResolver<T> {
-  private storeResolver: DependencyFactory<AlterableStore<any>>[] | [DependencyFactory<AlterableStore<any>>] = [];
+  private storeResolver: Instance<AlterableStore<any>>[] | [Instance<AlterableStore<any>>] = [];
   private hasSubscription = false;
 
   constructor(private select: () => T, private deps: SelectorResolver<any>[] = []) {

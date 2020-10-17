@@ -63,7 +63,7 @@ describe(`ModuleResolver`, () => {
     expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
   });
 
-  it(`returns DependencyFactory functions delegating to resolvers`, async () => {
+  it(`returns Instance functions delegating to resolvers`, async () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 
@@ -86,7 +86,7 @@ describe(`ModuleResolver`, () => {
     expect(buildBFactorySpy).toHaveBeenCalledWith(containerContext);
   });
 
-  it(`returns DependencyFactory functions returning correct values`, async () => {
+  it(`returns Instance functions returning correct values`, async () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 

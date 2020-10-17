@@ -1,13 +1,13 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory, ModuleLookup } from 'hardwired';
+import { AbstractDependencyResolver, ContainerContext, Instance, ModuleLookup } from 'hardwired';
 import { ReducerResolver } from './ReducerResolver';
 import { AlterableStore } from '../stack/AlterableStore';
 import { SagaResolver } from './SagaResolver';
 
 export class StoreResolver<AppState> extends AbstractDependencyResolver<AlterableStore<AppState>> {
-  public reducersResolvers: DependencyFactory<any>[] = [];
-  public sagasResolvers: DependencyFactory<any>[] = [];
+  public reducersResolvers: Instance<any>[] = [];
+  public sagasResolvers: Instance<any>[] = [];
 
-  constructor(private resolver: DependencyFactory<AppState>) {
+  constructor(private resolver: Instance<AppState>) {
     super();
   }
 
@@ -44,7 +44,7 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
 }
 
 export const store = <TAppState extends Record<any, any>>(
-  defaultsState: DependencyFactory<TAppState>,
+  defaultsState: Instance<TAppState>,
 ): StoreResolver<TAppState> => {
   return new StoreResolver<TAppState>(defaultsState);
 };
