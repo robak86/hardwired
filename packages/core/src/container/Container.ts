@@ -1,11 +1,10 @@
-import { ContainerContext } from "./ContainerContext";
-import { ModuleLookup } from "../module/ModuleLookup";
+import { ContainerContext } from './ContainerContext';
+import { ModuleLookup } from '../module/ModuleLookup';
 
-import { Module } from "../module/Module";
-import { ModuleResolverService } from "../resolvers/ModuleResolver";
-import { RegistryRecord } from "../module/RegistryRecord";
-import invariant from "tiny-invariant";
-import { DependencyResolverEvents } from "../resolvers/abstract/AbstractDependencyResolver";
+import { Module } from '../module/Module';
+import { RegistryRecord } from '../module/RegistryRecord';
+import invariant from 'tiny-invariant';
+import { DependencyResolverEvents } from '../resolvers/abstract/AbstractDependencyResolver';
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -41,8 +40,8 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     private containerContext: ContainerContext = ContainerContext.empty(),
     private context?: C,
   ) {
-    ModuleResolverService.load(module, this.containerContext);
-    ModuleResolverService.onInit(module, this.containerContext);
+    this.containerContext.loadModule(module);
+    this.containerContext.initModule(module);
 
     this.rootModuleLookup = this.containerContext.getModule(module.moduleId);
   }
@@ -80,11 +79,11 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   };
 
   load(module: Module<any>) {
-    ModuleResolverService.load(module, this.containerContext, module.injections);
+    this.containerContext.loadModule(module, module.injections);
     let lookup = this.containerContext.getModule(module.moduleId);
 
     this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
-    ModuleResolverService.onInit(module, this.containerContext);
+    this.containerContext.initModule(module);
   }
 
   getEvents<
@@ -92,11 +91,11 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string
   >(module: Module<TRegistryRecord>, key: K): DependencyResolverEvents {
     if (!this.containerContext.hasModule(module.moduleId)) {
-      ModuleResolverService.load(module, this.containerContext, module.injections);
+      this.containerContext.loadModule(module);
       let lookup = this.containerContext.getModule(module.moduleId);
 
       this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
-      ModuleResolverService.onInit(module, this.containerContext);
+      this.containerContext.initModule(module);
     }
 
     const moduleLookup = this.containerContext.getModule(module.moduleId);
