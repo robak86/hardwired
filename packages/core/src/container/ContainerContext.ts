@@ -7,37 +7,12 @@ import { Module } from "../module/Module";
 import { RegistryRecord } from "../module/RegistryRecord";
 import { DefinitionResolver, DefinitionResolverFactory } from "../resolvers/DependencyResolver";
 import { Instance } from "../resolvers/abstract/Instance";
+import { PushPromise } from "../utils/PushPromise";
 
 export type ContainerCacheEntry = {
   // requestId:string;
   value: any;
 };
-
-class PushPromise<T> {
-  resolve!: (value: T | Promise<T>) => void;
-  public readonly promise: Promise<T>;
-
-  constructor() {
-    this.promise = new Promise<T>((resolve, reject) => {
-      this.resolve = resolve;
-      setTimeout(() => {
-        reject('timeout'); // TODO: add correct errors handling
-      }, 10000);
-    });
-  }
-
-  get(): Promise<T> {
-    return this.promise;
-  }
-
-  push(value: T | Promise<T>) {
-    if (!this.resolve) {
-      throw new Error('race condition related to promise constructor');
-    }
-
-    this.resolve(value);
-  }
-}
 
 const ModuleResolverService = {
   load(module: Module<any>, containerContext: ContainerContext, injections = ImmutableSet.empty()) {

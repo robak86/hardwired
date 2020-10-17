@@ -1,7 +1,7 @@
-import { createResolverId } from "../../utils/fastId";
-import { ModuleLookup } from "../../module/ModuleLookup";
-import { ContainerContext } from "../../container/ContainerContext";
-import { EventsEmitter } from "../../utils/EventsEmitter";
+import { createResolverId } from '../../utils/fastId';
+import { ModuleLookup } from '../../module/ModuleLookup';
+import { ContainerContext } from '../../container/ContainerContext';
+import { EventsEmitter } from '../../utils/EventsEmitter';
 
 export class DependencyResolverEvents {
   invalidateEvents: EventsEmitter<any> = new EventsEmitter<any>();
@@ -18,4 +18,3 @@ export abstract class AbstractDependencyResolver<TReturn> {
 
   abstract build(context: ContainerContext): TReturn;
 }
-
