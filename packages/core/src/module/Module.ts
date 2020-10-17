@@ -1,12 +1,9 @@
-import { DefinitionResolver, DefinitionResolverFactory, DependencyResolver } from '../resolvers/DependencyResolver';
+import { DefinitionResolver, DependencyResolver } from '../resolvers/DependencyResolver';
 import { ModuleId } from './ModuleId';
 import { ImmutableSet } from '../collections/ImmutableSet';
-import { DependencyFactory, RegistryRecord } from './RegistryRecord';
+import { RegistryRecord } from './RegistryRecord';
 import invariant from 'tiny-invariant';
-import { AbstractDependencyResolver} from '../resolvers/abstract/AbstractDependencyResolver';
-import { ContainerContext } from '../container/ContainerContext';
-import { ModuleLookup } from './ModuleLookup';
-import { AbstractModuleResolver } from "../resolvers/abstract/AbstractModuleResolver";
+import { AbstractDependencyResolver } from '../resolvers/abstract/AbstractDependencyResolver';
 
 export namespace Module {
   export type Registry<T extends Module<any>> = T extends Module<infer TShape> ? TShape : never;
@@ -15,24 +12,18 @@ export namespace Module {
 export const module = (name: string) => Module.empty(name);
 export const unit = module;
 
-export class Module<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
-  public readonly type: 'module' = 'module';
+export class Module<TRegistryRecord extends RegistryRecord> {
+  public type: 'module' = 'module';
 
   static empty(name: string): Module<{}> {
     return new Module<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
   }
 
   protected constructor(
-    moduleId: ModuleId,
+    public moduleId: ModuleId,
     public registry: ImmutableSet<RegistryRecord.Resolvers<TRegistryRecord>>,
-    injections: ImmutableSet<Record<string, Module<any>>>,
-  ) {
-    super(moduleId, injections);
-  }
-
-  forEachDefinition(iterFn: (resolverFactory: DefinitionResolverFactory, key: string) => void) {
-    this.registry.forEach(iterFn);
-  }
+    public injections: ImmutableSet<Record<string, Module<any>>>,
+  ) {}
 
   define<TKey extends string, T1 extends (ctx: TRegistryRecord) => DefinitionResolver>(
     name: TKey,
@@ -64,20 +55,5 @@ export class Module<TRegistryRecord extends RegistryRecord> extends AbstractModu
     invariant(this.registry.hasKey(name), `Cannot replace dependency with name: ${name}. It does not exists `);
 
     return new Module(this.moduleId, this.registry.replace(name, resolver) as any, this.injections) as this;
-  }
-
-  onInit(containerContext: ContainerContext) {
-    const moduleLookup = containerContext.getModule(this.moduleId);
-
-    moduleLookup.forEachModuleResolver(resolver => {
-      resolver.onInit(containerContext);
-    });
-
-    moduleLookup.freezeImplementations();
-
-    moduleLookup.forEachDependencyResolver(resolver => {
-      const onInit = resolver.onInit;
-      onInit && onInit.call(resolver, moduleLookup);
-    });
   }
 }

@@ -1,11 +1,9 @@
-import { DependencyFactory, RegistryRecord } from '../../module/RegistryRecord';
-import { createResolverId } from '../../utils/fastId';
-import { ModuleId } from '../../module/ModuleId';
-import { ImmutableSet } from '../../collections/ImmutableSet';
-import { Module } from '../../module/Module';
-import { ContainerContext } from '../../container/ContainerContext';
-import { ModuleLookup } from '../../module/ModuleLookup';
-import { DefinitionResolver, DefinitionResolverFactory } from '../DependencyResolver';
+import { RegistryRecord } from "../../module/RegistryRecord";
+import { createResolverId } from "../../utils/fastId";
+import { ImmutableSet } from "../../collections/ImmutableSet";
+import { Module } from "../../module/Module";
+import { ContainerContext } from "../../container/ContainerContext";
+import { ModuleResolverService } from "../ModuleResolver";
 
 export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
   public readonly id: string = createResolverId();
@@ -15,69 +13,17 @@ export abstract class AbstractModuleResolver<TReturn extends RegistryRecord> {
 
   protected parentModules: Record<string, AbstractModuleResolver<any>> = {};
 
-  protected constructor(public moduleId: ModuleId, public injections: ImmutableSet<Record<string, Module<any>>>) {}
+  protected constructor(public module: Module<any>) {}
 
-  protected appendParent(other: AbstractModuleResolver<any>) {
-    this.parentModules[other.moduleId.id] = other;
-  }
-
-  build(containerContext: ContainerContext, injections: ImmutableSet<any> = this.injections): ModuleLookup<TReturn> {
-    if (!containerContext.hasModule(this.moduleId)) {
-      // TODO: merge injections with own this.registry injections
-      // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
-      const context: RegistryRecord = {};
-      const moduleLookup: ModuleLookup<any> = new ModuleLookup(this.moduleId);
-      const mergedInjections = this.injections.merge(injections);
-
-      this.forEachDefinition((resolverFactory: DefinitionResolverFactory, key: string) => {
-        // TODO: by calling resolverFactory with proxy object, we could automatically track all dependencies for change detection
-        //  ...but we probably don't wanna have this feature in the responsibility of this DI solution?? What about compatibility(proxy object) ?
-        const resolver: DefinitionResolver = resolverFactory(context);
-
-        if (resolver.type === 'dependency') {
-          console.log('dependency', key);
-          //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
-          context[key] = moduleLookup.instancesProxy.getReference(key);
-          moduleLookup.dependencyResolvers[key] = resolver;
-          moduleLookup.appendDependencyFactory(key, resolver, context[key] as DependencyFactory<any>);
-        }
-
-        if (resolver.type === 'module') {
-          if (mergedInjections.hasKey(resolver.moduleId.identity)) {
-            moduleLookup.moduleResolvers[key] = mergedInjections.get(resolver.moduleId.identity);
-          } else {
-            moduleLookup.moduleResolvers[key] = resolver;
-          }
-
-          moduleLookup.moduleResolvers[key].appendParent(this);
-          const registryLookup = moduleLookup.moduleResolvers[key].build(containerContext, mergedInjections);
-
-          context[key] = registryLookup.registry;
-          moduleLookup.appendChild(registryLookup);
-        }
-      });
-
-      containerContext.addModule(this.moduleId, moduleLookup);
-    }
-
-    this.onInit(containerContext);
-    return containerContext.getModule(this.moduleId);
+  load(containerContext: ContainerContext, injections = ImmutableSet.empty()) {
+    ModuleResolverService.load(this.module, containerContext, injections);
   }
 
   onInit(containerContext: ContainerContext) {
-    const moduleLookup = containerContext.getModule(this.moduleId);
-
-    moduleLookup.forEachModuleResolver(resolver => {
-      resolver.onInit(containerContext);
-    });
-
-    moduleLookup.freezeImplementations();
-
-    moduleLookup.forEachDependencyResolver(resolver => {
-      const onInit = resolver.onInit;
-      onInit && onInit.call(resolver, moduleLookup);
-    });
+    ModuleResolverService.onInit(this.module, containerContext);
   }
 
-  abstract forEachDefinition(iterFn: (resolverFactory: DefinitionResolverFactory, key: string) => void);
+  get moduleId() {
+    return this.module.moduleId;
+  }
 }

@@ -1,11 +1,12 @@
 import { AbstractDependencyResolver } from '../abstract/AbstractDependencyResolver';
 import { ModuleLookup } from '../../module/ModuleLookup';
 import { Module, unit } from '../../module/Module';
-import { ModuleResolver } from '../ModuleResolver';
+
 import { ContainerContext } from '../../container/ContainerContext';
 import { singleton } from '../ClassSingletonResolver';
 import { value } from '../ValueResolver';
 import { container } from '../../container/Container';
+import { ModuleResolverService } from '../ModuleResolver';
 
 describe(`ModuleResolver`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -32,10 +33,9 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
-    const resolver = new ModuleResolver(m);
-
     const containerContext = ContainerContext.empty();
-    resolver.load(containerContext);
+    ModuleResolverService.load(m, containerContext);
+    ModuleResolverService.onInit(m, containerContext);
 
     const { registry } = containerContext.getModule(m.moduleId);
 
@@ -55,11 +55,10 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
-    const resolver = new ModuleResolver(m);
+    const containerContext = ContainerContext.empty();
+    ModuleResolverService.load(m, containerContext);
+    ModuleResolverService.onInit(m, containerContext);
 
-    const context = ContainerContext.empty();
-    resolver.load(context);
-    resolver.onInit(context);
     expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
     expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
   });
@@ -75,13 +74,10 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
-    const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-
-    resolver.load(containerContext);
-
+    ModuleResolverService.load(m, containerContext);
+    ModuleResolverService.onInit(m, containerContext);
     const { registry } = containerContext.getModule(m.moduleId);
-    resolver.onInit(containerContext);
 
     registry.a.get(containerContext);
     registry.b.get(containerContext);
@@ -101,12 +97,11 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
-    const resolver = new ModuleResolver(m);
-    const containerContext = ContainerContext.empty();
-    resolver.load(containerContext);
 
+    const containerContext = ContainerContext.empty();
+    ModuleResolverService.load(m, containerContext);
+    ModuleResolverService.onInit(m, containerContext);
     const { registry } = containerContext.getModule(m.moduleId);
-    resolver.onInit(containerContext);
 
     expect(registry.a.get(containerContext)).toEqual(123);
     expect(registry.b.get(containerContext)).toEqual(false);
@@ -117,13 +112,10 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependency(1))
       .replace('a', ctx => dependency(2));
 
-    const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    resolver.load(containerContext);
-
+    ModuleResolverService.load(m, containerContext);
+    ModuleResolverService.onInit(m, containerContext);
     const { registry } = containerContext.getModule(m.moduleId);
-
-    resolver.onInit(containerContext);
 
     const replacedValue = registry.a.get(containerContext);
     expect(replacedValue).toEqual(2);

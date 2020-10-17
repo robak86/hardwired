@@ -1,10 +1,10 @@
 import { ModuleId } from "./ModuleId";
 import { DependencyFactory, RegistryRecord } from "./RegistryRecord";
-import { DefinitionResolver, DependencyResolver } from "../resolvers/DependencyResolver";
-import { AbstractDependencyResolver} from "../resolvers/abstract/AbstractDependencyResolver";
+import { AbstractDependencyResolver } from "../resolvers/abstract/AbstractDependencyResolver";
 import { ClassType } from "../utils/ClassType";
 import { InstancesProxy } from "../resolvers/InstancesProxy";
 import { AbstractModuleResolver } from "../resolvers/abstract/AbstractModuleResolver";
+import { Module } from "./Module";
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
@@ -13,20 +13,19 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
   private dependenciesByModuleId: Record<string, Record<string, DependencyFactory<any>>> = {};
   private dependenciesByName: Record<string, DependencyFactory<any>> = {};
   private childModuleRegistriesByModuleId: Record<string, ModuleLookup<any>> = {};
-  private resolvers: DefinitionResolver[] = [];
+  private resolvers: AbstractDependencyResolver<any>[] = [];
   protected parent?: ModuleLookup<any>;
 
   // TODO: encapsulate
   public instancesProxy = new InstancesProxy();
   public dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
-  public moduleResolvers: Record<string, AbstractModuleResolver<any>> = {};
+  public modules: Record<string, Module<any>> = {};
 
   constructor(public moduleId: ModuleId) {}
 
   get registry(): Record<string, DependencyFactory<any>> {
     return this.dependenciesByName;
   }
-
 
   // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
   // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
@@ -42,9 +41,9 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
     });
   }
 
-  forEachModuleResolver(iterFn: (resolver: AbstractModuleResolver<any>) => void) {
-    Object.keys(this.moduleResolvers).forEach(key => {
-      iterFn(this.moduleResolvers[key]);
+  forEachModuleResolver(iterFn: (resolver: Module<any>) => void) {
+    Object.keys(this.modules).forEach(key => {
+      iterFn(this.modules[key]);
     });
   }
 
