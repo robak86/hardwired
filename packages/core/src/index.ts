@@ -22,4 +22,3 @@ export { ServiceLocator } from './container/ServiceLocator';
 
 export type { ClassType } from './utils/ClassType';
 export { EventsEmitter } from './utils/EventsEmitter';
-export { AbstractModuleResolver } from "./resolvers/abstract/AbstractModuleResolver";

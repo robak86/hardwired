@@ -1,44 +1,11 @@
-import { ModuleLookup } from "../module/ModuleLookup";
-import { Module } from "../module/Module";
-import { DefinitionResolver, DefinitionResolverFactory } from "./DependencyResolver";
-import { DependencyFactory, RegistryRecord } from "../module/RegistryRecord";
-import { ContainerContext } from "../container/ContainerContext";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import invariant from "tiny-invariant";
-import { AbstractDependencyResolver, DependencyResolverEvents } from "./abstract/AbstractDependencyResolver";
+import { ModuleLookup } from '../module/ModuleLookup';
+import { Module } from '../module/Module';
+import { DefinitionResolver, DefinitionResolverFactory } from './DependencyResolver';
+import { DependencyFactory, RegistryRecord } from '../module/RegistryRecord';
+import { ContainerContext } from '../container/ContainerContext';
+import { ImmutableSet } from '../collections/ImmutableSet';
 
-export class InstancesProxy {
-  private buildFunctions: Record<string, (context: ContainerContext) => any> = {};
-  private events: Record<string, DependencyResolverEvents> = {};
-
-  getReference(key: string) {
-    const self = this;
-
-    return new DependencyFactory(
-      (cache: ContainerContext) => {
-        const build = self.buildFunctions[key];
-        invariant(
-          build,
-          `Cannot find build implementation for ${key}. Available keys ${Object.keys(this.buildFunctions)}`,
-        );
-        return build(cache);
-      },
-      () => {
-        const events = self.events[key];
-
-        invariant(events, 'notifyInvalidated called before modules initialization complete');
-        return events;
-      },
-    );
-  }
-
-  replaceImplementation(key, resolver: AbstractDependencyResolver<any>) {
-    this.buildFunctions[key] = resolver.build.bind(resolver);
-    this.events[key] = resolver.events;
-  }
-}
-
-// This looks like responsibility of the ContainerContext
+//TODO: This looks like responsibility of the ContainerContext ?
 export const ModuleResolverService = {
   load(module: Module<any>, containerContext: ContainerContext, injections = ImmutableSet.empty()) {
     if (!containerContext.hasModule(module.moduleId)) {
@@ -99,24 +66,3 @@ export const ModuleResolverService = {
     });
   },
 };
-//
-// // TODO: since this class is completely stateless... should it even exists ?!
-// export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
-//   constructor(Module: Module<TRegistryRecord>) {
-//     super(Module);
-//   }
-//
-//   load(containerContext: ContainerContext, injections = ImmutableSet.empty()) {
-//     throw new Error('Implement me');
-//     // ModuleResolverService.load(this.module, containerContext, injections);
-//   }
-//
-//   onInit(containerContext: ContainerContext) {
-//     throw new Error('Implement me');
-//     // ModuleResolverService.onInit(this.module, containerContext);
-//   }
-// }
-
-// export const moduleImport = <TValue extends RegistryRecord>(value: Module<TValue>): ModuleResolver<TValue> => {
-//   return new ModuleResolver(value);
-// };

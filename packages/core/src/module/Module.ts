@@ -1,9 +1,9 @@
-import { DefinitionResolver, DependencyResolver } from '../resolvers/DependencyResolver';
-import { ModuleId } from './ModuleId';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import { RegistryRecord } from './RegistryRecord';
-import invariant from 'tiny-invariant';
-import { AbstractDependencyResolver } from '../resolvers/abstract/AbstractDependencyResolver';
+import { DefinitionResolver, DependencyResolver } from "../resolvers/DependencyResolver";
+import { ModuleId } from "./ModuleId";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import { RegistryRecord } from "./RegistryRecord";
+import invariant from "tiny-invariant";
+import { AbstractDependencyResolver } from "../resolvers/abstract/AbstractDependencyResolver";
 
 export namespace Module {
   export type Registry<T extends Module<any>> = T extends Module<infer TShape> ? TShape : never;

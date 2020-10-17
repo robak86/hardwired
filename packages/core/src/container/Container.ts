@@ -1,12 +1,11 @@
-import { ContainerContext } from './ContainerContext';
-import { ModuleLookup } from '../module/ModuleLookup';
+import { ContainerContext } from "./ContainerContext";
+import { ModuleLookup } from "../module/ModuleLookup";
 
-import { Module } from '../module/Module';
-import { ModuleResolverService } from '../resolvers/ModuleResolver';
-import { RegistryRecord } from '../module/RegistryRecord';
-import invariant from 'tiny-invariant';
-import { DependencyResolverEvents } from '../resolvers/abstract/AbstractDependencyResolver';
-import { AbstractModuleResolver } from '../resolvers/abstract/AbstractModuleResolver';
+import { Module } from "../module/Module";
+import { ModuleResolverService } from "../resolvers/ModuleResolver";
+import { RegistryRecord } from "../module/RegistryRecord";
+import invariant from "tiny-invariant";
+import { DependencyResolverEvents } from "../resolvers/abstract/AbstractDependencyResolver";
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];

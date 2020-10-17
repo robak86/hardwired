@@ -3,7 +3,6 @@ import { DependencyFactory, RegistryRecord } from "./RegistryRecord";
 import { AbstractDependencyResolver } from "../resolvers/abstract/AbstractDependencyResolver";
 import { ClassType } from "../utils/ClassType";
 import { InstancesProxy } from "../resolvers/InstancesProxy";
-import { AbstractModuleResolver } from "../resolvers/abstract/AbstractModuleResolver";
 import { Module } from "./Module";
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state

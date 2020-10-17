@@ -1,14 +1,8 @@
-import { AbstractDependencyResolver} from './abstract/AbstractDependencyResolver';
-import { DependencyFactory, RegistryRecord } from '../module/RegistryRecord';
-import { Module } from '../module/Module';
-import { AbstractModuleResolver } from "./abstract/AbstractModuleResolver";
+import { AbstractDependencyResolver } from "./abstract/AbstractDependencyResolver";
+import { DependencyFactory } from "../module/RegistryRecord";
+import { Module } from "../module/Module";
 
-// prettier-ignore
-// export type DependencyResolver<TValue> =
-//   | AbstractDependencyResolver<any>
-//   | AbstractModuleResolver<any>;
-
-export type DefinitionResolver = Module<any> | AbstractDependencyResolver<any>
+export type DefinitionResolver = Module<any> | AbstractDependencyResolver<any>;
 export type DefinitionResolverFactory = (context: any) => DefinitionResolver;
 
 export namespace DependencyResolver {
