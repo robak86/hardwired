@@ -1,15 +1,15 @@
 import {
   AbstractDependencyResolver,
   AbstractModuleResolver,
-  DependencyResolverEvents,
-} from './AbstractDependencyResolver';
-import { ModuleLookup } from '../module/ModuleLookup';
-import { Module } from '../module/Module';
-import { DependencyResolver } from './DependencyResolver';
-import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from '../module/RegistryRecord';
-import { ContainerContext } from '../container/ContainerContext';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import invariant from 'tiny-invariant';
+  DependencyResolverEvents
+} from "./AbstractDependencyResolver";
+import { ModuleLookup } from "../module/ModuleLookup";
+import { Module } from "../module/Module";
+import { DependencyResolver } from "./DependencyResolver";
+import { DependencyFactory, DependencyResolverFactory, RegistryRecord } from "../module/RegistryRecord";
+import { ContainerContext } from "../container/ContainerContext";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import invariant from "tiny-invariant";
 
 export class InstancesProxy {
   private buildFunctions: Record<string, (context: ContainerContext) => any> = {};
@@ -45,13 +45,11 @@ export class InstancesProxy {
 export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
   constructor(Module: Module<TRegistryRecord>) {
     super(Module);
-    console.log('initialize', this.moduleId);
   }
 
   // TODO: accept custom module resolverClass? in order to select ModuleResolver instance at container creation?
   // TODO: module resolver shouldn't use containerContext - there is no need that resolver should store something
   build(containerContext: ContainerContext, injections = ImmutableSet.empty()): ModuleLookup<TRegistryRecord> {
-    console.log('calling build for', this.moduleId);
     if (!containerContext.hasModule(this.moduleId)) {
       // TODO: merge injections with own this.registry injections
       // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
@@ -65,7 +63,6 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
         const resolver: DependencyResolver<any> = resolverFactory(context);
 
         if (resolver.type === 'dependency') {
-          console.log('dependency', key);
           //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
           context[key] = moduleLookup.instancesProxy.getReference(key);
           moduleLookup.dependencyResolvers[key] = resolver;

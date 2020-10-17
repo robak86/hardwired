@@ -1,11 +1,11 @@
-import { AbstractDependencyResolver } from "../AbstractDependencyResolver";
-import { ModuleLookup } from "../../module/ModuleLookup";
-import { Module, unit } from "../../module/Module";
-import { moduleImport, ModuleResolver } from "../ModuleResolver";
-import { ContainerContext } from "../../container/ContainerContext";
-import { singleton } from "../ClassSingletonResolver";
-import { value } from "../ValueResolver";
-import { container } from "../../container/Container";
+import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
+import { ModuleLookup } from '../../module/ModuleLookup';
+import { Module, unit } from '../../module/Module';
+import { moduleImport, ModuleResolver } from '../ModuleResolver';
+import { ContainerContext } from '../../container/ContainerContext';
+import { singleton } from '../ClassSingletonResolver';
+import { value } from '../ValueResolver';
+import { container } from '../../container/Container';
 
 describe(`ModuleResolver`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -72,7 +72,9 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
+
     const { registry } = resolver.build(containerContext);
+    resolver.onInit(containerContext);
 
     registry.a.get(containerContext);
     registry.b.get(containerContext);
@@ -95,6 +97,7 @@ describe(`ModuleResolver`, () => {
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
     const { registry } = resolver.build(containerContext);
+    resolver.onInit(containerContext);
 
     expect(registry.a.get(containerContext)).toEqual(123);
     expect(registry.b.get(containerContext)).toEqual(false);
@@ -108,6 +111,8 @@ describe(`ModuleResolver`, () => {
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
     const { registry } = resolver.build(containerContext);
+    resolver.onInit(containerContext);
+
     const replacedValue = registry.a.get(containerContext);
     expect(replacedValue).toEqual(2);
   });

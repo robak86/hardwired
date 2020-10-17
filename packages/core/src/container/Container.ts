@@ -57,11 +57,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 
     if (nameOrModule instanceof Module) {
       if (!this.containerContext.hasModule(nameOrModule.moduleId)) {
-        const moduleResolver = new ModuleResolver(nameOrModule);
-
-        let lookup = moduleResolver.build(this.containerContext, nameOrModule.injections);
-        this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
-        moduleResolver.onInit(this.containerContext);
+        this.load(nameOrModule);
         // this.rootResolver.onInit(this.containerContext);
       }
 
@@ -77,6 +73,14 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 
     invariant('Invalid module or name');
   };
+
+  load(nameOrModule: Module<any>) {
+    const moduleResolver = new ModuleResolver(nameOrModule);
+
+    let lookup = moduleResolver.build(this.containerContext, nameOrModule.injections);
+    this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
+    moduleResolver.onInit(this.containerContext);
+  }
 
   getEvents<
     TRegistryRecord extends RegistryRecord,

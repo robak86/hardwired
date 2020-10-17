@@ -1,11 +1,11 @@
-import { container, module, moduleImport, unit, value } from "hardwired";
-import { store } from "../StoreResolver";
-import { selector } from "../SelectorResolver";
-import { ContainerProvider, useWatchable } from "hardwired-react";
-import { render } from "@testing-library/react";
-import React, { FunctionComponent } from "react";
-import { dispatch } from "../DispatchResolver";
-import { reducer } from "../ReducerResolver";
+import { container, module, moduleImport, unit, value } from 'hardwired';
+import { store } from '../StoreResolver';
+import { selector } from '../SelectorResolver';
+import { ContainerProvider, useWatchable } from 'hardwired-react';
+import { render } from '@testing-library/react';
+import React, { FunctionComponent } from 'react';
+import { dispatch } from '../DispatchResolver';
+import { reducer } from '../ReducerResolver';
 
 export type DummyComponentProps = {
   value: string;
@@ -87,6 +87,7 @@ describe(`SelectorResolver`, () => {
       };
 
       const c = container(unit('empty'));
+      c.load(m);
 
       return render(
         <ContainerProvider container={c}>
