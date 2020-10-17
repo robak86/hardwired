@@ -33,7 +33,12 @@ describe(`ModuleResolver`, () => {
       .define('b', ctx => dependencyB);
 
     const resolver = new ModuleResolver(m);
-    const { registry } = resolver.build(ContainerContext.empty());
+
+    const containerContext = ContainerContext.empty();
+    resolver.load(containerContext);
+
+    const { registry } = containerContext.getModule(m.moduleId);
+
     expect(Object.keys(registry)).toEqual(['a', 'b']);
     expect(registry.a.get).toBeInstanceOf(Function);
     expect(registry.b.get).toBeInstanceOf(Function);
@@ -53,7 +58,7 @@ describe(`ModuleResolver`, () => {
     const resolver = new ModuleResolver(m);
 
     const context = ContainerContext.empty();
-    resolver.build(context);
+    resolver.load(context);
     resolver.onInit(context);
     expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
     expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
@@ -73,7 +78,9 @@ describe(`ModuleResolver`, () => {
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
 
-    const { registry } = resolver.build(containerContext);
+    resolver.load(containerContext);
+
+    const { registry } = containerContext.getModule(m.moduleId);
     resolver.onInit(containerContext);
 
     registry.a.get(containerContext);
@@ -96,7 +103,9 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    const { registry } = resolver.build(containerContext);
+    resolver.load(containerContext);
+
+    const { registry } = containerContext.getModule(m.moduleId);
     resolver.onInit(containerContext);
 
     expect(registry.a.get(containerContext)).toEqual(123);
@@ -110,7 +119,10 @@ describe(`ModuleResolver`, () => {
 
     const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    const { registry } = resolver.build(containerContext);
+    resolver.load(containerContext);
+
+    const { registry } = containerContext.getModule(m.moduleId);
+
     resolver.onInit(containerContext);
 
     const replacedValue = registry.a.get(containerContext);

@@ -1,7 +1,6 @@
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { AbstractModuleResolver, DependencyResolverEvents } from '../resolvers/AbstractDependencyResolver';
-import { ContainerContext } from '../container/ContainerContext';
-import { EventsEmitter } from '../utils/EventsEmitter';
+import { DependencyResolver } from "../resolvers/DependencyResolver";
+import { AbstractModuleResolver, DependencyResolverEvents } from "../resolvers/AbstractDependencyResolver";
+import { ContainerContext } from "../container/ContainerContext";
 
 // TODO: rename -> Instance|Definition|Def (the shorter the better for types errors messages?)
 

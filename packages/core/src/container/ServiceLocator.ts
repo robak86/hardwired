@@ -20,7 +20,9 @@ export class ServiceLocator {
     return factory({
       get: (module, key) => {
         const resolver = new ModuleResolver(module);
-        const dependencyFactory = resolver.build(requestContext).getDependencyResolver(key as string);
+        resolver.load(requestContext);
+
+        const dependencyFactory = requestContext.getModule(module.moduleId).getDependencyResolver(key as string);
         invariant(dependencyFactory, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
         return dependencyFactory.get(requestContext);
       },

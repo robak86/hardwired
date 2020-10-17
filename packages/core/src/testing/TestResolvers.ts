@@ -22,7 +22,7 @@ export class RegistryResolver<TValue extends RegistryRecord> extends AbstractMod
     super(registry);
   }
 
-  build(): ModuleLookup<any> {
+  load(): ModuleLookup<any> {
     throw new Error('Implement me');
   }
   onInit() {}

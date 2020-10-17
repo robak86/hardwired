@@ -42,22 +42,16 @@ export class InstancesProxy {
   }
 }
 
-export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
-  constructor(Module: Module<TRegistryRecord>) {
-    super(Module);
-  }
-
-  // TODO: accept custom module resolverClass? in order to select ModuleResolver instance at container creation?
-  // TODO: module resolver shouldn't use containerContext - there is no need that resolver should store something
-  build(containerContext: ContainerContext, injections = ImmutableSet.empty()): ModuleLookup<TRegistryRecord> {
-    if (!containerContext.hasModule(this.moduleId)) {
+const ModuleResolverService = {
+  load(module: Module<any>, containerContext: ContainerContext, injections = ImmutableSet.empty()) {
+    if (!containerContext.hasModule(module.moduleId)) {
       // TODO: merge injections with own this.registry injections
       // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
       const context: RegistryRecord = {};
-      const moduleLookup: ModuleLookup<any> = new ModuleLookup(this.module.moduleId);
-      const mergedInjections = this.module.injections.merge(injections);
+      const moduleLookup: ModuleLookup<any> = new ModuleLookup(module.moduleId);
+      const mergedInjections = module.injections.merge(injections);
 
-      this.module.registry.forEach((resolverFactory: DependencyResolverFactory<any>, key: string) => {
+      module.registry.forEach((resolverFactory: DependencyResolverFactory<any>, key: string) => {
         // TODO: by calling resolverFactory with proxy object, we could automatically track all dependencies for change detection
         //  ...but we probably don't wanna have this feature in the responsibility of this DI solution?? What about compatibility(proxy object) ?
         const resolver: DependencyResolver<any> = resolverFactory(context);
@@ -77,21 +71,22 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
             moduleLookup.moduleResolvers[key] = resolver;
           }
 
-          const childModuleLookup = moduleLookup.moduleResolvers[key].build(containerContext, mergedInjections);
+          const childModuleResolver = moduleLookup.moduleResolvers[key];
+          childModuleResolver.load(containerContext, mergedInjections);
+
+          const childModuleLookup = containerContext.getModule(childModuleResolver.moduleId);
 
           context[key] = childModuleLookup.registry;
           moduleLookup.appendChild(childModuleLookup);
         }
       });
 
-      containerContext.addModule(this.moduleId, moduleLookup);
+      containerContext.addModule(module.moduleId, moduleLookup);
     }
+  },
 
-    return containerContext.getModule(this.moduleId);
-  }
-
-  onInit(containerContext: ContainerContext) {
-    const moduleLookup = containerContext.getModule(this.moduleId);
+  onInit(module: Module<any>, containerContext: ContainerContext) {
+    const moduleLookup = containerContext.getModule(module.moduleId);
 
     moduleLookup.forEachModuleResolver(resolver => {
       resolver.onInit(containerContext);
@@ -103,6 +98,21 @@ export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends Abst
       const onInit = resolver.onInit;
       onInit && onInit.call(resolver, moduleLookup);
     });
+  },
+};
+
+// TODO: since this class is completely stateless... should it even exists ?!
+export class ModuleResolver<TRegistryRecord extends RegistryRecord> extends AbstractModuleResolver<TRegistryRecord> {
+  constructor(Module: Module<TRegistryRecord>) {
+    super(Module);
+  }
+
+  load(containerContext: ContainerContext, injections = ImmutableSet.empty()) {
+    ModuleResolverService.load(this.module, containerContext, injections);
+  }
+
+  onInit(containerContext: ContainerContext) {
+    ModuleResolverService.onInit(this.module, containerContext);
   }
 }
 
