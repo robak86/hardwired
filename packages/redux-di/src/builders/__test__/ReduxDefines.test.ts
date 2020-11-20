@@ -1,8 +1,8 @@
-import { container, module, value } from 'hardwired';
-import { AlterableStore } from '../../stack/AlterableStore';
-import { reducer, ReducerResolver } from '../../factories/ReducerResolver';
-import { saga, SagaResolver } from '../../factories/SagaResolver';
-import { store } from '../../factories/StoreResolver';
+import { container, module, value } from "hardwired";
+import { AlterableStore } from "../../stack/AlterableStore";
+import { reducer, ReducerResolver } from "../../resolvers/ReducerResolver";
+import { saga, SagaResolver } from "../../resolvers/SagaResolver";
+import { store } from "../../resolvers/StoreResolver";
 
 describe(`ReduxDefines`, () => {
   it(`sdf`, async () => {

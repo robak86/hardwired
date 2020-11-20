@@ -1,8 +1,9 @@
-import { DependencyResolver } from '../resolvers/DependencyResolver';
-import { ModuleId } from './ModuleId';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import { RegistryRecord } from './RegistryRecord';
-import invariant from 'tiny-invariant';
+import { DefinitionResolver, DependencyResolver } from "../resolvers/DependencyResolver";
+import { ModuleId } from "./ModuleId";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import { RegistryRecord } from "./RegistryRecord";
+import invariant from "tiny-invariant";
+import { AbstractDependencyResolver } from "../resolvers/abstract/AbstractDependencyResolver";
 
 export namespace Module {
   export type Registry<T extends Module<any>> = T extends Module<infer TShape> ? TShape : never;
@@ -12,6 +13,8 @@ export const module = (name: string) => Module.empty(name);
 export const unit = module;
 
 export class Module<TRegistryRecord extends RegistryRecord> {
+  public type: 'module' = 'module';
+
   static empty(name: string): Module<{}> {
     return new Module<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
   }
@@ -22,7 +25,7 @@ export class Module<TRegistryRecord extends RegistryRecord> {
     public injections: ImmutableSet<Record<string, Module<any>>>,
   ) {}
 
-  define<TKey extends string, T1 extends (ctx: TRegistryRecord) => DependencyResolver<any>>(
+  define<TKey extends string, T1 extends (ctx: TRegistryRecord) => DefinitionResolver>(
     name: TKey,
     resolver: T1,
   ): Module<TRegistryRecord & Record<TKey, DependencyResolver.Value<ReturnType<T1>>>> {
@@ -43,12 +46,11 @@ export class Module<TRegistryRecord extends RegistryRecord> {
     ) as any;
   }
 
-  // TODO: consider forcing that replaced T1 returns the same kind of resolver that original T1
   replace<
     K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>,
     T1 extends (
       ctx: Omit<Pick<TRegistryRecord, RegistryRecord.DependencyResolversKeys<TRegistryRecord>>, K>,
-    ) => DependencyResolver<ReturnType<TRegistryRecord[K]>>
+    ) => AbstractDependencyResolver<ReturnType<TRegistryRecord[K]>>
   >(name: K, resolver: T1): this {
     invariant(this.registry.hasKey(name), `Cannot replace dependency with name: ${name}. It does not exists `);
 

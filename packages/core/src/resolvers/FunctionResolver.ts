@@ -1,7 +1,7 @@
-import { curry } from "../utils/curry";
-import { AbstractDependencyResolver } from "./AbstractDependencyResolver";
-import { ContainerContext } from "../container/ContainerContext";
-import { DependencyFactory } from "../module/RegistryRecord";
+import { curry } from '../utils/curry';
+import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
+import { ContainerContext } from '../container/ContainerContext';
+import { Instance } from "./abstract/Instance";
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
@@ -11,7 +11,7 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
   private readonly uncurriedFunction;
   private previousDependencies: any[] = [];
 
-  constructor(fn: (...args: any[]) => any, private depSelect: Array<DependencyFactory<any>> = []) {
+  constructor(fn: (...args: any[]) => any, private depSelect: Array<Instance<any>> = []) {
     super();
     this.uncurriedFunction = fn;
     this.curriedFunction = curry(fn);
@@ -19,7 +19,7 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
 
   build(cache: ContainerContext): TReturn {
     // TODO: not sure if this does not trigger all getter from the whole tree !!!!
-    const currentDependencies = this.depSelect.map(factory => factory(cache));
+    const currentDependencies = this.depSelect.map(factory => factory.get(cache));
     const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
 
     if (requiresRevalidation) {
@@ -50,15 +50,15 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
 type FunctionResolverBuilder = {
   <TResult>(fn: () => TResult): FunctionResolver<() => TResult>;
   <TDep1, TResult>(fn: (d1: TDep1) => TResult): FunctionResolver<(d1: TDep1) => TResult>;
-  <TDep1, TResult>(fn: (d1: TDep1) => TResult, depSelect: [DependencyFactory<TDep1>]): FunctionResolver<() => TResult>;
+  <TDep1, TResult>(fn: (d1: TDep1) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<() => TResult>;
   <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult): FunctionResolver<(d1: TDep1, d2: TDep2) => TResult>;
   <TDep1, TDep2, TResult>(
     fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: [DependencyFactory<TDep1>],
+    depSelect: [Instance<TDep1>],
   ): FunctionResolver<(dep2: TDep2) => TResult>;
   <TDep1, TDep2, TResult>(
     fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: [DependencyFactory<TDep1>, DependencyFactory<TDep2>],
+    depSelect: [Instance<TDep1>, Instance<TDep2>],
   ): FunctionResolver<() => TResult>;
   // 3 args
   <TDep1, TDep2, TDep3, TResult>(fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult): FunctionResolver<
@@ -66,19 +66,19 @@ type FunctionResolverBuilder = {
   >;
   <TDep1, TDep2, TDep3, TResult>(
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [DependencyFactory<TDep1>],
+    depSelect: [Instance<TDep1>],
   ): FunctionResolver<(dep2: TDep2, dep3: TDep3) => TResult>;
   <TDep1, TDep2, TDep3, TResult>(
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [DependencyFactory<TDep1>, DependencyFactory<TDep2>],
+    depSelect: [Instance<TDep1>, Instance<TDep2>],
   ): FunctionResolver<(dep3: TDep3) => TResult>;
   <TDep1, TDep2, TDep3, TResult>(
     fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [DependencyFactory<TDep1>, DependencyFactory<TDep2>, DependencyFactory<TDep3>],
+    depSelect: [Instance<TDep1>, Instance<TDep2>, Instance<TDep3>],
   ): FunctionResolver<() => TResult>;
   <TDep1, TDep2, TDep3, TDep4, TResult>(
     fn: (d1: TDep1, d2: TDep2, d3: TDep3, d4: TDep4) => TResult,
-    depSelect: [DependencyFactory<TDep1>, DependencyFactory<TDep2>, DependencyFactory<TDep3>, DependencyFactory<TDep4>],
+    depSelect: [Instance<TDep1>, Instance<TDep2>, Instance<TDep3>, Instance<TDep4>],
   ): FunctionResolver<() => TResult>;
 };
 

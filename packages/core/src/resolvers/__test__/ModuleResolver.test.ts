@@ -1,7 +1,7 @@
-import { AbstractDependencyResolver } from '../AbstractDependencyResolver';
-import { RegistryLookup } from '../../module/RegistryLookup';
+import { AbstractDependencyResolver } from '../abstract/AbstractDependencyResolver';
+import { ModuleLookup } from '../../module/ModuleLookup';
 import { Module, unit } from '../../module/Module';
-import { moduleImport, ModuleResolver } from '../ModuleResolver';
+
 import { ContainerContext } from '../../container/ContainerContext';
 import { singleton } from '../ClassSingletonResolver';
 import { value } from '../ValueResolver';
@@ -17,7 +17,7 @@ describe(`ModuleResolver`, () => {
       return this.value;
     }
 
-    onInit(registry: RegistryLookup<any>) {}
+    onInit(registry: ModuleLookup<any>) {}
   }
 
   const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
@@ -32,11 +32,15 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
-    const resolver = new ModuleResolver(m);
-    const { registry } = resolver.build(ContainerContext.empty());
+    const containerContext = ContainerContext.empty();
+    containerContext.loadModule(m);
+    containerContext.initModule(m);
+
+    const { registry } = containerContext.getModule(m.moduleId);
+
     expect(Object.keys(registry)).toEqual(['a', 'b']);
-    expect(registry.a).toBeInstanceOf(Function);
-    expect(registry.b).toBeInstanceOf(Function);
+    expect(registry.a.get).toBeInstanceOf(Function);
+    expect(registry.b.get).toBeInstanceOf(Function);
   });
 
   it(`calls dependencyResolver.onInit with parameter of type ModuleRegistry`, async () => {
@@ -50,14 +54,15 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
-    const resolver = new ModuleResolver(m);
+    const containerContext = ContainerContext.empty();
+    containerContext.loadModule(m);
+    containerContext.initModule(m);
 
-    resolver.build(ContainerContext.empty());
-    expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(RegistryLookup);
-    expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(RegistryLookup);
+    expect(buildASpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
+    expect(buildBSpy.mock.calls[0][0]).toBeInstanceOf(ModuleLookup);
   });
 
-  it(`returns DependencyFactory functions delegating to resolvers`, async () => {
+  it(`returns Instance functions delegating to resolvers`, async () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 
@@ -68,18 +73,19 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
-    const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    const { registry } = resolver.build(containerContext);
+    containerContext.loadModule(m);
+    containerContext.initModule(m);
+    const { registry } = containerContext.getModule(m.moduleId);
 
-    registry.a(containerContext);
-    registry.b(containerContext);
+    registry.a.get(containerContext);
+    registry.b.get(containerContext);
 
     expect(buildAFactorySpy).toHaveBeenCalledWith(containerContext);
     expect(buildBFactorySpy).toHaveBeenCalledWith(containerContext);
   });
 
-  it(`returns DependencyFactory functions returning correct values`, async () => {
+  it(`returns Instance functions returning correct values`, async () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 
@@ -90,12 +96,13 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependencyA)
       .define('b', ctx => dependencyB);
 
-    const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    const { registry } = resolver.build(containerContext);
+    containerContext.loadModule(m);
+    containerContext.initModule(m);
+    const { registry } = containerContext.getModule(m.moduleId);
 
-    expect(registry.a(containerContext)).toEqual(123);
-    expect(registry.b(containerContext)).toEqual(false);
+    expect(registry.a.get(containerContext)).toEqual(123);
+    expect(registry.b.get(containerContext)).toEqual(false);
   });
 
   it(`returns correct value for replaced value`, async () => {
@@ -103,10 +110,12 @@ describe(`ModuleResolver`, () => {
       .define('a', ctx => dependency(1))
       .replace('a', ctx => dependency(2));
 
-    const resolver = new ModuleResolver(m);
     const containerContext = ContainerContext.empty();
-    const { registry } = resolver.build(containerContext);
-    const replacedValue = registry.a(containerContext);
+    containerContext.loadModule(m);
+    containerContext.initModule(m);
+    const { registry } = containerContext.getModule(m.moduleId);
+
+    const replacedValue = registry.a.get(containerContext);
     expect(replacedValue).toEqual(2);
   });
 
@@ -117,7 +126,7 @@ describe(`ModuleResolver`, () => {
 
     it(`resolves correct dependencies using injections`, async () => {
       const parent = unit('parent')
-        .define('imported', _ => moduleImport(child))
+        .define('imported', _ => child)
         .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
 
       const child = unit('child') //breakme
@@ -131,7 +140,7 @@ describe(`ModuleResolver`, () => {
 
     it(`resolves correct dependencies using deepGet`, async () => {
       const parent = unit('parent')
-        .define('imported', _ => moduleImport(child))
+        .define('imported', _ => child)
         .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
 
       const child = unit('child') //breakme
@@ -146,14 +155,14 @@ describe(`ModuleResolver`, () => {
     it(`resolves correct dependencies replacing multiple modules with injections`, async () => {
       const parent = unit('parent')
         // imports
-        .define('child', _ => moduleImport(child))
-        .define('grandChild', _ => moduleImport(grandChild))
+        .define('child', _ => child)
+        .define('grandChild', _ => grandChild)
 
         .define('ownGrandChild', _ => singleton(ValueWrapper, [_.grandChild.a]))
         .define('transientGrandChild', _ => singleton(ValueWrapper, [_.child.grandChildValue]));
 
       const child = unit('child') //breakme
-        .define('grandChild', _ => moduleImport(grandChild))
+        .define('grandChild', _ => grandChild)
         .define('grandChildValue', _ => singleton(ValueWrapper, [_.grandChild.a]));
 
       const grandChild = unit('grandChild') //breakme

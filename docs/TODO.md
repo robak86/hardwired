@@ -1,7 +1,20 @@
+### ModuleResolver
+
+- probably module resolver shouldn't use container context and should
+- shouldn't have build method, but rather load() (side effect)
+
+- is it important for the resolver to know if discovered dependency comes from parent or from child ?
+
+- lazy loading introduces dependency to order of modules loading which makes preserving (reasonable) tree hierarchy of loaded modules
+  not possible. Instead of keeping tree structure in the context maybe we should use a simple `map<uuid, resolver>`
+  (optimized with additional maps <resolver type, resolvers[]> for discovery performance) and additionally provide `validate` method on the
+  `AbstractDependencyResolver` for checking if e.g. application has only single definition of redux store (what if for some
+  reason somebody would like to have 2 instances ?) ?
+
 - while replacing definition one can still create circular dependencies cycle
-    - ideally it should be forbidden using types (...but probably impossible/hard to implement)
-    - forbid using any other dependencies ? (too restrictive)
-    - add runtime check, rename `replace` -> `testReplace` (to highlight that it should be using only for tests - no type-safe ?)
+  - ideally it should be forbidden using types (...but probably impossible/hard to implement)
+  - forbid using any other dependencies ? (too restrictive)
+  - add runtime check, rename `replace` -> `testReplace` (to highlight that it should be using only for tests - no type-safe ?)
 
 ```typescript
 const m = module('m')
@@ -11,9 +24,8 @@ const m = module('m')
 
 expect(container(m).get('b').args).toEqual(['a']);
 
-
 // CRASH or maxium call stack exceeded (dependending how .replace is implemented on ImmutableSet)
-const updated = m.replace('b', _ => singleton(ArgsDebug, [_.c])); 
+const updated = m.replace('b', _ => singleton(ArgsDebug, [_.c]));
 
 expect(container(updated).get('b')).toEqual('bReplaced');
 expect(container(updated).get('c')).toEqual({
@@ -21,8 +33,13 @@ expect(container(updated).get('c')).toEqual({
 });
 ```
 
+- Find better names for the `RegistryRecord`
+- narrow key types to strings (keyof S & string)
+
 - add `link` | 'export' resolver. For exporting definition from imported modules.
-- prevent accessing properties through multiple levels of modules hierarchy
+
+  - prevent accessing properties through multiple levels of modules hierarchy
+  - but breaks Law od Demeter
 
   ```typescript
   const m = module('m')

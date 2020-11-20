@@ -4,7 +4,7 @@
 
 Minimalistic, type-safe dependency injection solution for TypeScript.
 
-- [x] Type-safe, all definitions checked at compile time
+- [x] Type-safe, all dependencies checked at compile time
 - [x] No decorators, no reflection
 - [x] Lazy instantiation of the dependencies
 - [x] Easy mocking and testing

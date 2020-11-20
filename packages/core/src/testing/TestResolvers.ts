@@ -1,8 +1,6 @@
-import { AbstractDependencyResolver, AbstractModuleResolver } from '../resolvers/AbstractDependencyResolver';
+import { AbstractDependencyResolver } from '../resolvers/abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
-import { RegistryRecord } from '../module/RegistryRecord';
-import { RegistryLookup } from '../module/RegistryLookup';
-import { DependencyResolver } from '../resolvers/DependencyResolver';
+import { ModuleLookup } from '../module/ModuleLookup';
 
 export class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(private value: TValue) {
@@ -12,26 +10,13 @@ export class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   build(cache: ContainerContext): TValue {
     return this.value;
   }
-}
-
-export class RegistryResolver<TValue extends RegistryRecord> extends AbstractModuleResolver<TValue> {
-  constructor(registry) {
-    super(registry);
+  onInit(lookup: ModuleLookup<any>) {
+    return undefined;
   }
-
-  build(): RegistryLookup<any> {
-    throw new Error('Implement me');
-  }
-
-  forEach(iterFn: (resolver: DependencyResolver<any>) => any) {}
 }
 
 export const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
   return new DummyResolver<TValue>(value);
-};
-
-export const registryDependency = <TValue extends RegistryRecord>(value: TValue): RegistryResolver<TValue> => {
-  return new RegistryResolver<TValue>(value);
 };
 
 export class TestTransientResolver<TReturn> extends AbstractDependencyResolver<TReturn> {

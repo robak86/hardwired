@@ -1,18 +1,20 @@
-import { AbstractDependencyResolver, ContainerContext, DependencyFactory, RegistryLookup } from 'hardwired';
+import { AbstractDependencyResolver, ContainerContext, Instance, ModuleLookup } from 'hardwired';
 import { ReducerResolver } from './ReducerResolver';
 import { AlterableStore } from '../stack/AlterableStore';
 import { SagaResolver } from './SagaResolver';
 
 export class StoreResolver<AppState> extends AbstractDependencyResolver<AlterableStore<AppState>> {
-  public reducersResolvers: DependencyFactory<any>[] = [];
-  public sagasResolvers: DependencyFactory<any>[] = [];
+  public reducersResolvers: Instance<any>[] = [];
+  public sagasResolvers: Instance<any>[] = [];
 
-  constructor(private resolver: DependencyFactory<AppState>) {
+  constructor(private resolver: Instance<AppState>) {
     super();
   }
 
   build(cache: ContainerContext) {
-    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver(cache));
+    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.get(cache));
+    const sagas = this.sagasResolvers.map(sagaResolver => sagaResolver.get(cache));
+
     const store = this.buildStore(cache);
     store.replaceReducers(reducers);
 
@@ -23,14 +25,14 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const initialState = this.resolver(cache);
+      const initialState = this.resolver.get(cache);
       const store = new AlterableStore(initialState);
       cache.setForGlobalScope(this.id, store);
       return store;
     }
   }
 
-  onInit(registry: RegistryLookup<any>): any {
+  onInit(registry: ModuleLookup<any>): any {
     this.reducersResolvers = registry.findFactoriesByResolverClass(ReducerResolver);
     this.sagasResolvers = registry.findFactoriesByResolverClass(SagaResolver);
   }
@@ -42,7 +44,7 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
 }
 
 export const store = <TAppState extends Record<any, any>>(
-  defaultsState: DependencyFactory<TAppState>,
+  defaultsState: Instance<TAppState>,
 ): StoreResolver<TAppState> => {
   return new StoreResolver<TAppState>(defaultsState);
 };

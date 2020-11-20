@@ -1,4 +1,11 @@
-## Getting started
+**!!! WARNING - Library is still in early alpha stage !!!**
+
+# Hardwired
+
+Minimalistic, type-safe dependency injection solution for TypeScript.
+
+
+### Installation
 
 yarn
 
@@ -16,9 +23,9 @@ npm install hardwired
 
 The library uses three main concepts:
 
-- Resolvers - encapsulate details of objects instantiation, (e.g. `singleton`, `transient`, `request`, etc)
 - Module - immutable object containing resolvers registered by names
-- Container - object where all instances lives - it caches and returns object instances created by resolvers
+- Resolver - encapsulates details of objects instantiation, (e.g. `singleton`, `transient`, `request`, etc)
+- Container - object where all instances live. Tt caches and returns object instances created by the resolvers.
 
 #### Create module
 
@@ -204,7 +211,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 ### Modules composition
 
 ```typescript
-import { module, value, singleton, moduleImport } from 'hardwired';
+import { module, value, singleton } from 'hardwired';
 
 const databaseConfig = {
   url: '',
@@ -223,8 +230,8 @@ class UsersListQuery {
 }
 
 const usersModule = module('users')
-  .define('db', _ => moduleImport(dbModule))
-  .define('usersQuery', _ => singleton(UsersListQuery, [_db.connection]));
+  .define('db', _ => dbModule)
+  .define('usersQuery', _ => singleton(UsersListQuery, [_.db.connection]));
 ```
 
 ### Replacing deeply nested dependencies

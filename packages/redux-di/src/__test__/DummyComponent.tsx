@@ -6,5 +6,9 @@ export type DummyComponentProps = {
 };
 
 export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value }) => {
-  return <div data-testid="value">{value}</div>;
+  return (
+    <>
+      <div data-testid="value">{value}</div>
+    </>
+  );
 };

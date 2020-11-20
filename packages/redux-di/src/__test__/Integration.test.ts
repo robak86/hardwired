@@ -1,6 +1,6 @@
-import { container, func, module, moduleImport, value } from 'hardwired';
-import { reducer } from '../factories/ReducerResolver';
-import { store } from '../factories/StoreResolver';
+import { container, module, value } from 'hardwired';
+import { reducer } from '../resolvers/ReducerResolver';
+import { store } from '../resolvers/StoreResolver';
 
 describe(`Integration tests`, () => {
   type AppState = {
@@ -18,7 +18,7 @@ describe(`Integration tests`, () => {
         const childModule = module('childModule').define('appReducer2', _ => reducer(appReducer2));
 
         const m = module('m')
-          .define('childStoreModule', _ => moduleImport(childModule))
+          .define('childStoreModule', _ => childModule)
           .define('defaultState', _ => value(defaultState))
           .define('store', _ => store(_.defaultState))
           .define('appReducer1', _ => reducer(appReducer1));

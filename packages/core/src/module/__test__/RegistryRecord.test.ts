@@ -1,37 +1,37 @@
-import { RegistryRecord } from '../RegistryRecord';
-import { ContainerContext } from '../../container/ContainerContext';
-import { expectType, TypeEqual } from 'ts-expect';
+import { RegistryRecord } from "../RegistryRecord";
+import { expectType, TypeEqual } from "ts-expect";
+import { Instance } from "../../resolvers/abstract/Instance";
 
 describe(`RegistryRecord`, () => {
   describe(`Module`, () => {
     it(`returns correct type`, async () => {
-      const registry = {
-        a: (ctx: ContainerContext) => 123,
+      type Registry = {
+        a: Instance<number>;
         imported: {
-          b: (ctx: ContainerContext) => true,
-        },
+          b: Instance<boolean>;
+        };
         imported2: {
-          c: (ctx: ContainerContext) => 123,
+          c: Instance<number>;
           nested: {
-            d: (ctx: ContainerContext) => 'somestring',
-          },
-        },
+            d: Instance<string>;
+          };
+        };
       };
 
-      type Modules = RegistryRecord.Flatten<typeof registry>;
+      type Modules = RegistryRecord.Flatten<Registry>;
 
       type Expected =
         | {
-            b: (ctx: ContainerContext) => boolean;
+            b: Instance<boolean>;
           }
         | {
-            c: (ctx: ContainerContext) => number;
+            c: Instance<number>;
             nested: {
-              d: (ctx: ContainerContext) => string;
+              d: Instance<string>;
             };
           }
         | {
-            d: (ctx: ContainerContext) => string;
+            d: Instance<string>;
           };
 
       expectType<TypeEqual<Modules, Expected>>(true);
@@ -40,14 +40,14 @@ describe(`RegistryRecord`, () => {
 
   describe(`RegistryRecord.DependencyResolversKeys`, () => {
     it(`returns correct type`, async () => {
-      const registry = {
-        a: (ctx: ContainerContext) => 123,
+      type Registry = {
+        a: Instance<123>;
         imported: {
-          b: (ctx: ContainerContext) => true,
-        },
+          b: Instance<true>;
+        };
       };
 
-      type Keys = RegistryRecord.DependencyResolversKeys<typeof registry>;
+      type Keys = RegistryRecord.DependencyResolversKeys<Registry>;
 
       expectType<TypeEqual<Keys, 'a'>>(true);
     });
@@ -55,14 +55,14 @@ describe(`RegistryRecord`, () => {
 
   describe(`RegistryRecord.ModuleResolversKeys`, () => {
     it(`returns correct type`, async () => {
-      const registry = {
-        a: (ctx: ContainerContext) => 123,
+      type Registry = {
+        a: Instance<123>;
         imported: {
-          b: (ctx: ContainerContext) => true,
-        },
+          b: Instance<true>;
+        };
       };
 
-      type Keys = RegistryRecord.ModuleResolversKeys<typeof registry>;
+      type Keys = RegistryRecord.ModuleResolversKeys<Registry>;
 
       expectType<TypeEqual<Keys, 'imported'>>(true);
     });

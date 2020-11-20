@@ -1,7 +1,6 @@
 import { ContainerContext } from "./ContainerContext";
 import { RegistryRecord } from "../module/RegistryRecord";
 import { Module } from "../module/Module";
-import { ModuleResolver } from "../resolvers/ModuleResolver";
 import invariant from "tiny-invariant";
 
 type ServiceLocatorGet = {
@@ -19,10 +18,12 @@ export class ServiceLocator {
 
     return factory({
       get: (module, key) => {
-        const resolver = new ModuleResolver(module);
-        const dependencyFactory = resolver.build(requestContext).getDependencyResolver(key as string);
+        requestContext.loadModule(module);
+        requestContext.initModule(module);
+
+        const dependencyFactory = requestContext.getModule(module.moduleId).getDependencyResolver(key as string);
         invariant(dependencyFactory, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
-        return dependencyFactory(requestContext);
+        return dependencyFactory.get(requestContext);
       },
     });
   }

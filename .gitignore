@@ -12,5 +12,7 @@ lib
 *.tsbuildinfo
 .nyc_output
 .vscode
+packages/example/dist
+packages/example/.cache
 
 
