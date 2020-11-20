@@ -1,5 +1,8 @@
 ## Getting started
 
+**!!! WARNING - Library is still in early alpha stage !!!**
+
+
 yarn
 
 ```
@@ -204,7 +207,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 ### Modules composition
 
 ```typescript
-import { module, value, singleton, moduleImport } from 'hardwired';
+import { module, value, singleton } from 'hardwired';
 
 const databaseConfig = {
   url: '',
@@ -223,7 +226,7 @@ class UsersListQuery {
 }
 
 const usersModule = module('users')
-  .define('db', _ => moduleImport(dbModule))
+  .define('db', _ => dbModule)
   .define('usersQuery', _ => singleton(UsersListQuery, [_db.connection]));
 ```
 

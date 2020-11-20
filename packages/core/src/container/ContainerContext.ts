@@ -1,13 +1,13 @@
-import { ModuleId } from "../module/ModuleId";
-import invariant from "tiny-invariant";
-import { ModuleLookup } from "../module/ModuleLookup";
+import { ModuleId } from '../module/ModuleId';
+import invariant from 'tiny-invariant';
+import { ModuleLookup } from '../module/ModuleLookup';
 
-import { ImmutableSet } from "../collections/ImmutableSet";
-import { Module } from "../module/Module";
-import { RegistryRecord } from "../module/RegistryRecord";
-import { DefinitionResolver, DefinitionResolverFactory } from "../resolvers/DependencyResolver";
-import { Instance } from "../resolvers/abstract/Instance";
-import { PushPromise } from "../utils/PushPromise";
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { Module } from '../module/Module';
+import { RegistryRecord } from '../module/RegistryRecord';
+import { DefinitionResolver, DefinitionResolverFactory } from '../resolvers/DependencyResolver';
+import { Instance } from '../resolvers/abstract/Instance';
+import { PushPromise } from '../utils/PushPromise';
 
 export type ContainerCacheEntry = {
   // requestId:string;
