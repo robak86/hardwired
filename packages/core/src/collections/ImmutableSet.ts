@@ -99,12 +99,10 @@ export class ImmutableSet<D extends Record<string, any>> {
   extend<TKey extends string, TValue>(key: TKey, value: TValue): ImmutableSet<D & { [K in TKey]: TValue }> {
     invariant(!this.records[key], `Cannot extend set with key: ${key}. It already exists`);
 
-    this.records[key] = [];
-
     return new ImmutableSet(
       {
         ...this.records,
-        [key]: [value, ...this.records[key]],
+        [key]: [value, ...(this.records[key] || [])],
       },
       [...this.orderedKeys, key],
     ) as any;

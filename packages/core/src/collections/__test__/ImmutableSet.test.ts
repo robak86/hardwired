@@ -32,6 +32,14 @@ describe(`ImmutableSet`, () => {
       const a = ImmutableSet.empty().extend('a', 1);
       expect(a.get('a')).toEqual(1);
     });
+
+    it(`does not mutate original element`, async () => {
+      const emptySet = ImmutableSet.empty();
+      emptySet.extend('a', 1);
+      emptySet.extend('b', 1);
+
+      expect(emptySet.keys).toEqual([]);
+    });
   });
 
   describe(`forEach`, () => {
