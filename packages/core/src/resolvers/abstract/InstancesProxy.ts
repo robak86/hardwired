@@ -1,18 +1,18 @@
 import { AbstractDependencyResolver, DependencyResolverEvents } from './AbstractDependencyResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import invariant from 'tiny-invariant';
-import { Instance } from "./Instance";
+import { Instance } from './Instance';
 
 export class InstancesProxy {
   private buildFunctions: Record<string, (context: ContainerContext) => any> = {};
   private events: Record<string, DependencyResolverEvents> = {};
 
   getReference(key: string) {
-    const self = this;
+    // const self = this;
 
     return new Instance(
       (cache: ContainerContext) => {
-        const build = self.buildFunctions[key];
+        const build = this.buildFunctions[key];
         invariant(
           build,
           `Cannot find build implementation for ${key}. Available keys ${Object.keys(this.buildFunctions)}`,
@@ -20,7 +20,7 @@ export class InstancesProxy {
         return build(cache);
       },
       () => {
-        const events = self.events[key];
+        const events = this.events[key];
 
         invariant(events, 'notifyInvalidated called before modules initialization complete');
         return events;

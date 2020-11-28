@@ -1,5 +1,5 @@
-import { compose, createStore, Dispatch, Middleware, Reducer, Store, Unsubscribe } from "redux";
-import createSagaMiddleware, { SagaMiddleware } from "redux-saga";
+import { compose, createStore, Dispatch, Middleware, Reducer, Store, Unsubscribe } from 'redux';
+import createSagaMiddleware, { SagaMiddleware } from 'redux-saga';
 
 export class AlterableStore<AppState> {
   private middlewares: ReturnType<Middleware>[] = [];
@@ -24,7 +24,7 @@ export class AlterableStore<AppState> {
   }
 
   replaceMiddleware(middlewares: Middleware[]) {
-    let dispatch: any = () => {
+    const dispatch: any = () => {
       throw new Error(
         'Dispatching while constructing your middleware is not allowed. ' +
           'Other middleware would not be applied to this dispatch.',

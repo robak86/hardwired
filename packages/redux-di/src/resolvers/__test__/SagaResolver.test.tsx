@@ -15,5 +15,5 @@ describe(`SagaResolver`, () => {
     return { c };
   }
 
-  it(`registers`, async () => {});
+  it.todo(`registers`);
 });

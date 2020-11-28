@@ -9,11 +9,11 @@ export type MatrixProps = {
 export const Matrix: FunctionComponent<MatrixProps> = ({ elements }) => {
   return (
     <div>
-      {elements.map(row => {
+      {elements.map((row, idx) => {
         return (
-          <div>
-            {row.map(cell => (
-              <MatrixCell value={cell} />
+          <div key={idx}>
+            {row.map((cell, idx) => (
+              <MatrixCell value={cell} key={idx} />
             ))}
           </div>
         );

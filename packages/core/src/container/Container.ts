@@ -80,7 +80,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
 
   load(module: Module<any>) {
     this.containerContext.loadModule(module, module.injections);
-    let lookup = this.containerContext.getModule(module.moduleId);
+    const lookup = this.containerContext.getModule(module.moduleId);
 
     this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
     this.containerContext.initModule(module);
@@ -92,7 +92,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   >(module: Module<TRegistryRecord>, key: K): DependencyResolverEvents {
     if (!this.containerContext.hasModule(module.moduleId)) {
       this.containerContext.loadModule(module);
-      let lookup = this.containerContext.getModule(module.moduleId);
+      const lookup = this.containerContext.getModule(module.moduleId);
 
       this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
       this.containerContext.initModule(module);
@@ -135,6 +135,6 @@ export function container<TRegistryRecord extends RegistryRecord>(
   m: Module<TRegistryRecord>,
   ctx?: any,
 ): Container<TRegistryRecord> {
-  let container = new Container(m, ContainerContext.empty(), ctx);
+  const container = new Container(m, ContainerContext.empty(), ctx);
   return container as any;
 }

@@ -1,7 +1,7 @@
 import { curry } from '../utils/curry';
 import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
-import { Instance } from "./abstract/Instance";
+import { Instance } from './abstract/Instance';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
@@ -32,7 +32,7 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      let instance = this.buildFunction(currentDependencies);
+      const instance = this.buildFunction(currentDependencies);
       cache.setForGlobalScope(this.id, instance);
       return instance;
     }
@@ -52,10 +52,9 @@ type FunctionResolverBuilder = {
   <TDep1, TResult>(fn: (d1: TDep1) => TResult): FunctionResolver<(d1: TDep1) => TResult>;
   <TDep1, TResult>(fn: (d1: TDep1) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<() => TResult>;
   <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult): FunctionResolver<(d1: TDep1, d2: TDep2) => TResult>;
-  <TDep1, TDep2, TResult>(
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: [Instance<TDep1>],
-  ): FunctionResolver<(dep2: TDep2) => TResult>;
+  <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<
+    (dep2: TDep2) => TResult
+  >;
   <TDep1, TDep2, TResult>(
     fn: (d1: TDep1, d2: TDep2) => TResult,
     depSelect: [Instance<TDep1>, Instance<TDep2>],

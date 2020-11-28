@@ -138,6 +138,22 @@ describe(`ModuleResolver`, () => {
       expect(container(parentWithInjectedChild).get('aFromImported').value).toEqual(456);
     });
 
+    it(`resolves correct dependencies using multiple injections on the same module `, async () => {
+      const parent = unit('parent')
+        .define('imported', _ => child)
+        .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
+
+      const child = unit('child') //breakme
+        .define('a', _ => value(123));
+
+      const updatedChild = child.replace('a', _ => value(456));
+      const parentWithInjectedChild = parent.inject(updatedChild);
+      const parentWithInjectedChild2 = parent.inject(updatedChild);
+
+      expect(container(parentWithInjectedChild).get('aFromImported').value).toEqual(456);
+      expect(container(parentWithInjectedChild2).get('aFromImported').value).toEqual(456);
+    });
+
     it(`resolves correct dependencies using deepGet`, async () => {
       const parent = unit('parent')
         .define('imported', _ => child)

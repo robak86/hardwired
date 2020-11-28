@@ -24,7 +24,7 @@ describe(`StoreInstance`, () => {
   it(`allows for dynamic middleware registration`, async () => {
     const { state, store, action } = setup();
 
-    function* test<TValue>(value: TValue) {
+    function test<TValue>(value: TValue) {
       return value;
     }
 

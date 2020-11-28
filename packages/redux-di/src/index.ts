@@ -5,7 +5,7 @@ import { DispatchResolver, DispatchResolverParams } from './resolvers/DispatchRe
 import { Instance } from 'hardwired';
 import { StoreResolver } from './resolvers/StoreResolver';
 
-export function init<TState extends object, TAction extends Action = any>() {
+export function init<TState extends Record<string, unknown>, TAction extends Action = any>() {
   const selector: SelectorResolverParams<TState> = (select, deps?) => {
     return new SelectorResolver(select, deps) as any;
   };
