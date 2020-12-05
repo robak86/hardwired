@@ -56,7 +56,7 @@ export const factory: ClassFactoryBuilder = (klass, depSelect?) => {
   return new FactoryResolver(klass, depSelect);
 };
 
-export function transientNew<TDeps extends any[], TValue>(
+export function factoryNew<TDeps extends any[], TValue>(
   cls: ClassType<TDeps, Factory<TValue>>,
 ): FactoryResolverNew<TValue, TDeps> {
   return new FactoryResolverNew(cls);

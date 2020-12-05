@@ -1,10 +1,11 @@
-import { ClassType } from "../utils/ClassType";
-import { AllowedKeys } from "../path";
-import { PropType } from "../utils/PropType";
-import { ModuleId } from "./ModuleId";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import invariant from "tiny-invariant";
-import { AbstractInstanceResolver, BoundResolver, ModuleEntryResolver } from "../resolvers/abstract/AbstractResolvers";
+import { ClassType } from '../utils/ClassType';
+import { AllowedKeys } from '../path';
+import { PropType } from '../utils/PropType';
+import { ModuleId } from './ModuleId';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import invariant from 'tiny-invariant';
+import { AbstractInstanceResolver, BoundResolver, ModuleEntryResolver } from '../resolvers/abstract/AbstractResolvers';
+import { Thunk } from '../utils/Thunk';
 
 // prettier-ignore
 type UnboxModuleEntry<T> =
@@ -15,6 +16,8 @@ type Instance<T> = {
   kind: 'definition';
   instance: T;
 };
+
+export type ModuleEntriesRecord = Record<string, ModuleEntry>;
 
 export type ModuleEntries<T extends Record<string, ModuleEntry>> = {
   kind: 'module';
@@ -32,6 +35,10 @@ export type MaterializeModule<TModule extends ModuleEntry> = TModule extends Ins
 export type MaterializedRecord<TRecord extends Record<string, ModuleEntry>> = {
   [K in keyof TRecord]: MaterializeModule<TRecord[K]>;
 };
+
+export type ModuleInstancesKeys<TRecord extends Record<string, ModuleEntry>> = {
+  [K in keyof TRecord]: TRecord[K] extends Instance<any> ? K : never;
+}[keyof TRecord];
 
 // type M1 = M<{
 //   a: Definition<number>;
@@ -106,24 +113,44 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> implemen
     );
   }
 
-  replace<TKey extends keyof TRecord & string>(
+  replace<TKey extends string, TValue extends UnboxModuleEntry<TRecord[TKey]>>(
     name: TKey,
-    resolver: ModuleEntryResolver<UnboxModuleEntry<TRecord[TKey]>, []>,
+    resolver: ModuleEntryResolver<TValue, []>,
   ): ModuleBuilder<TRecord>;
   replace<
-    TKey extends keyof TRecord & string,
+    TKey extends string,
+    TValue extends UnboxModuleEntry<TRecord[TKey]>,
     TDepKey extends AllowedKeys<TRecord>,
     TDepsKeys extends [TDepKey, ...TDepKey[]]
   >(
     name: TKey,
-    resolver: ModuleEntryResolver<UnboxModuleEntry<TRecord[TKey]>, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
+    resolver: ModuleEntryResolver<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
     dependencies: TDepsKeys,
   ): ModuleBuilder<TRecord>;
   replace<
-    TKey extends keyof TRecord & string,
+    TKey extends string,
+    TValue extends UnboxModuleEntry<TRecord[TKey]>,
     TDepKey extends AllowedKeys<TRecord>,
     TDepsKeys extends [TDepKey, ...TDepKey[]]
   >(name: TKey, resolver: ModuleEntryResolver<any, any>, dependencies?: TDepsKeys): ModuleBuilder<TRecord> {
+    // replace<TKey extends keyof TRecord & string, TReplacement extends UnboxModuleEntry<TRecord[TKey]>>(
+    //   name: TKey,
+    //   resolver: ModuleEntryResolver<UnboxModuleEntry<TRecord[TKey]>, []>,
+    // ): ModuleBuilder<TRecord>;
+    // replace<
+    //   TKey extends keyof TRecord & string,
+    //   TDepKey extends AllowedKeys<TRecord>,
+    //   TDepsKeys extends [TDepKey, ...TDepKey[]]
+    // >(
+    //   name: TKey,
+    //   resolver: ModuleEntryResolver<UnboxModuleEntry<TRecord[TKey]>, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
+    //   dependencies: TDepsKeys,
+    // ): ModuleBuilder<TRecord>;
+    // replace<
+    //   TKey extends keyof TRecord & string,
+    //   TDepKey extends AllowedKeys<TRecord>,
+    //   TDepsKeys extends [TDepKey, ...TDepKey[]]
+    // >(name: TKey, resolver: ModuleEntryResolver<any, any>, dependencies?: TDepsKeys): ModuleBuilder<TRecord> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
 
     return new ModuleBuilder(
@@ -134,6 +161,10 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> implemen
       } as any),
       this.injections,
     );
+  }
+
+  inject(...args: any[]): this {
+    throw new Error('Implement me');
   }
 }
 
@@ -165,7 +196,9 @@ export const value = <TValue>(value: TValue): AbstractInstanceResolver<TValue, [
   throw new Error('implement me');
 };
 
-export const moduleImport = <TValue extends ModuleEntries<any>>(value: TValue): ModuleEntryResolver<TValue, []> => {
+export const moduleImport = <TValue extends ModuleEntries<any>>(
+  value: Thunk<TValue>,
+): ModuleEntryResolver<TValue, []> => {
   throw new Error('implement me');
 };
 

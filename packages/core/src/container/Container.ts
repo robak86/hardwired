@@ -1,10 +1,10 @@
 import { ContainerContext } from './ContainerContext';
 import { ModuleLookup } from '../module/ModuleLookup';
 
-import { Module } from '../module/Module';
 import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';
 import { DependencyResolverEvents } from '../resolvers/abstract/AbstractDependencyResolver';
+import { MaterializedRecord, ModuleBuilder, ModuleEntriesRecord, ModuleInstancesKeys } from '../module/ModuleBuilder';
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -21,22 +21,20 @@ type GetMany<D> = {
   ): [D[K], D[K2], D[K3], D[K4]];
 };
 
-type ContainerGet<TRegistryRecord extends RegistryRecord> = {
-  <K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string>(key: K): RegistryRecord.Materialized<
-    TRegistryRecord
-  >[K];
-  <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string>(
-    module: Module<TRegistryRecord>,
+type ContainerGet<TRegistryRecord extends ModuleEntriesRecord> = {
+  <K extends ModuleInstancesKeys<TRegistryRecord> & string>(key: K): MaterializedRecord<TRegistryRecord>[K];
+  <TRegistryRecord extends ModuleEntriesRecord, K extends ModuleInstancesKeys<TRegistryRecord> & string>(
+    module: ModuleBuilder<TRegistryRecord>,
     key: K,
-  ): RegistryRecord.Materialized<TRegistryRecord>[K];
+  ): MaterializedRecord<TRegistryRecord>[K];
 };
 
-export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
+export class Container<TRegistryRecord extends ModuleEntriesRecord = {}, C = {}> {
   // private rootResolver: ModuleResolver<any>;
   private rootModuleLookup: ModuleLookup<TRegistryRecord>;
 
   constructor(
-    module: Module<TRegistryRecord>,
+    module: ModuleBuilder<TRegistryRecord>,
     private containerContext: ContainerContext = ContainerContext.empty(),
     private context?: C,
   ) {
@@ -51,34 +49,35 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   }
 
   get: ContainerGet<TRegistryRecord> = (nameOrModule, name?) => {
-    if (typeof nameOrModule === 'string') {
-      const dependencyFactory = this.rootModuleLookup.getDependencyResolver(nameOrModule as any);
-
-      invariant(dependencyFactory, `Dependency with name: ${nameOrModule} does not exist`);
-
-      return dependencyFactory.get(this.containerContext.forNewRequest());
-    }
-
-    if (nameOrModule instanceof Module) {
-      if (!this.containerContext.hasModule(nameOrModule.moduleId)) {
-        this.load(nameOrModule);
-        // this.rootResolver.onInit(this.containerContext);
-      }
-
-      const moduleLookup = this.containerContext.getModule(nameOrModule.moduleId);
-      const dependencyResolver = moduleLookup.findDependencyFactory(nameOrModule.moduleId, name);
-      invariant(
-        dependencyResolver,
-        `Cannot find dependency resolver for module name ${nameOrModule.moduleId.name} and id ${nameOrModule.moduleId.id} while getting definition named: ${name}`,
-      );
-
-      return dependencyResolver.get(this.containerContext.forNewRequest());
-    }
+    throw new Error('implement me');
+    // if (typeof nameOrModule === 'string') {
+    //   const dependencyFactory = this.rootModuleLookup.getDependencyResolver(nameOrModule as any);
+    //
+    //   invariant(dependencyFactory, `Dependency with name: ${nameOrModule} does not exist`);
+    //
+    //   return dependencyFactory.get(this.containerContext.forNewRequest());
+    // }
+    //
+    // if (nameOrModule instanceof Module) {
+    //   if (!this.containerContext.hasModule(nameOrModule.moduleId)) {
+    //     this.load(nameOrModule);
+    //     // this.rootResolver.onInit(this.containerContext);
+    //   }
+    //
+    //   const moduleLookup = this.containerContext.getModule(nameOrModule.moduleId);
+    //   const dependencyResolver = moduleLookup.findDependencyFactory(nameOrModule.moduleId, name);
+    //   invariant(
+    //     dependencyResolver,
+    //     `Cannot find dependency resolver for module name ${nameOrModule.moduleId.name} and id ${nameOrModule.moduleId.id} while getting definition named: ${name}`,
+    //   );
+    //
+    //   return dependencyResolver.get(this.containerContext.forNewRequest());
+    // }
 
     invariant('Invalid module or name');
   };
 
-  load(module: Module<any>) {
+  load(module: ModuleBuilder<any>) {
     this.containerContext.loadModule(module, module.injections);
     const lookup = this.containerContext.getModule(module.moduleId);
 
@@ -86,10 +85,10 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     this.containerContext.initModule(module);
   }
 
-  getEvents<
-    TRegistryRecord extends RegistryRecord,
-    K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord> & string
-  >(module: Module<TRegistryRecord>, key: K): DependencyResolverEvents {
+  getEvents<TRegistryRecord extends ModuleEntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord> & string>(
+    module: ModuleBuilder<TRegistryRecord>,
+    key: K,
+  ): DependencyResolverEvents {
     if (!this.containerContext.hasModule(module.moduleId)) {
       this.containerContext.loadModule(module);
       const lookup = this.containerContext.getModule(module.moduleId);
@@ -108,7 +107,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     return dependencyResolver.events;
   }
 
-  getMany: GetMany<RegistryRecord.DependencyResolversKeys<TRegistryRecord>> = (...args: any[]) => {
+  getMany: GetMany<MaterializedRecord<TRegistryRecord>> = (...args: any[]) => {
     const cache = this.containerContext.forNewRequest();
 
     return args.map(key => {
@@ -120,7 +119,7 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
     }) as any;
   };
 
-  asObject(): RegistryRecord.Materialized<TRegistryRecord> {
+  asObject(): MaterializedRecord<TRegistryRecord> {
     const obj = {};
     const cache = this.containerContext.forNewRequest();
     this.rootModuleLookup.forEachDependency((key, factory) => {
@@ -131,8 +130,8 @@ export class Container<TRegistryRecord extends RegistryRecord = {}, C = {}> {
   }
 }
 
-export function container<TRegistryRecord extends RegistryRecord>(
-  m: Module<TRegistryRecord>,
+export function container<TRegistryRecord extends ModuleEntriesRecord>(
+  m: ModuleBuilder<TRegistryRecord>,
   ctx?: any,
 ): Container<TRegistryRecord> {
   const container = new Container(m, ContainerContext.empty(), ctx);

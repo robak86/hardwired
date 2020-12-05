@@ -1,7 +1,7 @@
-import { func, FunctionResolver } from '../FunctionResolver';
 import { unit } from '../../module/Module';
 import { dependency, TestTransientResolver } from '../../testing/TestResolvers';
 import { container } from '../../container/Container';
+import { func } from '../FunctionResolverNew';
 
 describe(`FunctionResolver`, () => {
   function setup() {
@@ -11,9 +11,7 @@ describe(`FunctionResolver`, () => {
     const transientFactorySpy = jest.fn().mockImplementation(() => Math.random());
     const transientResolver = new TestTransientResolver(transientFactorySpy);
 
-    const m = unit('test')
-      .define('singleton', _ => singletonResolver)
-      .define('transient', _ => transientResolver);
+    const m = unit('test').define('singleton', singletonResolver).define('transient', transientResolver);
 
     return { module: m, singletonFactorySpy, transientFactorySpy };
   }
@@ -24,7 +22,7 @@ describe(`FunctionResolver`, () => {
         const { module } = setup();
         const someFunction = (a: number) => Math.random();
 
-        const set = module.define('fn', ctx => func(someFunction));
+        const set = module.define('fn', func(someFunction, 0));
 
         const c = container(set);
 
@@ -40,7 +38,9 @@ describe(`FunctionResolver`, () => {
         const { module, singletonFactorySpy } = setup();
         const someFunction = (a: number) => a;
 
-        const set = module.define('fn', ctx => func(someFunction, [ctx.singleton]));
+        const aa = func(someFunction, 1);
+
+        const set = module.define('fn', func(someFunction, 1), ['singleton']);
         const c = container(set);
 
         const fnBuild1 = c.get('fn');
@@ -59,7 +59,7 @@ describe(`FunctionResolver`, () => {
         const { module, transientFactorySpy } = setup();
         const someFunction = (a: number) => a;
 
-        const set = module.define('fn', ctx => func(someFunction, [ctx.transient]));
+        const set = module.define('fn', func(someFunction, 1), ['transient']);
 
         const c = container(set);
 
@@ -77,7 +77,7 @@ describe(`FunctionResolver`, () => {
         const { module, singletonFactorySpy, transientFactorySpy } = setup();
         const someFunction = (a: number, b: number) => [a, b];
 
-        const set = module.define('fn', ctx => func(someFunction, [ctx.transient, ctx.singleton]));
+        const set = module.define('fn', func(someFunction, 2), ['transient', 'singleton']);
         const c = container(set);
 
         const fnBuild1 = c.get('fn');

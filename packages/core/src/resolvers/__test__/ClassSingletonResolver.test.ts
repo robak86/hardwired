@@ -1,10 +1,11 @@
-import { singleton } from '../ClassSingletonResolver';
+import { singleton, singletonNew } from '../ClassSingletonResolver';
 import { dependency } from '../../testing/TestResolvers';
 import { container } from '../../container/Container';
 import { createResolverId } from '../../utils/fastId';
 import { unit } from '../../module/Module';
-import { value } from '../ValueResolver';
-import { transient } from '../ClassTransientResolver';
+import { value, valueNew } from '../ValueResolver';
+import { transient, transientNew } from '../ClassTransientResolver';
+import { moduleImport } from '../../module/ModuleBuilder';
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {
@@ -19,8 +20,8 @@ describe(`ClassSingletonResolver`, () => {
 
   describe(`single module`, () => {
     const m = unit('root')
-      .define('someValue', _ => dependency('someString'))
-      .define('a', _ => singleton(TestClass, [_.someValue]));
+      .define('someValue', dependency('someString'))
+      .define('a', singletonNew(TestClass), ['someValue']);
 
     it(`returns class instance`, async () => {
       const c = container(m);
@@ -43,23 +44,38 @@ describe(`ClassSingletonResolver`, () => {
 
   describe(`singleton shared across multiple modules hierarchy`, () => {
     const root = unit('root')
-      .define('child1', _ => child1)
-      .define('child2', _ => child2)
+      .define(
+        'child1',
+        moduleImport(() => child1),
+      )
+      .define(
+        'child2',
+        moduleImport(() => child2),
+      )
 
-      .define('singletonModule', _ => singletonModule)
-      .define('singletonConsumer', _ => transient(TestClassConsumer, [_.singletonModule.theSingleton]));
+      .define(
+        'singletonModule',
+        moduleImport(() => singletonModule),
+      )
+      .define('singletonConsumer', transientNew(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const child1 = unit('child1')
-      .define('singletonModule', _ => singletonModule)
-      .define('singletonConsumer', _ => transient(TestClassConsumer, [_.singletonModule.theSingleton]));
+      .define(
+        'singletonModule',
+        moduleImport(() => singletonModule),
+      )
+      .define('singletonConsumer', transientNew(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const child2 = unit('child2')
-      .define('singletonModule', _ => singletonModule)
-      .define('singletonConsumer', _ => transient(TestClassConsumer, [_.singletonModule.theSingleton]));
+      .define(
+        'singletonModule',
+        moduleImport(() => singletonModule),
+      )
+      .define('singletonConsumer', transientNew(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const singletonModule = unit('child1')
-      .define('value', _ => value('someValue'))
-      .define('theSingleton', _ => singleton(TestClass, [_.value]));
+      .define('value', valueNew('someValue'))
+      .define('theSingleton', singletonNew(TestClass), ['value']);
 
     it(`reuses the same instance`, async () => {
       const c = container(root);

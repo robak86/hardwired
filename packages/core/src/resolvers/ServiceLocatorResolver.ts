@@ -1,7 +1,7 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
-import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
+import { AbstractInstanceResolver } from './abstract/AbstractResolvers';
 
 export class ServiceLocatorResolver extends AbstractDependencyResolver<ServiceLocator> {
   constructor() {
@@ -37,4 +37,4 @@ export class ServiceLocatorResolverNew extends AbstractInstanceResolver<ServiceL
 
 export const serviceLocator = (): ServiceLocatorResolver => new ServiceLocatorResolver();
 
-export const serviceLocatorNew = () => ServiceLocatorResolverNew;
+export const serviceLocatorNew = () => new ServiceLocatorResolverNew();

@@ -1,8 +1,8 @@
-import { transient } from "../ClassTransientResolver";
-import { dependency } from "../../testing/TestResolvers";
-import { container } from "../../container/Container";
-import { createResolverId } from "../../utils/fastId";
-import { unit } from "../../module/Module";
+import { transient, transientNew } from '../ClassTransientResolver';
+import { dependency } from '../../testing/TestResolvers';
+import { container } from '../../container/Container';
+import { createResolverId } from '../../utils/fastId';
+import { unit } from '../../module/Module';
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {
@@ -12,8 +12,8 @@ describe(`ClassTransientResolver`, () => {
   }
 
   const m = unit('root')
-    .define('someValue', _ => dependency('someString'))
-    .define('a', _ => transient(TestClass, [_.someValue]));
+    .define('someValue', dependency('someString'))
+    .define('a', transientNew(TestClass), ['someValue']);
 
   it(`returns class instance`, async () => {
     const c = container(m);

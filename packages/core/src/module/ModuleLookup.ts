@@ -1,14 +1,14 @@
 import { ModuleId } from "./ModuleId";
-import { RegistryRecord } from "./RegistryRecord";
 import { AbstractDependencyResolver } from "../resolvers/abstract/AbstractDependencyResolver";
 import { ClassType } from "../utils/ClassType";
 import { InstancesProxy } from "../resolvers/abstract/InstancesProxy";
-import { Module } from "./Module";
+
 import { Instance } from "../resolvers/abstract/Instance";
+import { ModuleBuilder, ModuleEntriesRecord } from "./ModuleBuilder";
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
-export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
+export class ModuleLookup<TRegistryRecord extends ModuleEntriesRecord> {
   private dependenciesByResolverId: Record<string, Instance<any>> = {};
   private dependenciesByModuleId: Record<string, Record<string, Instance<any>>> = {};
   private dependenciesByName: Record<string, Instance<any>> = {};
@@ -19,7 +19,7 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
   // TODO: encapsulate
   public instancesProxy = new InstancesProxy();
   public dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
-  public modules: Record<string, Module<any>> = {};
+  public modules: Record<string, ModuleBuilder<any>> = {};
 
   constructor(public moduleId: ModuleId) {}
 
@@ -41,7 +41,7 @@ export class ModuleLookup<TRegistryRecord extends RegistryRecord> {
     });
   }
 
-  forEachModuleResolver(iterFn: (resolver: Module<any>) => void) {
+  forEachModuleResolver(iterFn: (resolver: ModuleBuilder<any>) => void) {
     Object.keys(this.modules).forEach(key => {
       iterFn(this.modules[key]);
     });

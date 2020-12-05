@@ -28,7 +28,7 @@ export const value = <TValue>(value: TValue): ValueResolver<TValue> => {
   return new ValueResolver(value);
 };
 
-export function transientNew<TDeps extends any[], TValue>(
+export function valueNew<TDeps extends any[], TValue>(
   value: TValue,
 ): ValueResolverNew<TValue> {
   return new ValueResolverNew(value);

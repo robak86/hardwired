@@ -1,4 +1,4 @@
-export { unit, module, Module } from './module/Module';
+export { unit, module } from './module/Module';
 export { container, Container } from './container/Container';
 
 export { ModuleLookup } from './module/ModuleLookup';
@@ -22,4 +22,4 @@ export { ServiceLocator } from './container/ServiceLocator';
 
 export type { ClassType } from './utils/ClassType';
 export { EventsEmitter } from './utils/EventsEmitter';
-export { Instance } from "./resolvers/abstract/Instance";
+export { Instance } from './resolvers/abstract/Instance';

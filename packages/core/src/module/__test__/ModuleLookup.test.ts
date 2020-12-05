@@ -127,13 +127,13 @@ describe(`ModuleLookup`, () => {
   });
 
   describe(`findDependencyFactory`, () => {
-    it(`returns correct dependency factory`, async () => {
-      const { grandChild1Id, root, grandChild1 } = setup();
-
-      const d1 = dependency(123);
-      grandChild1.appendDependencyFactory('d1', d1, new Instance(d1.build, () => new DependencyResolverEvents()));
-      const dependencyFactory = root.findDependencyFactory(grandChild1Id, 'd1');
-      expect(dependencyFactory?.get).toEqual(d1.build);
+    it.todo(`returns correct dependency factory`, async () => {
+      // const { grandChild1Id, root, grandChild1 } = setup();
+      //
+      // const d1 = dependency(123);
+      // grandChild1.appendDependencyFactory('d1', d1, new Instance(d1.build, () => new DependencyResolverEvents()));
+      // const dependencyFactory = root.findDependencyFactory(grandChild1Id, 'd1');
+      // expect(dependencyFactory?.get).toEqual(d1.build);
     });
   });
 });

@@ -1,11 +1,12 @@
-import { unit } from "../../module/Module";
-import { value } from "../ValueResolver";
-import { createResolverId } from "../../utils/fastId";
-import { request } from "../ClassRequestResolver";
-import { singleton } from "../ClassSingletonResolver";
-import { serviceLocator } from "../ServiceLocatorResolver";
-import { container } from "../../container/Container";
-import { factory } from "../FactoryResolver";
+import { unit } from '../../module/Module';
+import { value, valueNew } from '../ValueResolver';
+import { createResolverId } from '../../utils/fastId';
+import { request, requestNew } from '../ClassRequestResolver';
+import { singleton, singletonNew } from '../ClassSingletonResolver';
+import { serviceLocator, serviceLocatorNew } from '../ServiceLocatorResolver';
+import { container } from '../../container/Container';
+import { factory, factoryNew } from '../FactoryResolver';
+import { moduleImport } from '../../module/ModuleBuilder';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -25,16 +26,19 @@ describe(`ServiceLocatorResolver`, () => {
   }
 
   const root = unit('root')
-    .define('locator', _ => serviceLocator())
+    .define('locator', serviceLocatorNew())
 
-    .define('singletonModule', _ => singletonModule)
-    .define('producedByFactory', _ => factory(DummyFactory))
-    .define('singletonConsumer', _ => request(TestClassConsumer, [_.singletonModule.reqScoped]));
+    .define(
+      'singletonModule',
+      moduleImport(() => singletonModule),
+    )
+    .define('producedByFactory', factoryNew(DummyFactory))
+    .define('singletonConsumer', requestNew(TestClassConsumer), ['singletonModule.reqScoped']);
 
   const singletonModule = unit('child1')
-    .define('value', _ => value('someValue'))
-    .define('reqScoped', _ => request(TestClass, [_.value]))
-    .define('singleton', _ => singleton(TestClass, [_.value]));
+    .define('value', valueNew('someValue'))
+    .define('reqScoped', requestNew(TestClass), ['value'])
+    .define('singleton', singletonNew(TestClass), ['value']);
 
   it(`returns request scoped instances`, async () => {
     const c = container(root);

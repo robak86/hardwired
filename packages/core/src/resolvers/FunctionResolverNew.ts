@@ -5,7 +5,7 @@ import { Instance } from './abstract/Instance';
 import Parameters = jest.Parameters;
 import { ClassType } from '../utils/ClassType';
 import { ClassRequestResolverNew } from './ClassRequestResolver';
-import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
+import { AbstractInstanceResolver } from './abstract/AbstractResolvers';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
@@ -63,19 +63,38 @@ type PartiallyApplied<TFunc extends (...args:any[]) => any, TDepth extends 0 | 1
 
 // prettier-ignore
 type PartiallyApplied1<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, ...infer TRest] ? (...args: [TArg1]) => (...rest:TRest) => TReturn : 'args count mismatch'
+  TArgs extends [infer TArg1, ...infer TRest] ? (...rest:TRest) => TReturn : 'args count mismatch'
 
 // prettier-ignore
 type PartiallyApplied2<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, infer TArg2, ...infer TRest] ? (...args: [TArg1, TArg2]) => (...rest:TRest) => TReturn : 'args count mismatch'
+  TArgs extends [infer TArg1, infer TArg2, ...infer TRest] ? (...rest:TRest) => TReturn : 'args count mismatch'
 
 // prettier-ignore
 type PartiallyApplied3<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, infer TArg2,infer TArg3, ...infer TRest] ? (...args: [TArg1, TArg2, TArg3]) => (...rest:TRest) => TReturn : 'args count mismatch'
+  TArgs extends [infer TArg1, infer TArg2,infer TArg3, ...infer TRest] ?  (...rest:TRest) => TReturn : 'args count mismatch'
 
-export function func<TDeps extends any[], TValue extends (...args: any[]) => any, TDepth extends 0 | 1 | 2 | 3>(
+// prettier-ignore
+type PartiallyAppliedArgs<TFunc extends (...args:any[]) => any, TDepth extends 0 | 1 | 2 | 3> =
+  0 extends  TDepth ? [] :
+    1 extends  TDepth ? PartiallyAppliedArgs1<Parameters<TFunc>, ReturnType<TFunc>> :
+      2 extends  TDepth ? PartiallyAppliedArgs2<Parameters<TFunc>, ReturnType<TFunc>> :
+        3 extends  TDepth ? PartiallyAppliedArgs3<Parameters<TFunc>, ReturnType<TFunc>> : never
+
+// prettier-ignore
+type PartiallyAppliedArgs1<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, ...infer TRest] ? [TArg1] : []
+
+// prettier-ignore
+type PartiallyAppliedArgs2<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, infer TArg2, ...infer TRest] ? [TArg1, TArg2] : []
+
+// prettier-ignore
+type PartiallyAppliedArgs3<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, infer TArg2,infer TArg3, ...infer TRest] ?  [TArg1, TArg2, TArg3] : []
+
+export function func<TValue extends (...args: any[]) => any, TDepth extends 0 | 1 | 2 | 3>(
   cls: TValue,
   depth: TDepth,
-): ClassRequestResolverNew<PartiallyApplied<TValue, TDepth>, TDeps> {
+): ClassRequestResolverNew<PartiallyApplied<TValue, TDepth>, PartiallyAppliedArgs<TValue, TDepth>> {
   return new ClassRequestResolverNew(cls);
 }

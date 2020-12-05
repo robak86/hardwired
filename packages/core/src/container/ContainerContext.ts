@@ -1,13 +1,10 @@
-import { ModuleId } from '../module/ModuleId';
-import invariant from 'tiny-invariant';
-import { ModuleLookup } from '../module/ModuleLookup';
+import { ModuleId } from "../module/ModuleId";
+import invariant from "tiny-invariant";
+import { ModuleLookup } from "../module/ModuleLookup";
 
-import { ImmutableSet } from '../collections/ImmutableSet';
-import { Module } from '../module/Module';
-import { RegistryRecord } from '../module/RegistryRecord';
-import { DefinitionResolver, DefinitionResolverFactory } from '../resolvers/DependencyResolver';
-import { Instance } from '../resolvers/abstract/Instance';
-import { PushPromise } from '../utils/PushPromise';
+import { ImmutableSet } from "../collections/ImmutableSet";
+import { ModuleBuilder } from "../module/ModuleBuilder";
+import { PushPromise } from "../utils/PushPromise";
 
 export type ContainerCacheEntry = {
   // requestId:string;
@@ -15,51 +12,53 @@ export type ContainerCacheEntry = {
 };
 
 const ModuleResolverService = {
-  load(module: Module<any>, containerContext: ContainerContext, injections = ImmutableSet.empty()) {
+  load(module: ModuleBuilder<any>, containerContext: ContainerContext, injections = ImmutableSet.empty()) {
     if (!containerContext.hasModule(module.moduleId)) {
+      throw new Error('Implement me');
+
       // TODO: merge injections with own this.registry injections
       // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
-      const context: RegistryRecord = {};
-      const moduleLookup: ModuleLookup<any> = new ModuleLookup(module.moduleId);
-      const mergedInjections = module.injections.merge(injections);
-
-      module.registry.forEach((resolverFactory: DefinitionResolverFactory, key: string) => {
-        // TODO: by calling resolverFactory with proxy object, we could automatically track all dependencies for change detection
-        //  ...but we probably don't wanna have this feature in the responsibility of this DI solution?? What about compatibility(proxy object) ?
-        const resolver: DefinitionResolver = resolverFactory(context);
-
-        if (resolver.type === 'dependency') {
-          //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
-          context[key] = moduleLookup.instancesProxy.getReference(key);
-          moduleLookup.dependencyResolvers[key] = resolver;
-          moduleLookup.appendDependencyFactory(key, resolver, context[key] as Instance<any>);
-        }
-
-        if (resolver.type === 'module') {
-          if (mergedInjections.hasKey(resolver.moduleId.identity)) {
-            const injectedModule = mergedInjections.get(resolver.moduleId.identity);
-            moduleLookup.modules[key] = injectedModule;
-          } else {
-            moduleLookup.modules[key] = resolver;
-          }
-
-          const childModuleResolver = moduleLookup.modules[key];
-
-          ModuleResolverService.load(childModuleResolver, containerContext, mergedInjections);
-
-          const childModuleLookup = containerContext.getModule(childModuleResolver.moduleId);
-
-          context[key] = childModuleLookup.registry;
-          moduleLookup.appendChild(childModuleLookup);
-        }
-      });
-
-      containerContext.addModule(module.moduleId, moduleLookup);
+      // const context: RegistryRecord = {};
+      // const moduleLookup: ModuleLookup<any> = new ModuleLookup(module.moduleId);
+      // const mergedInjections = module.injections.merge(injections);
+      //
+      // module.registry.forEach((resolverFactory: DefinitionResolverFactory, key: string) => {
+      //   // TODO: by calling resolverFactory with proxy object, we could automatically track all dependencies for change detection
+      //   //  ...but we probably don't wanna have this feature in the responsibility of this DI solution?? What about compatibility(proxy object) ?
+      //   const resolver: DefinitionResolver = resolverFactory(context);
+      //
+      //   if (resolver.type === 'dependency') {
+      //     //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
+      //     context[key] = moduleLookup.instancesProxy.getReference(key);
+      //     moduleLookup.dependencyResolvers[key] = resolver;
+      //     moduleLookup.appendDependencyFactory(key, resolver, context[key] as Instance<any>);
+      //   }
+      //
+      //   if (resolver.type === 'module') {
+      //     if (mergedInjections.hasKey(resolver.moduleId.identity)) {
+      //       const injectedModule = mergedInjections.get(resolver.moduleId.identity);
+      //       moduleLookup.modules[key] = injectedModule;
+      //     } else {
+      //       moduleLookup.modules[key] = resolver;
+      //     }
+      //
+      //     const childModuleResolver = moduleLookup.modules[key];
+      //
+      //     ModuleResolverService.load(childModuleResolver, containerContext, mergedInjections);
+      //
+      //     const childModuleLookup = containerContext.getModule(childModuleResolver.moduleId);
+      //
+      //     context[key] = childModuleLookup.registry;
+      //     moduleLookup.appendChild(childModuleLookup);
+      //   }
+      // });
+      //
+      // containerContext.addModule(module.moduleId, moduleLookup);
     }
   },
 
   // TODO: should be somehow memoized ? don't wanna initialized already initialized module ?
-  onInit(module: Module<any>, containerContext: ContainerContext) {
+  onInit(module: ModuleBuilder<any>, containerContext: ContainerContext) {
     const moduleLookup = containerContext.getModule(module.moduleId);
 
     moduleLookup.forEachModuleResolver(module => {
@@ -171,11 +170,11 @@ export class ContainerContext {
     this.initializedModules[moduleId.id] = true;
   }
 
-  loadModule(module: Module<any>, injections = ImmutableSet.empty()) {
+  loadModule(module: ModuleBuilder<any>, injections = ImmutableSet.empty()) {
     ModuleResolverService.load(module, this, injections);
   }
 
-  initModule(module: Module<any>) {
+  initModule(module: ModuleBuilder<any>) {
     ModuleResolverService.onInit(module, this);
   }
 }

@@ -1,13 +1,13 @@
 import { ContainerContext } from "./ContainerContext";
-import { RegistryRecord } from "../module/RegistryRecord";
-import { Module } from "../module/Module";
+
 import invariant from "tiny-invariant";
+import { MaterializedRecord, ModuleBuilder, ModuleEntriesRecord } from "../module/ModuleBuilder";
 
 type ServiceLocatorGet = {
-  <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
-    module: Module<TRegistryRecord>,
+  <TRegistryRecord extends ModuleEntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord>>(
+    module: ModuleBuilder<TRegistryRecord>,
     key: K,
-  ): RegistryRecord.Materialized<TRegistryRecord>[K];
+  ): MaterializedRecord<TRegistryRecord>[K];
 };
 
 export class ServiceLocator {

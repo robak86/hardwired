@@ -1,11 +1,13 @@
 import { AbstractDependencyResolver } from '../abstract/AbstractDependencyResolver';
 import { ModuleLookup } from '../../module/ModuleLookup';
-import { Module, unit } from '../../module/Module';
+import { module, unit } from '../../module/Module';
 
 import { ContainerContext } from '../../container/ContainerContext';
-import { singleton } from '../ClassSingletonResolver';
-import { value } from '../ValueResolver';
+import { singleton, singletonNew } from '../ClassSingletonResolver';
+import { value, valueNew, ValueResolverNew } from '../ValueResolver';
 import { container } from '../../container/Container';
+import { AbstractInstanceResolver } from '../abstract/AbstractResolvers';
+import { moduleImport } from '../../module/ModuleBuilder';
 
 describe(`ModuleResolver`, () => {
   class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -20,17 +22,15 @@ describe(`ModuleResolver`, () => {
     onInit(registry: ModuleLookup<any>) {}
   }
 
-  const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
-    return new DummyResolver<TValue>(value);
+  const dependency = <TValue>(value: TValue): ValueResolverNew<TValue> => {
+    return new ValueResolverNew<TValue>(value);
   };
 
   it(`returns correct registry object`, async () => {
     const dependencyA = dependency(123);
     const dependencyB = dependency(true);
 
-    const m = Module.empty('someName')
-      .define('a', ctx => dependencyA)
-      .define('b', ctx => dependencyB);
+    const m = module('someName').define('a', dependencyA).define('b', dependencyB);
 
     const containerContext = ContainerContext.empty();
     containerContext.loadModule(m);
@@ -50,9 +50,7 @@ describe(`ModuleResolver`, () => {
     const buildASpy = jest.spyOn(dependencyA, 'onInit');
     const buildBSpy = jest.spyOn(dependencyB, 'onInit');
 
-    const m = Module.empty('someName')
-      .define('a', ctx => dependencyA)
-      .define('b', ctx => dependencyB);
+    const m = module('someName').define('a', dependencyA).define('b', dependencyB);
 
     const containerContext = ContainerContext.empty();
     containerContext.loadModule(m);
@@ -69,9 +67,7 @@ describe(`ModuleResolver`, () => {
     const buildAFactorySpy = jest.spyOn(dependencyA, 'build');
     const buildBFactorySpy = jest.spyOn(dependencyB, 'build');
 
-    const m = Module.empty('someName')
-      .define('a', ctx => dependencyA)
-      .define('b', ctx => dependencyB);
+    const m = module('someName').define('a', dependencyA).define('b', dependencyB);
 
     const containerContext = ContainerContext.empty();
     containerContext.loadModule(m);
@@ -92,9 +88,7 @@ describe(`ModuleResolver`, () => {
     jest.spyOn(dependencyA, 'build').mockReturnValue(123);
     jest.spyOn(dependencyB, 'build').mockReturnValue(false);
 
-    const m = Module.empty('someName')
-      .define('a', ctx => dependencyA)
-      .define('b', ctx => dependencyB);
+    const m = module('someName').define('a', dependencyA).define('b', dependencyB);
 
     const containerContext = ContainerContext.empty();
     containerContext.loadModule(m);
@@ -106,9 +100,7 @@ describe(`ModuleResolver`, () => {
   });
 
   it(`returns correct value for replaced value`, async () => {
-    const m = Module.empty('someName')
-      .define('a', ctx => dependency(1))
-      .replace('a', ctx => dependency(2));
+    const m = module('someName').define('a', dependency(1)).replace('a', dependency(2));
 
     const containerContext = ContainerContext.empty();
     containerContext.loadModule(m);
@@ -126,13 +118,16 @@ describe(`ModuleResolver`, () => {
 
     it(`resolves correct dependencies using injections`, async () => {
       const parent = unit('parent')
-        .define('imported', _ => child)
-        .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
+        .define(
+          'imported',
+          moduleImport(() => child),
+        )
+        .define('aFromImported', singletonNew(ValueWrapper), ['imported.a']);
 
       const child = unit('child') //breakme
-        .define('a', _ => value(123));
+        .define('a', valueNew(123));
 
-      const updatedChild = child.replace('a', _ => value(456));
+      const updatedChild = child.replace('a', valueNew(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
 
       expect(container(parentWithInjectedChild).get('aFromImported').value).toEqual(456);
@@ -140,13 +135,16 @@ describe(`ModuleResolver`, () => {
 
     it(`resolves correct dependencies using multiple injections on the same module `, async () => {
       const parent = unit('parent')
-        .define('imported', _ => child)
-        .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
+        .define(
+          'imported',
+          moduleImport(() => child),
+        )
+        .define('aFromImported', singletonNew(ValueWrapper), ['imported.a']);
 
       const child = unit('child') //breakme
-        .define('a', _ => value(123));
+        .define('a', valueNew(123));
 
-      const updatedChild = child.replace('a', _ => value(456));
+      const updatedChild = child.replace('a', valueNew(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
       const parentWithInjectedChild2 = parent.inject(updatedChild);
 
@@ -156,13 +154,16 @@ describe(`ModuleResolver`, () => {
 
     it(`resolves correct dependencies using deepGet`, async () => {
       const parent = unit('parent')
-        .define('imported', _ => child)
-        .define('aFromImported', _ => singleton(ValueWrapper, [_.imported.a]));
+        .define(
+          'imported',
+          moduleImport(() => child),
+        )
+        .define('aFromImported', singletonNew(ValueWrapper), ['imported.a']);
 
       const child = unit('child') //breakme
-        .define('a', _ => value(123));
+        .define('a', valueNew(123));
 
-      const updatedChild = child.replace('a', _ => value(456));
+      const updatedChild = child.replace('a', valueNew(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
 
       expect(container(parentWithInjectedChild).get(updatedChild, 'a')).toEqual(456);
@@ -171,23 +172,32 @@ describe(`ModuleResolver`, () => {
     it(`resolves correct dependencies replacing multiple modules with injections`, async () => {
       const parent = unit('parent')
         // imports
-        .define('child', _ => child)
-        .define('grandChild', _ => grandChild)
+        .define(
+          'child',
+          moduleImport(() => child),
+        )
+        .define(
+          'grandChild',
+          moduleImport(() => grandChild),
+        )
 
-        .define('ownGrandChild', _ => singleton(ValueWrapper, [_.grandChild.a]))
-        .define('transientGrandChild', _ => singleton(ValueWrapper, [_.child.grandChildValue]));
+        .define('ownGrandChild', singletonNew(ValueWrapper), ['grandChild.a'])
+        .define('transientGrandChild', singletonNew(ValueWrapper), ['child.grandChildValue']);
 
       const child = unit('child') //breakme
-        .define('grandChild', _ => grandChild)
-        .define('grandChildValue', _ => singleton(ValueWrapper, [_.grandChild.a]));
+        .define(
+          'grandChild',
+          moduleImport(() => grandChild),
+        )
+        .define('grandChildValue', singletonNew(ValueWrapper), ['grandChild.a']);
 
       const grandChild = unit('grandChild') //breakme
-        .define('a', _ => value(123));
+        .define('a', valueNew(123));
 
       expect(container(parent).get('ownGrandChild').value).toEqual(123);
       expect(container(parent).get('transientGrandChild').value.value).toEqual(123);
 
-      const updatedChild = grandChild.replace('a', _ => value(456));
+      const updatedChild = grandChild.replace('a', valueNew(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
 
       expect(container(parentWithInjectedChild).get('ownGrandChild').value).toEqual(456);

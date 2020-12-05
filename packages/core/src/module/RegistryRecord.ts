@@ -1,5 +1,5 @@
 import { DefinitionResolver } from '../resolvers/DependencyResolver';
-import { Module } from './Module';
+import { ModuleBuilder } from './ModuleBuilder';
 import { Instance } from '../resolvers/abstract/Instance';
 
 // TODO: rename to ModuleEntries | ModuleDefinitions ?
@@ -35,6 +35,6 @@ export declare namespace RegistryRecord {
   type DefinitionsResolvers<T extends RegistryRecord> = T;
 
   type ModuleResolvers<T extends RegistryRecord> = {
-    [K in keyof ModuleResolversKeys<T>]: Module<any>;
+    [K in keyof ModuleResolversKeys<T>]: ModuleBuilder<any>;
   };
 }
