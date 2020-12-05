@@ -3,9 +3,9 @@ import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolve
 import { ContainerContext } from '../container/ContainerContext';
 import { Instance } from './abstract/Instance';
 import Parameters = jest.Parameters;
-import { AbstractInstanceResolver } from '../module/ModuleBuilder';
 import { ClassType } from '../utils/ClassType';
 import { ClassRequestResolverNew } from './ClassRequestResolver';
+import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1

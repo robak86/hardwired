@@ -2,8 +2,8 @@ import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolve
 import { ContainerContext } from '../container/ContainerContext';
 import { ClassType } from '../utils/ClassType';
 import { Instance } from './abstract/Instance';
-import { AbstractInstanceResolver } from '../module/ModuleBuilder';
 import { ClassTransientResolverNew } from "./ClassTransientResolver";
+import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
 
 export class ClassRequestResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
   constructor(private klass, private selectDependencies: Array<Instance<any>> = []) {

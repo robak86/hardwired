@@ -1,8 +1,8 @@
 import { AbstractDependencyResolver } from "./abstract/AbstractDependencyResolver";
 import { ContainerContext } from "../container/ContainerContext";
-import { AbstractInstanceResolver } from "../module/ModuleBuilder";
 import { ClassType } from "../utils/ClassType";
 import { ClassTransientResolverNew } from "./ClassTransientResolver";
+import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
 
 export class ValueResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
   constructor(private value: TReturn) {
