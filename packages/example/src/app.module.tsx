@@ -1,9 +1,9 @@
-import { module, value } from "hardwired";
-import { component } from "hardwired-react";
-import React, { FunctionComponent } from "react";
-import { dispatch, reducer, selector, store } from "./state/reduxResolvers";
-import { AppState } from "./state/AppState";
-import { rootReducer } from "./state/rootReducer";
+import { module, value } from 'hardwired';
+import { component } from 'hardwired-react';
+import React, { FunctionComponent } from 'react';
+import { dispatch, reducer, selector, store } from './state/reduxResolvers';
+import { AppState } from './state/AppState';
+import { rootReducer } from './state/rootReducer';
 
 const selectStateValue = state => state.value;
 const updateAction = (newValue: string) => ({ type: 'update', newValue });
@@ -30,13 +30,13 @@ export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, 
 
 export const appModule = module('app')
   .define('initialState', value({ value: 'initialValue' }))
-  .define('store', _ => store(_.initialState))
-  .define('rootReducer', _ => reducer(rootReducer))
-  .define('someSelector', _ => selector(selectStateValue))
-  .define('updateValue', _ => dispatch(updateAction))
-  .define('DummyComponentContainer', _ =>
-    component(DummyComponent, {
-      value: _.someSelector,
-      onUpdateClick: _.updateValue,
-    }),
-  );
+  .define('store', store(), ['initialState'])
+  .define('rootReducer', reducer(rootReducer))
+  // .define('someSelector', selector(selectStateValue))
+  .define('updateValue', dispatch(updateAction));
+// .define('DummyComponentContainer',
+//   component(DummyComponent), {
+//     value:'someSelector',
+//     onUpdateClick:'updateValue',
+//   },
+// ); TODO: requires passing dependencies as object instead of array ['dep1', 'imported.dep2'] --> {propName: 'dep1', propName2: 'imported.dep2'}
