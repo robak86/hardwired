@@ -1,6 +1,6 @@
-import { MaterializeModule, Module, moduleImport, singleton, TestClass, TestClassUsing, value } from "../new-api";
+import { MaterializeModule, ModuleBuilder, moduleImport, singleton, TestClass, TestClassUsing, value } from "../module/ModuleBuilder";
 
-const m = Module.empty('')
+const m = ModuleBuilder.empty('')
 
 const m222 = m
   .define('a', value(1))

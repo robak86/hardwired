@@ -1,104 +1,98 @@
-import { Module } from '../Module';
-import { AbstractDependencyResolver } from '../../resolvers/abstract/AbstractDependencyResolver';
-import { ContainerContext } from '../../container/ContainerContext';
-import { expectType, TypeEqual } from 'ts-expect';
-import { Instance } from '../../resolvers/abstract/Instance';
+import { expectType, TypeEqual } from "ts-expect";
+import {
+  AbstractInstanceResolver,
+  MaterializeModule,
+  ModuleBuilder,
+  ModuleEntryResolver,
+  moduleImport
+} from "../ModuleBuilder";
+import { ClassType } from "../../utils/ClassType";
 
 describe(`Module`, () => {
-  class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
-    constructor(value: TValue) {
-      super();
-    }
+  const dummy = <TValue>(value: TValue): AbstractInstanceResolver<TValue, []> => {
+    throw new Error('implement me');
+  };
 
-    build(registry: ContainerContext): TValue {
-      throw new Error('Implement me');
-    }
-  }
-  const dummy = <TValue>(value: TValue): DummyResolver<TValue> => {
-    return new DummyResolver<TValue>(value);
+  const dummyClassResolver = <TDeps extends any[], TValue>(
+    cls: ClassType<TDeps, TValue>,
+  ): AbstractInstanceResolver<TValue, TDeps> => {
+    throw new Error('implement me');
   };
 
   it(`creates correct type`, async () => {
-    const m = Module.empty('someModule')
-      .define('key1', ctx => dummy(123))
-      .define('key2', ctx => dummy(true))
-      .define('key3', ctx => dummy('string'))
-      .define('key4', ctx => dummy(() => 'someString'));
+    const m = ModuleBuilder.empty('someModule')
+      .define('key1', dummy(123))
+      .define('key2', dummy(true))
+      .define('key3', dummy('string'))
+      .define(
+        'key4',
+        dummy(() => 'someString'),
+      );
 
     type ExpectedType = {
-      key1: Instance<number>;
-      key2: Instance<boolean>;
-      key3: Instance<string>;
-      key4: Instance<() => 'someString'>;
+      key1: number;
+      key2: boolean;
+      key3: string;
+      key4: () => 'someString';
     };
 
-    expectType<TypeEqual<Module.Registry<typeof m>, ExpectedType>>(true);
+    expectType<TypeEqual<MaterializeModule<typeof m>, ExpectedType>>(true);
   });
 
-  it(`creates correct types for deps`, async () => {
-    type ExpectedType = {
-      key1: Instance<number>;
-      key2: Instance<boolean>;
-      key3: Instance<string>;
-      key4: Instance<() => 'someString'>;
-    };
+  it(`providing deps`, async () => {
+    class TestClass {
+      constructor(private a: number, private b: string) {}
+    }
 
-    const m = Module.empty('someModule') // breakme
-      .define('key1', _ => {
-        expectType<TypeEqual<typeof _, Record<string, unknown>>>(true);
+    const m2 = ModuleBuilder.empty('someModule').define('string', dummy('string')).define('number', dummy(123));
 
-        return dummy(123);
-      })
-      .define('key2', _ => {
-        expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1'>>>(true);
+    m2.define('cls', dummyClassResolver(TestClass), ['number', 'string']);
 
-        return dummy(true);
-      })
+    // @ts-expect-error - dependencies were passed in the wrong order
+    m2.define('cls', dummyClassResolver(TestClass), ['string', 'number']);
 
-      .define('key3', _ => {
-        expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1' | 'key2'>>>(true);
+    // @ts-expect-error - on of the dependencies is missing
+    m2.define('cls', dummyClassResolver(TestClass), ['number']);
 
-        return dummy('string');
-      })
+    // @ts-expect-error - dependencies array is empty
+    m2.define('cls', dummyClassResolver(TestClass), []);
 
-      .define('key4', _ => {
-        expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1' | 'key2' | 'key3'>>>(true);
-
-        return dummy(() => 'someString');
-      });
+    // @ts-expect-error - dependencies array is not provided
+    m2.define('cls', dummyClassResolver(TestClass));
   });
 
   it(`creates correct types for imports`, async () => {
-    const m1 = Module.empty('someModule').define('key1', ctx => dummy(123));
+    const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
+    const m2 = ModuleBuilder.empty('someModule').define('imported', moduleImport(m1)).define('key1', dummy(123));
 
-    const m2 = Module.empty('someModule')
-      .define('imported', ctx => m1)
-      .define('key1', _ => {
-        expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1> }>>(true);
+    type ExpectedType = {
+      key1: number;
+    };
 
-        return dummy(123);
-      });
+    expectType<TypeEqual<MaterializeModule<typeof m2>['imported'], ExpectedType>>(true);
   });
 
   it(`creates correct types for replace`, async () => {
-    const m1 = Module.empty('someModule').define('key1', ctx => dummy(123));
+    const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
 
-    const m2 = Module.empty('someModule')
-      .define('imported', ctx => m1)
-      .define('key2', ctx => dummy('string'))
-      .define('key1', _ => {
-        expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1>; key2: Instance<string> }>>(true);
+    const m2 = ModuleBuilder.empty('someModule')
+      .define('imported', moduleImport(m1))
+      .define('key2', dummy('string'))
+      .define('key1', dummy(123));
 
-        return dummy(123);
-      });
+    const replaced = m2.replace('key1', dummy(123));
 
-    type Expected = (key: 'key1' | 'key2', factory: (ctx: any) => AbstractDependencyResolver<number>) => typeof m2;
+    type ExpectedType = {
+      imported: {
+        key1: number;
+      };
+      key2: string;
+      key1: number;
+    };
 
-    m2.replace('key1', ctx => {
-      // ctx.key2
-      return dummy('string');
-    });
+    expectType<TypeEqual<MaterializeModule<typeof replaced>, ExpectedType>>(true);
 
-    expectType<TypeEqual<typeof m2.replace, Expected>>(true);
+    // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
+    m2.replace('key1', dummy('sdf'));
   });
 });
