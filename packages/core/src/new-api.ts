@@ -108,11 +108,20 @@ export class M<TRecord extends Record<string, ModuleEntry>> {
 
   defineUniversal<TKey extends string, TValue, TDepsKeys extends AllowedKeys<TRecord>[]>(
     key: TKey,
-    value: ClassType<Deps<TDepsKeys, MaterializedRecord<TRecord>>, TValue>,
+    value: TResolver<Deps<TDepsKeys, MaterializedRecord<TRecord>>, TValue>,
     keys: TDepsKeys,
   ): M<TRecord & Record<TKey, TValue>> {
     throw new Error('Implement me');
   }
+}
+
+type TResolver<TDeps, TValue> = {
+  deps: TDeps;
+  value: TValue;
+};
+
+function singleton<TDeps extends any[], TValue>(cls: ClassType<TDeps, TValue>): TResolver<TDeps, TValue> {
+  throw new Error('implement me');
 }
 
 type Deps<T extends string[], TDeps extends Record<string, unknown>> = {
@@ -141,3 +150,7 @@ m2.defineClass('cls', TestClass, ['aa', 'import.b']);
 
 m2.defineClassOverrideExplicit('cls', TestClass, ['aa', 'import.b']);
 m2.defineClassOverrideExplicit('cls', NoArgsClass);
+
+const myk = singleton(TestClass);
+const waa = m2.defineUniversal('cls', singleton(TestClass), ['aa', 'import.b']);
+m2.defineUniversal('cls', singleton(TestClass), []);
