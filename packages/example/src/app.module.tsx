@@ -4,7 +4,6 @@ import React, { FunctionComponent } from "react";
 import { dispatch, reducer, selector, store } from "./state/reduxResolvers";
 import { AppState } from "./state/AppState";
 import { rootReducer } from "./state/rootReducer";
-import { MatrixState } from "./matrix/state/MatrixState";
 
 const selectStateValue = state => state.value;
 const updateAction = (newValue: string) => ({ type: 'update', newValue });
@@ -30,8 +29,7 @@ export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, 
 };
 
 export const appModule = module('app')
-
-  .define('initialState', _ => value({ value: 'initialValue' }))
+  .define('initialState', value({ value: 'initialValue' }))
   .define('store', _ => store(_.initialState))
   .define('rootReducer', _ => reducer(rootReducer))
   .define('someSelector', _ => selector(selectStateValue))

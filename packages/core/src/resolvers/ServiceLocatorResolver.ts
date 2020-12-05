@@ -1,9 +1,8 @@
-import { ServiceLocator } from '../container/ServiceLocator';
-import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
-import { ContainerContext } from '../container/ContainerContext';
-import { AbstractInstanceResolver } from './abstract/AbstractResolvers';
+import { ServiceLocator } from "../container/ServiceLocator";
+import { ContainerContext } from "../container/ContainerContext";
+import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
 
-export class ServiceLocatorResolver extends AbstractDependencyResolver<ServiceLocator> {
+export class ServiceLocatorResolver extends AbstractInstanceResolver<ServiceLocator, []> {
   constructor() {
     super();
   }
@@ -19,22 +18,4 @@ export class ServiceLocatorResolver extends AbstractDependencyResolver<ServiceLo
   }
 }
 
-export class ServiceLocatorResolverNew extends AbstractInstanceResolver<ServiceLocator, []> {
-  constructor() {
-    super();
-  }
-
-  build(cache: ContainerContext): ServiceLocator {
-    if (cache.hasInGlobalScope(this.id)) {
-      return cache.getFromGlobalScope(this.id);
-    } else {
-      const instance = new ServiceLocator(cache);
-      cache.setForGlobalScope(this.id, instance);
-      return instance;
-    }
-  }
-}
-
-export const serviceLocator = (): ServiceLocatorResolver => new ServiceLocatorResolver();
-
-export const serviceLocatorNew = () => new ServiceLocatorResolverNew();
+export const serviceLocator = () => new ServiceLocatorResolver();

@@ -1,7 +1,7 @@
 import { AbstractDependencyResolver } from "../../resolvers/abstract/AbstractDependencyResolver";
 import { ContainerContext } from "../../container/ContainerContext";
-import { ValueResolverNew } from "../../resolvers/ValueResolver";
-import { singletonNew } from "../../resolvers/ClassSingletonResolver";
+import { ValueResolver } from "../../resolvers/ValueResolver";
+import { singleton } from "../../resolvers/ClassSingletonResolver";
 import { ModuleBuilder, moduleImport, TestClass } from "../ModuleBuilder";
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
@@ -14,8 +14,8 @@ class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   }
 }
 
-const dummy = <TValue>(value: TValue): ValueResolverNew<TValue> => {
-  return new ValueResolverNew(value);
+const dummy = <TValue>(value: TValue): ValueResolver<TValue> => {
+  return new ValueResolver(value);
 };
 
 const ab0 = ModuleBuilder.empty('a')
@@ -439,7 +439,7 @@ const a = ModuleBuilder.empty('a')
   .define('imported1', moduleImport(ab1))
   .define('imported2', moduleImport(ab2))
   .define('asdf', dummy(1))
-  .define('cba', singletonNew(TestClass), ['imported.a', 'imported0.a']);
+  .define('cba', singleton(TestClass), ['imported.a', 'imported0.a']);
 // .replace('cba', ctx => {
 //   ctx.asdf;
 //   return dummy('sdf');

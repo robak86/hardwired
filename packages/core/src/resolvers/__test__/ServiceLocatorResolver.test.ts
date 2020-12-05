@@ -1,11 +1,11 @@
 import { unit } from '../../module/Module';
-import { value, valueNew } from '../ValueResolver';
+import { value, value } from '../ValueResolver';
 import { createResolverId } from '../../utils/fastId';
-import { request, requestNew } from '../ClassRequestResolver';
-import { singleton, singletonNew } from '../ClassSingletonResolver';
-import { serviceLocator, serviceLocatorNew } from '../ServiceLocatorResolver';
+import { request, request } from '../ClassRequestResolver';
+import { singleton, singleton } from '../ClassSingletonResolver';
+import { serviceLocator, serviceLocator } from '../ServiceLocatorResolver';
 import { container } from '../../container/Container';
-import { factory, factoryNew } from '../FactoryResolver';
+import { factory, factory } from '../FactoryResolver';
 import { moduleImport } from '../../module/ModuleBuilder';
 
 describe(`ServiceLocatorResolver`, () => {
@@ -26,19 +26,19 @@ describe(`ServiceLocatorResolver`, () => {
   }
 
   const root = unit('root')
-    .define('locator', serviceLocatorNew())
+    .define('locator', serviceLocator())
 
     .define(
       'singletonModule',
       moduleImport(() => singletonModule),
     )
-    .define('producedByFactory', factoryNew(DummyFactory))
-    .define('singletonConsumer', requestNew(TestClassConsumer), ['singletonModule.reqScoped']);
+    .define('producedByFactory', factory(DummyFactory))
+    .define('singletonConsumer', request(TestClassConsumer), ['singletonModule.reqScoped']);
 
   const singletonModule = unit('child1')
-    .define('value', valueNew('someValue'))
-    .define('reqScoped', requestNew(TestClass), ['value'])
-    .define('singleton', singletonNew(TestClass), ['value']);
+    .define('value', value('someValue'))
+    .define('reqScoped', request(TestClass), ['value'])
+    .define('singleton', singleton(TestClass), ['value']);
 
   it(`returns request scoped instances`, async () => {
     const c = container(root);

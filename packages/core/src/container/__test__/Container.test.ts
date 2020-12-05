@@ -1,8 +1,8 @@
 import { module } from '../../module/Module';
 import { dependency } from '../../testing/TestResolvers';
 import { container } from '../Container';
-import { value, valueNew } from '../../resolvers/ValueResolver';
-import { singleton, singletonNew } from '../../resolvers/ClassSingletonResolver';
+import { value, value } from '../../resolvers/ValueResolver';
+import { singleton, singleton } from '../../resolvers/ClassSingletonResolver';
 import { ArgsDebug } from '../../testing/ArgsDebug';
 import { moduleImport } from '../../module/ModuleBuilder';
 
@@ -51,22 +51,22 @@ describe(`Container`, () => {
   describe(`replacing definitions`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
-        const m = module('m').define('a', valueNew(1));
-        const updated = m.replace('a', valueNew(2));
+        const m = module('m').define('a', value(1));
+        const updated = m.replace('a', value(2));
         expect(container(updated).get('a')).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
-        const m = module('m').define('a', valueNew(1)).define('b', valueNew('b'));
-        const updated = m.replace('a', valueNew(2));
+        const m = module('m').define('a', value(1)).define('b', value('b'));
+        const updated = m.replace('a', value(2));
         expect(container(updated).get('b')).toEqual('b');
       });
 
       it.todo(`can use all previously registered definitions`, async () => {
         const m = module('m')
-          .define('a', valueNew('a'))
-          .define('b', singletonNew(ArgsDebug), ['a'])
-          .define('c', singletonNew(ArgsDebug), ['b']);
+          .define('a', value('a'))
+          .define('b', singleton(ArgsDebug), ['a'])
+          .define('c', singleton(ArgsDebug), ['b']);
 
         // expect(container(m).get('b').args).toEqual(['a']);
         //

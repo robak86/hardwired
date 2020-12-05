@@ -2,24 +2,26 @@ import { curry } from '../utils/curry';
 import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 import { Instance } from './abstract/Instance';
+import Parameters = jest.Parameters;
+import { ClassType } from '../utils/ClassType';
+import { ClassRequestResolver } from './ClassRequestResolver';
+import { AbstractInstanceResolver } from './abstract/AbstractResolvers';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
 //  or it shouldn't never be memoized ?
-export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
+export class FunctionResolver<TReturn, TDeps extends any[]> extends AbstractInstanceResolver<TReturn, TDeps> {
   private readonly curriedFunction;
   private readonly uncurriedFunction;
   private previousDependencies: any[] = [];
 
-  constructor(fn: (...args: any[]) => any, private depSelect: Array<Instance<any>> = []) {
+  constructor(fn: (...args: any[]) => any) {
     super();
     this.uncurriedFunction = fn;
     this.curriedFunction = curry(fn);
   }
 
-  build(cache: ContainerContext): TReturn {
-    // TODO: not sure if this does not trigger all getter from the whole tree !!!!
-    const currentDependencies = this.depSelect.map(factory => factory.get(cache));
+  build(cache: ContainerContext, currentDependencies): TReturn {
     const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
 
     if (requiresRevalidation) {
@@ -47,40 +49,52 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
   }
 }
 
-type FunctionResolverBuilder = {
-  <TResult>(fn: () => TResult): FunctionResolver<() => TResult>;
-  <TDep1, TResult>(fn: (d1: TDep1) => TResult): FunctionResolver<(d1: TDep1) => TResult>;
-  <TDep1, TResult>(fn: (d1: TDep1) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<() => TResult>;
-  <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult): FunctionResolver<(d1: TDep1, d2: TDep2) => TResult>;
-  <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<
-    (dep2: TDep2) => TResult
-  >;
-  <TDep1, TDep2, TResult>(
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>],
-  ): FunctionResolver<() => TResult>;
-  // 3 args
-  <TDep1, TDep2, TDep3, TResult>(fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult): FunctionResolver<
-    (d1: TDep1, d2: TDep2, d3: TDep3) => TResult
-  >;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>],
-  ): FunctionResolver<(dep2: TDep2, dep3: TDep3) => TResult>;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>],
-  ): FunctionResolver<(dep3: TDep3) => TResult>;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>, Instance<TDep3>],
-  ): FunctionResolver<() => TResult>;
-  <TDep1, TDep2, TDep3, TDep4, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3, d4: TDep4) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>, Instance<TDep3>, Instance<TDep4>],
-  ): FunctionResolver<() => TResult>;
-};
+type Wtf = PartiallyApplied<(a: number, b: string, c: boolean) => number, 0>;
+type Wtf1 = PartiallyApplied<(a: number, b: string, c: boolean) => number, 1>;
+type Wtf2 = PartiallyApplied<(a: number, b: string, c: boolean) => number, 2>;
+type Wtf3 = PartiallyApplied<(a: number, b: string, c: boolean) => number, 3>;
 
-export const func: FunctionResolverBuilder = (fn, deps?) => {
-  return new FunctionResolver(fn, deps) as any;
-};
+// prettier-ignore
+type PartiallyApplied<TFunc extends (...args:any[]) => any, TDepth extends 0 | 1 | 2 | 3> =
+ 0 extends  TDepth ? TFunc :
+ 1 extends  TDepth ? PartiallyApplied1<Parameters<TFunc>, ReturnType<TFunc>> :
+ 2 extends  TDepth ? PartiallyApplied2<Parameters<TFunc>, ReturnType<TFunc>> :
+ 3 extends  TDepth ? PartiallyApplied3<Parameters<TFunc>, ReturnType<TFunc>> : never
+
+// prettier-ignore
+type PartiallyApplied1<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, ...infer TRest] ? (...rest:TRest) => TReturn : 'args count mismatch'
+
+// prettier-ignore
+type PartiallyApplied2<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, infer TArg2, ...infer TRest] ? (...rest:TRest) => TReturn : 'args count mismatch'
+
+// prettier-ignore
+type PartiallyApplied3<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, infer TArg2,infer TArg3, ...infer TRest] ?  (...rest:TRest) => TReturn : 'args count mismatch'
+
+// prettier-ignore
+type PartiallyAppliedArgs<TFunc extends (...args:any[]) => any, TDepth extends 0 | 1 | 2 | 3> =
+  0 extends  TDepth ? [] :
+    1 extends  TDepth ? PartiallyAppliedArgs1<Parameters<TFunc>, ReturnType<TFunc>> :
+      2 extends  TDepth ? PartiallyAppliedArgs2<Parameters<TFunc>, ReturnType<TFunc>> :
+        3 extends  TDepth ? PartiallyAppliedArgs3<Parameters<TFunc>, ReturnType<TFunc>> : never
+
+// prettier-ignore
+type PartiallyAppliedArgs1<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, ...infer TRest] ? [TArg1] : []
+
+// prettier-ignore
+type PartiallyAppliedArgs2<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, infer TArg2, ...infer TRest] ? [TArg1, TArg2] : []
+
+// prettier-ignore
+type PartiallyAppliedArgs3<TArgs extends any[], TReturn> =
+  TArgs extends [infer TArg1, infer TArg2,infer TArg3, ...infer TRest] ?  [TArg1, TArg2, TArg3] : []
+
+export function func<TValue extends (...args: any[]) => any, TDepth extends 0 | 1 | 2 | 3>(
+  cls: TValue,
+  depth: TDepth,
+): ClassRequestResolver<PartiallyApplied<TValue, TDepth>, PartiallyAppliedArgs<TValue, TDepth>> {
+  return new ClassRequestResolver(cls);
+}

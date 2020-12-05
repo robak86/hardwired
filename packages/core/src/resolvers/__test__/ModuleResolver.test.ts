@@ -3,8 +3,8 @@ import { ModuleLookup } from '../../module/ModuleLookup';
 import { module, unit } from '../../module/Module';
 
 import { ContainerContext } from '../../container/ContainerContext';
-import { singleton, singletonNew } from '../ClassSingletonResolver';
-import { value, valueNew, ValueResolverNew } from '../ValueResolver';
+import { singleton, singleton } from '../ClassSingletonResolver';
+import { value, value, ValueResolver } from '../ValueResolver';
 import { container } from '../../container/Container';
 import { AbstractInstanceResolver } from '../abstract/AbstractResolvers';
 import { moduleImport } from '../../module/ModuleBuilder';
@@ -22,8 +22,8 @@ describe(`ModuleResolver`, () => {
     onInit(registry: ModuleLookup<any>) {}
   }
 
-  const dependency = <TValue>(value: TValue): ValueResolverNew<TValue> => {
-    return new ValueResolverNew<TValue>(value);
+  const dependency = <TValue>(value: TValue): ValueResolver<TValue> => {
+    return new ValueResolver<TValue>(value);
   };
 
   it(`returns correct registry object`, async () => {
@@ -122,12 +122,12 @@ describe(`ModuleResolver`, () => {
           'imported',
           moduleImport(() => child),
         )
-        .define('aFromImported', singletonNew(ValueWrapper), ['imported.a']);
+        .define('aFromImported', singleton(ValueWrapper), ['imported.a']);
 
       const child = unit('child') //breakme
-        .define('a', valueNew(123));
+        .define('a', value(123));
 
-      const updatedChild = child.replace('a', valueNew(456));
+      const updatedChild = child.replace('a', value(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
 
       expect(container(parentWithInjectedChild).get('aFromImported').value).toEqual(456);
@@ -139,12 +139,12 @@ describe(`ModuleResolver`, () => {
           'imported',
           moduleImport(() => child),
         )
-        .define('aFromImported', singletonNew(ValueWrapper), ['imported.a']);
+        .define('aFromImported', singleton(ValueWrapper), ['imported.a']);
 
       const child = unit('child') //breakme
-        .define('a', valueNew(123));
+        .define('a', value(123));
 
-      const updatedChild = child.replace('a', valueNew(456));
+      const updatedChild = child.replace('a', value(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
       const parentWithInjectedChild2 = parent.inject(updatedChild);
 
@@ -158,12 +158,12 @@ describe(`ModuleResolver`, () => {
           'imported',
           moduleImport(() => child),
         )
-        .define('aFromImported', singletonNew(ValueWrapper), ['imported.a']);
+        .define('aFromImported', singleton(ValueWrapper), ['imported.a']);
 
       const child = unit('child') //breakme
-        .define('a', valueNew(123));
+        .define('a', value(123));
 
-      const updatedChild = child.replace('a', valueNew(456));
+      const updatedChild = child.replace('a', value(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
 
       expect(container(parentWithInjectedChild).get(updatedChild, 'a')).toEqual(456);
@@ -181,23 +181,23 @@ describe(`ModuleResolver`, () => {
           moduleImport(() => grandChild),
         )
 
-        .define('ownGrandChild', singletonNew(ValueWrapper), ['grandChild.a'])
-        .define('transientGrandChild', singletonNew(ValueWrapper), ['child.grandChildValue']);
+        .define('ownGrandChild', singleton(ValueWrapper), ['grandChild.a'])
+        .define('transientGrandChild', singleton(ValueWrapper), ['child.grandChildValue']);
 
       const child = unit('child') //breakme
         .define(
           'grandChild',
           moduleImport(() => grandChild),
         )
-        .define('grandChildValue', singletonNew(ValueWrapper), ['grandChild.a']);
+        .define('grandChildValue', singleton(ValueWrapper), ['grandChild.a']);
 
       const grandChild = unit('grandChild') //breakme
-        .define('a', valueNew(123));
+        .define('a', value(123));
 
       expect(container(parent).get('ownGrandChild').value).toEqual(123);
       expect(container(parent).get('transientGrandChild').value.value).toEqual(123);
 
-      const updatedChild = grandChild.replace('a', valueNew(456));
+      const updatedChild = grandChild.replace('a', value(456));
       const parentWithInjectedChild = parent.inject(updatedChild);
 
       expect(container(parentWithInjectedChild).get('ownGrandChild').value).toEqual(456);

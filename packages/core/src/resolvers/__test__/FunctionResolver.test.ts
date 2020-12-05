@@ -1,7 +1,7 @@
 import { unit } from '../../module/Module';
 import { dependency, TestTransientResolver } from '../../testing/TestResolvers';
 import { container } from '../../container/Container';
-import { func } from '../FunctionResolverNew';
+import { func } from '../FunctionResolver';
 
 describe(`FunctionResolver`, () => {
   function setup() {
