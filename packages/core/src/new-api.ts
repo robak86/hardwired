@@ -1,22 +1,23 @@
-import { ClassType } from "./utils/ClassType";
-import { AllowedKeys } from "./path";
-import { PropType } from "./utils/PropType";
-import { Instance } from "./resolvers/abstract/Instance";
-import { FunctionResolver } from "./resolvers/FunctionResolver";
+import { ClassType } from './utils/ClassType';
+import { AllowedKeys } from './path';
+import { PropType } from './utils/PropType';
+import { ModuleId } from './module/ModuleId';
+import { ImmutableSet } from './collections/ImmutableSet';
+import invariant from 'tiny-invariant';
 
-type Definition<T> = {
+type Instance<T> = {
   kind: 'definition';
   instance: T;
 };
 
-type ModuleRegistry<T extends Record<string, ModuleEntry>> = {
+type ModuleEntries<T extends Record<string, ModuleEntry>> = {
   kind: 'module';
-  registry: { [K in keyof T]: any };
+  entries: { [K in keyof T]: any };
 };
 
-export type ModuleEntry = Definition<any> | ModuleRegistry<any>;
+export type ModuleEntry = Instance<any> | ModuleEntries<any>;
 
-type MaterializeModule<TModule extends ModuleEntry> = TModule extends Definition<infer TInstanceType>
+export type MaterializeModule<TModule extends ModuleEntry> = TModule extends Instance<infer TInstanceType>
   ? TInstanceType
   : TModule extends Module<infer TRecord>
   ? { [K in keyof TRecord]: MaterializeModule<TRecord[K]> }
@@ -55,40 +56,73 @@ type MaterializedRecord<TRecord extends Record<string, ModuleEntry>> = {
 //   return new ClassSingletonResolver(klass, depSelect);
 // };
 
-function asTupleOfLiterals<T extends string, U extends [T, ...T[]]>(tuple: U): U {
-  return tuple;
-}
+type ModuleResolvers<TEntries extends Record<string, ModuleEntry>> = {
+  [K in keyof TEntries & string]: BoundResolver;
+};
 
-const zz = asTupleOfLiterals(['a', 'b']);
-
-export class Module<TRecord extends Record<string, ModuleEntry>> implements ModuleRegistry<TRecord> {
+export class Module<TRecord extends Record<string, ModuleEntry>> implements ModuleEntries<TRecord> {
   kind: 'module' = 'module';
-  registry;
+  entries;
+
+  static empty(name: string): Module<{}> {
+    return new Module<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
+  }
+
+  protected constructor(
+    public moduleId: ModuleId,
+    public registry: ImmutableSet<ModuleResolvers<TRecord>>,
+    public injections: ImmutableSet<Record<string, Module<any>>>,
+  ) {}
 
   define<TKey extends string, TValue>(
-    key: TKey,
-    value: TResolver<[], TValue>,
-  ): Module<TRecord & Record<TKey, TValue extends ModuleRegistry<any> ? TValue : Definition<TValue>>>;
+    name: TKey,
+    resolver: ModuleEntryResolver<TValue, []>,
+  ): Module<TRecord & Record<TKey, TValue extends ModuleEntries<any> ? TValue : Instance<TValue>>>;
   define<TKey extends string, TValue, TDepKey extends AllowedKeys<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
-    key: TKey,
-    value: TResolver<Deps<TDepsKeys, MaterializedRecord<TRecord>>, TValue>,
-    keys: TDepsKeys,
-  ): Module<TRecord & Record<TKey, TValue extends ModuleRegistry<any> ? TValue : Definition<TValue>>>;
+    name: TKey,
+    resolver: ModuleEntryResolver<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
+    dependencies: TDepsKeys,
+  ): Module<TRecord & Record<TKey, TValue extends ModuleEntries<any> ? TValue : Instance<TValue>>>;
   define<TKey extends string, TValue, TDepKey extends AllowedKeys<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
-    key: TKey,
-    value: any,
-    keys?: TDepsKeys,
-  ): Module<TRecord & Record<TKey, TValue extends ModuleRegistry<any> ? TValue : Definition<TValue>>> {
-    throw new Error('Implement me');
+    name: TKey,
+    resolver: ModuleEntryResolver<any, any>,
+    dependencies?: TDepsKeys,
+  ): Module<TRecord & Record<TKey, TValue extends ModuleEntries<any> ? TValue : Instance<TValue>>> {
+    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+
+    return new Module(
+      ModuleId.next(this.moduleId),
+      this.registry.extend(name, {
+        resolver,
+        dependencies,
+      }),
+      this.injections,
+    );
   }
 }
 
-type TResolver<TDeps, TValue> = {
+type ModuleEntryResolver<TValue, TDeps extends any[]> = InstanceResolver<TValue, TDeps> | ModuleResolver<TValue, TDeps>;
+
+type BoundResolver = {
+  resolver: ModuleEntryResolver<any, any>;
+  dependencies: string[];
+};
+
+type InstanceResolver<TValue, TDeps extends any[]> = {
+  kind: 'instanceResolver';
   deps: TDeps;
   value: TValue;
 };
 
-function singleton<TDeps extends any[], TValue>(cls: ClassType<TDeps, TValue>): TResolver<TDeps, TValue> {
+type ModuleResolver<TValue, TDeps extends any[]> = {
+  kind: 'moduleResolver';
+  deps: TDeps;
+  value: TValue;
+};
+
+export function singleton<TDeps extends any[], TValue>(
+  cls: ClassType<TDeps, TValue>,
+): ModuleEntryResolver<TValue, TDeps> {
   throw new Error('implement me');
 }
 
@@ -96,25 +130,25 @@ type Deps<T extends string[], TDeps extends Record<string, unknown>> = {
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
 
-const m = new Module<{}>();
+const m = Module.empty('');
 
-class TestClass {
+export class TestClass {
   constructor(private a: number, private b: string) {}
 }
 
-class TestClassUsing {
+export class TestClassUsing {
   constructor(private a: TestClass) {}
 }
 
-class NoArgsClass {
+export class NoArgsClass {
   constructor() {}
 }
 
-const value = <TValue>(value: TValue): TResolver<[], TValue> => {
+export const value = <TValue>(value: TValue): ModuleEntryResolver<TValue, []> => {
   throw new Error('implement me');
 };
 
-const moduleImport = <TValue extends ModuleRegistry<any>>(value: TValue): TResolver<[], TValue> => {
+export const moduleImport = <TValue extends ModuleEntries<any>>(value: TValue): ModuleEntryResolver<TValue, []> => {
   throw new Error('implement me');
 };
 
@@ -132,39 +166,3 @@ const mmm = m
 
 type Mat = MaterializeModule<typeof mmm>;
 // .defineUniversal('cls', singleton(TestClass), ['a', 'b']);
-
-
-
-type FunctionResolverBuilder = {
-  <TResult>(fn: () => TResult): FunctionResolver<() => TResult>;
-  <TDep1, TResult>(fn: (d1: TDep1) => TResult): FunctionResolver<(d1: TDep1) => TResult>;
-  <TDep1, TResult>(fn: (d1: TDep1) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<() => TResult>;
-  <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult): FunctionResolver<(d1: TDep1, d2: TDep2) => TResult>;
-  <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<
-    (dep2: TDep2) => TResult
-    >;
-  <TDep1, TDep2, TResult>(
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>],
-  ): FunctionResolver<() => TResult>;
-  // 3 args
-  <TDep1, TDep2, TDep3, TResult>(fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult): FunctionResolver<
-    (d1: TDep1, d2: TDep2, d3: TDep3) => TResult
-    >;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>],
-  ): FunctionResolver<(dep2: TDep2, dep3: TDep3) => TResult>;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>],
-  ): FunctionResolver<(dep3: TDep3) => TResult>;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>, Instance<TDep3>],
-  ): FunctionResolver<() => TResult>;
-  <TDep1, TDep2, TDep3, TDep4, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3, d4: TDep4) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>, Instance<TDep3>, Instance<TDep4>],
-  ): FunctionResolver<() => TResult>;
-};
