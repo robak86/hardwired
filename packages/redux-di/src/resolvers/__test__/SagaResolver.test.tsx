@@ -7,9 +7,9 @@ describe(`SagaResolver`, () => {
     function* someSaga() {}
 
     const m = module('someModule')
-      .define('someSaga', _ => saga(someSaga))
-      .define('defaultState', _ => value({ v: 'someDefaultValue' }))
-      .define('store', _ => store(_.defaultState));
+      .define('someSaga', saga(someSaga))
+      .define('defaultState', value({ v: 'someDefaultValue' }))
+      .define('store', store(), ['defaultState']);
     const c = container(m);
 
     return { c };

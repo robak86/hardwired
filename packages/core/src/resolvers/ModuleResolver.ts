@@ -1,17 +1,18 @@
 import { AbstractModuleResolver, BoundResolver } from "./abstract/AbstractResolvers";
-import { ModuleBuilder } from "../module/ModuleBuilder";
+import { ModuleBuilder, ModuleEntries } from "../module/ModuleBuilder";
 import { ContainerContext } from "../container/ContainerContext";
 import { createResolverId } from "../utils/fastId";
 import { ModuleId } from "../module/ModuleId";
 import invariant from "tiny-invariant";
 import { ImmutableSet } from "../collections/ImmutableSet";
+import { Thunk } from "../utils/Thunk";
 
 export class ModuleResolver extends AbstractModuleResolver<any, any> {
   public readonly id: string = createResolverId();
 
   kind: 'moduleResolver' = 'moduleResolver';
 
-  constructor(private module: ModuleBuilder<any>) {
+  constructor(private module: Thunk<ModuleEntries<any>>) {
     super();
   }
 

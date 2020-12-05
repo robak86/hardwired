@@ -1,14 +1,15 @@
-import { useContainer } from "../components/ContainerContext";
-import { useEffect, useState } from "react";
-import { Module, RegistryRecord } from "hardwired";
+import { useContainer } from '../components/ContainerContext';
+import { useEffect, useState } from 'react';
+import { RegistryRecord, ModuleBuilder, ModuleEntriesRecord } from 'hardwired';
+import { MaterializedRecord, ModuleInstancesKeys } from 'hardwired/lib/module/ModuleBuilder';
 
 export type WatchableHook = <
-  TRegistryRecord extends RegistryRecord,
-  TDefinitionName extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>
+  TRegistryRecord extends ModuleEntriesRecord,
+  TDefinitionName extends ModuleInstancesKeys<TRegistryRecord>
 >(
-  module: Module<TRegistryRecord>,
+  module: ModuleBuilder<TRegistryRecord>,
   name: TDefinitionName & string,
-) => RegistryRecord.Materialized<TRegistryRecord>[TDefinitionName];
+) => MaterializedRecord<TRegistryRecord>[TDefinitionName];
 
 export const useWatchable: WatchableHook = (module, name) => {
   const container = useContainer();

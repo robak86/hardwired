@@ -9,6 +9,7 @@ export { AbstractDependencyResolver } from './resolvers/abstract/AbstractDepende
 
 export { singleton, ClassSingletonResolver } from './resolvers/ClassSingletonResolver';
 
+export * from './module/ModuleBuilder';
 
 export { factory, FactoryResolver } from './resolvers/FactoryResolver';
 export type { Factory } from './resolvers/FactoryResolver';
@@ -23,3 +24,5 @@ export { ServiceLocator } from './container/ServiceLocator';
 export type { ClassType } from './utils/ClassType';
 export { EventsEmitter } from './utils/EventsEmitter';
 export { Instance } from './resolvers/abstract/Instance';
+
+export * from './resolvers/abstract/AbstractResolvers';

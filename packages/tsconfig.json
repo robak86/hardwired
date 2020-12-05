@@ -10,9 +10,6 @@
     },
     {
       "path": "./redux-di/tsconfig.json"
-    },
-    {
-      "path": "./example/tsconfig.json"
     }
   ]
 }

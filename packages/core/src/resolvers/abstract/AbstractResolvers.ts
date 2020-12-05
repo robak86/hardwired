@@ -2,6 +2,7 @@ import { ContainerContext } from '../../container/ContainerContext';
 import { createResolverId } from '../../utils/fastId';
 import { ImmutableSet } from '../../collections/ImmutableSet';
 import { ModuleLookup } from "../../module/ModuleLookup";
+import { DependencyResolverEvents } from "./AbstractDependencyResolver";
 
 export type ModuleEntryResolver<TValue, TDeps extends any[]> =
   | AbstractInstanceResolver<TValue, TDeps>
@@ -14,6 +15,7 @@ export type BoundResolver = {
 
 export abstract class AbstractInstanceResolver<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
+  public readonly events = new DependencyResolverEvents();
 
   protected constructor(public readonly id: string = createResolverId()) {}
 

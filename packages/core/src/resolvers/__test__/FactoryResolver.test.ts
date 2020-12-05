@@ -10,7 +10,7 @@ describe(`FactoryResolver`, () => {
 
     const factoryResolver = new FactoryResolver(DummyFactory);
     const context = ContainerContext.empty();
-    const value = factoryResolver.build(context);
+    const value = factoryResolver.build(context, []);
     expect(value).toEqual('built by factory');
   });
 
@@ -21,7 +21,7 @@ describe(`FactoryResolver`, () => {
 
     const factoryResolver = new FactoryResolver(DummyFactory);
     const context = ContainerContext.empty();
-    expect(factoryResolver.build(context)).toEqual(factoryResolver.build(context));
+    expect(factoryResolver.build(context, [])).toEqual(factoryResolver.build(context, []));
   });
 
   it(`caches factory instance`, async () => {
@@ -35,8 +35,8 @@ describe(`FactoryResolver`, () => {
 
     const factoryResolver = new FactoryResolver(DummyFactory);
     const context = ContainerContext.empty();
-    factoryResolver.build(context);
-    factoryResolver.build(context);
+    factoryResolver.build(context, []);
+    factoryResolver.build(context, []);
     expect(constructorSpy).toBeCalledTimes(1);
   });
 });

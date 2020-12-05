@@ -1,11 +1,11 @@
-import { singleton, singleton } from '../ClassSingletonResolver';
-import { dependency } from '../../testing/TestResolvers';
-import { container } from '../../container/Container';
-import { createResolverId } from '../../utils/fastId';
-import { unit } from '../../module/Module';
-import { value, value } from '../ValueResolver';
-import { transient, transient } from '../ClassTransientResolver';
-import { moduleImport } from '../../module/ModuleBuilder';
+import { singleton } from "../ClassSingletonResolver";
+import { dependency } from "../../testing/TestResolvers";
+import { container } from "../../container/Container";
+import { createResolverId } from "../../utils/fastId";
+import { unit } from "../../module/Module";
+import { value } from "../ValueResolver";
+import { transient } from "../ClassTransientResolver";
+import { moduleImport } from "../../module/ModuleBuilder";
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {

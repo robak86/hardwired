@@ -3,8 +3,8 @@ import { ModuleLookup } from '../../module/ModuleLookup';
 import { module, unit } from '../../module/Module';
 
 import { ContainerContext } from '../../container/ContainerContext';
-import { singleton, singleton } from '../ClassSingletonResolver';
-import { value, value, ValueResolver } from '../ValueResolver';
+import { singleton } from '../ClassSingletonResolver';
+import { value, ValueResolver } from '../ValueResolver';
 import { container } from '../../container/Container';
 import { AbstractInstanceResolver } from '../abstract/AbstractResolvers';
 import { moduleImport } from '../../module/ModuleBuilder';

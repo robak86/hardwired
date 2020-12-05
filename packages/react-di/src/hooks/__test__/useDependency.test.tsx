@@ -7,8 +7,8 @@ import { useDependency } from '../useDependency';
 
 describe(`useDependency`, () => {
   const m1 = module('myModule')
-    .define('val1', _ => value('val1'))
-    .define('val2', _ => value('val2'));
+    .define('val1', value('val1'))
+    .define('val2', value('val2'));
 
   function setup() {
     const Consumer = () => {

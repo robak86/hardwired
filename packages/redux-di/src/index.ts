@@ -2,12 +2,11 @@ import { SelectorResolver, SelectorResolverParams } from './resolvers/SelectorRe
 import { Action, Reducer } from 'redux';
 import { ReducerResolver } from './resolvers/ReducerResolver';
 import { DispatchResolver, DispatchResolverParams } from './resolvers/DispatchResolver';
-import { Instance } from 'hardwired';
 import { StoreResolver } from './resolvers/StoreResolver';
 
 export function init<TState extends Record<string, unknown>, TAction extends Action = any>() {
-  const selector: SelectorResolverParams<TState> = (select, deps?) => {
-    return new SelectorResolver(select, deps) as any;
+  const selector: SelectorResolverParams<TState> = select => {
+    return new SelectorResolver(select) as any;
   };
 
   const reducer = (reducer: Reducer<TState, any>): ReducerResolver<TState> => {
@@ -18,8 +17,8 @@ export function init<TState extends Record<string, unknown>, TAction extends Act
     return new DispatchResolver(actionCreator);
   };
 
-  const store = <TState>(defaultsState: Instance<TState>): StoreResolver<TState> => {
-    return new StoreResolver<TState>(defaultsState);
+  const store = <TState>(): StoreResolver<TState> => {
+    return new StoreResolver<TState>();
   };
 
   return {

@@ -1,31 +1,30 @@
-import { AbstractDependencyResolver, ContainerContext, Instance, ModuleLookup } from 'hardwired';
-import { ReducerResolver } from './ReducerResolver';
-import { AlterableStore } from '../stack/AlterableStore';
-import { SagaResolver } from './SagaResolver';
+import { AbstractInstanceResolver, ContainerContext, Instance, ModuleLookup } from "hardwired";
+import { ReducerResolver } from "./ReducerResolver";
+import { AlterableStore } from "../stack/AlterableStore";
+import { SagaResolver } from "./SagaResolver";
 
-export class StoreResolver<AppState> extends AbstractDependencyResolver<AlterableStore<AppState>> {
+export class StoreResolver<TAppState> extends AbstractInstanceResolver<AlterableStore<TAppState>, [TAppState]> {
   public reducersResolvers: Instance<any>[] = [];
   public sagasResolvers: Instance<any>[] = [];
 
-  constructor(private resolver: Instance<AppState>) {
+  constructor() {
     super();
   }
 
-  build(cache: ContainerContext) {
+  build(cache: ContainerContext, [initialState]) {
     const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.get(cache));
     const sagas = this.sagasResolvers.map(sagaResolver => sagaResolver.get(cache));
 
-    const store = this.buildStore(cache);
+    const store = this.buildStore(cache, initialState);
     store.replaceReducers(reducers);
 
     return store;
   }
 
-  private buildStore(cache: ContainerContext) {
+  private buildStore(cache: ContainerContext, initialState) {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const initialState = this.resolver.get(cache);
       const store = new AlterableStore(initialState);
       cache.setForGlobalScope(this.id, store);
       return store;
@@ -43,8 +42,6 @@ export class StoreResolver<AppState> extends AbstractDependencyResolver<Alterabl
   // }
 }
 
-export const store = <TAppState extends Record<any, any>>(
-  defaultsState: Instance<TAppState>,
-): StoreResolver<TAppState> => {
-  return new StoreResolver<TAppState>(defaultsState);
+export const store = <TAppState extends Record<any, any>>(): StoreResolver<TAppState> => {
+  return new StoreResolver<TAppState>();
 };

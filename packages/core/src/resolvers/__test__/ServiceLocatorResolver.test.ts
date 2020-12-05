@@ -1,11 +1,11 @@
 import { unit } from '../../module/Module';
-import { value, value } from '../ValueResolver';
+import { value } from '../ValueResolver';
 import { createResolverId } from '../../utils/fastId';
-import { request, request } from '../ClassRequestResolver';
-import { singleton, singleton } from '../ClassSingletonResolver';
-import { serviceLocator, serviceLocator } from '../ServiceLocatorResolver';
+import { request } from '../ClassRequestResolver';
+import { singleton } from '../ClassSingletonResolver';
+import { serviceLocator } from '../ServiceLocatorResolver';
 import { container } from '../../container/Container';
-import { factory, factory } from '../FactoryResolver';
+import { factory } from '../FactoryResolver';
 import { moduleImport } from '../../module/ModuleBuilder';
 
 describe(`ServiceLocatorResolver`, () => {

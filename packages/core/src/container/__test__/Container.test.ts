@@ -1,8 +1,8 @@
 import { module } from '../../module/Module';
 import { dependency } from '../../testing/TestResolvers';
 import { container } from '../Container';
-import { value, value } from '../../resolvers/ValueResolver';
-import { singleton, singleton } from '../../resolvers/ClassSingletonResolver';
+import { value } from '../../resolvers/ValueResolver';
+import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { ArgsDebug } from '../../testing/ArgsDebug';
 import { moduleImport } from '../../module/ModuleBuilder';
 

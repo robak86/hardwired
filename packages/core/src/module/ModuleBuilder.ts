@@ -6,6 +6,7 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 import invariant from 'tiny-invariant';
 import { AbstractInstanceResolver, BoundResolver, ModuleEntryResolver } from '../resolvers/abstract/AbstractResolvers';
 import { Thunk } from '../utils/Thunk';
+import { ModuleResolver } from "../resolvers/ModuleResolver";
 
 // prettier-ignore
 type UnboxModuleEntry<T> =
@@ -39,35 +40,6 @@ export type MaterializedRecord<TRecord extends Record<string, ModuleEntry>> = {
 export type ModuleInstancesKeys<TRecord extends Record<string, ModuleEntry>> = {
   [K in keyof TRecord]: TRecord[K] extends Instance<any> ? K : never;
 }[keyof TRecord];
-
-// type M1 = M<{
-//   a: Definition<number>;
-//   b: Definition<string>;
-//   c: M<{
-//     e: Definition<number>;
-//     f: M<{
-//       g: Definition<boolean>;
-//     }>;
-//   }>;
-// }>;
-//
-// type WTF2 = MaterializeModule<M1>;
-//
-// type MaterializedPath = PropType<WTF2, 'c.f.g'>;
-
-// type DEb = AllowedKeys<M1>
-//
-// export type ClassSingletonBuilder = {
-//   <TResult>(klass: ClassType<[], TResult>): ClassSingletonResolver<TResult>;
-//   <TDeps extends any[], TResult>(
-//     klass: ClassType<TDeps, TResult>,
-//     depSelect: { [K in keyof TDeps]: Instance<TDeps[K]> },
-//   ): ClassSingletonResolver<TResult>;
-// };
-//
-// export const singleton: ClassSingletonBuilder = (klass, depSelect?) => {
-//   return new ClassSingletonResolver(klass, depSelect);
-// };
 
 type ModuleResolvers<TEntries extends Record<string, ModuleEntry>> = {
   [K in keyof TEntries & string]: BoundResolver;
@@ -168,17 +140,12 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> implemen
   }
 }
 
-export function singleton<TDeps extends any[], TValue>(
-  cls: ClassType<TDeps, TValue>,
-): AbstractInstanceResolver<TValue, TDeps> {
-  throw new Error('implement me');
-}
 
 type Deps<T extends string[], TDeps extends Record<string, unknown>> = {
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
 
-const m = ModuleBuilder.empty('');
+// const m = ModuleBuilder.empty('');
 
 export class TestClass {
   constructor(private a: number, private b: string) {}
@@ -192,27 +159,8 @@ export class NoArgsClass {
   constructor() {}
 }
 
-export const value = <TValue>(value: TValue): AbstractInstanceResolver<TValue, []> => {
-  throw new Error('implement me');
-};
-
 export const moduleImport = <TValue extends ModuleEntries<any>>(
   value: Thunk<TValue>,
 ): ModuleEntryResolver<TValue, []> => {
-  throw new Error('implement me');
+  return new ModuleResolver(value)
 };
-
-const m222 = m.define('a', value(1)).define('b', value('string'));
-
-const value1 = moduleImport(m222);
-const value2 = value(1);
-
-const mmm = m
-  .define('imported', value1)
-  .define('a', value2)
-  .define('b', value('string'))
-  .define('sdf', singleton(TestClass), ['a', 'b'])
-  .define('sdf2', singleton(TestClassUsing), ['sdf']);
-
-type Mat = MaterializeModule<typeof mmm>;
-// .defineUniversal('cls', singleton(TestClass), ['a', 'b']);

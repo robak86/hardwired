@@ -9,7 +9,7 @@ import { expectType, TypeEqual } from "ts-expect";
 describe(`useWatchable`, () => {
   describe(`using dependencies from root module`, () => {
     function setup() {
-      const m1 = module('myModule').define('val1', _ => value('val1'));
+      const m1 = module('myModule').define('val1', value('val1'));
 
       const Container = () => {
         const value = useWatchable(m1, 'val1');
@@ -45,7 +45,7 @@ describe(`useWatchable`, () => {
 
   describe(`types`, () => {
     it(`returns correct type`, async () => {
-      const m1 = module('myModule').define('val1', _ => value('val1'));
+      const m1 = module('myModule').define('val1', value('val1'));
 
       const SomeComponent = () => {
         const val = useWatchable(m1, 'val1');
