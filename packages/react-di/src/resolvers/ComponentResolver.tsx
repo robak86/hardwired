@@ -1,11 +1,5 @@
-import {
-  AbstractDependencyResolver,
-  ContainerContext,
-  Instance,
-  EventsEmitter,
-  ModuleLookup
-} from "hardwired";
-import React from "react";
+import { AbstractDependencyResolver, ContainerContext, Instance, EventsEmitter, ModuleLookup } from 'hardwired';
+import React from 'react';
 
 // TODO: probably TProps (instead of TComponent) should be sufficient
 export type MaterializedComponent<TComponent extends React.ComponentType> = {
@@ -19,7 +13,7 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
 > {
   private onDependencyInvalidated = new EventsEmitter();
 
-  constructor(private component: TComponent, private propsDependencies: Record<string, Instance<any>>) {
+  constructor(private component: TComponent, private propsDependencies: Record<string, Instance<any, any>>) {
     super();
   }
 
@@ -34,19 +28,20 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends A
 
   // TODO: should we apply some cache ?
   build(cache: ContainerContext): MaterializedComponent<TComponent> {
-    const props = Object.keys(this.propsDependencies).reduce((props, currentKey) => {
-      props[currentKey] = this.propsDependencies[currentKey].get(cache);
-      return props;
-    }, {});
-
-    return { component: this.component, props, subscribe: this.onDependencyInvalidated.add } as MaterializedComponent<
-      any
-    >;
+    throw new Error('Implement me');
+    // const props = Object.keys(this.propsDependencies).reduce((props, currentKey) => {
+    //   props[currentKey] = this.propsDependencies[currentKey].get(cache);
+    //   return props;
+    // }, {});
+    //
+    // return { component: this.component, props, subscribe: this.onDependencyInvalidated.add } as MaterializedComponent<
+    //   any
+    // >;
   }
 }
 
 export type ComponentDependencies<TProps> = {
-  [K in keyof TProps]: Instance<TProps[K]>;
+  [K in keyof TProps]: Instance<TProps[K], any>;
 };
 
 // TODO: should subtract props provided by container from final component props

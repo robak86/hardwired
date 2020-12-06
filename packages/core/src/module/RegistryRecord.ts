@@ -1,15 +1,15 @@
 import { DefinitionResolver } from '../resolvers/DependencyResolver';
 import { ModuleBuilder } from './ModuleBuilder';
-import { Instance } from '../resolvers/abstract/Instance';
+import { InstanceLegacy } from '../resolvers/abstract/InstanceLegacy';
 
 // TODO: rename to ModuleEntries | ModuleDefinitions ?
 export interface RegistryRecord {
-  [property: string]: Instance<any> | RegistryRecord;
+  [property: string]: InstanceLegacy<any> | RegistryRecord;
 }
 
 export declare namespace RegistryRecord {
   type Materialized<T extends RegistryRecord> = {
-    [K in keyof T]: T[K] extends Instance<infer TValue> ? TValue : never;
+    [K in keyof T]: T[K] extends InstanceLegacy<infer TValue> ? TValue : never;
   };
 
   type Flatten<T extends RegistryRecord> = {
@@ -21,11 +21,11 @@ export declare namespace RegistryRecord {
   }[keyof T];
 
   type ModuleResolversKeys<T extends RegistryRecord> = {
-    [K in keyof T]: T[K] extends Record<string, Instance<any>> ? K : never;
+    [K in keyof T]: T[K] extends Record<string, InstanceLegacy<any>> ? K : never;
   }[keyof T];
 
   type DependencyResolversKeys<T extends RegistryRecord> = {
-    [K in keyof T]: T[K] extends Instance<any> ? K : never;
+    [K in keyof T]: T[K] extends InstanceLegacy<any> ? K : never;
   }[keyof T];
 
   type Resolvers<T extends RegistryRecord> = {

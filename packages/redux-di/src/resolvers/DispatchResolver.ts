@@ -1,11 +1,11 @@
-import { AbstractDependencyResolver, ContainerContext, Instance, ModuleLookup, AbstractInstanceResolver } from 'hardwired';
+import { AbstractDependencyResolver, ContainerContext,  ModuleLookup, Instance } from 'hardwired';
 import { Action } from 'redux';
 import { StoreResolver } from './StoreResolver';
 import invariant from 'tiny-invariant';
 import { AlterableStore } from '../stack/AlterableStore';
 
-export class DispatchResolver<TActionArgs extends any[]> extends AbstractInstanceResolver<(...TActionArgs) => void, []> {
-  private storeResolver: Instance<AlterableStore<any>>[] | [Instance<AlterableStore<any>>] = [];
+export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TActionArgs) => void, []> {
+  private storeResolver: Instance<AlterableStore<any>, any>[] | [Instance<AlterableStore<any>, any>] = [];
 
   constructor(private action: (...args: any) => Action) {
     super();
@@ -18,12 +18,13 @@ export class DispatchResolver<TActionArgs extends any[]> extends AbstractInstanc
   }
 
   build(context: ContainerContext): any {
-    const storeInstance = this.storeResolver[0];
-    const store = storeInstance.get(context);
-
-    return (...args) => {
-      store.dispatch(this.action(...args));
-    };
+    throw new Error("TODO")
+    // const storeInstance = this.storeResolver[0];
+    // const store = storeInstance.build(context);
+    //
+    // return (...args) => {
+    //   store.dispatch(this.action(...args));
+    // };
   }
 }
 

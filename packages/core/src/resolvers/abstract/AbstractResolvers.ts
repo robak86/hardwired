@@ -6,14 +6,14 @@ import { DependencyResolverEvents } from './AbstractDependencyResolver';
 import { MaterializedRecord, ModuleEntry } from '../../module/ModuleBuilder';
 import { ModuleId } from '../../module/ModuleId';
 
-export type AnyResolver = AbstractInstanceResolver<any, any> | AbstractModuleResolver<any>;
+export type AnyResolver = Instance<any, any> | AbstractModuleResolver<any>;
 
 export type BoundResolver = {
   resolver: AnyResolver;
   dependencies: string[];
 };
 
-export abstract class AbstractInstanceResolver<TValue, TDeps extends any[]> {
+export abstract class Instance<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
   public readonly events = new DependencyResolverEvents();
 

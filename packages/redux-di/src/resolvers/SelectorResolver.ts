@@ -1,17 +1,11 @@
-import {
-  AbstractDependencyResolver,
-  AbstractInstanceResolver,
-  ContainerContext,
-  Instance,
-  ModuleLookup,
-} from 'hardwired';
-import { StoreResolver } from './StoreResolver';
-import invariant from 'tiny-invariant';
-import { AlterableStore } from '../stack/AlterableStore';
-import { createSelector } from 'reselect';
+import { ContainerContext, Instance, ModuleLookup } from "hardwired";
+import { StoreResolver } from "./StoreResolver";
+import invariant from "tiny-invariant";
+import { AlterableStore } from "../stack/AlterableStore";
+import { createSelector } from "reselect";
 
-export class SelectorResolver<T> extends AbstractInstanceResolver<T, []> {
-  private storeResolver: Instance<AlterableStore<any>>[] | [Instance<AlterableStore<any>>] = [];
+export class SelectorResolver<T> extends Instance<T, []> {
+  private storeResolver: Instance<AlterableStore<any>, any>[] | [Instance<AlterableStore<any>, any>] = [];
   private hasSubscription = false;
 
   constructor(private select: () => T) {
@@ -19,22 +13,23 @@ export class SelectorResolver<T> extends AbstractInstanceResolver<T, []> {
   }
 
   build(context: ContainerContext, depsSelectors): T {
-    const storeInstance = this.storeResolver[0];
-    invariant(storeInstance, `Cannot find store instance`); // TODO: maybe we should provide
-    const store = storeInstance.get(context);
-
-    if (!this.hasSubscription) {
-      store.subscribe(() => {
-        this.events.invalidateEvents.emit();
-      });
-      this.hasSubscription = true;
-
-      const finalSelector = depsSelectors.length > 0 ? createSelector(depsSelectors, this.select) : this.select;
-      context.setForGlobalScope(this.id, finalSelector);
-    }
-    const selectedState = context.getFromGlobalScope(this.id)(store.getState());
-
-    return selectedState;
+    throw new Error('implement me')
+    // const storeInstance = this.storeResolver[0];
+    // invariant(storeInstance, `Cannot find store instance`); // TODO: maybe we should provide
+    // const store = storeInstance.get(context);
+    //
+    // if (!this.hasSubscription) {
+    //   store.subscribe(() => {
+    //     this.events.invalidateEvents.emit();
+    //   });
+    //   this.hasSubscription = true;
+    //
+    //   const finalSelector = depsSelectors.length > 0 ? createSelector(depsSelectors, this.select) : this.select;
+    //   context.setForGlobalScope(this.id, finalSelector);
+    // }
+    // const selectedState = context.getFromGlobalScope(this.id)(store.getState());
+    //
+    // return selectedState;
   }
 
   onInit(registry: ModuleLookup<any>): any {

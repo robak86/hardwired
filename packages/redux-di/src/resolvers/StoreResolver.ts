@@ -1,24 +1,25 @@
-import { AbstractInstanceResolver, ContainerContext, Instance, ModuleLookup } from "hardwired";
-import { ReducerResolver } from "./ReducerResolver";
-import { AlterableStore } from "../stack/AlterableStore";
-import { SagaResolver } from "./SagaResolver";
+import { Instance, ContainerContext, ModuleLookup } from 'hardwired';
+import { ReducerResolver } from './ReducerResolver';
+import { AlterableStore } from '../stack/AlterableStore';
+import { SagaResolver } from './SagaResolver';
 
-export class StoreResolver<TAppState> extends AbstractInstanceResolver<AlterableStore<TAppState>, [TAppState]> {
-  public reducersResolvers: Instance<any>[] = [];
-  public sagasResolvers: Instance<any>[] = [];
+export class StoreResolver<TAppState> extends Instance<AlterableStore<TAppState>, [TAppState]> {
+  public reducersResolvers: Instance<any, any>[] = [];
+  public sagasResolvers: Instance<any, any>[] = [];
 
   constructor() {
     super();
   }
 
-  build(cache: ContainerContext, [initialState]) {
-    const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.get(cache));
-    const sagas = this.sagasResolvers.map(sagaResolver => sagaResolver.get(cache));
-
-    const store = this.buildStore(cache, initialState);
-    store.replaceReducers(reducers);
-
-    return store;
+  build(context: ContainerContext, deps: any): AlterableStore<TAppState> {
+    throw new Error("implement me")
+    // const reducers = this.reducersResolvers.map(reducerResolver => reducerResolver.get(cache));
+    // const sagas = this.sagasResolvers.map(sagaResolver => sagaResolver.get(cache));
+    //
+    // const store = this.buildStore(cache, initialState);
+    // store.replaceReducers(reducers);
+    //
+    // return store;
   }
 
   private buildStore(cache: ContainerContext, initialState) {
@@ -32,8 +33,9 @@ export class StoreResolver<TAppState> extends AbstractInstanceResolver<Alterable
   }
 
   onInit(registry: ModuleLookup<any>): any {
-    this.reducersResolvers = registry.findFactoriesByResolverClass(ReducerResolver);
-    this.sagasResolvers = registry.findFactoriesByResolverClass(SagaResolver);
+    throw new Error("Implement me")
+    // this.reducersResolvers = registry.findFactoriesByResolverClass(ReducerResolver);
+    // this.sagasResolvers = registry.findFactoriesByResolverClass(SagaResolver);
   }
 
   // onRegister(events: ): any {

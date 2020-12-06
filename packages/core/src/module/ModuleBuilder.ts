@@ -3,13 +3,13 @@ import { PropType } from '../utils/PropType';
 import { ModuleId } from './ModuleId';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import invariant from 'tiny-invariant';
-import { AbstractInstanceResolver, AbstractModuleResolver } from '../resolvers/abstract/AbstractResolvers';
+import { Instance, AbstractModuleResolver } from '../resolvers/abstract/AbstractResolvers';
 import { ContainerContext } from '../container/ContainerContext';
 import { Thunk } from '../utils/Thunk';
 
 // prettier-ignore
 type UnboxModuleEntry<T> =
-  T extends AbstractInstanceResolver<infer TInstance, any> ? TInstance : 'cannot unwrap instance type from AbstractInstanceResolver'
+  T extends Instance<infer TInstance, any> ? TInstance : 'cannot unwrap instance type from Instance'
 
 // type Instance<T> = {
 //   kind: 'definition';
@@ -23,19 +23,19 @@ export type ModuleEntriesRecord = Record<string, ModuleEntry>;
 //   entries: { [K in keyof T]: any };
 // };
 
-export type ModuleEntry = AbstractInstanceResolver<any, any> | AbstractModuleResolver<any>;
+export type ModuleEntry = Instance<any, any> | AbstractModuleResolver<any>;
 
 // prettier-ignore
 export type MaterializeModule<TModule extends ModuleBuilder<any>> =
   TModule extends ModuleBuilder<infer TRecord> ? { //TODO: should be inferred from AbstractModuleResolver<infer TRecord>
         [K in keyof TRecord & string]: TRecord[K] extends ModuleBuilder<infer TModule> ? MaterializeModule<TRecord[K]> :
 
-                               TRecord[K] extends AbstractInstanceResolver<infer TInstance, any> ? TInstance : 'co do chuja'
+                               TRecord[K] extends Instance<infer TInstance, any> ? TInstance : 'co do chuja'
   } : never;
 
 // prettier-ignore
 export type MaterializedRecord<TRecord extends Record<string, ModuleEntry>> = {
-  [K in keyof TRecord]: TRecord[K] extends AbstractInstanceResolver<infer TInstanceType, any> ? TInstanceType
+  [K in keyof TRecord]: TRecord[K] extends Instance<infer TInstanceType, any> ? TInstanceType
                         : TRecord[K] extends AbstractModuleResolver<infer TRecord> ? MaterializedRecord<TRecord> : unknown
 
 };
@@ -43,10 +43,10 @@ export type MaterializedRecord<TRecord extends Record<string, ModuleEntry>> = {
 // prettier-ignore
 export type ModuleInstancesKeys<TModule extends ModuleBuilder<any>> =
   TModule extends ModuleBuilder<infer TRecord> ?
-    ({[K in keyof TRecord]: TRecord[K] extends AbstractInstanceResolver<infer A, infer B> ? K : never })[keyof TRecord] : unknown
+    ({[K in keyof TRecord]: TRecord[K] extends Instance<infer A, infer B> ? K : never })[keyof TRecord] : unknown
 
 export type ModuleRecordInstancesKeys<TRecord extends Record<string, ModuleEntry>> = {
-  [K in keyof TRecord]: TRecord[K] extends AbstractInstanceResolver<any, any> ? K : never;
+  [K in keyof TRecord]: TRecord[K] extends Instance<any, any> ? K : never;
 }[keyof TRecord];
 
 type ModuleResolvers<TEntries extends Record<string, ModuleEntry>> = {
@@ -81,18 +81,18 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
 
   define<TKey extends string, TValue>(
     name: TKey,
-    resolver: AbstractInstanceResolver<TValue, []>,
-  ): ModuleBuilder<TRecord & Record<TKey, AbstractInstanceResolver<TValue, []>>>;
+    resolver: Instance<TValue, []>,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
   define<TKey extends string, TValue, TDepKey extends AllowedKeys<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
     name: TKey,
-    resolver: AbstractInstanceResolver<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
+    resolver: Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
     dependencies: TDepsKeys,
   ): ModuleBuilder<
-    TRecord & Record<TKey, AbstractInstanceResolver<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>>
+    TRecord & Record<TKey, Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>>
   >;
   define<TKey extends string, TValue, TDepKey extends AllowedKeys<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
     name: TKey,
-    resolver: AbstractInstanceResolver<any, any> | Thunk<AbstractModuleResolver<any>>,
+    resolver: Instance<any, any> | Thunk<AbstractModuleResolver<any>>,
     dependencies?: TDepsKeys,
   ): ModuleBuilder<TRecord & Record<TKey, unknown>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
@@ -110,7 +110,7 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
 
   replace<TKey extends string, TValue extends UnboxModuleEntry<TRecord[TKey]>>(
     name: TKey,
-    resolver: AbstractInstanceResolver<TValue, []>,
+    resolver: Instance<TValue, []>,
   ): ModuleBuilder<TRecord>;
   replace<
     TKey extends string,
@@ -119,7 +119,7 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
     TDepsKeys extends [TDepKey, ...TDepKey[]]
   >(
     name: TKey,
-    resolver: AbstractInstanceResolver<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
+    resolver: Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
     dependencies: TDepsKeys,
   ): ModuleBuilder<TRecord>;
   replace<
@@ -127,7 +127,7 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
     TValue extends UnboxModuleEntry<TRecord[TKey]>,
     TDepKey extends AllowedKeys<TRecord>,
     TDepsKeys extends [TDepKey, ...TDepKey[]]
-  >(name: TKey, resolver: AbstractInstanceResolver<any, any>, dependencies?: TDepsKeys): ModuleBuilder<TRecord> {
+  >(name: TKey, resolver: Instance<any, any>, dependencies?: TDepsKeys): ModuleBuilder<TRecord> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
 
     return new ModuleBuilder(

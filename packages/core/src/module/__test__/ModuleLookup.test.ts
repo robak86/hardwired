@@ -6,7 +6,7 @@ import {
   DependencyResolverEvents,
 } from '../../resolvers/abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../../container/ContainerContext';
-import { Instance } from '../../resolvers/abstract/Instance';
+import { InstanceLegacy } from '../../resolvers/abstract/InstanceLegacy';
 
 function setup() {
   const rootId = ModuleId.build('a');
@@ -81,7 +81,7 @@ describe(`ModuleLookup`, () => {
       const { root, child1, child2 } = setup();
 
       const discoverable = new DiscoverableResolver();
-      const dependencyFactory = new Instance(discoverable.build, () => new DependencyResolverEvents());
+      const dependencyFactory = new InstanceLegacy(discoverable.build, () => new DependencyResolverEvents());
 
       root.appendDependencyFactory('discoverable', discoverable, dependencyFactory);
       const discoveredFromChild1 = child1.findAncestorResolvers(DiscoverableResolver);
@@ -95,7 +95,7 @@ describe(`ModuleLookup`, () => {
       const { root, grandChild1, grandChild2 } = setup();
 
       const discoverable = new DiscoverableResolver();
-      const dependencyFactory = new Instance(discoverable.build, () => new DependencyResolverEvents());
+      const dependencyFactory = new InstanceLegacy(discoverable.build, () => new DependencyResolverEvents());
 
       root.appendDependencyFactory('discoverable', discoverable, dependencyFactory);
       const discoveredFromGrandChild1 = grandChild1.findAncestorResolvers(DiscoverableResolver);
@@ -109,10 +109,10 @@ describe(`ModuleLookup`, () => {
       const { root, grandChild1, grandChild2, child1, child2 } = setup();
 
       const discoverable = new DiscoverableResolver();
-      const dependencyFactory = new Instance(discoverable.build, () => new DependencyResolverEvents());
+      const dependencyFactory = new InstanceLegacy(discoverable.build, () => new DependencyResolverEvents());
 
       const discoverable2 = new DiscoverableResolver();
-      const dependencyFactory2 = new Instance(discoverable.build, () => new DependencyResolverEvents());
+      const dependencyFactory2 = new InstanceLegacy(discoverable.build, () => new DependencyResolverEvents());
 
       root.appendDependencyFactory('discoverable', discoverable, dependencyFactory);
       child1.appendDependencyFactory('discoverable2', discoverable2, dependencyFactory2);

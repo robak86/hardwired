@@ -1,7 +1,7 @@
 import { ContainerContext } from "../container/ContainerContext";
-import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
+import { Instance } from "./abstract/AbstractResolvers";
 
-export class ValueResolver<TReturn> extends AbstractInstanceResolver<TReturn, []> {
+export class ValueResolver<TReturn> extends Instance<TReturn, []> {
   constructor(private value: TReturn) {
     super();
   }

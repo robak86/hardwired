@@ -1,8 +1,8 @@
 import { ContainerContext } from "../container/ContainerContext";
 import { ClassType } from "../utils/ClassType";
-import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
+import { Instance } from "./abstract/AbstractResolvers";
 
-export class ClassSingletonResolver<TReturn, TDeps extends any[]> extends AbstractInstanceResolver<TReturn, TDeps> {
+export class ClassSingletonResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   constructor(private klass) {
     super();
   }

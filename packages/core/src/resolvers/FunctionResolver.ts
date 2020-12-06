@@ -1,16 +1,16 @@
 import { curry } from '../utils/curry';
 import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
-import { Instance } from './abstract/Instance';
+import { InstanceLegacy } from './abstract/InstanceLegacy';
 import Parameters = jest.Parameters;
 import { ClassType } from '../utils/ClassType';
 import { ClassRequestResolver } from './ClassRequestResolver';
-import { AbstractInstanceResolver } from './abstract/AbstractResolvers';
+import { Instance } from './abstract/AbstractResolvers';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
 //  or it shouldn't never be memoized ?
-export class FunctionResolver<TReturn, TDeps extends any[]> extends AbstractInstanceResolver<TReturn, TDeps> {
+export class FunctionResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   private readonly curriedFunction;
   private readonly uncurriedFunction;
   private previousDependencies: any[] = [];

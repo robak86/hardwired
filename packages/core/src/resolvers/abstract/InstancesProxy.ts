@@ -1,7 +1,7 @@
 import { AbstractDependencyResolver, DependencyResolverEvents } from './AbstractDependencyResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import invariant from 'tiny-invariant';
-import { Instance } from './Instance';
+import { InstanceLegacy } from './InstanceLegacy';
 
 export class InstancesProxy {
   private buildFunctions: Record<string, (context: ContainerContext) => any> = {};
@@ -10,7 +10,7 @@ export class InstancesProxy {
   getReference(key: string) {
     // const self = this;
 
-    return new Instance(
+    return new InstanceLegacy(
       (cache: ContainerContext) => {
         const build = this.buildFunctions[key];
         invariant(

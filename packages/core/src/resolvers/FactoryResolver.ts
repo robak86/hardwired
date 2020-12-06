@@ -1,12 +1,12 @@
 import { ContainerContext } from "../container/ContainerContext";
 import { ClassType } from "../utils/ClassType";
-import { AbstractInstanceResolver } from "./abstract/AbstractResolvers";
+import { Instance } from "./abstract/AbstractResolvers";
 
 export interface Factory<TReturn> {
   build(): TReturn;
 }
 
-export class FactoryResolver<TReturn, TDeps extends any[]> extends AbstractInstanceResolver<TReturn, TDeps> {
+export class FactoryResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   constructor(private klass: ClassType<any, Factory<TReturn>>) {
     super();
   }

@@ -1,19 +1,19 @@
 import { RegistryRecord } from "../RegistryRecord";
 import { expectType, TypeEqual } from "ts-expect";
-import { Instance } from "../../resolvers/abstract/Instance";
+import { InstanceLegacy } from "../../resolvers/abstract/InstanceLegacy";
 
 describe(`RegistryRecord`, () => {
   describe(`Module`, () => {
     it(`returns correct type`, async () => {
       type Registry = {
-        a: Instance<number>;
+        a: InstanceLegacy<number>;
         imported: {
-          b: Instance<boolean>;
+          b: InstanceLegacy<boolean>;
         };
         imported2: {
-          c: Instance<number>;
+          c: InstanceLegacy<number>;
           nested: {
-            d: Instance<string>;
+            d: InstanceLegacy<string>;
           };
         };
       };
@@ -22,16 +22,16 @@ describe(`RegistryRecord`, () => {
 
       type Expected =
         | {
-            b: Instance<boolean>;
+            b: InstanceLegacy<boolean>;
           }
         | {
-            c: Instance<number>;
+            c: InstanceLegacy<number>;
             nested: {
-              d: Instance<string>;
+              d: InstanceLegacy<string>;
             };
           }
         | {
-            d: Instance<string>;
+            d: InstanceLegacy<string>;
           };
 
       expectType<TypeEqual<Modules, Expected>>(true);
@@ -41,9 +41,9 @@ describe(`RegistryRecord`, () => {
   describe(`RegistryRecord.DependencyResolversKeys`, () => {
     it(`returns correct type`, async () => {
       type Registry = {
-        a: Instance<123>;
+        a: InstanceLegacy<123>;
         imported: {
-          b: Instance<true>;
+          b: InstanceLegacy<true>;
         };
       };
 
@@ -56,9 +56,9 @@ describe(`RegistryRecord`, () => {
   describe(`RegistryRecord.ModuleResolversKeys`, () => {
     it(`returns correct type`, async () => {
       type Registry = {
-        a: Instance<123>;
+        a: InstanceLegacy<123>;
         imported: {
-          b: Instance<true>;
+          b: InstanceLegacy<true>;
         };
       };
 
