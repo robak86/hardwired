@@ -1,6 +1,7 @@
-import { MaterializeModule, ModuleBuilder, moduleImport,  TestClass, TestClassUsing } from "../module/ModuleBuilder";
+import { MaterializeModule, ModuleBuilder, TestClass, TestClassUsing } from "../module/ModuleBuilder";
 import { value } from "../resolvers/ValueResolver";
 import { singleton } from "../resolvers/ClassSingletonResolver";
+import { moduleImport } from "../resolvers/ModuleResolver";
 
 const m = ModuleBuilder.empty('')
 

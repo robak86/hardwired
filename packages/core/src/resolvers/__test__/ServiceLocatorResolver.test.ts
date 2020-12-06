@@ -6,7 +6,7 @@ import { singleton } from '../ClassSingletonResolver';
 import { serviceLocator } from '../ServiceLocatorResolver';
 import { container } from '../../container/Container';
 import { factory } from '../FactoryResolver';
-import { moduleImport } from '../../module/ModuleBuilder';
+import { moduleImport } from "../ModuleResolver";
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {

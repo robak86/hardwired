@@ -28,7 +28,7 @@ export abstract class AbstractInstanceResolver<TValue, TDeps extends any[]> {
 export abstract class AbstractModuleResolver<TValue, TDeps extends any[]> {
   kind: 'moduleResolver' = 'moduleResolver';
 
-  abstract build(path: string, context: ContainerContext, deps: TDeps, injections: ImmutableSet<any>): TValue;
+  abstract build(path: string, context: ContainerContext, deps: TDeps, injections?: ImmutableSet<any>): TValue;
 
   onInit?(lookup: ModuleLookup<any>): void;
   onAppend?(lookup: ModuleLookup<any>): void;

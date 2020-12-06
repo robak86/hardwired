@@ -2,7 +2,8 @@ import { AbstractDependencyResolver } from "../../resolvers/abstract/AbstractDep
 import { ContainerContext } from "../../container/ContainerContext";
 import { ValueResolver } from "../../resolvers/ValueResolver";
 import { singleton } from "../../resolvers/ClassSingletonResolver";
-import { ModuleBuilder, moduleImport, TestClass } from "../ModuleBuilder";
+import { ModuleBuilder, TestClass } from "../ModuleBuilder";
+import { moduleImport } from "../../resolvers/ModuleResolver";
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {

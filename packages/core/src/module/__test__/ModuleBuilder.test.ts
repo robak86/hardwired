@@ -1,11 +1,11 @@
 import { expectType, TypeEqual } from "ts-expect";
 import {
   MaterializeModule,
-  ModuleBuilder,
-  moduleImport
+  ModuleBuilder
 } from "../ModuleBuilder";
 import { ClassType } from "../../utils/ClassType";
 import { AbstractInstanceResolver, ModuleEntryResolver } from "../../resolvers/abstract/AbstractResolvers";
+import { moduleImport } from "../../resolvers/ModuleResolver";
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): AbstractInstanceResolver<TValue, []> => {

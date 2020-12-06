@@ -1,8 +1,8 @@
-import { transient } from '../ClassTransientResolver';
-import { dependency } from '../../testing/TestResolvers';
-import { container } from '../../container/Container';
-import { createResolverId } from '../../utils/fastId';
-import { unit } from '../../module/Module';
+import { transient } from "../ClassTransientResolver";
+import { dependency } from "../../testing/TestResolvers";
+import { container } from "../../container/Container";
+import { createResolverId } from "../../utils/fastId";
+import { unit } from "../../module/Module";
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {

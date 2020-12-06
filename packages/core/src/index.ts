@@ -26,3 +26,4 @@ export { EventsEmitter } from './utils/EventsEmitter';
 export { Instance } from './resolvers/abstract/Instance';
 
 export * from './resolvers/abstract/AbstractResolvers';
+export { moduleImport } from "./resolvers/ModuleResolver";

@@ -1,12 +1,9 @@
-import { ClassType } from '../utils/ClassType';
-import { AllowedKeys } from '../path';
-import { PropType } from '../utils/PropType';
-import { ModuleId } from './ModuleId';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import invariant from 'tiny-invariant';
-import { AbstractInstanceResolver, BoundResolver, ModuleEntryResolver } from '../resolvers/abstract/AbstractResolvers';
-import { Thunk } from '../utils/Thunk';
-import { ModuleResolver } from "../resolvers/ModuleResolver";
+import { AllowedKeys } from "../path";
+import { PropType } from "../utils/PropType";
+import { ModuleId } from "./ModuleId";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import invariant from "tiny-invariant";
+import { BoundResolver, ModuleEntryResolver } from "../resolvers/abstract/AbstractResolvers";
 
 // prettier-ignore
 type UnboxModuleEntry<T> =
@@ -79,7 +76,7 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> implemen
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
         resolver,
-        dependencies,
+        dependencies: dependencies || [],
       }),
       this.injections,
     );
@@ -159,8 +156,3 @@ export class NoArgsClass {
   constructor() {}
 }
 
-export const moduleImport = <TValue extends ModuleEntries<any>>(
-  value: Thunk<TValue>,
-): ModuleEntryResolver<TValue, []> => {
-  return new ModuleResolver(value)
-};

@@ -4,7 +4,7 @@ import { container } from '../Container';
 import { value } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { ArgsDebug } from '../../testing/ArgsDebug';
-import { moduleImport } from '../../module/ModuleBuilder';
+import { moduleImport } from "../../resolvers/ModuleResolver";
 
 describe(`Container`, () => {
   describe(`.get`, () => {
