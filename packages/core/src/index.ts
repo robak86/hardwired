@@ -21,6 +21,7 @@ export { request, ClassRequestResolver } from './resolvers/ClassRequestResolver'
 export { serviceLocator, ServiceLocatorResolver } from './resolvers/ServiceLocatorResolver';
 export { ServiceLocator } from './container/ServiceLocator';
 
+
 export type { ClassType } from './utils/ClassType';
 export { EventsEmitter } from './utils/EventsEmitter';
 export { InstanceLegacy } from './resolvers/abstract/InstanceLegacy';

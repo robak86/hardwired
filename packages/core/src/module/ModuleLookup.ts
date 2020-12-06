@@ -1,7 +1,6 @@
 import { ModuleId } from "./ModuleId";
 import { AbstractDependencyResolver } from "../resolvers/abstract/AbstractDependencyResolver";
 import { ClassType } from "../utils/ClassType";
-import { InstancesProxy } from "../resolvers/abstract/InstancesProxy";
 
 import { InstanceLegacy } from "../resolvers/abstract/InstanceLegacy";
 import { ModuleBuilder, ModuleEntriesRecord } from "./ModuleBuilder";
@@ -17,7 +16,7 @@ export class ModuleLookup<TRegistryRecord extends ModuleEntriesRecord> {
   protected parent?: ModuleLookup<any>;
 
   // TODO: encapsulate
-  public instancesProxy = new InstancesProxy();
+
   public dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
   public modules: Record<string, ModuleBuilder<any>> = {};
 
@@ -35,23 +34,23 @@ export class ModuleLookup<TRegistryRecord extends ModuleEntriesRecord> {
   // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
   // TODO: split module lookup into two classes - ModuleLookup (passed in onInit for module resolver) and DefinitionLookup (passed in onInit for dependency resolver)
 
-  freezeImplementations() {
-    Object.keys(this.dependencyResolvers).forEach(key => {
-      this.instancesProxy.replaceImplementation(key, this.dependencyResolvers[key]);
-    });
-  }
-
-  forEachModuleResolver(iterFn: (resolver: ModuleBuilder<any>) => void) {
-    Object.keys(this.modules).forEach(key => {
-      iterFn(this.modules[key]);
-    });
-  }
-
-  forEachDependencyResolver(iterFn: (resolver: AbstractDependencyResolver<any>) => void) {
-    Object.keys(this.dependencyResolvers).forEach(key => {
-      iterFn(this.dependencyResolvers[key]);
-    });
-  }
+  // freezeImplementations() {
+  //   Object.keys(this.dependencyResolvers).forEach(key => {
+  //     this.instancesProxy.replaceImplementation(key, this.dependencyResolvers[key]);
+  //   });
+  // }
+  //
+  // forEachModuleResolver(iterFn: (resolver: ModuleBuilder<any>) => void) {
+  //   Object.keys(this.modules).forEach(key => {
+  //     iterFn(this.modules[key]);
+  //   });
+  // }
+  //
+  // forEachDependencyResolver(iterFn: (resolver: AbstractDependencyResolver<any>) => void) {
+  //   Object.keys(this.dependencyResolvers).forEach(key => {
+  //     iterFn(this.dependencyResolvers[key]);
+  //   });
+  // }
 
   appendDependencyFactory(name: string, resolver: AbstractDependencyResolver<any>, factory: InstanceLegacy<any>) {
     this.dependenciesByName[name] = factory;

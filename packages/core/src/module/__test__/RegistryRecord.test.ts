@@ -1,43 +1,10 @@
-import { RegistryRecord } from "../RegistryRecord";
-import { expectType, TypeEqual } from "ts-expect";
-import { InstanceLegacy } from "../../resolvers/abstract/InstanceLegacy";
+import { RegistryRecord } from '../RegistryRecord';
+import { expectType, TypeEqual } from 'ts-expect';
+import { InstanceLegacy } from '../../resolvers/abstract/InstanceLegacy';
+import { AbstractModuleResolver, Instance } from '../../resolvers/abstract/AbstractResolvers';
+import { MaterializedRecord } from '../ModuleBuilder';
 
 describe(`RegistryRecord`, () => {
-  describe(`Module`, () => {
-    it(`returns correct type`, async () => {
-      type Registry = {
-        a: InstanceLegacy<number>;
-        imported: {
-          b: InstanceLegacy<boolean>;
-        };
-        imported2: {
-          c: InstanceLegacy<number>;
-          nested: {
-            d: InstanceLegacy<string>;
-          };
-        };
-      };
-
-      type Modules = RegistryRecord.Flatten<Registry>;
-
-      type Expected =
-        | {
-            b: InstanceLegacy<boolean>;
-          }
-        | {
-            c: InstanceLegacy<number>;
-            nested: {
-              d: InstanceLegacy<string>;
-            };
-          }
-        | {
-            d: InstanceLegacy<string>;
-          };
-
-      expectType<TypeEqual<Modules, Expected>>(true);
-    });
-  });
-
   describe(`RegistryRecord.DependencyResolversKeys`, () => {
     it(`returns correct type`, async () => {
       type Registry = {

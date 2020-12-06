@@ -1,27 +1,16 @@
-import { AllowedKeys } from '../path';
-import { PropType } from '../utils/PropType';
-import { ModuleId } from './ModuleId';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import invariant from 'tiny-invariant';
-import { Instance, AbstractModuleResolver } from '../resolvers/abstract/AbstractResolvers';
-import { ContainerContext } from '../container/ContainerContext';
-import { Thunk } from '../utils/Thunk';
+import { AllowedKeys } from "../path";
+import { PropType } from "../utils/PropType";
+import { ModuleId } from "./ModuleId";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import invariant from "tiny-invariant";
+import { AbstractModuleResolver, Instance } from "../resolvers/abstract/AbstractResolvers";
+import { Thunk } from "../utils/Thunk";
 
 // prettier-ignore
 type UnboxModuleEntry<T> =
   T extends Instance<infer TInstance, any> ? TInstance : 'cannot unwrap instance type from Instance'
 
-// type Instance<T> = {
-//   kind: 'definition';
-//   instance: T;
-// };
-
 export type ModuleEntriesRecord = Record<string, ModuleEntry>;
-
-// export type ModuleEntries<T extends Record<string, ModuleEntry>> = {
-//   kind: 'module';
-//   entries: { [K in keyof T]: any };
-// };
 
 export type ModuleEntry = Instance<any, any> | AbstractModuleResolver<any>;
 
@@ -52,9 +41,6 @@ export type ModuleRecordInstancesKeys<TRecord extends Record<string, ModuleEntry
 type ModuleResolvers<TEntries extends Record<string, ModuleEntry>> = {
   [K in keyof TEntries & string]: any;
 };
-
-// type NextRecord<TValue> = TValue extends ModuleEntries<any> ? TValue : Instance<TValue>;
-type NextRecord<TValue> = TValue; //extends ModuleEntries<any> ? TValue : Instance<TValue>;
 
 export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends AbstractModuleResolver<TRecord> {
   kind: 'moduleResolver' = 'moduleResolver';
@@ -87,9 +73,7 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
     name: TKey,
     resolver: Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
     dependencies: TDepsKeys,
-  ): ModuleBuilder<
-    TRecord & Record<TKey, Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>>
-  >;
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>>>;
   define<TKey extends string, TValue, TDepKey extends AllowedKeys<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
     name: TKey,
     resolver: Instance<any, any> | Thunk<AbstractModuleResolver<any>>,
@@ -106,7 +90,6 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
       this.injections,
     );
   }
-
 
   replace<TKey extends string, TValue extends UnboxModuleEntry<TRecord[TKey]>>(
     name: TKey,
