@@ -1,7 +1,7 @@
 import { RegistryRecord } from '../RegistryRecord';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceLegacy } from '../../resolvers/abstract/InstanceLegacy';
-import { AbstractModuleResolver, Instance } from '../../resolvers/abstract/AbstractResolvers';
+import { Module, Instance } from '../../resolvers/abstract/AbstractResolvers';
 import { MaterializedRecord } from '../ModuleBuilder';
 
 describe(`RegistryRecord`, () => {

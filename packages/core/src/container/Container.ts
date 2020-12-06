@@ -13,7 +13,7 @@ import {
   ModuleInstancesKeys,
   ModuleRecordInstancesKeys,
 } from '../module/ModuleBuilder';
-import { AbstractModuleResolver } from '../resolvers/abstract/AbstractResolvers';
+import { Module } from '../resolvers/abstract/AbstractResolvers';
 import { ImmutableSet } from "../collections/ImmutableSet";
 
 type GetMany<D> = {

@@ -6,10 +6,10 @@ import { DependencyResolverEvents } from './AbstractDependencyResolver';
 import { MaterializedRecord, ModuleEntry } from '../../module/ModuleBuilder';
 import { ModuleId } from '../../module/ModuleId';
 
-export type AnyResolver = Instance<any, any> | AbstractModuleResolver<any>;
+
 
 export type BoundResolver = {
-  resolver: AnyResolver;
+  resolver: ModuleEntry;
   dependencies: string[];
 };
 
@@ -25,7 +25,7 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   onAppend?(lookup: ModuleLookup<any>): void;
 }
 
-export abstract class AbstractModuleResolver<TValue extends Record<string, ModuleEntry>> {
+export abstract class Module<TValue extends Record<string, ModuleEntry>> {
   kind: 'moduleResolver' = 'moduleResolver';
 
   abstract moduleId: ModuleId;
