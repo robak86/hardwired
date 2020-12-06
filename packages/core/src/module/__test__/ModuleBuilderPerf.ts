@@ -3,7 +3,7 @@ import { ContainerContext } from "../../container/ContainerContext";
 import { ValueResolver } from "../../resolvers/ValueResolver";
 import { singleton } from "../../resolvers/ClassSingletonResolver";
 import { ModuleBuilder, TestClass } from "../ModuleBuilder";
-import { moduleImport } from "../../resolvers/ModuleResolver";
+
 
 class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   constructor(value: TValue) {
@@ -435,10 +435,10 @@ const ab2 = ModuleBuilder.empty('a')
   .define('ascba', dummy(1));
 
 const a = ModuleBuilder.empty('a')
-  .define('imported0', moduleImport(ab0))
-  .define('imported', moduleImport(ab))
-  .define('imported1', moduleImport(ab1))
-  .define('imported2', moduleImport(ab2))
+  .define('imported0', () => ab0)
+  .define('imported', () => ab)
+  .define('imported1', () => ab1)
+  .define('imported2', () => ab2)
   .define('asdf', dummy(1))
   .define('cba', singleton(TestClass), ['imported.a', 'imported0.a']);
 // .replace('cba', ctx => {

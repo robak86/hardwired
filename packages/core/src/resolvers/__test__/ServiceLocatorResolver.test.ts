@@ -6,7 +6,7 @@ import { singleton } from '../ClassSingletonResolver';
 import { serviceLocator } from '../ServiceLocatorResolver';
 import { container } from '../../container/Container';
 import { factory } from '../FactoryResolver';
-import { moduleImport } from "../ModuleResolver";
+import { MaterializeModule, ModuleInstancesKeys } from "../../module/ModuleBuilder";
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -27,11 +27,7 @@ describe(`ServiceLocatorResolver`, () => {
 
   const root = unit('root')
     .define('locator', serviceLocator())
-
-    .define(
-      'singletonModule',
-      moduleImport(() => singletonModule),
-    )
+    .define('singletonModule', () => singletonModule)
     .define('producedByFactory', factory(DummyFactory))
     .define('singletonConsumer', request(TestClassConsumer), ['singletonModule.reqScoped']);
 
@@ -58,6 +54,15 @@ describe(`ServiceLocatorResolver`, () => {
 
   it(`reuses singleton instances from container`, async () => {
     const c = container(root);
+
+
+    const www = unit('root')
+      .define('locator', serviceLocator())
+
+
+
+    type Wtf = MaterializeModule<typeof singletonModule>;
+
     const locator = c.get('locator');
 
     const fromContainer = c.get(singletonModule, 'singleton');

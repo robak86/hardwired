@@ -1,11 +1,11 @@
-import { singleton } from "../ClassSingletonResolver";
-import { dependency } from "../../testing/TestResolvers";
-import { container } from "../../container/Container";
-import { createResolverId } from "../../utils/fastId";
-import { unit } from "../../module/Module";
-import { value } from "../ValueResolver";
-import { transient } from "../ClassTransientResolver";
-import { moduleImport } from "../ModuleResolver";
+import { singleton } from '../ClassSingletonResolver';
+import { dependency } from '../../testing/TestResolvers';
+import { container } from '../../container/Container';
+import { createResolverId } from '../../utils/fastId';
+import { unit } from '../../module/Module';
+import { value } from '../ValueResolver';
+import { transient } from '../ClassTransientResolver';
+
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {
@@ -44,33 +44,18 @@ describe(`ClassSingletonResolver`, () => {
 
   describe(`singleton shared across multiple modules hierarchy`, () => {
     const root = unit('root')
-      .define(
-        'child1',
-        moduleImport(() => child1),
-      )
-      .define(
-        'child2',
-        moduleImport(() => child2),
-      )
-
-      .define(
-        'singletonModule',
-        moduleImport(() => singletonModule),
-      )
+      .define('child1', () => child1)
+      .define('child2', () => child2)
+      //
+      .define('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const child1 = unit('child1')
-      .define(
-        'singletonModule',
-        moduleImport(() => singletonModule),
-      )
+      .define('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const child2 = unit('child2')
-      .define(
-        'singletonModule',
-        moduleImport(() => singletonModule),
-      )
+      .define('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const singletonModule = unit('child1')

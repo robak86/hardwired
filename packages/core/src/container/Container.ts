@@ -4,7 +4,17 @@ import { ModuleLookup } from '../module/ModuleLookup';
 import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';
 import { DependencyResolverEvents } from '../resolvers/abstract/AbstractDependencyResolver';
-import { MaterializedRecord, ModuleBuilder, ModuleEntriesRecord, ModuleInstancesKeys } from '../module/ModuleBuilder';
+import {
+  MaterializedRecord,
+  MaterializeModule,
+  ModuleBuilder,
+  ModuleEntriesRecord,
+  ModuleEntry,
+  ModuleInstancesKeys,
+  ModuleRecordInstancesKeys,
+} from '../module/ModuleBuilder';
+import { AbstractModuleResolver } from '../resolvers/abstract/AbstractResolvers';
+import { ImmutableSet } from "../collections/ImmutableSet";
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -21,20 +31,20 @@ type GetMany<D> = {
   ): [D[K], D[K2], D[K3], D[K4]];
 };
 
-type ContainerGet<TRegistryRecord extends ModuleEntriesRecord> = {
-  <K extends ModuleInstancesKeys<TRegistryRecord> & string>(key: K): MaterializedRecord<TRegistryRecord>[K];
-  <TRegistryRecord extends ModuleEntriesRecord, K extends ModuleInstancesKeys<TRegistryRecord> & string>(
-    module: ModuleBuilder<TRegistryRecord>,
+type ContainerGet<TModule extends ModuleBuilder<any>> = {
+  <K extends ModuleInstancesKeys<TModule> & string>(key: K): MaterializeModule<TModule>[K];
+  <TLazyModule extends ModuleBuilder<any>, K extends ModuleInstancesKeys<TLazyModule> & string>(
+    module: TLazyModule,
     key: K,
-  ): MaterializedRecord<TRegistryRecord>[K];
+  ): MaterializeModule<TLazyModule>[K];
 };
 
-export class Container<TRegistryRecord extends ModuleEntriesRecord = {}, C = {}> {
+export class Container<TModule extends ModuleBuilder<any>, C = {}> {
   // private rootResolver: ModuleResolver<any>;
   // private rootModuleLookup: ModuleLookup<TRegistryRecord>;
 
   constructor(
-    private module: ModuleBuilder<TRegistryRecord>,
+    private module: TModule,
     private containerContext: ContainerContext = ContainerContext.empty(),
     private context?: C,
   ) {
@@ -44,11 +54,11 @@ export class Container<TRegistryRecord extends ModuleEntriesRecord = {}, C = {}>
     // this.rootModuleLookup = this.containerContext.getModuleResolver(module.moduleId);
   }
 
-  withScope<TReturn>(container: (container: Container<TRegistryRecord>) => TReturn): TReturn {
+  withScope<TReturn>(container: (container: Container<TModule>) => TReturn): TReturn {
     throw new Error('Implement me');
   }
 
-  get: ContainerGet<TRegistryRecord> = (nameOrModule, name?) => {
+  get: ContainerGet<TModule> = (nameOrModule, name?) => {
     if (typeof nameOrModule === 'string') {
       const moduleResolver = this.containerContext.getModuleResolver(this.module.moduleId);
       // // const dependencyFactory = this.rootModuleLookup.getDependencyResolver(nameOrModule as any);
@@ -56,9 +66,7 @@ export class Container<TRegistryRecord extends ModuleEntriesRecord = {}, C = {}>
       invariant(moduleResolver, `Dependency with name: ${nameOrModule} does not exist`);
       //
 
-      moduleResolver.build(nameOrModule, this.containerContext, []);
-
-      return moduleResolver.build(nameOrModule, this.containerContext, []);
+      return moduleResolver.get(nameOrModule.split('.') as any, this.containerContext, ImmutableSet.empty()) as any;
     }
 
     // if (nameOrModule instanceof ModuleBuilder) {
@@ -137,10 +145,7 @@ export class Container<TRegistryRecord extends ModuleEntriesRecord = {}, C = {}>
   // }
 }
 
-export function container<TRegistryRecord extends ModuleEntriesRecord>(
-  m: ModuleBuilder<TRegistryRecord>,
-  ctx?: any,
-): Container<TRegistryRecord> {
+export function container<TModule extends ModuleBuilder<any>>(m: TModule, ctx?: any): Container<TModule> {
   const container = new Container(m, ContainerContext.empty(), ctx);
   return container as any;
 }

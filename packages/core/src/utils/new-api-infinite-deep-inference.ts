@@ -1,7 +1,7 @@
 import { MaterializeModule, ModuleBuilder, TestClass, TestClassUsing } from "../module/ModuleBuilder";
 import { value } from "../resolvers/ValueResolver";
 import { singleton } from "../resolvers/ClassSingletonResolver";
-import { moduleImport } from "../resolvers/ModuleResolver";
+
 
 const m = ModuleBuilder.empty('')
 
@@ -82,7 +82,7 @@ const m222 = m
   .define('num', value(123));
 
 const mmm = m
-  .define('imported', moduleImport(m222))
+  .define('imported', m222)
   .define('b', value('string'))
   .define('sdf', singleton(TestClass), ['imported.num', 'b'])
   .define('sdf2', singleton(TestClassUsing), ['sdf']);

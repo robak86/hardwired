@@ -1,15 +1,15 @@
 import { ContainerContext } from '../../container/ContainerContext';
 import { createResolverId } from '../../utils/fastId';
 import { ImmutableSet } from '../../collections/ImmutableSet';
-import { ModuleLookup } from "../../module/ModuleLookup";
-import { DependencyResolverEvents } from "./AbstractDependencyResolver";
+import { ModuleLookup } from '../../module/ModuleLookup';
+import { DependencyResolverEvents } from './AbstractDependencyResolver';
+import { MaterializedRecord, ModuleEntry } from '../../module/ModuleBuilder';
+import { ModuleId } from '../../module/ModuleId';
 
-export type ModuleEntryResolver<TValue, TDeps extends any[]> =
-  | AbstractInstanceResolver<TValue, TDeps>
-  | AbstractModuleResolver<TValue, TDeps>;
+export type AnyResolver = AbstractInstanceResolver<any, any> | AbstractModuleResolver<any>;
 
 export type BoundResolver = {
-  resolver: ModuleEntryResolver<any, any>;
+  resolver: AnyResolver;
   dependencies: string[];
 };
 
@@ -25,10 +25,28 @@ export abstract class AbstractInstanceResolver<TValue, TDeps extends any[]> {
   onAppend?(lookup: ModuleLookup<any>): void;
 }
 
-export abstract class AbstractModuleResolver<TValue, TDeps extends any[]> {
+export abstract class AbstractModuleResolver<TValue extends Record<string, ModuleEntry>> {
   kind: 'moduleResolver' = 'moduleResolver';
 
-  abstract build(path: string, context: ContainerContext, deps: TDeps, injections?: ImmutableSet<any>): TValue;
+  abstract moduleId: ModuleId;
+  // abstract build(path: string, context: ContainerContext, deps: TDeps, injections?: ImmutableSet<any>): TValue;
+  get<TInstanceKey extends keyof TValue>(
+    path: [TInstanceKey],
+    context: ContainerContext,
+    injections?: ImmutableSet<any>,
+  ): MaterializedRecord<TValue>[TInstanceKey];
+  get<TModuleKey extends keyof TValue, TInstanceKey extends keyof MaterializedRecord<TValue>[TModuleKey]>(
+    path: [TModuleKey, TInstanceKey],
+    context: ContainerContext,
+    injections?: ImmutableSet<any>,
+  ): MaterializedRecord<TValue>[TModuleKey][TInstanceKey];
+  get<TModuleKey extends keyof TValue, TInstanceKey extends keyof MaterializedRecord<TValue>[TModuleKey]>(
+    path: string[],
+    context: ContainerContext,
+    injections?: ImmutableSet<any>,
+  ): unknown {
+    throw new Error('Implement me');
+  }
 
   onInit?(lookup: ModuleLookup<any>): void;
   onAppend?(lookup: ModuleLookup<any>): void;

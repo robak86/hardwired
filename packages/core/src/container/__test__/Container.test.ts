@@ -4,7 +4,6 @@ import { container } from '../Container';
 import { value } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { ArgsDebug } from '../../testing/ArgsDebug';
-import { moduleImport } from "../../resolvers/ModuleResolver";
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -22,14 +21,8 @@ describe(`Container`, () => {
     const child2 = module('child').define('c', dependency('cValue')).define('d', dependency('dValue'));
 
     const parent = module('parent')
-      .define(
-        'child1',
-        moduleImport(() => child),
-      )
-      .define(
-        'child2',
-        moduleImport(() => child2),
-      );
+      .define('child1', () => child)
+      .define('child2', () => child2);
 
     it(`returns correct value`, async () => {
       const c = container(parent);
@@ -68,9 +61,9 @@ describe(`Container`, () => {
           .define('b', singleton(ArgsDebug), ['a'])
           .define('c', singleton(ArgsDebug), ['b']);
 
-        // expect(container(m).get('b').args).toEqual(['a']);
-        //
-        // const updated = m.replace('b', valueNew('bReplaced'));
+        expect(container(m).get('b').args).toEqual(['a']);
+
+        // const updated = m.replace('b', value('bReplaced'));
         //
         // expect(container(updated).get('b')).toEqual('bReplaced');
         // expect(container(updated).get('c')).toEqual({
@@ -91,11 +84,11 @@ describe(`Container`, () => {
       const parentSiblingChild = module('parentSiblingChild').define('value', parentSiblingChildValue);
 
       const parentValue = dependency('parent');
-      const parent = module('parent').define('child', moduleImport(parentChild)).define('value', parentValue);
+      const parent = module('parent').define('child', parentChild).define('value', parentValue);
 
       const parentSiblingValue = dependency('parentSibling');
       const parentSibling = module('parentSibling')
-        .define('child', moduleImport(parentSiblingChild))
+        .define('child', parentSiblingChild)
         .define('value', parentSiblingValue);
 
       return {

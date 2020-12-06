@@ -1,13 +1,12 @@
-import { RegistryRecord } from "../../../core/src/module/RegistryRecord";
-import { ModuleBuilder, ModuleEntriesRecord } from "hardwired";
+import { ModuleBuilder } from "hardwired";
 import { useContainer } from "../components/ContainerContext";
 import { ModuleInstancesKeys } from "hardwired/lib/module/ModuleBuilder";
 
 export const useDependency = <
-  TRegistryRecord extends ModuleEntriesRecord,
-  K extends ModuleInstancesKeys<TRegistryRecord> & string
+  TModuleBuilder extends ModuleBuilder<any>,
+  K extends ModuleInstancesKeys<TModuleBuilder> & string
 >(
-  module: ModuleBuilder<TRegistryRecord>,
+  module: TModuleBuilder,
   key: K,
 ) => {
   const container = useContainer();

@@ -1,11 +1,8 @@
 import { expectType, TypeEqual } from "ts-expect";
-import {
-  MaterializeModule,
-  ModuleBuilder
-} from "../ModuleBuilder";
+import { MaterializeModule, ModuleBuilder } from "../ModuleBuilder";
 import { ClassType } from "../../utils/ClassType";
-import { AbstractInstanceResolver, ModuleEntryResolver } from "../../resolvers/abstract/AbstractResolvers";
-import { moduleImport } from "../../resolvers/ModuleResolver";
+import { AbstractInstanceResolver } from "../../resolvers/abstract/AbstractResolvers";
+
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): AbstractInstanceResolver<TValue, []> => {
@@ -35,7 +32,11 @@ describe(`Module`, () => {
       key4: () => 'someString';
     };
 
-    expectType<TypeEqual<MaterializeModule<typeof m>, ExpectedType>>(true);
+
+
+    type Actual = MaterializeModule<typeof m>
+
+    expectType<TypeEqual<Actual, ExpectedType>>(true);
   });
 
   it(`providing deps`, async () => {
@@ -62,20 +63,22 @@ describe(`Module`, () => {
 
   it(`creates correct types for imports`, async () => {
     const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
-    const m2 = ModuleBuilder.empty('someModule').define('imported', moduleImport(m1)).define('key1', dummy(123));
+    const m2 = ModuleBuilder.empty('someModule').define('imported', m1).define('key1', dummy(123));
 
     type ExpectedType = {
       key1: number;
     };
 
-    expectType<TypeEqual<MaterializeModule<typeof m2>['imported'], ExpectedType>>(true);
+    type Actual = MaterializeModule<typeof m2>
+
+    expectType<TypeEqual<Actual['imported'], ExpectedType>>(true);
   });
 
   it(`creates correct types for replace`, async () => {
     const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
 
     const m2 = ModuleBuilder.empty('someModule')
-      .define('imported', moduleImport(m1))
+      .define('imported', m1)
       .define('key2', dummy('string'))
       .define('key1', dummy(123));
 

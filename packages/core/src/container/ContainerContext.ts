@@ -5,7 +5,6 @@ import { ModuleLookup } from '../module/ModuleLookup';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { ModuleBuilder } from '../module/ModuleBuilder';
 import { PushPromise } from '../utils/PushPromise';
-import { moduleImport, ModuleResolver } from '../resolvers/ModuleResolver';
 import { AbstractModuleResolver } from '../resolvers/abstract/AbstractResolvers';
 
 export type ContainerCacheEntry = {
@@ -55,7 +54,7 @@ const ModuleResolverService = {
       //   }
       // });
 
-      containerContext.addModule(module.moduleId, moduleImport(module));
+      containerContext.addModule(module.moduleId, module);
     }
   },
 
@@ -88,7 +87,7 @@ export class ContainerContext {
 
   protected constructor(
     public globalScope: Record<string, ContainerCacheEntry> = {},
-    public modulesResolvers: Record<string, AbstractModuleResolver<any, any>> = {},
+    public modulesResolvers: Record<string, AbstractModuleResolver<any>> = {},
     private _isScoped: boolean = false,
   ) {}
 
@@ -165,13 +164,13 @@ export class ContainerContext {
     return !!this.modulesResolvers[moduleId.id];
   }
 
-  getModuleResolver(moduleId: ModuleId): AbstractModuleResolver<any, any> {
+  getModuleResolver(moduleId: ModuleId): AbstractModuleResolver<any> {
     const lookup = this.modulesResolvers[moduleId.id];
     invariant(lookup, `Cannot get module with id: ${moduleId.id}. Module does not exists with container context`);
     return lookup;
   }
 
-  addModule(moduleId: ModuleId, moduleResolver: AbstractModuleResolver<any, any>) {
+  addModule(moduleId: ModuleId, moduleResolver: AbstractModuleResolver<any>) {
     invariant(!this.modulesResolvers[moduleId.id], `Module with id ${moduleId.id} already exists`);
     this.modulesResolvers[moduleId.id] = moduleResolver;
   }

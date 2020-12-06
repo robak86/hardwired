@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useContext } from 'react';
-import { Container } from 'hardwired';
+import { Container, ModuleBuilder } from "hardwired";
 import invariant from 'tiny-invariant';
 
 export type ContainerContextValue = {
@@ -15,7 +15,7 @@ export const useContainerContext = (): ContainerContextValue => {
   return useContext(ContainerContext);
 };
 
-export const useContainer = (): Container => {
+export const useContainer = (): Container<ModuleBuilder<{}>> => {
   const { container } = useContainerContext();
   invariant(container, `Cannot find container. Make sure that component is wrapped with ContainerProvider`);
   return container;

@@ -1,22 +1,22 @@
 import { useContainer } from '../components/ContainerContext';
 import { useEffect, useState } from 'react';
-import { RegistryRecord, ModuleBuilder, ModuleEntriesRecord } from 'hardwired';
+import { RegistryRecord, ModuleBuilder, ModuleEntriesRecord, ModuleEntry, MaterializeModule} from "hardwired";
 import { MaterializedRecord, ModuleInstancesKeys } from 'hardwired/lib/module/ModuleBuilder';
 
 export type WatchableHook = <
-  TRegistryRecord extends ModuleEntriesRecord,
-  TDefinitionName extends ModuleInstancesKeys<TRegistryRecord>
+  TModule extends ModuleBuilder<any>,
+  TDefinitionName extends ModuleInstancesKeys<TModule>
 >(
-  module: ModuleBuilder<TRegistryRecord>,
+  module: TModule,
   name: TDefinitionName & string,
-) => MaterializedRecord<TRegistryRecord>[TDefinitionName];
+) => MaterializeModule<TModule>[TDefinitionName];
 
 export const useWatchable: WatchableHook = (module, name) => {
   const container = useContainer();
   const events = container.getEvents(module, name);
   const [invalidateCount, setInvalidateCount] = useState(0);
 
-  const value = container.get(module, name);
+  const value:any = container.get(module, name); //TODO: use correct types
 
   useEffect(() => {
     return events.invalidateEvents.add(() => {
