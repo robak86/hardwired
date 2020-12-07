@@ -10,9 +10,9 @@ import { Thunk } from '../utils/Thunk';
 type UnboxModuleEntry<T> =
   T extends Instance<infer TInstance, any> ? TInstance : 'cannot unwrap instance type from Instance'
 
-export type ModuleEntriesRecord = Record<string, ModuleEntry>;
+export type ModuleEntriesRecord = Record<string, AnyResolver>;
 
-export type ModuleEntry = Instance<any, any> | Module<any>;
+export type AnyResolver = Instance<any, any> | Module<any>;
 
 // prettier-ignore
 export type MaterializeModule<TModule extends ModuleBuilder<any>> =
@@ -23,7 +23,7 @@ export type MaterializeModule<TModule extends ModuleBuilder<any>> =
   } : never;
 
 // prettier-ignore
-export type MaterializedRecord<TRecord extends Record<string, ModuleEntry>> = {
+export type MaterializedRecord<TRecord extends Record<string, AnyResolver>> = {
   [K in keyof TRecord]: TRecord[K] extends Instance<infer TInstanceType, any> ? TInstanceType
                         : TRecord[K] extends Module<infer TRecord> ? MaterializedRecord<TRecord> : unknown
 
@@ -34,15 +34,15 @@ export type ModuleInstancesKeys<TModule extends ModuleBuilder<any>> =
   TModule extends ModuleBuilder<infer TRecord> ?
     ({[K in keyof TRecord]: TRecord[K] extends Instance<infer A, infer B> ? K : never })[keyof TRecord] : unknown
 
-export type ModuleRecordInstancesKeys<TRecord extends Record<string, ModuleEntry>> = {
+export type ModuleRecordInstancesKeys<TRecord extends Record<string, AnyResolver>> = {
   [K in keyof TRecord]: TRecord[K] extends Instance<any, any> ? K : never;
 }[keyof TRecord];
 
-export type ModuleResolvers<TEntries extends Record<string, ModuleEntry>> = {
+export type ModuleResolvers<TEntries extends Record<string, AnyResolver>> = {
   [K in keyof TEntries & string]: any;
 };
 
-export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends Module<TRecord> {
+export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends Module<TRecord> {
   static empty(name: string): ModuleBuilder<{}> {
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
   }

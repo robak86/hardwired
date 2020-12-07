@@ -1,10 +1,5 @@
-import { ModuleLookup } from '../ModuleLookup';
-import { ModuleId } from '../ModuleId';
-import { dependency } from '../../testing/TestResolvers';
-
-import { ContainerContext } from '../../container/ContainerContext';
-import { InstanceLegacy } from '../../resolvers/abstract/InstanceLegacy';
-import { DependencyResolverEvents } from "../../resolvers/abstract/DependencyResolverEvents";
+import { ModuleLookup } from "../ModuleLookup";
+import { ModuleId } from "../ModuleId";
 
 function setup() {
   const rootId = ModuleId.build('a');

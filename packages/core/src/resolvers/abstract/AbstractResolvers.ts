@@ -2,14 +2,14 @@ import { ContainerContext } from "../../container/ContainerContext";
 import { createResolverId } from "../../utils/fastId";
 import { ImmutableSet } from "../../collections/ImmutableSet";
 import { ModuleLookup } from "../../module/ModuleLookup";
-import { MaterializedRecord, ModuleEntry } from "../../module/ModuleBuilder";
+import { MaterializedRecord, AnyResolver } from "../../module/ModuleBuilder";
 import { ModuleId } from "../../module/ModuleId";
 import invariant from "tiny-invariant";
 import { Thunk, unwrapThunk } from "../../utils/Thunk";
 import { DependencyResolverEvents } from "./DependencyResolverEvents";
 
 export type BoundResolver = {
-  resolver: Thunk<ModuleEntry>;
+  resolver: Thunk<AnyResolver>;
   dependencies: string[];
 };
 
@@ -25,7 +25,7 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   onAppend?(lookup: ModuleLookup<any>): void;
 }
 
-export abstract class Module<TValue extends Record<string, ModuleEntry>> {
+export abstract class Module<TValue extends Record<string, AnyResolver>> {
   kind: 'moduleResolver' = 'moduleResolver';
 
   protected constructor(
