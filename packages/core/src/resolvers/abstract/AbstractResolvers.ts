@@ -79,8 +79,9 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
   }
 
   onInit(containerEvents: ContainerEvents) {
-    this.registry.forEach(resolver => {});
+    this.registry.forEach(boundResolver => {
+      const resolver = unwrapThunk(boundResolver.resolverThunk);
+      resolver.onInit && resolver.onInit(containerEvents);
+    });
   }
-
-  onAppend?(lookup: ModuleLookup<any>): void;
 }
