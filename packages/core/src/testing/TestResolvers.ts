@@ -1,7 +1,6 @@
-import { AbstractDependencyResolver } from '../resolvers/abstract/AbstractDependencyResolver';
-import { ContainerContext } from '../container/ContainerContext';
-import { ModuleLookup } from '../module/ModuleLookup';
-import { Instance } from '../resolvers/abstract/AbstractResolvers';
+import { ContainerContext } from "../container/ContainerContext";
+import { ModuleLookup } from "../module/ModuleLookup";
+import { Instance } from "../resolvers/abstract/AbstractResolvers";
 
 export class DummyResolver<TValue> extends Instance<TValue, []> {
   constructor(private value: TValue) {

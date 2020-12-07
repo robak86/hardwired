@@ -1,18 +1,17 @@
-import { expectType, TypeEqual } from "ts-expect";
-import { MaterializeModule, ModuleBuilder } from "../ModuleBuilder";
-import { ClassType } from "../../utils/ClassType";
-import { Instance } from "../../resolvers/abstract/AbstractResolvers";
-
+import { expectType, TypeEqual } from 'ts-expect';
+import { MaterializeModule, ModuleBuilder } from '../ModuleBuilder';
+import { ClassType } from '../../utils/ClassType';
+import { Instance } from '../../resolvers/abstract/AbstractResolvers';
+import { ValueResolver } from '../../resolvers/ValueResolver';
+import { singleton } from "../../resolvers/ClassSingletonResolver";
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
-    throw new Error('implement me');
+    return new ValueResolver(value);
   };
 
-  const dummyClassResolver = <TDeps extends any[], TValue>(
-    cls: ClassType<TDeps, TValue>,
-  ): Instance<TValue, TDeps> => {
-    throw new Error('implement me');
+  const dummyClassResolver = <TDeps extends any[], TValue>(cls: ClassType<TDeps, TValue>): Instance<TValue, TDeps> => {
+    return singleton(cls)
   };
 
   it(`creates correct type`, async () => {
@@ -32,9 +31,7 @@ describe(`Module`, () => {
       key4: () => 'someString';
     };
 
-
-
-    type Actual = MaterializeModule<typeof m>
+    type Actual = MaterializeModule<typeof m>;
 
     expectType<TypeEqual<Actual, ExpectedType>>(true);
   });
@@ -69,7 +66,7 @@ describe(`Module`, () => {
       key1: number;
     };
 
-    type Actual = MaterializeModule<typeof m2>
+    type Actual = MaterializeModule<typeof m2>;
 
     expectType<TypeEqual<Actual['imported'], ExpectedType>>(true);
   });

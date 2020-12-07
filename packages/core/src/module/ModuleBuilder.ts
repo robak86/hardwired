@@ -1,10 +1,10 @@
-import { AllowedKeys } from "../path";
-import { PropType } from "../utils/PropType";
-import { ModuleId } from "./ModuleId";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import invariant from "tiny-invariant";
-import { Module, Instance } from "../resolvers/abstract/AbstractResolvers";
-import { Thunk } from "../utils/Thunk";
+import { AllowedKeys } from '../path';
+import { PropType } from '../utils/PropType';
+import { ModuleId } from './ModuleId';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import invariant from 'tiny-invariant';
+import { Module, Instance } from '../resolvers/abstract/AbstractResolvers';
+import { Thunk } from '../utils/Thunk';
 
 // prettier-ignore
 type UnboxModuleEntry<T> =
@@ -38,25 +38,13 @@ export type ModuleRecordInstancesKeys<TRecord extends Record<string, ModuleEntry
   [K in keyof TRecord]: TRecord[K] extends Instance<any, any> ? K : never;
 }[keyof TRecord];
 
-type ModuleResolvers<TEntries extends Record<string, ModuleEntry>> = {
+export type ModuleResolvers<TEntries extends Record<string, ModuleEntry>> = {
   [K in keyof TEntries & string]: any;
 };
 
 export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends Module<TRecord> {
-  kind: 'moduleResolver' = 'moduleResolver';
-
-  entries;
-
   static empty(name: string): ModuleBuilder<{}> {
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
-  }
-
-  protected constructor(
-    public moduleId: ModuleId,
-    public registry: ImmutableSet<ModuleResolvers<TRecord>>,
-    public injections: ImmutableSet<Record<string, ModuleBuilder<any>>>,
-  ) {
-    super();
   }
 
   // TODO: simplify other overloads  similarly as for AbstractModuleResolver
@@ -71,9 +59,9 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
   define<TKey extends string, TValue, TDepKey extends AllowedKeys<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
     name: TKey,
-    resolver: Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
+    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>,
     dependencies: TDepsKeys,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>>>;
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
   define<TKey extends string, TValue, TDepKey extends AllowedKeys<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
     name: TKey,
     resolver: Instance<any, any> | Thunk<Module<any>>,
@@ -86,7 +74,7 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
       this.registry.extend(name, {
         resolver,
         dependencies: dependencies || [],
-      }),
+      }) as any,
       this.injections,
     );
   }
@@ -102,7 +90,7 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
     TDepsKeys extends [TDepKey, ...TDepKey[]]
   >(
     name: TKey,
-    resolver: Instance<TValue, Deps<TDepsKeys, MaterializedRecord<TRecord>>>,
+    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>,
     dependencies: TDepsKeys,
   ): ModuleBuilder<TRecord>;
   replace<
@@ -111,13 +99,13 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
     TDepKey extends AllowedKeys<TRecord>,
     TDepsKeys extends [TDepKey, ...TDepKey[]]
   >(name: TKey, resolver: Instance<any, any>, dependencies?: TDepsKeys): ModuleBuilder<TRecord> {
-    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+    invariant(this.registry.hasKey(name), `Cannot replace definition. Definition: ${name} does not exist.`);
 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.replace(name, {
         resolver,
-        dependencies,
+        dependencies: dependencies || [],
       } as any),
       this.injections,
     );
@@ -128,20 +116,8 @@ export class ModuleBuilder<TRecord extends Record<string, ModuleEntry>> extends 
   }
 }
 
-type Deps<T extends string[], TDeps extends Record<string, unknown>> = {
+type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> = {
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
 
-// const m = ModuleBuilder.empty('');
 
-export class TestClass {
-  constructor(private a: number, private b: string) {}
-}
-
-export class TestClassUsing {
-  constructor(private a: TestClass) {}
-}
-
-export class NoArgsClass {
-  constructor() {}
-}

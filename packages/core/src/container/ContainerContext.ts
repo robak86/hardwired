@@ -1,78 +1,12 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
-import { ModuleLookup } from '../module/ModuleLookup';
 
 import { ImmutableSet } from '../collections/ImmutableSet';
-import { ModuleBuilder } from '../module/ModuleBuilder';
 import { PushPromise } from '../utils/PushPromise';
 import { Module } from '../resolvers/abstract/AbstractResolvers';
 
 export type ContainerCacheEntry = {
-  // requestId:string;
   value: any;
-};
-
-const ModuleResolverService = {
-  load(module: ModuleBuilder<any>, containerContext: ContainerContext, injections = ImmutableSet.empty()) {
-    if (!containerContext.hasModule(module.moduleId)) {
-      // throw new Error('Implement me');
-
-      // TODO: merge injections with own this.registry injections
-      // TODO: lazy loading ? this method returns an object. We can return proxy or object with getters and setters (lazy evaluated)
-      // const context: RegistryRecord = {};
-      // const moduleLookup: ModuleLookup<any> = new ModuleLookup(module.moduleId);
-      const mergedInjections = module.injections.merge(injections);
-
-      // module.registry.forEach((resolverFactory: DefinitionResolverFactory, key: string) => {
-      //   // TODO: by calling resolverFactory with proxy object, we could automatically track all dependencies for change detection
-      //   //  ...but we probably don't wanna have this feature in the responsibility of this DI solution?? What about compatibility(proxy object) ?
-      //   const resolver: DefinitionResolver = resolverFactory(context);
-      //
-      //   if (resolver.type === 'dependency') {
-      //     //TODO: consider adding check for making sure that this function is not called in define(..., ctx => ctx.someDependency(...))
-      //     context[key] = moduleLookup.instancesProxy.getReference(key);
-      //     moduleLookup.dependencyResolvers[key] = resolver;
-      //     moduleLookup.appendDependencyFactory(key, resolver, context[key] as Instance<any>);
-      //   }
-      //
-      //   if (resolver.type === 'module') {
-      //     if (mergedInjections.hasKey(resolver.moduleId.identity)) {
-      //       const injectedModule = mergedInjections.get(resolver.moduleId.identity);
-      //       moduleLookup.modules[key] = injectedModule;
-      //     } else {
-      //       moduleLookup.modules[key] = resolver;
-      //     }
-      //
-      //     const childModuleResolver = moduleLookup.modules[key];
-      //
-      //     ModuleResolverService.load(childModuleResolver, containerContext, mergedInjections);
-      //
-      //     const childModuleLookup = containerContext.getModule(childModuleResolver.moduleId);
-      //
-      //     context[key] = childModuleLookup.registry;
-      //     moduleLookup.appendChild(childModuleLookup);
-      //   }
-      // });
-
-      containerContext.addModule(module.moduleId, module);
-    }
-  },
-
-  // TODO: should be somehow memoized ? don't wanna initialized already initialized module ?
-  onInit(module: ModuleBuilder<any>, containerContext: ContainerContext) {
-    // const moduleLookup = containerContext.getModuleResolver(module.moduleId);
-    //
-    // moduleLookup.forEachModuleResolver(module => {
-    //   ModuleResolverService.onInit(module, containerContext);
-    // });
-    //
-    // moduleLookup.freezeImplementations();
-    //
-    // moduleLookup.forEachDependencyResolver(resolver => {
-    //   const onInit = resolver.onInit;
-    //   onInit && onInit.call(resolver, moduleLookup);
-    // });
-  },
 };
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
@@ -152,19 +86,33 @@ export class ContainerContext {
     this.initializedModules[moduleId.id] = true;
   }
 
-  loadModule(module: ModuleBuilder<any>, injections = ImmutableSet.empty()) {
-    ModuleResolverService.load(module, this, injections);
+  loadModule(module: Module<any>) {
+    if (!this.hasModule(module.moduleId)) {
+      module.onInit && module.onInit(this);
+      this.addModule(module.moduleId, module);
+    }
   }
 
-  initModule(module: ModuleBuilder<any>) {
-    ModuleResolverService.onInit(module, this);
+  initModule(module: Module<any>) {
+    // const moduleLookup = containerContext.getModuleResolver(module.moduleId);
+    //
+    // moduleLookup.forEachModuleResolver(module => {
+    //   ModuleResolverService.onInit(module, containerContext);
+    // });
+    //
+    // moduleLookup.freezeImplementations();
+    //
+    // moduleLookup.forEachDependencyResolver(resolver => {
+    //   const onInit = resolver.onInit;
+    //   onInit && onInit.call(resolver, moduleLookup);
+    // });
   }
 
   hasModule(moduleId: ModuleId): boolean {
     return !!this.modulesResolvers[moduleId.id];
   }
 
-  getModuleResolver(moduleId: ModuleId): Module<any> {
+  getModule(moduleId: ModuleId): Module<any> {
     const lookup = this.modulesResolvers[moduleId.id];
     invariant(lookup, `Cannot get module with id: ${moduleId.id}. Module does not exists with container context`);
     return lookup;

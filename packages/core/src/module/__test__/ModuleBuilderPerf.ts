@@ -1,26 +1,22 @@
-import { AbstractDependencyResolver } from "../../resolvers/abstract/AbstractDependencyResolver";
-import { ContainerContext } from "../../container/ContainerContext";
-import { ValueResolver } from "../../resolvers/ValueResolver";
+import { value, ValueResolver } from "../../resolvers/ValueResolver";
 import { singleton } from "../../resolvers/ClassSingletonResolver";
-import { ModuleBuilder, TestClass } from "../ModuleBuilder";
-
-
-class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
-  constructor(value: TValue) {
-    super();
-  }
-
-  build(cache: ContainerContext): TValue {
-    throw new Error('Implement me');
-  }
-}
+import { MaterializeModule, ModuleBuilder } from "../ModuleBuilder";
 
 const dummy = <TValue>(value: TValue): ValueResolver<TValue> => {
   return new ValueResolver(value);
 };
 
+export class TestClass {
+  constructor(private a: number, private b: string) {}
+}
+
+export class TestClassUsing {
+  constructor(private a: TestClass) {}
+}
+
 const ab0 = ModuleBuilder.empty('a')
   .define('a', dummy(1))
+  .define('string', dummy('some string'))
   .define('b', dummy(1))
   .define('c', dummy(1))
   .define('d', dummy(1))
@@ -109,51 +105,51 @@ const ab0 = ModuleBuilder.empty('a')
   .define('asbai', dummy(1))
   .define('asbaj', dummy(1))
   .define('asbak', dummy(1))
-  .define('ascba', dummy(1));
-// .singleton('s111', SomeClass, c => [c.a])
-// .singleton('s112', SomeClass, c => [c.a])
-// .singleton('s113', SomeClass, c => [c.a])
-// .singleton('s114', SomeClass, c => [c.a])
-// .singleton('s115', SomeClass, c => [c.a])
-// .singleton('s116', SomeClass, c => [c.a])
-// .singleton('s117', SomeClass, c => [c.a])
-// .singleton('s118', SomeClass, c => [c.a])
-// .singleton('s119', SomeClass, c => [c.a])
-// .singleton('s110', SomeClass, c => [c.a])
-// .singleton('s1123', SomeClass, c => [c.a])
-// .singleton('as111', SomeClass, c => [c.a])
-// .singleton('as112', SomeClass, c => [c.a])
-// .singleton('as113', SomeClass, c => [c.a])
-// .singleton('as114', SomeClass, c => [c.a])
-// .singleton('as115', SomeClass, c => [c.a])
-// .singleton('as116', SomeClass, c => [c.a])
-// .singleton('as117', SomeClass, c => [c.a])
-// .singleton('as118', SomeClass, c => [c.a])
-// .singleton('as119', SomeClass, c => [c.a])
-// .singleton('as110', SomeClass, c => [c.a])
-// .singleton('as1123', SomeClass, c => [c.a])
-// .singleton('aass111', SomeClass, c => [c.a])
-// .singleton('aass112', SomeClass, c => [c.a])
-// .singleton('aass113', SomeClass, c => [c.a])
-// .singleton('aass114', SomeClass, c => [c.a])
-// .singleton('aass115', SomeClass, c => [c.a])
-// .singleton('aass116', SomeClass, c => [c.a])
-// .singleton('aass117', SomeClass, c => [c.a])
-// .singleton('aass118', SomeClass, c => [c.a])
-// .singleton('aass119', SomeClass, c => [c.a])
-// .singleton('aass110', SomeClass, c => [c.a])
-// .singleton('aass1123', SomeClass, c => [c.a])
-// .singleton('aasas111', SomeClass, c => [c.a])
-// .singleton('aasas112', SomeClass, c => [c.a])
-// .singleton('aasas113', SomeClass, c => [c.a])
-// .singleton('aasas114', SomeClass, c => [c.a])
-// .singleton('aasas115', SomeClass, c => [c.a])
-// .singleton('aasas116', SomeClass, c => [c.a])
-// .singleton('aasas117', SomeClass, c => [c.a])
-// .singleton('aasas118', SomeClass, c => [c.a])
-// .singleton('aasas119', SomeClass, c => [c.a])
-// .singleton('aasas110', SomeClass, c => [c.a])
-// .singleton('aasas1123', SomeClass, c => [c.a]);
+  .define('ascba', dummy(1))
+  .define('s111', singleton(TestClass), ['a', 'string'])
+  .define('s112', singleton(TestClass), ['a', 'string'])
+  .define('s113', singleton(TestClass), ['a', 'string'])
+  .define('s114', singleton(TestClass), ['a', 'string'])
+  .define('s115', singleton(TestClass), ['a', 'string'])
+  .define('s116', singleton(TestClass), ['a', 'string'])
+  .define('s117', singleton(TestClass), ['a', 'string'])
+  .define('s118', singleton(TestClass), ['a', 'string'])
+  .define('s119', singleton(TestClass), ['a', 'string'])
+  .define('s110', singleton(TestClass), ['a', 'string'])
+  .define('s1123', singleton(TestClass), ['a', 'string'])
+  .define('as111', singleton(TestClass), ['a', 'string'])
+  .define('as112', singleton(TestClass), ['a', 'string'])
+  .define('as113', singleton(TestClass), ['a', 'string'])
+  .define('as114', singleton(TestClass), ['a', 'string'])
+  .define('as115', singleton(TestClass), ['a', 'string'])
+  .define('as116', singleton(TestClass), ['a', 'string'])
+  .define('as117', singleton(TestClass), ['a', 'string'])
+  .define('as118', singleton(TestClass), ['a', 'string'])
+  .define('as119', singleton(TestClass), ['a', 'string'])
+  .define('as110', singleton(TestClass), ['a', 'string'])
+  .define('as1123', singleton(TestClass), ['a', 'string'])
+  .define('aass111', singleton(TestClass), ['a', 'string'])
+  .define('aass112', singleton(TestClass), ['a', 'string'])
+  .define('aass113', singleton(TestClass), ['a', 'string'])
+  .define('aass114', singleton(TestClass), ['a', 'string'])
+  .define('aass115', singleton(TestClass), ['a', 'string'])
+  .define('aass116', singleton(TestClass), ['a', 'string'])
+  .define('aass117', singleton(TestClass), ['a', 'string'])
+  .define('aass118', singleton(TestClass), ['a', 'string'])
+  .define('aass119', singleton(TestClass), ['a', 'string'])
+  .define('aass110', singleton(TestClass), ['a', 'string'])
+  .define('aass1123', singleton(TestClass), ['a', 'string'])
+  .define('aasas111', singleton(TestClass), ['a', 'string'])
+  .define('aasas112', singleton(TestClass), ['a', 'string'])
+  .define('aasas113', singleton(TestClass), ['a', 'string'])
+  .define('aasas114', singleton(TestClass), ['a', 'string'])
+  .define('aasas115', singleton(TestClass), ['a', 'string'])
+  .define('aasas116', singleton(TestClass), ['a', 'string'])
+  .define('aasas117', singleton(TestClass), ['a', 'string'])
+  .define('aasas118', singleton(TestClass), ['a', 'string'])
+  .define('aasas119', singleton(TestClass), ['a', 'string'])
+  .define('aasas110', singleton(TestClass), ['a', 'string'])
+  .define('aasas1123', singleton(TestClass), ['a', 'string']);
 
 const ab = ModuleBuilder.empty('a')
   // .using(commonDefines)
@@ -441,7 +437,88 @@ const a = ModuleBuilder.empty('a')
   .define('imported2', () => ab2)
   .define('asdf', dummy(1))
   .define('cba', singleton(TestClass), ['imported.a', 'imported0.a']);
-// .replace('cba', ctx => {
-//   ctx.asdf;
-//   return dummy('sdf');
-// });
+
+const m = ModuleBuilder.empty('');
+
+const m222 = m
+  .define('a', value(1))
+  .define('a1', value('string'))
+  .define('ab1', value('string'))
+  .define('abc1', value('string'))
+  .define('abcd1', value('string'))
+  .define('abcde1', value('string'))
+  .define('abcdef1', value('string'))
+  .define('abcdefg1', value('string'))
+  .define('abcdefgh1', value('string'))
+  .define('a2', value('string'))
+  .define('ab2', value('string'))
+  .define('abc2', value('string'))
+  .define('abcd2', value('string'))
+  .define('abcde2', value('string'))
+  .define('abcdef2', value('string'))
+  .define('abcdefg2', value('string'))
+  .define('abcdefgh2', value('string'))
+  .define('a3', value('string'))
+  .define('ab3', value('string'))
+  .define('abc3', value('string'))
+  .define('abcd3', value('string'))
+  .define('abcde3', value('string'))
+  .define('abcdef3', value('string'))
+  .define('abcdefg3', value('string'))
+  .define('abcdefgh3', value('string'))
+  .define('a4', value('string'))
+  .define('ab4', value('string'))
+  .define('abc4', value('string'))
+  .define('abcd4', value('string'))
+  .define('abcde4', value('string'))
+  .define('abcdef4', value('string'))
+  .define('abcdefg4', value('string'))
+  .define('abcdefgh4', value('string'))
+  .define('a5', value('string'))
+  .define('ab5', value('string'))
+  .define('abc5', value('string'))
+  .define('abcd5', value('string'))
+  .define('abcde5', value('string'))
+  .define('abcdef5', value('string'))
+  .define('abcdefg5', value('string'))
+  .define('abcdefgh5', value('string'))
+  .define('a6', value('string'))
+  .define('ab6', value('string'))
+  .define('abc6', value('string'))
+  .define('abcd6', value('string'))
+  .define('abcde6', value('string'))
+  .define('abcdef6', value('string'))
+  .define('abcdefg6', value('string'))
+  .define('abcdefgh6', value('string'))
+  .define('a7', value('string'))
+  .define('ab7', value('string'))
+  .define('abc7', value('string'))
+  .define('abcd7', value('string'))
+  .define('abcde7', value('string'))
+  .define('abcdef7', value('string'))
+  .define('abcdefg7', value('string'))
+  .define('abcdefgh7', value('string'))
+  .define('a8', value('string'))
+  .define('ab8', value('string'))
+  .define('abc8', value('string'))
+  .define('abcd8', value('string'))
+  .define('abcde8', value('string'))
+  .define('abcdef8', value('string'))
+  .define('abcdefg8', value('string'))
+  .define('abcdefgh8', value('string'))
+  .define('a9', value('string'))
+  .define('ab9', value('string'))
+  .define('abc9', value('string'))
+  .define('abcd9', value('string'))
+  .define('abcde9', value('string'))
+  .define('abcdef9', value('string'))
+  .define('abcdefg9', value('string'))
+  .define('abcdefgh9', value('string'))
+  .define('num', value(123));
+
+const mmm = m
+  .define('imported', m222)
+  .define('b', value('string'))
+  .define('sdf', singleton(TestClass), ['imported.num', 'b'])
+  .define('sdf2', singleton(TestClassUsing), ['sdf']);
+type Mat = MaterializeModule<typeof mmm>;

@@ -38,8 +38,6 @@ describe(`FunctionResolver`, () => {
         const { module, singletonFactorySpy } = setup();
         const someFunction = (a: number) => a;
 
-        const aa = func(someFunction, 1);
-
         const set = module.define('fn', func(someFunction, 1), ['singleton']);
         const c = container(set);
 

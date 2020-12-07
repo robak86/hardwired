@@ -1,11 +1,8 @@
-import { curry } from '../utils/curry';
-import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
-import { ContainerContext } from '../container/ContainerContext';
-import { InstanceLegacy } from './abstract/InstanceLegacy';
+import { curry } from "../utils/curry";
+import { ContainerContext } from "../container/ContainerContext";
+import { ClassRequestResolver } from "./ClassRequestResolver";
+import { Instance } from "./abstract/AbstractResolvers";
 import Parameters = jest.Parameters;
-import { ClassType } from '../utils/ClassType';
-import { ClassRequestResolver } from './ClassRequestResolver';
-import { Instance } from './abstract/AbstractResolvers';
 
 // TODO: not sure if this should be singleton ?
 //  or we should memoize the function by dependencySelect ?  +1
@@ -95,6 +92,6 @@ type PartiallyAppliedArgs3<TArgs extends any[], TReturn> =
 export function func<TValue extends (...args: any[]) => any, TDepth extends 0 | 1 | 2 | 3>(
   cls: TValue,
   depth: TDepth,
-): ClassRequestResolver<PartiallyApplied<TValue, TDepth>, PartiallyAppliedArgs<TValue, TDepth>> {
-  return new ClassRequestResolver(cls);
+): FunctionResolver<PartiallyApplied<TValue, TDepth>, PartiallyAppliedArgs<TValue, TDepth>> {
+  return new FunctionResolver(cls);
 }

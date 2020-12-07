@@ -1,7 +1,4 @@
 import { ContainerContext } from './ContainerContext';
-import { ModuleLookup } from '../module/ModuleLookup';
-
-import { RegistryRecord } from '../module/RegistryRecord';
 import invariant from 'tiny-invariant';
 import { DependencyResolverEvents } from '../resolvers/abstract/AbstractDependencyResolver';
 import {
@@ -9,12 +6,11 @@ import {
   MaterializeModule,
   ModuleBuilder,
   ModuleEntriesRecord,
-  ModuleEntry,
   ModuleInstancesKeys,
-  ModuleRecordInstancesKeys,
 } from '../module/ModuleBuilder';
 import { Module } from '../resolvers/abstract/AbstractResolvers';
-import { ImmutableSet } from "../collections/ImmutableSet";
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { unwrapThunk } from '../utils/Thunk';
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -60,56 +56,62 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
 
   get: ContainerGet<TModule> = (nameOrModule, name?) => {
     if (typeof nameOrModule === 'string') {
-      const moduleResolver = this.containerContext.getModuleResolver(this.module.moduleId);
-      // // const dependencyFactory = this.rootModuleLookup.getDependencyResolver(nameOrModule as any);
-      //
-      invariant(moduleResolver, `Dependency with name: ${nameOrModule} does not exist`);
-      //
+      const module = this.containerContext.getModule(this.module.moduleId);
 
-      return moduleResolver.get(nameOrModule.split('.') as any, this.containerContext, ImmutableSet.empty()) as any;
+      invariant(module, `Dependency with name: ${nameOrModule} does not exist`);
+
+      return module.get(nameOrModule.split('.') as any, this.containerContext, ImmutableSet.empty()) as any;
     }
 
-    // if (nameOrModule instanceof ModuleBuilder) {
-    //   if (!this.containerContext.hasModule(nameOrModule.moduleId)) {
-    //     this.containerContext.addModule(nameOrModule.moduleId, nameOrModule);
-    //     this.load(nameOrModule);
-    //     // this.rootResolver.onInit(this.containerContext);
-    //   }
-    //
-    //   const moduleLookup = this.containerContext.getModule(nameOrModule.moduleId);
-    //   const dependencyResolver = moduleLookup.findDependencyFactory(nameOrModule.moduleId, name);
-    //   invariant(
-    //     dependencyResolver,
-    //     `Cannot find dependency resolver for module name ${nameOrModule.moduleId.name} and id ${nameOrModule.moduleId.id} while getting definition named: ${name}`,
-    //   );
-    //
-    //   return dependencyResolver.get(this.containerContext.forNewRequest());
-    // }
+    if (nameOrModule instanceof Module) {
+      if (!this.containerContext.hasModule(nameOrModule.moduleId)) {
+        this.containerContext.addModule(nameOrModule.moduleId, nameOrModule);
+        this.load(nameOrModule);
+        // this.rootResolver.onInit(this.containerContext);
+      }
+
+      const module = this.containerContext.getModule(nameOrModule.moduleId);
+      invariant(
+        module,
+        `Cannot find module for module name ${nameOrModule.moduleId.name} and id ${nameOrModule.moduleId.id} while getting definition named: ${name}`,
+      );
+
+      const instance = module.get(name.split('.'), this.containerContext);
+      return instance;
+    }
 
     invariant(false, 'Invalid module or name');
   };
 
-  // load(module: ModuleBuilder<any>) {
-  //   this.containerContext.loadModule(module, module.injections);
-  //   const lookup = this.containerContext.getModuleResolver(module.moduleId);
-  //
-  //   this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
-  //   this.containerContext.initModule(module);
-  // }
+  load(module: Module<any>) {
+    this.containerContext.loadModule(module);
+    const lookup = this.containerContext.getModule(module.moduleId);
+
+    // this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
+    this.containerContext.initModule(module);
+  }
 
   getEvents<TRegistryRecord extends ModuleEntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord> & string>(
-    module: ModuleBuilder<TRegistryRecord>,
+    module: Module<TRegistryRecord>,
     key: K,
   ): DependencyResolverEvents {
-    // if (!this.containerContext.hasModule(module.moduleId)) {
-    //   this.containerContext.loadModule(module);
-    //   const lookup = this.containerContext.getModuleResolver(module.moduleId);
-    //
-    //   this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
-    //   this.containerContext.initModule(module);
-    // }
+    // throw new Error('implement me');
+    if (!this.containerContext.hasModule(module.moduleId)) {
+      this.containerContext.loadModule(module);
+      this.containerContext.getModule(module.moduleId);
 
-    throw new Error('implement me');
+      // this.rootModuleLookup.appendChild(lookup); // TODO: not sure if we should maintain hierarchy for lookups (it may be created optionally as a cache while getting resolvers)
+      this.containerContext.initModule(module);
+    }
+
+    const loadedModule = this.containerContext.getModule(module.moduleId);
+
+    const resolver = unwrapThunk(loadedModule.registry.get(key).resolver);
+
+    if (resolver.kind === 'moduleResolver') {
+      throw new Error('Cannot get events for module resolver');
+    }
+    return resolver.events;
   }
   //
   //   const moduleLookup = this.containerContext.getModuleResolver(module.moduleId);

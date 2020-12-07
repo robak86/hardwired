@@ -19,10 +19,10 @@ export class ServiceLocator {
 
     return factory({
       get: (module, key) => {
-        requestContext.loadModule(module);
-        requestContext.initModule(module);
+        requestContext.loadModule(module as any);
+        requestContext.initModule(module as any);
 
-        const moduleResolver = requestContext.getModuleResolver(module.moduleId);
+        const moduleResolver = requestContext.getModule(module.moduleId);
         invariant(moduleResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
 
         // TODO: use real injections

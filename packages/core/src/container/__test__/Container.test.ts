@@ -55,7 +55,7 @@ describe(`Container`, () => {
         expect(container(updated).get('b')).toEqual('b');
       });
 
-      it.todo(`can use all previously registered definitions`, async () => {
+      it(`can use all previously registered definitions`, async () => {
         const m = module('m')
           .define('a', value('a'))
           .define('b', singleton(ArgsDebug), ['a'])
@@ -63,7 +63,19 @@ describe(`Container`, () => {
 
         expect(container(m).get('b').args).toEqual(['a']);
 
-        // const updated = m.replace('b', value('bReplaced'));
+        // @ts-expect-error - replaced value should have the same type
+        const updated = m.replace('b', value('bReplaced'));
+      });
+
+      it(`can use all previously registered definitions`, async () => {
+        const m = module('m')
+          .define('a', value('a'))
+          .define('b', singleton(ArgsDebug), ['a'])
+          .define('c', singleton(ArgsDebug), ['b']);
+
+        expect(container(m).get('b').args).toEqual(['a']);
+
+        const updated = m.replace('b', singleton(ArgsDebug), ['b']);
         //
         // expect(container(updated).get('b')).toEqual('bReplaced');
         // expect(container(updated).get('c')).toEqual({

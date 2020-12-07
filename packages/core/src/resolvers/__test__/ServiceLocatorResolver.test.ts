@@ -1,12 +1,12 @@
-import { unit } from '../../module/Module';
-import { value } from '../ValueResolver';
-import { createResolverId } from '../../utils/fastId';
-import { request } from '../ClassRequestResolver';
-import { singleton } from '../ClassSingletonResolver';
-import { serviceLocator } from '../ServiceLocatorResolver';
-import { container } from '../../container/Container';
-import { factory } from '../FactoryResolver';
-import { MaterializeModule, ModuleInstancesKeys } from "../../module/ModuleBuilder";
+import { unit } from "../../module/Module";
+import { value } from "../ValueResolver";
+import { createResolverId } from "../../utils/fastId";
+import { request } from "../ClassRequestResolver";
+import { singleton } from "../ClassSingletonResolver";
+import { serviceLocator } from "../ServiceLocatorResolver";
+import { container } from "../../container/Container";
+import { factory } from "../FactoryResolver";
+import { MaterializeModule } from "../../module/ModuleBuilder";
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {

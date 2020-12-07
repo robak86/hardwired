@@ -1,15 +1,15 @@
-import { ContainerContext } from '../../container/ContainerContext';
-import { createResolverId } from '../../utils/fastId';
-import { ImmutableSet } from '../../collections/ImmutableSet';
-import { ModuleLookup } from '../../module/ModuleLookup';
-import { DependencyResolverEvents } from './AbstractDependencyResolver';
-import { MaterializedRecord, ModuleEntry } from '../../module/ModuleBuilder';
-import { ModuleId } from '../../module/ModuleId';
-
-
+import { ContainerContext } from "../../container/ContainerContext";
+import { createResolverId } from "../../utils/fastId";
+import { ImmutableSet } from "../../collections/ImmutableSet";
+import { ModuleLookup } from "../../module/ModuleLookup";
+import { DependencyResolverEvents } from "./AbstractDependencyResolver";
+import { MaterializedRecord, ModuleEntry } from "../../module/ModuleBuilder";
+import { ModuleId } from "../../module/ModuleId";
+import invariant from "tiny-invariant";
+import { Thunk, unwrapThunk } from "../../utils/Thunk";
 
 export type BoundResolver = {
-  resolver: ModuleEntry;
+  resolver: Thunk<ModuleEntry>;
   dependencies: string[];
 };
 
@@ -28,8 +28,13 @@ export abstract class Instance<TValue, TDeps extends any[]> {
 export abstract class Module<TValue extends Record<string, ModuleEntry>> {
   kind: 'moduleResolver' = 'moduleResolver';
 
-  abstract moduleId: ModuleId;
-  // abstract build(path: string, context: ContainerContext, deps: TDeps, injections?: ImmutableSet<any>): TValue;
+  protected constructor(
+    public moduleId: ModuleId,
+    public registry: ImmutableSet<{ [K in keyof TValue]: BoundResolver }>,
+    public injections: ImmutableSet<Record<string, Module<any>>>,
+  ) {}
+
+  // TODO: replace tuple with `moduleName.instanceName`
   get<TInstanceKey extends keyof TValue>(
     path: [TInstanceKey],
     context: ContainerContext,
@@ -43,11 +48,35 @@ export abstract class Module<TValue extends Record<string, ModuleEntry>> {
   get<TModuleKey extends keyof TValue, TInstanceKey extends keyof MaterializedRecord<TValue>[TModuleKey]>(
     path: string[],
     context: ContainerContext,
-    injections?: ImmutableSet<any>,
+    injections: ImmutableSet<any> = ImmutableSet.empty(),
   ): unknown {
-    throw new Error('Implement me');
+    invariant(path.length === 1 || path.length === 2, `Module builder called with wrong path ${path}`);
+
+    const instance = this.build(path, context, injections);
+    invariant(instance, `Module returned undefined value for ${path}`);
+    return instance;
   }
 
-  onInit?(lookup: ModuleLookup<any>): void;
+  protected build(path: string[], context: ContainerContext, otherInjections) {
+    const [moduleOrInstanceKey, instanceName] = path;
+
+    const mergedInjections = this.injections.merge(otherInjections);
+
+    const boundResolver: BoundResolver = this.registry.get(moduleOrInstanceKey);
+    const resolver = unwrapThunk(boundResolver.resolver);
+
+    if (resolver.kind === 'instanceResolver') {
+      const depsInstances = boundResolver.dependencies.map(path =>
+        this.get(path.split('.') as any, context, mergedInjections),
+      );
+      return resolver.build(context, depsInstances);
+    }
+
+    if (resolver.kind === 'moduleResolver') {
+      return resolver.build([instanceName], context, otherInjections);
+    }
+  }
+
+  onInit?(lookup: ContainerContext): void;
   onAppend?(lookup: ModuleLookup<any>): void;
 }
