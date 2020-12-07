@@ -1,4 +1,4 @@
-import { AbstractDependencyResolver, ContainerContext, Instance, EventsEmitter, ModuleLookup } from 'hardwired';
+import { ContainerContext, Instance, EventsEmitter, ModuleLookup } from 'hardwired';
 import React from 'react';
 
 // TODO: probably TProps (instead of TComponent) should be sufficient
@@ -8,8 +8,9 @@ export type MaterializedComponent<TComponent extends React.ComponentType> = {
   subscribe: (onchangeListener: () => void) => void;
 };
 
-export class ComponentResolver<TComponent extends React.ComponentType> extends AbstractDependencyResolver<
-  MaterializedComponent<TComponent>
+export class ComponentResolver<TComponent extends React.ComponentType> extends Instance<
+  MaterializedComponent<TComponent>,
+  []
 > {
   private onDependencyInvalidated = new EventsEmitter();
 

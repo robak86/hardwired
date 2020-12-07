@@ -2,11 +2,11 @@ import { ContainerContext } from "../../container/ContainerContext";
 import { createResolverId } from "../../utils/fastId";
 import { ImmutableSet } from "../../collections/ImmutableSet";
 import { ModuleLookup } from "../../module/ModuleLookup";
-import { DependencyResolverEvents } from "./AbstractDependencyResolver";
 import { MaterializedRecord, ModuleEntry } from "../../module/ModuleBuilder";
 import { ModuleId } from "../../module/ModuleId";
 import invariant from "tiny-invariant";
 import { Thunk, unwrapThunk } from "../../utils/Thunk";
+import { DependencyResolverEvents } from "./DependencyResolverEvents";
 
 export type BoundResolver = {
   resolver: Thunk<ModuleEntry>;

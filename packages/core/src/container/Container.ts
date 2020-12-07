@@ -1,6 +1,5 @@
 import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
-import { DependencyResolverEvents } from '../resolvers/abstract/AbstractDependencyResolver';
 import {
   MaterializedRecord,
   MaterializeModule,
@@ -11,6 +10,7 @@ import {
 import { Module } from '../resolvers/abstract/AbstractResolvers';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { unwrapThunk } from '../utils/Thunk';
+import { DependencyResolverEvents } from "../resolvers/abstract/DependencyResolverEvents";
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];

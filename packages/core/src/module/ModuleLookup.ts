@@ -1,9 +1,9 @@
-import { ModuleId } from "./ModuleId";
-import { AbstractDependencyResolver } from "../resolvers/abstract/AbstractDependencyResolver";
-import { ClassType } from "../utils/ClassType";
+import { ModuleId } from './ModuleId';
 
-import { InstanceLegacy } from "../resolvers/abstract/InstanceLegacy";
-import { ModuleBuilder, ModuleEntriesRecord } from "./ModuleBuilder";
+import { ClassType } from '../utils/ClassType';
+
+import { InstanceLegacy } from '../resolvers/abstract/InstanceLegacy';
+import { ModuleBuilder, ModuleEntriesRecord, ModuleResolvers } from './ModuleBuilder';
 
 // TODO Split into Builder and readonly ModuleRegistry ? resolvers shouldn't be able to mutate this state
 // TODO Renaming. RegistryRectory -> ModuleRecord and ModuleRegistry -> ModuleRecordLookup
@@ -12,12 +12,12 @@ export class ModuleLookup<TRegistryRecord extends ModuleEntriesRecord> {
   private dependenciesByModuleId: Record<string, Record<string, InstanceLegacy<any>>> = {};
   private dependenciesByName: Record<string, InstanceLegacy<any>> = {};
   private childModuleRegistriesByModuleId: Record<string, ModuleLookup<any>> = {};
-  private resolvers: AbstractDependencyResolver<any>[] = [];
+  private resolvers: ModuleResolvers<any>[] = [];
   protected parent?: ModuleLookup<any>;
 
   // TODO: encapsulate
 
-  public dependencyResolvers: Record<string, AbstractDependencyResolver<any>> = {};
+  public dependencyResolvers: Record<string, ModuleResolvers<any>> = {};
   public modules: Record<string, ModuleBuilder<any>> = {};
 
   constructor(public moduleId: ModuleId) {}
@@ -52,7 +52,7 @@ export class ModuleLookup<TRegistryRecord extends ModuleEntriesRecord> {
   //   });
   // }
 
-  appendDependencyFactory(name: string, resolver: AbstractDependencyResolver<any>, factory: InstanceLegacy<any>) {
+  appendDependencyFactory(name: string, resolver: any, factory: InstanceLegacy<any>) {
     this.dependenciesByName[name] = factory;
     this.dependenciesByResolverId[resolver.id] = factory;
     this.resolvers.push(resolver);
@@ -111,7 +111,7 @@ export class ModuleLookup<TRegistryRecord extends ModuleEntriesRecord> {
   //   return this.parent.findAncestorResolvers(resolverClass);
   // }
 
-  findAncestorResolvers(resolverClass: ClassType<any, AbstractDependencyResolver<any>>): InstanceLegacy<any>[] {
+  findAncestorResolvers(resolverClass: ClassType<any, any>): InstanceLegacy<any>[] {
     const own = this.findOwnResolversByType(resolverClass);
     const fromParent = this.parent ? this.parent.findAncestorResolvers(resolverClass) : [];
 

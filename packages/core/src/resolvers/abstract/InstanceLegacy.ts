@@ -1,5 +1,5 @@
 import { ContainerContext } from '../../container/ContainerContext';
-import { DependencyResolverEvents } from './AbstractDependencyResolver';
+import { DependencyResolverEvents } from "./DependencyResolverEvents";
 
 let id = 1;
 

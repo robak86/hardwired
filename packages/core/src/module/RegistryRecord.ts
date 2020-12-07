@@ -1,4 +1,4 @@
-import { InstanceLegacy } from "../resolvers/abstract/InstanceLegacy";
+import { InstanceLegacy } from '../resolvers/abstract/InstanceLegacy';
 
 // TODO: rename to ModuleEntries | ModuleDefinitions ?
 export interface RegistryRecord {

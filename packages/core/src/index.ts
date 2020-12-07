@@ -4,8 +4,6 @@ export { container, Container } from './container/Container';
 export { ModuleLookup } from './module/ModuleLookup';
 export { ContainerContext } from './container/ContainerContext';
 export type { RegistryRecord } from './module/RegistryRecord';
-export type { DependencyResolver } from './resolvers/DependencyResolver';
-export { AbstractDependencyResolver } from './resolvers/abstract/AbstractDependencyResolver';
 
 export { singleton, ClassSingletonResolver } from './resolvers/ClassSingletonResolver';
 

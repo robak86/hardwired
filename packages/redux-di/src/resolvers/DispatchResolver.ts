@@ -1,8 +1,6 @@
-import { AbstractDependencyResolver, ContainerContext,  ModuleLookup, Instance } from 'hardwired';
-import { Action } from 'redux';
-import { StoreResolver } from './StoreResolver';
-import invariant from 'tiny-invariant';
-import { AlterableStore } from '../stack/AlterableStore';
+import { ContainerContext, Instance, ModuleLookup } from "hardwired";
+import { Action } from "redux";
+import { AlterableStore } from "../stack/AlterableStore";
 
 export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TActionArgs) => void, []> {
   private storeResolver: Instance<AlterableStore<any>, any>[] | [Instance<AlterableStore<any>, any>] = [];
