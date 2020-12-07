@@ -1,24 +1,33 @@
-import { SignalEmitter } from '../utils/SignalEmitter';
-import { AnyResolver } from '../module/ModuleBuilder';
-import { Module } from '../resolvers/abstract/AbstractResolvers';
-import { ClassType } from '../utils/ClassType';
+import { SignalEmitter } from "../utils/SignalEmitter";
+import { AnyResolver } from "../module/ModuleBuilder";
+import { Instance } from "../resolvers/abstract/AbstractResolvers";
+import { ClassType } from "../utils/ClassType";
+import { ContainerContext } from "./ContainerContext";
+
+type InstanceGetter<TValue> = {
+  id: string;
+  get: (containerContext: ContainerContext) => TValue;
+};
 
 class DefinitionsSignalEmitter {
-  private emitter = new SignalEmitter<[AnyResolver, Module<any>]>();
+  private emitter = new SignalEmitter<[Instance<any, any>, (containerContext: ContainerContext) => any]>();
 
-  add<T extends AnyResolver>(
-    resolverClass: ClassType<[], T>,
-    listener: (event: T, module: Module<any>) => void,
+  add<TValue>(
+    resolverClass: ClassType<any, Instance<TValue, any>>,
+    listener: (event: InstanceGetter<TValue>) => void,
   ): () => void {
-    return this.emitter.add((event, module) => {
-      if (event instanceof resolverClass) {
-        listener(event as any, module);
+    return this.emitter.add((instance, factory) => {
+      if (instance instanceof resolverClass) {
+        listener({
+          id: instance.id,
+          get: factory,
+        });
       }
     });
   }
 
-  emit(resolver: AnyResolver, module: Module<any>) {
-    this.emitter.emit(resolver, module);
+  emit<TValue>(resolver: Instance<TValue, any>, factory: (containerContext: ContainerContext) => TValue) {
+    this.emitter.emit(resolver, factory);
   }
 }
 

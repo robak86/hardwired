@@ -1,7 +1,6 @@
 import { ContainerContext } from '../../container/ContainerContext';
 import { createResolverId } from '../../utils/fastId';
 import { ImmutableSet } from '../../collections/ImmutableSet';
-import { ModuleLookup } from '../../module/ModuleLookup';
 import { MaterializedRecord, AnyResolver } from '../../module/ModuleBuilder';
 import { ModuleId } from '../../module/ModuleId';
 import invariant from 'tiny-invariant';
@@ -23,7 +22,6 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   abstract build(context: ContainerContext, deps: TDeps): TValue;
 
   onInit?(containerEvents: ContainerEvents): void;
-  onAppend?(lookup: ModuleLookup<any>): void;
 }
 
 export abstract class Module<TValue extends Record<string, AnyResolver>> {
@@ -79,9 +77,15 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
   }
 
   onInit(containerEvents: ContainerEvents) {
-    this.registry.forEach(boundResolver => {
+    this.registry.forEach((boundResolver, key) => {
       const resolver = unwrapThunk(boundResolver.resolverThunk);
       resolver.onInit && resolver.onInit(containerEvents);
+
+      if (resolver.kind === 'instanceResolver') {
+        containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
+          return this.get([key], containerContext, this.injections);
+        });
+      }
     });
   }
 }

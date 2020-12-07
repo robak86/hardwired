@@ -1,9 +1,7 @@
-import { ContainerContext, Instance, ModuleLookup } from 'hardwired';
-import { StoreResolver } from './StoreResolver';
-import invariant from 'tiny-invariant';
-import { AlterableStore } from '../stack/AlterableStore';
-import { createSelector } from 'reselect';
-import { ContainerEvents } from 'hardwired/lib/container/ContainerEvents';
+import { ContainerContext, Instance } from "hardwired";
+import { StoreResolver } from "./StoreResolver";
+import { AlterableStore } from "../stack/AlterableStore";
+import { ContainerEvents } from "hardwired/lib/container/ContainerEvents";
 
 export class SelectorResolver<T> extends Instance<T, []> {
   private storeResolver: Instance<AlterableStore<any>, any>[] | [Instance<AlterableStore<any>, any>] = [];

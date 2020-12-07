@@ -21,24 +21,25 @@ describe(`Integration tests`, () => {
           .define('childStoreModule', childModule)
           .define('defaultState', value(defaultState))
           .define('store', store(), ['defaultState'])
-          .define('appReducer1', reducer(appReducer1));
+          .define('appReducer1', reducer(appReducer1))
+          .define('appReducer2', reducer(appReducer2));
 
         const c = container(m);
 
         return { container: c, appReducer1, appReducer2, defaultState };
       }
 
-      it.todo(`calls reducers with correct params`, async () => {
-        // const { container, appReducer1, appReducer2, defaultState } = setup();
-        // const { store } = container.asObject();
-        //
-        // expect(store.getState()).toEqual(defaultState);
-        //
-        // const action = { type: 'SOME_TYPE' };
-        // store.dispatch(action);
-        //
-        // expect(appReducer1).toBeCalledWith(defaultState, action);
-        // expect(appReducer2).toBeCalledWith(defaultState, action);
+      it(`calls reducers with correct params`, async () => {
+        const { container, appReducer1, appReducer2, defaultState } = setup();
+        const store = container.get('store');
+
+        expect(store.getState()).toEqual(defaultState);
+
+        const action = { type: 'SOME_TYPE' };
+        store.dispatch(action);
+
+        expect(appReducer1).toBeCalledWith(defaultState, action);
+        expect(appReducer2).toBeCalledWith(defaultState, action);
       });
     });
   });

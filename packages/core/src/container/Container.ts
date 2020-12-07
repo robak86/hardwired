@@ -107,7 +107,7 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
   //   }) as any;
   // };
 
-  // asObject(): MaterializedRecord<TRegistryRecord> {
+  // asObject(): MaterializeModule<TModule> {
   //   const obj = {};
   //   const cache = this.containerContext.forNewRequest();
   //   this.rootModuleLookup.forEachDependency((key, factory) => {

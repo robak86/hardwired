@@ -33,7 +33,7 @@ describe(`SelectorResolver`, () => {
   //       .define('initialState', value({ value: 'initialValue' }))
   //       .define('store', store(), ['initialState'])
   //       .define('rootReducer', reducer(updateReducer))
-  //       // .define('someSelector', selector(selectStateValue))
+  //       .define('someSelector', selector(selectStateValue))
   //       .define('updateValue', dispatch(updateAction));
   //
   //     const Container = () => {
@@ -74,11 +74,11 @@ describe(`SelectorResolver`, () => {
   //     const selectorsModule = module('selectors').define('someSelector', _ => selector(selectStateValue));
   //
   //     const m = module('someModule')
-  //       .define('selectors', _ => selectorsModule)
-  //       .define('initialState', _ => value({ value: 'initialValue' }))
-  //       .define('store', _ => store(_.initialState))
-  //       .define('rootReducer', _ => reducer(updateReducer))
-  //       .define('updateValue', _ => dispatch(updateAction));
+  //       .define('selectors', () => selectorsModule)
+  //       .define('initialState', value({ value: 'initialValue' }))
+  //       .define('store', store(), ['initialState'])
+  //       .define('rootReducer', reducer(updateReducer))
+  //       .define('updateValue', dispatch(updateAction));
   //
   //     const Container = () => {
   //       const value = useWatchable(selectorsModule, 'someSelector');

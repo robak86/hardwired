@@ -1,7 +1,6 @@
 export { unit, module } from './module/Module';
 export { container, Container } from './container/Container';
 
-export { ModuleLookup } from './module/ModuleLookup';
 export { ContainerContext } from './container/ContainerContext';
 
 export { singleton, ClassSingletonResolver } from './resolvers/ClassSingletonResolver';
