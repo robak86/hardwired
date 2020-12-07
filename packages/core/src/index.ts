@@ -3,7 +3,6 @@ export { container, Container } from './container/Container';
 
 export { ModuleLookup } from './module/ModuleLookup';
 export { ContainerContext } from './container/ContainerContext';
-export type { RegistryRecord } from './module/RegistryRecord';
 
 export { singleton, ClassSingletonResolver } from './resolvers/ClassSingletonResolver';
 

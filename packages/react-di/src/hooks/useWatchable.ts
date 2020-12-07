@@ -1,7 +1,7 @@
-import { useContainer } from '../components/ContainerContext';
-import { useEffect, useState } from 'react';
-import { RegistryRecord, ModuleBuilder, ModuleEntriesRecord, ModuleEntry, MaterializeModule} from "hardwired";
-import { MaterializedRecord, ModuleInstancesKeys } from 'hardwired/lib/module/ModuleBuilder';
+import { useContainer } from "../components/ContainerContext";
+import { useEffect, useState } from "react";
+import { MaterializeModule, ModuleBuilder } from "hardwired";
+import { ModuleInstancesKeys } from "hardwired/lib/module/ModuleBuilder";
 
 export type WatchableHook = <
   TModule extends ModuleBuilder<any>,
