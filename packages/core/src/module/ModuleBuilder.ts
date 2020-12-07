@@ -72,7 +72,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
-        resolver,
+        resolverThunk: resolver,
         dependencies: dependencies || [],
       }) as any,
       this.injections,
@@ -104,7 +104,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.replace(name, {
-        resolver,
+        resolverThunk: resolver,
         dependencies: dependencies || [],
       } as any),
       this.injections,

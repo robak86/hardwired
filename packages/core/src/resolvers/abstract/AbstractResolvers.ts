@@ -10,7 +10,7 @@ import { DependencyResolverEvents } from './DependencyResolverEvents';
 import { ContainerEvents } from '../../container/ContainerEvents';
 
 export type BoundResolver = {
-  resolver: Thunk<AnyResolver>;
+  resolverThunk: Thunk<AnyResolver>;
   dependencies: string[];
 };
 
@@ -64,7 +64,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     const mergedInjections = this.injections.merge(otherInjections);
 
     const boundResolver: BoundResolver = this.registry.get(moduleOrInstanceKey);
-    const resolver = unwrapThunk(boundResolver.resolver);
+    const resolver = unwrapThunk(boundResolver.resolverThunk);
 
     if (resolver.kind === 'instanceResolver') {
       const depsInstances = boundResolver.dependencies.map(path =>
