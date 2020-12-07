@@ -1,0 +1,27 @@
+@startuml
+
+package "Some Container" as container1 {
+    package "RootModule" as root {
+        [Store Definition] as store
+        [Child Module Definition] as childModule
+    }
+}
+
+
+Package "Some Other Container" as container2 {
+    package "Other Root Module" as otherRoot {
+        [Store Definition] as otherStore
+        [Child Module Definition] as otherChildModule
+    }
+}
+
+
+package "Child Module" as child {
+    [Selector Definition] as selector
+}
+note bottom of child: This means that we cannot hold any parent module reference in module definition (or module resolver)
+
+childModule --> child
+otherChildModule --> child
+
+@enduml

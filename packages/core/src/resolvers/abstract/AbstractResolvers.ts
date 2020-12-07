@@ -1,13 +1,13 @@
-import { ContainerContext } from "../../container/ContainerContext";
-import { createResolverId } from "../../utils/fastId";
-import { ImmutableSet } from "../../collections/ImmutableSet";
-import { ModuleLookup } from "../../module/ModuleLookup";
-import { MaterializedRecord, AnyResolver } from "../../module/ModuleBuilder";
-import { ModuleId } from "../../module/ModuleId";
-import invariant from "tiny-invariant";
-import { Thunk, unwrapThunk } from "../../utils/Thunk";
-import { DependencyResolverEvents } from "./DependencyResolverEvents";
-import { ContainerEvents } from "../../container/ContainerEvents";
+import { ContainerContext } from '../../container/ContainerContext';
+import { createResolverId } from '../../utils/fastId';
+import { ImmutableSet } from '../../collections/ImmutableSet';
+import { ModuleLookup } from '../../module/ModuleLookup';
+import { MaterializedRecord, AnyResolver } from '../../module/ModuleBuilder';
+import { ModuleId } from '../../module/ModuleId';
+import invariant from 'tiny-invariant';
+import { Thunk, unwrapThunk } from '../../utils/Thunk';
+import { DependencyResolverEvents } from './DependencyResolverEvents';
+import { ContainerEvents } from '../../container/ContainerEvents';
 
 export type BoundResolver = {
   resolver: Thunk<AnyResolver>;
@@ -78,6 +78,9 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     }
   }
 
-  onInit?(lookup: ContainerContext): void;
+  onInit(containerEvents: ContainerEvents) {
+    this.registry.forEach(resolver => {});
+  }
+
   onAppend?(lookup: ModuleLookup<any>): void;
 }

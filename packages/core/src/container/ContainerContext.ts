@@ -1,9 +1,8 @@
-import { ModuleId } from '../module/ModuleId';
-import invariant from 'tiny-invariant';
-
-import { ImmutableSet } from '../collections/ImmutableSet';
-import { PushPromise } from '../utils/PushPromise';
-import { Module } from '../resolvers/abstract/AbstractResolvers';
+import { ModuleId } from "../module/ModuleId";
+import invariant from "tiny-invariant";
+import { PushPromise } from "../utils/PushPromise";
+import { Module } from "../resolvers/abstract/AbstractResolvers";
+import { ContainerEvents } from "./ContainerEvents";
 
 export type ContainerCacheEntry = {
   value: any;
@@ -18,6 +17,7 @@ export class ContainerContext {
   public requestScope: Record<string, ContainerCacheEntry> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public initializedModules: Record<string, any> = {};
+  private containerEvents = new ContainerEvents();
 
   protected constructor(
     public globalScope: Record<string, ContainerCacheEntry> = {},
@@ -88,24 +88,9 @@ export class ContainerContext {
 
   loadModule(module: Module<any>) {
     if (!this.hasModule(module.moduleId)) {
-      module.onInit && module.onInit(this);
       this.addModule(module.moduleId, module);
+      module.onInit && module.onInit(this.containerEvents);
     }
-  }
-
-  initModule(module: Module<any>) {
-    // const moduleLookup = containerContext.getModuleResolver(module.moduleId);
-    //
-    // moduleLookup.forEachModuleResolver(module => {
-    //   ModuleResolverService.onInit(module, containerContext);
-    // });
-    //
-    // moduleLookup.freezeImplementations();
-    //
-    // moduleLookup.forEachDependencyResolver(resolver => {
-    //   const onInit = resolver.onInit;
-    //   onInit && onInit.call(resolver, moduleLookup);
-    // });
   }
 
   hasModule(moduleId: ModuleId): boolean {
