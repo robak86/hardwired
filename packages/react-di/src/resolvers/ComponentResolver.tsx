@@ -1,5 +1,6 @@
-import { ContainerContext, Instance, EventsEmitter, ModuleLookup } from 'hardwired';
+import { ContainerContext, Instance, EventsEmitter } from 'hardwired';
 import React from 'react';
+import { ContainerEvents } from 'hardwired/lib/container/ContainerEvents';
 
 // TODO: probably TProps (instead of TComponent) should be sufficient
 export type MaterializedComponent<TComponent extends React.ComponentType> = {
@@ -18,7 +19,7 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends I
     super();
   }
 
-  onInit(lookup: ModuleLookup<any>) {
+  onInit(lookup: ContainerEvents) {
     Object.keys(this.propsDependencies).forEach(currentKey => {
       const dependencyFactory = this.propsDependencies[currentKey];
       dependencyFactory.events.invalidateEvents.add(() => {

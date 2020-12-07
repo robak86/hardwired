@@ -1,8 +1,9 @@
-import { ContainerContext, Instance, ModuleLookup } from "hardwired";
-import { StoreResolver } from "./StoreResolver";
-import invariant from "tiny-invariant";
-import { AlterableStore } from "../stack/AlterableStore";
-import { createSelector } from "reselect";
+import { ContainerContext, Instance, ModuleLookup } from 'hardwired';
+import { StoreResolver } from './StoreResolver';
+import invariant from 'tiny-invariant';
+import { AlterableStore } from '../stack/AlterableStore';
+import { createSelector } from 'reselect';
+import { ContainerEvents } from 'hardwired/lib/container/ContainerEvents';
 
 export class SelectorResolver<T> extends Instance<T, []> {
   private storeResolver: Instance<AlterableStore<any>, any>[] | [Instance<AlterableStore<any>, any>] = [];
@@ -13,7 +14,7 @@ export class SelectorResolver<T> extends Instance<T, []> {
   }
 
   build(context: ContainerContext, depsSelectors): T {
-    throw new Error('implement me')
+    throw new Error('implement me');
     // const storeInstance = this.storeResolver[0];
     // invariant(storeInstance, `Cannot find store instance`); // TODO: maybe we should provide
     // const store = storeInstance.get(context);
@@ -32,7 +33,7 @@ export class SelectorResolver<T> extends Instance<T, []> {
     // return selectedState;
   }
 
-  onInit(registry: ModuleLookup<any>): any {
+  onInit(registry: ContainerEvents): any {
     throw new Error('Implement me');
     // this.storeResolver = registry.findAncestorResolvers(StoreResolver);
     // invariant(this.storeResolver.length === 1, `Multiple store instances are currently not supported`);

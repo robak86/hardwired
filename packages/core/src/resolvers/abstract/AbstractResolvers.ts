@@ -7,6 +7,7 @@ import { ModuleId } from "../../module/ModuleId";
 import invariant from "tiny-invariant";
 import { Thunk, unwrapThunk } from "../../utils/Thunk";
 import { DependencyResolverEvents } from "./DependencyResolverEvents";
+import { ContainerEvents } from "../../container/ContainerEvents";
 
 export type BoundResolver = {
   resolver: Thunk<AnyResolver>;
@@ -21,7 +22,7 @@ export abstract class Instance<TValue, TDeps extends any[]> {
 
   abstract build(context: ContainerContext, deps: TDeps): TValue;
 
-  onInit?(lookup: ModuleLookup<any>): void;
+  onInit?(containerEvents: ContainerEvents): void;
   onAppend?(lookup: ModuleLookup<any>): void;
 }
 

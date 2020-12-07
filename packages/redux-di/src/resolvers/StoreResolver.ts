@@ -2,6 +2,7 @@ import { Instance, ContainerContext, ModuleLookup } from 'hardwired';
 import { ReducerResolver } from './ReducerResolver';
 import { AlterableStore } from '../stack/AlterableStore';
 import { SagaResolver } from './SagaResolver';
+import { ContainerEvents } from "hardwired/lib/container/ContainerEvents";
 
 export class StoreResolver<TAppState> extends Instance<AlterableStore<TAppState>, [TAppState]> {
   public reducersResolvers: Instance<any, any>[] = [];
@@ -32,7 +33,7 @@ export class StoreResolver<TAppState> extends Instance<AlterableStore<TAppState>
     }
   }
 
-  onInit(registry: ModuleLookup<any>): any {
+  onInit(registry: ContainerEvents): any {
     throw new Error("Implement me")
     // this.reducersResolvers = registry.findFactoriesByResolverClass(ReducerResolver);
     // this.sagasResolvers = registry.findFactoriesByResolverClass(SagaResolver);

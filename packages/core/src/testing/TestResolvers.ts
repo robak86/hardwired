@@ -1,6 +1,6 @@
 import { ContainerContext } from "../container/ContainerContext";
-import { ModuleLookup } from "../module/ModuleLookup";
 import { Instance } from "../resolvers/abstract/AbstractResolvers";
+import { ContainerEvents } from "../container/ContainerEvents";
 
 export class DummyResolver<TValue> extends Instance<TValue, []> {
   constructor(private value: TValue) {
@@ -10,7 +10,7 @@ export class DummyResolver<TValue> extends Instance<TValue, []> {
   build(cache: ContainerContext): TValue {
     return this.value;
   }
-  onInit(lookup: ModuleLookup<any>) {
+  onInit(lookup: ContainerEvents) {
     return undefined;
   }
 }
