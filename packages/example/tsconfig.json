@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "rootDir": "./src",
+    "composite": true,
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  },
+  "references": [
+    {
+      "path": "../core/tsconfig.json"
+    },
+    {
+      "path": "../react-di/tsconfig.json"
+    },
+    {
+      "path": "../redux-di/tsconfig.json"
+    }
+  ],
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "./tests",
+    "./lib"
+  ]
+}

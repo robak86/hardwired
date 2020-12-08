@@ -6,12 +6,7 @@
   "dependencies": {
     "hardwired": "*"
   },
-  "devDependencies": {
-    "@testing-library/react": "^11.0.2",
-    "@types/react": "^16.9.34",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
-  },
+  "devDependencies": {},
   "files": [
     "lib",
     "README.md"

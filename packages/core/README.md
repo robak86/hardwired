@@ -7,6 +7,8 @@ Minimalistic, type-safe dependency injection solution for TypeScript.
 
 ### Installation
 
+This library requires typescript >= 4.1
+
 yarn
 
 ```
@@ -42,8 +44,8 @@ class Logger {
 }
 
 const loggerModule = module('logger')
-  .define('configuration', _ => singleton(LoggerConfiguration))
-  .define('logger', ({ configuration }) => singleton(Logger, [configuration]));
+  .define('configuration', singleton(LoggerConfiguration))
+  .define('logger', singleton(Logger), ['configuration']);
 ```
 
 #### Create container
@@ -57,23 +59,38 @@ const logger = exampleContainer.get('logger'); // returns instance of Logger cla
 
 ### Registering module entries
 
-- `.define(name, resolverFactory)` - returns a new instance of the module and appends new definition
+- `.define(name, resolver, dependencies)` - returns a new instance of the module and appends new definition
 
   - `name` - name of the definition
-  - `resolverFactory` - function returning instance of the resolver. It's called with object containing factories for all previously registered definitions.
+  - `resolver` -  It's called with object containing factories for all previously registered definitions.
+  - `dependencies` - array of paths pointing to given instance dependencies 
 
   ```typescript
   import { module, value } from 'hardwired';
 
+  class DummyClass {
+    constructor(private a: number, private b: string){}
+  }
+  
+  
   const m1 = module('example')
-    .define('a', _ => value(1))
-    .define('b', ({ a }) => value(2))
-    .define('c', ({ a, b }) => value(3));
-
-  const m2 = m1.define('d', ({ a, b, c }) => value(4));
-
-  m1 === m2; // false
+    .define('a', value(123))
+    .define('b', value('someString'))
+    .define('c', singleton(DummyClass), ['a', 'b']);
   ```
+  
+  Since the module is immutable `.define` returns always a new instance of the module
+
+  ```typescript
+  const m1 = module('example')
+    .define('a', value(123))
+  
+  const m2 = module('example2')
+    .define('b', value(123))
+  
+  m1 === m2 // false
+  ```
+  
 
 ### Available resolvers (scopes)
 
@@ -84,7 +101,7 @@ import { module, transient } from 'hardwired';
 
 class SomeClass {}
 
-const someModule = module('example').define('transientDependency', _ => transient(SomeClass));
+const someModule = module('example').define('transientDependency', transient(SomeClass));
 const ct = container(someModule);
 
 ct.get('transientDependency') === ct.get('transientDependency'); // false
@@ -97,7 +114,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 
   class SomeClass {}
 
-  const someModule = module('example').define('someSingleton', _ => singleton(SomeClass));
+  const someModule = module('example').define('someSingleton', singleton(SomeClass));
   const ct = container(someModule);
 
   ct.get('someSingleton') === ct.get('someSingleton'); // true
@@ -113,7 +130,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 
   const someObject = { someProp: 123 };
 
-  const someModule = module('example').define('someValue', _ => value(someObject));
+  const someModule = module('example').define('someValue', value(someObject));
   const ct = container(someModule);
 
   ct.get('someValue') === ct.get('someValue'); // true
@@ -133,7 +150,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
     }
   }
 
-  const someModule = module('example').define('createdByFactory', _ => factory(NumberFactory));
+  const someModule = module('example').define('createdByFactory', factory(NumberFactory));
   const ct = container(someModule);
 
   ct.get('createdByFactory'); // returns 1
@@ -147,9 +164,9 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   }
 
   const otherModule = module('example')
-    .define('createdByFactory', _ => factory(NumberFactory))
-    .define('spy1', _ => singleton(ArgsSpy))
-    .define('spy2', _ => singleton(ArgsSpy));
+    .define('createdByFactory', factory(NumberFactory))
+    .define('spy1', singleton(ArgsSpy))
+    .define('spy2', singleton(ArgsSpy));
 
   const ct2 = container(someModule);
 
@@ -166,13 +183,13 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   const someFunction = (a: number, b: string, c: boolean): string => 'example';
 
   const someModule = module('example')
-    .define('arg1', _ => value(1))
-    .define('arg2', _ => value('string'))
-    .define('arg3', _ => value(false))
-    .define('noArgsApplied', _ => func(someFunction))
-    .define('partiallyApplied1', _ => func(someFunction, [_.arg1]))
-    .define('partiallyApplied2', _ => func(someFunction, [_.arg1, _.arg2]))
-    .define('partiallyApplied3', _ => func(someFunction, [_.arg1, _.arg2, _.arg3]));
+    .define('arg1', value(1))
+    .define('arg2', value('string'))
+    .define('arg3', value(false))
+    .define('noArgsApplied', func(someFunction, 0))
+    .define('partiallyApplied1', func(someFunction, 1), ['arg1'])
+    .define('partiallyApplied2', func(someFunction, 2), ['arg1', 'arg2'])
+    .define('partiallyApplied3', func(someFunction, 3), ['arg1', 'arg2', 'arg3']);
 
   const ct = container(someModule);
 
@@ -195,9 +212,9 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   }
 
   const someModule = module('requestExample')
-    .define('leaf', _ => request(SomeClass))
-    .define('child', _ => request(SomeClass, [_.leaf]))
-    .define('parent', _ => request(SomeClass, [_.child, _.leaf]));
+    .define('leaf', request(SomeClass))
+    .define('child', request(SomeClass, ['leaf']))
+    .define('parent', request(SomeClass, ['child', 'leaf']));
 
   const ct = container(someModule);
 
@@ -222,22 +239,22 @@ class DbConnection {
 }
 
 const dbModule = module('db')
-  .define('config', _ => value(databaseConfig))
-  .define('connection', _ => singleton(DbConnection, [_.config]));
+  .define('config', value(databaseConfig))
+  .define('connection', singleton(DbConnection, ['config']));
 
 class UsersListQuery {
   constructor(private dbConnection: DbConnection) {}
 }
 
 const usersModule = module('users')
-  .define('db', _ => dbModule)
-  .define('usersQuery', _ => singleton(UsersListQuery, [_.db.connection]));
+  .define('db', dbModule)
+  .define('usersQuery', singleton(UsersListQuery, ['db.connection']));
 ```
 
 ### Replacing deeply nested dependencies
 
 ```typescript
-const updatedDbModule = dbModule.replace('config', _ => value({ url: 'updated' }));
+const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
 const usersModuleWithNewConfig = usersModule.inject(updatedDbModule);
 
 container(usersModule).get('usersQuery'); // uses databaseConfig with url equal to ''
