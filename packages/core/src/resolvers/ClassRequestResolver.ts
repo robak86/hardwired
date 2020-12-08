@@ -20,6 +20,6 @@ export class ClassRequestResolver<TReturn, TDeps extends any[]> extends Instance
 
 export function request<TDeps extends any[], TValue>(
   cls: ClassType<TDeps, TValue>,
-): ClassRequestResolver<TValue, TDeps> {
+): Instance<TValue, TDeps> {
   return new ClassRequestResolver(cls);
 }

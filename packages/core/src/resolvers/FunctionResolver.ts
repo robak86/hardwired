@@ -1,7 +1,7 @@
-import { curry } from "../utils/curry";
-import { ContainerContext } from "../container/ContainerContext";
-import { ClassRequestResolver } from "./ClassRequestResolver";
-import { Instance } from "./abstract/AbstractResolvers";
+import { curry } from '../utils/curry';
+import { ContainerContext } from '../container/ContainerContext';
+import { ClassRequestResolver } from './ClassRequestResolver';
+import { Instance } from './abstract/AbstractResolvers';
 import Parameters = jest.Parameters;
 
 // TODO: not sure if this should be singleton ?
@@ -70,6 +70,7 @@ type PartiallyApplied2<TArgs extends any[], TReturn> =
 type PartiallyApplied3<TArgs extends any[], TReturn> =
   TArgs extends [infer TArg1, infer TArg2,infer TArg3, ...infer TRest] ?  (...rest:TRest) => TReturn : 'args count mismatch'
 
+// TODO: add recursive type
 // prettier-ignore
 type PartiallyAppliedArgs<TFunc extends (...args:any[]) => any, TDepth extends 0 | 1 | 2 | 3> =
   0 extends  TDepth ? [] :
@@ -92,6 +93,6 @@ type PartiallyAppliedArgs3<TArgs extends any[], TReturn> =
 export function func<TValue extends (...args: any[]) => any, TDepth extends 0 | 1 | 2 | 3>(
   cls: TValue,
   depth: TDepth,
-): FunctionResolver<PartiallyApplied<TValue, TDepth>, PartiallyAppliedArgs<TValue, TDepth>> {
+): Instance<PartiallyApplied<TValue, TDepth>, PartiallyAppliedArgs<TValue, TDepth>> {
   return new FunctionResolver(cls);
 }

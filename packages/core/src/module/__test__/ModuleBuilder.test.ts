@@ -3,7 +3,7 @@ import { MaterializeModule, ModuleBuilder } from '../ModuleBuilder';
 import { ClassType } from '../../utils/ClassType';
 import { Instance } from '../../resolvers/abstract/AbstractResolvers';
 import { ValueResolver } from '../../resolvers/ValueResolver';
-import { singleton } from "../../resolvers/ClassSingletonResolver";
+import { singleton } from '../../resolvers/ClassSingletonResolver';
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
@@ -11,7 +11,7 @@ describe(`Module`, () => {
   };
 
   const dummyClassResolver = <TDeps extends any[], TValue>(cls: ClassType<TDeps, TValue>): Instance<TValue, TDeps> => {
-    return singleton(cls)
+    return singleton(cls);
   };
 
   it(`creates correct type`, async () => {

@@ -1,16 +1,16 @@
-import { ContainerContext } from "./ContainerContext";
-import invariant from "tiny-invariant";
+import { ContainerContext } from './ContainerContext';
+import invariant from 'tiny-invariant';
 import {
   MaterializedRecord,
   MaterializeModule,
   ModuleBuilder,
   ModuleEntriesRecord,
-  ModuleInstancesKeys
-} from "../module/ModuleBuilder";
-import { Module } from "../resolvers/abstract/AbstractResolvers";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import { unwrapThunk } from "../utils/Thunk";
-import { DependencyResolverEvents } from "../resolvers/abstract/DependencyResolverEvents";
+  ModuleInstancesKeys,
+} from '../module/ModuleBuilder';
+import { Module } from '../resolvers/abstract/AbstractResolvers';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { unwrapThunk } from '../utils/Thunk';
+import { DependencyResolverEvents } from '../resolvers/abstract/DependencyResolverEvents';
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -58,8 +58,7 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
     }
 
     if (nameOrModule instanceof Module) {
-      if (!this.containerContext.hasModule(nameOrModule.moduleId)) {
-        this.containerContext.addModule(nameOrModule.moduleId, nameOrModule);
+      if (!this.haveModule(nameOrModule)) {
         this.load(nameOrModule);
       }
 
@@ -75,7 +74,12 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
     invariant(false, 'Invalid module or name');
   };
 
+  haveModule(module: Module<any>): boolean {
+    return this.containerContext.hasModule(module.moduleId);
+  }
+
   load(module: Module<any>) {
+    invariant(!this.haveModule(module), `Module ${module.moduleId} is already loaded`);
     this.containerContext.loadModule(module);
   }
 

@@ -97,14 +97,15 @@ export class ContainerContext {
     return !!this.modulesResolvers[moduleId.id];
   }
 
+  addModule(moduleId: ModuleId, moduleResolver: Module<any>) {
+    invariant(!this.modulesResolvers[moduleId.id], `Module with id ${moduleId.id} already exists`);
+    this.modulesResolvers[moduleId.id] = moduleResolver;
+  }
+
   getModule(moduleId: ModuleId): Module<any> {
     const lookup = this.modulesResolvers[moduleId.id];
     invariant(lookup, `Cannot get module with id: ${moduleId.id}. Module does not exists with container context`);
     return lookup;
   }
 
-  addModule(moduleId: ModuleId, moduleResolver: Module<any>) {
-    invariant(!this.modulesResolvers[moduleId.id], `Module with id ${moduleId.id} already exists`);
-    this.modulesResolvers[moduleId.id] = moduleResolver;
-  }
 }

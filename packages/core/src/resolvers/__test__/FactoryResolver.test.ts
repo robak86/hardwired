@@ -1,8 +1,24 @@
-import { Factory, FactoryResolver } from '../FactoryResolver';
+import { factory, Factory, FactoryResolver } from '../FactoryResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import { createResolverId } from '../../utils/fastId';
+import { expectType, TypeEqual } from 'ts-expect';
+import { Instance } from '../abstract/AbstractResolvers';
 
 describe(`FactoryResolver`, () => {
+  describe(`factory`, () => {
+    it(`return Instance type`, async () => {
+      class DummyFactory implements Factory<number> {
+        build() {
+          return 1;
+        }
+        constructor(private a: string) {}
+      }
+
+      const s = factory(DummyFactory);
+      expectType<TypeEqual<typeof s, Instance<number, [string]>>>(true);
+    });
+  });
+
   it(`returns value produced by the factory`, async () => {
     class DummyFactory implements Factory<any> {
       build = jest.fn().mockReturnValue('built by factory');

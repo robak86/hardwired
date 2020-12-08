@@ -7,6 +7,9 @@ import { serviceLocator } from "../ServiceLocatorResolver";
 import { container } from "../../container/Container";
 import { factory } from "../FactoryResolver";
 import { MaterializeModule } from "../../module/ModuleBuilder";
+import { expectType, TypeEqual } from "ts-expect";
+import { Instance } from "../abstract/AbstractResolvers";
+import { ServiceLocator } from "../../container/ServiceLocator";
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -36,6 +39,13 @@ describe(`ServiceLocatorResolver`, () => {
     .define('reqScoped', request(TestClass), ['value'])
     .define('singleton', singleton(TestClass), ['value']);
 
+  describe(`serviceLocator`, () => {
+    it(`return Instance type`, async () => {
+      const s = serviceLocator();
+      expectType<TypeEqual<typeof s, Instance<ServiceLocator, []>>>(true);
+    });
+  });
+
   it(`returns request scoped instances`, async () => {
     const c = container(root);
     const locator = c.get('locator');
@@ -55,11 +65,7 @@ describe(`ServiceLocatorResolver`, () => {
   it(`reuses singleton instances from container`, async () => {
     const c = container(root);
 
-
-    const www = unit('root')
-      .define('locator', serviceLocator())
-
-
+    const www = unit('root').define('locator', serviceLocator());
 
     type Wtf = MaterializeModule<typeof singletonModule>;
 

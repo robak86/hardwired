@@ -5,6 +5,8 @@ import { ImmutableSet } from '../collections/ImmutableSet';
 import invariant from 'tiny-invariant';
 import { Module, Instance } from '../resolvers/abstract/AbstractResolvers';
 import { Thunk } from '../utils/Thunk';
+import { value } from '../resolvers/ValueResolver';
+import { singleton } from '../resolvers/ClassSingletonResolver';
 
 // prettier-ignore
 type UnboxModuleEntry<T> =
@@ -47,6 +49,29 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
   }
 
+
+  defineStructured<
+    TKey extends string,
+    TValue,
+    TDepKey extends AllowedKeys<TRecord>,
+    TDepsKeys extends Record<string, TDepKey>
+  >(
+    name: TKey,
+    resolver: Instance<TValue, [PropTypesObject<TDepsKeys, MaterializedRecord<TRecord>>]>,
+    dependencies: TDepsKeys,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsKeys, MaterializedRecord<TRecord>>]>>> {
+    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+
+    return new ModuleBuilder(
+      ModuleId.next(this.moduleId),
+      this.registry.extend(name, {
+        resolverThunk: resolver,
+        dependencies: dependencies || [],
+      }) as any,
+      this.injections,
+    );
+  }
+
   // TODO: simplify other overloads  similarly as for AbstractModuleResolver
   define<TKey extends string, TValue extends Module<any>>(
     name: TKey,
@@ -68,6 +93,9 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     dependencies?: TDepsKeys,
   ): ModuleBuilder<TRecord & Record<TKey, unknown>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+
+    // TODO: for case where resolver is thunk add check for making sure that thunk returns always the same module (in case if somebody would like to build module dynamically)
+    // Make sure that this check will be still evaluated lazily
 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
@@ -119,5 +147,10 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
 type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> = {
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
+
+type PropTypesObject<T extends Record<string, string>, TDeps extends Record<string, unknown>> = {
+  [K in keyof T]: PropType<TDeps, T[K] & string>;
+};
+
 
 

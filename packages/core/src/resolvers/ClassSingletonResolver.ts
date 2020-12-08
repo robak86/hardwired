@@ -20,6 +20,6 @@ export class ClassSingletonResolver<TReturn, TDeps extends any[]> extends Instan
 
 export function singleton<TDeps extends any[], TValue>(
   cls: ClassType<TDeps, TValue>,
-): ClassSingletonResolver<TValue, TDeps> {
+): Instance<TValue, TDeps> {
   return new ClassSingletonResolver(cls);
 }

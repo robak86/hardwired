@@ -2,6 +2,10 @@ import { unit } from '../../module/Module';
 import { dependency, TestTransientResolver } from '../../testing/TestResolvers';
 import { container } from '../../container/Container';
 import { func } from '../FunctionResolver';
+import { transient } from '../ClassTransientResolver';
+import { expectType, TypeEqual } from 'ts-expect';
+import { Instance } from '../abstract/AbstractResolvers';
+import { TestClass } from '../../module/__test__/ModuleBuilderPerf';
 
 describe(`FunctionResolver`, () => {
   function setup() {
@@ -15,6 +19,30 @@ describe(`FunctionResolver`, () => {
 
     return { module: m, singletonFactorySpy, transientFactorySpy };
   }
+
+  describe(`func`, () => {
+    const testFunction = (a: '1', b: '2', c: '3') => 123;
+
+    it(`curry 0`, async () => {
+      const s = func(testFunction, 0);
+      expectType<TypeEqual<typeof s, Instance<typeof testFunction, []>>>(true);
+    });
+
+    it(`curry 1`, async () => {
+      const s = func(testFunction, 1);
+      expectType<TypeEqual<typeof s, Instance<(b: '2', c: '3') => number, ['1']>>>(true);
+    });
+
+    it(`curry 2`, async () => {
+      const s = func(testFunction, 2);
+      expectType<TypeEqual<typeof s, Instance<(c: '3') => number, ['1', '2']>>>(true);
+    });
+
+    it(`curry 3`, async () => {
+      const s = func(testFunction, 3);
+      expectType<TypeEqual<typeof s, Instance<() => number, ['1', '2', '3']>>>(true);
+    });
+  });
 
   describe(`memoization`, () => {
     describe(`no partially applied arguments`, () => {

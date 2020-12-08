@@ -1,11 +1,12 @@
-import { singleton } from "../ClassSingletonResolver";
-import { dependency } from "../../testing/TestResolvers";
-import { container } from "../../container/Container";
-import { createResolverId } from "../../utils/fastId";
-import { unit } from "../../module/Module";
-import { value } from "../ValueResolver";
-import { transient } from "../ClassTransientResolver";
-
+import { singleton } from '../ClassSingletonResolver';
+import { dependency } from '../../testing/TestResolvers';
+import { container } from '../../container/Container';
+import { createResolverId } from '../../utils/fastId';
+import { unit } from '../../module/Module';
+import { value } from '../ValueResolver';
+import { transient } from '../ClassTransientResolver';
+import { expectType, TypeEqual } from 'ts-expect';
+import { Instance } from '../abstract/AbstractResolvers';
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {
@@ -17,6 +18,13 @@ describe(`ClassSingletonResolver`, () => {
   class TestClassConsumer {
     constructor(public testClassInstance: TestClass) {}
   }
+
+  describe(`singleton`, () => {
+    it(`return Instance type`, async () => {
+      const s = singleton(TestClass);
+      expectType<TypeEqual<typeof s, Instance<TestClass, [string]>>>(true);
+    });
+  });
 
   describe(`single module`, () => {
     const m = unit('root')

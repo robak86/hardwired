@@ -15,6 +15,6 @@ export class ClassTransientResolver<TReturn, TDeps extends any[]> extends Instan
 
 export function transient<TDeps extends any[], TValue>(
   cls: ClassType<TDeps, TValue>,
-): ClassTransientResolver<TValue, TDeps> {
+): Instance<TValue, TDeps> {
   return new ClassTransientResolver(cls);
 }

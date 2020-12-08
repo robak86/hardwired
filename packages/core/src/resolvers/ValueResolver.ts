@@ -1,5 +1,5 @@
-import { ContainerContext } from "../container/ContainerContext";
-import { Instance } from "./abstract/AbstractResolvers";
+import { ContainerContext } from '../container/ContainerContext';
+import { Instance } from './abstract/AbstractResolvers';
 
 export class ValueResolver<TReturn> extends Instance<TReturn, []> {
   constructor(private value: TReturn) {
@@ -11,6 +11,6 @@ export class ValueResolver<TReturn> extends Instance<TReturn, []> {
   }
 }
 
-export function value<TDeps extends any[], TValue>(value: TValue): ValueResolver<TValue> {
+export function value<TDeps extends any[], TValue>(value: TValue): Instance<TValue, []> {
   return new ValueResolver(value);
 }
