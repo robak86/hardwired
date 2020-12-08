@@ -10,7 +10,7 @@ import { ContainerEvents } from '../../container/ContainerEvents';
 
 export type BoundResolver = {
   resolverThunk: Thunk<AnyResolver>;
-  dependencies: string[];
+  dependencies: (string | Record<string, string>)[];
 };
 
 export abstract class Instance<TValue, TDeps extends any[]> {
@@ -65,9 +65,17 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     const resolver = unwrapThunk(boundResolver.resolverThunk);
 
     if (resolver.kind === 'instanceResolver') {
-      const depsInstances = boundResolver.dependencies.map(path =>
-        this.get(path.split('.') as any, context, mergedInjections),
-      );
+      const depsInstances = boundResolver.dependencies.map(pathOrPathsRecord => {
+        if (typeof pathOrPathsRecord === 'string') {
+          return this.get(pathOrPathsRecord.split('.') as any, context, mergedInjections);
+        }
+
+        return Object.keys(pathOrPathsRecord).reduce(prop => {
+          const path = pathOrPathsRecord[prop];
+
+          return this.build(path.split('.'), context, otherInjections);
+        });
+      });
       return resolver.build(context, depsInstances);
     }
 

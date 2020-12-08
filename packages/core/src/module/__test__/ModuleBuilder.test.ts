@@ -70,26 +70,25 @@ describe(`Module`, () => {
 
       const definition = dummyClassResolver(TestClass);
 
-      m2.defineStructured('cls', definition, { a: 'string', b: 'number' });
+      m2.define('cls', definition, { a: 'string', b: 'number' });
 
       // @ts-expect-error - wrong dependency name used
-      m2.defineStructured('cls', definition, { a: 'wrong_name', b: 'number' });
-
+      m2.define('cls', definition, { a: 'wrong_name', b: 'number' });
 
       // @ts-expect-error - wrong dependency key
-      m2.defineStructured('cls', definition, { aa: 'string', b: 'number' });
+      m2.define('cls', definition, { aa: 'string', b: 'number' });
 
       // @ts-expect-error - wrong dependencies types passed
-      m2.defineStructured('cls', definition, { a: 'number', b: 'number' });
+      m2.define('cls', definition, { a: 'number', b: 'number' });
 
       // @ts-expect-error - dependencies array is empty
-      m2.defineStructured('cls', definition, { a: 'string' });
+      m2.define('cls', definition, { a: 'string' });
 
       // @ts-expect-error - dependencies array is empty
-      m2.defineStructured('cls', definition, {});
+      m2.define('cls', definition, {});
 
       // @ts-expect-error - dependencies array is not provided
-      m2.defineStructured('cls', definition);
+      m2.define('cls', definition);
     });
   });
 
