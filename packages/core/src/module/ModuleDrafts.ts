@@ -44,7 +44,7 @@ m2.define('cls', dummyClassResolver(TestClass), ['number']);
 // @ts-expect-error - dependencies array is empty
 m2.define('cls', dummyClassResolver(TestClass), []);
 
-m2.defineStructured('asdf', singleton(SomeClass), {});
+m2.defineStructured('asdf', singleton(SomeClass), { a: 'number', b: 'string' });
 
 m2.define('cls', singleton(TestClass), ['number', 'string']);
 m2.defineStructured('cls', singleton(SomeClass), { a: 'number', b: 'string' });

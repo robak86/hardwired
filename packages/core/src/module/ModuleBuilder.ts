@@ -49,17 +49,19 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
   }
 
-
   defineStructured<
     TKey extends string,
     TValue,
     TDepKey extends AllowedKeys<TRecord>,
-    TDepsKeys extends Record<string, TDepKey>
+    TDepsRecord extends Record<TDepsKey, TDepKey>,
+    TDepsKey extends string
   >(
     name: TKey,
-    resolver: Instance<TValue, [PropTypesObject<TDepsKeys, MaterializedRecord<TRecord>>]>,
-    dependencies: TDepsKeys,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsKeys, MaterializedRecord<TRecord>>]>>> {
+    resolver: Instance<TValue, [{ [K in TDepsKey]: PropType<MaterializedRecord<TRecord>, TDepsRecord[K] & string> }]>,
+    dependencies: TDepsRecord,
+  ): ModuleBuilder<
+    TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>]>>
+  > {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
 
     return new ModuleBuilder(
@@ -71,6 +73,57 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
       this.injections,
     );
   }
+
+  defineStructured2<
+    TKey extends string,
+    TValue,
+    TDepKey extends AllowedKeys<TRecord>,
+    TDepsRecord extends Record<string, TDepKey>,
+    // TDepsRecord extends { [K in keyof TDeps]: PropType<MaterializedRecord<TRecord>, TDeps[K] & string> }
+
+    //PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>
+    TDeps extends { [K in keyof TDepsRecord]: PropType<MaterializedRecord<TRecord>, TDepsRecord[K]> }
+  >(
+    name: TKey,
+    resolver: Instance<TValue, [TDeps]>,
+    dependencies: TDepsRecord,
+  ): ModuleBuilder<
+    TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>]>>
+  > {
+    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+
+    return new ModuleBuilder(
+      ModuleId.next(this.moduleId),
+      this.registry.extend(name, {
+        resolverThunk: resolver,
+        dependencies: dependencies || [],
+      }) as any,
+      this.injections,
+    );
+  }
+  // defineStructured<
+  //   TKey extends string,
+  //   TValue,
+  //   TDepKey extends AllowedKeys<TRecord>,
+  //   TDepsKeys extends Record<string, TDepKey>
+  // >(
+  //   name: TKey,
+  //   resolver: Instance<TValue, [PropTypesObject<TDepsKeys, MaterializedRecord<TRecord>>]>,
+  //   dependencies: TDepsKeys,
+  // ): ModuleBuilder<
+  //   TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsKeys, MaterializedRecord<TRecord>>]>>
+  // > {
+  //   invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+  //
+  //   return new ModuleBuilder(
+  //     ModuleId.next(this.moduleId),
+  //     this.registry.extend(name, {
+  //       resolverThunk: resolver,
+  //       dependencies: dependencies || [],
+  //     }) as any,
+  //     this.injections,
+  //   );
+  // }
 
   // TODO: simplify other overloads  similarly as for AbstractModuleResolver
   define<TKey extends string, TValue extends Module<any>>(
@@ -148,9 +201,6 @@ type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> =
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
 
-type PropTypesObject<T extends Record<string, string>, TDeps extends Record<string, unknown>> = {
+type PropTypesObject<T extends Record<string, any>, TDeps extends Record<string, unknown>> = {
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
-
-
-
