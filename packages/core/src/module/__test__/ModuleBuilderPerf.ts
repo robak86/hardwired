@@ -436,7 +436,7 @@ const a = ModuleBuilder.empty('a')
   .define('imported1', () => ab1)
   .define('imported2', () => ab2)
   .define('asdf', dummy(1))
-  .define('cba', singleton(TestClass), ['imported.a', 'imported0.a']);
+  .define('cba', singleton(TestClass), ['imported.a', 'imported0.string']);
 
 const m = ModuleBuilder.empty('');
 

@@ -1,9 +1,10 @@
 import { expectType, TypeEqual } from 'ts-expect';
-import { MaterializeModule, ModuleBuilder } from '../ModuleBuilder';
+import { AvailableInjections, MaterializeModule, ModuleBuilder } from '../ModuleBuilder';
 import { ClassType } from '../../utils/ClassType';
-import { Instance } from '../../resolvers/abstract/AbstractResolvers';
+import { Instance, Module } from '../../resolvers/abstract/AbstractResolvers';
 import { ValueResolver } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
+import { container } from '../../container/Container';
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
@@ -14,118 +15,152 @@ describe(`Module`, () => {
     return singleton(cls);
   };
 
-  it(`creates correct type`, async () => {
-    const m = ModuleBuilder.empty('someModule')
-      .define('key1', dummy(123))
-      .define('key2', dummy(true))
-      .define('key3', dummy('string'))
-      .define(
-        'key4',
-        dummy(() => 'someString'),
-      );
+  class TestClass {
+    constructor(public a: number, public b: string) {}
+  }
 
-    type ExpectedType = {
-      key1: number;
-      key2: boolean;
-      key3: string;
-      key4: () => 'someString';
-    };
+  describe(`define`, () => {
+    it(`creates correct type`, async () => {
+      const m = ModuleBuilder.empty('someModule')
+        .define('key1', dummy(123))
+        .define('key2', dummy(true))
+        .define('key3', dummy('string'))
+        .define(
+          'key4',
+          dummy(() => 'someString'),
+        );
 
-    type Actual = MaterializeModule<typeof m>;
+      type ExpectedType = {
+        key1: number;
+        key2: boolean;
+        key3: string;
+        key4: () => 'someString';
+      };
 
-    expectType<TypeEqual<Actual, ExpectedType>>(true);
-  });
+      type Actual = MaterializeModule<typeof m>;
 
-  it(`providing deps`, async () => {
-    class TestClass {
-      constructor(private a: number, private b: string) {}
-    }
+      expectType<TypeEqual<Actual, ExpectedType>>(true);
+    });
 
-    const m2 = ModuleBuilder.empty('someModule').define('string', dummy('string')).define('number', dummy(123));
+    it(`providing deps`, async () => {
+      const m2 = ModuleBuilder.empty('someModule').define('string', dummy('string')).define('number', dummy(123));
 
-    m2.define('cls', dummyClassResolver(TestClass), ['number', 'string']);
+      m2.define('cls', dummyClassResolver(TestClass), ['number', 'string']);
 
-    // @ts-expect-error - dependencies were passed in the wrong order
-    m2.define('cls', dummyClassResolver(TestClass), ['string', 'number']);
+      // @ts-expect-error - dependencies were passed in the wrong order
+      m2.define('cls', dummyClassResolver(TestClass), ['string', 'number']);
 
-    // @ts-expect-error - on of the dependencies is missing
-    m2.define('cls', dummyClassResolver(TestClass), ['number']);
-
-    // @ts-expect-error - dependencies array is empty
-    m2.define('cls', dummyClassResolver(TestClass), []);
-
-    // @ts-expect-error - dependencies array is not provided
-    m2.define('cls', dummyClassResolver(TestClass));
-  });
-
-  describe(`providing structured deps`, () => {
-    it(`is typesafe`, async () => {
-      class TestClass {
-        constructor(private args: { a: string; b: number }) {}
-      }
-
-      const m2 = ModuleBuilder.empty('someModule') // breakme
-        .define('string', dummy('string'))
-        .define('number', dummy(123));
-
-      const definition = dummyClassResolver(TestClass);
-
-      m2.define('cls', definition, { a: 'string', b: 'number' });
-
-      // @ts-expect-error - wrong dependency name used
-      m2.define('cls', definition, { a: 'wrong_name', b: 'number' });
-
-      // @ts-expect-error - wrong dependency key
-      m2.define('cls', definition, { aa: 'string', b: 'number' });
-
-      // @ts-expect-error - wrong dependencies types passed
-      m2.define('cls', definition, { a: 'number', b: 'number' });
+      // @ts-expect-error - on of the dependencies is missing
+      m2.define('cls', dummyClassResolver(TestClass), ['number']);
 
       // @ts-expect-error - dependencies array is empty
-      m2.define('cls', definition, { a: 'string' });
-
-      // @ts-expect-error - dependencies array is empty
-      m2.define('cls', definition, {});
+      m2.define('cls', dummyClassResolver(TestClass), []);
 
       // @ts-expect-error - dependencies array is not provided
-      m2.define('cls', definition);
+      m2.define('cls', dummyClassResolver(TestClass));
+    });
+
+    describe(`providing structured deps`, () => {
+      it(`is typesafe`, async () => {
+        class TestClass {
+          constructor(private args: { a: string; b: number }) {}
+        }
+
+        const m2 = ModuleBuilder.empty('someModule') // breakme
+          .define('string', dummy('string'))
+          .define('number', dummy(123));
+
+        const definition = dummyClassResolver(TestClass);
+
+        m2.define('cls', definition, { a: 'string', b: 'number' });
+
+        // @ts-expect-error - wrong dependency name used
+        m2.define('cls', definition, { a: 'wrong_name', b: 'number' });
+
+        // @ts-expect-error - wrong dependency key
+        m2.define('cls', definition, { aa: 'string', b: 'number' });
+
+        // @ts-expect-error - wrong dependencies types passed
+        m2.define('cls', definition, { a: 'number', b: 'number' });
+
+        // @ts-expect-error - dependencies array is empty
+        m2.define('cls', definition, { a: 'string' });
+
+        // @ts-expect-error - dependencies array is empty
+        m2.define('cls', definition, {});
+
+        // @ts-expect-error - dependencies array is not provided
+        m2.define('cls', definition);
+      });
+    });
+
+    it(`creates correct types for imports`, async () => {
+      const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
+      const m2 = ModuleBuilder.empty('someModule').define('imported', m1).define('key1', dummy(123));
+
+      type ExpectedType = {
+        key1: number;
+      };
+
+      type Actual = MaterializeModule<typeof m2>;
+
+      expectType<TypeEqual<Actual['imported'], ExpectedType>>(true);
+    });
+
+    it(`creates correct types for replace`, async () => {
+      const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
+
+      const m2 = ModuleBuilder.empty('someModule')
+        .define('imported', m1)
+        .define('key2', dummy('string'))
+        .define('key1', dummy(123));
+
+      const replaced = m2.replace('key1', dummy(123));
+
+      type ExpectedType = {
+        imported: {
+          key1: number;
+        };
+        key2: string;
+        key1: number;
+      };
+
+      expectType<TypeEqual<MaterializeModule<typeof replaced>, ExpectedType>>(true);
+
+      // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
+      m2.replace('key1', dummy('sdf'));
     });
   });
 
-  it(`creates correct types for imports`, async () => {
-    const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
-    const m2 = ModuleBuilder.empty('someModule').define('imported', m1).define('key1', dummy(123));
+  describe(`inject`, () => {
+    it(`returns unchanged module type`, async () => {
+      const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
+      const m2 = ModuleBuilder.empty('someModule').define('imported', m1).define('key1', dummy(123));
 
-    type ExpectedType = {
-      key1: number;
-    };
+      const withInjection = m2.inject(m1);
+    });
 
-    type Actual = MaterializeModule<typeof m2>;
+    it(`does not allow to inject unrelated module`, async () => {
+      const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
+      const m2 = ModuleBuilder.empty('someModule').define('imported', m1).define('key1', dummy(123));
+      const unrelatedModule = ModuleBuilder.empty('someModule').define('differentKey', dummy(123));
 
-    expectType<TypeEqual<Actual['imported'], ExpectedType>>(true);
-  });
+      // @ts-expect-error - unrelated module does not extend m1 (differentKey not compatible with key)
+      const withInjection = m2.inject(unrelatedModule);
+    });
 
-  it(`creates correct types for replace`, async () => {
-    const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
+    it(`replaces deeply nested module`, async () => {
+      const child1 = ModuleBuilder.empty('someModule').define('key1', dummy(123)).define('key2', dummy('someString'));
 
-    const m2 = ModuleBuilder.empty('someModule')
-      .define('imported', m1)
-      .define('key2', dummy('string'))
-      .define('key1', dummy(123));
+      const root = ModuleBuilder.empty('someModule')
+        .define('imported', child1)
+        .define('cls', singleton(TestClass), ['imported.key1', 'imported.key2']);
 
-    const replaced = m2.replace('key1', dummy(123));
+      const rootWithInjection = root.inject(child1.replace('key2', dummy('replacedString')));
+      const c = container(rootWithInjection);
 
-    type ExpectedType = {
-      imported: {
-        key1: number;
-      };
-      key2: string;
-      key1: number;
-    };
-
-    expectType<TypeEqual<MaterializeModule<typeof replaced>, ExpectedType>>(true);
-
-    // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
-    m2.replace('key1', dummy('sdf'));
+      const classInstance = c.get('cls');
+      expect(classInstance.b).toEqual('replacedString');
+    });
   });
 });

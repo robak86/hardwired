@@ -1,10 +1,10 @@
-import { AllowedKeys } from "../path";
-import { PropType } from "../utils/PropType";
-import { ModuleId } from "./ModuleId";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import invariant from "tiny-invariant";
-import { Instance, Module } from "../resolvers/abstract/AbstractResolvers";
-import { Thunk } from "../utils/Thunk";
+import { AllowedKeys } from '../path';
+import { PropType } from '../utils/PropType';
+import { ModuleId } from './ModuleId';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import invariant from 'tiny-invariant';
+import { BoundResolver, Instance, Module } from '../resolvers/abstract/AbstractResolvers';
+import { Thunk } from '../utils/Thunk';
 
 // prettier-ignore
 type UnboxModuleEntry<T> =
@@ -34,7 +34,6 @@ export type ModuleInstancesKeys<TModule extends ModuleBuilder<any>> =
   TModule extends ModuleBuilder<infer TRecord> ?
     ({[K in keyof TRecord]: TRecord[K] extends Instance<infer A, infer B> ? K : never })[keyof TRecord] : unknown
 
-
 type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> = {
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
@@ -43,6 +42,16 @@ type PropTypesObject<T extends Record<string, any>, TDeps extends Record<string,
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
 
+// type ChildModules<TModule extends Module<any>> =
+//   TModule extends Module<infer TRecord> ?  : never
+
+// prettier-ignore
+export type AvailableInjections<TModule extends Module<any>> =
+  TModule extends Module<infer TRecord> ?
+    {
+      [K in keyof TRecord]: TRecord[K] extends Module<any> ? TRecord[K] | AvailableInjections<TRecord[K]> : never;
+    }[keyof TRecord]
+  : never;
 
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends Module<TRecord> {
   static empty(name: string): ModuleBuilder<{}> {
@@ -129,10 +138,11 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     );
   }
 
-  inject(...args: any[]): this {
-    throw new Error('Implement me');
-
-
+  inject(otherModule: AvailableInjections<this>): this {
+    return new ModuleBuilder(
+      ModuleId.next(this.moduleId),
+      this.registry,
+      this.injections.extend(otherModule.moduleId.identity, otherModule),
+    ) as any;
   }
 }
-

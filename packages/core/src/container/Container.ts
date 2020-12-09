@@ -91,7 +91,8 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
       this.containerContext.loadModule(module);
     }
 
-    const resolver = unwrapThunk(module.registry.get(key).resolverThunk);
+    // TODO: add method for accessing given resolver ?
+    const resolver = unwrapThunk((module as any).registry.get(key).resolverThunk);
 
     if (resolver.kind === 'moduleResolver') {
       throw new Error('Cannot get events for module resolver');

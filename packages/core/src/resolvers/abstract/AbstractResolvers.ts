@@ -27,10 +27,12 @@ export abstract class Instance<TValue, TDeps extends any[]> {
 export abstract class Module<TValue extends Record<string, AnyResolver>> {
   kind: 'moduleResolver' = 'moduleResolver';
 
+  _keep!: TValue; // prevent erasing the type
+
   protected constructor(
     public moduleId: ModuleId,
-    public registry: ImmutableSet<{ [K in keyof TValue]: BoundResolver }>,
-    public injections: ImmutableSet<Record<string, Module<any>>>,
+    public registry: ImmutableSet<Record<string, BoundResolver>>,
+    protected injections: ImmutableSet<Record<string, Module<any>>>,
   ) {}
 
   // TODO: replace tuple with `moduleName.instanceName`
@@ -61,19 +63,24 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
 
     const mergedInjections = this.injections.merge(otherInjections);
 
+    console.log('has Injection ', mergedInjections.hasKey(this.moduleId.identity))
+    const moduleResolver = mergedInjections.hasKey(this.moduleId.identity)
+      ? mergedInjections.get(this.moduleId.identity)
+      : this;
+
     const boundResolver: BoundResolver = this.registry.get(moduleOrInstanceKey);
     const resolver = unwrapThunk(boundResolver.resolverThunk);
 
     if (resolver.kind === 'instanceResolver') {
       const depsInstances = boundResolver.dependencies.map(pathOrPathsRecord => {
         if (typeof pathOrPathsRecord === 'string') {
-          return this.get(pathOrPathsRecord.split('.') as any, context, mergedInjections);
+          return moduleResolver.get(pathOrPathsRecord.split('.') as any, context, mergedInjections);
         }
 
         return Object.keys(pathOrPathsRecord).reduce(prop => {
           const path = pathOrPathsRecord[prop];
 
-          return this.build(path.split('.'), context, otherInjections);
+          return moduleResolver.build(path.split('.'), context, otherInjections);
         });
       });
       return resolver.build(context, depsInstances);
