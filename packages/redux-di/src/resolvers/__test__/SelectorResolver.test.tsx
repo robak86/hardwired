@@ -1,11 +1,9 @@
-import { container, module, unit, value } from 'hardwired';
-import { store } from '../StoreResolver';
-import { selector } from '../SelectorResolver';
-import { ContainerProvider, useWatchable } from 'hardwired-react';
-import { render } from '@testing-library/react';
-import React, { FunctionComponent } from 'react';
-import { dispatch } from '../DispatchResolver';
-import { reducer } from '../ReducerResolver';
+import { container, module, unit, value } from "hardwired";
+import { ContainerProvider, useWatchable } from "hardwired-react";
+import { render } from "@testing-library/react";
+import React, { FunctionComponent } from "react";
+
+import { init } from "../StateTypedResolverts";
 
 export type DummyComponentProps = {
   value: string;
@@ -25,6 +23,8 @@ export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, 
 describe(`SelectorResolver`, () => {
   describe(`flat module`, () => {
     function setup() {
+      const { dispatch, reducer, selector, store } = init();
+
       const selectStateValue = (state): string => state.value;
       const updateAction = (newValue: string) => ({ type: 'update', newValue });
       const updateReducer = state => ({ value: 'updated' });
@@ -43,6 +43,7 @@ describe(`SelectorResolver`, () => {
       };
 
       const c = container(unit('empty'));
+      c.load(m)
 
       return render(
         <ContainerProvider container={c}>
@@ -71,7 +72,9 @@ describe(`SelectorResolver`, () => {
       const updateAction = (newValue: string) => ({ type: 'update', newValue });
       const updateReducer = state => ({ value: 'updated' });
 
-      const selectorsModule = module('selectors').define('someSelector', _ => selector(selectStateValue));
+      const { store, selector, reducer, dispatch } = init<{ value: string }>();
+
+      const selectorsModule = module('selectors').define('someSelector', selector(selectStateValue));
 
       const m = module('someModule')
         .define('selectors', () => selectorsModule)

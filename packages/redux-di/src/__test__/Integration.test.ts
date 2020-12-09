@@ -1,6 +1,6 @@
-import { container, module, value } from 'hardwired';
-import { reducer } from '../resolvers/ReducerResolver';
-import { store } from '../resolvers/StoreResolver';
+import { container, module, value } from "hardwired";
+import { store } from "../resolvers/StoreResolver";
+import { init } from "../resolvers/StateTypedResolverts";
 
 describe(`Integration tests`, () => {
   type AppState = {
@@ -14,6 +14,8 @@ describe(`Integration tests`, () => {
         const appReducer2 = jest.fn().mockImplementation(state => state);
 
         const defaultState = { userName: 'Tomasz' };
+
+        const { reducer } = init<typeof defaultState>();
 
         const childModule = module('childModule').define('appReducer2', reducer(appReducer2));
 

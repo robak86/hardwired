@@ -1,36 +1,40 @@
-import { ContainerContext, Instance } from "hardwired";
-import { Action } from "redux";
-import { AlterableStore } from "../stack/AlterableStore";
-import { ContainerEvents } from "hardwired/lib/container/ContainerEvents";
+import { ContainerContext, Instance } from 'hardwired';
+import { Action } from 'redux';
+import { AlterableStore } from '../stack/AlterableStore';
+import { ContainerEvents } from 'hardwired/lib/container/ContainerEvents';
+import { StoreResolver } from './StoreResolver';
+import invariant from 'tiny-invariant';
 
 export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TActionArgs) => void, []> {
-  private storeResolver: Instance<AlterableStore<any>, any>[] | [Instance<AlterableStore<any>, any>] = [];
+  private storeResolver: Record<string, (containerContext: ContainerContext) => AlterableStore<any>> = {};
 
   constructor(private action: (...args: any) => Action) {
     super();
   }
 
-  onInit(registry: ContainerEvents): any {
-    throw new Error('Implement me');
-    // this.storeResolver = registry.findAncestorResolvers(StoreResolver);
-    // invariant(this.storeResolver.length === 1, `Multiple store instances are currently not supported`);
-  }
 
   build(context: ContainerContext): any {
-    throw new Error('TODO');
-    // const storeInstance = this.storeResolver[0];
-    // const store = storeInstance.build(context);
-    //
-    // return (...args) => {
-    //   store.dispatch(this.action(...args));
-    // };
+    const getStore = Object.values(this.storeResolver)[0];
+    invariant(getStore, `Cannot find store instance`); // TODO: maybe we should provide
+    const store = getStore(context);
+
+    return (...args) => {
+      store.dispatch(this.action(...args));
+    };
   }
+
+  onInit(containerEvents: ContainerEvents): any {
+    containerEvents.onSpecificDefinitionAppend.add(StoreResolver, event => {
+      this.storeResolver[event.id] = event.get;
+      invariant(Object.keys(this.storeResolver).length === 1, `Multiple store instances are currently not supported.`);
+    });
+  }
+
 }
 
 export type DispatchResolverParams<TAction extends Action> = {
-  <TActionArgs extends any[]>(actionCreator: (...args: TActionArgs) => TAction): DispatchResolver<any>;
-};
-
-export const dispatch: DispatchResolverParams<Action> = actionCreator => {
-  return new DispatchResolver(actionCreator);
+  <TActionArgs extends any[]>(actionCreator: (...args: TActionArgs) => TAction): Instance<
+    (...args: TActionArgs) => void,
+    []
+  >;
 };

@@ -34,6 +34,16 @@ export type ModuleInstancesKeys<TModule extends ModuleBuilder<any>> =
   TModule extends ModuleBuilder<infer TRecord> ?
     ({[K in keyof TRecord]: TRecord[K] extends Instance<infer A, infer B> ? K : never })[keyof TRecord] : unknown
 
+
+type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> = {
+  [K in keyof T]: PropType<TDeps, T[K] & string>;
+};
+
+type PropTypesObject<T extends Record<string, any>, TDeps extends Record<string, unknown>> = {
+  [K in keyof T]: PropType<TDeps, T[K] & string>;
+};
+
+
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends Module<TRecord> {
   static empty(name: string): ModuleBuilder<{}> {
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
@@ -121,13 +131,8 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
 
   inject(...args: any[]): this {
     throw new Error('Implement me');
+
+
   }
 }
 
-type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> = {
-  [K in keyof T]: PropType<TDeps, T[K] & string>;
-};
-
-type PropTypesObject<T extends Record<string, any>, TDeps extends Record<string, unknown>> = {
-  [K in keyof T]: PropType<TDeps, T[K] & string>;
-};

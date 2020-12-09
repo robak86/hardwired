@@ -9,7 +9,7 @@ describe(`ContainerContext`, () => {
       expect(ctx.hasInAsyncRequestScope(resourceId)).toEqual(false);
 
       const call1 = ctx.usingAsyncScope(resourceId, asyncResourceFactory);
-      expect(ctx.hasInAsyncRequestScope(resourceId));
+      expect(ctx.hasInAsyncRequestScope(resourceId)).toEqual(true);
       const value = await call1;
       expect(value).toEqual(123);
     });

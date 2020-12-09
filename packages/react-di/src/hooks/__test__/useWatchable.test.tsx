@@ -1,11 +1,10 @@
-import { container, module, unit, value } from 'hardwired';
-import { DummyComponent } from '../../testing/DummyComponent';
-import { render } from '@testing-library/react';
-import { ContainerProvider } from '../../components/ContainerProvider';
-import * as React from 'react';
-import { useWatchable } from '../useWatchable';
-import { expectType, TypeEqual } from 'ts-expect';
-import { PropType } from '../../../../core/src/utils/PropType';
+import { container, module, unit, value } from "hardwired";
+import { DummyComponent } from "../../testing/DummyComponent";
+import { render } from "@testing-library/react";
+import { ContainerProvider } from "../../components/ContainerProvider";
+import * as React from "react";
+import { useWatchable } from "../useWatchable";
+import { expectType, TypeEqual } from "ts-expect";
 
 describe(`useWatchable`, () => {
   describe(`using dependencies from root module`, () => {
@@ -32,9 +31,10 @@ describe(`useWatchable`, () => {
 
     it(`returns correct type`, async () => {
       const m1 = module('myModule').define('val1', value('val1'));
-      const v = useWatchable(m1, 'val1');
-
-      expectType<TypeEqual<typeof v, string>>(true);
+      const preventHookCall = () => {
+        const v = useWatchable(m1, 'val1');
+        expectType<TypeEqual<typeof v, string>>(true);
+      };
     });
 
     it(`renders inner component`, async () => {

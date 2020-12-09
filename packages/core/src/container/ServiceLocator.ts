@@ -1,8 +1,7 @@
-import { ContainerContext } from './ContainerContext';
-
-import invariant from 'tiny-invariant';
-import { MaterializedRecord, ModuleBuilder, ModuleEntriesRecord } from '../module/ModuleBuilder';
-import { ImmutableSet } from '../collections/ImmutableSet';
+import { ContainerContext } from "./ContainerContext";
+import invariant from "tiny-invariant";
+import { MaterializedRecord, ModuleBuilder, ModuleEntriesRecord } from "../module/ModuleBuilder";
+import { ImmutableSet } from "../collections/ImmutableSet";
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends ModuleEntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord> & string>(
