@@ -1,16 +1,17 @@
 import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
 import {
-  MaterializedRecord,
-  MaterializeModule,
   ModuleBuilder,
-  ModuleEntriesRecord,
-  ModuleInstancesKeys,
+
+
 } from '../module/ModuleBuilder';
-import { Module } from '../resolvers/abstract/AbstractResolvers';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { unwrapThunk } from '../utils/Thunk';
 import { DependencyResolverEvents } from '../resolvers/abstract/DependencyResolverEvents';
+import {
+  MaterializedRecord,
+  Module
+} from "../resolvers/abstract/Module";
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -28,11 +29,11 @@ type GetMany<D> = {
 };
 
 type ContainerGet<TModule extends ModuleBuilder<any>> = {
-  <K extends ModuleInstancesKeys<TModule> & string>(key: K): MaterializeModule<TModule>[K];
-  <TLazyModule extends ModuleBuilder<any>, K extends ModuleInstancesKeys<TLazyModule> & string>(
+  <K extends Module.InstancesKeys<TModule> & string>(key: K): Module.Materialized<TModule>[K];
+  <TLazyModule extends ModuleBuilder<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     module: TLazyModule,
     key: K,
-  ): MaterializeModule<TLazyModule>[K];
+  ): Module.Materialized<TLazyModule>[K];
 };
 
 export class Container<TModule extends ModuleBuilder<any>, C = {}> {
@@ -83,7 +84,7 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
     this.containerContext.loadModule(module);
   }
 
-  getEvents<TRegistryRecord extends ModuleEntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord> & string>(
+  getEvents<TRegistryRecord extends Module.EntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord> & string>(
     module: Module<TRegistryRecord>,
     key: K,
   ): DependencyResolverEvents {

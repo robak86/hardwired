@@ -1,9 +1,9 @@
-import { module } from "../../module/Module";
 import { dependency } from "../../testing/TestResolvers";
 import { container } from "../Container";
 import { value } from "../../resolvers/ValueResolver";
 import { singleton } from "../../resolvers/ClassSingletonResolver";
 import { ArgsDebug } from "../../testing/ArgsDebug";
+import { module } from "../../module/ModuleBuilder";
 
 describe(`Container`, () => {
   describe(`.get`, () => {

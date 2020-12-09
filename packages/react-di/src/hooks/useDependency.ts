@@ -1,10 +1,10 @@
 import { ModuleBuilder } from "hardwired";
 import { useContainer } from "../components/ContainerContext";
-import { ModuleInstancesKeys } from "hardwired/lib/module/ModuleBuilder";
+import { Module } from "hardwired";
 
 export const useDependency = <
   TModuleBuilder extends ModuleBuilder<any>,
-  K extends ModuleInstancesKeys<TModuleBuilder> & string
+  K extends Module.InstancesKeys<TModuleBuilder> & string
 >(
   module: TModuleBuilder,
   key: K,

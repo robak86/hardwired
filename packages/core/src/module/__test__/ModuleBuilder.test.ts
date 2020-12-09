@@ -1,10 +1,11 @@
 import { expectType, TypeEqual } from 'ts-expect';
-import { AvailableInjections, MaterializeModule, ModuleBuilder } from '../ModuleBuilder';
+import { ModuleBuilder } from '../ModuleBuilder';
 import { ClassType } from '../../utils/ClassType';
-import { Instance, Module } from '../../resolvers/abstract/AbstractResolvers';
+import { Instance } from '../../resolvers/abstract/AbstractResolvers';
 import { ValueResolver } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { container } from '../../container/Container';
+import { Module } from '../../resolvers/abstract/Module';
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
@@ -37,7 +38,7 @@ describe(`Module`, () => {
         key4: () => 'someString';
       };
 
-      type Actual = MaterializeModule<typeof m>;
+      type Actual = Module.Materialized<typeof m>;
 
       expectType<TypeEqual<Actual, ExpectedType>>(true);
     });
@@ -102,7 +103,7 @@ describe(`Module`, () => {
         key1: number;
       };
 
-      type Actual = MaterializeModule<typeof m2>;
+      type Actual = Module.Materialized<typeof m2>;
 
       expectType<TypeEqual<Actual['imported'], ExpectedType>>(true);
     });
@@ -125,7 +126,7 @@ describe(`Module`, () => {
         key1: number;
       };
 
-      expectType<TypeEqual<MaterializeModule<typeof replaced>, ExpectedType>>(true);
+      expectType<TypeEqual<Module.Materialized<typeof replaced>, ExpectedType>>(true);
 
       // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
       m2.replace('key1', dummy('sdf'));

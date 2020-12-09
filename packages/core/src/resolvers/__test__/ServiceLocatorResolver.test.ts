@@ -1,4 +1,3 @@
-import { unit } from "../../module/Module";
 import { value } from "../ValueResolver";
 import { createResolverId } from "../../utils/fastId";
 import { request } from "../ClassRequestResolver";
@@ -6,10 +5,11 @@ import { singleton } from "../ClassSingletonResolver";
 import { serviceLocator } from "../ServiceLocatorResolver";
 import { container } from "../../container/Container";
 import { factory } from "../FactoryResolver";
-import { MaterializeModule } from "../../module/ModuleBuilder";
+import { unit } from "../../module/ModuleBuilder";
 import { expectType, TypeEqual } from "ts-expect";
 import { Instance } from "../abstract/AbstractResolvers";
 import { ServiceLocator } from "../../container/ServiceLocator";
+import { Module } from "../abstract/Module";
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -67,7 +67,7 @@ describe(`ServiceLocatorResolver`, () => {
 
     const www = unit('root').define('locator', serviceLocator());
 
-    type Wtf = MaterializeModule<typeof singletonModule>;
+    type Wtf = Module.Materialized<typeof singletonModule>;
 
     const locator = c.get('locator');
 

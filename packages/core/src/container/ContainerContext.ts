@@ -1,8 +1,8 @@
 import { ModuleId } from "../module/ModuleId";
 import invariant from "tiny-invariant";
 import { PushPromise } from "../utils/PushPromise";
-import { Module } from "../resolvers/abstract/AbstractResolvers";
 import { ContainerEvents } from "./ContainerEvents";
+import { Module } from "../resolvers/abstract/Module";
 
 export type ContainerCacheEntry = {
   value: any;

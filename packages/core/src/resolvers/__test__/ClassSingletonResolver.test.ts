@@ -2,11 +2,11 @@ import { singleton } from '../ClassSingletonResolver';
 import { dependency } from '../../testing/TestResolvers';
 import { container } from '../../container/Container';
 import { createResolverId } from '../../utils/fastId';
-import { unit } from '../../module/Module';
 import { value } from '../ValueResolver';
 import { transient } from '../ClassTransientResolver';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Instance } from '../abstract/AbstractResolvers';
+import { unit } from "../../module/ModuleBuilder";
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {

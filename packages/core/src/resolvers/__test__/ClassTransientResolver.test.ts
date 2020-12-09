@@ -2,9 +2,9 @@ import { transient } from "../ClassTransientResolver";
 import { dependency } from "../../testing/TestResolvers";
 import { container } from "../../container/Container";
 import { createResolverId } from "../../utils/fastId";
-import { unit } from "../../module/Module";
 import { expectType, TypeEqual } from "ts-expect";
 import { Instance } from "../abstract/AbstractResolvers";
+import { unit } from "../../module/ModuleBuilder";
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {

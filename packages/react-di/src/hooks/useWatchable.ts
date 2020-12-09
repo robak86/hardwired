@@ -1,11 +1,11 @@
 import { useContainer } from '../components/ContainerContext';
 import { useEffect, useState } from 'react';
-import { MaterializeModule, ModuleBuilder, ModuleInstancesKeys } from 'hardwired';
+import { Module, ModuleBuilder } from 'hardwired';
 
-export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName extends ModuleInstancesKeys<TModule>>(
+export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
   module: TModule,
   name: TDefinitionName & string,
-) => MaterializeModule<TModule>[TDefinitionName];
+) => Module.Materialized<TModule>[TDefinitionName];
 
 export const useWatchable: WatchableHook = (module, name) => {
   const container = useContainer();

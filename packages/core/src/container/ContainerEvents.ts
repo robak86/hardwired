@@ -1,8 +1,8 @@
 import { SignalEmitter } from "../utils/SignalEmitter";
-import { AnyResolver } from "../module/ModuleBuilder";
 import { Instance } from "../resolvers/abstract/AbstractResolvers";
 import { ClassType } from "../utils/ClassType";
 import { ContainerContext } from "./ContainerContext";
+import { AnyResolver } from "../resolvers/abstract/Module";
 
 type InstanceGetter<TValue> = {
   id: string;

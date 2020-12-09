@@ -1,6 +1,7 @@
 import { value, ValueResolver } from "../../resolvers/ValueResolver";
 import { singleton } from "../../resolvers/ClassSingletonResolver";
-import { MaterializeModule, ModuleBuilder } from "../ModuleBuilder";
+import { ModuleBuilder } from "../ModuleBuilder";
+import { Module } from "../../resolvers/abstract/Module";
 
 const dummy = <TValue>(value: TValue): ValueResolver<TValue> => {
   return new ValueResolver(value);
@@ -521,4 +522,4 @@ const mmm = m
   .define('b', value('string'))
   .define('sdf', singleton(TestClass), ['imported.num', 'b'])
   .define('sdf2', singleton(TestClassUsing), ['sdf']);
-type Mat = MaterializeModule<typeof mmm>;
+type Mat = Module.Materialized<typeof mmm>;
