@@ -15,11 +15,11 @@ export type ModuleEntriesRecord = Record<string, AnyResolver>;
 export type AnyResolver = Instance<any, any> | Module<any>;
 
 // prettier-ignore
-export type MaterializeModule<TModule extends ModuleBuilder<any>> =
-  TModule extends ModuleBuilder<infer TRecord> ? { //TODO: should be inferred from AbstractModuleResolver<infer TRecord>
-        [K in keyof TRecord & string]: TRecord[K] extends ModuleBuilder<infer TModule> ? MaterializeModule<TRecord[K]> :
+export type MaterializeModule<TModule extends Module<any>> =
+  TModule extends Module<infer TRecord> ? { //TODO: should be inferred from AbstractModuleResolver<infer TRecord>
+        [K in keyof TRecord & string]: TRecord[K] extends Module<infer TModule> ? MaterializeModule<TRecord[K]> :
 
-                               TRecord[K] extends Instance<infer TInstance, any> ? TInstance : 'co do chuja'
+                               TRecord[K] extends Instance<infer TInstance, any> ? TInstance : unknown
   } : never;
 
 // prettier-ignore
@@ -30,8 +30,8 @@ export type MaterializedRecord<TRecord extends Record<string, AnyResolver>> = {
 };
 
 // prettier-ignore
-export type ModuleInstancesKeys<TModule extends ModuleBuilder<any>> =
-  TModule extends ModuleBuilder<infer TRecord> ?
+export type ModuleInstancesKeys<TModule extends Module<any>> =
+  TModule extends Module<infer TRecord> ?
     ({[K in keyof TRecord]: TRecord[K] extends Instance<infer A, infer B> ? K : never })[keyof TRecord] : unknown
 
 type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> = {
@@ -58,7 +58,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
   }
 
-  // TODO: simplify other overloads  similarly as for AbstractModuleResolver
+  // TODO: add checks for TKey collision (no accidental overrides)
   define<TKey extends string, TValue extends Module<any>>(
     name: TKey,
     resolver: Thunk<TValue>,

@@ -63,10 +63,15 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
 
     const mergedInjections = this.injections.merge(otherInjections);
 
-    console.log('has Injection ', mergedInjections.hasKey(this.moduleId.identity))
-    const moduleResolver = mergedInjections.hasKey(this.moduleId.identity)
-      ? mergedInjections.get(this.moduleId.identity)
-      : this;
+    // console.log(
+    //   'has Injection ',
+    //   mergedInjections.hasKey(this.moduleId.identity),
+    //   this.moduleId.identity,
+    //   this.moduleId.identity,
+    // );
+    // const moduleResolver = mergedInjections.hasKey(this.moduleId.identity)
+    //   ? mergedInjections.get(this.moduleId.identity)
+    //   : this;
 
     const boundResolver: BoundResolver = this.registry.get(moduleOrInstanceKey);
     const resolver = unwrapThunk(boundResolver.resolverThunk);
@@ -74,20 +79,24 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     if (resolver.kind === 'instanceResolver') {
       const depsInstances = boundResolver.dependencies.map(pathOrPathsRecord => {
         if (typeof pathOrPathsRecord === 'string') {
-          return moduleResolver.get(pathOrPathsRecord.split('.') as any, context, mergedInjections);
+          return this.get(pathOrPathsRecord.split('.') as any, context, mergedInjections);
         }
 
         return Object.keys(pathOrPathsRecord).reduce(prop => {
           const path = pathOrPathsRecord[prop];
 
-          return moduleResolver.build(path.split('.'), context, otherInjections);
+          return this.build(path.split('.'), context, mergedInjections);
         });
       });
       return resolver.build(context, depsInstances);
     }
 
     if (resolver.kind === 'moduleResolver') {
-      return resolver.build([instanceName], context, otherInjections);
+      const moduleResolver = mergedInjections.hasKey(resolver.moduleId.identity)
+        ? mergedInjections.get(resolver.moduleId.identity)
+        : resolver;
+
+      return moduleResolver.build([instanceName], context, mergedInjections);
     }
   }
 

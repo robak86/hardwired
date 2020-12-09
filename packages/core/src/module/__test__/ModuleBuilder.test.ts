@@ -149,10 +149,10 @@ describe(`Module`, () => {
       const withInjection = m2.inject(unrelatedModule);
     });
 
-    it(`replaces deeply nested module`, async () => {
-      const child1 = ModuleBuilder.empty('someModule').define('key1', dummy(123)).define('key2', dummy('someString'));
+    it(`replaces child module`, async () => {
+      const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
 
-      const root = ModuleBuilder.empty('someModule')
+      const root = ModuleBuilder.empty('root')
         .define('imported', child1)
         .define('cls', singleton(TestClass), ['imported.key1', 'imported.key2']);
 
@@ -160,6 +160,27 @@ describe(`Module`, () => {
       const c = container(rootWithInjection);
 
       const classInstance = c.get('cls');
+      expect(classInstance.b).toEqual('replacedString');
+    });
+
+    it(`replaces all imports of given module`, async () => {
+      const root = ModuleBuilder.empty('root')
+        .define('import1', () => child1)
+        .define('import2', () => child1)
+        .define('cls', singleton(TestClass), ['import1.key1', 'import2.key2']);
+
+      const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
+
+      const rootWithInjection = root.inject(
+        child1 //breakme
+          .replace('key1', dummy(456))
+          .replace('key2', dummy('replacedString')),
+      );
+
+      const c = container(rootWithInjection);
+
+      const classInstance = c.get('cls');
+      expect(classInstance.a).toEqual(456);
       expect(classInstance.b).toEqual('replacedString');
     });
   });
