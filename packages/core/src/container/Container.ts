@@ -3,7 +3,7 @@ import invariant from 'tiny-invariant';
 import { ModuleBuilder, unit } from '../module/ModuleBuilder';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { unwrapThunk } from '../utils/Thunk';
-import { DependencyResolverEvents } from '../resolvers/abstract/DependencyResolverEvents';
+import { InstanceEvents } from './InstanceEvents';
 import { MaterializedRecord, Module } from '../resolvers/abstract/Module';
 
 type GetMany<D> = {
@@ -80,7 +80,7 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
   getEvents<TRegistryRecord extends Module.EntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord> & string>(
     module: Module<TRegistryRecord>,
     key: K,
-  ): DependencyResolverEvents {
+  ): InstanceEvents {
     if (!this.containerContext.hasModule(module.moduleId)) {
       this.containerContext.loadModule(module);
     }

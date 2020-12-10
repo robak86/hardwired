@@ -5,8 +5,8 @@ import { createResolverId } from '../../utils/fastId';
 import { value } from '../ValueResolver';
 import { transient } from '../ClassTransientResolver';
 import { expectType, TypeEqual } from 'ts-expect';
-import { Instance } from '../abstract/AbstractResolvers';
 import { unit } from '../../module/ModuleBuilder';
+import { Instance } from "../abstract/Instance";
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {

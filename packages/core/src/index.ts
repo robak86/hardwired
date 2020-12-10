@@ -20,7 +20,6 @@ export { ServiceLocator } from './container/ServiceLocator';
 export type { ClassType } from './utils/ClassType';
 export { EventsEmitter } from './utils/EventsEmitter';
 
-export * from './resolvers/abstract/AbstractResolvers';
 export { unit } from "./module/ModuleBuilder";
 export { module } from "./module/ModuleBuilder";
 export { Module } from "./resolvers/abstract/Module";
@@ -28,3 +27,4 @@ export type { PropTypesObject } from "./resolvers/abstract/Module";
 export type { PropTypesTuple } from "./resolvers/abstract/Module";
 export type { MaterializedRecord } from "./resolvers/abstract/Module";
 export type { AnyResolver } from "./resolvers/abstract/Module";
+export { Instance } from "./resolvers/abstract/Instance";

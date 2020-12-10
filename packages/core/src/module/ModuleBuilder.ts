@@ -2,7 +2,6 @@ import { PropType } from "../utils/PropType";
 import { ModuleId } from "./ModuleId";
 import { ImmutableSet } from "../collections/ImmutableSet";
 import invariant from "tiny-invariant";
-import { Instance } from "../resolvers/abstract/AbstractResolvers";
 import { Thunk } from "../utils/Thunk";
 import {
   AnyResolver,
@@ -11,6 +10,7 @@ import {
   PropTypesObject,
   PropTypesTuple,
 } from "../resolvers/abstract/Module";
+import { Instance } from "../resolvers/abstract/Instance";
 
 
 export const module = (name: string) => ModuleBuilder.empty(name);

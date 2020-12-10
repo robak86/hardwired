@@ -1,6 +1,6 @@
 import { ContainerContext } from "../container/ContainerContext";
 import { ClassType } from "../utils/ClassType";
-import { Instance } from "./abstract/AbstractResolvers";
+import { Instance } from "./abstract/Instance";
 
 export interface Factory<TReturn> {
   build(): TReturn;

@@ -7,9 +7,9 @@ import { container } from '../../container/Container';
 import { factory } from '../FactoryResolver';
 import { unit } from '../../module/ModuleBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
-import { Instance } from '../abstract/AbstractResolvers';
 import { ServiceLocator } from '../../container/ServiceLocator';
 import { Module } from '../abstract/Module';
+import { Instance } from "../abstract/Instance";
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {

@@ -64,8 +64,7 @@ expect(container(updated).get('c')).toEqual({
 
   - if not, maybe this memoization is pointless??
 
-
-### React 
+### React
 
 - add dependency injection to sagas, using custom effects
 
@@ -98,9 +97,9 @@ const effectMiddleware = containerCache => next => effect => {
     return (
       <Container1>
         <Container2>
-          useSelector() // has access to state merged from states defined in Container1 and in Container2 dispatch() //
-          should dispatch actions defined only in Container1 and Container2 (to corresponding sagas) or should be
-          dispatched to the whole application
+          useSelector() // has access to state merged from states defined in Container1 and in
+          Container2 dispatch() // should dispatch actions defined only in Container1 and Container2
+          (to corresponding sagas) or should be dispatched to the whole application
         </Container2>
       </Container1>
     );
@@ -110,6 +109,12 @@ const effectMiddleware = containerCache => next => effect => {
 - sagas, reducers, states should be propagated to root container - it's a global dependency. How to reuse it in child modules ?
 
 ### React
+
+- shouldn't we use explicit dependencies for redux stack ?
+
+  - e.g. providing store instance for selector definition ?
+    - this would require different modules organization (store (with all domains stuff) has to be leaf module) and
+      modules holding selectors would need it import store module (which in terms of composition or dependencies direction makes totally sense)
 
 - how to connect it with saga ?
 

@@ -1,6 +1,6 @@
 import { ContainerContext } from "../container/ContainerContext";
 import { ClassType } from "../utils/ClassType";
-import { Instance } from "./abstract/AbstractResolvers";
+import { Instance } from "./abstract/Instance";
 
 export class ClassRequestResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   constructor(private klass) {

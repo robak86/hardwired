@@ -1,11 +1,11 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { ModuleBuilder } from '../ModuleBuilder';
 import { ClassType } from '../../utils/ClassType';
-import { Instance } from '../../resolvers/abstract/AbstractResolvers';
 import { value, ValueResolver } from "../../resolvers/ValueResolver";
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { container } from '../../container/Container';
 import { Module } from '../../resolvers/abstract/Module';
+import { Instance } from "../../resolvers/abstract/Instance";
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {

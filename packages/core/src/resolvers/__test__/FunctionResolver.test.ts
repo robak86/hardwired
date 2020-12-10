@@ -3,9 +3,9 @@ import { container } from '../../container/Container';
 import { func } from '../FunctionResolver';
 import { transient } from '../ClassTransientResolver';
 import { expectType, TypeEqual } from 'ts-expect';
-import { Instance } from '../abstract/AbstractResolvers';
 import { TestClass } from '../../module/__test__/ModuleBuilderPerf';
 import { unit } from "../../module/ModuleBuilder";
+import { Instance } from "../abstract/Instance";
 
 describe(`FunctionResolver`, () => {
   function setup() {

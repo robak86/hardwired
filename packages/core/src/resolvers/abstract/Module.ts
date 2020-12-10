@@ -2,10 +2,11 @@ import { ModuleId } from '../../module/ModuleId';
 import { ImmutableSet } from '../../collections/ImmutableSet';
 import { ContainerContext } from '../../container/ContainerContext';
 import invariant from 'tiny-invariant';
-import { unwrapThunk } from '../../utils/Thunk';
+import { Thunk, unwrapThunk } from "../../utils/Thunk";
 import { ContainerEvents } from '../../container/ContainerEvents';
-import { BoundResolver, Instance } from './AbstractResolvers';
 import { PropType } from '../../utils/PropType';
+import { Instance } from "./Instance";
+
 
 // prettier-ignore
 export type AnyResolver = Instance<any, any> | Module<any>;
@@ -51,6 +52,11 @@ export namespace Module {
   export type Paths<TRecord extends Record<string, AnyResolver>> = {
     [K in keyof TRecord & string]: TRecord[K] extends Module<infer TChildEntry> ? `${K}.${Paths<TChildEntry>}` : K;
   }[keyof TRecord & string];
+
+  export type BoundResolver = {
+    resolverThunk: Thunk<AnyResolver>;
+    dependencies: (string | Record<string, string>)[];
+  };
 }
 
 export abstract class Module<TValue extends Record<string, AnyResolver>> {
@@ -60,7 +66,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
 
   protected constructor(
     public moduleId: ModuleId,
-    public registry: ImmutableSet<Record<string, BoundResolver>>,
+    public registry: ImmutableSet<Record<string, Module.BoundResolver>>,
     protected injections: ImmutableSet<Record<string, Module<any>>>,
   ) {}
 
@@ -79,7 +85,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
 
     const mergedInjections = this.injections.merge(otherInjections);
 
-    const boundResolver: BoundResolver = this.registry.get(moduleOrInstanceKey);
+    const boundResolver: Module.BoundResolver = this.registry.get(moduleOrInstanceKey);
     const resolver = unwrapThunk(boundResolver.resolverThunk);
 
     if (resolver.kind === 'instanceResolver') {

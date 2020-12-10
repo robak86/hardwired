@@ -1,6 +1,6 @@
 import { ContainerContext } from "../container/ContainerContext";
-import { Instance } from "../resolvers/abstract/AbstractResolvers";
 import { ContainerEvents } from "../container/ContainerEvents";
+import { Instance } from "../resolvers/abstract/Instance";
 
 export class DummyResolver<TValue> extends Instance<TValue, []> {
   constructor(private value: TValue) {

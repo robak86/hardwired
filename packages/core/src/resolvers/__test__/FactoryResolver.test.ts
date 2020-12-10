@@ -2,7 +2,7 @@ import { factory, Factory, FactoryResolver } from '../FactoryResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import { createResolverId } from '../../utils/fastId';
 import { expectType, TypeEqual } from 'ts-expect';
-import { Instance } from '../abstract/AbstractResolvers';
+import { Instance } from "../abstract/Instance";
 
 describe(`FactoryResolver`, () => {
   describe(`factory`, () => {
