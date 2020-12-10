@@ -1,5 +1,5 @@
-import { EventsEmitter } from "../utils/EventsEmitter";
+import { SignalEmitter } from '../utils/SignalEmitter';
 
 export class InstanceEvents {
-  invalidateEvents: EventsEmitter<any> = new EventsEmitter<any>();
+  invalidateEvents: SignalEmitter<[]> = new SignalEmitter<[]>();
 }

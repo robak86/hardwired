@@ -14,5 +14,10 @@ export class SignalEmitter<TEventType extends any[]> {
   emit(...eventType: TEventType) {
     this.listeners.forEach(listener => listener(...eventType));
   }
+
+
+  get count(): number {
+    return this.listeners.length;
+  }
 }
 

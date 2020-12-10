@@ -5,26 +5,20 @@ import { ContainerEvents } from "./ContainerEvents";
 import { Module } from "../resolvers/abstract/Module";
 import { InstanceEvents } from "./InstanceEvents";
 
-export type ContainerCacheEntry = {
-  value: any;
-};
-
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
   static empty(): ContainerContext {
     return new ContainerContext();
   }
 
-  public requestScope: Record<string, ContainerCacheEntry> = {};
+  public requestScope: Record<string, any> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
-  public initializedModules: Record<string, any> = {};
   public containerEvents = new ContainerEvents();
   private instancesEvents: Record<string, InstanceEvents> = {};
 
   protected constructor(
-    public globalScope: Record<string, ContainerCacheEntry> = {},
+    public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
-    private _isScoped: boolean = false,
   ) {}
 
   getInstancesEvents(resolverId: string): InstanceEvents {
@@ -32,15 +26,11 @@ export class ContainerContext {
   }
 
   setForGlobalScope(uuid: string, instance: any) {
-    this.globalScope[uuid] = {
-      value: instance,
-    };
+    this.globalScope[uuid] = instance;
   }
 
   setForRequestScope(uuid: string, instance: any) {
-    this.requestScope[uuid] = {
-      value: instance,
-    };
+    this.requestScope[uuid] = instance;
   }
 
   hasInGlobalScope(uuid: string): boolean {
@@ -68,28 +58,16 @@ export class ContainerContext {
 
   getFromRequestScope(uuid: string) {
     invariant(!!this.requestScope[uuid], `Dependency with given uuid doesn't exists in request scope`);
-    return this.requestScope[uuid].value;
+    return this.requestScope[uuid];
   }
 
   getFromGlobalScope(uuid: string) {
     invariant(!!this.globalScope[uuid], `Dependency with given uuid doesn't exists in global scope`);
-    return this.globalScope[uuid].value;
+    return this.globalScope[uuid];
   }
 
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.modulesResolvers, true);
-  }
-
-  isScoped(): boolean {
-    return this._isScoped;
-  }
-
-  isModuleInitialized(moduleId: ModuleId): boolean {
-    return !!this.initializedModules[moduleId.id];
-  }
-
-  markModuleAsInitialized(moduleId: ModuleId) {
-    this.initializedModules[moduleId.id] = true;
+    return new ContainerContext(this.globalScope, this.modulesResolvers);
   }
 
   loadModule(module: Module<any>) {

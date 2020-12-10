@@ -1,11 +1,10 @@
-import { ModuleId } from '../../module/ModuleId';
-import { ImmutableSet } from '../../collections/ImmutableSet';
-import { ContainerContext } from '../../container/ContainerContext';
-import invariant from 'tiny-invariant';
-import { Thunk, unwrapThunk } from '../../utils/Thunk';
-import { ContainerEvents } from '../../container/ContainerEvents';
-import { PropType } from '../../utils/PropType';
-import { Instance } from './Instance';
+import { ModuleId } from "../../module/ModuleId";
+import { ImmutableSet } from "../../collections/ImmutableSet";
+import { ContainerContext } from "../../container/ContainerContext";
+import invariant from "tiny-invariant";
+import { Thunk, unwrapThunk } from "../../utils/Thunk";
+import { PropType } from "../../utils/PropType";
+import { Instance } from "./Instance";
 
 // prettier-ignore
 export type AnyResolver = Instance<any, any> | Module<any>;
