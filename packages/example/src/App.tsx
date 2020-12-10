@@ -3,7 +3,7 @@ import { ContainerProvider } from "hardwired-react";
 import { container, unit } from "hardwired";
 import { MatrixContainer } from "./matrix/components/MatrixContainer";
 
-const appContainer = container(unit('empty'));
+const appContainer = container();
 
 function App() {
   return (

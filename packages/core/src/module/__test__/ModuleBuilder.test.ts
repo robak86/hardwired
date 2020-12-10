@@ -1,11 +1,11 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { ModuleBuilder } from '../ModuleBuilder';
 import { ClassType } from '../../utils/ClassType';
-import { value, ValueResolver } from "../../resolvers/ValueResolver";
+import { value, ValueResolver } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { container } from '../../container/Container';
 import { Module } from '../../resolvers/abstract/Module';
-import { Instance } from "../../resolvers/abstract/Instance";
+import { Instance } from '../../resolvers/abstract/Instance';
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
@@ -66,7 +66,7 @@ describe(`Module`, () => {
         .define('someNumber', value(123))
         .define('someString', value('content'));
 
-      const m2 = ModuleBuilder.empty('someModule').define('imported', () => child)
+      const m2 = ModuleBuilder.empty('someModule').define('imported', () => child);
 
       m2.define('cls', dummyClassResolver(TestClass), ['imported.someNumber', 'imported.someString']);
 
@@ -180,9 +180,9 @@ describe(`Module`, () => {
         .define('cls', singleton(TestClass), ['imported.key1', 'imported.key2']);
 
       const rootWithInjection = root.inject(child1.replace('key2', dummy('replacedString')));
-      const c = container(rootWithInjection);
+      const c = container();
 
-      const classInstance = c.get('cls');
+      const classInstance = c.get(rootWithInjection, 'cls');
       expect(classInstance.b).toEqual('replacedString');
     });
 
@@ -200,9 +200,9 @@ describe(`Module`, () => {
           .replace('key2', dummy('replacedString')),
       );
 
-      const c = container(rootWithInjection);
+      const c = container();
 
-      const classInstance = c.get('cls');
+      const classInstance = c.get(rootWithInjection, 'cls');
       expect(classInstance.a).toEqual(456);
       expect(classInstance.b).toEqual('replacedString');
     });

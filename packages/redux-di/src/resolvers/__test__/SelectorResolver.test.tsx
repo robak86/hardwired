@@ -1,4 +1,4 @@
-import { container, module, unit, value } from "hardwired";
+import { container, module, value } from "hardwired";
 import { ContainerProvider, useWatchable } from "hardwired-react";
 import { render } from "@testing-library/react";
 import React, { FunctionComponent } from "react";
@@ -42,8 +42,8 @@ describe(`SelectorResolver`, () => {
         return <DummyComponent value={value} onUpdateClick={onUpdate} />;
       };
 
-      const c = container(unit('empty'));
-      c.load(m)
+      const c = container();
+      c.load(m);
 
       return render(
         <ContainerProvider container={c}>
@@ -89,7 +89,7 @@ describe(`SelectorResolver`, () => {
         return <DummyComponent value={value} onUpdateClick={onUpdate} />;
       };
 
-      const c = container(unit('empty'));
+      const c = container();
       c.load(m);
 
       return render(

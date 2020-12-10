@@ -16,7 +16,7 @@ describe(`useWatchable`, () => {
         return <DummyComponent value={value} />;
       };
 
-      const c = container(unit('empty'));
+      const c = container();
 
       return {
         wrapper: render(

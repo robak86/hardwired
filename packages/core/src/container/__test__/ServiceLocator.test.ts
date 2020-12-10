@@ -18,7 +18,7 @@ describe(`ServiceLocator`, () => {
         .define('cls', singleton(TestClass), ['import.someNumber', 'import.someString']);
 
       const mWithInjection = m.inject(child.replace('someNumber', value(456)));
-      const c = container(unit('empty'));
+      const c = container();
 
       const locator = c.get(m, 'locator');
       const cls = locator.withScope(({ get }) => get(mWithInjection, 'cls'));

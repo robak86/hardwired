@@ -2,8 +2,8 @@
 
 - Resolvers should be stateless in case where e.g. single module is used by multiple separated containers
 
-  - `DependencyResolverEvents` should be stored in ContainerContext and could be lazily initialized - not all
-    resolvers use this feature
+  - ~~`DependencyResolverEvents` should be stored in ContainerContext and could be lazily initialized - not all
+    resolvers use this feature~~ [x]
 
 - is it important for the resolver to know if discovered dependency comes from a parent or from a child module ?
 
@@ -64,6 +64,42 @@ expect(container(updated).get('c')).toEqual({
 
   - if not, maybe this memoization is pointless??
 
+# Container
+
+```
+
+  // Instead multiple function overloads use tuples TDepsKeys extends [TDepKey, ...TDepKey[]]
+  // getMany: GetMany<MaterializedRecord<TRegistryRecord>> = (...args: any[]) => {
+  //   const cache = this.containerContext.forNewRequest();
+  //
+  //   return args.map(key => {
+  //     const dependencyFactory = this.rootModuleLookup.getDependencyResolver(key as any);
+  //
+  //     invariant(dependencyFactory, `Dependency with name: ${key} does not exist`);
+  //
+  //     return dependencyFactory.get(cache);
+  //   }) as any;
+  // };
+
+  // Using proxy object
+  // asObject(): MaterializeModule<TModule> {
+  //   const obj = {};
+  //   const cache = this.containerContext.forNewRequest();
+  //   this.rootModuleLookup.forEachDependency((key, factory) => {
+  //     obj[key] = factory.get(cache);
+  //   });
+  //
+  //   return obj as any;
+  // }
+```
+
+```
+
+  withScope<TReturn>(container: (container: Container<TModule>) => TReturn): TReturn {
+    throw new Error('Implement me');
+  }
+```
+
 ### React
 
 - add dependency injection to sagas, using custom effects
@@ -97,9 +133,9 @@ const effectMiddleware = containerCache => next => effect => {
     return (
       <Container1>
         <Container2>
-          useSelector() // has access to state merged from states defined in Container1 and in
-          Container2 dispatch() // should dispatch actions defined only in Container1 and Container2
-          (to corresponding sagas) or should be dispatched to the whole application
+          useSelector() // has access to state merged from states defined in Container1 and in Container2 dispatch() //
+          should dispatch actions defined only in Container1 and Container2 (to corresponding sagas) or should be
+          dispatched to the whole application
         </Container2>
       </Container1>
     );

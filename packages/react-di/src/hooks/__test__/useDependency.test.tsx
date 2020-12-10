@@ -16,7 +16,7 @@ describe(`useDependency`, () => {
       return <DummyComponent value={val1} />;
     };
 
-    const c = container(unit('empty'));
+    const c = container();
 
     return render(
       <ContainerProvider container={c}>

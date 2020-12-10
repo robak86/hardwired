@@ -9,7 +9,7 @@ import { unit } from '../../module/ModuleBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { ServiceLocator } from '../../container/ServiceLocator';
 import { Module } from '../abstract/Module';
-import { Instance } from "../abstract/Instance";
+import { Instance } from '../abstract/Instance';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -47,8 +47,8 @@ describe(`ServiceLocatorResolver`, () => {
   });
 
   it(`returns request scoped instances`, async () => {
-    const c = container(root);
-    const locator = c.get('locator');
+    const c = container();
+    const locator = c.get(root, 'locator');
 
     const fromLocator = locator.withScope(({ get }) => {
       const call1 = get(singletonModule, 'singleton');
@@ -63,9 +63,9 @@ describe(`ServiceLocatorResolver`, () => {
   });
 
   it(`reuses singleton instances from container`, async () => {
-    const c = container(root);
+    const c = container();
 
-    const locator = c.get('locator');
+    const locator = c.get(root, 'locator');
 
     const fromContainer = c.get(singletonModule, 'singleton');
     const fromLocator = locator.withScope(({ get }) => {
@@ -76,8 +76,8 @@ describe(`ServiceLocatorResolver`, () => {
   });
 
   it(`reuses values built by factories from container`, async () => {
-    const c = container(root);
-    const locator = c.get('locator');
+    const c = container();
+    const locator = c.get(root, 'locator');
 
     const fromContainer = c.get(root, 'producedByFactory');
     const fromLocator = locator.withScope(({ get }) => {

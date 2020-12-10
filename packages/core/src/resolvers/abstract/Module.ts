@@ -79,6 +79,32 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     return instance;
   }
 
+  getResolver(key: string): AnyResolver {
+    const { resolverThunk } = this.registry.get(key);
+    return unwrapThunk(resolverThunk);
+  }
+
+  onInit(containerContext: ContainerContext) {
+    this.registry.forEach((boundResolver, key) => {
+      const { resolverThunk, dependencies } = boundResolver;
+      const resolver = unwrapThunk(resolverThunk);
+
+      const dependenciesIds = this.getDependenciesResolvers(dependencies).map(r => r.id);
+
+      resolver.onInit && resolver.onInit(containerContext, dependenciesIds);
+    });
+
+    this.registry.forEach((boundResolver, key) => {
+      const resolver = unwrapThunk(boundResolver.resolverThunk);
+
+      if (resolver.kind === 'instanceResolver') {
+        containerContext.containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
+          return this.get(key as any, containerContext, this.injections);
+        });
+      }
+    });
+  }
+
   protected build(path: string, context: ContainerContext, otherInjections) {
     const [moduleOrInstanceKey, instanceName] = path.split('.');
 
@@ -111,62 +137,40 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     }
   }
 
-  protected getResolver(key: string): AnyResolver {
-    const { resolverThunk } = this.registry.get(key);
-    return unwrapThunk(resolverThunk);
-  }
+  protected getDependenciesResolvers(dependencies: (string | Record<string, string>)[]): Instance<any, any>[] {
+    return dependencies
+      .flatMap(dep => {
+        if (typeof dep === 'string') {
+          return dep;
+        }
+        return Object.values(dep);
+      })
 
-  onInit(containerContext: ContainerContext) {
-    this.registry.forEach((boundResolver, key) => {
-      const { resolverThunk, dependencies } = boundResolver;
-      const resolver = unwrapThunk(resolverThunk);
+      .map(dep => {
+        const [moduleOrInstance, instance] = dep.split('.');
 
-      const dependenciesIds = dependencies
-        .flatMap(dep => {
-          if (typeof dep === 'string') {
-            return dep;
-          }
-          return Object.values(dep);
-        })
+        if (instance) {
+          const childModule = this.getResolver(moduleOrInstance);
+          invariant(
+            childModule instanceof Module,
+            `Expected module resolver for key=${moduleOrInstance} got ${childModule?.constructor?.name}`,
+          );
 
-        .map(dep => {
-          const [moduleOrInstance, instance] = dep.split('.');
+          const instanceResolver = childModule.getResolver(instance);
+          invariant(
+            instanceResolver instanceof Instance,
+            `Expected instance resolver for key=${instance} got ${instanceResolver?.constructor?.name}`,
+          );
+          return instanceResolver;
+        } else {
+          const instanceResolver = this.getResolver(moduleOrInstance);
 
-          if (instance) {
-            const childModule = this.getResolver(moduleOrInstance);
-            invariant(
-              childModule instanceof Module,
-              `Expected module resolver for key=${moduleOrInstance} got ${childModule?.constructor?.name}`,
-            );
-
-            const instanceResolver = childModule.getResolver(instance);
-            invariant(
-              instanceResolver instanceof Instance,
-              `Expected instance resolver for key=${instance} got ${instanceResolver?.constructor?.name}`,
-            );
-            return instanceResolver.id;
-          } else {
-            const instanceResolver = this.getResolver(moduleOrInstance);
-
-            invariant(
-              instanceResolver instanceof Instance,
-              `Expected instance resolver for key=${moduleOrInstance} got ${instanceResolver?.constructor?.name}`,
-            );
-            return instanceResolver.id;
-          }
-        });
-
-      resolver.onInit && resolver.onInit(containerContext, dependenciesIds);
-    });
-
-    this.registry.forEach((boundResolver, key) => {
-      const resolver = unwrapThunk(boundResolver.resolverThunk);
-
-      if (resolver.kind === 'instanceResolver') {
-        containerContext.containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
-          return this.get(key as any, containerContext, this.injections);
-        });
-      }
-    });
+          invariant(
+            instanceResolver instanceof Instance,
+            `Expected instance resolver for key=${moduleOrInstance} got ${instanceResolver?.constructor?.name}`,
+          );
+          return instanceResolver;
+        }
+      });
   }
 }

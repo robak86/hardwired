@@ -1,16 +1,16 @@
-import { dependency } from "../../testing/TestResolvers";
-import { container } from "../Container";
-import { value } from "../../resolvers/ValueResolver";
-import { singleton } from "../../resolvers/ClassSingletonResolver";
-import { ArgsDebug } from "../../testing/ArgsDebug";
-import { module } from "../../module/ModuleBuilder";
+import { dependency } from '../../testing/TestResolvers';
+import { container } from '../Container';
+import { value } from '../../resolvers/ValueResolver';
+import { singleton } from '../../resolvers/ClassSingletonResolver';
+import { ArgsDebug, TestClass } from '../../testing/ArgsDebug';
+import { module } from '../../module/ModuleBuilder';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
     it(`return correct value`, async () => {
       const m = module('root').define('a', dependency(123));
-      const c = container(m);
-      const a = c.get('a');
+      const c = container();
+      const a = c.get(m, 'a');
       expect(a).toEqual(123);
     });
   });
@@ -25,7 +25,7 @@ describe(`Container`, () => {
       .define('child2', () => child2);
 
     it(`returns correct value`, async () => {
-      const c = container(parent);
+      const c = container();
 
       const cValue = c.get(child2, 'c');
       expect(cValue).toEqual('cValue');
@@ -35,7 +35,7 @@ describe(`Container`, () => {
       const notRegistered = module('notUsed') // breakme
         .define('a', dependency(1));
 
-      const c = container(parent);
+      const c = container();
 
       expect(c.get(notRegistered, 'a')).toEqual(1);
     });
@@ -46,13 +46,13 @@ describe(`Container`, () => {
       it(`returns replaced value`, async () => {
         const m = module('m').define('a', value(1));
         const updated = m.replace('a', value(2));
-        expect(container(updated).get('a')).toEqual(2);
+        expect(container().get(updated, 'a')).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
         const m = module('m').define('a', value(1)).define('b', value('b'));
         const updated = m.replace('a', value(2));
-        expect(container(updated).get('b')).toEqual('b');
+        expect(container().get(updated, 'b')).toEqual('b');
       });
 
       it.skip(`can use all previously registered definitions`, async () => {
@@ -65,7 +65,7 @@ describe(`Container`, () => {
         // @ts-expect-error - one can replace definition only with the same type - string is not compatible with ArgsDebug Class
         const updated = m.replace('b', value('bReplaced'));
 
-        expect(container(m).get('b').args).toEqual(['a']);
+        expect(container().get(m, 'b').args).toEqual(['a']);
       });
 
       it.skip(`can use all previously registered definitions`, async () => {
@@ -74,12 +74,12 @@ describe(`Container`, () => {
           .define('b', singleton(ArgsDebug), ['a'])
           .define('c', singleton(ArgsDebug), ['b']);
 
-        expect(container(m).get('b').args).toEqual(['a']);
+        expect(container().get(m, 'b').args).toEqual(['a']);
 
         const updated = m.replace('b', singleton(ArgsDebug), ['b']);
 
-        expect(container(updated).get('b')).toEqual('bReplaced');
-        expect(container(updated).get('c')).toEqual({
+        expect(container().get(updated, 'b')).toEqual('bReplaced');
+        expect(container().get(updated, 'c')).toEqual({
           args: ['bReplaced'],
         });
       });
@@ -88,7 +88,7 @@ describe(`Container`, () => {
 
   describe(`lazy loading`, () => {
     function setup() {
-      const c = container(module('emptyRoot'));
+      const c = container();
 
       const parentChildValue = dependency('parentChild');
       const parentChild = module('parentChild').define('value', parentChildValue);
@@ -122,6 +122,25 @@ describe(`Container`, () => {
       jest.spyOn(parentValue, 'onInit');
       c.get(parent, 'value');
       expect(parentValue.onInit).toHaveBeenCalled();
+    });
+
+    it(`calls onInit with dependencies resolvers id's`, async () => {
+      const numberResolver = value(123);
+      const stringResolver = value('some string');
+      const singletonResolver = singleton(TestClass);
+
+      (singletonResolver as any).onInit = () => null;
+      jest.spyOn(singletonResolver, 'onInit');
+
+      const m = module('parent')
+        .define('someNumber', numberResolver)
+        .define('someString', stringResolver)
+        .define('cls', singletonResolver, ['someNumber', 'someString']);
+
+      const c = container();
+      c.load(m);
+
+      expect(singletonResolver.onInit).toHaveBeenCalledWith(c.getContext(), [numberResolver.id, stringResolver.id]);
     });
 
     it(`calls onInit on child definition`, async () => {

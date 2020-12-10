@@ -1,10 +1,10 @@
-import { dependency, TestTransientResolver } from "../../testing/TestResolvers";
-import { container } from "../../container/Container";
-import { func } from "../FunctionResolver";
-import { transient } from "../ClassTransientResolver";
-import { expectType, TypeEqual } from "ts-expect";
-import { unit } from "../../module/ModuleBuilder";
-import { Instance } from "../abstract/Instance";
+import { dependency, TestTransientResolver } from '../../testing/TestResolvers';
+import { container } from '../../container/Container';
+import { func } from '../FunctionResolver';
+import { transient } from '../ClassTransientResolver';
+import { expectType, TypeEqual } from 'ts-expect';
+import { unit } from '../../module/ModuleBuilder';
+import { Instance } from '../abstract/Instance';
 
 describe(`FunctionResolver`, () => {
   function setup() {
@@ -51,10 +51,10 @@ describe(`FunctionResolver`, () => {
 
         const set = module.define('fn', func(someFunction, 0));
 
-        const c = container(set);
+        const c = container();
 
-        const fnBuild1 = c.get('fn');
-        const fnBuild2 = c.get('fn');
+        const fnBuild1 = c.get(set,'fn');
+        const fnBuild2 = c.get(set,'fn');
 
         expect(fnBuild1).toBe(fnBuild2);
       });
@@ -66,11 +66,11 @@ describe(`FunctionResolver`, () => {
         const someFunction = (a: number) => a;
 
         const set = module.define('fn', func(someFunction, 1), ['singleton']);
-        const c = container(set);
+        const c = container();
 
-        const fnBuild1 = c.get('fn');
-        const fnBuild2 = c.get('fn');
-        const singleton = c.get('singleton');
+        const fnBuild1 = c.get(set, 'fn');
+        const fnBuild2 = c.get(set, 'fn');
+        const singleton = c.get(set, 'singleton');
 
         expect(singletonFactorySpy).toHaveBeenCalledTimes(3);
         expect(fnBuild1).toBe(fnBuild2);
@@ -86,10 +86,10 @@ describe(`FunctionResolver`, () => {
 
         const set = module.define('fn', func(someFunction, 1), ['transient']);
 
-        const c = container(set);
+        const c = container();
 
-        const fnBuild1 = c.get('fn');
-        const fnBuild2 = c.get('fn');
+        const fnBuild1 = c.get(set, 'fn');
+        const fnBuild2 = c.get(set, 'fn');
 
         expect(transientFactorySpy).toHaveBeenCalledTimes(2);
         expect(fnBuild1).not.toBe(fnBuild2);
@@ -103,10 +103,10 @@ describe(`FunctionResolver`, () => {
         const someFunction = (a: number, b: number) => [a, b];
 
         const set = module.define('fn', func(someFunction, 2), ['transient', 'singleton']);
-        const c = container(set);
+        const c = container();
 
-        const fnBuild1 = c.get('fn');
-        const fnBuild2 = c.get('fn');
+        const fnBuild1 = c.get(set, 'fn');
+        const fnBuild2 = c.get(set, 'fn');
 
         expect(singletonFactorySpy).toHaveBeenCalledTimes(2);
         expect(transientFactorySpy).toHaveBeenCalledTimes(2);

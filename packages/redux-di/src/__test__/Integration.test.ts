@@ -1,6 +1,6 @@
-import { container, module, value } from "hardwired";
-import { store } from "../resolvers/StoreResolver";
-import { init } from "../resolvers/StateTypedResolverts";
+import { container, module, value } from 'hardwired';
+import { store } from '../resolvers/StoreResolver';
+import { init } from '../resolvers/StateTypedResolverts';
 
 describe(`Integration tests`, () => {
   type AppState = {
@@ -19,21 +19,21 @@ describe(`Integration tests`, () => {
 
         const childModule = module('childModule').define('appReducer2', reducer(appReducer2));
 
-        const m = module('m')
+        const root = module('m')
           .define('childStoreModule', childModule)
           .define('defaultState', value(defaultState))
           .define('store', store(), ['defaultState'])
           .define('appReducer1', reducer(appReducer1))
           .define('appReducer2', reducer(appReducer2));
 
-        const c = container(m);
+        const c = container();
 
-        return { container: c, appReducer1, appReducer2, defaultState };
+        return { container: c, appReducer1, appReducer2, defaultState, root };
       }
 
       it(`calls reducers with correct params`, async () => {
-        const { container, appReducer1, appReducer2, defaultState } = setup();
-        const store = container.get('store');
+        const { container, appReducer1, appReducer2, defaultState, root } = setup();
+        const store = container.get(root, 'store');
 
         expect(store.getState()).toEqual(defaultState);
 

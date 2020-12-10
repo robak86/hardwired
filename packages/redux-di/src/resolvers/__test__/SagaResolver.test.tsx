@@ -10,7 +10,7 @@ describe(`SagaResolver`, () => {
       .define('someSaga', saga(someSaga))
       .define('defaultState', value({ v: 'someDefaultValue' }))
       .define('store', store(), ['defaultState']);
-    const c = container(m);
+    const c = container();
 
     return { c };
   }
