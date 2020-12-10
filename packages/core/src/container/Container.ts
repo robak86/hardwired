@@ -1,17 +1,10 @@
-import { ContainerContext } from './ContainerContext';
-import invariant from 'tiny-invariant';
-import {
-  ModuleBuilder,
-
-
-} from '../module/ModuleBuilder';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import { unwrapThunk } from '../utils/Thunk';
-import { DependencyResolverEvents } from '../resolvers/abstract/DependencyResolverEvents';
-import {
-  MaterializedRecord,
-  Module
-} from "../resolvers/abstract/Module";
+import { ContainerContext } from "./ContainerContext";
+import invariant from "tiny-invariant";
+import { ModuleBuilder } from "../module/ModuleBuilder";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import { unwrapThunk } from "../utils/Thunk";
+import { DependencyResolverEvents } from "../resolvers/abstract/DependencyResolverEvents";
+import { MaterializedRecord, Module } from "../resolvers/abstract/Module";
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -55,7 +48,7 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
 
       invariant(module, `Dependency with name: ${nameOrModule} does not exist`);
 
-      return module.get(nameOrModule.split('.') as any, this.containerContext, ImmutableSet.empty()) as any;
+      return module.get(nameOrModule, this.containerContext, ImmutableSet.empty()) as any;
     }
 
     if (nameOrModule instanceof Module) {
@@ -69,7 +62,7 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
         `Cannot find module for module name ${nameOrModule.moduleId.name} and id ${nameOrModule.moduleId.id} while getting definition named: ${name}`,
       );
 
-      return module.get(name.split('.'), this.containerContext);
+      return module.get(name, this.containerContext);
     }
 
     invariant(false, 'Invalid module or name');

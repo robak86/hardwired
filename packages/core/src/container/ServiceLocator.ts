@@ -25,7 +25,7 @@ export class ServiceLocator {
         invariant(moduleResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
 
         // TODO: use real injections
-        return moduleResolver.get([key], requestContext, ImmutableSet.empty()) as any;
+        return moduleResolver.get(key, requestContext, ImmutableSet.empty()) as any;
       },
     });
   }

@@ -65,31 +65,18 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     protected injections: ImmutableSet<Record<string, Module<any>>>,
   ) {}
 
-  // TODO: replace tuple with `moduleName.instanceName`
-  get<TInstanceKey extends keyof TValue>(
-    path: [TInstanceKey],
+  get<TPath extends Module.Paths<TValue>>(
+    path: TPath,
     context: ContainerContext,
-    injections?: ImmutableSet<any>,
-  ): MaterializedRecord<TValue>[TInstanceKey];
-  get<TModuleKey extends keyof TValue, TInstanceKey extends keyof MaterializedRecord<TValue>[TModuleKey]>(
-    path: [TModuleKey, TInstanceKey],
-    context: ContainerContext,
-    injections?: ImmutableSet<any>,
-  ): MaterializedRecord<TValue>[TModuleKey][TInstanceKey];
-  get<TModuleKey extends keyof TValue, TInstanceKey extends keyof MaterializedRecord<TValue>[TModuleKey]>(
-    path: string[],
-    context: ContainerContext,
-    injections: ImmutableSet<any> = ImmutableSet.empty(),
-  ): unknown {
-    invariant(path.length === 1 || path.length === 2, `Module builder called with wrong path ${path}`);
-
+    injections = ImmutableSet.empty(),
+  ): PropType<MaterializedRecord<TValue>, TPath> {
     const instance = this.build(path, context, injections);
     invariant(instance, `Module returned undefined value for ${path}`);
     return instance;
   }
 
-  protected build(path: string[], context: ContainerContext, otherInjections) {
-    const [moduleOrInstanceKey, instanceName] = path;
+  protected build(path: string, context: ContainerContext, otherInjections) {
+    const [moduleOrInstanceKey, instanceName] = path.split('.');
 
     const mergedInjections = this.injections.merge(otherInjections);
 
@@ -99,13 +86,13 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     if (resolver.kind === 'instanceResolver') {
       const depsInstances = boundResolver.dependencies.map(pathOrPathsRecord => {
         if (typeof pathOrPathsRecord === 'string') {
-          return this.get(pathOrPathsRecord.split('.') as any, context, mergedInjections);
+          return this.get(pathOrPathsRecord as Module.Paths<TValue>, context, mergedInjections);
         }
 
         return Object.keys(pathOrPathsRecord).reduce(prop => {
           const path = pathOrPathsRecord[prop];
 
-          return this.build(path.split('.'), context, mergedInjections);
+          return this.build(path, context, mergedInjections);
         });
       });
       return resolver.build(context, depsInstances);
@@ -116,7 +103,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
         ? mergedInjections.get(resolver.moduleId.identity)
         : resolver;
 
-      return moduleResolver.build([instanceName], context, mergedInjections);
+      return moduleResolver.build(instanceName, context, mergedInjections);
     }
   }
 
@@ -131,7 +118,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
 
       if (resolver.kind === 'instanceResolver') {
         containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
-          return this.get([key], containerContext, this.injections);
+          return this.get(key as any, containerContext, this.injections);
         });
       }
     });
