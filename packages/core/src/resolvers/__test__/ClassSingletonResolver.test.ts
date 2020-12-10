@@ -6,7 +6,7 @@ import { value } from '../ValueResolver';
 import { transient } from '../ClassTransientResolver';
 import { expectType, TypeEqual } from 'ts-expect';
 import { Instance } from '../abstract/AbstractResolvers';
-import { unit } from "../../module/ModuleBuilder";
+import { unit } from '../../module/ModuleBuilder';
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {
@@ -54,7 +54,7 @@ describe(`ClassSingletonResolver`, () => {
     const root = unit('root')
       .define('child1', () => child1)
       .define('child2', () => child2)
-      //
+
       .define('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
@@ -89,6 +89,21 @@ describe(`ClassSingletonResolver`, () => {
       const theSingleton = c.get(singletonModule, 'theSingleton');
       expect(consumerFromChild1.testClassInstance.id).toEqual(theSingleton.id);
       expect(consumerFromChild2.testClassInstance.id).toEqual(theSingleton.id);
+    });
+  });
+
+  describe(`multiple containers`, () => {
+    it(`does not shares instances across multiple containers`, async () => {
+      const m = unit('root')
+        .define('someValue', dependency('someString'))
+        .define('a', singleton(TestClass), ['someValue']);
+
+      const c1 = container();
+      const instanceFromC1 = c1.get(m, 'a');
+
+      const c2 = container();
+      const instanceFromC2 = c2.get(m, 'a');
+      expect(instanceFromC1.id).not.toEqual(instanceFromC2.id);
     });
   });
 });

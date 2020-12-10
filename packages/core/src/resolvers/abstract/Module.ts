@@ -8,7 +8,6 @@ import { BoundResolver, Instance } from './AbstractResolvers';
 import { PropType } from '../../utils/PropType';
 
 // prettier-ignore
-
 export type AnyResolver = Instance<any, any> | Module<any>;
 
 export type MaterializedRecord<TRecord extends Record<string, AnyResolver>> = {
@@ -30,7 +29,7 @@ export type PropTypesObject<T extends Record<string, any>, TDeps extends Record<
 // prettier-ignore
 export namespace Module {
   export type Materialized<TModule extends Module<any>> =
-    TModule extends Module<infer TRecord> ? { //TODO: should be inferred from AbstractModuleResolver<infer TRecord>
+    TModule extends Module<infer TRecord> ? {
       [K in keyof TRecord & string]: TRecord[K] extends Module<infer TModule> ? Materialized<TRecord[K]> :
 
         TRecord[K] extends Instance<infer TInstance, any> ? TInstance : unknown

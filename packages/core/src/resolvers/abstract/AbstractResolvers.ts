@@ -1,19 +1,19 @@
-import { ContainerContext } from "../../container/ContainerContext";
-import { createResolverId } from "../../utils/fastId";
-import { Thunk } from "../../utils/Thunk";
-import { DependencyResolverEvents } from "./DependencyResolverEvents";
-import { ContainerEvents } from "../../container/ContainerEvents";
-import { AnyResolver } from "./Module";
+import { ContainerContext } from '../../container/ContainerContext';
+import { createResolverId } from '../../utils/fastId';
+import { Thunk } from '../../utils/Thunk';
+import { DependencyResolverEvents } from './DependencyResolverEvents';
+import { ContainerEvents } from '../../container/ContainerEvents';
+import { AnyResolver } from './Module';
 
 export type BoundResolver = {
   resolverThunk: Thunk<AnyResolver>;
   dependencies: (string | Record<string, string>)[];
 };
 
-// prettier-ignore
 export namespace Instance {
-  export type Unbox<T> =
-    T extends Instance<infer TInstance, any> ? TInstance : "cannot unwrap instance type from Instance"
+  export type Unbox<T> = T extends Instance<infer TInstance, any>
+    ? TInstance
+    : 'cannot unwrap instance type from Instance';
 }
 
 export abstract class Instance<TValue, TDeps extends any[]> {
@@ -26,4 +26,3 @@ export abstract class Instance<TValue, TDeps extends any[]> {
 
   onInit?(containerEvents: ContainerEvents): void;
 }
-

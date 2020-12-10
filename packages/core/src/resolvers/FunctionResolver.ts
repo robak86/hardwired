@@ -1,25 +1,24 @@
-import { curry } from '../utils/curry';
-import { ContainerContext } from '../container/ContainerContext';
-import { ClassRequestResolver } from './ClassRequestResolver';
-import { Instance } from './abstract/AbstractResolvers';
-import Parameters = jest.Parameters;
+import { curry } from "../utils/curry";
+import { ContainerContext } from "../container/ContainerContext";
+import { Instance } from "./abstract/AbstractResolvers";
+import { PartiallyApplied } from "../utils/PartiallyApplied";
+import { PartiallyAppliedArgs } from "../utils/PartiallyAppliedArgs";
 
-// TODO: not sure if this should be singleton ?
-//  or we should memoize the function by dependencySelect ?  +1
-//  or it shouldn't never be memoized ?
 export class FunctionResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   private readonly curriedFunction;
-  private readonly uncurriedFunction;
+  private readonly unCurriedFunction;
   private previousDependencies: any[] = [];
 
   constructor(fn: (...args: any[]) => any) {
     super();
-    this.uncurriedFunction = fn;
+    this.unCurriedFunction = fn;
     this.curriedFunction = curry(fn);
   }
 
   build(cache: ContainerContext, currentDependencies): TReturn {
-    const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
+    const requiresRevalidation = currentDependencies.some(
+      (val, idx) => val !== this.previousDependencies[idx],
+    );
 
     if (requiresRevalidation) {
       this.previousDependencies = currentDependencies;
@@ -38,59 +37,15 @@ export class FunctionResolver<TReturn, TDeps extends any[]> extends Instance<TRe
   }
 
   private buildFunction(params) {
-    if (params.length === this.uncurriedFunction.length) {
-      return () => this.uncurriedFunction(...params);
+    if (params.length === this.unCurriedFunction.length) {
+      return () => this.unCurriedFunction(...params);
     } else {
       return this.curriedFunction(...params);
     }
   }
 }
 
-type Wtf = PartiallyApplied<(a: number, b: string, c: boolean) => number, 0>;
-type Wtf1 = PartiallyApplied<(a: number, b: string, c: boolean) => number, 1>;
-type Wtf2 = PartiallyApplied<(a: number, b: string, c: boolean) => number, 2>;
-type Wtf3 = PartiallyApplied<(a: number, b: string, c: boolean) => number, 3>;
-
-// prettier-ignore
-type PartiallyApplied<TFunc extends (...args:any[]) => any, TDepth extends 0 | 1 | 2 | 3> =
- 0 extends  TDepth ? TFunc :
- 1 extends  TDepth ? PartiallyApplied1<Parameters<TFunc>, ReturnType<TFunc>> :
- 2 extends  TDepth ? PartiallyApplied2<Parameters<TFunc>, ReturnType<TFunc>> :
- 3 extends  TDepth ? PartiallyApplied3<Parameters<TFunc>, ReturnType<TFunc>> : never
-
-// prettier-ignore
-type PartiallyApplied1<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, ...infer TRest] ? (...rest:TRest) => TReturn : 'args count mismatch'
-
-// prettier-ignore
-type PartiallyApplied2<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, infer TArg2, ...infer TRest] ? (...rest:TRest) => TReturn : 'args count mismatch'
-
-// prettier-ignore
-type PartiallyApplied3<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, infer TArg2,infer TArg3, ...infer TRest] ?  (...rest:TRest) => TReturn : 'args count mismatch'
-
-// TODO: add recursive type
-// prettier-ignore
-type PartiallyAppliedArgs<TFunc extends (...args:any[]) => any, TDepth extends 0 | 1 | 2 | 3> =
-  0 extends  TDepth ? [] :
-    1 extends  TDepth ? PartiallyAppliedArgs1<Parameters<TFunc>, ReturnType<TFunc>> :
-      2 extends  TDepth ? PartiallyAppliedArgs2<Parameters<TFunc>, ReturnType<TFunc>> :
-        3 extends  TDepth ? PartiallyAppliedArgs3<Parameters<TFunc>, ReturnType<TFunc>> : never
-
-// prettier-ignore
-type PartiallyAppliedArgs1<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, ...infer TRest] ? [TArg1] : []
-
-// prettier-ignore
-type PartiallyAppliedArgs2<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, infer TArg2, ...infer TRest] ? [TArg1, TArg2] : []
-
-// prettier-ignore
-type PartiallyAppliedArgs3<TArgs extends any[], TReturn> =
-  TArgs extends [infer TArg1, infer TArg2,infer TArg3, ...infer TRest] ?  [TArg1, TArg2, TArg3] : []
-
-export function func<TValue extends (...args: any[]) => any, TDepth extends 0 | 1 | 2 | 3>(
+export function func<TValue extends (...args: any[]) => any, TDepth extends 0 | 1 | 2 | 3 | 4>(
   cls: TValue,
   depth: TDepth,
 ): Instance<PartiallyApplied<TValue, TDepth>, PartiallyAppliedArgs<TValue, TDepth>> {

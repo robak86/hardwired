@@ -2,7 +2,7 @@ import { expectType, TypeEqual } from 'ts-expect';
 import { ModuleBuilder } from '../ModuleBuilder';
 import { ClassType } from '../../utils/ClassType';
 import { Instance } from '../../resolvers/abstract/AbstractResolvers';
-import { ValueResolver } from '../../resolvers/ValueResolver';
+import { value, ValueResolver } from "../../resolvers/ValueResolver";
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { container } from '../../container/Container';
 import { Module } from '../../resolvers/abstract/Module';
@@ -53,6 +53,28 @@ describe(`Module`, () => {
 
       // @ts-expect-error - on of the dependencies is missing
       m2.define('cls', dummyClassResolver(TestClass), ['number']);
+
+      // @ts-expect-error - dependencies array is empty
+      m2.define('cls', dummyClassResolver(TestClass), []);
+
+      // @ts-expect-error - dependencies array is not provided
+      m2.define('cls', dummyClassResolver(TestClass));
+    });
+
+    it(`providing deps from imported modules`, async () => {
+      const child = ModuleBuilder.empty('child')
+        .define('someNumber', value(123))
+        .define('someString', value('content'));
+
+      const m2 = ModuleBuilder.empty('someModule').define('imported', () => child)
+
+      m2.define('cls', dummyClassResolver(TestClass), ['imported.someNumber', 'imported.someString']);
+
+      // @ts-expect-error - dependencies were passed in the wrong order
+      m2.define('cls', dummyClassResolver(TestClass), ['imported.someString', 'imported.someNumber']);
+
+      // @ts-expect-error - on of the dependencies is missing
+      m2.define('cls', dummyClassResolver(TestClass), ['imported.someNumber']);
 
       // @ts-expect-error - dependencies array is empty
       m2.define('cls', dummyClassResolver(TestClass), []);

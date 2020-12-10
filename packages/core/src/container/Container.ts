@@ -1,10 +1,10 @@
-import { ContainerContext } from "./ContainerContext";
-import invariant from "tiny-invariant";
-import { ModuleBuilder } from "../module/ModuleBuilder";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import { unwrapThunk } from "../utils/Thunk";
-import { DependencyResolverEvents } from "../resolvers/abstract/DependencyResolverEvents";
-import { MaterializedRecord, Module } from "../resolvers/abstract/Module";
+import { ContainerContext } from './ContainerContext';
+import invariant from 'tiny-invariant';
+import { ModuleBuilder, unit } from '../module/ModuleBuilder';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { unwrapThunk } from '../utils/Thunk';
+import { DependencyResolverEvents } from '../resolvers/abstract/DependencyResolverEvents';
+import { MaterializedRecord, Module } from '../resolvers/abstract/Module';
 
 type GetMany<D> = {
   <K extends keyof D>(key: K): [D[K]];
@@ -85,7 +85,6 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
       this.containerContext.loadModule(module);
     }
 
-    // TODO: add method for accessing given resolver ?
     const resolver = unwrapThunk((module as any).registry.get(key).resolverThunk);
 
     if (resolver.kind === 'moduleResolver') {
@@ -117,7 +116,10 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
   // }
 }
 
-export function container<TModule extends ModuleBuilder<any>>(m: TModule, ctx?: any): Container<TModule> {
-  const container = new Container(m, ContainerContext.empty(), ctx);
+export function container(): Container<ModuleBuilder<{}>>;
+export function container<TModule extends ModuleBuilder<any>>(m: TModule): Container<TModule>;
+export function container<TModule extends ModuleBuilder<any>>(m?: TModule): unknown {
+  const mod = m ? m : unit('root');
+  const container = new Container(mod, ContainerContext.empty());
   return container as any;
 }

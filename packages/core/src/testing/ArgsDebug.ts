@@ -5,3 +5,7 @@ export class ArgsDebug {
     this.args = args;
   }
 }
+
+export class TestClass {
+  constructor(public someNumber: number, public someString: string) {}
+}
