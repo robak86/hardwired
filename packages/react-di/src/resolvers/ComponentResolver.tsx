@@ -19,7 +19,7 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends I
     super();
   }
 
-  onInit(lookup: ContainerEvents) {
+  onInit(ctx: ContainerContext) {
     Object.keys(this.propsDependencies).forEach(currentKey => {
       const dependencyFactory = this.propsDependencies[currentKey];
       dependencyFactory.events.invalidateEvents.add(() => {

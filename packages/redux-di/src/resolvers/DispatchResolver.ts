@@ -1,9 +1,8 @@
-import { ContainerContext, Instance } from 'hardwired';
-import { Action } from 'redux';
-import { AlterableStore } from '../stack/AlterableStore';
-import { ContainerEvents } from 'hardwired/lib/container/ContainerEvents';
-import { StoreResolver } from './StoreResolver';
-import invariant from 'tiny-invariant';
+import { ContainerContext, Instance } from "hardwired";
+import { Action } from "redux";
+import { AlterableStore } from "../stack/AlterableStore";
+import { StoreResolver } from "./StoreResolver";
+import invariant from "tiny-invariant";
 
 export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TActionArgs) => void, []> {
   private storeResolver: Record<string, (containerContext: ContainerContext) => AlterableStore<any>> = {};
@@ -23,8 +22,8 @@ export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TA
     };
   }
 
-  onInit(containerEvents: ContainerEvents): any {
-    containerEvents.onSpecificDefinitionAppend.add(StoreResolver, event => {
+  onInit(ctx: ContainerContext): any {
+    ctx.containerEvents.onSpecificDefinitionAppend.add(StoreResolver, event => {
       this.storeResolver[event.id] = event.get;
       invariant(Object.keys(this.storeResolver).length === 1, `Multiple store instances are currently not supported.`);
     });

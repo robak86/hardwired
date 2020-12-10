@@ -33,13 +33,13 @@ export class StoreResolver<TAppState> extends Instance<AlterableStore<TAppState>
     }
   }
 
-  onInit(events: ContainerEvents): any {
+  onInit(ctx: ContainerContext): any {
     // TODO: add synchronize method -> pass resolver class + object for holding factories
-    events.onSpecificDefinitionAppend.add(ReducerResolver, resolver => {
+    ctx.containerEvents.onSpecificDefinitionAppend.add(ReducerResolver, resolver => {
       this.reducersResolvers[resolver.id] = resolver.get;
     });
 
-    events.onSpecificDefinitionAppend.add(SagaResolver, resolver => {
+    ctx.containerEvents.onSpecificDefinitionAppend.add(SagaResolver, resolver => {
       this.sagasResolvers[resolver.id] = resolver.get;
     });
   }

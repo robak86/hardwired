@@ -32,8 +32,8 @@ export class SelectorResolver<T> extends Instance<T, []> {
     return selectedState;
   }
 
-  onInit(containerEvents: ContainerEvents): any {
-    containerEvents.onSpecificDefinitionAppend.add(StoreResolver, event => {
+  onInit(ctx: ContainerContext): any {
+    ctx.containerEvents.onSpecificDefinitionAppend.add(StoreResolver, event => {
       this.storeResolver[event.id] = event.get;
       invariant(Object.keys(this.storeResolver).length === 1, `Multiple store instances are currently not supported.`);
     });

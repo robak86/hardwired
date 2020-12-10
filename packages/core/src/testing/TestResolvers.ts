@@ -10,7 +10,7 @@ export class DummyResolver<TValue> extends Instance<TValue, []> {
   build(cache: ContainerContext): TValue {
     return this.value;
   }
-  onInit(lookup: ContainerEvents) {
+  onInit(lookup: ContainerContext) {
     return undefined;
   }
 }

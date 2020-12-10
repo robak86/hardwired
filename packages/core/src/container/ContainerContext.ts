@@ -17,7 +17,7 @@ export class ContainerContext {
   public requestScope: Record<string, ContainerCacheEntry> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public initializedModules: Record<string, any> = {};
-  private containerEvents = new ContainerEvents();
+  public containerEvents = new ContainerEvents();
 
   protected constructor(
     public globalScope: Record<string, ContainerCacheEntry> = {},
@@ -89,7 +89,7 @@ export class ContainerContext {
   loadModule(module: Module<any>) {
     if (!this.hasModule(module.moduleId)) {
       this.addModule(module.moduleId, module);
-      module.onInit && module.onInit(this.containerEvents);
+      module.onInit && module.onInit(this);
     }
   }
 

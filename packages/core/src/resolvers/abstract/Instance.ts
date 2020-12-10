@@ -18,5 +18,5 @@ export abstract class Instance<TValue, TDeps extends any[]> {
 
   abstract build(context: ContainerContext, deps: TDeps): TValue;
 
-  onInit?(containerEvents: ContainerEvents): void;
+  onInit?(context: ContainerContext): void;
 }

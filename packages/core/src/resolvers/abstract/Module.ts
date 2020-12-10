@@ -112,17 +112,17 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     }
   }
 
-  onInit(containerEvents: ContainerEvents) {
+  onInit(containerContext: ContainerContext) {
     this.registry.forEach((boundResolver, key) => {
       const resolver = unwrapThunk(boundResolver.resolverThunk);
-      resolver.onInit && resolver.onInit(containerEvents);
+      resolver.onInit && resolver.onInit(containerContext);
     });
 
     this.registry.forEach((boundResolver, key) => {
       const resolver = unwrapThunk(boundResolver.resolverThunk);
 
       if (resolver.kind === 'instanceResolver') {
-        containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
+        containerContext.containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
           return this.get(key as any, containerContext, this.injections);
         });
       }
