@@ -20,12 +20,13 @@ export class ComponentResolver<TComponent extends React.ComponentType> extends I
   }
 
   onInit(ctx: ContainerContext) {
-    Object.keys(this.propsDependencies).forEach(currentKey => {
-      const dependencyFactory = this.propsDependencies[currentKey];
-      dependencyFactory.events.invalidateEvents.add(() => {
-        this.onDependencyInvalidated.emit();
-      });
-    }, {});
+    // Object.keys(this.propsDependencies).forEach(currentKey => {
+    //   const dependencyFactory = this.propsDependencies[currentKey];
+    //
+    //   ctx.getInstancesEvents(this.id).invalidateEvents.add(() => {
+    //     this.onDependencyInvalidated.emit();
+    //   });
+    // }, {});
   }
 
   // TODO: should we apply some cache ?

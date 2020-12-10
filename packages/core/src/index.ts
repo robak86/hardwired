@@ -5,7 +5,6 @@ export { ContainerContext } from './container/ContainerContext';
 export { singleton, ClassSingletonResolver } from './resolvers/ClassSingletonResolver';
 
 export * from './module/ModuleBuilder';
-
 export { factory, FactoryResolver } from './resolvers/FactoryResolver';
 export type { Factory } from './resolvers/FactoryResolver';
 

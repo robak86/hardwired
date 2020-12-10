@@ -20,7 +20,7 @@ export class SelectorResolver<T> extends Instance<T, []> {
 
     if (!this.hasSubscription) {
       store.subscribe(() => {
-        this.events.invalidateEvents.emit();
+        context.getInstancesEvents(this.id).invalidateEvents.emit();
       });
       this.hasSubscription = true;
 

@@ -29,12 +29,8 @@ type ContainerGet<TModule extends ModuleBuilder<any>> = {
   ): Module.Materialized<TLazyModule>[K];
 };
 
-export class Container<TModule extends ModuleBuilder<any>, C = {}> {
-  constructor(
-    private module: TModule,
-    private containerContext: ContainerContext = ContainerContext.empty(),
-    private context?: C,
-  ) {
+export class Container<TModule extends ModuleBuilder<any>> {
+  constructor(private module: TModule, private containerContext: ContainerContext = ContainerContext.empty()) {
     this.containerContext.loadModule(module);
   }
 
@@ -90,7 +86,8 @@ export class Container<TModule extends ModuleBuilder<any>, C = {}> {
     if (resolver.kind === 'moduleResolver') {
       throw new Error('Cannot get events for module resolver');
     }
-    return resolver.events;
+
+    return this.containerContext.getInstancesEvents(resolver.id);
   }
 
   // getMany: GetMany<MaterializedRecord<TRegistryRecord>> = (...args: any[]) => {

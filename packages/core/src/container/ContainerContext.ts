@@ -3,6 +3,7 @@ import invariant from "tiny-invariant";
 import { PushPromise } from "../utils/PushPromise";
 import { ContainerEvents } from "./ContainerEvents";
 import { Module } from "../resolvers/abstract/Module";
+import { InstanceEvents } from "./InstanceEvents";
 
 export type ContainerCacheEntry = {
   value: any;
@@ -18,12 +19,17 @@ export class ContainerContext {
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public initializedModules: Record<string, any> = {};
   public containerEvents = new ContainerEvents();
+  private instancesEvents: Record<string, InstanceEvents> = {};
 
   protected constructor(
     public globalScope: Record<string, ContainerCacheEntry> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
     private _isScoped: boolean = false,
   ) {}
+
+  getInstancesEvents(resolverId: string): InstanceEvents {
+    return this.instancesEvents[resolverId] || (this.instancesEvents[resolverId] = new InstanceEvents());
+  }
 
   setForGlobalScope(uuid: string, instance: any) {
     this.globalScope[uuid] = {
@@ -107,5 +113,4 @@ export class ContainerContext {
     invariant(lookup, `Cannot get module with id: ${moduleId.id}. Module does not exists with container context`);
     return lookup;
   }
-
 }
