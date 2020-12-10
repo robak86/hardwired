@@ -2,11 +2,10 @@ import { ModuleId } from '../../module/ModuleId';
 import { ImmutableSet } from '../../collections/ImmutableSet';
 import { ContainerContext } from '../../container/ContainerContext';
 import invariant from 'tiny-invariant';
-import { Thunk, unwrapThunk } from "../../utils/Thunk";
+import { Thunk, unwrapThunk } from '../../utils/Thunk';
 import { ContainerEvents } from '../../container/ContainerEvents';
 import { PropType } from '../../utils/PropType';
-import { Instance } from "./Instance";
-
+import { Instance } from './Instance';
 
 // prettier-ignore
 export type AnyResolver = Instance<any, any> | Module<any>;
@@ -112,10 +111,52 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     }
   }
 
+  protected getResolver(key: string): AnyResolver {
+    const { resolverThunk } = this.registry.get(key);
+    return unwrapThunk(resolverThunk);
+  }
+
   onInit(containerContext: ContainerContext) {
     this.registry.forEach((boundResolver, key) => {
-      const resolver = unwrapThunk(boundResolver.resolverThunk);
-      resolver.onInit && resolver.onInit(containerContext);
+      const { resolverThunk, dependencies } = boundResolver;
+      const resolver = unwrapThunk(resolverThunk);
+
+      const dependenciesIds = dependencies
+        .flatMap(dep => {
+          if (typeof dep === 'string') {
+            return dep;
+          }
+          return Object.values(dep);
+        })
+
+        .map(dep => {
+          const [moduleOrInstance, instance] = dep.split('.');
+
+          if (instance) {
+            const childModule = this.getResolver(moduleOrInstance);
+            invariant(
+              childModule instanceof Module,
+              `Expected module resolver for key=${moduleOrInstance} got ${childModule?.constructor?.name}`,
+            );
+
+            const instanceResolver = childModule.getResolver(instance);
+            invariant(
+              instanceResolver instanceof Instance,
+              `Expected instance resolver for key=${instance} got ${instanceResolver?.constructor?.name}`,
+            );
+            return instanceResolver.id;
+          } else {
+            const instanceResolver = this.getResolver(moduleOrInstance);
+
+            invariant(
+              instanceResolver instanceof Instance,
+              `Expected instance resolver for key=${moduleOrInstance} got ${instanceResolver?.constructor?.name}`,
+            );
+            return instanceResolver.id;
+          }
+        });
+
+      resolver.onInit && resolver.onInit(containerContext, dependenciesIds);
     });
 
     this.registry.forEach((boundResolver, key) => {

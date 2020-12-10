@@ -1,9 +1,8 @@
-import { dependency, TestTransientResolver } from '../../testing/TestResolvers';
-import { container } from '../../container/Container';
-import { func } from '../FunctionResolver';
-import { transient } from '../ClassTransientResolver';
-import { expectType, TypeEqual } from 'ts-expect';
-import { TestClass } from '../../module/__test__/ModuleBuilderPerf';
+import { dependency, TestTransientResolver } from "../../testing/TestResolvers";
+import { container } from "../../container/Container";
+import { func } from "../FunctionResolver";
+import { transient } from "../ClassTransientResolver";
+import { expectType, TypeEqual } from "ts-expect";
 import { unit } from "../../module/ModuleBuilder";
 import { Instance } from "../abstract/Instance";
 
