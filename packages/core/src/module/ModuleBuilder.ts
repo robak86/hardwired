@@ -42,20 +42,25 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>]>>
   >;
 
+  define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
+    name: TKey,
+    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>, []>,
+    dependencies: TDepsKeys,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
+
   define<
     TKey extends string,
     TValue,
     TDepKey extends Module.Paths<TRecord>,
-    TDepsKeys extends [TDepKey, ...TDepKey[]]
-    >(
+    TDepsKeys extends [TDepKey, ...TDepKey[]],
+    TBindKeys extends [TDepKey, ...TDepKey[]]
+  >(
     name: TKey,
-    resolver: Instance<
-      TValue,
-      PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>,
-      []
-      >,
-    dependencies: TDepsKeys,
+    resolver: Instance<TValue, [], PropTypesTuple<TBindKeys, MaterializedRecord<TRecord>>>,
+    dependencies: [],
+    bind: TBindKeys,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
+
   define<
     TKey extends string,
     TValue,
