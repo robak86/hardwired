@@ -1,8 +1,7 @@
-import { ContainerContext, Instance } from 'hardwired';
-import { ReducerResolver } from './ReducerResolver';
-import { AlterableStore } from '../stack/AlterableStore';
-import { SagaResolver } from './SagaResolver';
-import { ContainerEvents } from 'hardwired/lib/container/ContainerEvents';
+import { ContainerContext, Instance } from "hardwired";
+import { ReducerResolver } from "./ReducerResolver";
+import { AlterableStore } from "../stack/AlterableStore";
+import { SagaResolver } from "./SagaResolver";
 
 export class StoreResolver<TAppState> extends Instance<AlterableStore<TAppState>, [TAppState]> {
   public reducersResolvers: Record<string, (containerContext: ContainerContext) => ReducerResolver<any>> = {};

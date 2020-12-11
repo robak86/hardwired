@@ -1,12 +1,9 @@
-import { useDependency } from '../../hooks/useDependency';
-import { DummyComponent } from '../../testing/DummyComponent';
-import { container, ContainerContext, Instance, unit } from 'hardwired';
-import { render } from '@testing-library/react';
-import { ContainerProvider } from '../../components/ContainerProvider';
-import * as React from 'react';
-import { ValueResolver } from '../../../../core/src/resolvers/ValueResolver';
-import { component } from '../ComponentResolver';
-import { FunctionComponent } from 'react';
+import { container, ContainerContext, Instance, unit } from "hardwired";
+import { render } from "@testing-library/react";
+import { ContainerProvider } from "../../components/ContainerProvider";
+import * as React from "react";
+import { FunctionComponent } from "react";
+import { component } from "../ComponentResolver";
 
 describe(`ComponentResolver`, () => {
   class ObservableValue<T> extends Instance<T, []> {
@@ -56,4 +53,8 @@ describe(`ComponentResolver`, () => {
 
     </ContainerProvider>);
   }
+
+  it(`works`, async () => {
+
+  });
 });

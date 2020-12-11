@@ -1,10 +1,7 @@
-import * as React from "react";
-import { FunctionComponent, useMemo } from "react";
-import { Container } from "hardwired";
-import { ContainerContext } from "./ContainerContext";
-
-// TODO: should print warning that transient/request resolvers are not supported ?
-// Maybe react package should provide it's own container implementation ?
+import * as React from 'react';
+import { FunctionComponent, useMemo } from 'react';
+import { Container } from 'hardwired';
+import { ContainerContext } from './ContainerContext';
 
 export type ContainerProviderProps = {
   container: Container<any>;

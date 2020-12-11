@@ -4,7 +4,7 @@ import { ContainerContext } from '../../container/ContainerContext';
 export namespace Instance {
   export type Unbox<T> = T extends Instance<infer TInstance, any>
     ? TInstance
-    : 'cannot unwrap instance type from Instance';
+    : 'Cannot unbox instance type from Instance';
 }
 
 export abstract class Instance<TValue, TDeps extends any[]> {
