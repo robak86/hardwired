@@ -1,9 +1,9 @@
-import { ModuleId } from "../module/ModuleId";
-import invariant from "tiny-invariant";
-import { PushPromise } from "../utils/PushPromise";
-import { ContainerEvents } from "./ContainerEvents";
-import { Module } from "../resolvers/abstract/Module";
-import { InstanceEvents } from "./InstanceEvents";
+import { ModuleId } from '../module/ModuleId';
+import invariant from 'tiny-invariant';
+import { PushPromise } from '../utils/PushPromise';
+import { ContainerEvents } from './ContainerEvents';
+import { Module } from '../resolvers/abstract/Module';
+import { InstanceEvents } from './InstanceEvents';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -21,6 +21,7 @@ export class ContainerContext {
     public modulesResolvers: Record<string, Module<any>> = {},
   ) {}
 
+  // TODO: InstanceEvents should be bound to given instance not a resolver, because single resolver may produce multiple instances(e.g. transient)
   getInstancesEvents(resolverId: string): InstanceEvents {
     return this.instancesEvents[resolverId] || (this.instancesEvents[resolverId] = new InstanceEvents());
   }

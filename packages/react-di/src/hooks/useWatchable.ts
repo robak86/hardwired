@@ -1,27 +1,33 @@
 import { useContainer } from '../components/ContainerContext';
-import { useEffect, useState } from 'react';
-import { Module, ModuleBuilder } from 'hardwired';
-
+import { useEffect, useRef, useState } from 'react';
+import { Module, ModuleBuilder, value } from 'hardwired';
 
 export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
   module: TModule,
   name: TDefinitionName & string,
 ) => Module.Materialized<TModule>[TDefinitionName];
 
+// TODO: add second version which allows for watching only selected properties
+// TODO: providing array for the last
+/*
+   const {watchedValue1, watchedValue2} = useWatchable(mod, 'obj', ['watchedValue1', 'watchedValue2']) // returns only selected properties
+ */
+
 export const useWatchable: WatchableHook = (module, name) => {
   const container = useContainer();
   const events = container.getEvents(module, name);
   const [invalidateCount, setInvalidateCount] = useState(0);
-
-  const value: any = container.get(module, name); //TODO: use correct types
-
+  const instanceRef = useRef<any>(container.get(module, name));
 
   useEffect(() => {
     return events.invalidateEvents.add(() => {
-      // TODO: add equality check
+      const newValue = container.get(module, name);
+      if (instanceRef.current !== newValue) {
+        instanceRef.current = newValue;
+      }
       setInvalidateCount(invalidateCount + 1);
     });
   }, []);
 
-  return value;
+  return instanceRef.current;
 };

@@ -1,10 +1,8 @@
 import { module, value } from 'hardwired';
-import { component } from 'hardwired-react';
 import React, { FunctionComponent } from 'react';
 import { dispatch, reducer, selector, store } from './state/reduxResolvers';
 import { AppState } from './state/AppState';
 import { rootReducer } from './state/rootReducer';
-import { MatrixState } from './matrix/state/MatrixState';
 
 const selectStateValue = state => state.value;
 const updateAction = (newValue: string) => ({ type: 'update', newValue });
@@ -34,8 +32,4 @@ export const appModule = module('app')
   .define('store', store(), ['initialState'])
   .define('rootReducer', reducer(rootReducer))
   .define('someSelector', selector(selectStateValue))
-  .define('updateValue', dispatch(updateAction))
-  .define('DummyComponentContainer', component(DummyComponent), {
-    value: 'someSelector',
-    onUpdateClick: 'updateValue',
-  });
+  .define('updateValue', dispatch(updateAction));

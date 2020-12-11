@@ -14,7 +14,7 @@ export class SelectorResolver<T> extends Instance<T, []> {
 
   build(context: ContainerContext, depsSelectors): T {
     const getStore = Object.values(this.storeResolver)[0];
-    invariant(getStore, `Cannot find store instance`); // TODO: maybe we should provide
+    invariant(getStore, `Cannot find store instance`); // TODO: maybe we should provide store as an explicit dependency ?
     const store = getStore(context);
 
     if (!this.hasSubscription) {
