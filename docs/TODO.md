@@ -1,5 +1,10 @@
 ### Core
 
+- Invalidation events works currently for singleton like resolvers (where
+  there is always a relation that for a single resolver instance there is only a single produced instance) 
+  - use WeakMap for binding produced value with InstanceEvents object ?
+  - alternatively we could use instance id... but this looks like overhead
+  
 - Resolvers should be stateless in case where e.g. single module is used by multiple separated containers
 
   - ~~`DependencyResolverEvents` should be stored in ContainerContext and could be lazily initialized - not all

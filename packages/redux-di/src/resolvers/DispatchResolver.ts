@@ -1,39 +1,31 @@
-import { ContainerContext, Instance } from "hardwired";
-import { Action } from "redux";
-import { AlterableStore } from "../stack/AlterableStore";
-import { StoreResolver } from "./StoreResolver";
-import invariant from "tiny-invariant";
+import { ContainerContext, Instance } from 'hardwired';
+import { Action, AnyAction, Store } from 'redux';
 
-export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TActionArgs) => void, []> {
-  private storeResolver: Record<string, (containerContext: ContainerContext) => AlterableStore<any>> = {};
-
+export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TActionArgs) => void, [Store<any>]> {
   constructor(private action: (...args: any) => Action) {
     super();
   }
 
+  build(context: ContainerContext, [store]): any {
+    if (!context.hasInGlobalScope(this.id)) {
+      const dispatch = (...args) => {
+        store.dispatch(this.action(...args));
+      };
 
-  build(context: ContainerContext): any {
-    const getStore = Object.values(this.storeResolver)[0];
-    invariant(getStore, `Cannot find store instance`); // TODO: maybe we should provide
-    const store = getStore(context);
+      context.setForGlobalScope(this.id, dispatch);
+    }
 
-    return (...args) => {
-      store.dispatch(this.action(...args));
-    };
+    return context.getFromGlobalScope(this.id);
   }
-
-  onInit(ctx: ContainerContext): any {
-    ctx.containerEvents.onSpecificDefinitionAppend.add(StoreResolver, event => {
-      this.storeResolver[event.id] = event.get;
-      invariant(Object.keys(this.storeResolver).length === 1, `Multiple store instances are currently not supported.`);
-    });
-  }
-
 }
 
-export type DispatchResolverParams<TAction extends Action> = {
-  <TActionArgs extends any[]>(actionCreator: (...args: TActionArgs) => TAction): Instance<
+export type DispatchResolverParams = {
+  <TActionArgs extends any[], TAction extends AnyAction>(actionCreator: (...args: TActionArgs) => TAction): Instance<
     (...args: TActionArgs) => void,
-    []
+    [Store<any, any>]
   >;
+};
+
+export const dispatch: DispatchResolverParams = actionCreator => {
+  return new DispatchResolver(actionCreator);
 };

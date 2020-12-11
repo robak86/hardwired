@@ -1,11 +1,8 @@
-import { ContainerContext, Instance } from "hardwired";
-import { AlterableStore } from "../stack/AlterableStore";
-import { StoreResolver } from "./StoreResolver";
-import invariant from "tiny-invariant";
-import { createSelector } from "reselect";
+import { ContainerContext, Instance } from 'hardwired';
+import { createSelector } from 'reselect';
+import { Store } from 'redux';
 
 export class SelectorResolver<T> extends Instance<T, []> {
-  private storeResolver: Record<string, (containerContext: ContainerContext) => AlterableStore<any>> = {};
   private hasSubscription = false;
 
   constructor(private select: () => T) {
@@ -13,9 +10,8 @@ export class SelectorResolver<T> extends Instance<T, []> {
   }
 
   build(context: ContainerContext, depsSelectors): T {
-    const getStore = Object.values(this.storeResolver)[0];
-    invariant(getStore, `Cannot find store instance`); // TODO: maybe we should provide store as an explicit dependency ?
-    const store = getStore(context);
+    const store = depsSelectors.find(dep => dep.subscribe);
+    const childSelectors = depsSelectors.filter(dep => typeof dep === 'function');
 
     if (!this.hasSubscription) {
       store.subscribe(() => {
@@ -23,27 +19,25 @@ export class SelectorResolver<T> extends Instance<T, []> {
       });
       this.hasSubscription = true;
 
-      const finalSelector = depsSelectors.length > 0 ? createSelector(depsSelectors, this.select) : this.select;
+      const finalSelector = childSelectors.length > 0 ? createSelector(childSelectors, this.select) : this.select;
       context.setForGlobalScope(this.id, finalSelector);
     }
-    const selectedState = context.getFromGlobalScope(this.id)(store.getState());
 
-    return selectedState;
+    return context.getFromGlobalScope(this.id)(store.getState());
   }
 
   onInit(ctx: ContainerContext): any {
-    ctx.containerEvents.onSpecificDefinitionAppend.add(StoreResolver, event => {
-      this.storeResolver[event.id] = event.get;
-      invariant(Object.keys(this.storeResolver).length === 1, `Multiple store instances are currently not supported.`);
-    });
+    // ctx.containerEvents.onSpecificDefinitionAppend.add(StoreResolver, event => {
+    //   this.storeResolver[event.id] = event.get;
+    //   invariant(Object.keys(this.storeResolver).length === 1, `Multiple store instances are currently not supported.`);
+    // });
   }
 }
 
-export type SelectorResolverParams<TState> = {
-  <TReturn>(select: (appState: TState) => TReturn): Instance<TReturn, []>;
-  <TReturn, TSelect1>(select: (deps: [TSelect1]) => TReturn): Instance<TReturn, [(state: TState) => TSelect1]>;
-  <TReturn, TSelect1, TSelect2>(select: (deps: [TSelect1, TSelect2]) => TReturn): Instance<
-    TReturn,
-    [(state: TState) => TSelect1, (state: TState) => TSelect2]
-  >;
+export type SelectorResolverParams = {
+  <TReturn, TState>(select: (appState: TState) => TReturn): Instance<TReturn, [TState]>;
+};
+
+export const selector: SelectorResolverParams = select => {
+  return new SelectorResolver(select as any);
 };

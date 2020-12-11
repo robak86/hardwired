@@ -1,8 +1,12 @@
-import { module, value } from 'hardwired';
+import { factory, Factory, module, value } from 'hardwired';
 import React, { FunctionComponent } from 'react';
-import { dispatch, reducer, selector, store } from './state/reduxResolvers';
+
 import { AppState } from './state/AppState';
 import { rootReducer } from './state/rootReducer';
+import { createStore, Reducer, Store } from 'redux';
+import { selector } from 'hardwired-redux/lib/resolvers/SelectorResolver';
+import { dispatch } from 'hardwired-redux/lib/resolvers/DispatchResolver';
+import { storeModule } from './state/store.module';
 
 const selectStateValue = state => state.value;
 const updateAction = (newValue: string) => ({ type: 'update', newValue });
@@ -28,8 +32,6 @@ export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, 
 };
 
 export const appModule = module('app')
-  .define('initialState', value({ value: 'initialValue' }))
-  .define('store', store(), ['initialState'])
-  .define('rootReducer', reducer(rootReducer))
-  .define('someSelector', selector(selectStateValue))
-  .define('updateValue', dispatch(updateAction));
+  .define('store', storeModule)
+  .define('someSelector', selector(selectStateValue), ['store.store'])
+  .define('updateValue', dispatch(updateAction), ['store.store']);

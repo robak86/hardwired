@@ -1,9 +1,10 @@
-import { container, module, value } from "hardwired";
-import { ContainerProvider, useWatchable } from "hardwired-react";
-import { render } from "@testing-library/react";
-import React, { FunctionComponent } from "react";
-
-import { init } from "../StateTypedResolverts";
+import { container, factory, module, value } from 'hardwired';
+import { ContainerProvider, useWatchable } from 'hardwired-react';
+import { render } from '@testing-library/react';
+import React, { FunctionComponent } from 'react';
+import { selector } from '../SelectorResolver';
+import { dispatch } from '../DispatchResolver';
+import { StoreFactory } from '../../tests/StoreFactory';
 
 export type DummyComponentProps = {
   value: string;
@@ -20,21 +21,26 @@ export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, 
   );
 };
 
+const selectStateValue = state => state.value;
+const toUpperCase = (s: string) => s.toUpperCase();
+const updateAction = (newValue: string) => ({ type: 'update', newValue });
+const updateReducer = (state, action) => {
+  if (action.type === 'update') {
+    return { value: 'updated' };
+  }
+  return state;
+};
+
 describe(`SelectorResolver`, () => {
   describe(`flat module`, () => {
     function setup() {
-      const { dispatch, reducer, selector, store } = init();
-
-      const selectStateValue = (state): string => state.value;
-      const updateAction = (newValue: string) => ({ type: 'update', newValue });
-      const updateReducer = state => ({ value: 'updated' });
-
       const m = module('someModule')
         .define('initialState', value({ value: 'initialValue' }))
-        .define('store', store(), ['initialState'])
-        .define('rootReducer', reducer(updateReducer))
-        .define('someSelector', selector(selectStateValue))
-        .define('updateValue', dispatch(updateAction));
+        .define('rootReducer', value(updateReducer))
+        .define('store', factory(StoreFactory), ['rootReducer', 'initialState'])
+
+        .define('someSelector', selector(selectStateValue), ['store'])
+        .define('updateValue', dispatch(updateAction), ['store']);
 
       const Container = () => {
         const value = useWatchable(m, 'someSelector');
@@ -68,20 +74,16 @@ describe(`SelectorResolver`, () => {
 
   describe(`external modules`, () => {
     function setup() {
-      const selectStateValue = state => state.value;
-      const updateAction = (newValue: string) => ({ type: 'update', newValue });
-      const updateReducer = state => ({ value: 'updated' });
+      const selectorsModule = module('selectors')
+        .define('redux', () => m)
+        .define('someSelector', selector(selectStateValue), ['redux.store'])
+        .define('composedSelector', selector(toUpperCase), ['someSelector']);
 
-      const { store, selector, reducer, dispatch } = init<{ value: string }>();
-
-      const selectorsModule = module('selectors').define('someSelector', selector(selectStateValue));
-
-      const m = module('someModule')
-        .define('selectors', () => selectorsModule)
+      const m = module('reduxModule')
         .define('initialState', value({ value: 'initialValue' }))
-        .define('store', store(), ['initialState'])
-        .define('rootReducer', reducer(updateReducer))
-        .define('updateValue', dispatch(updateAction));
+        .define('rootReducer', value(updateReducer))
+        .define('store', factory(StoreFactory), ['rootReducer', 'initialState'])
+        .define('updateValue', dispatch(updateAction), ['store']);
 
       const Container = () => {
         const value = useWatchable(selectorsModule, 'someSelector');

@@ -1,38 +1,26 @@
-import { container, module, value } from 'hardwired';
-import { store } from '../resolvers/StoreResolver';
-import { init } from '../resolvers/StateTypedResolverts';
+import { container, factory, module, value } from 'hardwired';
+import { AppState, StoreFactory } from '../tests/StoreFactory';
 
 describe(`Integration tests`, () => {
-  type AppState = {
-    userName: string;
-  };
-
   describe(`registering reducers`, () => {
     describe(`no lazy loading`, () => {
       function setup() {
-        const appReducer1 = jest.fn().mockImplementation(state => state);
-        const appReducer2 = jest.fn().mockImplementation(state => state);
+        const appReducer1 = jest.fn().mockImplementation((state: AppState) => state);
 
-        const defaultState = { userName: 'Tomasz' };
-
-        const { reducer } = init<typeof defaultState>();
-
-        const childModule = module('childModule').define('appReducer2', reducer(appReducer2));
+        const defaultState = { value: 'Tomasz' };
 
         const root = module('m')
-          .define('childStoreModule', childModule)
           .define('defaultState', value(defaultState))
-          .define('store', store(), ['defaultState'])
-          .define('appReducer1', reducer(appReducer1))
-          .define('appReducer2', reducer(appReducer2));
+          .define('appReducer1', value(appReducer1))
+          .define('store', factory(StoreFactory), ['appReducer1', 'defaultState']);
 
         const c = container();
 
-        return { container: c, appReducer1, appReducer2, defaultState, root };
+        return { container: c, appReducer1, defaultState, root };
       }
 
       it(`calls reducers with correct params`, async () => {
-        const { container, appReducer1, appReducer2, defaultState, root } = setup();
+        const { container, appReducer1, defaultState, root } = setup();
         const store = container.get(root, 'store');
 
         expect(store.getState()).toEqual(defaultState);
@@ -41,7 +29,6 @@ describe(`Integration tests`, () => {
         store.dispatch(action);
 
         expect(appReducer1).toBeCalledWith(defaultState, action);
-        expect(appReducer2).toBeCalledWith(defaultState, action);
       });
     });
   });
