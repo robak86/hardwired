@@ -5,4 +5,4 @@ import { selector } from 'hardwired-redux';
 
 export const matrixModule = module('matrix')
   .define('store', storeModule)
-  .define('selectMatrixElements', selector(selectMatrixElements) as any, ['store.store']); //TODO
+  .define('selectMatrixElements', selector(selectMatrixElements, 0) as any, ['store.store']); //TODO

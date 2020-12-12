@@ -14,7 +14,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
   }
 
-  // TODO: add checks for TKey collision (no accidental overrides)
   define<TKey extends string, TValue extends Module<any>>(
     name: TKey,
     resolver: Thunk<TValue>,
@@ -91,9 +90,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     bind?: TBindKeys,
   ): ModuleBuilder<TRecord & Record<TKey, unknown>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
-
-    // TODO: for case where resolver is thunk add check for making sure that thunk returns always the same module (in case if somebody would like to build module dynamically)
-    // Make sure that this check will be still evaluated lazily
 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),

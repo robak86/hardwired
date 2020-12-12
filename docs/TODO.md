@@ -1,10 +1,20 @@
 ### Core
 
+##ModuleBuilder
+
+- add checks for TKey collision in define method (no accidental overrides)
+
+- for case where resolver is thunk add check for making sure that thunk returns always the same module (in case if somebody would like to build module dynamically
+  Make sure that this check will be still evaluated lazily
+- investigate if extra bind array is really necessary for `.define` method. Instead of explicit bind we could just use
+  first/last items from dependencies array
+
 - Invalidation events works currently for singleton like resolvers (where
-  there is always a relation that for a single resolver instance there is only a single produced instance) 
+  there is always a relation that for a single resolver instance there is only a single produced instance)
   - use WeakMap for binding produced value with InstanceEvents object ?
   - alternatively we could use instance id... but this looks like overhead
   
+
 - Resolvers should be stateless in case where e.g. single module is used by multiple separated containers
 
   - ~~`DependencyResolverEvents` should be stored in ContainerContext and could be lazily initialized - not all

@@ -35,9 +35,27 @@ export class SelectorResolver<T> extends Instance<T, []> {
 }
 
 export type SelectorResolverParams = {
-  <TReturn, TState>(select: (appState: TState) => TReturn): Instance<TReturn, [TState]>;
+  <TReturn, TState>(select: (appState: TState) => TReturn, n:0): Instance<TReturn, [], [Store<TState>]>;
+  <TReturn, TState, TReturn1>(select: (appState: TReturn1) => TReturn, n:1): Instance<
+    TReturn,
+    [TReturn1],
+    [Store<TState>]
+  >;
 };
 
+// export type SelectorResolverParams = {
+//   <TReturn, TState>(select: (appState: TState) => TReturn, n:0): Instance<TReturn, [], [Store<TState>]>;
+//   <TReturn, TState, TReturn1>(select: (appState: TReturn1) => TReturn, n:1): Instance<
+//     TReturn,
+//     [(state: TState) => TReturn1],
+//     [Store<TState>]
+//     >;
+// };
+
 export const selector: SelectorResolverParams = select => {
+  return new SelectorResolver(select as any);
+};
+
+export const selector2: SelectorResolverParams = select => {
   return new SelectorResolver(select as any);
 };
