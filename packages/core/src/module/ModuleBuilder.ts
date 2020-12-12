@@ -21,8 +21,13 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
 
   define<TKey extends string, TValue>(
     name: TKey,
-    resolver: Instance<TValue, [], []>,
+    resolver: Instance<TValue, []>,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
+  define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
+    name: TKey,
+    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>,
+    dependencies: TDepsKeys,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
   define<
     TKey extends string,
     TValue,
@@ -31,63 +36,15 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     TDepsKey extends string
   >(
     name: TKey,
-    resolver: Instance<
-      TValue,
-      [{ [K in TDepsKey]: PropType<MaterializedRecord<TRecord>, TDepsRecord[K] & string> }],
-      any
-    >,
+    resolver: Instance<TValue, [{ [K in TDepsKey]: PropType<MaterializedRecord<TRecord>, TDepsRecord[K] & string> }]>,
     dependencies: TDepsRecord,
   ): ModuleBuilder<
     TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>]>>
   >;
-
   define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
-    name: TKey,
-    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>, []>,
-    dependencies: TDepsKeys,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
-
-  define<
-    TKey extends string,
-    TValue,
-    TDepKey extends Module.Paths<TRecord>,
-    TDepsKeys extends [TDepKey, ...TDepKey[]],
-    TBindKeys extends [TDepKey, ...TDepKey[]]
-  >(
-    name: TKey,
-    resolver: Instance<TValue, [], PropTypesTuple<TBindKeys, MaterializedRecord<TRecord>>>,
-    dependencies: [],
-    bind: TBindKeys,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
-
-  define<
-    TKey extends string,
-    TValue,
-    TDepKey extends Module.Paths<TRecord>,
-    TDepsKeys extends [TDepKey, ...TDepKey[]],
-    TBindKeys extends [TDepKey, ...TDepKey[]]
-  >(
-    name: TKey,
-    resolver: Instance<
-      TValue,
-      PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>,
-      PropTypesTuple<TBindKeys, MaterializedRecord<TRecord>>
-    >,
-    dependencies: TDepsKeys,
-    bind: TBindKeys,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
-
-  define<
-    TKey extends string,
-    TValue,
-    TDepKey extends Module.Paths<TRecord>,
-    TDepsKeys extends [TDepKey, ...TDepKey[]],
-    TBindKeys extends [TDepKey, ...TDepKey[]]
-  >(
     name: TKey,
     resolver: Instance<any, any> | Thunk<Module<any>>,
     dependencies?: TDepsKeys,
-    bind?: TBindKeys,
   ): ModuleBuilder<TRecord & Record<TKey, unknown>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
 

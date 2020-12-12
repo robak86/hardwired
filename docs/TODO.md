@@ -81,6 +81,9 @@ expect(container(updated).get('c')).toEqual({
 
 # Container
 
+- investigate if modules (resolvers) could have any side effects (requiring the container to implement some kind of eager loading)
+  - this would mean that we cannot have `onInit` methods in resolvers
+
 ```
 
   // Instead multiple function overloads use tuples TDepsKeys extends [TDepKey, ...TDepKey[]]

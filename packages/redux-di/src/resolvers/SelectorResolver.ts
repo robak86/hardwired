@@ -1,6 +1,6 @@
-import { ContainerContext, Instance } from 'hardwired';
-import { createSelector } from 'reselect';
-import { Store } from 'redux';
+import { ContainerContext, Instance } from "hardwired";
+import { createSelector } from "reselect";
+import { Store } from "redux";
 
 export class SelectorResolver<T> extends Instance<T, []> {
   private hasSubscription = false;
@@ -35,11 +35,10 @@ export class SelectorResolver<T> extends Instance<T, []> {
 }
 
 export type SelectorResolverParams = {
-  <TReturn, TState>(select: (appState: TState) => TReturn, n:0): Instance<TReturn, [], [Store<TState>]>;
-  <TReturn, TState, TReturn1>(select: (appState: TReturn1) => TReturn, n:1): Instance<
+  <TReturn, TState>(select: (appState: TState) => TReturn, n: 0): Instance<TReturn, [Store<TState>]>;
+  <TReturn, TState, TReturn1>(select: (appState: TReturn1) => TReturn, n: 1): Instance<
     TReturn,
-    [TReturn1],
-    [Store<TState>]
+    [Store<TState>, TReturn1]
   >;
 };
 

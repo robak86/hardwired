@@ -7,7 +7,7 @@ export namespace Instance {
     : 'Cannot unbox instance type from Instance';
 }
 
-export abstract class Instance<TValue, TDeps extends any[], TBind extends any[] = []> {
+export abstract class Instance<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
 
   protected constructor(public readonly id: string = createResolverId()) {}

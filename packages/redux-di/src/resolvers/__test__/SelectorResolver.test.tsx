@@ -1,4 +1,4 @@
-import { container, factory, Module, module, value } from 'hardwired';
+import { container, factory, module, value } from 'hardwired';
 import { ContainerProvider, useWatchable } from 'hardwired-react';
 import { render } from '@testing-library/react';
 import React, { FunctionComponent } from 'react';
@@ -34,16 +34,13 @@ const updateReducer = (state, action) => {
 describe(`SelectorResolver`, () => {
   describe(`flat module`, () => {
     function setup() {
-      const wtf = selector(selectStateValue,0);
       const m = module('someModule')
         .define('initialState', value({ value: 'initialValue' }))
         .define('rootReducer', value(updateReducer))
         .define('store', factory(StoreFactory), ['rootReducer', 'initialState'])
 
-        .define('someSelector', wtf, [], ['store'])
+        .define('someSelector', selector(selectStateValue, 0), ['store'])
         .define('updateValue', dispatch(updateAction), ['store']);
-
-      type WTf = Module.Materialized<typeof m>;
 
       const Container = () => {
         const value = useWatchable(m, 'someSelector');
@@ -77,20 +74,11 @@ describe(`SelectorResolver`, () => {
 
   describe(`external modules`, () => {
     function setup() {
-
-      // TODO: make selector return Selector((state: TState) => TReturn) - it requires for the selectStateValue to have declared arg type (TState)
-      const wtf = selector(selectStateValue, 0);
-      const wtfNumber = selector((state: AppState) => 1232, 0);
-
-      // TODO Make
-      const wtf2 = selector(toUpperCase, 1);
       const selectorsModule = module('selectors')
         .define('redux', () => m)
-        .define('someSelector', wtf, [], ['redux.store'])
-        .define('otherSelector', wtf, [], ['redux.store'])
-        .define('composedSelector', wtf2, ['someSelector']);
-
-      type WTF = Module.Materialized<typeof selectorsModule>;
+        .define('someSelector', selector(selectStateValue, 0), ['redux.store'])
+        .define('otherSelector', selector(selectStateValue, 0), ['redux.store'])
+        .define('compositeSelector', selector(toUpperCase, 1), ['redux.store', 'someSelector']);
 
       const m = module('reduxModule')
         .define('initialState', value({ value: 'initialValue' }))
@@ -99,7 +87,7 @@ describe(`SelectorResolver`, () => {
         .define('updateValue', dispatch(updateAction), ['store']);
 
       const Container = () => {
-        const value = useWatchable(selectorsModule, 'someSelector');
+        const value = useWatchable(selectorsModule, 'compositeSelector');
         const onUpdate = useWatchable(m, 'updateValue');
         return <DummyComponent value={value} onUpdateClick={onUpdate} />;
       };

@@ -31,5 +31,5 @@ export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, 
 
 export const appModule = module('app')
   .define('store', storeModule)
-  .define('someSelector', selector(selectStateValue, 0), [], ['store.store'])
+  .define('someSelector', selector(selectStateValue, 0),  ['store.store'])
   .define('updateValue', dispatch(updateAction), ['store.store']);
