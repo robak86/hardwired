@@ -4,6 +4,7 @@ import { value } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { ArgsDebug, TestClass } from '../../testing/ArgsDebug';
 import { module } from '../../module/ModuleBuilder';
+import { ContainerContext } from '../ContainerContext';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -137,10 +138,12 @@ describe(`Container`, () => {
         .define('someString', stringResolver)
         .define('cls', singletonResolver, ['someNumber', 'someString']);
 
-      const c = container();
+      const containerContext = ContainerContext.empty();
+
+      const c = container(containerContext);
       c.load(m);
 
-      expect(singletonResolver.onInit).toHaveBeenCalledWith(c.getContext(), [numberResolver.id, stringResolver.id]);
+      expect(singletonResolver.onInit).toHaveBeenCalledWith(containerContext, [numberResolver.id, stringResolver.id]);
     });
 
     it(`calls onInit on child definition`, async () => {

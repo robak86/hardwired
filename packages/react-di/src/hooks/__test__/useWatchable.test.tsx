@@ -44,7 +44,7 @@ describe(`useWatchable`, () => {
 
     it(`cleans listeners on unmount`, async () => {
       const { wrapper, container, m1 } = setup();
-      const events = container.getEvents(m1, 'val1');
+      const events = container.acquireInstanceResolver(m1, 'val1').getEvents();
       expect(events.invalidateEvents.count).toEqual(1);
       wrapper.unmount();
       expect(events.invalidateEvents.count).toEqual(0);

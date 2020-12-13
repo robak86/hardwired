@@ -2,7 +2,7 @@ import { factory, Factory, FactoryResolver } from '../FactoryResolver';
 import { ContainerContext } from '../../container/ContainerContext';
 import { createResolverId } from '../../utils/fastId';
 import { expectType, TypeEqual } from 'ts-expect';
-import { Instance } from "../abstract/Instance";
+import { Instance } from '../abstract/Instance';
 
 describe(`FactoryResolver`, () => {
   describe(`factory`, () => {
@@ -25,6 +25,7 @@ describe(`FactoryResolver`, () => {
     }
 
     const factoryResolver = new FactoryResolver(DummyFactory);
+    factoryResolver.setDependencies([]);
     const context = ContainerContext.empty();
     const value = factoryResolver.build(context);
     expect(value).toEqual('built by factory');
@@ -36,6 +37,7 @@ describe(`FactoryResolver`, () => {
     }
 
     const factoryResolver = new FactoryResolver(DummyFactory);
+    factoryResolver.setDependencies([]);
     const context = ContainerContext.empty();
     expect(factoryResolver.build(context)).toEqual(factoryResolver.build(context));
   });
@@ -50,6 +52,8 @@ describe(`FactoryResolver`, () => {
     }
 
     const factoryResolver = new FactoryResolver(DummyFactory);
+    factoryResolver.setDependencies([]);
+
     const context = ContainerContext.empty();
     factoryResolver.build(context);
     factoryResolver.build(context);

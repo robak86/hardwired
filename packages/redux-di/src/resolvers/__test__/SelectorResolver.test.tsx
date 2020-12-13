@@ -72,7 +72,7 @@ describe(`SelectorResolver`, () => {
     });
   });
 
-  describe(`external modules`, () => {
+  describe(`composite selectors`, () => {
     function setup() {
       const selectorsModule = module('selectors')
         .define('redux', () => m)
@@ -104,15 +104,15 @@ describe(`SelectorResolver`, () => {
 
     it(`correctly select initial state value`, async () => {
       const result = setup();
-      expect(result.getByTestId('value').textContent).toEqual('initialValue');
+      expect(result.getByTestId('value').textContent).toEqual('INITIALVALUE');
     });
 
     it(`rerender component on store change`, async () => {
       const result = setup();
-      expect(result.getByTestId('value').textContent).toEqual('initialValue');
+      expect(result.getByTestId('value').textContent).toEqual('INITIALVALUE');
       const button = await result.findByRole('button');
       button.click();
-      expect(result.getByTestId('value').textContent).toEqual('updated');
+      expect(result.getByTestId('value').textContent).toEqual('UPDATED');
     });
   });
 });

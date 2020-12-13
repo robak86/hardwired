@@ -15,9 +15,14 @@ export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName
 
 export const useWatchable: WatchableHook = (module, name) => {
   const container = useContainer();
-  const events = container.getEvents(module, name);
+  const acquiredInstanceRef = useRef<any>(container.acquireInstanceResolver(module, name));
+
+  const events = acquiredInstanceRef.current.getEvents(module, name);
   const [invalidateCount, setInvalidateCount] = useState(0);
   const instanceRef = useRef<any>(container.get(module, name));
+
+  // TODO: use container.getResolver().(isStateFull?, isObservable, isReactive?)
+  // container.getResolver().subscribe() - subscriptions needs to be hold in container context (no state in resolvers)
 
   useEffect(() => {
     return events.invalidateEvents.add(() => {

@@ -1,6 +1,28 @@
 ### Core
 
+## FactoryResolver
+
+- add scope `factory(SomeFactoryClass, 'transient' | 'request' | 'singleton')`
+
 ##ModuleBuilder
+
+- extract `dependencies` array from `Instance` into `ContainerContext`
+
+  - resolvers should be stateless
+
+- holding any state on `Instance` may be tricky.
+
+  - what if single instance is used in two module instance ?
+
+  ```typescript
+  const m1 = unit().define('a', instance);
+  const m2 = m1.define('b', instance);
+
+  const m3 = unit().define('import1', m1).define('import2', m2);
+  ```
+
+  - should we somehow freeze modules (explicitly or implicitly on the container creation?) ?
+    - add runtime check for this case ?
 
 - add checks for TKey collision in define method (no accidental overrides)
 
@@ -11,9 +33,9 @@
 
 - Invalidation events works currently for singleton like resolvers (where
   there is always a relation that for a single resolver instance there is only a single produced instance)
+
   - use WeakMap for binding produced value with InstanceEvents object ?
   - alternatively we could use instance id... but this looks like overhead
-  
 
 - Resolvers should be stateless in case where e.g. single module is used by multiple separated containers
 
