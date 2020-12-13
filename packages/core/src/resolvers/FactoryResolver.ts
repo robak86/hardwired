@@ -11,11 +11,12 @@ export class FactoryResolver<TReturn, TDeps extends any[]> extends Instance<TRet
     super();
   }
 
-  build(cache: ContainerContext, deps): TReturn {
+  build(cache: ContainerContext, _): TReturn {
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const factory = new this.klass(...deps);
+      const args = this.dependencies.map(d => d.build(cache, []));
+      const factory = new this.klass(...args);
       const instance = factory.build();
       cache.setForGlobalScope(this.id, instance);
       return instance;

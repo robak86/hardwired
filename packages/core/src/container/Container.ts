@@ -47,9 +47,6 @@ export class Container<TModule extends ModuleBuilder<any>> {
 
     const resolver = module.getResolver(key);
 
-    if (resolver.kind === 'moduleResolver') {
-      throw new Error('Cannot get events for module resolver');
-    }
 
     return this.containerContext.getInstancesEvents(resolver.id);
   }

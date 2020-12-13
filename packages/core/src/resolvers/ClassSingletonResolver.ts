@@ -1,6 +1,6 @@
-import { ContainerContext } from "../container/ContainerContext";
-import { ClassType } from "../utils/ClassType";
-import { Instance } from "./abstract/Instance";
+import { ContainerContext } from '../container/ContainerContext';
+import { ClassType } from '../utils/ClassType';
+import { Instance } from './abstract/Instance';
 
 export class ClassSingletonResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   constructor(private klass) {
@@ -11,15 +11,14 @@ export class ClassSingletonResolver<TReturn, TDeps extends any[]> extends Instan
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const instance = new this.klass(...deps);
+      const args = this.dependencies.map(d => d.build(cache, []));
+      const instance = new this.klass(...args);
       cache.setForGlobalScope(this.id, instance);
       return instance;
     }
   }
 }
 
-export function singleton<TDeps extends any[], TValue>(
-  cls: ClassType<TDeps, TValue>,
-): Instance<TValue, TDeps> {
+export function singleton<TDeps extends any[], TValue>(cls: ClassType<TDeps, TValue>): Instance<TValue, TDeps> {
   return new ClassSingletonResolver(cls);
 }
