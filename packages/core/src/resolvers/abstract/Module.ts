@@ -161,8 +161,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
             return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, otherInjections);
           }
 
-
-          throw new Error("Implement me")
+          throw new Error('Implement me');
           // return Object.keys(pathOrPathsRecord).reduce((resolvers, prop) => {
           //   const path = pathOrPathsRecord[prop];
           //
@@ -175,18 +174,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     }
 
     if (resolver.kind === 'instanceResolver') {
-      const depsInstances = boundResolver.dependencies.map(pathOrPathsRecord => {
-        if (typeof pathOrPathsRecord === 'string') {
-          return this.get(pathOrPathsRecord as Module.Paths<TValue>, context, mergedInjections);
-        }
-
-        return Object.keys(pathOrPathsRecord).reduce(prop => {
-          const path = pathOrPathsRecord[prop];
-
-          return this.build(path, context, mergedInjections);
-        });
-      });
-      return resolver.build(context, depsInstances);
+      return resolver.build(context, []);
     }
 
     if (resolver.kind === 'moduleResolver') {
