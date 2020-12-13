@@ -71,7 +71,7 @@ describe(`useWatchable`, () => {
         super();
       }
 
-      build(context: ContainerContext, deps: []): T {
+      build(context: ContainerContext): T {
         return this.value;
       }
 

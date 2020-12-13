@@ -1,6 +1,7 @@
-import { ContainerContext } from "../container/ContainerContext";
-import { ClassType } from "../utils/ClassType";
-import { Instance } from "./abstract/Instance";
+import { ContainerContext } from '../container/ContainerContext';
+import { ClassType } from '../utils/ClassType';
+import { Instance } from './abstract/Instance';
+import invariant from 'tiny-invariant';
 
 export interface Factory<TReturn> {
   build(): TReturn;
@@ -11,11 +12,13 @@ export class FactoryResolver<TReturn, TDeps extends any[]> extends Instance<TRet
     super();
   }
 
-  build(cache: ContainerContext, _): TReturn {
+  build(cache: ContainerContext): TReturn {
+    invariant(this.isInitialized, `Resolver is not initialized`);
+
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const args = this.dependencies.map(d => d.build(cache, []));
+      const args = this.dependencies.map(d => d.build(cache));
       const factory = new this.klass(...args);
       const instance = factory.build();
       cache.setForGlobalScope(this.id, instance);
@@ -24,8 +27,6 @@ export class FactoryResolver<TReturn, TDeps extends any[]> extends Instance<TRet
   }
 }
 
-export function factory<TDeps extends any[], TValue>(
-  cls: ClassType<TDeps, Factory<TValue>>,
-): Instance<TValue, TDeps> {
+export function factory<TDeps extends any[], TValue>(cls: ClassType<TDeps, Factory<TValue>>): Instance<TValue, TDeps> {
   return new FactoryResolver(cls);
 }

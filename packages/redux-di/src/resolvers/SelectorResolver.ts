@@ -1,15 +1,16 @@
-import { ContainerContext, Instance } from "hardwired";
-import { createSelector } from "reselect";
-import { Store } from "redux";
+import { ContainerContext, Instance } from 'hardwired';
+import { createSelector } from 'reselect';
+import { Store } from 'redux';
 
-export class SelectorResolver<T> extends Instance<T, []> {
+export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps> {
   private hasSubscription = false;
 
   constructor(private select: () => T) {
     super();
   }
 
-  build(context: ContainerContext, depsSelectors): T {
+  build(context: ContainerContext): T {
+    const depsSelectors = this.dependencies.map(d => d.build(context));
     const store = depsSelectors.find(dep => dep.subscribe);
     const childSelectors = depsSelectors.filter(dep => typeof dep === 'function');
 
@@ -35,8 +36,8 @@ export class SelectorResolver<T> extends Instance<T, []> {
 }
 
 export type SelectorResolverParams = {
-  <TReturn, TState>(select: (appState: TState) => TReturn, n: 0): Instance<TReturn, [Store<TState>]>;
-  <TReturn, TState, TReturn1>(select: (appState: TReturn1) => TReturn, n: 1): Instance<
+  <TReturn, TState>(select: (appState: TState) => TReturn, n: 0): SelectorResolver<TReturn, [Store<TState>]>;
+  <TReturn, TState, TReturn1>(select: (appState: TReturn1) => TReturn, n: 1): SelectorResolver<
     TReturn,
     [Store<TState>, TReturn1]
   >;
@@ -52,9 +53,9 @@ export type SelectorResolverParams = {
 // };
 
 export const selector: SelectorResolverParams = select => {
-  return new SelectorResolver(select as any);
+  return new SelectorResolver(select as any) as any;
 };
 
 export const selector2: SelectorResolverParams = select => {
-  return new SelectorResolver(select as any);
+  return new SelectorResolver(select as any) as any;
 };

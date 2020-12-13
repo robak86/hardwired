@@ -18,9 +18,11 @@ export abstract class Instance<TValue, TDeps extends any[]> {
 
   protected constructor(public readonly id: string = createResolverId()) {}
 
-  abstract build(context: ContainerContext, deps: TDeps): TValue;
+  abstract build(context: ContainerContext): TValue;
 
   onInit?(context: ContainerContext, dependenciesIds: string[]): void;
+
+  private __keep(t: TDeps) {}
 
   setDependencies(instances: Instance<any, any>[]) {
     this.dependencies = instances;

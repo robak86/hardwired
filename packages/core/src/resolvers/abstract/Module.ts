@@ -95,19 +95,44 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
 
   getResolver(path: string, injections = ImmutableSet.empty()): Instance<any, any> {
     const [moduleOrInstance, instance] = path.split('.');
+    const mergedInjections = this.injections.merge(injections); //TODO: it's not optimal to do this merge for each getResolver call :/
 
-    const { resolverThunk } = this.registry.get(moduleOrInstance);
+    const { resolverThunk, dependencies } = this.registry.get(moduleOrInstance);
     const resolver = unwrapThunk(resolverThunk);
 
     invariant(resolver, `Cannot return instance resolver for path ${path}. ${moduleOrInstance} does not exist.`);
+
+    if (resolver.kind === 'instanceResolver') {
+      if (!resolver.isInitialized) {
+        const depsInstances = dependencies.map(pathOrPathsRecord => {
+          if (typeof pathOrPathsRecord === 'string') {
+            return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, mergedInjections);
+          }
+
+          throw new Error('Implement me');
+          // return Object.keys(pathOrPathsRecord).reduce((resolvers, prop) => {
+          //   const path = pathOrPathsRecord[prop];
+          //
+          //   return this.getResolver(path, otherInjections);
+          // });
+        });
+
+        resolver.setDependencies(depsInstances);
+      }
+
+      invariant(
+        resolver.kind === 'instanceResolver',
+        `Cannot return instance resolver for path ${path}. ${moduleOrInstance} is not a module.`,
+      );
+
+      return resolver;
+    }
 
     if (instance) {
       invariant(
         resolver.kind === 'moduleResolver',
         `Cannot return resolver for path: ${path}. ${moduleOrInstance} is not a module`,
       );
-
-      const mergedInjections = this.injections.merge(injections); //TODO: it's not optimal to do this merge for each getResolver call :/
 
       const moduleResolver = mergedInjections.hasKey(resolver.moduleId.identity)
         ? mergedInjections.get(resolver.moduleId.identity)
@@ -116,12 +141,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
       return moduleResolver.getResolver(instance, mergedInjections);
     }
 
-    invariant(
-      resolver.kind === 'instanceResolver',
-      `Cannot return instance resolver for path ${path}. ${moduleOrInstance} is not a module.`,
-    );
-
-    return resolver;
+    throw new Error('invalid state');
   }
 
   onInit(containerContext: ContainerContext) {
@@ -147,43 +167,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
   }
 
   protected build(path: string, context: ContainerContext, otherInjections) {
-    const [moduleOrInstanceKey, instanceName] = path.split('.');
-
-    const mergedInjections = this.injections.merge(otherInjections);
-
-    const boundResolver: Module.BoundResolver = this.registry.get(moduleOrInstanceKey);
-    const resolver = unwrapThunk(boundResolver.resolverThunk);
-
-    if (resolver.kind === 'instanceResolver') {
-      if (!resolver.isInitialized) {
-        const depsInstances = boundResolver.dependencies.map(pathOrPathsRecord => {
-          if (typeof pathOrPathsRecord === 'string') {
-            return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, otherInjections);
-          }
-
-          throw new Error('Implement me');
-          // return Object.keys(pathOrPathsRecord).reduce((resolvers, prop) => {
-          //   const path = pathOrPathsRecord[prop];
-          //
-          //   return this.getResolver(path, otherInjections);
-          // });
-        });
-
-        resolver.setDependencies(depsInstances);
-      }
-    }
-
-    if (resolver.kind === 'instanceResolver') {
-      return resolver.build(context, []);
-    }
-
-    if (resolver.kind === 'moduleResolver') {
-      const moduleResolver = mergedInjections.hasKey(resolver.moduleId.identity)
-        ? mergedInjections.get(resolver.moduleId.identity)
-        : resolver;
-
-      return moduleResolver.build(instanceName, context, mergedInjections);
-    }
+    return this.getResolver(path, otherInjections).build(context);
   }
 
   protected getDependenciesResolvers(

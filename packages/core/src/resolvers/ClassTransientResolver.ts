@@ -7,8 +7,8 @@ export class ClassTransientResolver<TReturn, TDeps extends any[]> extends Instan
     super();
   }
 
-  build(cache: ContainerContext, _): TReturn {
-    const args = this.dependencies.map(d => d.build(cache, []));
+  build(cache: ContainerContext): TReturn {
+    const args = this.dependencies.map(d => d.build(cache));
     return new this.klass(...args);
   }
 }

@@ -5,7 +5,7 @@ describe(`Integration tests`, () => {
   describe(`registering reducers`, () => {
     describe(`no lazy loading`, () => {
       function setup() {
-        const appReducer1 = jest.fn().mockImplementation((state: AppState) => state);
+        const appReducer1 = jest.fn().mockImplementation((state: AppState, action) => state);
 
         const defaultState = { value: 'Tomasz' };
 
