@@ -31,16 +31,16 @@ const updateReducer = (state, action) => {
   return state;
 };
 
+const reduxModule = module('reduxModule')
+  .define('initialState', value({ value: 'initialValue' }))
+  .define('rootReducer', value(updateReducer))
+  .define('store', factory(StoreFactory), ['rootReducer', 'initialState'])
+  .define('updateValue', dispatch(updateAction), ['store']);
+
 describe(`SelectorResolver`, () => {
   describe(`flat module`, () => {
     function setup() {
-      const m = module('someModule')
-        .define('initialState', value({ value: 'initialValue' }))
-        .define('rootReducer', value(updateReducer))
-        .define('store', factory(StoreFactory), ['rootReducer', 'initialState'])
-
-        .define('someSelector', selector(selectStateValue, 0), ['store'])
-        .define('updateValue', dispatch(updateAction), ['store']);
+      const m = reduxModule.define('someSelector', selector(selectStateValue, 0), ['store']);
 
       const Container = () => {
         const value = useWatchable(m, 'someSelector');
@@ -74,43 +74,125 @@ describe(`SelectorResolver`, () => {
   describe(`composite selectors`, () => {
     function setup() {
       const selectorsModule = module('selectors')
-        .define('redux', () => m)
+        .define('redux', () => reduxModule)
         .define('someSelector', selector(selectStateValue, 0), ['redux.store'])
-        .define('otherSelector', selector(selectStateValue, 0), ['redux.store'])
         .define('compositeSelector', selector(toUpperCase, 1), ['redux.store', 'someSelector']);
-
-      const m = module('reduxModule')
-        .define('initialState', value({ value: 'initialValue' }))
-        .define('rootReducer', value(updateReducer))
-        .define('store', factory(StoreFactory), ['rootReducer', 'initialState'])
-        .define('updateValue', dispatch(updateAction), ['store']);
 
       const Container = () => {
         const value = useWatchable(selectorsModule, 'compositeSelector');
-        const onUpdate = useWatchable(m, 'updateValue');
+        const onUpdate = useWatchable(reduxModule, 'updateValue');
         return <DummyComponent value={value} onUpdateClick={onUpdate} />;
       };
 
       const c = container();
 
-      return render(
-        <ContainerProvider container={c}>
-          <Container />
-        </ContainerProvider>,
-      );
+      const Component = () => {
+        return (
+          <ContainerProvider container={c}>
+            <Container />
+          </ContainerProvider>
+        );
+      };
+
+      return {
+        Component,
+        selectorsModule,
+        container: c,
+      };
     }
 
     it(`correctly select initial state value`, async () => {
-      const result = setup();
+      const { Component } = setup();
+      const result = render(<Component />);
       expect(result.getByTestId('value').textContent).toEqual('INITIALVALUE');
     });
 
     it(`rerender component on store change`, async () => {
-      const result = setup();
+      const { Component } = setup();
+      const result = render(<Component />);
       expect(result.getByTestId('value').textContent).toEqual('INITIALVALUE');
       const button = await result.findByRole('button');
       button.click();
       expect(result.getByTestId('value').textContent).toEqual('UPDATED');
+    });
+
+    it(`allows to easily mock selector`, async () => {
+      const { Component, selectorsModule, container } = setup();
+      container.inject(selectorsModule.replace('someSelector', value('mockedValue')));
+      const result = render(<Component />);
+      expect(result.getByTestId('value').textContent).toEqual('MOCKEDVALUE');
+    });
+
+    it(`allows to easily mock final composite selector`, async () => {
+      const { Component, selectorsModule, container } = setup();
+      container.inject(selectorsModule.replace('compositeSelector', value('mockedValue')));
+      const result = render(<Component />);
+      expect(result.getByTestId('value').textContent).toEqual('mockedValue');
+    });
+  });
+
+  describe(`composite selector using other composite selector`, () => {
+    function setup() {
+      const selectorsModule = module('selectors')
+        .define('redux', () => reduxModule)
+        .define('someSelector', selector(selectStateValue, 0), ['redux.store'])
+        .define('compositeSelector', selector(toUpperCase, 1), ['redux.store', 'someSelector'])
+        .define(
+          'uberCompositeSelector',
+          selector((arg1, arg2) => arg1 + '_' + arg2, 2),
+          ['redux.store', 'someSelector', 'compositeSelector'],
+        );
+
+      const Container = () => {
+        const value = useWatchable(selectorsModule, 'uberCompositeSelector');
+        const onUpdate = useWatchable(reduxModule, 'updateValue');
+        return <DummyComponent value={value} onUpdateClick={onUpdate} />;
+      };
+
+      const c = container();
+
+      const Component = () => {
+        return (
+          <ContainerProvider container={c}>
+            <Container />
+          </ContainerProvider>
+        );
+      };
+
+      return {
+        Component,
+        selectorsModule,
+        container: c,
+      };
+    }
+
+    it(`correctly select initial state value`, async () => {
+      const { Component } = setup();
+      const result = render(<Component />);
+      expect(result.getByTestId('value').textContent).toEqual('initialValue_INITIALVALUE');
+    });
+
+    it(`rerender component on store change`, async () => {
+      const { Component } = setup();
+      const result = render(<Component />);
+      expect(result.getByTestId('value').textContent).toEqual('initialValue_INITIALVALUE');
+      const button = await result.findByRole('button');
+      button.click();
+      expect(result.getByTestId('value').textContent).toEqual('updated_UPDATED');
+    });
+
+    it(`allows to easily mock selector`, async () => {
+      const { Component, selectorsModule, container } = setup();
+      container.inject(selectorsModule.replace('someSelector', value('mockedValue')));
+      const result = render(<Component />);
+      expect(result.getByTestId('value').textContent).toEqual('mockedValue_MOCKEDVALUE');
+    });
+
+    it(`allows to easily mock final composite selector`, async () => {
+      const { Component, selectorsModule, container } = setup();
+      container.inject(selectorsModule.replace('uberCompositeSelector', value('mockedValue')));
+      const result = render(<Component />);
+      expect(result.getByTestId('value').textContent).toEqual('mockedValue');
     });
   });
 });

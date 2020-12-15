@@ -1,6 +1,6 @@
-import { AcquiredInstance, Container, ContainerContext, Instance } from 'hardwired';
+import { AcquiredInstance, ContainerContext, Instance } from 'hardwired';
 import { createSelector } from 'reselect';
-import { Store, Unsubscribe } from 'redux';
+import { Store } from 'redux';
 import invariant from 'tiny-invariant';
 
 export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps> {
@@ -10,9 +10,9 @@ export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps>
 
   build(context: ContainerContext): T {
     const store = this.getStore(context);
-    const childSelectors = this.dependencies
-      .filter(d => d instanceof SelectorResolver)
-      .map(d => () => d.build(context));
+    const [storeResolver, ...selectorsResolvers] = this.dependencies;
+
+    const childSelectors = selectorsResolvers.map(d => () => d.build(context));
 
     if (!context.hasInGlobalScope(this.id)) {
       const finalSelector = childSelectors.length > 0 ? createSelector(childSelectors, this.select) : this.select;
@@ -27,16 +27,10 @@ export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps>
   }
 
   getStore(context: ContainerContext): Store<any> {
-    const otherSelector = this.dependencies.find(d => d instanceof SelectorResolver);
-    if (otherSelector instanceof SelectorResolver) {
-      return otherSelector.getStore(context);
-    }
+    const [storeResolver, ...selectorsResolvers] = this.dependencies;
+    invariant(storeResolver, `Missing store dependency`);
 
-    const depsSelectors = this.dependencies.map(d => d.build(context));
-    const store = depsSelectors.find(dep => dep.subscribe);
-
-    invariant(store, `Cannot fetch store instance`);
-    return store;
+    return storeResolver.build(context);
   }
 }
 
@@ -67,14 +61,32 @@ export class AcquiredSelector<TValue> extends AcquiredInstance<TValue> {
   }
 }
 
-export type SelectorResolverParams = {
+export type SelectorResolverBuildFn = {
   <TReturn, TState>(select: (appState: TState) => TReturn, n: 0): SelectorResolver<TReturn, [Store<TState>]>;
   <TReturn, TState, TReturn1>(select: (appState: TReturn1) => TReturn, n: 1): SelectorResolver<
     TReturn,
     [Store<TState>, TReturn1]
   >;
+  <TReturn, TState, TReturn1, TReturn2>(
+    select: (return1: TReturn1, return2: TReturn2) => TReturn,
+    n: 2,
+  ): SelectorResolver<TReturn, [Store<TState>, TReturn1, TReturn2]>;
+  <TReturn, TState, TReturn1, TReturn2, TReturn3>(
+    select: (return1: TReturn1, return2: TReturn2, return3: TReturn3) => TReturn,
+    n: 3,
+  ): SelectorResolver<TReturn, [Store<TState>, TReturn1, TReturn2, TReturn3]>;
+
+  <TReturn, TState, TReturn1, TReturn2, TReturn3, TReturn4>(
+    select: (return1: TReturn1, return2: TReturn2, return3: TReturn3, return4: TReturn4) => TReturn,
+    n: 4,
+  ): SelectorResolver<TReturn, [Store<TState>, TReturn1, TReturn2, TReturn3, TReturn4]>;
+
+  <TReturn, TState, TReturn1, TReturn2, TReturn3, TReturn4, TReturn5>(
+    select: (return1: TReturn1, return2: TReturn2, return3: TReturn3, return4: TReturn4, return5: TReturn5) => TReturn,
+    n: 5,
+  ): SelectorResolver<TReturn, [Store<TState>, TReturn1, TReturn2, TReturn3, TReturn4, TReturn5]>;
 };
 
-export const selector: SelectorResolverParams = select => {
+export const selector: SelectorResolverBuildFn = select => {
   return new SelectorResolver(select as any) as any;
 };

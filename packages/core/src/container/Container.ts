@@ -33,7 +33,11 @@ export class Container<TModule extends ModuleBuilder<any>> {
       this.containerContext.loadModule(moduleInstance);
     }
 
-    return moduleInstance.getResolver(name).acquire(this.containerContext);
+    const moduleToBeUsed = this.containerContext.injections.hasKey(moduleInstance.moduleId.id)
+      ? this.containerContext.injections.get(moduleInstance.moduleId.id)
+      : moduleInstance;
+
+    return moduleToBeUsed.getResolver(name, this.containerContext.injections).acquire(this.containerContext);
   }
 
   hasModule(module: Module<any>): boolean {

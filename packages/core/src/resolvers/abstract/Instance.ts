@@ -22,7 +22,7 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   // TODO: for transient/scoped resolvers each acquisition should be distinguishable (acquisitionId? :/)
   // TODO: this probably should be abstract and only specific resolvers should implement this (other should throw an error ?) - e.g. for usingWatchable on non watchable instance
   acquire(context: ContainerContext): AcquiredInstance<TValue> {
-    return new BaseAcquiredInstance(this.id, context, this.build);
+    return new BaseAcquiredInstance(this.id, context, this.build.bind(this));
   }
 
   onInit?(context: ContainerContext): void;

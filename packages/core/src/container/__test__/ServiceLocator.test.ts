@@ -1,4 +1,4 @@
-import { ModuleBuilder, unit } from '../../module/ModuleBuilder';
+import { ModuleBuilder } from '../../module/ModuleBuilder';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { TestClassArgs2 } from '../../testing/ArgsDebug';
 import { value } from '../../resolvers/ValueResolver';
@@ -19,8 +19,6 @@ describe(`ServiceLocator`, () => {
 
       const c = container();
       c.inject(child.replace('someNumber', value(456)));
-
-      console.log(c.get(m, 'cls'));
 
       const locator = c.get(m, 'locator');
       const cls = locator.withScope(({ get }) => get(m, 'cls'));
