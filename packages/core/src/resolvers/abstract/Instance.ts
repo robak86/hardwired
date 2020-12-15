@@ -1,6 +1,7 @@
 import { createResolverId } from '../../utils/fastId';
 import { ContainerContext } from '../../container/ContainerContext';
 import { InstanceEvents } from '../../container/InstanceEvents';
+import { ImmutableSet } from '../../collections/ImmutableSet';
 
 export namespace Instance {
   export type Unbox<T> = T extends Instance<infer TInstance, any>
@@ -24,7 +25,7 @@ export abstract class Instance<TValue, TDeps extends any[]> {
     return new BaseAcquiredInstance(this.id, context, this.build);
   }
 
-  onInit?(context: ContainerContext, dependenciesIds: string[]): void;
+  onInit?(context: ContainerContext): void;
 
   private __keep(t: TDeps) {} // prevent erasing of the TDeps
 

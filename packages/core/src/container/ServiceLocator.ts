@@ -1,8 +1,8 @@
-import { ContainerContext } from "./ContainerContext";
-import invariant from "tiny-invariant";
-import { ModuleBuilder} from "../module/ModuleBuilder";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import { MaterializedRecord, Module } from "../resolvers/abstract/Module";
+import { ContainerContext } from './ContainerContext';
+import invariant from 'tiny-invariant';
+import { ModuleBuilder } from '../module/ModuleBuilder';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { MaterializedRecord, Module } from '../resolvers/abstract/Module';
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends Module.EntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord> & string>(
@@ -25,7 +25,7 @@ export class ServiceLocator {
         invariant(moduleResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
 
         // TODO: use real injections
-        return moduleResolver.get(key, requestContext, ImmutableSet.empty()) as any;
+        return moduleResolver.get(key, requestContext) as any;
       },
     });
   }

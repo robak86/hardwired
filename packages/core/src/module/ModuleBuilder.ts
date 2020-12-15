@@ -1,17 +1,17 @@
-import { PropType } from '../utils/PropType';
-import { ModuleId } from './ModuleId';
-import { ImmutableSet } from '../collections/ImmutableSet';
-import invariant from 'tiny-invariant';
-import { Thunk } from '../utils/Thunk';
-import { AnyResolver, MaterializedRecord, Module, PropTypesObject, PropTypesTuple } from '../resolvers/abstract/Module';
-import { Instance } from '../resolvers/abstract/Instance';
+import { PropType } from "../utils/PropType";
+import { ModuleId } from "./ModuleId";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import invariant from "tiny-invariant";
+import { Thunk } from "../utils/Thunk";
+import { AnyResolver, MaterializedRecord, Module, PropTypesObject, PropTypesTuple } from "../resolvers/abstract/Module";
+import { Instance } from "../resolvers/abstract/Instance";
 
 export const module = (name: string) => ModuleBuilder.empty(name);
 export const unit = module;
 
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends Module<TRecord> {
   static empty(name: string): ModuleBuilder<{}> {
-    return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any, ImmutableSet.empty() as any);
+    return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any);
   }
 
   define<TKey extends string, TValue extends Module<any>>(
@@ -54,7 +54,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
         resolverThunk: resolver,
         dependencies: dependencies || [],
       }) as any,
-      this.injections,
     );
   }
 
@@ -86,15 +85,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
         resolverThunk: resolver,
         dependencies: dependencies || [],
       }),
-      this.injections,
     );
-  }
-
-  inject(otherModule: Module.ChildModules<this>): this {
-    return new ModuleBuilder(
-      this.moduleId,
-      this.registry,
-      this.injections.extend(otherModule.moduleId.id, otherModule),
-    ) as any;
   }
 }

@@ -40,6 +40,12 @@ export class Container<TModule extends ModuleBuilder<any>> {
     return this.containerContext.hasModule(module.moduleId);
   }
 
+  // TODO: rename override|mock|replace ?
+  inject(module: Module<any>) {
+    invariant(!this.hasModule(module), `Cannot inject module: ${module.moduleId}. Module is already loaded`);
+    this.containerContext.inject(module);
+  }
+
   // TODO: this could be protected (and lazily evaluated) assuming that modules loading does not have any side effects
   // TODO: It was required for
   // TODO: it is still required for testing (providing injections)
@@ -50,6 +56,7 @@ export class Container<TModule extends ModuleBuilder<any>> {
   }
 }
 
+// TODO: should take context... or maybe injections ? This will allow for removing a imperative .inject method
 export function container(containerContext = ContainerContext.empty()): Container<ModuleBuilder<{}>> {
   const container = new Container(containerContext);
   return container as any;

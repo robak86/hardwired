@@ -153,22 +153,6 @@ describe(`Module`, () => {
   });
 
   describe(`inject`, () => {
-    it(`returns unchanged module type`, async () => {
-      const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
-      const m2 = ModuleBuilder.empty('someModule').define('imported', m1).define('key1', dummy(123));
-
-      const withInjection = m2.inject(m1);
-    });
-
-    it(`does not allow to inject unrelated module`, async () => {
-      const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
-      const m2 = ModuleBuilder.empty('someModule').define('imported', m1).define('key1', dummy(123));
-      const unrelatedModule = ModuleBuilder.empty('someModule').define('differentKey', dummy(123));
-
-      // @ts-expect-error - unrelated module does not extend m1 (differentKey not compatible with key)
-      const withInjection = m2.inject(unrelatedModule);
-    });
-
     it(`replaces child module`, async () => {
       const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
 
@@ -176,10 +160,10 @@ describe(`Module`, () => {
         .define('imported', child1)
         .define('cls', singleton(TestClassArgs2), ['imported.key1', 'imported.key2']);
 
-      const rootWithInjection = root.inject(child1.replace('key2', dummy('replacedString')));
       const c = container();
+      c.inject(child1.replace('key2', dummy('replacedString')));
 
-      const classInstance = c.get(rootWithInjection, 'cls');
+      const classInstance = c.get(root, 'cls');
       expect(classInstance.someString).toEqual('replacedString');
     });
 
@@ -191,15 +175,14 @@ describe(`Module`, () => {
 
       const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
 
-      const rootWithInjection = root.inject(
+      const c = container();
+      c.inject(
         child1 //breakme
           .replace('key1', dummy(456))
           .replace('key2', dummy('replacedString')),
       );
 
-      const c = container();
-
-      const classInstance = c.get(rootWithInjection, 'cls');
+      const classInstance = c.get(root, 'cls');
       expect(classInstance.someNumber).toEqual(456);
       expect(classInstance.someString).toEqual('replacedString');
     });

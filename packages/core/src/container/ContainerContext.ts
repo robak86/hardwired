@@ -1,8 +1,9 @@
-import { ModuleId } from "../module/ModuleId";
-import invariant from "tiny-invariant";
-import { PushPromise } from "../utils/PushPromise";
-import { ContainerEvents } from "./ContainerEvents";
-import { Module } from "../resolvers/abstract/Module";
+import { ModuleId } from '../module/ModuleId';
+import invariant from 'tiny-invariant';
+import { PushPromise } from '../utils/PushPromise';
+import { ContainerEvents } from './ContainerEvents';
+import { Module } from '../resolvers/abstract/Module';
+import { ImmutableSet } from '../collections/ImmutableSet';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -17,6 +18,7 @@ export class ContainerContext {
   protected constructor(
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
+    public injections = ImmutableSet.empty(),
   ) {}
 
   setForGlobalScope(uuid: string, instance: any) {
@@ -25,6 +27,10 @@ export class ContainerContext {
 
   setForRequestScope(uuid: string, instance: any) {
     this.requestScope[uuid] = instance;
+  }
+
+  inject(module: Module<any>) {
+    this.injections = this.injections.extend(module.moduleId.id, module);
   }
 
   hasInGlobalScope(uuid: string): boolean {
@@ -61,13 +67,17 @@ export class ContainerContext {
   }
 
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.modulesResolvers);
+    return new ContainerContext(this.globalScope, this.modulesResolvers, this.injections);
   }
 
   loadModule(module: Module<any>) {
     if (!this.hasModule(module.moduleId)) {
-      this.addModule(module.moduleId, module);
-      module.onInit && module.onInit(this);
+      const moduleToBeLoaded = this.injections.hasKey(module.moduleId.id)
+        ? this.injections.get(module.moduleId.id)
+        : module;
+
+      this.addModule(moduleToBeLoaded.moduleId, moduleToBeLoaded);
+      moduleToBeLoaded.onInit && moduleToBeLoaded.onInit(this);
     }
   }
 

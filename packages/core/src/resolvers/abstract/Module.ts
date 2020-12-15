@@ -65,26 +65,24 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
   protected constructor(
     public moduleId: ModuleId,
     public registry: ImmutableSet<Record<string, Module.BoundResolver>>,
-    protected injections: ImmutableSet<Record<string, Module<any>>>,
   ) {}
 
   get<TPath extends Module.Paths<TValue>>(
     path: TPath,
     context: ContainerContext,
-    injections = ImmutableSet.empty(),
   ): PropType<MaterializedRecord<TValue>, TPath> {
-    const instance = this.build(path, context, injections);
+    const instance = this.build(path, context, context.injections);
     invariant(instance, `Module returned undefined value for ${path}`);
     return instance;
   }
 
+  // TODO: consider adding less naive (slower?) modules comparison - e.g. comparing all definitions and resolvers types ?
   isEqual(otherModule: Module<any>): boolean {
     return this.moduleId.id === otherModule.moduleId.id;
   }
 
   getResolver(path: string, injections = ImmutableSet.empty()): Instance<any, any> {
     const [moduleOrInstance, instance] = path.split('.');
-    const mergedInjections = this.injections.merge(injections); //TODO: it's not optimal to do this merge for each getResolver call :/
 
     const { resolverThunk, dependencies } = this.registry.get(moduleOrInstance);
     const resolver = unwrapThunk(resolverThunk);
@@ -95,7 +93,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
       if (!resolver.isInitialized) {
         const depsInstances = dependencies.map(pathOrPathsRecord => {
           if (typeof pathOrPathsRecord === 'string') {
-            return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, mergedInjections);
+            return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, injections);
           }
 
           throw new Error('Implement me');
@@ -123,11 +121,11 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
         `Cannot return resolver for path: ${path}. ${moduleOrInstance} is not a module`,
       );
 
-      const moduleResolver = mergedInjections.hasKey(resolver.moduleId.id)
-        ? mergedInjections.get(resolver.moduleId.id)
+      const moduleResolver = injections.hasKey(resolver.moduleId.id)
+        ? injections.get(resolver.moduleId.id)
         : resolver;
 
-      return moduleResolver.getResolver(instance, mergedInjections);
+      return moduleResolver.getResolver(instance, injections);
     }
 
     throw new Error('invalid state');
@@ -139,9 +137,15 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
       const resolver = unwrapThunk(resolverThunk);
 
       // TODO: USE INJECTIONS
-      const dependenciesIds = this.getDependenciesResolvers(dependencies, ImmutableSet.empty()).map(r => r.id);
+      // const dependenciesIds = this.getDependenciesResolvers(dependencies, ImmutableSet.empty()).map(r => r.id);
 
-      resolver.onInit && resolver.onInit(containerContext, dependenciesIds);
+      if (resolver.kind === 'moduleResolver') {
+        resolver.onInit && resolver.onInit(containerContext);
+      }
+
+      if (resolver.kind === 'instanceResolver') {
+        resolver.onInit && resolver.onInit(containerContext);
+      }
     });
 
     this.registry.forEach((boundResolver, key) => {
@@ -149,7 +153,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
 
       if (resolver.kind === 'instanceResolver') {
         containerContext.containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
-          return this.get(key as any, containerContext, this.injections);
+          return this.get(key as any, containerContext);
         });
       }
     });
