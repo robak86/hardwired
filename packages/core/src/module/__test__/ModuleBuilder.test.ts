@@ -13,7 +13,7 @@ describe(`Module`, () => {
     return new ValueResolver(value);
   };
 
-  const dummyClassResolver = <TDeps extends any[], TValue>(cls: ClassType<TDeps, TValue>): Instance<TValue, TDeps> => {
+  const dummyClassResolver = <TDeps extends any[], TValue>(cls: ClassType<TValue, TDeps>): Instance<TValue, TDeps> => {
     return singleton(cls);
   };
 

@@ -8,7 +8,7 @@ export interface Factory<TReturn> {
 }
 
 export class FactoryResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
-  constructor(private klass: ClassType<any, Factory<TReturn>>) {
+  constructor(private klass: ClassType<Factory<TReturn>, any>) {
     super();
   }
 
@@ -27,6 +27,6 @@ export class FactoryResolver<TReturn, TDeps extends any[]> extends Instance<TRet
   }
 }
 
-export function factory<TDeps extends any[], TValue>(cls: ClassType<TDeps, Factory<TValue>>): Instance<TValue, TDeps> {
+export function factory<TDeps extends any[], TValue>(cls: ClassType<Factory<TValue>, TDeps>): Instance<TValue, TDeps> {
   return new FactoryResolver(cls);
 }

@@ -13,7 +13,7 @@ class DefinitionsSignalEmitter {
   private emitter = new SignalEmitter<[Instance<any, any>, (containerContext: ContainerContext) => any]>();
 
   add<TValue>(
-    resolverClass: ClassType<any, Instance<TValue, any>>,
+    resolverClass: ClassType<Instance<TValue, any>, any>,
     listener: (event: InstanceGetter<TValue>) => void,
   ): () => void {
     return this.emitter.add((instance, factory) => {

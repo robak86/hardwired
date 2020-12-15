@@ -1,6 +1,6 @@
-import { ContainerContext } from "../container/ContainerContext";
-import { ClassType } from "../utils/ClassType";
-import { Instance } from "./abstract/Instance";
+import { ContainerContext } from '../container/ContainerContext';
+import { ClassType } from '../utils/ClassType';
+import { Instance } from './abstract/Instance';
 
 export class ClassTransientResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   constructor(private klass) {
@@ -13,9 +13,6 @@ export class ClassTransientResolver<TReturn, TDeps extends any[]> extends Instan
   }
 }
 
-
-export function transient<TDeps extends any[], TValue>(
-  cls: ClassType<TDeps, TValue>,
-): Instance<TValue, TDeps> {
+export function transient<TDeps extends any[], TValue>(cls: ClassType<TValue, TDeps>): Instance<TValue, TDeps> {
   return new ClassTransientResolver(cls);
 }
