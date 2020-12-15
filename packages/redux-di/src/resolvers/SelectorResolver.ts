@@ -1,11 +1,9 @@
-import { ContainerContext, Instance } from 'hardwired';
+import { AcquiredInstance, Container, ContainerContext, Instance } from 'hardwired';
 import { createSelector } from 'reselect';
-import { Store } from 'redux';
+import { Store, Unsubscribe } from 'redux';
 import invariant from 'tiny-invariant';
 
 export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps> {
-  private hasSubscription = false;
-
   constructor(private select: () => T) {
     super();
   }
@@ -21,15 +19,11 @@ export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps>
       context.setForGlobalScope(this.id, finalSelector);
     }
 
-    // TODO: this registers many unnecessary subscriptions. Subscription should be created lazily only when some component uses a selector
-    if (!this.hasSubscription) {
-      store.subscribe(() => {
-        context.getInstancesEvents(this.id).invalidateEvents.emit();
-      });
-      this.hasSubscription = true;
-    }
-
     return context.getFromGlobalScope(this.id)(store.getState());
+  }
+
+  acquire(context: ContainerContext): AcquiredInstance<T> {
+    return new AcquiredSelector(this.id, context, this.getStore(context), this.build);
   }
 
   getStore(context: ContainerContext): Store<any> {
@@ -43,6 +37,33 @@ export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps>
 
     invariant(store, `Cannot fetch store instance`);
     return store;
+  }
+}
+
+export class AcquiredSelector<TValue> extends AcquiredInstance<TValue> {
+  private unsubscribe?: Function;
+
+  constructor(
+    protected resolverId: string,
+    protected containerContext,
+    private store: Store<any>,
+    private select: (containerContext: ContainerContext) => TValue,
+  ) {
+    super(resolverId, containerContext);
+
+    this.unsubscribe = this.store.subscribe(() => {
+      this.instanceEvents.invalidateEvents.emit();
+    });
+  }
+
+  dispose() {
+    this.unsubscribe?.();
+    this.unsubscribe = undefined;
+    this.instanceEvents.clearAll();
+  }
+
+  get(): TValue {
+    return this.select(this.containerContext);
   }
 }
 

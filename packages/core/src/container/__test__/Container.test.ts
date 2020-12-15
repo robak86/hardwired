@@ -2,30 +2,14 @@ import { dependency } from '../../testing/TestResolvers';
 import { container } from '../Container';
 import { value } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
-import { ArgsDebug, TestClass } from '../../testing/ArgsDebug';
+import { ArgsDebug, TestClassArgs2 } from '../../testing/ArgsDebug';
 import { module } from '../../module/ModuleBuilder';
 import { ContainerContext } from '../ContainerContext';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
-    it(`return correct value`, async () => {
-      const m = module('root').define('a', dependency(123));
-      const c = container();
-      const a = c.get(m, 'a');
-      expect(a).toEqual(123);
-    });
-  });
-
-  describe(`.get using module-key pairs`, () => {
-    const child = module('child').define('a', dependency('aValue')).define('b', dependency('bValue'));
-
-    const child2 = module('child').define('c', dependency('cValue')).define('d', dependency('dValue'));
-
-    const parent = module('parent')
-      .define('child1', () => child)
-      .define('child2', () => child2);
-
     it(`returns correct value`, async () => {
+      const child2 = module('child').define('c', dependency('cValue')).define('d', dependency('dValue'));
       const c = container();
 
       const cValue = c.get(child2, 'c');
@@ -42,7 +26,7 @@ describe(`Container`, () => {
     });
   });
 
-  describe(`replacing definitions`, () => {
+  describe(`.replace`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
         const m = module('m').define('a', value(1));
@@ -87,6 +71,18 @@ describe(`Container`, () => {
     });
   });
 
+  describe(`.acquireInstanceResolver`, () => {
+    it(`calls acquire on resolver and returns created object`, async () => {
+      const resolver = dependency(123);
+      const m = module('testModule').define('testResolver', resolver);
+      const c = container();
+      jest.spyOn(resolver, 'acquire').mockReturnValue('mocked' as any);
+      const acquired = c.acquireInstanceResolver(m, 'testResolver');
+      expect(resolver.acquire).toHaveBeenCalled();
+      expect(acquired).toEqual('mocked');
+    });
+  });
+
   describe(`lazy loading`, () => {
     function setup() {
       const c = container();
@@ -128,7 +124,7 @@ describe(`Container`, () => {
     it(`calls onInit with dependencies resolvers id's`, async () => {
       const numberResolver = value(123);
       const stringResolver = value('some string');
-      const singletonResolver = singleton(TestClass);
+      const singletonResolver = singleton(TestClassArgs2);
 
       (singletonResolver as any).onInit = () => null;
       jest.spyOn(singletonResolver, 'onInit');
@@ -141,7 +137,7 @@ describe(`Container`, () => {
       const containerContext = ContainerContext.empty();
 
       const c = container(containerContext);
-      c.load(m);
+      c.get(m, 'someString');
 
       expect(singletonResolver.onInit).toHaveBeenCalledWith(containerContext, [numberResolver.id, stringResolver.id]);
     });

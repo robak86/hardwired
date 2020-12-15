@@ -17,21 +17,20 @@ export const useWatchable: WatchableHook = (module, name) => {
   const container = useContainer();
   const acquiredInstanceRef = useRef<any>(container.acquireInstanceResolver(module, name));
 
-  const events = acquiredInstanceRef.current.getEvents(module, name);
+  const events = acquiredInstanceRef.current.getEvents();
   const [invalidateCount, setInvalidateCount] = useState(0);
   const instanceRef = useRef<any>(container.get(module, name));
 
-  // TODO: use container.getResolver().(isStateFull?, isObservable, isReactive?)
-  // container.getResolver().subscribe() - subscriptions needs to be hold in container context (no state in resolvers)
-
   useEffect(() => {
-    return events.invalidateEvents.add(() => {
+    events.invalidateEvents.add(() => {
       const newValue = container.get(module, name);
       if (instanceRef.current !== newValue) {
         instanceRef.current = newValue;
       }
       setInvalidateCount(invalidateCount + 1);
     });
+
+    return () => acquiredInstanceRef.current.dispose();
   }, []);
 
   return instanceRef.current;

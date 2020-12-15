@@ -6,6 +6,7 @@ import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { container } from '../../container/Container';
 import { Module } from '../../resolvers/abstract/Module';
 import { Instance } from '../../resolvers/abstract/Instance';
+import { TestClassArgs2 } from '../../testing/ArgsDebug';
 
 describe(`Module`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
@@ -15,10 +16,6 @@ describe(`Module`, () => {
   const dummyClassResolver = <TDeps extends any[], TValue>(cls: ClassType<TDeps, TValue>): Instance<TValue, TDeps> => {
     return singleton(cls);
   };
-
-  class TestClass {
-    constructor(public a: number, public b: string) {}
-  }
 
   describe(`define`, () => {
     it(`creates correct type`, async () => {
@@ -46,19 +43,19 @@ describe(`Module`, () => {
     it(`providing deps`, async () => {
       const m2 = ModuleBuilder.empty('someModule').define('string', dummy('string')).define('number', dummy(123));
 
-      m2.define('cls', dummyClassResolver(TestClass), ['number', 'string']);
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['number', 'string']);
 
       // @ts-expect-error - dependencies were passed in the wrong order
-      m2.define('cls', dummyClassResolver(TestClass), ['string', 'number']);
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['string', 'number']);
 
       // @ts-expect-error - on of the dependencies is missing
-      m2.define('cls', dummyClassResolver(TestClass), ['number']);
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['number']);
 
       // @ts-expect-error - dependencies array is empty
-      m2.define('cls', dummyClassResolver(TestClass), []);
+      m2.define('cls', dummyClassResolver(TestClassArgs2), []);
 
       // @ts-expect-error - dependencies array is not provided
-      m2.define('cls', dummyClassResolver(TestClass));
+      m2.define('cls', dummyClassResolver(TestClassArgs2));
     });
 
     it(`providing deps from imported modules`, async () => {
@@ -68,19 +65,19 @@ describe(`Module`, () => {
 
       const m2 = ModuleBuilder.empty('someModule').define('imported', () => child);
 
-      m2.define('cls', dummyClassResolver(TestClass), ['imported.someNumber', 'imported.someString']);
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['imported.someNumber', 'imported.someString']);
 
       // @ts-expect-error - dependencies were passed in the wrong order
-      m2.define('cls', dummyClassResolver(TestClass), ['imported.someString', 'imported.someNumber']);
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['imported.someString', 'imported.someNumber']);
 
       // @ts-expect-error - on of the dependencies is missing
-      m2.define('cls', dummyClassResolver(TestClass), ['imported.someNumber']);
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['imported.someNumber']);
 
       // @ts-expect-error - dependencies array is empty
-      m2.define('cls', dummyClassResolver(TestClass), []);
+      m2.define('cls', dummyClassResolver(TestClassArgs2), []);
 
       // @ts-expect-error - dependencies array is not provided
-      m2.define('cls', dummyClassResolver(TestClass));
+      m2.define('cls', dummyClassResolver(TestClassArgs2));
     });
 
     describe(`providing structured deps`, () => {
@@ -177,20 +174,20 @@ describe(`Module`, () => {
 
       const root = ModuleBuilder.empty('root')
         .define('imported', child1)
-        .define('cls', singleton(TestClass), ['imported.key1', 'imported.key2']);
+        .define('cls', singleton(TestClassArgs2), ['imported.key1', 'imported.key2']);
 
       const rootWithInjection = root.inject(child1.replace('key2', dummy('replacedString')));
       const c = container();
 
       const classInstance = c.get(rootWithInjection, 'cls');
-      expect(classInstance.b).toEqual('replacedString');
+      expect(classInstance.someString).toEqual('replacedString');
     });
 
     it(`replaces all imports of given module`, async () => {
       const root = ModuleBuilder.empty('root')
         .define('import1', () => child1)
         .define('import2', () => child1)
-        .define('cls', singleton(TestClass), ['import1.key1', 'import2.key2']);
+        .define('cls', singleton(TestClassArgs2), ['import1.key1', 'import2.key2']);
 
       const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
 
@@ -203,8 +200,8 @@ describe(`Module`, () => {
       const c = container();
 
       const classInstance = c.get(rootWithInjection, 'cls');
-      expect(classInstance.a).toEqual(456);
-      expect(classInstance.b).toEqual('replacedString');
+      expect(classInstance.someNumber).toEqual(456);
+      expect(classInstance.someString).toEqual('replacedString');
     });
   });
 });

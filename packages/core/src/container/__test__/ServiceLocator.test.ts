@@ -1,6 +1,6 @@
 import { ModuleBuilder, unit } from '../../module/ModuleBuilder';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
-import { TestClass } from '../../testing/ArgsDebug';
+import { TestClassArgs2 } from '../../testing/ArgsDebug';
 import { value } from '../../resolvers/ValueResolver';
 import { container } from '../Container';
 import { serviceLocator } from '../../resolvers/ServiceLocatorResolver';
@@ -15,7 +15,7 @@ describe(`ServiceLocator`, () => {
       const m = ModuleBuilder.empty('root')
         .define('import', child)
         .define('locator', serviceLocator())
-        .define('cls', singleton(TestClass), ['import.someNumber', 'import.someString']);
+        .define('cls', singleton(TestClassArgs2), ['import.someNumber', 'import.someString']);
 
       const mWithInjection = m.inject(child.replace('someNumber', value(456)));
       const c = container();

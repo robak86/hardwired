@@ -1,9 +1,8 @@
 import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
 import { ModuleBuilder } from '../module/ModuleBuilder';
-import { InstanceEvents } from './InstanceEvents';
-import { MaterializedRecord, Module } from '../resolvers/abstract/Module';
-import { AcquiredInstance, Instance } from '../resolvers/abstract/Instance';
+import { Module } from '../resolvers/abstract/Module';
+import { AcquiredInstance } from '../resolvers/abstract/Instance';
 
 export class Container<TModule extends ModuleBuilder<any>> {
   constructor(private containerContext: ContainerContext = ContainerContext.empty()) {}
@@ -42,12 +41,13 @@ export class Container<TModule extends ModuleBuilder<any>> {
   }
 
   // TODO: this could be protected (and lazily evaluated) assuming that modules loading does not have any side effects
-  load(module: Module<any>) {
+  // TODO: It was required for
+  // TODO: it is still required for testing (providing injections)
+  // TODO: rename to inject and extract injections from the module to container (but this is still orthogonal to modules loading) ?
+  protected load(module: Module<any>) {
     invariant(!this.hasModule(module), `Module ${module.moduleId} is already loaded`);
     this.containerContext.loadModule(module);
   }
-
-
 }
 
 export function container(containerContext = ContainerContext.empty()): Container<ModuleBuilder<{}>> {

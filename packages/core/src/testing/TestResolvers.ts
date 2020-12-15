@@ -1,5 +1,4 @@
 import { ContainerContext } from "../container/ContainerContext";
-import { ContainerEvents } from "../container/ContainerEvents";
 import { Instance } from "../resolvers/abstract/Instance";
 
 export class DummyResolver<TValue> extends Instance<TValue, []> {

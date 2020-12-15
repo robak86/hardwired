@@ -49,7 +49,6 @@ describe(`SelectorResolver`, () => {
       };
 
       const c = container();
-      c.load(m);
 
       return render(
         <ContainerProvider container={c}>
@@ -93,7 +92,6 @@ describe(`SelectorResolver`, () => {
       };
 
       const c = container();
-      c.load(m);
 
       return render(
         <ContainerProvider container={c}>

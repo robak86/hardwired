@@ -6,6 +6,6 @@ export class ArgsDebug {
   }
 }
 
-export class TestClass {
+export class TestClassArgs2 {
   constructor(public someNumber: number, public someString: string) {}
 }

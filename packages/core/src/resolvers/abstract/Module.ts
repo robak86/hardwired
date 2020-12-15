@@ -6,21 +6,6 @@ import { Thunk, unwrapThunk } from '../../utils/Thunk';
 import { PropType } from '../../utils/PropType';
 import { Instance } from './Instance';
 
-/*
--  add dependencies array to Instance class
--  build(context: ContainerContext, deps: DepsResolvers<TDeps>) -> build(context: ContainerContext)
--  how to get own deps resolvers having only path(without module context) and context ?
--  maybe apart from the dependencies Instance should have also assigned moduleId which it belongs to
--  having moduleId and deps paths should allow any Instance to fetch its resolvers from context (assuming that module will it's resolvers under  [moduleId][path] into container context)
-
-
-V2
-- add dependencies array holding references to Resolvers (instead of paths)
-- most probably settings dependencies needs to happen lazily (in order to support injections)
-- Instance and Module need to have the same build signature
-- How to instantiate dependency from imported module ('imported.path') assuming that dependencies is only an  array of resolvers
- */
-
 // prettier-ignore
 export type AnyResolver = Instance<any, any> | Module<any>;
 

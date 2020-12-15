@@ -2,17 +2,15 @@ import { value, ValueResolver } from "../../resolvers/ValueResolver";
 import { singleton } from "../../resolvers/ClassSingletonResolver";
 import { ModuleBuilder } from "../ModuleBuilder";
 import { Module } from "../../resolvers/abstract/Module";
+import { TestClassArgs2 } from "../../testing/ArgsDebug";
 
 const dummy = <TValue>(value: TValue): ValueResolver<TValue> => {
   return new ValueResolver(value);
 };
 
-export class TestClass {
-  constructor(private a: number, private b: string) {}
-}
 
 export class TestClassUsing {
-  constructor(private a: TestClass) {}
+  constructor(private a: TestClassArgs2) {}
 }
 
 const ab0 = ModuleBuilder.empty('a')
@@ -107,50 +105,50 @@ const ab0 = ModuleBuilder.empty('a')
   .define('asbaj', dummy(1))
   .define('asbak', dummy(1))
   .define('ascba', dummy(1))
-  .define('s111', singleton(TestClass), ['a', 'string'])
-  .define('s112', singleton(TestClass), ['a', 'string'])
-  .define('s113', singleton(TestClass), ['a', 'string'])
-  .define('s114', singleton(TestClass), ['a', 'string'])
-  .define('s115', singleton(TestClass), ['a', 'string'])
-  .define('s116', singleton(TestClass), ['a', 'string'])
-  .define('s117', singleton(TestClass), ['a', 'string'])
-  .define('s118', singleton(TestClass), ['a', 'string'])
-  .define('s119', singleton(TestClass), ['a', 'string'])
-  .define('s110', singleton(TestClass), ['a', 'string'])
-  .define('s1123', singleton(TestClass), ['a', 'string'])
-  .define('as111', singleton(TestClass), ['a', 'string'])
-  .define('as112', singleton(TestClass), ['a', 'string'])
-  .define('as113', singleton(TestClass), ['a', 'string'])
-  .define('as114', singleton(TestClass), ['a', 'string'])
-  .define('as115', singleton(TestClass), ['a', 'string'])
-  .define('as116', singleton(TestClass), ['a', 'string'])
-  .define('as117', singleton(TestClass), ['a', 'string'])
-  .define('as118', singleton(TestClass), ['a', 'string'])
-  .define('as119', singleton(TestClass), ['a', 'string'])
-  .define('as110', singleton(TestClass), ['a', 'string'])
-  .define('as1123', singleton(TestClass), ['a', 'string'])
-  .define('aass111', singleton(TestClass), ['a', 'string'])
-  .define('aass112', singleton(TestClass), ['a', 'string'])
-  .define('aass113', singleton(TestClass), ['a', 'string'])
-  .define('aass114', singleton(TestClass), ['a', 'string'])
-  .define('aass115', singleton(TestClass), ['a', 'string'])
-  .define('aass116', singleton(TestClass), ['a', 'string'])
-  .define('aass117', singleton(TestClass), ['a', 'string'])
-  .define('aass118', singleton(TestClass), ['a', 'string'])
-  .define('aass119', singleton(TestClass), ['a', 'string'])
-  .define('aass110', singleton(TestClass), ['a', 'string'])
-  .define('aass1123', singleton(TestClass), ['a', 'string'])
-  .define('aasas111', singleton(TestClass), ['a', 'string'])
-  .define('aasas112', singleton(TestClass), ['a', 'string'])
-  .define('aasas113', singleton(TestClass), ['a', 'string'])
-  .define('aasas114', singleton(TestClass), ['a', 'string'])
-  .define('aasas115', singleton(TestClass), ['a', 'string'])
-  .define('aasas116', singleton(TestClass), ['a', 'string'])
-  .define('aasas117', singleton(TestClass), ['a', 'string'])
-  .define('aasas118', singleton(TestClass), ['a', 'string'])
-  .define('aasas119', singleton(TestClass), ['a', 'string'])
-  .define('aasas110', singleton(TestClass), ['a', 'string'])
-  .define('aasas1123', singleton(TestClass), ['a', 'string']);
+  .define('s111', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s112', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s113', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s114', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s115', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s116', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s117', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s118', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s119', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s110', singleton(TestClassArgs2), ['a', 'string'])
+  .define('s1123', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as111', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as112', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as113', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as114', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as115', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as116', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as117', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as118', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as119', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as110', singleton(TestClassArgs2), ['a', 'string'])
+  .define('as1123', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass111', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass112', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass113', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass114', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass115', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass116', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass117', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass118', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass119', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass110', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aass1123', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas111', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas112', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas113', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas114', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas115', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas116', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas117', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas118', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas119', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas110', singleton(TestClassArgs2), ['a', 'string'])
+  .define('aasas1123', singleton(TestClassArgs2), ['a', 'string']);
 
 const ab = ModuleBuilder.empty('a')
   // .using(commonDefines)
@@ -437,7 +435,7 @@ const a = ModuleBuilder.empty('a')
   .define('imported1', () => ab1)
   .define('imported2', () => ab2)
   .define('asdf', dummy(1))
-  .define('cba', singleton(TestClass), ['imported.a', 'imported0.string']);
+  .define('cba', singleton(TestClassArgs2), ['imported.a', 'imported0.string']);
 
 const m = ModuleBuilder.empty('');
 
@@ -520,6 +518,6 @@ const m222 = m
 const mmm = m
   .define('imported', m222)
   .define('b', value('string'))
-  .define('sdf', singleton(TestClass), ['imported.num', 'b'])
+  .define('sdf', singleton(TestClassArgs2), ['imported.num', 'b'])
   .define('sdf2', singleton(TestClassUsing), ['sdf']);
 type Mat = Module.Materialized<typeof mmm>;
