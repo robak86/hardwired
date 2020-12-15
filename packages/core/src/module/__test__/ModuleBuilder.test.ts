@@ -1,5 +1,5 @@
 import { expectType, TypeEqual } from 'ts-expect';
-import { ModuleBuilder } from '../ModuleBuilder';
+import { ModuleBuilder, module } from '../ModuleBuilder';
 import { ClassType } from '../../utils/ClassType';
 import { value, ValueResolver } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
@@ -202,6 +202,26 @@ describe(`Module`, () => {
       const classInstance = c.get(rootWithInjection, 'cls');
       expect(classInstance.someNumber).toEqual(456);
       expect(classInstance.someString).toEqual('replacedString');
+    });
+  });
+
+  describe(`isEqual`, () => {
+    it(`returns false for two newly created empty modules`, async () => {
+      const m1 = module('');
+      const m2 = module('');
+      expect(m1.isEqual(m2)).toEqual(false);
+    });
+
+    it(`returns false for module extended with a new definition`, async () => {
+      const m1 = module('').define('a', value('string'));
+      const m2 = m1.define('b', value('someOtherString'));
+      expect(m1.isEqual(m2)).toEqual(false);
+    });
+
+    it(`returns true for module with replaced value`, async () => {
+      const m1 = module('').define('a', value('string'));
+      const m2 = m1.replace('a', value('someOtherString'));
+      expect(m1.isEqual(m2)).toEqual(true);
     });
   });
 });

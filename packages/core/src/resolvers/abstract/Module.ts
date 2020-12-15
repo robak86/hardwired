@@ -78,6 +78,10 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     return instance;
   }
 
+  isEqual(otherModule: Module<any>): boolean {
+    return this.moduleId.id === otherModule.moduleId.id;
+  }
+
   getResolver(path: string, injections = ImmutableSet.empty()): Instance<any, any> {
     const [moduleOrInstance, instance] = path.split('.');
     const mergedInjections = this.injections.merge(injections); //TODO: it's not optimal to do this merge for each getResolver call :/
@@ -119,8 +123,8 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
         `Cannot return resolver for path: ${path}. ${moduleOrInstance} is not a module`,
       );
 
-      const moduleResolver = mergedInjections.hasKey(resolver.moduleId.identity)
-        ? mergedInjections.get(resolver.moduleId.identity)
+      const moduleResolver = mergedInjections.hasKey(resolver.moduleId.id)
+        ? mergedInjections.get(resolver.moduleId.id)
         : resolver;
 
       return moduleResolver.getResolver(instance, mergedInjections);

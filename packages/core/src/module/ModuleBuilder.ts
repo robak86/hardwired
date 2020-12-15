@@ -81,7 +81,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     invariant(this.registry.hasKey(name), `Cannot replace definition. Definition: ${name} does not exist.`);
 
     return new ModuleBuilder(
-      ModuleId.next(this.moduleId),
+      this.moduleId,
       this.registry.replace(name, {
         resolverThunk: resolver,
         dependencies: dependencies || [],
@@ -92,9 +92,9 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
 
   inject(otherModule: Module.ChildModules<this>): this {
     return new ModuleBuilder(
-      ModuleId.next(this.moduleId),
+      this.moduleId,
       this.registry,
-      this.injections.extend(otherModule.moduleId.identity, otherModule),
+      this.injections.extend(otherModule.moduleId.id, otherModule),
     ) as any;
   }
 }
