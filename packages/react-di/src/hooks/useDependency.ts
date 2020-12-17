@@ -1,6 +1,6 @@
-import { ModuleBuilder } from 'hardwired';
+import { ModuleBuilder } from '@hardwired/core';
 import { useContainer } from '../components/ContainerContext';
-import { Module } from 'hardwired';
+import { Module } from '@hardwired/core';
 import { useRef } from 'react';
 
 export const useDependency = <

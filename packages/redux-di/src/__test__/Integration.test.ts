@@ -1,4 +1,4 @@
-import { container, factory, module, value } from 'hardwired';
+import { container, factory, module, value } from '@hardwired/core';
 import { AppState, StoreFactory } from '../tests/StoreFactory';
 
 describe(`Integration tests`, () => {

@@ -1,4 +1,4 @@
-import { module } from "hardwired";
+import { module } from "@hardwired/core";
 import React, { FunctionComponent } from "react";
 
 import { AppState } from "./state/AppState";

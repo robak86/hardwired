@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@types/node": "^12.0.0",
-    "hardwired": "*",
+    "@hardwired/core": "*",
     "hardwired-react": "*",
     "hardwired-redux": "*",
     "parcel-bundler": "^1.12.4"

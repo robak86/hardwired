@@ -1,4 +1,4 @@
-import { Factory } from 'hardwired';
+import { Factory } from '@hardwired/core';
 import { createStore, Reducer, Store } from 'redux';
 
 export type AppState = {

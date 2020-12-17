@@ -4,7 +4,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "hardwired": "*"
+    "@hardwired/core": "*"
   },
   "devDependencies": {},
   "files": [

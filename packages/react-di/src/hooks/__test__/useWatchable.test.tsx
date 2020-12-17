@@ -1,11 +1,11 @@
-import { AcquiredInstance, container, ContainerContext, Instance, module, unit, value } from 'hardwired';
+import { AcquiredInstance, container, ContainerContext, Instance, module, unit, value } from '@hardwired/core';
 import { DummyComponent } from '../../testing/DummyComponent';
 import { act, render } from '@testing-library/react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import * as React from 'react';
 import { useWatchable } from '../useWatchable';
 import { expectType, TypeEqual } from 'ts-expect';
-import { BaseAcquiredInstance } from 'hardwired/lib/resolvers/abstract/Instance';
+import { BaseAcquiredInstance } from '@hardwired/core';
 
 describe(`useWatchable`, () => {
   describe(`using dependencies from root module`, () => {

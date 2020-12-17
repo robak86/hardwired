@@ -1,6 +1,6 @@
 import React from "react";
 import { ContainerProvider } from "hardwired-react";
-import { container, unit } from "hardwired";
+import { container, unit } from "@hardwired/core";
 import { MatrixContainer } from "./matrix/components/MatrixContainer";
 
 const appContainer = container();

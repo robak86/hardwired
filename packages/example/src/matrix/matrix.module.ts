@@ -1,5 +1,5 @@
 import { selectMatrixElements } from './selectors/matrixSelectors';
-import { module } from 'hardwired';
+import { module } from '@hardwired/core';
 import { storeModule } from '../state/store.module';
 import { selector } from 'hardwired-redux';
 

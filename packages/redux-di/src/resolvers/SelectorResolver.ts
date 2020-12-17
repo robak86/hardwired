@@ -1,4 +1,4 @@
-import { AcquiredInstance, ContainerContext, Instance } from 'hardwired';
+import { AcquiredInstance, ContainerContext, Instance } from '@hardwired/core';
 import { createSelector } from 'reselect';
 import { Store } from 'redux';
 import invariant from 'tiny-invariant';

@@ -1,4 +1,4 @@
-import { Factory, factory, module, value } from 'hardwired';
+import { Factory, factory, module, value } from '@hardwired/core';
 import { rootReducer } from './rootReducer';
 import { createStore, Reducer, Store } from 'redux';
 import { AppState } from './AppState';

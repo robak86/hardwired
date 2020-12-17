@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FunctionComponent, useMemo } from 'react';
-import { Container } from 'hardwired';
+import { Container } from '@hardwired/core';
 import { ContainerContext } from './ContainerContext';
 
 export type ContainerProviderProps = {

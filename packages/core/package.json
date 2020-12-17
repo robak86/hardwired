@@ -1,5 +1,5 @@
 {
-  "name": "hardwired",
+  "name": "@hardwired/core",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "keywords": [
     "ioc",

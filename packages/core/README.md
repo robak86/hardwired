@@ -32,7 +32,7 @@ The library uses three main concepts:
 #### Create module
 
 ```typescript
-import { module, singleton } from 'hardwired';
+import { module, singleton } from '@hardwired/core';
 
 class LoggerConfiguration {
   logLevel = 0;
@@ -51,7 +51,7 @@ const loggerModule = module('logger')
 #### Create container
 
 ```typescript
-import { container } from 'hardwired';
+import { container } from '@hardwired/core';
 
 const exampleContainer = container(loggerModule);
 const logger = exampleContainer.get('logger'); // returns instance of Logger class
@@ -66,7 +66,7 @@ const logger = exampleContainer.get('logger'); // returns instance of Logger cla
   - `dependencies` - array of paths pointing to given instance dependencies 
 
   ```typescript
-  import { module, value } from 'hardwired';
+  import { module, value } from '@hardwired/core';
 
   class DummyClass {
     constructor(private a: number, private b: string){}
@@ -97,7 +97,7 @@ const logger = exampleContainer.get('logger'); // returns instance of Logger cla
 - `transient` - creates a new instance for each request
 
 ```typescript
-import { module, transient } from 'hardwired';
+import { module, transient } from '@hardwired/core';
 
 class SomeClass {}
 
@@ -110,7 +110,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 - `singleton` - creates single instance, which is cached in the container for all subsequent requests
 
   ```typescript
-  import { module, singleton } from 'hardwired';
+  import { module, singleton } from '@hardwired/core';
 
   class SomeClass {}
 
@@ -126,7 +126,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 - `value` - similar to `singleton`, but takes a value instead of class
 
   ```typescript
-  import { module, value } from 'hardwired';
+  import { module, value } from '@hardwired/core';
 
   const someObject = { someProp: 123 };
 
@@ -139,7 +139,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 - `factory` - creates an instance of factory class and returns value produced by `build` method. The value acts like singleton.
 
   ```typescript
-  import { module, factory } from 'hardwired';
+  import { module, factory } from '@hardwired/core';
 
   class NumberFactory {
     private count = 0;
@@ -178,7 +178,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 - `func` - creates function with partially applied arguments
 
   ```typescript
-  import { module, func, value } from 'hardwired';
+  import { module, func, value } from '@hardwired/core';
 
   const someFunction = (a: number, b: string, c: boolean): string => 'example';
 
@@ -202,7 +202,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 - `request` - creates new singleton instance for each new request
 
   ```typescript
-  import { module, request } from 'hardwired';
+  import { module, request } from '@hardwired/core';
 
   class SomeClass {
     args: any[];
@@ -228,7 +228,7 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
 ### Modules composition
 
 ```typescript
-import { module, value, singleton } from 'hardwired';
+import { module, value, singleton } from '@hardwired/core';
 
 const databaseConfig = {
   url: '',
