@@ -6,10 +6,10 @@
       "path": "./core/tsconfig.json"
     },
     {
-      "path": "./react-di/tsconfig.json"
+      "path": "./react/tsconfig.json"
     },
     {
-      "path": "./redux-di/tsconfig.json"
+      "path": "./redux/tsconfig.json"
     },
     {
       "path": "./example/tsconfig.json"

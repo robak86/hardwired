@@ -1,17 +1,29 @@
-import { Factory, factory, module, value } from '@hardwired/core';
-import { rootReducer } from './rootReducer';
-import { createStore, Reducer, Store } from 'redux';
-import { AppState } from './AppState';
+import { Factory, factory, module, value } from "@hardwired/core";
+import { rootReducer } from "./rootReducer";
+import { applyMiddleware, compose, createStore, Reducer, Store } from "redux";
+import { AppState } from "./AppState";
+import { NodesState } from "../nodes/state/NodesState";
+import { composeWithDevTools } from "redux-devtools-extension";
 
 class StoreFactory implements Factory<Store<AppState>> {
   constructor(private rootReducer: Reducer<AppState>, private defaultState: AppState) {}
 
   build(): Store {
-    return createStore<AppState, any, any, any>(this.rootReducer, this.defaultState);
+    const enhancersCompose: any = process.env.NODE_ENV === 'production' ? _ => _ : composeWithDevTools;
+    const enhancers = [enhancersCompose(applyMiddleware())];
+    return createStore<AppState, any, any, any>(this.rootReducer, this.defaultState, compose(...enhancers));
+  }
+}
+
+class InitialStateFactory implements Factory<AppState> {
+  build(): AppState {
+    return {
+      ...NodesState.build(),
+    };
   }
 }
 
 export const storeModule = module('app')
-  .define('initialState', value({ value: 'initialValue' }))
+  .define('initialState', factory(InitialStateFactory))
   .define('rootReducer', value(rootReducer))
   .define('store', factory(StoreFactory), ['rootReducer', 'initialState']);

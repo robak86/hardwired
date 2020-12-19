@@ -1,5 +1,7 @@
 ### Core
 
+We still need some discovery mechanism for registering Be server route handlers
+
 ## FactoryResolver
 
 - add scope `factory(SomeFactoryClass, 'transient' | 'request' | 'singleton')`

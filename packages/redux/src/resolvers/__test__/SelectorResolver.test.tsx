@@ -1,5 +1,5 @@
 import { container, factory, module, value } from '@hardwired/core';
-import { ContainerProvider, useWatchable } from 'hardwired-react';
+import { ContainerProvider, useWatchable } from '@hardwired/react';
 import { render } from '@testing-library/react';
 import React, { FunctionComponent } from 'react';
 import { selector } from '../SelectorResolver';

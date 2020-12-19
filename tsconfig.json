@@ -21,6 +21,7 @@
     "keyofStringsOnly": false,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "removeComments": true
+    "removeComments": true,
+    "skipLibCheck": false
   }
 }

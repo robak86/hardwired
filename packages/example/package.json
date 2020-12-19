@@ -1,13 +1,18 @@
 {
-  "name": "example",
+  "name": "@hardwired/example",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@types/node": "^12.0.0",
     "@hardwired/core": "*",
-    "hardwired-react": "*",
-    "hardwired-redux": "*",
-    "parcel-bundler": "^1.12.4"
+    "@hardwired/react": "*",
+    "@hardwired/redux": "*",
+    "@types/node": "^12.0.0",
+    "@types/styled-components": "^5.1.5",
+    "parcel-bundler": "^1.12.4",
+    "react-draggable": "^4.4.3",
+    "redux-devtools-extension": "^2.13.8",
+    "styled-components": "^5.2.1",
+    "typesafe-actions": "^5.1.0"
   },
   "browserslist": {
     "production": [

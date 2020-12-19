@@ -2,6 +2,7 @@ import { AcquiredInstance, ContainerContext, Instance } from '@hardwired/core';
 import { createSelector } from 'reselect';
 import { Store } from 'redux';
 import invariant from 'tiny-invariant';
+import memo from 'memoize-one';
 
 export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps> {
   constructor(private select: () => T) {
@@ -15,7 +16,7 @@ export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps>
     const childSelectors = selectorsResolvers.map(d => () => d.build(context));
 
     if (!context.hasInGlobalScope(this.id)) {
-      const finalSelector = childSelectors.length > 0 ? createSelector(childSelectors, this.select) : this.select;
+      const finalSelector = childSelectors.length > 0 ? createSelector(childSelectors, this.select) : memo(this.select);
       context.setForGlobalScope(this.id, finalSelector);
     }
 
@@ -23,7 +24,7 @@ export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps>
   }
 
   acquire(context: ContainerContext): AcquiredInstance<T> {
-    return new AcquiredSelector(this.id, context, this.getStore(context), this.build);
+    return new AcquiredSelector(this.id, context, this.getStore(context), this.build.bind(this));
   }
 
   getStore(context: ContainerContext): Store<any> {

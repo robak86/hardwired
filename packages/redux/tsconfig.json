@@ -10,7 +10,7 @@
       "path": "../core/tsconfig.json"
     },
     {
-      "path": "../react-di/tsconfig.json"
+      "path": "../react/tsconfig.json"
     }
   ],
   "include": [

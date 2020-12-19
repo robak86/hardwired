@@ -1,6 +1,6 @@
 import { useContainer } from '../components/ContainerContext';
-import { useEffect, useRef, useState } from 'react';
-import { Module, ModuleBuilder, value } from '@hardwired/core';
+import { useEffect, useReducer, useRef } from 'react';
+import { Module, ModuleBuilder } from '@hardwired/core';
 
 export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
   module: TModule,
@@ -15,19 +15,22 @@ export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName
 
 export const useWatchable: WatchableHook = (module, name) => {
   const container = useContainer();
-  const acquiredInstanceRef = useRef<any>(container.acquireInstanceResolver(module, name));
+  const [, forceUpdate] = useReducer(x => x + 1, 0);
 
+  const acquiredInstanceRef = useRef<any>(container.acquireInstanceResolver(module, name));
   const events = acquiredInstanceRef.current.getEvents();
-  const [invalidateCount, setInvalidateCount] = useState(0);
-  const instanceRef = useRef<any>(container.get(module, name));
+  const instanceRef = useRef<any>(acquiredInstanceRef.current.get());
 
   useEffect(() => {
     events.invalidateEvents.add(() => {
-      const newValue = container.get(module, name);
+      const newValue = acquiredInstanceRef.current.get();
+      // console.log('comparing', newValue, instanceRef.current);
       if (instanceRef.current !== newValue) {
         instanceRef.current = newValue;
       }
-      setInvalidateCount(invalidateCount + 1);
+
+      console.log('invalidate');
+      forceUpdate();
     });
 
     return () => acquiredInstanceRef.current.dispose();
