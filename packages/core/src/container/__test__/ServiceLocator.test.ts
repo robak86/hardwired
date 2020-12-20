@@ -13,7 +13,7 @@ describe(`ServiceLocator`, () => {
         .define('someString', value('some content'));
 
       const m = ModuleBuilder.empty('root')
-        .define('import', child)
+        .import('import', child)
         .define('locator', serviceLocator())
         .define('cls', singleton(TestClassArgs2), ['import.someNumber', 'import.someString']);
 

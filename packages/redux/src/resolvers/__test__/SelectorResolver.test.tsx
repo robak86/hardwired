@@ -74,7 +74,7 @@ describe(`SelectorResolver`, () => {
   describe(`composite selectors`, () => {
     function setup() {
       const selectorsModule = module('selectors')
-        .define('redux', () => reduxModule)
+        .import('redux', () => reduxModule)
         .define('someSelector', selector(selectStateValue, 0), ['redux.store'])
         .define('compositeSelector', selector(toUpperCase, 1), ['redux.store', 'someSelector']);
 
@@ -134,7 +134,7 @@ describe(`SelectorResolver`, () => {
   describe(`composite selector using other composite selector`, () => {
     function setup() {
       const selectorsModule = module('selectors')
-        .define('redux', () => reduxModule)
+        .import('redux', () => reduxModule)
         .define('someSelector', selector(selectStateValue, 0), ['redux.store'])
         .define('compositeSelector', selector(toUpperCase, 1), ['redux.store', 'someSelector'])
         .define(

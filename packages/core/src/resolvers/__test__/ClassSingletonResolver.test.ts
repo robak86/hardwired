@@ -52,18 +52,18 @@ describe(`ClassSingletonResolver`, () => {
 
   describe(`singleton shared across multiple modules hierarchy`, () => {
     const root = unit('root')
-      .define('child1', () => child1)
-      .define('child2', () => child2)
+      .import('child1', () => child1)
+      .import('child2', () => child2)
 
-      .define('singletonModule', () => singletonModule)
+      .import('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const child1 = unit('child1')
-      .define('singletonModule', () => singletonModule)
+      .import('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const child2 = unit('child2')
-      .define('singletonModule', () => singletonModule)
+      .import('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
     const singletonModule = unit('child1')

@@ -30,7 +30,7 @@ describe(`ServiceLocatorResolver`, () => {
 
   const root = unit('root')
     .define('locator', serviceLocator())
-    .define('singletonModule', () => singletonModule)
+    .import('singletonModule', () => singletonModule)
     .define('producedByFactory', factory(DummyFactory))
     .define('singletonConsumer', request(TestClassConsumer), ['singletonModule.reqScoped']);
 

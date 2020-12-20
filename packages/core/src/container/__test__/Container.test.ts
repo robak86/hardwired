@@ -94,11 +94,11 @@ describe(`Container`, () => {
       const parentSiblingChild = module('parentSiblingChild').define('value', parentSiblingChildValue);
 
       const parentValue = dependency('parent');
-      const parent = module('parent').define('child', parentChild).define('value', parentValue);
+      const parent = module('parent').import('child', parentChild).define('value', parentValue);
 
       const parentSiblingValue = dependency('parentSibling');
       const parentSibling = module('parentSibling')
-        .define('child', parentSiblingChild)
+        .import('child', parentSiblingChild)
         .define('value', parentSiblingValue);
 
       return {

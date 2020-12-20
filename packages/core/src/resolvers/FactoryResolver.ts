@@ -28,5 +28,5 @@ export class FactoryResolver<TReturn, TDeps extends any[]> extends Instance<TRet
 }
 
 export function factory<TDeps extends any[], TValue>(cls: ClassType<Factory<TValue>, TDeps>): Instance<TValue, TDeps> {
-  return new FactoryResolver(cls);
+  return new FactoryResolver(cls) as any;
 }

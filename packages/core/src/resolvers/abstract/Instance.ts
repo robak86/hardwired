@@ -1,7 +1,6 @@
 import { createResolverId } from '../../utils/fastId';
 import { ContainerContext } from '../../container/ContainerContext';
 import { InstanceEvents } from '../../container/InstanceEvents';
-import { ImmutableSet } from '../../collections/ImmutableSet';
 
 export namespace Instance {
   export type Unbox<T> = T extends Instance<infer TInstance, any>
@@ -12,7 +11,7 @@ export namespace Instance {
 export abstract class Instance<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
 
-  protected dependencies: Instance<any, any>[] = [];
+  protected dependencies: { [K in keyof TDeps]: Instance<any, any> } = [] as any;
   private _isInitialized = false;
 
   protected constructor(public readonly id: string = createResolverId()) {}
@@ -27,10 +26,10 @@ export abstract class Instance<TValue, TDeps extends any[]> {
 
   onInit?(context: ContainerContext): void;
 
-  private __keep(t: TDeps) {} // prevent erasing of the TDeps
+  private deps(t: TDeps) {} // prevent erasing of the TDeps
 
   setDependencies(instances: Instance<any, any>[]) {
-    this.dependencies = instances;
+    this.dependencies = instances as any;
     this._isInitialized = true;
   }
   get isInitialized(): boolean {

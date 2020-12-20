@@ -1,10 +1,10 @@
-import { PropType } from "../utils/PropType";
-import { ModuleId } from "./ModuleId";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import invariant from "tiny-invariant";
-import { Thunk } from "../utils/Thunk";
-import { AnyResolver, MaterializedRecord, Module, PropTypesObject, PropTypesTuple } from "../resolvers/abstract/Module";
-import { Instance } from "../resolvers/abstract/Instance";
+import { PropType } from '../utils/PropType';
+import { ModuleId } from './ModuleId';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import invariant from 'tiny-invariant';
+import { Thunk } from '../utils/Thunk';
+import { AnyResolver, MaterializedRecord, Module, PropTypesObject, PropTypesTuple } from '../resolvers/abstract/Module';
+import { Instance } from '../resolvers/abstract/Instance';
 
 export const module = (name: string) => ModuleBuilder.empty(name);
 export const unit = module;
@@ -14,10 +14,20 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableSet.empty() as any);
   }
 
-  define<TKey extends string, TValue extends Module<any>>(
+  import<TKey extends string, TValue extends Module<any>>(
     name: TKey,
     resolver: Thunk<TValue>,
-  ): ModuleBuilder<TRecord & Record<TKey, TValue>>;
+  ): ModuleBuilder<TRecord & Record<TKey, TValue>> {
+    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+
+    return new ModuleBuilder(
+      ModuleId.next(this.moduleId),
+      this.registry.extend(name, {
+        resolverThunk: resolver,
+        dependencies: [],
+      }) as any,
+    );
+  }
 
   define<TKey extends string, TValue>(
     name: TKey,
@@ -28,7 +38,23 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     resolver: Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>,
     dependencies: TDepsKeys,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
-  define<
+  define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
+    name: TKey,
+    resolver: Instance<TValue, []> | Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>,
+    dependencies?: TDepsKeys,
+  ): unknown {
+    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+
+    return new ModuleBuilder(
+      ModuleId.next(this.moduleId),
+      this.registry.extend(name, {
+        resolverThunk: resolver,
+        dependencies: dependencies || [],
+      }) as any,
+    ) as any;
+  }
+
+  defineStructured<
     TKey extends string,
     TValue,
     TDepKey extends Module.Paths<TRecord>,
@@ -40,21 +66,8 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     dependencies: TDepsRecord,
   ): ModuleBuilder<
     TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>]>>
-  >;
-  define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
-    name: TKey,
-    resolver: Instance<any, any> | Thunk<Module<any>>,
-    dependencies?: TDepsKeys,
-  ): ModuleBuilder<TRecord & Record<TKey, unknown>> {
-    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
-
-    return new ModuleBuilder(
-      ModuleId.next(this.moduleId),
-      this.registry.extend(name, {
-        resolverThunk: resolver,
-        dependencies: dependencies || [],
-      }) as any,
-    );
+  > {
+    throw new Error('Implement me');
   }
 
   replace<TKey extends string, TValue extends Instance.Unbox<TRecord[TKey]>>(

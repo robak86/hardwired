@@ -5,7 +5,7 @@ import { dispatch } from '@hardwired/redux';
 import { setNodePositionAction } from './actions/nodeActions';
 
 export const nodesModule = unit('node')
-  .define('store', storeModule)
+  .import('store', storeModule)
   .define('selectNodesIds', func(selectNodesIds, 1), ['store.state'])
   .define('selectNodePosition', func(selectNodePosition, 1), ['store.state'])
   .define('setNodePosition', dispatch(setNodePositionAction), ['store.store']);

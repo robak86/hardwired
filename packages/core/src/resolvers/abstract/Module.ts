@@ -60,7 +60,7 @@ export namespace Module {
 export abstract class Module<TValue extends Record<string, AnyResolver>> {
   kind: 'moduleResolver' = 'moduleResolver';
 
-  _keep!: TValue; // prevent erasing the type
+  dependencies!: TValue; // prevent erasing the type
 
   protected constructor(
     public moduleId: ModuleId,

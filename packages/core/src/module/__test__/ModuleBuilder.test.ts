@@ -63,7 +63,7 @@ describe(`Module`, () => {
         .define('someNumber', value(123))
         .define('someString', value('content'));
 
-      const m2 = ModuleBuilder.empty('someModule').define('imported', () => child);
+      const m2 = ModuleBuilder.empty('someModule').import('imported', () => child);
 
       m2.define('cls', dummyClassResolver(TestClassArgs2), ['imported.someNumber', 'imported.someString']);
 
@@ -92,31 +92,31 @@ describe(`Module`, () => {
 
         const definition = dummyClassResolver(TestClass);
 
-        m2.define('cls', definition, { a: 'string', b: 'number' });
+        m2.defineStructured('cls', definition, { a: 'string', b: 'number' });
 
         // @ts-expect-error - wrong dependency name used
-        m2.define('cls', definition, { a: 'wrong_name', b: 'number' });
+        m2.defineStructured('cls', definition, { a: 'wrong_name', b: 'number' });
 
         // @ts-expect-error - wrong dependency key
-        m2.define('cls', definition, { aa: 'string', b: 'number' });
+        m2.defineStructured('cls', definition, { aa: 'string', b: 'number' });
 
         // @ts-expect-error - wrong dependencies types passed
-        m2.define('cls', definition, { a: 'number', b: 'number' });
+        m2.defineStructured('cls', definition, { a: 'number', b: 'number' });
 
         // @ts-expect-error - dependencies array is empty
-        m2.define('cls', definition, { a: 'string' });
+        m2.defineStructured('cls', definition, { a: 'string' });
 
         // @ts-expect-error - dependencies array is empty
-        m2.define('cls', definition, {});
+        m2.defineStructured('cls', definition, {});
 
         // @ts-expect-error - dependencies array is not provided
-        m2.define('cls', definition);
+        m2.defineStructured('cls', definition);
       });
     });
 
     it(`creates correct types for imports`, async () => {
       const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
-      const m2 = ModuleBuilder.empty('someModule').define('imported', m1).define('key1', dummy(123));
+      const m2 = ModuleBuilder.empty('someModule').import('imported', m1).define('key1', dummy(123));
 
       type ExpectedType = {
         key1: number;
@@ -131,7 +131,7 @@ describe(`Module`, () => {
       const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
 
       const m2 = ModuleBuilder.empty('someModule')
-        .define('imported', m1)
+        .import('imported', m1)
         .define('key2', dummy('string'))
         .define('key1', dummy(123));
 
@@ -157,7 +157,7 @@ describe(`Module`, () => {
       const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
 
       const root = ModuleBuilder.empty('root')
-        .define('imported', child1)
+        .import('imported', child1)
         .define('cls', singleton(TestClassArgs2), ['imported.key1', 'imported.key2']);
 
       const c = container();
@@ -169,8 +169,8 @@ describe(`Module`, () => {
 
     it(`replaces all imports of given module`, async () => {
       const root = ModuleBuilder.empty('root')
-        .define('import1', () => child1)
-        .define('import2', () => child1)
+        .import('import1', () => child1)
+        .import('import2', () => child1)
         .define('cls', singleton(TestClassArgs2), ['import1.key1', 'import2.key2']);
 
       const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));

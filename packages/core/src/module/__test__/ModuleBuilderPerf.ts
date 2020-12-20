@@ -430,10 +430,10 @@ const ab2 = ModuleBuilder.empty('a')
   .define('ascba', dummy(1));
 
 const a = ModuleBuilder.empty('a')
-  .define('imported0', () => ab0)
-  .define('imported', () => ab)
-  .define('imported1', () => ab1)
-  .define('imported2', () => ab2)
+  .import('imported0', () => ab0)
+  .import('imported', () => ab)
+  .import('imported1', () => ab1)
+  .import('imported2', () => ab2)
   .define('asdf', dummy(1))
   .define('cba', singleton(TestClassArgs2), ['imported.a', 'imported0.string']);
 
@@ -516,7 +516,7 @@ const m222 = m
   .define('num', value(123));
 
 const mmm = m
-  .define('imported', m222)
+  .import('imported', m222)
   .define('b', value('string'))
   .define('sdf', singleton(TestClassArgs2), ['imported.num', 'b'])
   .define('sdf2', singleton(TestClassUsing), ['sdf']);
