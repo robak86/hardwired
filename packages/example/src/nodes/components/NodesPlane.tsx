@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useWatchable } from '@hardwired/react';
 import { nodesModule } from '../nodes.module';
 import { DNode } from './DNode';
+import { useSelector } from '@hardwired/redux';
 
 const Container = styled('div')({
   width: 1000,
@@ -11,7 +11,7 @@ const Container = styled('div')({
 });
 
 export const NodesPlane = () => {
-  const nodesIds = useWatchable(nodesModule, 'selectNodesIds');
+  const nodesIds = useSelector(nodesModule, 'selectNodesIds');
 
   return (
     <Container>

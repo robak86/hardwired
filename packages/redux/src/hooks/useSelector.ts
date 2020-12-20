@@ -1,11 +1,12 @@
-import { useContainer } from "../components/ContainerContext";
-import { useEffect, useReducer, useRef } from "react";
-import { Module, ModuleBuilder } from "@hardwired/core";
+import { useEffect, useReducer, useRef } from 'react';
+import { Module, ModuleBuilder } from '@hardwired/core';
+import { useContainer } from '@hardwired/react';
 
-export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
+export type SelectorHook = <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
   module: TModule,
   name: TDefinitionName & string,
-) => Module.Materialized<TModule>[TDefinitionName];
+  ...args: Module.Materialized<TModule>[TDefinitionName] extends (...args: infer TArgs) => any ? TArgs : []
+) => Module.Materialized<TModule>[TDefinitionName] extends (...args: any[]) => infer TReturn ? TReturn : unknown;
 
 // TODO: add second version which allows for watching only selected properties
 // TODO: providing array for the last
@@ -13,7 +14,7 @@ export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName
    const {watchedValue1, watchedValue2} = useWatchable(mod, 'obj', ['watchedValue1', 'watchedValue2']) // returns only selected properties
  */
 
-export const useWatchable: WatchableHook = (module, name) => {
+export const useSelector: SelectorHook = (module, name, ...args) => {
   const container = useContainer();
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 

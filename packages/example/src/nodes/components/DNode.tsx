@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useDependency, useWatchable } from '@hardwired/react';
 import { nodesModule } from '../nodes.module';
 import Draggable from 'react-draggable';
+import { useSelector } from '@hardwired/redux';
 
 export type DNodeProps = {
   id: string;
@@ -15,10 +16,10 @@ const NodeContainer = styled('div')({
 });
 
 export const DNode: FunctionComponent<DNodeProps> = ({ id }) => {
-  const getPosition = useWatchable(nodesModule, 'selectNodePosition');
+  const getPosition = useSelector(nodesModule, 'selectNodePosition', id);
   const setPosition = useDependency(nodesModule, 'setNodePosition');
 
-  const { x, y } = getPosition(id);
+  const { x, y } = getPosition;
 
   // console.log('current position', id, x, y);
 
