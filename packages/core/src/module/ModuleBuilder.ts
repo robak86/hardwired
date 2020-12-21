@@ -20,6 +20,8 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
   ): ModuleBuilder<TRecord & Record<TKey, TValue>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
 
+    //TODO: should we autofreeze a module here ? and throw next time module is imported but it's extended with additional definitions ?
+
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
@@ -54,6 +56,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     ) as any;
   }
 
+  // TODO: not sure if we should provide such complex composition (this should be done in user's code not at the container/module level)
   defineStructured<
     TKey extends string,
     TValue,
@@ -67,7 +70,15 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
   ): ModuleBuilder<
     TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>]>>
   > {
-    throw new Error('Implement me');
+    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+
+    return new ModuleBuilder(
+      this.moduleId,
+      this.registry.extend(name, {
+        resolverThunk: resolver,
+        dependencies: [dependencies],
+      }),
+    );
   }
 
   replace<TKey extends string, TValue extends Instance.Unbox<TRecord[TKey]>>(

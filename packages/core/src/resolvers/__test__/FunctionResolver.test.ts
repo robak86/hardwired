@@ -19,7 +19,7 @@ describe(`FunctionResolver`, () => {
     return { module: m, singletonFactorySpy, transientFactorySpy };
   }
 
-  describe(`func`, () => {
+  describe(`types`, () => {
     const testFunction = (a: '1', b: '2', c: '3') => 123;
 
     it(`curry 0`, async () => {

@@ -247,7 +247,7 @@ class UsersListQuery {
 }
 
 const usersModule = module('users')
-  .define('db', dbModule)
+  .import('db', dbModule)
   .define('usersQuery', singleton(UsersListQuery, ['db.connection']));
 ```
 

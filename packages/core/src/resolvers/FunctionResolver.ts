@@ -16,12 +16,9 @@ export class FunctionResolver<TReturn, TDeps extends any[]> extends Instance<TRe
   }
 
   build(cache: ContainerContext): TReturn {
-
     const currentDependencies = this.dependencies.map(d => d.build(cache));
 
-    const requiresRevalidation = currentDependencies.some(
-      (val, idx) => val !== this.previousDependencies[idx],
-    );
+    const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
 
     if (requiresRevalidation) {
       this.previousDependencies = currentDependencies;
