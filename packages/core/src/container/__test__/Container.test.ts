@@ -1,4 +1,4 @@
-import { dependency } from '../../testing/TestResolvers';
+import { dependency, DummyResolver } from '../../testing/TestResolvers';
 import { container } from '../Container';
 import { value } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
@@ -193,5 +193,34 @@ describe(`Container`, () => {
     });
 
     it.todo(`Eagerly initializes parent module while instantiating definition from child module?? `);
+  });
+
+  describe(`getByType`, () => {
+    it(`returns instances by resolver types`, async () => {
+      const m = module('test')
+        .define('value', value(123))
+        .define('dependency1', dependency(456))
+        .define('dependency2', dependency(789));
+      const c = container();
+      c.load(m);
+
+      const instances = c.getByType(DummyResolver);
+      expect(instances).toEqual([456, 789]);
+    });
+
+    it(`returns instances by resolver types from imported modules`, async () => {
+      const m = module('test')
+        .import('imported', () => child)
+        .define('value', value(123))
+        .define('dependency1', dependency(456));
+
+      const child = module('child').define('dependency2', dependency(789));
+
+      const c = container();
+      c.load(m);
+
+      const instances = c.getByType(DummyResolver);
+      expect(instances).toEqual([789, 456]); //TODO: investigate in what order should be returned instances
+    });
   });
 });

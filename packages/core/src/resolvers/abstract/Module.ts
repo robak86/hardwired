@@ -121,9 +121,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
         `Cannot return resolver for path: ${path}. ${moduleOrInstance} is not a module`,
       );
 
-      const moduleResolver = injections.hasKey(resolver.moduleId.id)
-        ? injections.get(resolver.moduleId.id)
-        : resolver;
+      const moduleResolver = injections.hasKey(resolver.moduleId.id) ? injections.get(resolver.moduleId.id) : resolver;
 
       return moduleResolver.getResolver(instance, injections);
     }
@@ -152,6 +150,8 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
       const resolver = unwrapThunk(boundResolver.resolverThunk);
 
       if (resolver.kind === 'instanceResolver') {
+        containerContext.registerResolver(resolver);
+
         containerContext.containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
           return this.get(key as any, containerContext);
         });

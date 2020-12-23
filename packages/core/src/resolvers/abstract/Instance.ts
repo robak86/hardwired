@@ -11,7 +11,7 @@ export namespace Instance {
 export abstract class Instance<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
 
-  protected dependencies: { [K in keyof TDeps]: Instance<any, any> } = [] as any;
+  protected dependencies: Instance<any, any>[] = [] as any;
   private _isInitialized = false;
 
   protected constructor(public readonly id: string = createResolverId()) {}

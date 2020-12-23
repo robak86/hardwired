@@ -1,5 +1,6 @@
 import { container, factory, module, value } from '@hardwired/core';
 import { AppState, StoreFactory } from '../tests/StoreFactory';
+import { storeFactory } from "../resolvers/StoreFactory";
 
 describe(`Integration tests`, () => {
   describe(`registering reducers`, () => {
@@ -12,7 +13,7 @@ describe(`Integration tests`, () => {
         const root = module('m')
           .define('defaultState', value(defaultState))
           .define('appReducer1', value(appReducer1))
-          .define('store', factory(StoreFactory), ['appReducer1', 'defaultState']);
+          .define('store', storeFactory(StoreFactory), ['appReducer1', 'defaultState']);
 
         const c = container();
 

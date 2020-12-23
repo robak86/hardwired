@@ -2,7 +2,8 @@ import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
 import { ModuleBuilder } from '../module/ModuleBuilder';
 import { Module } from '../resolvers/abstract/Module';
-import { AcquiredInstance } from '../resolvers/abstract/Instance';
+import { AcquiredInstance, Instance } from '../resolvers/abstract/Instance';
+import { ClassType } from '../utils/ClassType';
 
 export class Container<TModule extends ModuleBuilder<any>> {
   constructor(private containerContext: ContainerContext = ContainerContext.empty()) {}
@@ -22,6 +23,11 @@ export class Container<TModule extends ModuleBuilder<any>> {
     );
 
     return module.get(name, this.containerContext) as any;
+  }
+
+  // TODO: allow using resolvers factory, .e.g singleton, selector, store
+  getByType<TValue, TResolverClass extends Instance<TValue, any>>(type: ClassType<TResolverClass, any>): TValue[] {
+    return this.containerContext.resolvers.filterByType(type).map(resolver => resolver.build(this.containerContext));
   }
 
   // TODO: how does this relate to scopes ? e.g. request ?
@@ -54,7 +60,7 @@ export class Container<TModule extends ModuleBuilder<any>> {
   // TODO: It was required for
   // TODO: it is still required for testing (providing injections)
   // TODO: rename to inject and extract injections from the module to container (but this is still orthogonal to modules loading) ?
-  protected load(module: Module<any>) {
+  load(module: Module<any>) {
     invariant(!this.hasModule(module), `Module ${module.moduleId} is already loaded`);
     this.containerContext.loadModule(module);
   }

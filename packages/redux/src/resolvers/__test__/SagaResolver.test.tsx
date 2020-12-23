@@ -1,6 +1,7 @@
 import { saga } from '../SagaResolver';
 import { container, factory, module, value } from '@hardwired/core';
 import { StoreFactory } from '../../tests/StoreFactory';
+import { storeFactory } from "../StoreFactory";
 
 describe(`SagaResolver`, () => {
   function setup() {
@@ -13,7 +14,7 @@ describe(`SagaResolver`, () => {
         'reducer',
         value(s => s),
       )
-      .define('store', factory(StoreFactory), ['reducer', 'defaultState']);
+      .define('store', storeFactory(StoreFactory), ['reducer', 'defaultState']);
     const c = container();
 
     return { c };

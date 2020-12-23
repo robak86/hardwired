@@ -5,6 +5,7 @@ import React, { FunctionComponent } from 'react';
 import { selector } from '../SelectorResolver';
 import { dispatch } from '../DispatchResolver';
 import { AppState, StoreFactory } from '../../tests/StoreFactory';
+import { storeFactory } from "../StoreFactory";
 
 export type DummyComponentProps = {
   value: string;
@@ -34,7 +35,7 @@ const updateReducer = (state, action) => {
 const reduxModule = module('reduxModule')
   .define('initialState', value({ value: 'initialValue' }))
   .define('rootReducer', value(updateReducer))
-  .define('store', factory(StoreFactory), ['rootReducer', 'initialState'])
+  .define('store', storeFactory(StoreFactory), ['rootReducer', 'initialState'])
   .define('updateValue', dispatch(updateAction), ['store']);
 
 describe(`SelectorResolver`, () => {

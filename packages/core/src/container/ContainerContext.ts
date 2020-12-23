@@ -1,9 +1,11 @@
-import { ModuleId } from '../module/ModuleId';
-import invariant from 'tiny-invariant';
-import { PushPromise } from '../utils/PushPromise';
-import { ContainerEvents } from './ContainerEvents';
-import { Module } from '../resolvers/abstract/Module';
-import { ImmutableSet } from '../collections/ImmutableSet';
+import { ModuleId } from "../module/ModuleId";
+import invariant from "tiny-invariant";
+import { PushPromise } from "../utils/PushPromise";
+import { ContainerEvents } from "./ContainerEvents";
+import { Module } from "../resolvers/abstract/Module";
+import { ImmutableSet } from "../collections/ImmutableSet";
+import { Instance } from "../resolvers/abstract/Instance";
+import { ResolversLookup } from "./ResolversLookup";
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -14,12 +16,17 @@ export class ContainerContext {
   public requestScope: Record<string, any> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public containerEvents = new ContainerEvents();
+  public resolvers:ResolversLookup = new ResolversLookup();
 
   protected constructor(
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
     public injections = ImmutableSet.empty(),
   ) {}
+
+  registerResolver(resolver: Instance<any, any>) {
+    this.resolvers.add(resolver)
+  }
 
   setForGlobalScope(uuid: string, instance: any) {
     this.globalScope[uuid] = instance;
