@@ -1,11 +1,11 @@
-import { ModuleId } from "../module/ModuleId";
-import invariant from "tiny-invariant";
-import { PushPromise } from "../utils/PushPromise";
-import { ContainerEvents } from "./ContainerEvents";
-import { Module } from "../resolvers/abstract/Module";
-import { ImmutableSet } from "../collections/ImmutableSet";
-import { Instance } from "../resolvers/abstract/Instance";
-import { ResolversLookup } from "./ResolversLookup";
+import { ModuleId } from '../module/ModuleId';
+import invariant from 'tiny-invariant';
+import { PushPromise } from '../utils/PushPromise';
+import { ContainerEvents } from './ContainerEvents';
+import { Module } from '../resolvers/abstract/Module';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { Instance } from '../resolvers/abstract/Instance';
+import { ResolversLookup } from './ResolversLookup';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -16,7 +16,7 @@ export class ContainerContext {
   public requestScope: Record<string, any> = {};
   public requestScopeAsync: Record<string, PushPromise<any>> = {};
   public containerEvents = new ContainerEvents();
-  public resolvers:ResolversLookup = new ResolversLookup();
+  public resolvers: ResolversLookup = new ResolversLookup();
 
   protected constructor(
     public globalScope: Record<string, any> = {},
@@ -25,7 +25,7 @@ export class ContainerContext {
   ) {}
 
   registerResolver(resolver: Instance<any, any>) {
-    this.resolvers.add(resolver)
+    this.resolvers.add(resolver);
   }
 
   setForGlobalScope(uuid: string, instance: any) {
@@ -92,14 +92,14 @@ export class ContainerContext {
     return !!this.modulesResolvers[moduleId.id];
   }
 
-  addModule(moduleId: ModuleId, moduleResolver: Module<any>) {
-    invariant(!this.modulesResolvers[moduleId.id], `Module with id ${moduleId.id} already exists`);
-    this.modulesResolvers[moduleId.id] = moduleResolver;
-  }
-
   getModule(moduleId: ModuleId): Module<any> {
     const lookup = this.modulesResolvers[moduleId.id];
     invariant(lookup, `Cannot get module with id: ${moduleId.id}. Module does not exists with container context`);
     return lookup;
+  }
+
+  protected addModule(moduleId: ModuleId, moduleResolver: Module<any>) {
+    invariant(!this.modulesResolvers[moduleId.id], `Module with id ${moduleId.id} already exists`);
+    this.modulesResolvers[moduleId.id] = moduleResolver;
   }
 }

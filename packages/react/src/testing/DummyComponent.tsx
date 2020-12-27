@@ -2,8 +2,8 @@ import { FunctionComponent } from 'react';
 import React = require('react');
 
 export type DummyComponentProps = {
-  value: string;
-  optionalValue?: string;
+  value: string | number;
+  optionalValue?: string | number;
 };
 
 export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, optionalValue }) => {

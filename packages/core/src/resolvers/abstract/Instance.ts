@@ -12,6 +12,7 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
 
   protected dependencies: Instance<any, any>[] = [] as any;
+  protected structuredDependencies: Record<string, Instance<any, any>> = {};
   private _isInitialized = false;
 
   protected constructor(public readonly id: string = createResolverId()) {}
@@ -32,6 +33,12 @@ export abstract class Instance<TValue, TDeps extends any[]> {
     this.dependencies = instances as any;
     this._isInitialized = true;
   }
+
+  setStructuredDependencies(instances: Record<string, Instance<any, any>>) {
+    this.structuredDependencies = instances;
+    this._isInitialized = true;
+  }
+
   get isInitialized(): boolean {
     return this._isInitialized;
   }
