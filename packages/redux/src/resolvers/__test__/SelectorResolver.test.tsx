@@ -5,7 +5,9 @@ import React, { FunctionComponent } from 'react';
 import { selector } from '../SelectorResolver';
 import { dispatch } from '../DispatchResolver';
 import { AppState, StoreFactory } from '../../tests/StoreFactory';
-import { storeFactory } from "../StoreFactory";
+import { storeFactory } from '../StoreFactory';
+import { provider } from '@hardwired/react';
+import { Provider } from 'react-redux';
 
 export type DummyComponentProps = {
   value: string;
@@ -36,7 +38,8 @@ const reduxModule = module('reduxModule')
   .define('initialState', value({ value: 'initialValue' }))
   .define('rootReducer', value(updateReducer))
   .define('store', storeFactory(StoreFactory), ['rootReducer', 'initialState'])
-  .define('updateValue', dispatch(updateAction), ['store']);
+  .define('updateValue', dispatch(updateAction), ['store'])
+  .defineStructured('reduxProvider', provider(Provider), { store: 'store' } as any);
 
 describe(`SelectorResolver`, () => {
   describe(`flat module`, () => {

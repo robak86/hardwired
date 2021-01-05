@@ -61,11 +61,17 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     TKey extends string,
     TValue,
     TDepKey extends Module.Paths<TRecord>,
-    TDepsRecord extends Record<TDepsKey, TDepKey>,
-    TDepsKey extends string
+    TDepsRecord extends Record<string, TDepKey>,
+    // TDepRecordKey extends string,
+    TMaterializedDeps extends {
+      [K in keyof TDepsRecord]: K extends keyof TDepsRecord
+        ? PropType<MaterializedRecord<TRecord>, TDepsRecord[K] & string>
+        : never;
+    }
+    // TMaterializedDepsKey extends keyof TDepsRecord
   >(
     name: TKey,
-    resolver: Instance<TValue, [{ [K in TDepsKey]: PropType<MaterializedRecord<TRecord>, TDepsRecord[K] & string> }]>,
+    resolver: Instance<TValue, [TMaterializedDeps]>,
     dependencies: TDepsRecord,
   ): ModuleBuilder<
     TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>]>>

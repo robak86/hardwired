@@ -18,6 +18,8 @@ export class ProviderResolver<TProps> extends Instance<BoundProvider<TProps>, [T
   }
 }
 
-export function provider<TProps>(providerComponent: ComponentType<TProps>): Instance<BoundProvider<TProps>, [TProps]> {
+export function provider<TProps>(
+  providerComponent: ComponentType<TProps>,
+): Instance<BoundProvider<TProps>, [Partial<TProps>]> {
   return new ProviderResolver(providerComponent);
 }
