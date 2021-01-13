@@ -1,7 +1,7 @@
-import { useEffect, useReducer, useRef } from "react";
-import { Module, ModuleBuilder } from "@hardwired/core";
-import { useContainer } from "@hardwired/react";
-import { StoreFactoryResolver } from "../resolvers/StoreFactory";
+import { useEffect, useReducer, useRef } from 'react';
+import { Module, ModuleBuilder } from 'hardwired';
+import { useContainer } from 'hardwired-react';
+import { StoreFactoryResolver } from '../resolvers/StoreFactory';
 
 export type SelectorHook = <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
   module: TModule,

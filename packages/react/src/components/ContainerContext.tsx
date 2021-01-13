@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useContext } from 'react';
-import { Container, ModuleBuilder } from "@hardwired/core";
+import { Container, ModuleBuilder } from 'hardwired';
 import invariant from 'tiny-invariant';
 
 export type ContainerContextValue = {

@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import styled from 'styled-components';
-import { useDependency, useWatchable } from '@hardwired/react';
+import { useDependency, useWatchable } from 'hardwired-react';
 import { nodesModule } from '../nodes.module';
 import Draggable from 'react-draggable';
-import { useSelector } from '@hardwired/redux';
+import { useSelector } from 'hardwired-redux';
 
 export type DNodeProps = {
   id: string;

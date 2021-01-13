@@ -21,7 +21,7 @@ describe(`ContainerContext`, () => {
       const resourceId = 'someId';
 
       expect(ctx.hasInRequestScope(resourceId)).toEqual(false);
-      expect(ctx.setForRequestScope(resourceId, 123))
+      expect(ctx.setForRequestScope(resourceId, 123));
       expect(ctx.getFromRequestScope(resourceId)).toEqual(123);
     });
 
@@ -29,8 +29,7 @@ describe(`ContainerContext`, () => {
       const ctx = ContainerContext.empty();
       const resourceId = 'someId';
 
-
-      expect(ctx.setForRequestScope(resourceId, 123))
+      expect(ctx.setForRequestScope(resourceId, 123));
 
       const childScope = ctx.forNewRequest();
       expect(childScope.hasInRequestScope(resourceId)).toEqual(false);

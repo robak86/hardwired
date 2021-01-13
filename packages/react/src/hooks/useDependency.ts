@@ -1,4 +1,4 @@
-import { Module, ModuleBuilder } from '@hardwired/core';
+import { Module, ModuleBuilder } from 'hardwired';
 import { useContainer } from '../components/ContainerContext';
 import { useRef } from 'react';
 

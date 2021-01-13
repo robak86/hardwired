@@ -1,13 +1,12 @@
-import { value, ValueResolver } from "../../resolvers/ValueResolver";
-import { singleton } from "../../resolvers/ClassSingletonResolver";
-import { ModuleBuilder } from "../ModuleBuilder";
-import { Module } from "../../resolvers/abstract/Module";
-import { TestClassArgs2 } from "../../testing/ArgsDebug";
+import { value, ValueResolver } from '../../resolvers/ValueResolver';
+import { singleton } from '../../resolvers/ClassSingletonResolver';
+import { ModuleBuilder } from '../ModuleBuilder';
+import { Module } from '../../resolvers/abstract/Module';
+import { TestClassArgs2 } from '../../testing/ArgsDebug';
 
 const dummy = <TValue>(value: TValue): ValueResolver<TValue> => {
   return new ValueResolver(value);
 };
-
 
 export class TestClassUsing {
   constructor(private a: TestClassArgs2) {}

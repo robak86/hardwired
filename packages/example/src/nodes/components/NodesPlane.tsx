@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { nodesModule } from '../nodes.module';
 import { DNode } from './DNode';
-import { useSelector } from '@hardwired/redux';
+import { useSelector } from 'hardwired-redux';
 
 const Container = styled('div')({
   width: 1000,

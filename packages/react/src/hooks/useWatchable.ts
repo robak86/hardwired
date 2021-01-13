@@ -1,6 +1,6 @@
-import { useContainer } from "../components/ContainerContext";
-import { useEffect, useReducer, useRef } from "react";
-import { Module, ModuleBuilder } from "@hardwired/core";
+import { useContainer } from '../components/ContainerContext';
+import { useEffect, useReducer, useRef } from 'react';
+import { Module, ModuleBuilder } from 'hardwired';
 
 export type WatchableHook = <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
   module: TModule,

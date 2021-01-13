@@ -1,8 +1,8 @@
-import { Factory } from '@hardwired/core';
+import { Factory } from 'hardwired';
 import { createStore, Reducer, Store } from 'redux';
 
 export type AppState = {
-  value: string
+  value: string;
 };
 
 export class StoreFactory implements Factory<Store<AppState>> {

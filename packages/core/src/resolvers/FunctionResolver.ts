@@ -1,8 +1,8 @@
-import { curry } from "../utils/curry";
-import { ContainerContext } from "../container/ContainerContext";
-import { PartiallyApplied } from "../utils/PartiallyApplied";
-import { PartiallyAppliedArgs } from "../utils/PartiallyAppliedArgs";
-import { Instance } from "./abstract/Instance";
+import { curry } from '../utils/curry';
+import { ContainerContext } from '../container/ContainerContext';
+import { PartiallyApplied } from '../utils/PartiallyApplied';
+import { PartiallyAppliedArgs } from '../utils/PartiallyAppliedArgs';
+import { Instance } from './abstract/Instance';
 
 export class FunctionResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   private readonly curriedFunction;

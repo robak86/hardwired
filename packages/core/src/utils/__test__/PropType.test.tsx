@@ -1,5 +1,5 @@
-import { expectType, TypeEqual } from "ts-expect";
-import { PropType } from "../PropType";
+import { expectType, TypeEqual } from 'ts-expect';
+import { PropType } from '../PropType';
 
 describe(`PropType`, () => {
   it(`returns type for given path`, async () => {

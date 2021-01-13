@@ -16,7 +16,7 @@ export type { Factory } from './resolvers/FactoryResolver';
 export type { ClassType } from './utils/ClassType';
 export { SignalEmitter } from './utils/SignalEmitter';
 
-export { Instance, AcquiredInstance, BaseAcquiredInstance} from './resolvers/abstract/Instance';
+export { Instance, AcquiredInstance, BaseAcquiredInstance } from './resolvers/abstract/Instance';
 export type {
   Module,
   PropTypesObject,

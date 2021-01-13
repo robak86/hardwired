@@ -20,6 +20,6 @@ Minimalistic, type-safe dependency injection solution for TypeScript.
 
 - [hardwired](./packages/core/README.md) - core functionality  
 
-- [@hardwired/react](packages/react/README.md) - react integration [not released]
+- [hardwired-react](packages/react/README.md) - react integration [not released]
 
-- [@hardwired/redux](packages/redux/README.md) - redux integration [not released]
+- [hardwired-redux](packages/redux/README.md) - redux integration [not released]

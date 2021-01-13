@@ -1,4 +1,4 @@
-import { ContainerContext, Instance } from '@hardwired/core';
+import { ContainerContext, Instance } from 'hardwired';
 import { ComponentType } from 'react';
 
 export type BoundProvider<TProps> = { component: ComponentType<TProps>; props: TProps };

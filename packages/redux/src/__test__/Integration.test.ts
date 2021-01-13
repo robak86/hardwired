@@ -1,6 +1,6 @@
-import { container, factory, module, value } from '@hardwired/core';
+import { container, factory, module, value } from 'hardwired';
 import { AppState, StoreFactory } from '../tests/StoreFactory';
-import { storeFactory } from "../resolvers/StoreFactory";
+import { storeFactory } from '../resolvers/StoreFactory';
 
 describe(`Integration tests`, () => {
   describe(`registering reducers`, () => {

@@ -32,7 +32,7 @@ The library uses three main concepts:
 #### Create module
 
 ```typescript
-import { module, singleton } from '@hardwired/core';
+import { module, singleton } from 'hardwired';
 
 class LoggerConfiguration {
   logLevel = 0;
@@ -51,7 +51,7 @@ const loggerModule = module('logger')
 #### Create container
 
 ```typescript
-import { container } from '@hardwired/core';
+import { container } from 'hardwired';
 
 const exampleContainer = container();
 ```
@@ -71,7 +71,7 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
   - `dependencies` - array of paths targeting dependencies required by the resolver
 
   ```typescript
-  import { module, value } from '@hardwired/core';
+  import { module, value } from 'hardwired';
 
   class DummyClass {
     constructor(private a: number, private b: string){}
@@ -102,7 +102,7 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
 - `transient` - creates a new instance for each request
 
 ```typescript
-import { module, transient } from '@hardwired/core';
+import { module, transient } from 'hardwired';
 
 class SomeClass {}
 
@@ -115,7 +115,7 @@ ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // 
 - `singleton` - creates single instance, which is cached in the container for all subsequent requests
 
   ```typescript
-  import { module, singleton } from '@hardwired/core';
+  import { module, singleton } from 'hardwired';
 
   class SomeClass {}
 
@@ -134,7 +134,7 @@ live in the containers_
 - `value` - similar to `singleton`, but takes a value instead of class
 
   ```typescript
-  import { module, value } from '@hardwired/core';
+  import { module, value } from 'hardwired';
 
   const someObject = { someProp: 123 };
 
@@ -147,7 +147,7 @@ live in the containers_
 - `factory` - creates an instance of factory class and returns value produced by `build` method. The value acts like singleton.
 
   ```typescript
-  import { module, factory } from '@hardwired/core';
+  import { module, factory } from 'hardwired';
 
   class NumberFactory {
     private count = 0;
@@ -186,7 +186,7 @@ live in the containers_
 - `func` - creates function with partially applied arguments
 
   ```typescript
-  import { module, func, value } from '@hardwired/core';
+  import { module, func, value } from 'hardwired';
 
   const someFunction = (a: number, b: string, c: boolean): string => 'example';
 
@@ -210,7 +210,7 @@ live in the containers_
 - `request` - creates new singleton instance for each new request
 
   ```typescript
-  import { module, request } from '@hardwired/core';
+  import { module, request } from 'hardwired';
 
   class SomeClass {
     args: any[];
@@ -236,7 +236,7 @@ live in the containers_
 ### Modules composition
 
 ```typescript
-import { module, value, singleton } from '@hardwired/core';
+import { module, value, singleton } from 'hardwired';
 
 const databaseConfig = {
   url: '',
@@ -262,7 +262,7 @@ const usersModule = module('users')
 ### Replacing implementations
 
 ```typescript
-import { module, value, singleton } from '@hardwired/core';
+import { module, value, singleton } from 'hardwired';
 
 const databaseConfig = {
   url: '',

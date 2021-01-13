@@ -1,11 +1,11 @@
 {
-  "name": "@hardwired/redux",
+  "name": "hardwired-redux",
   "version": "0.0.1",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
-    "@hardwired/core": "*",
-    "@hardwired/react": "*",
+    "hardwired": "*",
+    "hardwired-react": "*",
     "reselect": "^4.0.0"
   },
   "peerDependencies": {

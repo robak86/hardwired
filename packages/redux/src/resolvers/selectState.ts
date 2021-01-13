@@ -1,6 +1,6 @@
-import { AcquiredInstance, ContainerContext, Instance } from "@hardwired/core";
-import { Store } from "redux";
-import invariant from "tiny-invariant";
+import { AcquiredInstance, ContainerContext, Instance } from 'hardwired';
+import { Store } from 'redux';
+import invariant from 'tiny-invariant';
 
 export class StateSelector<T, TDeps extends any[]> extends Instance<T, TDeps> {
   constructor(private select: () => T) {

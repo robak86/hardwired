@@ -1,3 +1,3 @@
-import { NodesState } from "../nodes/state/NodesState";
+import { NodesState } from '../nodes/state/NodesState';
 
 export type AppState = NodesState;

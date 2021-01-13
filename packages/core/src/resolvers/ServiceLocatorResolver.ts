@@ -1,6 +1,6 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { ContainerContext } from '../container/ContainerContext';
-import { Instance } from "./abstract/Instance";
+import { Instance } from './abstract/Instance';
 
 export class ServiceLocatorResolver extends Instance<ServiceLocator, []> {
   constructor() {

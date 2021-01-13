@@ -1,12 +1,12 @@
-import { container, factory, module, value } from '@hardwired/core';
-import { ContainerProvider, useWatchable } from '@hardwired/react';
+import { container, factory, module, value } from 'hardwired';
+import { ContainerProvider, useWatchable } from 'hardwired-react';
 import { render } from '@testing-library/react';
 import React, { FunctionComponent } from 'react';
 import { selector } from '../SelectorResolver';
 import { dispatch } from '../DispatchResolver';
 import { AppState, StoreFactory } from '../../tests/StoreFactory';
 import { storeFactory } from '../StoreFactory';
-import { provider } from '@hardwired/react';
+import { provider } from 'hardwired-react';
 import { Provider } from 'react-redux';
 
 export type DummyComponentProps = {

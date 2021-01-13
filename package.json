@@ -13,7 +13,7 @@
     "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
     "build:coverage": "nyc --reporter=text-lcov mocha -- -- spec packages/**/__test__/*.test.js | coveralls",
     "build:coverage:local": "nyc mocha -- -- spec packages/**/__test__/*.test.js",
-    "format": "cross-env prettier --write 'packages/**/*.{ts,tsx,js}'",
+    "format": "prettier --write 'packages/**/src/**/*.{ts,tsx,js}'",
     "lint": "eslint 'packages/**/*.{!d.ts,ts,tsx}'"
   },
   "author": "Tomasz Robaczewski",
@@ -28,7 +28,7 @@
   },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
-      "prettier --write",
+      "yarn format",
       "yarn lint"
     ]
   },

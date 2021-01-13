@@ -56,7 +56,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     ) as any;
   }
 
-
   defineStructured<
     TKey extends string,
     TValue,

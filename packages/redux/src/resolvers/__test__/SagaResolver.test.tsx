@@ -1,7 +1,7 @@
 import { saga } from '../SagaResolver';
-import { container, factory, module, value } from '@hardwired/core';
+import { container, factory, module, value } from 'hardwired';
 import { StoreFactory } from '../../tests/StoreFactory';
-import { storeFactory } from "../StoreFactory";
+import { storeFactory } from '../StoreFactory';
 
 describe(`SagaResolver`, () => {
   function setup() {

@@ -1,7 +1,7 @@
 import { Instance } from '../../../core/src/resolvers/abstract/Instance';
 import { ClassType } from '../../../core/src/utils/ClassType';
 import { Factory } from '../../../core/src/resolvers/FactoryResolver';
-import { FactoryResolver } from '@hardwired/core';
+import { FactoryResolver } from 'hardwired';
 
 export class StoreFactoryResolver<TReturn, TDeps extends any[]> extends FactoryResolver<TReturn, TDeps> {}
 

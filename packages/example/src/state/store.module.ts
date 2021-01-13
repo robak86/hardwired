@@ -1,10 +1,10 @@
-import { Factory, factory, Module, module, value } from "@hardwired/core";
-import { rootReducer } from "./rootReducer";
-import { applyMiddleware, compose, createStore, Reducer, Store } from "redux";
-import { AppState } from "./AppState";
-import { NodesState } from "../nodes/state/NodesState";
-import { composeWithDevTools } from "redux-devtools-extension";
-import { selectState } from "@hardwired/redux";
+import { Factory, factory, Module, module, value } from 'hardwired';
+import { rootReducer } from './rootReducer';
+import { applyMiddleware, compose, createStore, Reducer, Store } from 'redux';
+import { AppState } from './AppState';
+import { NodesState } from '../nodes/state/NodesState';
+import { composeWithDevTools } from 'redux-devtools-extension';
+import { selectState } from 'hardwired-redux';
 
 class StoreFactory implements Factory<Store<AppState>> {
   constructor(private rootReducer: Reducer<AppState>, private defaultState: AppState) {}
@@ -31,4 +31,4 @@ export const storeModule = module('app')
   .define('state', selectState<AppState>(), ['store']);
 
 export type M = Module.Materialized<typeof storeModule>;
-type W = M['state']
+type W = M['state'];

@@ -1,4 +1,4 @@
-import invariant from "tiny-invariant";
+import invariant from 'tiny-invariant';
 
 export class ImmutableSet<D extends Record<string, any>> {
   static empty(): ImmutableSet<{}> {

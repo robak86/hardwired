@@ -1,7 +1,7 @@
-import React from "react";
-import { ContainerProvider } from "@hardwired/react";
-import { container } from "@hardwired/core";
-import { NodesPlane } from "./nodes/components/NodesPlane";
+import React from 'react';
+import { ContainerProvider } from 'hardwired-react';
+import { container } from 'hardwired';
+import { NodesPlane } from './nodes/components/NodesPlane';
 
 const appContainer = container();
 

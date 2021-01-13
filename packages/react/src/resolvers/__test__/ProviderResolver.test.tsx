@@ -1,4 +1,4 @@
-import { container, module, value } from '@hardwired/core';
+import { container, module, value } from 'hardwired';
 import { provider } from '../ProviderResolver';
 import { DummyProvider, useDummyProviderValue } from '../../testing/DummyProvider';
 import { DummyComponent } from '../../testing/DummyComponent';

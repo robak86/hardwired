@@ -1,5 +1,5 @@
 {
-  "name": "@hardwired/core",
+  "name": "hardwired",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "homepage": "https://github.com/robak86/hardwired",

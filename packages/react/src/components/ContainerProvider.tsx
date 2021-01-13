@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FunctionComponent, ReactElement, useMemo } from 'react';
-import { Container } from '@hardwired/core';
+import { Container } from 'hardwired';
 import { ContainerContext } from './ContainerContext';
 import { BoundProvider, ProviderResolver } from '../resolvers/ProviderResolver';
 

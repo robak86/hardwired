@@ -53,8 +53,8 @@ describe(`FunctionResolver`, () => {
 
         const c = container();
 
-        const fnBuild1 = c.get(set,'fn');
-        const fnBuild2 = c.get(set,'fn');
+        const fnBuild1 = c.get(set, 'fn');
+        const fnBuild2 = c.get(set, 'fn');
 
         expect(fnBuild1).toBe(fnBuild2);
       });

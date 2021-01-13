@@ -1,4 +1,4 @@
-import { ContainerContext, Instance } from '@hardwired/core';
+import { ContainerContext, Instance } from 'hardwired';
 import { Action, AnyAction, Store } from 'redux';
 
 export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TActionArgs) => void, [Store<any>]> {
