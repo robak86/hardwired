@@ -1,6 +1,10 @@
 ### Core
 
+- instead of creating multiple listeners across acquired resolvers hierarchy create common events bus on container context
+
 We still need some discovery mechanism for registering Be server route handlers
+
+- Add runtime checks for deps
 
 ## FactoryResolver
 
