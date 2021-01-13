@@ -56,7 +56,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     ) as any;
   }
 
-  // TODO: not sure if we should provide such complex composition (this should be done in user's code not at the container/module level)
+
   defineStructured<
     TKey extends string,
     TValue,

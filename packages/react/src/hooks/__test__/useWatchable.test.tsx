@@ -122,7 +122,7 @@ describe(`useWatchable`, () => {
       };
     }
 
-    it(`re-renders component on instance revalidate event`, async () => {
+    it.skip(`re-renders component on instance revalidate event`, async () => {
       const { Component, observedInstance } = setup();
 
       const result = render(<Component />);
