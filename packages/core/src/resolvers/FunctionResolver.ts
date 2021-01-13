@@ -1,25 +1,23 @@
 import { curry } from '../utils/curry';
-import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
+import { PartiallyApplied } from '../utils/PartiallyApplied';
+import { PartiallyAppliedArgs } from '../utils/PartiallyAppliedArgs';
 import { Instance } from './abstract/Instance';
 
-// TODO: not sure if this should be singleton ?
-//  or we should memoize the function by dependencySelect ?  +1
-//  or it shouldn't never be memoized ?
-export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
+export class FunctionResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
   private readonly curriedFunction;
-  private readonly uncurriedFunction;
+  private readonly unCurriedFunction;
   private previousDependencies: any[] = [];
 
-  constructor(fn: (...args: any[]) => any, private depSelect: Array<Instance<any>> = []) {
+  constructor(fn: (...args: any[]) => any) {
     super();
-    this.uncurriedFunction = fn;
+    this.unCurriedFunction = fn;
     this.curriedFunction = curry(fn);
   }
 
   build(cache: ContainerContext): TReturn {
-    // TODO: not sure if this does not trigger all getter from the whole tree !!!!
-    const currentDependencies = this.depSelect.map(factory => factory.get(cache));
+    const currentDependencies = this.dependencies.map(d => d.build(cache));
+
     const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
 
     if (requiresRevalidation) {
@@ -39,48 +37,17 @@ export class FunctionResolver<TReturn> extends AbstractDependencyResolver<TRetur
   }
 
   private buildFunction(params) {
-    if (params.length === this.uncurriedFunction.length) {
-      return () => this.uncurriedFunction(...params);
+    if (params.length === this.unCurriedFunction.length) {
+      return () => this.unCurriedFunction(...params);
     } else {
       return this.curriedFunction(...params);
     }
   }
 }
 
-type FunctionResolverBuilder = {
-  <TResult>(fn: () => TResult): FunctionResolver<() => TResult>;
-  <TDep1, TResult>(fn: (d1: TDep1) => TResult): FunctionResolver<(d1: TDep1) => TResult>;
-  <TDep1, TResult>(fn: (d1: TDep1) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<() => TResult>;
-  <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult): FunctionResolver<(d1: TDep1, d2: TDep2) => TResult>;
-  <TDep1, TDep2, TResult>(fn: (d1: TDep1, d2: TDep2) => TResult, depSelect: [Instance<TDep1>]): FunctionResolver<
-    (dep2: TDep2) => TResult
-  >;
-  <TDep1, TDep2, TResult>(
-    fn: (d1: TDep1, d2: TDep2) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>],
-  ): FunctionResolver<() => TResult>;
-  // 3 args
-  <TDep1, TDep2, TDep3, TResult>(fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult): FunctionResolver<
-    (d1: TDep1, d2: TDep2, d3: TDep3) => TResult
-  >;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>],
-  ): FunctionResolver<(dep2: TDep2, dep3: TDep3) => TResult>;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>],
-  ): FunctionResolver<(dep3: TDep3) => TResult>;
-  <TDep1, TDep2, TDep3, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>, Instance<TDep3>],
-  ): FunctionResolver<() => TResult>;
-  <TDep1, TDep2, TDep3, TDep4, TResult>(
-    fn: (d1: TDep1, d2: TDep2, d3: TDep3, d4: TDep4) => TResult,
-    depSelect: [Instance<TDep1>, Instance<TDep2>, Instance<TDep3>, Instance<TDep4>],
-  ): FunctionResolver<() => TResult>;
-};
-
-export const func: FunctionResolverBuilder = (fn, deps?) => {
-  return new FunctionResolver(fn, deps) as any;
-};
+export function func<TValue extends (...args: any[]) => any, TDepth extends 0 | 1 | 2 | 3 | 4>(
+  cls: TValue,
+  depth: TDepth,
+): Instance<PartiallyApplied<TValue, TDepth>, PartiallyAppliedArgs<TValue, TDepth>> {
+  return new FunctionResolver(cls);
+}

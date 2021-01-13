@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
-    "lib": [
-      "ES2019.Array",
-      "DOM"
-    ],
+    "lib": ["ES2019.Array", "DOM"],
     "declarationMap": true,
     "sourceMap": true,
     "target": "es5",
@@ -23,7 +20,8 @@
     "noImplicitAny": false,
     "keyofStringsOnly": false,
     "downlevelIteration": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "removeComments": true,
+    "skipLibCheck": false
   }
 }
-

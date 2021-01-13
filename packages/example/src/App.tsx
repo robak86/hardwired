@@ -1,16 +1,14 @@
-import React from "react";
-import { ContainerProvider } from "hardwired-react";
-import { container, unit } from "hardwired";
-import { MatrixContainer } from "./matrix/components/MatrixContainer";
+import React from 'react';
+import { ContainerProvider } from 'hardwired-react';
+import { container } from 'hardwired';
+import { NodesPlane } from './nodes/components/NodesPlane';
 
-const appContainer = container(unit('empty'));
+const appContainer = container();
 
 function App() {
   return (
     <ContainerProvider container={appContainer}>
-      <MatrixContainer />
-      {/*<Component module={appModule} name={'DummyComponentContainer'} />*/}
-      {/*<Component module={matrixModule} name={'MatrixContainer'} />*/}
+      <NodesPlane />
     </ContainerProvider>
   );
 }

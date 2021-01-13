@@ -1,11 +1,15 @@
-import { unit } from "../../module/Module";
-import { value } from "../ValueResolver";
-import { createResolverId } from "../../utils/fastId";
-import { request } from "../ClassRequestResolver";
-import { singleton } from "../ClassSingletonResolver";
-import { serviceLocator } from "../ServiceLocatorResolver";
-import { container } from "../../container/Container";
-import { factory } from "../FactoryResolver";
+import { value } from '../ValueResolver';
+import { createResolverId } from '../../utils/fastId';
+import { request } from '../ClassRequestResolver';
+import { singleton } from '../ClassSingletonResolver';
+import { serviceLocator } from '../ServiceLocatorResolver';
+import { container } from '../../container/Container';
+import { factory } from '../FactoryResolver';
+import { unit } from '../../module/ModuleBuilder';
+import { expectType, TypeEqual } from 'ts-expect';
+import { ServiceLocator } from '../../container/ServiceLocator';
+import { Module } from '../abstract/Module';
+import { Instance } from '../abstract/Instance';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -25,20 +29,26 @@ describe(`ServiceLocatorResolver`, () => {
   }
 
   const root = unit('root')
-    .define('locator', _ => serviceLocator())
-
-    .define('singletonModule', _ => singletonModule)
-    .define('producedByFactory', _ => factory(DummyFactory))
-    .define('singletonConsumer', _ => request(TestClassConsumer, [_.singletonModule.reqScoped]));
+    .define('locator', serviceLocator())
+    .import('singletonModule', () => singletonModule)
+    .define('producedByFactory', factory(DummyFactory))
+    .define('singletonConsumer', request(TestClassConsumer), ['singletonModule.reqScoped']);
 
   const singletonModule = unit('child1')
-    .define('value', _ => value('someValue'))
-    .define('reqScoped', _ => request(TestClass, [_.value]))
-    .define('singleton', _ => singleton(TestClass, [_.value]));
+    .define('value', value('someValue'))
+    .define('reqScoped', request(TestClass), ['value'])
+    .define('singleton', singleton(TestClass), ['value']);
+
+  describe(`serviceLocator`, () => {
+    it(`return Instance type`, async () => {
+      const s = serviceLocator();
+      expectType<TypeEqual<typeof s, Instance<ServiceLocator, []>>>(true);
+    });
+  });
 
   it(`returns request scoped instances`, async () => {
-    const c = container(root);
-    const locator = c.get('locator');
+    const c = container();
+    const locator = c.get(root, 'locator');
 
     const fromLocator = locator.withScope(({ get }) => {
       const call1 = get(singletonModule, 'singleton');
@@ -53,8 +63,9 @@ describe(`ServiceLocatorResolver`, () => {
   });
 
   it(`reuses singleton instances from container`, async () => {
-    const c = container(root);
-    const locator = c.get('locator');
+    const c = container();
+
+    const locator = c.get(root, 'locator');
 
     const fromContainer = c.get(singletonModule, 'singleton');
     const fromLocator = locator.withScope(({ get }) => {
@@ -65,8 +76,8 @@ describe(`ServiceLocatorResolver`, () => {
   });
 
   it(`reuses values built by factories from container`, async () => {
-    const c = container(root);
-    const locator = c.get('locator');
+    const c = container();
+    const locator = c.get(root, 'locator');
 
     const fromContainer = c.get(root, 'producedByFactory');
     const fromLocator = locator.withScope(({ get }) => {

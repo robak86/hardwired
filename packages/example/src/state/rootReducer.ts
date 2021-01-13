@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
 import { AppState } from './AppState';
-import { matrixReducer } from '../matrix/reducers/matrixReducer';
+import { nodesIdsReducer, nodesPositionsReducer } from '../nodes/reducers/nodesReducer';
 
 export const rootReducer = combineReducers<AppState>({
-  matrix: matrixReducer,
-  value: (v = 'strig') => v,
+  nodesIds: nodesIdsReducer,
+  nodesPositions: nodesPositionsReducer,
 });

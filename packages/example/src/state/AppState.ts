@@ -1,5 +1,3 @@
-import { MatrixState } from '../matrix/state/MatrixState';
+import { NodesState } from '../nodes/state/NodesState';
 
-export type AppState = MatrixState & {
-  value: string;
-};
+export type AppState = NodesState;

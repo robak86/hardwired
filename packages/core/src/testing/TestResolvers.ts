@@ -1,8 +1,7 @@
-import { AbstractDependencyResolver } from '../resolvers/abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
-import { ModuleLookup } from '../module/ModuleLookup';
+import { Instance } from '../resolvers/abstract/Instance';
 
-export class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
+export class DummyResolver<TValue> extends Instance<TValue, []> {
   constructor(private value: TValue) {
     super();
   }
@@ -10,7 +9,7 @@ export class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
   build(cache: ContainerContext): TValue {
     return this.value;
   }
-  onInit(lookup: ModuleLookup<any>) {
+  onInit(lookup: ContainerContext) {
     return undefined;
   }
 }
@@ -19,7 +18,7 @@ export const dependency = <TValue>(value: TValue): DummyResolver<TValue> => {
   return new DummyResolver<TValue>(value);
 };
 
-export class TestTransientResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
+export class TestTransientResolver<TReturn> extends Instance<TReturn, []> {
   constructor(private resolver: () => TReturn) {
     super();
   }

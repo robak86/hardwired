@@ -1,9 +1,54 @@
-### ModuleResolver
+### Core
 
-- probably module resolver shouldn't use container context and should
-- shouldn't have build method, but rather load() (side effect)
+- instead of creating multiple listeners across acquired resolvers hierarchy create common events bus on container context
 
-- is it important for the resolver to know if discovered dependency comes from parent or from child ?
+We still need some discovery mechanism for registering Be server route handlers
+
+- Add runtime checks for deps
+
+## FactoryResolver
+
+- add scope `factory(SomeFactoryClass, 'transient' | 'request' | 'singleton')`
+
+##ModuleBuilder
+
+- extract `dependencies` array from `Instance` into `ContainerContext`
+
+  - resolvers should be stateless
+
+- holding any state on `Instance` may be tricky.
+
+  - what if single instance is used in two module instance ?
+
+  ```typescript
+  const m1 = unit().define('a', instance);
+  const m2 = m1.define('b', instance);
+
+  const m3 = unit().define('import1', m1).define('import2', m2);
+  ```
+
+  - should we somehow freeze modules (explicitly or implicitly on the container creation?) ?
+    - add runtime check for this case ?
+
+- add checks for TKey collision in define method (no accidental overrides)
+
+- for case where resolver is thunk add check for making sure that thunk returns always the same module (in case if somebody would like to build module dynamically
+  Make sure that this check will be still evaluated lazily
+- investigate if extra bind array is really necessary for `.define` method. Instead of explicit bind we could just use
+  first/last items from dependencies array
+
+- Invalidation events works currently for singleton like resolvers (where
+  there is always a relation that for a single resolver instance there is only a single produced instance)
+
+  - use WeakMap for binding produced value with InstanceEvents object ?
+  - alternatively we could use instance id... but this looks like overhead
+
+- Resolvers should be stateless in case where e.g. single module is used by multiple separated containers
+
+  - ~~`DependencyResolverEvents` should be stored in ContainerContext and could be lazily initialized - not all
+    resolvers use this feature~~ [x]
+
+- is it important for the resolver to know if discovered dependency comes from a parent or from a child module ?
 
 - lazy loading introduces dependency to order of modules loading which makes preserving (reasonable) tree hierarchy of loaded modules
   not possible. Instead of keeping tree structure in the context maybe we should use a simple `map<uuid, resolver>`
@@ -33,39 +78,23 @@ expect(container(updated).get('c')).toEqual({
 });
 ```
 
-- Find better names for the `RegistryRecord`
-- narrow key types to strings (keyof S & string)
-
 - add `link` | 'export' resolver. For exporting definition from imported modules.
 
-  - prevent accessing properties through multiple levels of modules hierarchy
-  - but breaks Law od Demeter
+  - this breaks Law od Demeter
 
-  ```typescript
-  const m = module('m')
-    .define('imported', _ => moduleImport(someOtherModule))
-    .define('def1', _ => singletion(SomeClass, [_.imported.someModule.someDefinition])); // should throw compile error
-  ```
+- add `flatten` | `embed` for importing module and reexporting its definitions (so they are available as module's own definitions)?
 
-- add new base builder method for defining context slices/traits/partial/ ? usable for passing dependencies to functions
-  as context object
-
-```typescript
-const someFunction = ({ db, request }) => {};
-
-const m = unit()
-  .trait('store', ctx => ({ db: ctx.database.connection, s3: ctx.database.connection }))
-  .trait('migrationUtils', ctx => ({ db: ctx.databse.connection, migrator: ctx.someOtherClass }))
-  .middlewareFunction('m1', someFunction, ctx => ({ ...ctx.store, ...ctx.migrationUtils, request: ctx.request }));
-```
+  - ... but how it would behave with inject ?!!! How we replace all flattened definitions ??
+  - maybe we should treat all replaced
+  - is it correct in terms of good practices ?
 
 - investigate if we can use Symbol instead of unique `string` for `moduleId.identity`
 - investigate if module name `module('name`)` can be/should be optional ?
 - memory leaks ? shouldn't we use WeakMap ? What about compatibility ?
 
-* add methods for checking equality
-* if two containers are equal - it means they have exactly the same definitions and imports
-* add checks for definition (cannot return null and undefined)
+- add methods for checking equality ?
+  - if two containers are equal - it means they have exactly the same definitions and imports ?
+- add checks for definition (cannot return null and undefined)
 
   ```
   const m = module('m')
@@ -74,13 +103,52 @@ const m = unit()
   m is Module type instead of 'error message about colissions'
   ```
 
-* check if current implementation of .function memoization provides any gains in terms of performance
+- check if current implementation of .function memoization provides any gains in terms of performance
 
   - if not, maybe this memoization is pointless??
 
-* use consistent naming for resolvers - resolvers | factory | something else?
+# Container
 
-* add dependency injection to sagas, using custom effects
+- investigate if modules (resolvers) could have any side effects (requiring the container to implement some kind of eager loading)
+  - this would mean that we cannot have `onInit` methods in resolvers
+
+```
+
+  // Instead multiple function overloads use tuples TDepsKeys extends [TDepKey, ...TDepKey[]]
+  // getMany: GetMany<MaterializedRecord<TRegistryRecord>> = (...args: any[]) => {
+  //   const cache = this.containerContext.forNewRequest();
+  //
+  //   return args.map(key => {
+  //     const dependencyFactory = this.rootModuleLookup.getDependencyResolver(key as any);
+  //
+  //     invariant(dependencyFactory, `Dependency with name: ${key} does not exist`);
+  //
+  //     return dependencyFactory.get(cache);
+  //   }) as any;
+  // };
+
+  // Using proxy object
+  // asObject(): MaterializeModule<TModule> {
+  //   const obj = {};
+  //   const cache = this.containerContext.forNewRequest();
+  //   this.rootModuleLookup.forEachDependency((key, factory) => {
+  //     obj[key] = factory.get(cache);
+  //   });
+  //
+  //   return obj as any;
+  // }
+```
+
+```
+
+  withScope<TReturn>(container: (container: Container<TModule>) => TReturn): TReturn {
+    throw new Error('Implement me');
+  }
+```
+
+### React
+
+- add dependency injection to sagas, using custom effects
 
 ```typescript
 function* someSaga() {
@@ -102,14 +170,7 @@ const effectMiddleware = containerCache => next => effect => {
 
 - add typesafe effect (for getting dependencies) for redux saga
 
-* How implement lazy loading for modules ?
-  - check how loading of the next module is done, at what point ? what should trigger loading of the new module ?
-
 - add runtime checks for collision for `Module`
-
-* add `flatImport` which redefines all definitions from flatImported module, so they are available as module's own definitions
-  - ... but how it would behave with inject ?!!! How we replace all flattened definitions ??
-  - maybe we should treat all replaced
 
 - how to integrate hierarchical containers composition with state branches composition
 
@@ -127,9 +188,15 @@ const effectMiddleware = containerCache => next => effect => {
   };
   ```
 
-- sagas, reducers, states should be propagated to root container - it's global dependency. How to reuse it in child modules ?
+- sagas, reducers, states should be propagated to root container - it's a global dependency. How to reuse it in child modules ?
 
 ### React
+
+- shouldn't we use explicit dependencies for redux stack ?
+
+  - e.g. providing store instance for selector definition ?
+    - this would require different modules organization (store (with all domains stuff) has to be leaf module) and
+      modules holding selectors would need it import store module (which in terms of composition or dependencies direction makes totally sense)
 
 - how to connect it with saga ?
 

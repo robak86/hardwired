@@ -1,104 +1,241 @@
-import { Module } from '../Module';
-import { AbstractDependencyResolver } from '../../resolvers/abstract/AbstractDependencyResolver';
-import { ContainerContext } from '../../container/ContainerContext';
 import { expectType, TypeEqual } from 'ts-expect';
+import { ModuleBuilder, module } from '../ModuleBuilder';
+import { ClassType } from '../../utils/ClassType';
+import { value, ValueResolver } from '../../resolvers/ValueResolver';
+import { singleton } from '../../resolvers/ClassSingletonResolver';
+import { container } from '../../container/Container';
+import { Module } from '../../resolvers/abstract/Module';
 import { Instance } from '../../resolvers/abstract/Instance';
+import { TestClassArgs2 } from '../../testing/ArgsDebug';
 
 describe(`Module`, () => {
-  class DummyResolver<TValue> extends AbstractDependencyResolver<TValue> {
-    constructor(value: TValue) {
-      super();
-    }
-
-    build(registry: ContainerContext): TValue {
-      throw new Error('Implement me');
-    }
-  }
-  const dummy = <TValue>(value: TValue): DummyResolver<TValue> => {
-    return new DummyResolver<TValue>(value);
+  const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
+    return new ValueResolver(value);
   };
 
-  it(`creates correct type`, async () => {
-    const m = Module.empty('someModule')
-      .define('key1', ctx => dummy(123))
-      .define('key2', ctx => dummy(true))
-      .define('key3', ctx => dummy('string'))
-      .define('key4', ctx => dummy(() => 'someString'));
+  const dummyClassResolver = <TDeps extends any[], TValue>(cls: ClassType<TValue, TDeps>): Instance<TValue, TDeps> => {
+    return singleton(cls);
+  };
 
-    type ExpectedType = {
-      key1: Instance<number>;
-      key2: Instance<boolean>;
-      key3: Instance<string>;
-      key4: Instance<() => 'someString'>;
-    };
+  describe(`define`, () => {
+    it(`creates correct type`, async () => {
+      const m = ModuleBuilder.empty('someModule')
+        .define('key1', dummy(123))
+        .define('key2', dummy(true))
+        .define('key3', dummy('string'))
+        .define(
+          'key4',
+          dummy(() => 'someString'),
+        );
 
-    expectType<TypeEqual<Module.Registry<typeof m>, ExpectedType>>(true);
-  });
+      type ExpectedType = {
+        key1: number;
+        key2: boolean;
+        key3: string;
+        key4: () => 'someString';
+      };
 
-  it(`creates correct types for deps`, async () => {
-    type ExpectedType = {
-      key1: Instance<number>;
-      key2: Instance<boolean>;
-      key3: Instance<string>;
-      key4: Instance<() => 'someString'>;
-    };
+      type Actual = Module.Materialized<typeof m>;
 
-    const m = Module.empty('someModule') // breakme
-      .define('key1', _ => {
-        expectType<TypeEqual<typeof _, Record<string, unknown>>>(true);
-
-        return dummy(123);
-      })
-      .define('key2', _ => {
-        expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1'>>>(true);
-
-        return dummy(true);
-      })
-
-      .define('key3', _ => {
-        expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1' | 'key2'>>>(true);
-
-        return dummy('string');
-      })
-
-      .define('key4', _ => {
-        expectType<TypeEqual<typeof _, Pick<ExpectedType, 'key1' | 'key2' | 'key3'>>>(true);
-
-        return dummy(() => 'someString');
-      });
-  });
-
-  it(`creates correct types for imports`, async () => {
-    const m1 = Module.empty('someModule').define('key1', ctx => dummy(123));
-
-    const m2 = Module.empty('someModule')
-      .define('imported', ctx => m1)
-      .define('key1', _ => {
-        expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1> }>>(true);
-
-        return dummy(123);
-      });
-  });
-
-  it(`creates correct types for replace`, async () => {
-    const m1 = Module.empty('someModule').define('key1', ctx => dummy(123));
-
-    const m2 = Module.empty('someModule')
-      .define('imported', ctx => m1)
-      .define('key2', ctx => dummy('string'))
-      .define('key1', _ => {
-        expectType<TypeEqual<typeof _, { imported: Module.Registry<typeof m1>; key2: Instance<string> }>>(true);
-
-        return dummy(123);
-      });
-
-    type Expected = (key: 'key1' | 'key2', factory: (ctx: any) => AbstractDependencyResolver<number>) => typeof m2;
-
-    m2.replace('key1', ctx => {
-      // ctx.key2
-      return dummy('string');
+      expectType<TypeEqual<Actual, ExpectedType>>(true);
     });
 
-    expectType<TypeEqual<typeof m2.replace, Expected>>(true);
+    it(`providing deps`, async () => {
+      const m2 = ModuleBuilder.empty('someModule').define('string', dummy('string')).define('number', dummy(123));
+
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['number', 'string']);
+
+      // @ts-expect-error - dependencies were passed in the wrong order
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['string', 'number']);
+
+      // @ts-expect-error - on of the dependencies is missing
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['number']);
+
+      // @ts-expect-error - dependencies array is empty
+      m2.define('cls', dummyClassResolver(TestClassArgs2), []);
+
+      // @ts-expect-error - dependencies array is not provided
+      m2.define('cls', dummyClassResolver(TestClassArgs2));
+    });
+
+    it(`providing deps from imported modules`, async () => {
+      const child = ModuleBuilder.empty('child')
+        .define('someNumber', value(123))
+        .define('someString', value('content'));
+
+      const m2 = ModuleBuilder.empty('someModule').import('imported', () => child);
+
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['imported.someNumber', 'imported.someString']);
+
+      // @ts-expect-error - dependencies were passed in the wrong order
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['imported.someString', 'imported.someNumber']);
+
+      // @ts-expect-error - on of the dependencies is missing
+      m2.define('cls', dummyClassResolver(TestClassArgs2), ['imported.someNumber']);
+
+      // @ts-expect-error - dependencies array is empty
+      m2.define('cls', dummyClassResolver(TestClassArgs2), []);
+
+      // @ts-expect-error - dependencies array is not provided
+      m2.define('cls', dummyClassResolver(TestClassArgs2));
+    });
+
+    describe(`providing structured deps`, () => {
+      // it(`is typesafe`, async () => {
+      //   class TestClass {
+      //     constructor(private args: { a: string; b: number }) {}
+      //   }
+      //
+      //   const m2 = ModuleBuilder.empty('someModule') // breakme
+      //     .define('string', dummy('string'))
+      //     .define('number', dummy(123));
+      //
+      //   const definition = dummyClassResolver(TestClass);
+      //
+      //   m2.defineStructured('cls', definition, { a: 'string', b: 'number' });
+      //
+      //   // @ts-expect-error - wrong dependency name used
+      //   m2.defineStructured('cls', definition, { a: 'wrong_name', b: 'number' });
+      //
+      //   // @ts-expect-error - wrong dependency key
+      //   m2.defineStructured('cls', definition, { aa: 'string', b: 'number' });
+      //
+      //   // @ts-expect-error - wrong dependencies types passed
+      //   m2.defineStructured('cls', definition, { a: 'number', b: 'number' });
+      //
+      //   // @ts-expect-error - dependencies array is empty
+      //   m2.defineStructured('cls', definition, { a: 'string' });
+      //
+      //   // @ts-expect-error - dependencies array is empty
+      //   m2.defineStructured('cls', definition, {});
+      //
+      //   // @ts-expect-error - dependencies array is not provided
+      //   m2.defineStructured('cls', definition);
+      // });
+      //
+      // it(`is typesafe for optional pros`, async () => {
+      //   class TestClass {
+      //     constructor(private args: { a: string; b?: number }) {}
+      //   }
+      //
+      //   const m2 = ModuleBuilder.empty('someModule') // breakme
+      //     .define('string', dummy('string'))
+      //     .define('number', dummy(123));
+      //
+      //   const definition = dummyClassResolver(TestClass);
+      //
+      //   m2.defineStructured('cls', definition, { a: 'string', b: 'number' });
+      //
+      //   m2.defineStructured('cls', definition, { a: 'string' });
+      //
+      //   // @ts-expect-error - wrong dependency name used
+      //   m2.defineStructured('cls', definition, { a: 'wrong_name', b: 'number' });
+      //
+      //   // @ts-expect-error - wrong dependency key
+      //   m2.defineStructured('cls', definition, { aa: 'string', b: 'number' });
+      //
+      //   // @ts-expect-error - wrong dependencies types passed
+      //   m2.defineStructured('cls', definition, { a: 'number', b: 'number' });
+      //
+      //   // @ts-expect-error - dependencies array is empty
+      //   m2.defineStructured('cls', definition, {});
+      //
+      //   // @ts-expect-error - dependencies array is not provided
+      //   m2.defineStructured('cls', definition);
+      // });
+    });
+
+    it(`creates correct types for imports`, async () => {
+      const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
+      const m2 = ModuleBuilder.empty('someModule').import('imported', m1).define('key1', dummy(123));
+
+      type ExpectedType = {
+        key1: number;
+      };
+
+      type Actual = Module.Materialized<typeof m2>;
+
+      expectType<TypeEqual<Actual['imported'], ExpectedType>>(true);
+    });
+
+    it(`creates correct types for replace`, async () => {
+      const m1 = ModuleBuilder.empty('someModule').define('key1', dummy(123));
+
+      const m2 = ModuleBuilder.empty('someModule')
+        .import('imported', m1)
+        .define('key2', dummy('string'))
+        .define('key1', dummy(123));
+
+      const replaced = m2.replace('key1', dummy(123));
+
+      type ExpectedType = {
+        imported: {
+          key1: number;
+        };
+        key2: string;
+        key1: number;
+      };
+
+      expectType<TypeEqual<Module.Materialized<typeof replaced>, ExpectedType>>(true);
+
+      // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
+      m2.replace('key1', dummy('sdf'));
+    });
+  });
+
+  describe(`inject`, () => {
+    it(`replaces child module`, async () => {
+      const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
+
+      const root = ModuleBuilder.empty('root')
+        .import('imported', child1)
+        .define('cls', singleton(TestClassArgs2), ['imported.key1', 'imported.key2']);
+
+      const c = container();
+      c.inject(child1.replace('key2', dummy('replacedString')));
+
+      const classInstance = c.get(root, 'cls');
+      expect(classInstance.someString).toEqual('replacedString');
+    });
+
+    it(`replaces all imports of given module`, async () => {
+      const root = ModuleBuilder.empty('root')
+        .import('import1', () => child1)
+        .import('import2', () => child1)
+        .define('cls', singleton(TestClassArgs2), ['import1.key1', 'import2.key2']);
+
+      const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
+
+      const c = container();
+      c.inject(
+        child1 //breakme
+          .replace('key1', dummy(456))
+          .replace('key2', dummy('replacedString')),
+      );
+
+      const classInstance = c.get(root, 'cls');
+      expect(classInstance.someNumber).toEqual(456);
+      expect(classInstance.someString).toEqual('replacedString');
+    });
+  });
+
+  describe(`isEqual`, () => {
+    it(`returns false for two newly created empty modules`, async () => {
+      const m1 = module('');
+      const m2 = module('');
+      expect(m1.isEqual(m2)).toEqual(false);
+    });
+
+    it(`returns false for module extended with a new definition`, async () => {
+      const m1 = module('').define('a', value('string'));
+      const m2 = m1.define('b', value('someOtherString'));
+      expect(m1.isEqual(m2)).toEqual(false);
+    });
+
+    it(`returns true for module with replaced value`, async () => {
+      const m1 = module('').define('a', value('string'));
+      const m2 = m1.replace('a', value('someOtherString'));
+      expect(m1.isEqual(m2)).toEqual(true);
+    });
   });
 });

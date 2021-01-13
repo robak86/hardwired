@@ -1,13 +1,14 @@
-import { ContainerContext } from "./ContainerContext";
-import { RegistryRecord } from "../module/RegistryRecord";
-import { Module } from "../module/Module";
-import invariant from "tiny-invariant";
+import { ContainerContext } from './ContainerContext';
+import invariant from 'tiny-invariant';
+import { ModuleBuilder } from '../module/ModuleBuilder';
+import { ImmutableSet } from '../collections/ImmutableSet';
+import { MaterializedRecord, Module } from '../resolvers/abstract/Module';
 
 type ServiceLocatorGet = {
-  <TRegistryRecord extends RegistryRecord, K extends RegistryRecord.DependencyResolversKeys<TRegistryRecord>>(
-    module: Module<TRegistryRecord>,
+  <TRegistryRecord extends Module.EntriesRecord, K extends keyof MaterializedRecord<TRegistryRecord> & string>(
+    module: ModuleBuilder<TRegistryRecord>,
     key: K,
-  ): RegistryRecord.Materialized<TRegistryRecord>[K];
+  ): MaterializedRecord<TRegistryRecord>[K];
 };
 
 export class ServiceLocator {
@@ -18,12 +19,13 @@ export class ServiceLocator {
 
     return factory({
       get: (module, key) => {
-        requestContext.loadModule(module);
-        requestContext.initModule(module);
+        requestContext.loadModule(module as any);
 
-        const dependencyFactory = requestContext.getModule(module.moduleId).getDependencyResolver(key as string);
-        invariant(dependencyFactory, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
-        return dependencyFactory.get(requestContext);
+        const moduleResolver = requestContext.getModule(module.moduleId);
+        invariant(moduleResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
+
+        // TODO: use real injections
+        return moduleResolver.get(key, requestContext) as any;
       },
     });
   }

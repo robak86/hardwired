@@ -1,26 +1,25 @@
-import { AbstractDependencyResolver } from './abstract/AbstractDependencyResolver';
 import { ContainerContext } from '../container/ContainerContext';
 import { ClassType } from '../utils/ClassType';
-import { Instance } from "./abstract/Instance";
+import { Instance } from './abstract/Instance';
+import invariant from 'tiny-invariant';
 
 export interface Factory<TReturn> {
   build(): TReturn;
 }
 
-export class FactoryResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
-  constructor(
-    private klass: ClassType<any, Factory<TReturn>>,
-    private selectDependencies: Array<Instance<any>> = [],
-  ) {
+export class FactoryResolver<TReturn, TDeps extends any[]> extends Instance<TReturn, TDeps> {
+  constructor(private klass: ClassType<Factory<TReturn>, any>) {
     super();
   }
 
   build(cache: ContainerContext): TReturn {
+    invariant(this.isInitialized, `Resolver is not initialized`);
+
     if (cache.hasInGlobalScope(this.id)) {
       return cache.getFromGlobalScope(this.id);
     } else {
-      const constructorArgs = this.selectDependencies.map(factory => factory.get(cache));
-      const factory = new this.klass(...constructorArgs);
+      const args = this.dependencies.map(d => d.build(cache));
+      const factory = new this.klass(...args);
       const instance = factory.build();
       cache.setForGlobalScope(this.id, instance);
       return instance;
@@ -28,14 +27,6 @@ export class FactoryResolver<TReturn> extends AbstractDependencyResolver<TReturn
   }
 }
 
-export type ClassFactoryBuilder = {
-  <TResult>(klass: ClassType<[], Factory<TResult>>): FactoryResolver<TResult>;
-  <TDeps extends any[], TResult>(
-    klass: ClassType<TDeps, Factory<TResult>>,
-    depSelect: { [K in keyof TDeps]: Instance<TDeps[K]> },
-  ): FactoryResolver<TResult>;
-};
-
-export const factory: ClassFactoryBuilder = (klass, depSelect?) => {
-  return new FactoryResolver(klass, depSelect);
-};
+export function factory<TDeps extends any[], TValue>(cls: ClassType<Factory<TValue>, TDeps>): Instance<TValue, TDeps> {
+  return new FactoryResolver(cls) as any;
+}

@@ -1,7 +1,7 @@
-import { AbstractDependencyResolver } from "./abstract/AbstractDependencyResolver";
-import { ContainerContext } from "../container/ContainerContext";
+import { ContainerContext } from '../container/ContainerContext';
+import { Instance } from './abstract/Instance';
 
-export class ValueResolver<TReturn> extends AbstractDependencyResolver<TReturn> {
+export class ValueResolver<TReturn> extends Instance<TReturn, []> {
   constructor(private value: TReturn) {
     super();
   }
@@ -11,6 +11,6 @@ export class ValueResolver<TReturn> extends AbstractDependencyResolver<TReturn> 
   }
 }
 
-export const value = <TValue>(value: TValue): ValueResolver<TValue> => {
+export function value<TDeps extends any[], TValue>(value: TValue): Instance<TValue, []> {
   return new ValueResolver(value);
-};
+}
