@@ -27,7 +27,7 @@ The library uses three main concepts:
 
 - Module - immutable object containing resolvers registered by names
 - Resolver - encapsulates details of objects instantiation, (e.g. `singleton`, `transient`, `request`, etc)
-- Container - object where all instances live. Tt caches and returns object instances created by the resolvers.
+- Container - object where all instances live. The container returns and optionally caches object instances created by the resolvers.
 
 #### Create module
 
@@ -53,8 +53,13 @@ const loggerModule = module('logger')
 ```typescript
 import { container } from '@hardwired/core';
 
-const exampleContainer = container(loggerModule);
-const logger = exampleContainer.get('logger'); // returns instance of Logger class
+const exampleContainer = container();
+```
+
+#### Get instance
+
+```typescript
+const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance of Logger class
 ```
 
 ### Registering module entries
@@ -62,8 +67,8 @@ const logger = exampleContainer.get('logger'); // returns instance of Logger cla
 - `.define(name, resolver, dependencies)` - returns a new instance of the module and appends new definition
 
   - `name` - name of the definition
-  - `resolver` -  It's called with object containing factories for all previously registered definitions.
-  - `dependencies` - array of paths pointing to given instance dependencies 
+  - `resolver` -  resolver bound to specific class, function, or value
+  - `dependencies` - array of paths targeting dependencies required by the resolver
 
   ```typescript
   import { module, value } from '@hardwired/core';
@@ -102,9 +107,9 @@ import { module, transient } from '@hardwired/core';
 class SomeClass {}
 
 const someModule = module('example').define('transientDependency', transient(SomeClass));
-const ct = container(someModule);
+const ct = container();
 
-ct.get('transientDependency') === ct.get('transientDependency'); // false
+ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
 ```
 
 - `singleton` - creates single instance, which is cached in the container for all subsequent requests
@@ -115,13 +120,16 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   class SomeClass {}
 
   const someModule = module('example').define('someSingleton', singleton(SomeClass));
-  const ct = container(someModule);
+  const ct = container();
 
-  ct.get('someSingleton') === ct.get('someSingleton'); // true
+  ct.get(someModule, 'someSingleton') === ct.get(someModule, 'someSingleton'); // true
 
-  const otherContainer = container(someModule);
-  ct.get('someSingleton') === otherContainer.get('someSingleton'); // false
+  const otherContainer = container();
+  ct.get(someModule, 'someSingleton') === otherContainer.get(someModule, 'someSingleton'); // false
   ```
+
+  _Notice that loggerModule is stateless in terms of holding any reference to produced singleton instances. All instances
+live in the containers_
 
 - `value` - similar to `singleton`, but takes a value instead of class
 
@@ -131,9 +139,9 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   const someObject = { someProp: 123 };
 
   const someModule = module('example').define('someValue', value(someObject));
-  const ct = container(someModule);
+  const ct = container();
 
-  ct.get('someValue') === ct.get('someValue'); // true
+  ct.get('someValue') === ct.get(someModule, 'someValue'); // true
   ```
 
 - `factory` - creates an instance of factory class and returns value produced by `build` method. The value acts like singleton.
@@ -151,10 +159,10 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
   }
 
   const someModule = module('example').define('createdByFactory', factory(NumberFactory));
-  const ct = container(someModule);
+  const ct = container();
 
-  ct.get('createdByFactory'); // returns 1
-  ct.get('createdByFactory'); // returns 1
+  ct.get(someModule, 'createdByFactory'); // returns 1
+  ct.get(someModule, 'createdByFactory'); // returns 1
 
   class ArgsSpy {
     args: any[];
@@ -168,11 +176,11 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
     .define('spy1', singleton(ArgsSpy))
     .define('spy2', singleton(ArgsSpy));
 
-  const ct2 = container(someModule);
+  const ct2 = container();
 
-  ct2.get('spy1').args[0]; // equals to 1
-  ct2.get('spy2').args[0]; // equals to 1
-  ct2.get('createByFactory'); // returns 1
+  ct2.get(someModule, 'spy1').args[0]; // equals to 1
+  ct2.get(someModule, 'spy2').args[0]; // equals to 1
+  ct2.get(someModule, 'createByFactory'); // returns 1
   ```
 
 - `func` - creates function with partially applied arguments
@@ -191,12 +199,12 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
     .define('partiallyApplied2', func(someFunction, 2), ['arg1', 'arg2'])
     .define('partiallyApplied3', func(someFunction, 3), ['arg1', 'arg2', 'arg3']);
 
-  const ct = container(someModule);
+  const ct = container();
 
-  ct.get('noArgsApplied'); // (a: number, b: string, c: boolean) => string
-  ct.get('partiallyApplied1'); // (b: string, c: boolean) => string
-  ct.get('partiallyApplied2'); // (c: boolean) => string
-  ct.get('partiallyApplied3'); // () => string
+  ct.get(someModule, 'noArgsApplied'); // (a: number, b: string, c: boolean) => string
+  ct.get(someModule, 'partiallyApplied1'); // (b: string, c: boolean) => string
+  ct.get(someModule, 'partiallyApplied2'); // (c: boolean) => string
+  ct.get(someModule, 'partiallyApplied3'); // () => string
   ```
 
 - `request` - creates new singleton instance for each new request
@@ -216,12 +224,12 @@ ct.get('transientDependency') === ct.get('transientDependency'); // false
     .define('child', request(SomeClass, ['leaf']))
     .define('parent', request(SomeClass, ['child', 'leaf']));
 
-  const ct = container(someModule);
+  const ct = container();
 
-  const r1 = ct.get('parent');
+  const r1 = ct.get(someModule, 'parent');
   r1.args[0].args[0] === r1.args[1]; // true
 
-  const r2 = ct.get('parent');
+  const r2 = ct.get(someModule, 'parent');
   r1.args[0].args[0] === r2.args[1]; // false
   ```
 
@@ -251,12 +259,29 @@ const usersModule = module('users')
   .define('usersQuery', singleton(UsersListQuery, ['db.connection']));
 ```
 
-### Replacing deeply nested dependencies
+### Replacing implementations
 
 ```typescript
-const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
-const usersModuleWithNewConfig = usersModule.inject(updatedDbModule);
+import { module, value, singleton } from '@hardwired/core';
 
-container(usersModule).get('usersQuery'); // uses databaseConfig with url equal to ''
-container(usersModuleWithNewConfig).get('usersQuery'); // uses databaseConfig with url equal to 'updated'
+const databaseConfig = {
+  url: '',
+};
+
+class DbConnection {
+  constructor(private config: DatabaseConfig) {}
+}
+
+const dbModule = module('db')
+        .define('config', value(databaseConfig))
+        .define('connection', singleton(DbConnection, ['config']));
+
+
+const containerWithOriginalConfig = container();
+containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
+
+const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
+const containerWithUpdatedConfig = container();
+containerWithUpdatedConfig.inject(updatedDbModule);
+containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
 ```
