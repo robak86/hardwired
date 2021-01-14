@@ -6,7 +6,9 @@ import { render } from '@testing-library/react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import * as React from 'react';
 
-describe(`ProviderResolver`, () => {
+describe.skip(`ProviderResolver`, () => {
+  it.todo('TODO');
+
   // const m1 = module('testModule')
   //   .define('value', value(456))
   //   .defineStructured('dummyProvider', provider(DummyProvider), { value: 'value' });

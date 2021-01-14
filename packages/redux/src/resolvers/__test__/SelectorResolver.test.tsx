@@ -42,6 +42,7 @@ const reduxModule = module('reduxModule')
   .defineStructured('reduxProvider', provider(Provider), { store: 'store' } as any);
 
 describe(`SelectorResolver`, () => {
+  it.todo('TODO');
   // describe(`flat module`, () => {
   //   function setup() {
   //     const m = reduxModule.define('someSelector', selector(selectStateValue, 0), ['store']);

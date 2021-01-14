@@ -4,6 +4,8 @@ import { storeFactory } from '../resolvers/StoreFactory';
 
 describe(`Integration tests`, () => {
   describe(`registering reducers`, () => {
+    it.todo('TODO');
+
     // describe(`no lazy loading`, () => {
     //   function setup() {
     //     const appReducer1 = jest.fn().mockImplementation((state: AppState, action) => state);
