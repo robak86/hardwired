@@ -11,6 +11,10 @@ export namespace Instance {
 export abstract class Instance<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
 
+  // make sure that generic types won't be erased
+  __TValue!:TValue
+  __TDeps!:TDeps
+
   protected dependencies: Instance<any, any>[] = [] as any;
   protected structuredDependencies: Record<string, Instance<any, any>> = {};
   private _isInitialized = false;
@@ -26,8 +30,6 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   }
 
   onInit?(context: ContainerContext): void;
-
-  private deps(t: TDeps) {} // prevent erasing of the TDeps
 
   setDependencies(instances: Instance<any, any>[]) {
     this.dependencies = instances as any;
