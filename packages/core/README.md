@@ -4,7 +4,6 @@
 
 Minimalistic, type-safe dependency injection solution for TypeScript.
 
-
 ### Installation
 
 This library requires typescript >= 4.1
@@ -67,50 +66,89 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
 - `.define(name, resolver, dependencies)` - returns a new instance of the module and appends new definition
 
   - `name` - name of the definition
-  - `resolver` -  resolver bound to specific class, function, or value
+  - `resolver` - resolver bound to specific class, function, or value
   - `dependencies` - array of paths targeting dependencies required by the resolver
 
   ```typescript
   import { module, value } from 'hardwired';
 
   class DummyClass {
-    constructor(private a: number, private b: string){}
+    constructor(private a: number, private b: string) {}
   }
-  
-  
+
   const m1 = module('example')
     .define('a', value(123))
     .define('b', value('someString'))
     .define('c', singleton(DummyClass), ['a', 'b']);
   ```
-  
-  Since the module is immutable `.define` returns always a new instance of the module
 
-  ```typescript
-  const m1 = module('example')
-    .define('a', value(123))
-  
-  const m2 = module('example2')
-    .define('b', value(123))
-  
-  m1 === m2 // false
-  ```
-  
+### Modules equality
+
+Since the module is immutable `.define` returns always a new instance of the module
+
+```typescript
+const m1 = module('example').define('a', value(123));
+
+const m2 = module('example2').define('b', value(123));
+
+m1 === m2; // false
+m1.isEqual(m2); // false
+```
+
+The module allows replacing existing definitions. In this case new module instance is produced but internally it is considered
+to be equal to original module.
+
+```typescript
+const m1 = module('example').define('a', value(123));
+
+const m2 = m1.replace('a', value(456));
+
+m1 === m2;      // false
+m1.isEqual(m2); // true - m1 and m2 have the same definitions and share same parent module (m1)
+```
+This kind of equality checking is used for replacing deeply nested modules with new implementations of 
+definitions. (e.g. for testing purposes)
+
+
+```typescript
+import { module, value, singleton } from 'hardwired';
+
+const databaseConfig = {
+  url: '',
+};
+
+class DbConnection {
+  constructor(private config: DatabaseConfig) {}
+}
+
+const dbModule = module('db')
+  .define('config', value(databaseConfig))
+  .define('connection', singleton(DbConnection, ['config']));
+
+const containerWithOriginalConfig = container();
+containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
+
+const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
+const containerWithUpdatedConfig = container();
+containerWithUpdatedConfig.inject(updatedDbModule);
+containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
+```
+
 
 ### Available resolvers (scopes)
 
 - `transient` - creates a new instance for each request
 
-```typescript
-import { module, transient } from 'hardwired';
+  ```typescript
+  import { module, transient } from 'hardwired';
 
-class SomeClass {}
+  class SomeClass {}
 
-const someModule = module('example').define('transientDependency', transient(SomeClass));
-const ct = container();
+  const someModule = module('example').define('transientDependency', transient(SomeClass));
+  const ct = container();
 
-ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
-```
+  ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
+  ```
 
 - `singleton` - creates single instance, which is cached in the container for all subsequent requests
 
@@ -129,7 +167,7 @@ ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // 
   ```
 
   _Notice that loggerModule is stateless in terms of holding any reference to produced singleton instances. All instances
-live in the containers_
+  live in the containers_
 
 - `value` - similar to `singleton`, but takes a value instead of class
 
@@ -257,31 +295,4 @@ class UsersListQuery {
 const usersModule = module('users')
   .import('db', dbModule)
   .define('usersQuery', singleton(UsersListQuery, ['db.connection']));
-```
-
-### Replacing implementations
-
-```typescript
-import { module, value, singleton } from 'hardwired';
-
-const databaseConfig = {
-  url: '',
-};
-
-class DbConnection {
-  constructor(private config: DatabaseConfig) {}
-}
-
-const dbModule = module('db')
-        .define('config', value(databaseConfig))
-        .define('connection', singleton(DbConnection, ['config']));
-
-
-const containerWithOriginalConfig = container();
-containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
-
-const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
-const containerWithUpdatedConfig = container();
-containerWithUpdatedConfig.inject(updatedDbModule);
-containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
 ```
