@@ -12,8 +12,8 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
 
   // make sure that generic types won't be erased
-  __TValue!:TValue
-  __TDeps!:TDeps
+  __TValue!: TValue;
+  __TDeps!: TDeps;
 
   protected dependencies: Instance<any, any>[] = [] as any;
   protected structuredDependencies: Record<string, Instance<any, any>> = {};
