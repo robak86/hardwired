@@ -39,9 +39,9 @@ The library uses three main concepts:
 - **Resolver** - encapsulates details of objects instantiation, (e.g. `singleton`, `transient`, `request`, etc)
 - **Container** - object where all instances live. The container returns and optionally caches object instances created by the resolvers.
 
-### Example
+#### Example
 
-#### Create a module
+1. Create a module
 
 ```typescript
 import { module, singleton } from 'hardwired';
@@ -60,7 +60,7 @@ const loggerModule = module('logger')
   .define('logger', singleton(Logger), ['configuration']);
 ```
 
-#### Create a container
+2. Create a container
 
 ```typescript
 import { container } from 'hardwired';
@@ -68,13 +68,13 @@ import { container } from 'hardwired';
 const exampleContainer = container();
 ```
 
-#### Get an instance
+3. Get an instance
 
 ```typescript
 const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance of Logger class
 ```
 
-### Registering module entries
+### Registering definitions
 
 - `.define(name, resolver, dependencies)` - returns a new instance of the module and appends new definition
 
@@ -117,11 +117,15 @@ const m1 = module('example').define('a', value(123));
 
 const m2 = m1.replace('a', value(456));
 
+const m3 = module('example2').define('a', value(123));
+
 m1 === m2;      // false
 m1.isEqual(m2); // true - m1 and m2 are considered to be equal, 
-                // because they have the same definitions and share same parent module (m1)
+                // because they have the same definitions and m2 was created by m1
+
+m1.isEqual(m3)  // false - m1 and m3 have compatibile definitions, but m3 was not created using m1
 ```
-This kind of equality checking is used for replacing nested modules (e.g. for testing purposes).
+This kind of equality checking is used for replacing nested modules (e.g. for testing).
 
 ```typescript
 import { module, value, singleton } from 'hardwired';
