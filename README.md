@@ -81,7 +81,7 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
   - `name` - name of the definition
   - `resolver` - resolver bound to specific class, function, or value (e.g. `singleton(MyClass)`, `value(appConfig)`)
   - `dependencies` - array of paths targeting dependencies required by the resolver. Validity of all references is checked
-  at compile-time.
+    at compile-time.
 
   ```typescript
   import { module, value } from 'hardwired';
@@ -96,36 +96,39 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
     .define('c', singleton(DummyClass), ['a', 'b']);
   ```
 
-#### Modules equality
+#### Module identity
 
-Since the module is immutable `.define` returns always a new instance of the module:
-
-```typescript
-const m1 = module('example').define('a', value(123));
-
-const m2 = module('example2').define('b', value(123));
-
-m1 === m2; // false
-m1.isEqual(m2); // false
-```
-
-The module allows replacing existing definitions. In this case new module instance is created but internally it is considered
-to be equal to the original.
+Each module at the instantiation receives unique identity. This property is used for checking if modules are interchangeable and
+also allows for using modules as a key while creating instances. (`container.get(moduleActingAsKey, 'definitionName')`)
 
 ```typescript
-const m1 = module('example').define('a', value(123));
+const m1 = module('example');
+const m2 = module('example');
 
-const m2 = m1.replace('a', value(456));
-
-const m3 = module('example2').define('a', value(123));
-
-m1 === m2;      // false
-m1.isEqual(m2); // true - m1 and m2 are considered to be equal, 
-                // because they have the same definitions and m2 was created by m1
-
-m1.isEqual(m3)  // false - m1 and m3 have compatibile definitions, but m3 was not created using m1
+m1.isEqual(m2); // false - each module at creation received different id
 ```
-This kind of equality checking is used for replacing nested modules (e.g. for testing).
+
+Calling `.define` creates a new instance of the module with a different identity.
+
+```typescript
+const m1 = module('example');
+const m1Extended = m1.define('someVal', value(true));
+
+m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new id
+```
+
+Module preserves its identity using `.replace`. A new module created this way is interchangeable with the original,
+because `.replace` accepts only a types with are compatible with the original ones.
+
+```typescript
+const m1 = module('example').define('someVal', value(false));
+const m1WithReplacedValue = m1.replace('someVal', value(true)); 
+//const m1WithReplacedValue = m1.replace('someVal', value("cannot replace boolean with string")); // compile-time error 
+
+m1.isEqual(m1WithReplacedValue); // true - modules still have the same identities and they are interchangeable
+```
+
+This kind of equality checking is used for replacing nested modules using `.inject` method. (e.g. for testing).
 
 ```typescript
 import { module, value, singleton } from 'hardwired';
@@ -150,7 +153,6 @@ const containerWithUpdatedConfig = container();
 containerWithUpdatedConfig.inject(updatedDbModule);
 containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
 ```
-
 
 #### Available resolvers (lifetimes, scopes)
 
