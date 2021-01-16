@@ -12,8 +12,6 @@ Minimalistic, type-safe dependency injection solution for TypeScript.
 - [x] Allows writing code which is not coupled to DI container
   - does not pollute user code with DI specific code (usually decorators or static properties)
 - [x] Designed for structural typing
-  - no need to define interfaces in order to enable polymorphism - if the compiler confirms that it walks
-    like a duck, and it quacks like a duck, then it must be a duck.
 
 ### Installation
 
