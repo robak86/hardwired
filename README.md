@@ -34,8 +34,8 @@ npm install hardwired
 The library uses three main concepts:
 
 - **Module** - immutable object containing resolvers registered by names
-- **Resolver** - encapsulates details of objects instantiation, (e.g. `singleton`, `transient`, `request`, etc)
-- **Container** - object where all instances live. The container returns and optionally caches object instances created by the resolvers.
+- **Resolver** - encapsulates details of objects instantiation, (e.g. `singleton`, `transient`, `request`)
+- **Container** - returns and optionally caches object instances created by the resolvers.
 
 #### Example
 
@@ -116,7 +116,7 @@ m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new
 ```
 
 Module preserves its identity using `.replace`. A new module created this way is interchangeable with the original,
-because `.replace` accepts only a types with are compatible with the original ones.
+because `.replace` accepts only a type which is compatible with the original one.
 
 ```typescript
 const m1 = module('example').define('someVal', value(false));
