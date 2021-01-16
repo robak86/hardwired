@@ -14,5 +14,6 @@ lib
 .vscode
 packages/example/dist
 packages/example/.cache
-
+packages/core/README.md
+coverage
 

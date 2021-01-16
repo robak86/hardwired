@@ -21,6 +21,9 @@ jobs:
       - run: yarn install
       - run: yarn build
 
+      - name: Copy core documentation
+        run: cp ./README.md ./packages/core/README.md
+
       - name: Publish core
         uses: JS-DevTools/npm-publish@v1
         if: github.ref == 'refs/heads/master'
