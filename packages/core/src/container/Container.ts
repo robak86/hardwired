@@ -33,12 +33,12 @@ export class Container<TModule extends ModuleBuilder<any>> {
   }
 
   // TODO: allow using resolvers factory, .e.g singleton, selector, store
-  getByType<TValue, TResolverClass extends Instance<TValue, any>>(type: ClassType<TResolverClass, any>): TValue[] {
+  __getByType_experimental<TValue, TResolverClass extends Instance<TValue, any>>(type: ClassType<TResolverClass, any>): TValue[] {
     return this.containerContext.resolvers.filterByType(type).map(resolver => resolver.build(this.containerContext));
   }
 
   // TODO: how does this relate to scopes ? e.g. request ?
-  acquireInstanceResolver<TLazyModule extends ModuleBuilder<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
+  __acquireInstanceResolver_experimental<TLazyModule extends ModuleBuilder<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
     name: K,
   ): AcquiredInstance<Module.Materialized<TLazyModule>[K]> {

@@ -17,11 +17,11 @@ export type SelectorHook = <TModule extends ModuleBuilder<any>, TDefinitionName 
 
 export const useSelector: SelectorHook = (module, name, ...args) => {
   const container = useContainer();
-  const storeRef = useRef<any>(container.getByType(StoreFactoryResolver));
+  const storeRef = useRef<any>(container.__getByType_experimental(StoreFactoryResolver));
 
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
-  const acquiredInstanceRef = useRef<any>(container.acquireInstanceResolver(module, name));
+  const acquiredInstanceRef = useRef<any>(container.__acquireInstanceResolver_experimental(module, name));
   const events = acquiredInstanceRef.current.getEvents();
   const instanceRef = useRef<any>(acquiredInstanceRef.current.get());
 

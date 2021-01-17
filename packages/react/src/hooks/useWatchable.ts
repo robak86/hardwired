@@ -17,7 +17,7 @@ export const useWatchable: WatchableHook = (module, name) => {
   const container = useContainer();
   const [, forceUpdate] = useReducer(x => x + 1, 0);
 
-  const acquiredInstanceRef = useRef<any>(container.acquireInstanceResolver(module, name));
+  const acquiredInstanceRef = useRef<any>(container.__acquireInstanceResolver_experimental(module, name));
   const events = acquiredInstanceRef.current.getEvents();
   const instanceRef = useRef<any>(acquiredInstanceRef.current.get());
 

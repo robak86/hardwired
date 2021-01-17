@@ -77,7 +77,7 @@ describe(`Container`, () => {
       const m = module('testModule').define('testResolver', resolver);
       const c = container();
       jest.spyOn(resolver, 'acquire').mockReturnValue('mocked' as any);
-      const acquired = c.acquireInstanceResolver(m, 'testResolver');
+      const acquired = c.__acquireInstanceResolver_experimental(m, 'testResolver');
       expect(resolver.acquire).toHaveBeenCalled();
       expect(acquired).toEqual('mocked');
     });
@@ -203,7 +203,7 @@ describe(`Container`, () => {
         .define('dependency2', dependency(789));
       const c = container({ eager: [m] });
 
-      const instances = c.getByType(DummyResolver);
+      const instances = c.__getByType_experimental(DummyResolver);
       expect(instances).toEqual([456, 789]);
     });
 
@@ -217,7 +217,7 @@ describe(`Container`, () => {
 
       const c = container({ eager: [m] });
 
-      const instances = c.getByType(DummyResolver);
+      const instances = c.__getByType_experimental(DummyResolver);
       expect(instances).toEqual([789, 456]); //TODO: investigate in what order should be returned instances
     });
   });
