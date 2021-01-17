@@ -15,23 +15,25 @@ export class FunctionResolver<TReturn, TDeps extends any[]> extends Instance<TRe
     this.curriedFunction = curry(fn);
   }
 
-  build(cache: ContainerContext): TReturn {
-    const currentDependencies = this.dependencies.map(d => d.build(cache));
+  build(context: ContainerContext): TReturn {
+    const dependencies = context.getDependencies(this.id);
+
+    const currentDependencies = dependencies.map(d => d.build(context));
 
     const requiresRevalidation = currentDependencies.some((val, idx) => val !== this.previousDependencies[idx]);
 
     if (requiresRevalidation) {
       this.previousDependencies = currentDependencies;
       const instance = this.buildFunction(currentDependencies);
-      cache.setForGlobalScope(this.id, instance);
+      context.setForGlobalScope(this.id, instance);
       return instance;
     }
 
-    if (cache.hasInGlobalScope(this.id)) {
-      return cache.getFromGlobalScope(this.id);
+    if (context.hasInGlobalScope(this.id)) {
+      return context.getFromGlobalScope(this.id);
     } else {
       const instance = this.buildFunction(currentDependencies);
-      cache.setForGlobalScope(this.id, instance);
+      context.setForGlobalScope(this.id, instance);
       return instance;
     }
   }

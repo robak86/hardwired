@@ -7,7 +7,8 @@ export class DispatchResolver<TActionArgs extends any[]> extends Instance<(...TA
   }
 
   build(context: ContainerContext): any {
-    const [store] = this.dependencies.map(d => d.build(context));
+    const dependencies = context.getDependencies(this.id);
+    const [store] = dependencies.map(d => d.build(context));
     if (!context.hasInGlobalScope(this.id)) {
       const dispatch = (...args) => {
         store.dispatch(this.action(...args));

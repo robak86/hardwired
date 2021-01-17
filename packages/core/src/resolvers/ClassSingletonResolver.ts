@@ -7,13 +7,14 @@ export class ClassSingletonResolver<TReturn, TDeps extends any[]> extends Instan
     super();
   }
 
-  build(cache: ContainerContext): TReturn {
-    if (cache.hasInGlobalScope(this.id)) {
-      return cache.getFromGlobalScope(this.id);
+  build(context: ContainerContext): TReturn {
+    if (context.hasInGlobalScope(this.id)) {
+      return context.getFromGlobalScope(this.id);
     } else {
-      const args = this.dependencies.map(d => d.build(cache));
+      const dependencies = context.getDependencies(this.id);
+      const args = dependencies.map(d => d.build(context));
       const instance = new this.klass(...args);
-      cache.setForGlobalScope(this.id, instance);
+      context.setForGlobalScope(this.id, instance);
       return instance;
     }
   }

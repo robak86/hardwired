@@ -43,7 +43,7 @@ export class Container<TModule extends ModuleBuilder<any>> {
       ? this.containerContext.injections.get(moduleInstance.moduleId.id)
       : moduleInstance;
 
-    return moduleToBeUsed.getResolver(name, this.containerContext.injections).acquire(this.containerContext);
+    return moduleToBeUsed.getResolver(name, this.containerContext, this.containerContext.injections).acquire(this.containerContext);
   }
 
   hasModule(module: Module<any>): boolean {

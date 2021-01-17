@@ -21,8 +21,23 @@ export class ContainerContext {
   protected constructor(
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
+    public dependencies: Record<string, Instance<any, any>[]> = {},
     public injections = ImmutableSet.empty(),
   ) {}
+
+  setDependencies(uuid: string, instances: Instance<any, any>[]) {
+    this.dependencies[uuid] = instances;
+  }
+
+  getDependencies(uuid: string): Instance<any, any>[] {
+    const deps = this.dependencies[uuid];
+    invariant(deps, `Cannot get dependencies. Instance wasn't initialized.`);
+    return deps;
+  }
+
+  isInstanceInitialized(uuid: string): boolean {
+    return !!this.dependencies[uuid];
+  }
 
   registerResolver(resolver: Instance<any, any>) {
     this.resolvers.add(resolver);
@@ -74,7 +89,7 @@ export class ContainerContext {
   }
 
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.modulesResolvers, this.injections);
+    return new ContainerContext(this.globalScope, this.modulesResolvers, this.dependencies, this.injections);
   }
 
   loadModule(module: Module<any>) {
