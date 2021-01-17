@@ -23,7 +23,7 @@ export class ContainerContext {
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
     public dependencies: Record<string, Instance<any, any>[] | Record<string, Instance<any, any>>> = {},
-    public injections = ImmutableSet.empty(),
+    public overrides = ImmutableSet.empty(),
   ) {}
 
   getInstanceResolver(module: Module<any>, path: string): Instance<any, any> {
@@ -104,7 +104,7 @@ export class ContainerContext {
     return deps;
   }
 
-  hasWiredDependencies(uuid: string): boolean {
+  protected hasWiredDependencies(uuid: string): boolean {
     return !!this.dependencies[uuid];
   }
 
@@ -116,8 +116,8 @@ export class ContainerContext {
     this.requestScope[uuid] = instance;
   }
 
-  inject(module: Module<any>) {
-    this.injections = this.injections.extend(module.moduleId.id, module);
+  override(module: Module<any>) {
+    this.overrides = this.overrides.extend(module.moduleId.id, module);
   }
 
   hasInGlobalScope(uuid: string): boolean {
@@ -154,7 +154,7 @@ export class ContainerContext {
   }
 
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.modulesResolvers, this.dependencies, this.injections);
+    return new ContainerContext(this.globalScope, this.modulesResolvers, this.dependencies, this.overrides);
   }
 
   protected addModule(module: Module<any>) {
@@ -166,8 +166,8 @@ export class ContainerContext {
   }
 
   getModule(moduleId: ModuleId): Module<any> {
-    const targetModule: Module<any> = this.injections.hasKey(moduleId.id)
-      ? this.injections.get(moduleId.id)
+    const targetModule: Module<any> = this.overrides.hasKey(moduleId.id)
+      ? this.overrides.get(moduleId.id)
       : this.modulesResolvers[moduleId.id];
 
     invariant(targetModule, `Cannot get module with moduleId: ${moduleId}`);

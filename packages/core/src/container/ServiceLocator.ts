@@ -21,7 +21,6 @@ export class ServiceLocator {
         const instanceResolver = requestContext.getInstanceResolver(module, key);
         invariant(instanceResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
 
-        // TODO: use real injections
         return instanceResolver.build(requestContext) as any;
       },
     });

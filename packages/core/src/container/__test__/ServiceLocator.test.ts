@@ -6,8 +6,8 @@ import { container } from '../Container';
 import { serviceLocator } from '../../resolvers/ServiceLocatorResolver';
 
 describe(`ServiceLocator`, () => {
-  describe(`injections`, () => {
-    it(`returns instances from injected modules`, async () => {
+  describe(`overrides`, () => {
+    it(`returns instances from overrides modules`, async () => {
       const child = ModuleBuilder.empty('child')
         .define('someNumber', value(123))
         .define('someString', value('some content'));

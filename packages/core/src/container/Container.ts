@@ -11,7 +11,7 @@ export class Container<TModule extends ModuleBuilder<any>> {
     overrides: Module<any>[],
     eager: Module<any>[],
   ) {
-    overrides.forEach(m => this.inject(m));
+    overrides.forEach(m => this.containerContext.override(m));
     eager.forEach(m => this.containerContext.eagerLoad(m));
   }
 
@@ -41,11 +41,6 @@ export class Container<TModule extends ModuleBuilder<any>> {
 
   isLoaded(module: Module<any>): boolean {
     return this.containerContext.hasModule(module.moduleId);
-  }
-
-  private inject(module: Module<any>) {
-    invariant(!this.isLoaded(module), `Cannot inject module: ${module.moduleId}. Module is already loaded`);
-    this.containerContext.inject(module);
   }
 }
 
