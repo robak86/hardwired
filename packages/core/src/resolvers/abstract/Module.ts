@@ -94,7 +94,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     }
 
     if (resolver.kind === 'moduleResolver') {
-      invariant(instance, `Modules cannot be instantiated`)
+      invariant(instance, `Modules cannot be instantiated`);
       const moduleResolver = injections.hasKey(resolver.moduleId.id) ? injections.get(resolver.moduleId.id) : resolver;
       return moduleResolver.getResolver(instance, context, injections);
     }
@@ -109,27 +109,36 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     injections: ImmutableSet<{}>,
   ) {
     if (!context.isInstanceInitialized(resolver.id)) {
-      const depsInstances = dependencies.flatMap(pathOrPathsRecord => {
-        if (typeof pathOrPathsRecord === 'string') {
-          return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, context, injections);
-        }
+      if (Array.isArray(dependencies)) {
+        const depsInstances = dependencies.flatMap(pathOrPathsRecord => {
+          if (typeof pathOrPathsRecord === 'string') {
+            return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, context, injections);
+          }
 
-        return [];
-      });
+          return [];
+        });
 
-      const structInstances = dependencies.flatMap(pathOrPathsRecord => {
-        if (typeof pathOrPathsRecord !== 'string') {
-          return Object.keys(pathOrPathsRecord).reduce((resolvers, prop) => {
-            const path = pathOrPathsRecord[prop];
-            resolvers[prop] = this.getResolver(path, context, injections);
-            return resolvers;
-          }, {});
-        }
-        return [];
-      })[0];
+        context.setDependencies(resolver.id, depsInstances);
+      }
 
-      context.setDependencies(resolver.id, depsInstances);
-      resolver.setStructuredDependencies(structInstances);
+      if (!Array.isArray(dependencies) && typeof dependencies === 'object') {
+        const structInstances = dependencies.flatMap(pathOrPathsRecord => {
+          if (typeof pathOrPathsRecord !== 'string') {
+            return Object.keys(pathOrPathsRecord).reduce((resolvers, prop) => {
+              const path = pathOrPathsRecord[prop];
+              resolvers[prop] = this.getResolver(path, context, injections);
+              return resolvers;
+            }, {});
+          }
+          return [];
+        })[0];
+
+        context.setDependencies(resolver.id, structInstances);
+      }
+
+      if (!dependencies) {
+        context.setDependencies(resolver.id, []);
+      }
     }
   }
 
@@ -137,9 +146,6 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     this.registry.forEach((boundResolver, key) => {
       const { resolverThunk, dependencies } = boundResolver;
       const resolver = unwrapThunk(resolverThunk);
-
-      // TODO: USE INJECTIONS
-      // const dependenciesIds = this.getDependenciesResolvers(dependencies, ImmutableSet.empty()).map(r => r.id);
 
       if (resolver.kind === 'moduleResolver') {
         resolver.onInit && resolver.onInit(containerContext);

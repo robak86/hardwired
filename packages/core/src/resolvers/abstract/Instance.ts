@@ -15,8 +15,6 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   __TValue!: TValue;
   __TDeps!: TDeps;
 
-  protected structuredDependencies: Record<string, Instance<any, any>> = {};
-
   protected constructor(public readonly id: string = createResolverId()) {}
 
   abstract build(context: ContainerContext): TValue;
@@ -28,16 +26,6 @@ export abstract class Instance<TValue, TDeps extends any[]> {
   }
 
   onInit?(context: ContainerContext): void;
-
-  // setDependencies(instances: Instance<any, any>[]) {
-  //   this.dependencies = instances as any;
-  //   this._isInitialized = true;
-  // }
-
-  setStructuredDependencies(instances: Record<string, Instance<any, any>>) {
-    this.structuredDependencies = instances;
-    // this._isInitialized = true;
-  }
 }
 
 // TODO: does this object allow for keeping state, listeners, events ??
