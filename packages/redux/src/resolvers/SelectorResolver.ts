@@ -13,7 +13,7 @@ export class SelectorResolver<T, TDeps extends any[]> extends Instance<T, TDeps>
     const store = this.getStore(context);
     const [storeResolver, ...selectorsResolvers] = this.dependencies;
 
-    const childSelectors = selectorsResolvers.map(d => () => d.build(context));
+    const childSelectors:any[] = selectorsResolvers.map(d => () => d.build(context));
 
     if (!context.hasInGlobalScope(this.id)) {
       const finalSelector = childSelectors.length > 0 ? createSelector(childSelectors, this.select) : memo(this.select);
