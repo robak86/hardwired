@@ -93,7 +93,7 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
     .define('b', value('someString'))
     .define('c', singleton(DummyClass), ['a', 'b']);
   ```
-  
+
 #### Available resolvers (lifetimes, scopes)
 
 - `transient` - creates a new instance for each `.get` request
@@ -282,13 +282,13 @@ because `.replace` accepts only a type which is compatible with the original one
 
 ```typescript
 const m1 = module('example').define('someVal', value(false));
-const m1WithReplacedValue = m1.replace('someVal', value(true)); 
-//const m1WithReplacedValue = m1.replace('someVal', value("cannot replace boolean with string")); // compile-time error 
+const m1WithReplacedValue = m1.replace('someVal', value(true));
+//const m1WithReplacedValue = m1.replace('someVal', value("cannot replace boolean with string")); // compile-time error
 
 m1.isEqual(m1WithReplacedValue); // true - modules still have the same identities and they are interchangeable
 ```
 
-This kind of equality checking is used for replacing nested modules using `.inject` method. (e.g. for testing).
+This kind of equality checking is used for replacing nested modules using. (e.g. for testing).
 
 ```typescript
 import { module, value, singleton } from 'hardwired';
@@ -309,7 +309,6 @@ const containerWithOriginalConfig = container();
 containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
 
 const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
-const containerWithUpdatedConfig = container();
-containerWithUpdatedConfig.inject(updatedDbModule);
+const containerWithUpdatedConfig = container({ overrides: [updatedDbModule] }); //
 containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
 ```
