@@ -25,6 +25,7 @@
   },
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "homepage": "https://github.com/robak86/hardwired",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com:robak86/hardwired.git"

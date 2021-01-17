@@ -15,7 +15,7 @@
     "lint": "eslint 'packages/**/*.{!d.ts,ts,tsx}'"
   },
   "author": "Tomasz Robaczewski",
-  "license": "ISC",
+  "license": "MIT",
   "workspaces": [
     "packages/*"
   ],
