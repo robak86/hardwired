@@ -17,8 +17,7 @@ describe(`ServiceLocator`, () => {
         .define('locator', serviceLocator())
         .define('cls', singleton(TestClassArgs2), ['import.someNumber', 'import.someString']);
 
-      const c = container();
-      c.inject(child.replace('someNumber', value(456)));
+      const c = container({ overrides: [child.replace('someNumber', value(456))] });
 
       const locator = c.get(m, 'locator');
       const cls = locator.withScope(({ get }) => get(m, 'cls'));
