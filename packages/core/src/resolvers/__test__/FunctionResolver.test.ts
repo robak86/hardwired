@@ -6,6 +6,7 @@ import { expectType, TypeEqual } from 'ts-expect';
 import { unit } from '../../module/ModuleBuilder';
 import { Instance } from '../abstract/Instance';
 import { value } from '../ValueResolver';
+import { Factory, factory } from '../FactoryResolver';
 
 describe(`FunctionResolver`, () => {
   function setup() {
@@ -134,6 +135,38 @@ describe(`FunctionResolver`, () => {
           });
 
           const replacedResult = containerWithInjections.get(m2, 'fn')('suffix');
+          expect(replacedResult).toEqual('replaced -> suffix');
+        });
+
+        it(`it works with factory`, async () => {
+          const partiallyApplied = (arg1: string, arg2: string) => `${arg1} -> ${arg2}`;
+
+          const m1 = unit('partArgProvider')
+            .define('val', value('original'))
+            .define('suffix', value('suffix'))
+            .define('arg', func(partiallyApplied, 2), ['val', 'suffix']);
+
+          class PartialFactory implements Factory<string> {
+            constructor(private original: () => string) {}
+
+            build(): string {
+              return `${this.original()}`;
+            }
+          }
+
+          const m2 = unit('withPartiallyAppliedFun') //breakme
+            .import('m1', m1)
+            .define('fn', factory(PartialFactory), ['m1.arg']);
+
+          const containerWithoutInjections = container();
+          const originalResult = containerWithoutInjections.get(m2, 'fn');
+          expect(originalResult).toEqual('original -> suffix');
+
+          const containerWithInjections = container({
+            overrides: [m1.replace('val', value('replaced'))],
+          });
+
+          const replacedResult = containerWithInjections.get(m2, 'fn');
           expect(replacedResult).toEqual('replaced -> suffix');
         });
       });

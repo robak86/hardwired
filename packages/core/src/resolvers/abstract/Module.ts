@@ -1,8 +1,6 @@
 import { ModuleId } from '../../module/ModuleId';
 import { ImmutableSet } from '../../collections/ImmutableSet';
-import { ContainerContext } from '../../container/ContainerContext';
-import invariant from 'tiny-invariant';
-import { Thunk, unwrapThunk } from '../../utils/Thunk';
+import { Thunk } from '../../utils/Thunk';
 import { PropType } from '../../utils/PropType';
 import { Instance } from './Instance';
 
@@ -67,110 +65,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     public registry: ImmutableSet<Record<string, Module.BoundResolver>>,
   ) {}
 
-  get<TPath extends Module.Paths<TValue>>(
-    path: TPath,
-    context: ContainerContext,
-  ): PropType<MaterializedRecord<TValue>, TPath> {
-    const instance = this.build(path, context, context.injections);
-    invariant(instance, `Module returned undefined value for ${path}`);
-    return instance;
-  }
-
   isEqual(otherModule: Module<any>): boolean {
     return this.moduleId.id === otherModule.moduleId.id;
-  }
-
-  getResolver(path: string, context: ContainerContext, injections = ImmutableSet.empty()): Instance<any, any> {
-    const [moduleOrInstance, instance] = path.split('.');
-
-    const { resolverThunk, dependencies } = this.registry.get(moduleOrInstance);
-    const resolver = unwrapThunk(resolverThunk);
-
-    invariant(resolver, `Cannot return instance resolver for path ${path}. ${moduleOrInstance} does not exist.`);
-
-    if (resolver.kind === 'instanceResolver') {
-      this.setDependencies(resolver, dependencies, context, injections);
-      return resolver;
-    }
-
-    if (resolver.kind === 'moduleResolver') {
-      invariant(instance, `Modules cannot be instantiated`);
-      const moduleResolver = injections.hasKey(resolver.moduleId.id) ? injections.get(resolver.moduleId.id) : resolver;
-      return moduleResolver.getResolver(instance, context, injections);
-    }
-
-    throw new Error('invalid state');
-  }
-
-  private setDependencies(
-    resolver: Instance<any, any>,
-    dependencies,
-    context: ContainerContext,
-    injections: ImmutableSet<{}>,
-  ) {
-    if (!context.isInstanceInitialized(resolver.id)) {
-      if (Array.isArray(dependencies)) {
-        const depsInstances = dependencies.flatMap(pathOrPathsRecord => {
-          if (typeof pathOrPathsRecord === 'string') {
-            return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, context, injections);
-          }
-
-          return [];
-        });
-
-        context.setDependencies(resolver.id, depsInstances);
-      }
-
-      if (!Array.isArray(dependencies) && typeof dependencies === 'object') {
-        const structInstances = dependencies.flatMap(pathOrPathsRecord => {
-          if (typeof pathOrPathsRecord !== 'string') {
-            return Object.keys(pathOrPathsRecord).reduce((resolvers, prop) => {
-              const path = pathOrPathsRecord[prop];
-              resolvers[prop] = this.getResolver(path, context, injections);
-              return resolvers;
-            }, {});
-          }
-          return [];
-        })[0];
-
-        context.setDependencies(resolver.id, structInstances);
-      }
-
-      if (!dependencies) {
-        context.setDependencies(resolver.id, []);
-      }
-    }
-  }
-
-  onInit(containerContext: ContainerContext) {
-    this.registry.forEach((boundResolver, key) => {
-      const { resolverThunk, dependencies } = boundResolver;
-      const resolver = unwrapThunk(resolverThunk);
-
-      if (resolver.kind === 'moduleResolver') {
-        resolver.onInit && resolver.onInit(containerContext);
-      }
-
-      if (resolver.kind === 'instanceResolver') {
-        this.setDependencies(resolver, dependencies, containerContext, containerContext.injections);
-        resolver.onInit && resolver.onInit(containerContext);
-      }
-    });
-
-    this.registry.forEach((boundResolver, key) => {
-      const resolver = unwrapThunk(boundResolver.resolverThunk);
-
-      if (resolver.kind === 'instanceResolver') {
-        containerContext.registerResolver(resolver);
-
-        containerContext.containerEvents.onSpecificDefinitionAppend.emit(resolver, containerContext => {
-          return this.get(key as any, containerContext);
-        });
-      }
-    });
-  }
-
-  protected build(path: string, context: ContainerContext, otherInjections) {
-    return this.getResolver(path, context, otherInjections).build(context);
   }
 }

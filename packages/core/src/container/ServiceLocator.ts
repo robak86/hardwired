@@ -1,7 +1,6 @@
 import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
 import { ModuleBuilder } from '../module/ModuleBuilder';
-import { ImmutableSet } from '../collections/ImmutableSet';
 import { MaterializedRecord, Module } from '../resolvers/abstract/Module';
 
 type ServiceLocatorGet = {
@@ -19,13 +18,11 @@ export class ServiceLocator {
 
     return factory({
       get: (module, key) => {
-        requestContext.loadModule(module as any);
-
-        const moduleResolver = requestContext.getModule(module.moduleId);
-        invariant(moduleResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
+        const instanceResolver = requestContext.getInstanceResolver(module, key);
+        invariant(instanceResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
 
         // TODO: use real injections
-        return moduleResolver.get(key, requestContext) as any;
+        return instanceResolver.build(requestContext) as any;
       },
     });
   }
