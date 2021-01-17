@@ -157,7 +157,7 @@ describe(`Container`, () => {
       expect(parentValue.onInit).not.toHaveBeenCalled();
     });
 
-    it(`calls on init on child definitions while instantiating definitions from parent`, async () => {
+    it(`does not call onInit on child definitions which are not used as dependencies`, async () => {
       const { c, parent, parentValue, parentChildValue } = setup();
       jest.spyOn(parentValue, 'onInit');
       jest.spyOn(parentChildValue, 'onInit');
@@ -165,7 +165,7 @@ describe(`Container`, () => {
       c.get(parent, 'value');
 
       expect(parentValue.onInit).toHaveBeenCalled();
-      expect(parentChildValue.onInit).toHaveBeenCalled();
+      expect(parentChildValue.onInit).not.toHaveBeenCalled();
     });
 
     it.skip(`does not reinitialize definitions after the module is lazily loaded for the firs time`, async () => {
@@ -189,10 +189,85 @@ describe(`Container`, () => {
       c.get(parent, 'value');
 
       expect(parentValue.onInit).toHaveBeenCalledTimes(1);
-      expect(parentChildValue.onInit).toHaveBeenCalledTimes(2);
+      expect(parentChildValue.onInit).toHaveBeenCalledTimes(1);
     });
 
     it.todo(`Eagerly initializes parent module while instantiating definition from child module?? `);
+  });
+
+  describe(`eager loading`, () => {
+    it(`calls onInit on every definition`, async () => {
+      const childDef1 = dependency('child1');
+      const childDef2 = dependency('child2');
+      const parentDef = dependency('parent1');
+
+      const m = module('childModule') //breakme
+        .define('a', childDef1)
+        .define('b', childDef2);
+
+      const p = module('parent') //breakme
+        .import('child', m)
+        .define('c', parentDef);
+
+      jest.spyOn(childDef1, 'onInit');
+      jest.spyOn(childDef2, 'onInit');
+      jest.spyOn(parentDef, 'onInit');
+
+      const c = container({ eager: [p] });
+
+      expect(childDef1.onInit).toHaveBeenCalledTimes(1);
+      expect(childDef2.onInit).toHaveBeenCalledTimes(1);
+      expect(parentDef.onInit).toHaveBeenCalledTimes(1);
+    });
+
+    it(`does not call onInit on parent modules`, async () => {
+      const childDef1 = dependency('child1');
+      const childDef2 = dependency('child2');
+      const parentDef = dependency('parent1');
+
+      const m = module('childModule') //breakme
+        .define('a', childDef1)
+        .define('b', childDef2);
+
+      const p = module('parent') //breakme
+        .import('child', m)
+        .define('c', parentDef);
+
+      jest.spyOn(childDef1, 'onInit');
+      jest.spyOn(childDef2, 'onInit');
+      jest.spyOn(parentDef, 'onInit');
+
+      const c = container({ eager: [m] });
+
+      expect(childDef1.onInit).toHaveBeenCalledTimes(1);
+      expect(childDef2.onInit).toHaveBeenCalledTimes(1);
+      expect(parentDef.onInit).toHaveBeenCalledTimes(0);
+    });
+
+    it(`does not call onInit multiple times`, async () => {
+      const childDef1 = dependency('child1');
+      const childDef2 = dependency('child2');
+      const parentDef = dependency('parent1');
+
+      const m = module('childModule') //breakme
+        .define('a', childDef1)
+        .define('b', childDef2);
+
+      const p = module('parent') //breakme
+        .import('child', m)
+        .define('c', parentDef);
+
+      jest.spyOn(childDef1, 'onInit');
+      jest.spyOn(childDef2, 'onInit');
+      jest.spyOn(parentDef, 'onInit');
+
+      const c = container({ eager: [m] });
+      c.get(p, 'c');
+
+      expect(childDef1.onInit).toHaveBeenCalledTimes(1);
+      expect(childDef2.onInit).toHaveBeenCalledTimes(1);
+      expect(parentDef.onInit).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe(`getByType`, () => {

@@ -6,6 +6,7 @@ import { Module } from '../resolvers/abstract/Module';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
+import { unwrapThunk } from '../utils/Thunk';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -22,8 +23,70 @@ export class ContainerContext {
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
     public dependencies: Record<string, Instance<any, any>[] | Record<string, Instance<any, any>>> = {},
-    public injections = ImmutableSet.empty(),
+    public overrides = ImmutableSet.empty(),
   ) {}
+
+  getInstanceResolver(module: Module<any>, path: string): Instance<any, any> {
+    if (this.resolvers.hasByModule(module.moduleId, path)) {
+      return this.resolvers.getByModule(module.moduleId, path);
+    }
+
+    if (!this.hasModule(module.moduleId)) {
+      this.addModule(module);
+    }
+
+    const targetModule: Module<any> = this.getModule(module.moduleId);
+    const [moduleOrInstance, instance] = path.split('.');
+
+    const { resolverThunk, dependencies } = targetModule.registry.get(moduleOrInstance);
+    const resolver = unwrapThunk(resolverThunk);
+
+    invariant(resolver, `Cannot return instance resolver for path ${path}. ${moduleOrInstance} does not exist.`);
+
+    if (resolver.kind === 'instanceResolver') {
+      if (!this.hasWiredDependencies(resolver.id)) {
+        const depsInstances = dependencies.map(d => {
+          if (typeof d === 'string') {
+            return this.getInstanceResolver(targetModule, d);
+          }
+          throw new Error('implement me');
+        });
+
+        this.setDependencies(resolver.id, depsInstances);
+      }
+
+      if (!this.resolvers.has(resolver)) {
+        this.resolvers.add(targetModule.moduleId, path, resolver);
+        resolver.onInit?.(this);
+      }
+
+      return resolver;
+    }
+
+    if (resolver.kind === 'moduleResolver') {
+      invariant(instance, `getInstanceResolver is not intended to return module. Path is missing instance target`);
+      const instanceResolver = this.getInstanceResolver(resolver, instance);
+      if (!this.resolvers.has(instanceResolver)) {
+        this.resolvers.add(targetModule.moduleId, path, instanceResolver);
+      }
+      return instanceResolver;
+    }
+
+    throw new Error('should not happen');
+  }
+
+  eagerLoad(module: Module<any>) {
+    module.registry.forEach((boundResolver, key) => {
+      const resolver = unwrapThunk(boundResolver.resolverThunk);
+      if (resolver.kind === 'moduleResolver') {
+        this.eagerLoad(resolver);
+      }
+
+      if (resolver.kind === 'instanceResolver') {
+        this.getInstanceResolver(module, key);
+      }
+    });
+  }
 
   setDependencies(uuid: string, instances: Instance<any, any>[] | Record<string, Instance<any, any>>) {
     this.dependencies[uuid] = instances;
@@ -41,12 +104,8 @@ export class ContainerContext {
     return deps;
   }
 
-  isInstanceInitialized(uuid: string): boolean {
+  protected hasWiredDependencies(uuid: string): boolean {
     return !!this.dependencies[uuid];
-  }
-
-  registerResolver(resolver: Instance<any, any>) {
-    this.resolvers.add(resolver);
   }
 
   setForGlobalScope(uuid: string, instance: any) {
@@ -57,8 +116,8 @@ export class ContainerContext {
     this.requestScope[uuid] = instance;
   }
 
-  inject(module: Module<any>) {
-    this.injections = this.injections.extend(module.moduleId.id, module);
+  override(module: Module<any>) {
+    this.overrides = this.overrides.extend(module.moduleId.id, module);
   }
 
   hasInGlobalScope(uuid: string): boolean {
@@ -95,18 +154,11 @@ export class ContainerContext {
   }
 
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.modulesResolvers, this.dependencies, this.injections);
+    return new ContainerContext(this.globalScope, this.modulesResolvers, this.dependencies, this.overrides);
   }
 
-  loadModule(module: Module<any>) {
-    if (!this.hasModule(module.moduleId)) {
-      const moduleToBeLoaded = this.injections.hasKey(module.moduleId.id)
-        ? this.injections.get(module.moduleId.id)
-        : module;
-
-      this.addModule(moduleToBeLoaded.moduleId, moduleToBeLoaded);
-      moduleToBeLoaded.onInit && moduleToBeLoaded.onInit(this);
-    }
+  protected addModule(module: Module<any>) {
+    this.modulesResolvers[module.moduleId.id] = module;
   }
 
   hasModule(moduleId: ModuleId): boolean {
@@ -114,13 +166,11 @@ export class ContainerContext {
   }
 
   getModule(moduleId: ModuleId): Module<any> {
-    const lookup = this.modulesResolvers[moduleId.id];
-    invariant(lookup, `Cannot get module with id: ${moduleId.id}. Module does not exists with container context`);
-    return lookup;
-  }
+    const targetModule: Module<any> = this.overrides.hasKey(moduleId.id)
+      ? this.overrides.get(moduleId.id)
+      : this.modulesResolvers[moduleId.id];
 
-  protected addModule(moduleId: ModuleId, moduleResolver: Module<any>) {
-    invariant(!this.modulesResolvers[moduleId.id], `Module with id ${moduleId.id} already exists`);
-    this.modulesResolvers[moduleId.id] = moduleResolver;
+    invariant(targetModule, `Cannot get module with moduleId: ${moduleId}`);
+    return targetModule;
   }
 }

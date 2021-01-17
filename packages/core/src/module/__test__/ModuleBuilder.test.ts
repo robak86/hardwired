@@ -183,7 +183,7 @@ describe(`Module`, () => {
     });
   });
 
-  describe(`inject`, () => {
+  describe(`override`, () => {
     it(`replaces child module`, async () => {
       const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
 

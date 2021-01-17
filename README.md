@@ -1,5 +1,7 @@
 # Hardwired
 
+![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master)
+
 **!!! WARNING - Library is still in alpha stage !!!**
 
 Minimalistic, type-safe dependency injection solution for TypeScript.
