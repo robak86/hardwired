@@ -7,13 +7,14 @@ export class ClassRequestResolver<TReturn, TDeps extends any[]> extends Instance
     super();
   }
 
-  build(cache: ContainerContext): TReturn {
-    if (cache.hasInRequestScope(this.id)) {
-      return cache.getFromRequestScope(this.id);
+  build(context: ContainerContext): TReturn {
+    if (context.hasInRequestScope(this.id)) {
+      return context.getFromRequestScope(this.id);
     } else {
-      const args = this.dependencies.map(d => d.build(cache));
+      const dependencies = context.getDependencies(this.id);
+      const args = dependencies.map(d => d.build(context));
       const instance = new this.klass(...args);
-      cache.setForRequestScope(this.id, instance);
+      context.setForRequestScope(this.id, instance);
       return instance;
     }
   }

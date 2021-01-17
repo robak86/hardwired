@@ -17,7 +17,7 @@ export class StateSelector<T, TDeps extends any[]> extends Instance<T, TDeps> {
   }
 
   getStore(context: ContainerContext): Store<any> {
-    const [storeResolver, ...selectorsResolvers] = this.dependencies;
+    const [storeResolver, ...selectorsResolvers] = context.getDependencies(this.id);
     invariant(storeResolver, `Missing store dependency`);
 
     return storeResolver.build(context);

@@ -25,8 +25,8 @@ describe(`FactoryResolver`, () => {
     }
 
     const factoryResolver = new FactoryResolver(DummyFactory);
-    factoryResolver.setDependencies([]);
     const context = ContainerContext.empty();
+    context.setDependencies(factoryResolver.id, []);
     const value = factoryResolver.build(context);
     expect(value).toEqual('built by factory');
   });
@@ -37,8 +37,8 @@ describe(`FactoryResolver`, () => {
     }
 
     const factoryResolver = new FactoryResolver(DummyFactory);
-    factoryResolver.setDependencies([]);
     const context = ContainerContext.empty();
+    context.setDependencies(factoryResolver.id, []);
     expect(factoryResolver.build(context)).toEqual(factoryResolver.build(context));
   });
 
@@ -52,9 +52,9 @@ describe(`FactoryResolver`, () => {
     }
 
     const factoryResolver = new FactoryResolver(DummyFactory);
-    factoryResolver.setDependencies([]);
-
     const context = ContainerContext.empty();
+    context.setDependencies(factoryResolver.id, []);
+
     factoryResolver.build(context);
     factoryResolver.build(context);
     expect(constructorSpy).toBeCalledTimes(1);

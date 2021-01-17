@@ -5,6 +5,7 @@ import { transient } from '../ClassTransientResolver';
 import { expectType, TypeEqual } from 'ts-expect';
 import { unit } from '../../module/ModuleBuilder';
 import { Instance } from '../abstract/Instance';
+import { value } from '../ValueResolver';
 
 describe(`FunctionResolver`, () => {
   function setup() {
@@ -113,6 +114,27 @@ describe(`FunctionResolver`, () => {
 
         expect(fnBuild1).not.toBe(fnBuild2);
         expect(fnBuild1()).not.toEqual(fnBuild2());
+      });
+
+      describe(`using injections`, () => {
+        it(`it works with partially applied args`, async () => {
+          const partiallyApplied = (arg1: string, arg2: string) => `${arg1} -> ${arg2}`;
+
+          const m1 = unit('partArgProvider').define('arg', value('original'));
+          const m2 = unit('withPartiallyAppliedFun')
+            .import('m1', m1)
+            .define('fn', func(partiallyApplied as (arg1: string, arg2: string) => string, 1), ['m1.arg']);
+
+          const containerWithoutInjections = container();
+          const originalResult = containerWithoutInjections.get(m2, 'fn')('suffix');
+          expect(originalResult).toEqual('original -> suffix');
+
+          const containerWithInjections = container();
+          containerWithInjections.inject(m1.replace('arg', value('replaced')));
+
+          const replacedResult = containerWithInjections.get(m2, 'fn')('suffix');
+          expect(replacedResult).toEqual('replaced -> suffix');
+        });
       });
     });
   });

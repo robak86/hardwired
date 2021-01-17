@@ -60,7 +60,7 @@ export namespace Module {
 export abstract class Module<TValue extends Record<string, AnyResolver>> {
   kind: 'moduleResolver' = 'moduleResolver';
 
-  dependencies!: TValue; // prevent erasing the type
+  __dependencies!: TValue; // prevent erasing the type
 
   protected constructor(
     public moduleId: ModuleId,
@@ -76,12 +76,11 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     return instance;
   }
 
-  // TODO: consider adding less naive (slower?) modules comparison - e.g. comparing all definitions and resolvers types ?
   isEqual(otherModule: Module<any>): boolean {
     return this.moduleId.id === otherModule.moduleId.id;
   }
 
-  getResolver(path: string, injections = ImmutableSet.empty()): Instance<any, any> {
+  getResolver(path: string, context: ContainerContext, injections = ImmutableSet.empty()): Instance<any, any> {
     const [moduleOrInstance, instance] = path.split('.');
 
     const { resolverThunk, dependencies } = this.registry.get(moduleOrInstance);
@@ -90,35 +89,29 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
     invariant(resolver, `Cannot return instance resolver for path ${path}. ${moduleOrInstance} does not exist.`);
 
     if (resolver.kind === 'instanceResolver') {
-      this.setDependencies(resolver, dependencies, injections);
-
-      invariant(
-        resolver.kind === 'instanceResolver',
-        `Cannot return instance resolver for path ${path}. ${moduleOrInstance} is not a module.`,
-      );
-
+      this.setDependencies(resolver, dependencies, context, injections);
       return resolver;
     }
 
-    if (instance) {
-      invariant(
-        resolver.kind === 'moduleResolver',
-        `Cannot return resolver for path: ${path}. ${moduleOrInstance} is not a module`,
-      );
-
+    if (resolver.kind === 'moduleResolver') {
+      invariant(instance, `Modules cannot be instantiated`)
       const moduleResolver = injections.hasKey(resolver.moduleId.id) ? injections.get(resolver.moduleId.id) : resolver;
-
-      return moduleResolver.getResolver(instance, injections);
+      return moduleResolver.getResolver(instance, context, injections);
     }
 
     throw new Error('invalid state');
   }
 
-  private setDependencies(resolver, dependencies, injections: ImmutableSet<{}>) {
-    if (!resolver.isInitialized) {
+  private setDependencies(
+    resolver: Instance<any, any>,
+    dependencies,
+    context: ContainerContext,
+    injections: ImmutableSet<{}>,
+  ) {
+    if (!context.isInstanceInitialized(resolver.id)) {
       const depsInstances = dependencies.flatMap(pathOrPathsRecord => {
         if (typeof pathOrPathsRecord === 'string') {
-          return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, injections);
+          return this.getResolver(pathOrPathsRecord as Module.Paths<TValue>, context, injections);
         }
 
         return [];
@@ -128,14 +121,14 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
         if (typeof pathOrPathsRecord !== 'string') {
           return Object.keys(pathOrPathsRecord).reduce((resolvers, prop) => {
             const path = pathOrPathsRecord[prop];
-            resolvers[prop] = this.getResolver(path, injections);
+            resolvers[prop] = this.getResolver(path, context, injections);
             return resolvers;
           }, {});
         }
         return [];
       })[0];
 
-      resolver.setDependencies(depsInstances);
+      context.setDependencies(resolver.id, depsInstances);
       resolver.setStructuredDependencies(structInstances);
     }
   }
@@ -153,7 +146,7 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
       }
 
       if (resolver.kind === 'instanceResolver') {
-        this.setDependencies(resolver, dependencies, containerContext.injections);
+        this.setDependencies(resolver, dependencies, containerContext, containerContext.injections);
         resolver.onInit && resolver.onInit(containerContext);
       }
     });
@@ -172,6 +165,6 @@ export abstract class Module<TValue extends Record<string, AnyResolver>> {
   }
 
   protected build(path: string, context: ContainerContext, otherInjections) {
-    return this.getResolver(path, otherInjections).build(context);
+    return this.getResolver(path, context, otherInjections).build(context);
   }
 }

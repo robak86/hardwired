@@ -93,65 +93,7 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
     .define('b', value('someString'))
     .define('c', singleton(DummyClass), ['a', 'b']);
   ```
-
-#### Module identity
-
-Each module at the instantiation receives unique identity. This property is used for checking if modules are interchangeable and
-also allows for using modules as a key while creating instances. (`container.get(moduleActingAsKey, 'definitionName')`)
-
-```typescript
-const m1 = module('example');
-const m2 = module('example');
-
-m1.isEqual(m2); // false - each module at creation received different id
-```
-
-Calling `.define` creates a new instance of the module with a different identity.
-
-```typescript
-const m1 = module('example');
-const m1Extended = m1.define('someVal', value(true));
-
-m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new id
-```
-
-Module preserves its identity using `.replace`. A new module created this way is interchangeable with the original,
-because `.replace` accepts only a type which is compatible with the original one.
-
-```typescript
-const m1 = module('example').define('someVal', value(false));
-const m1WithReplacedValue = m1.replace('someVal', value(true)); 
-//const m1WithReplacedValue = m1.replace('someVal', value("cannot replace boolean with string")); // compile-time error 
-
-m1.isEqual(m1WithReplacedValue); // true - modules still have the same identities and they are interchangeable
-```
-
-This kind of equality checking is used for replacing nested modules using `.inject` method. (e.g. for testing).
-
-```typescript
-import { module, value, singleton } from 'hardwired';
-
-const databaseConfig = {
-  url: '',
-};
-
-class DbConnection {
-  constructor(private config: DatabaseConfig) {}
-}
-
-const dbModule = module('db')
-  .define('config', value(databaseConfig))
-  .define('connection', singleton(DbConnection, ['config']));
-
-const containerWithOriginalConfig = container();
-containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
-
-const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
-const containerWithUpdatedConfig = container();
-containerWithUpdatedConfig.inject(updatedDbModule);
-containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
-```
-
+  
 #### Available resolvers (lifetimes, scopes)
 
 - `transient` - creates a new instance for each `.get` request
@@ -312,4 +254,62 @@ class UsersListQuery {
 const usersModule = module('users')
   .import('db', dbModule)
   .define('usersQuery', singleton(UsersListQuery, ['db.connection']));
+```
+
+#### Module identity
+
+Each module at the instantiation receives unique identity. This property is used for checking if modules are interchangeable and
+also allows for using modules as a key while creating instances. (`container.get(moduleActingAsKey, 'definitionName')`)
+
+```typescript
+const m1 = module('example');
+const m2 = module('example');
+
+m1.isEqual(m2); // false - each module at creation received different id
+```
+
+Calling `.define` creates a new instance of the module with a different identity.
+
+```typescript
+const m1 = module('example');
+const m1Extended = m1.define('someVal', value(true));
+
+m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new id
+```
+
+Module preserves its identity using `.replace`. A new module created this way is interchangeable with the original,
+because `.replace` accepts only a type which is compatible with the original one.
+
+```typescript
+const m1 = module('example').define('someVal', value(false));
+const m1WithReplacedValue = m1.replace('someVal', value(true)); 
+//const m1WithReplacedValue = m1.replace('someVal', value("cannot replace boolean with string")); // compile-time error 
+
+m1.isEqual(m1WithReplacedValue); // true - modules still have the same identities and they are interchangeable
+```
+
+This kind of equality checking is used for replacing nested modules using `.inject` method. (e.g. for testing).
+
+```typescript
+import { module, value, singleton } from 'hardwired';
+
+const databaseConfig = {
+  url: '',
+};
+
+class DbConnection {
+  constructor(private config: DatabaseConfig) {}
+}
+
+const dbModule = module('db')
+  .define('config', value(databaseConfig))
+  .define('connection', singleton(DbConnection, ['config']));
+
+const containerWithOriginalConfig = container();
+containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
+
+const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
+const containerWithUpdatedConfig = container();
+containerWithUpdatedConfig.inject(updatedDbModule);
+containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
 ```
