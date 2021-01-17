@@ -129,8 +129,9 @@ describe(`FunctionResolver`, () => {
           const originalResult = containerWithoutInjections.get(m2, 'fn')('suffix');
           expect(originalResult).toEqual('original -> suffix');
 
-          const containerWithInjections = container();
-          containerWithInjections.inject(m1.replace('arg', value('replaced')));
+          const containerWithInjections = container({
+            overrides: [m1.replace('arg', value('replaced'))],
+          });
 
           const replacedResult = containerWithInjections.get(m2, 'fn')('suffix');
           expect(replacedResult).toEqual('replaced -> suffix');

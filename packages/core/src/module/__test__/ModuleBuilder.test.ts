@@ -191,8 +191,9 @@ describe(`Module`, () => {
         .import('imported', child1)
         .define('cls', singleton(TestClassArgs2), ['imported.key1', 'imported.key2']);
 
-      const c = container();
-      c.inject(child1.replace('key2', dummy('replacedString')));
+      const c = container({
+        overrides: [child1.replace('key2', dummy('replacedString'))],
+      });
 
       const classInstance = c.get(root, 'cls');
       expect(classInstance.someString).toEqual('replacedString');
@@ -206,12 +207,13 @@ describe(`Module`, () => {
 
       const child1 = ModuleBuilder.empty('child1').define('key1', dummy(123)).define('key2', dummy('someString'));
 
-      const c = container();
-      c.inject(
-        child1 //breakme
-          .replace('key1', dummy(456))
-          .replace('key2', dummy('replacedString')),
-      );
+      const c = container({
+        overrides: [
+          child1 //breakme
+            .replace('key1', dummy(456))
+            .replace('key2', dummy('replacedString')),
+        ],
+      });
 
       const classInstance = c.get(root, 'cls');
       expect(classInstance.someNumber).toEqual(456);

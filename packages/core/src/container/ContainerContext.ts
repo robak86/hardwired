@@ -21,17 +21,23 @@ export class ContainerContext {
   protected constructor(
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
-    public dependencies: Record<string, Instance<any, any>[]> = {},
+    public dependencies: Record<string, Instance<any, any>[] | Record<string, Instance<any, any>>> = {},
     public injections = ImmutableSet.empty(),
   ) {}
 
-  setDependencies(uuid: string, instances: Instance<any, any>[]) {
+  setDependencies(uuid: string, instances: Instance<any, any>[] | Record<string, Instance<any, any>>) {
     this.dependencies[uuid] = instances;
   }
 
   getDependencies(uuid: string): Instance<any, any>[] {
     const deps = this.dependencies[uuid];
-    invariant(deps, `Cannot get dependencies. Instance wasn't initialized.`);
+    invariant(Array.isArray(deps), `Cannot get dependencies. Instance wasn't initialized.`);
+    return deps;
+  }
+
+  getStructuredDependencies(uuid: string): Record<string, Instance<any, any>> {
+    const deps = this.dependencies[uuid];
+    invariant(deps && !Array.isArray(deps), `Cannot get structured dependencies`);
     return deps;
   }
 

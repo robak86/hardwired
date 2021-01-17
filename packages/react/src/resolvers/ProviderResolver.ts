@@ -9,8 +9,9 @@ export class ProviderResolver<TProps> extends Instance<BoundProvider<TProps>, [T
   }
 
   build(context: ContainerContext): BoundProvider<TProps> {
-    const props = Object.keys(this.structuredDependencies).reduce((dep, key) => {
-      dep[key] = this.structuredDependencies[key].build(context);
+    const structuredDeps = context.getStructuredDependencies(this.id);
+    const props = Object.keys(structuredDeps).reduce((dep, key) => {
+      dep[key] = structuredDeps[key].build(context);
       return dep;
     }, {}) as TProps;
 
