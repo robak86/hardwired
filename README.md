@@ -1,6 +1,6 @@
 # Hardwired
 
-![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master)
+![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/robak86/hardwired/branch/master/graph/badge.svg?token=50RAYIVVTT)](https://codecov.io/gh/robak86/hardwired)
 
 **!!! WARNING - Library is still in alpha stage !!!**
 
