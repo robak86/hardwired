@@ -20,9 +20,16 @@ jobs:
 
       - run: yarn install
       - run: yarn build
+      - run: yarn test --selectProjects core --coverage
 
       - name: Copy core documentation
         run: cp ./README.md ./packages/core/README.md
+
+      - uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage/clover.xml
+          fail_ci_if_error: true
+          verbose: true
 
       - name: Publish core
         uses: JS-DevTools/npm-publish@v1
