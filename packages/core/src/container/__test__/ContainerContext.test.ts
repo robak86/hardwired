@@ -1,4 +1,7 @@
 import { ContainerContext } from '../ContainerContext';
+import { unit } from '../../module/ModuleBuilder';
+import { dependency } from '../../testing/TestResolvers';
+import { request } from '../../resolvers/ClassRequestResolver';
 
 describe(`ContainerContext`, () => {
   describe(`async scope`, () => {
@@ -33,6 +36,33 @@ describe(`ContainerContext`, () => {
 
       const childScope = ctx.forNewRequest();
       expect(childScope.hasInRequestScope(resourceId)).toEqual(false);
+    });
+  });
+
+  describe(`asObject`, () => {
+    describe(`modules own definitions`, () => {
+      it(`returns materializes module definitions`, async () => {
+        const m = unit('a').define('a', dependency(1));
+        const context = ContainerContext.empty();
+
+        const { a } = context.asObject(m);
+        expect(a).toEqual(1);
+      });
+
+      it.todo(`uses the same request scope for getting all object properties`);
+    });
+
+    describe(`getting nested properties`, () => {
+      it(`returns materializes module definitions`, async () => {
+        const grandChildM = unit('grandChildM').define('grandChildValue1', dependency(1));
+        const childM = unit('childM').import('grandChild', grandChildM).define('childVal1', dependency(1));
+        const m = unit('a').import('child', childM).define('a', dependency(1));
+
+        const context = ContainerContext.empty();
+
+        const materialized = context.asObject(m);
+        expect(materialized.child.grandChild.grandChildValue1).toEqual(1);
+      });
     });
   });
 });

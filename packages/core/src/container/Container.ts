@@ -1,11 +1,10 @@
 import { ContainerContext } from './ContainerContext';
-import invariant from 'tiny-invariant';
 import { ModuleBuilder } from '../module/ModuleBuilder';
-import { Module } from '../resolvers/abstract/Module';
+import { AnyResolver, MaterializedRecord, Module } from '../resolvers/abstract/Module';
 import { AcquiredInstance, Instance } from '../resolvers/abstract/Instance';
 import { ClassType } from '../utils/ClassType';
 
-export class Container<TModule extends ModuleBuilder<any>> {
+export class Container {
   constructor(
     private containerContext: ContainerContext = ContainerContext.empty(),
     overrides: Module<any>[],
@@ -39,8 +38,8 @@ export class Container<TModule extends ModuleBuilder<any>> {
     return this.containerContext.getInstanceResolver(moduleInstance, name).acquire(this.containerContext);
   }
 
-  isLoaded(module: Module<any>): boolean {
-    return this.containerContext.hasModule(module.moduleId);
+  asObject<TRecord extends Record<string, AnyResolver>>(module: Module<TRecord>): MaterializedRecord<TRecord> {
+    return this.containerContext.asObject(module);
   }
 }
 
@@ -54,7 +53,7 @@ export function container({
   context = ContainerContext.empty(),
   overrides = [],
   eager = [],
-}: ContainerOptions = {}): Container<ModuleBuilder<{}>> {
+}: ContainerOptions = {}): Container {
   const container = new Container(context, overrides, eager);
   return container as any;
 }

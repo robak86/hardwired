@@ -2,7 +2,7 @@ import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
 import { ContainerEvents } from './ContainerEvents';
-import { Module } from '../resolvers/abstract/Module';
+import { AnyResolver, MaterializedRecord, Module } from '../resolvers/abstract/Module';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
@@ -172,5 +172,36 @@ export class ContainerContext {
 
     invariant(targetModule, `Cannot get module with moduleId: ${moduleId}`);
     return targetModule;
+  }
+
+  asObject<TRecord extends Record<string, AnyResolver>>(module: Module<TRecord>): MaterializedRecord<TRecord> {
+    const requestContext = this.forNewRequest();
+    return this.materializeModule(module, requestContext);
+  }
+
+  protected materializeModule<TRecord extends Record<string, AnyResolver>>(
+    module: Module<TRecord>,
+    context: ContainerContext,
+  ): MaterializedRecord<TRecord> {
+    const materialized: any = {};
+
+    module.registry.forEach((boundResolver, key) => {
+      const resolver = unwrapThunk(boundResolver.resolverThunk);
+      if (resolver.kind === 'instanceResolver') {
+        Object.defineProperty(materialized, key, {
+          configurable: false,
+          get: () => this.getInstanceResolver(module, key).build(context),
+        });
+      }
+
+      if (resolver.kind === 'moduleResolver'){
+        Object.defineProperty(materialized, key, {
+          configurable: false,
+          get: () => this.materializeModule(resolver, context)
+        });
+      }
+    });
+
+    return materialized;
   }
 }
