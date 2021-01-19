@@ -24,3 +24,5 @@ export type {
   MaterializedRecord,
   AnyResolver,
 } from './resolvers/abstract/Module';
+
+export type { LiteralResolver } from './resolvers/abstract/LiteralResolver';

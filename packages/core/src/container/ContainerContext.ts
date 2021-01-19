@@ -1,12 +1,12 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
-import { ContainerEvents } from './ContainerEvents';
 import { AnyResolver, MaterializedRecord, Module } from '../resolvers/abstract/Module';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
+import { ModuleBuilder } from '../module/ModuleBuilder';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -14,15 +14,14 @@ export class ContainerContext {
     return new ContainerContext();
   }
 
-  public requestScope: Record<string, any> = {};
-  public requestScopeAsync: Record<string, PushPromise<any>> = {};
-  public containerEvents = new ContainerEvents();
-  public resolvers: ResolversLookup = new ResolversLookup();
+  private requestScope: Record<string, any> = {};
+  private requestScopeAsync: Record<string, PushPromise<any>> = {};
 
   protected constructor(
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
     public dependencies: Record<string, Instance<any, any>[] | Record<string, Instance<any, any>>> = {},
+    public resolvers: ResolversLookup = new ResolversLookup(),
     public overrides = ImmutableSet.empty(),
   ) {}
 
@@ -56,7 +55,7 @@ export class ContainerContext {
       }
 
       if (!this.resolvers.has(resolver)) {
-        this.resolvers.add(targetModule.moduleId, path, resolver);
+        this.resolvers.add(targetModule, path, resolver);
         resolver.onInit?.(this);
       }
 
@@ -67,12 +66,20 @@ export class ContainerContext {
       invariant(instance, `getInstanceResolver is not intended to return module. Path is missing instance target`);
       const instanceResolver = this.getInstanceResolver(resolver, instance);
       if (!this.resolvers.has(instanceResolver)) {
-        this.resolvers.add(targetModule.moduleId, path, instanceResolver);
+        this.resolvers.add(targetModule, path, instanceResolver);
       }
       return instanceResolver;
     }
 
     throw new Error('should not happen');
+  }
+
+  get<TLazyModule extends ModuleBuilder<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
+    moduleInstance: TLazyModule,
+    name: K,
+  ): Module.Materialized<TLazyModule>[K] {
+    const resolver = this.getInstanceResolver(moduleInstance, name);
+    return resolver.build(this);
   }
 
   eagerLoad(module: Module<any>) {
@@ -154,7 +161,13 @@ export class ContainerContext {
   }
 
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.modulesResolvers, this.dependencies, this.overrides);
+    return new ContainerContext(
+      this.globalScope,
+      this.modulesResolvers,
+      this.dependencies,
+      this.resolvers,
+      this.overrides,
+    );
   }
 
   protected addModule(module: Module<any>) {
@@ -174,14 +187,9 @@ export class ContainerContext {
     return targetModule;
   }
 
-  asObject<TRecord extends Record<string, AnyResolver>>(module: Module<TRecord>): MaterializedRecord<TRecord> {
-    const requestContext = this.forNewRequest();
-    return this.materializeModule(module, requestContext);
-  }
-
-  protected materializeModule<TRecord extends Record<string, AnyResolver>>(
+  materializeModule<TRecord extends Record<string, AnyResolver>>(
     module: Module<TRecord>,
-    context: ContainerContext,
+    context: ContainerContext = this,
   ): MaterializedRecord<TRecord> {
     const materialized: any = {};
 
@@ -194,10 +202,10 @@ export class ContainerContext {
         });
       }
 
-      if (resolver.kind === 'moduleResolver'){
+      if (resolver.kind === 'moduleResolver') {
         Object.defineProperty(materialized, key, {
           configurable: false,
-          get: () => this.materializeModule(resolver, context)
+          get: () => this.materializeModule(resolver, context),
         });
       }
     });

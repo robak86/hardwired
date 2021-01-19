@@ -19,6 +19,14 @@ export type PropTypesTuple<T extends string[], TDeps extends Record<string, unkn
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
 
+export type MaterializedDepsRecord<
+  TDepsKeys extends string,
+  // TDepsRecord extends Record<TDepsKeys, any>,
+  TMaterializedRecord extends Record<TDepsKeys, any>
+> = {
+  [K in TDepsKeys]: PropType<TMaterializedRecord, K & string>;
+};
+
 export type PropTypesObject<T extends Record<string, any>, TDeps extends Record<string, unknown>> = {
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };

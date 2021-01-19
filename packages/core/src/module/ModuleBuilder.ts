@@ -5,6 +5,7 @@ import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
 import { AnyResolver, MaterializedRecord, Module, PropTypesObject, PropTypesTuple } from '../resolvers/abstract/Module';
 import { Instance } from '../resolvers/abstract/Instance';
+import { LiteralResolver, MaterializedContextResolver } from '../resolvers/abstract/LiteralResolver';
 
 export const module = (name: string) => ModuleBuilder.empty(name);
 export const unit = module;
@@ -31,6 +32,11 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     );
   }
 
+  // TODO: is it necessary to return Instance with TDeps?  TDeps are not necessary after the instance is registered
+  define<TKey extends string, TValue>(
+    name: TKey,
+    resolver: LiteralResolver<MaterializedRecord<TRecord>, TValue>,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
   define<TKey extends string, TValue>(
     name: TKey,
     resolver: Instance<TValue, []>,
@@ -42,10 +48,16 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
   define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
     name: TKey,
-    resolver: Instance<TValue, []> | Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>,
+    resolver:
+      | Instance<TValue, []>
+      | Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>
+      | LiteralResolver<MaterializedRecord<TRecord>, TValue>,
     dependencies?: TDepsKeys,
   ): unknown {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+
+    // const targetResolver = resolver.kind === 'literalResolver' ?
+    //   new MaterializedContextResolver(this, )
 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
@@ -54,36 +66,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
         dependencies: dependencies || [],
       }) as any,
     ) as any;
-  }
-
-  defineStructured<
-    TKey extends string,
-    TValue,
-    TDepKey extends Module.Paths<TRecord>,
-    TDepsRecord extends Record<string, TDepKey>,
-    // TDepRecordKey extends string,
-    TMaterializedDeps extends {
-      [K in keyof TDepsRecord]: K extends keyof TDepsRecord
-        ? PropType<MaterializedRecord<TRecord>, TDepsRecord[K] & string>
-        : never;
-    }
-    // TMaterializedDepsKey extends keyof TDepsRecord
-  >(
-    name: TKey,
-    resolver: Instance<TValue, [TMaterializedDeps]>,
-    dependencies: TDepsRecord,
-  ): ModuleBuilder<
-    TRecord & Record<TKey, Instance<TValue, [PropTypesObject<TDepsRecord, MaterializedRecord<TRecord>>]>>
-  > {
-    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
-
-    return new ModuleBuilder(
-      this.moduleId,
-      this.registry.extend(name, {
-        resolverThunk: resolver,
-        dependencies: [dependencies],
-      }),
-    );
   }
 
   replace<TKey extends string, TValue extends Instance.Unbox<TRecord[TKey]>>(

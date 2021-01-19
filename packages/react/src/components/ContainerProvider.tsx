@@ -5,7 +5,7 @@ import { ContainerContext } from './ContainerContext';
 import { BoundProvider, ProviderResolver } from '../resolvers/ProviderResolver';
 
 export type ContainerProviderProps = {
-  container: Container<any>;
+  container: Container;
 };
 
 export const ContainerProvider: FunctionComponent<ContainerProviderProps> = ({ children, container }) => {

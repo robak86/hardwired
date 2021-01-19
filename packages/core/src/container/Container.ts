@@ -18,8 +18,7 @@ export class Container {
     moduleInstance: TLazyModule,
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
-    const resolver = this.containerContext.getInstanceResolver(moduleInstance, name);
-    return resolver.build(this.containerContext);
+    return this.containerContext.get(moduleInstance, name);
   }
 
   // TODO: allow using resolvers factory, .e.g singleton, selector, store
@@ -39,7 +38,8 @@ export class Container {
   }
 
   asObject<TRecord extends Record<string, AnyResolver>>(module: Module<TRecord>): MaterializedRecord<TRecord> {
-    return this.containerContext.asObject(module);
+    const requestContext = this.containerContext.forNewRequest();
+    return this.containerContext.materializeModule(module, requestContext);
   }
 }
 
@@ -49,6 +49,8 @@ export type ContainerOptions = {
   context?: ContainerContext;
 };
 
+// TODO: overrides are also eagerly loaded
+// TODO: add runtime check for duplicates in eager, and overrides options
 export function container({
   context = ContainerContext.empty(),
   overrides = [],

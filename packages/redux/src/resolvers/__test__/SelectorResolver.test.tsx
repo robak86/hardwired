@@ -1,12 +1,9 @@
-import { container, factory, module, value } from 'hardwired';
-import { ContainerProvider, useWatchable } from 'hardwired-react';
-import { render } from '@testing-library/react';
+import { container, module, value } from 'hardwired';
+import { provider } from 'hardwired-react';
 import React, { FunctionComponent } from 'react';
-import { selector } from '../SelectorResolver';
 import { dispatch } from '../DispatchResolver';
 import { AppState, StoreFactory } from '../../tests/StoreFactory';
 import { storeFactory } from '../StoreFactory';
-import { provider } from 'hardwired-react';
 import { Provider } from 'react-redux';
 
 export type DummyComponentProps = {
@@ -39,7 +36,10 @@ const reduxModule = module('reduxModule')
   .define('rootReducer', value(updateReducer))
   .define('store', storeFactory(StoreFactory), ['rootReducer', 'initialState'])
   .define('updateValue', dispatch(updateAction), ['store'])
-  .defineStructured('reduxProvider', provider(Provider), { store: 'store' } as any);
+  .define(
+    'someComponent',
+    provider(({ store }) => <Provider store={store} />),
+  );
 
 describe(`SelectorResolver`, () => {
   it.todo('TODO');

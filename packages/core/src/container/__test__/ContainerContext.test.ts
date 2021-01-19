@@ -45,7 +45,7 @@ describe(`ContainerContext`, () => {
         const m = unit('a').define('a', dependency(1));
         const context = ContainerContext.empty();
 
-        const { a } = context.asObject(m);
+        const { a } = context.materializeModule(m);
         expect(a).toEqual(1);
       });
 
@@ -60,7 +60,7 @@ describe(`ContainerContext`, () => {
 
         const context = ContainerContext.empty();
 
-        const materialized = context.asObject(m);
+        const materialized = context.materializeModule(m);
         expect(materialized.child.grandChild.grandChildValue1).toEqual(1);
       });
     });

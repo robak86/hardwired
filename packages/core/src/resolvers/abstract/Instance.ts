@@ -8,6 +8,7 @@ export namespace Instance {
     : 'Cannot unbox instance type from Instance';
 }
 
+
 export abstract class Instance<TValue, TDeps extends any[]> {
   kind: 'instanceResolver' = 'instanceResolver';
 
