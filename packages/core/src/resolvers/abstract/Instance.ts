@@ -8,17 +8,17 @@ export namespace Instance {
     : 'Cannot unbox instance type from Instance';
 }
 
-
 export abstract class Instance<TValue, TDeps extends any[]> {
-  kind: 'instanceResolver' = 'instanceResolver';
+  readonly kind: 'instanceResolver' = 'instanceResolver';
+  readonly usesMaterializedModule: boolean = false;
 
   // make sure that generic types won't be erased
-  __TValue!: TValue;
-  __TDeps!: TDeps;
+  readonly __TValue!: TValue;
+  readonly __TDeps!: TDeps;
 
   protected constructor(public readonly id: string = createResolverId()) {}
 
-  abstract build(context: ContainerContext): TValue;
+  abstract build(context: ContainerContext, materializedModule?): TValue;
 
   // TODO: for transient/scoped resolvers each acquisition should be distinguishable (acquisitionId? :/)
   // TODO: this probably should be abstract and only specific resolvers should implement this (other should throw an error ?) - e.g. for usingWatchable on non watchable instance

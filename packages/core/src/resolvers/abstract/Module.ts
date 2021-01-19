@@ -5,7 +5,7 @@ import { PropType } from '../../utils/PropType';
 import { Instance } from './Instance';
 
 // prettier-ignore
-export type AnyResolver = Instance<any, any> | Module<any>;
+export type AnyResolver = Instance<any, any> | Module<any> ;
 
 export type MaterializedRecord<TRecord extends Record<string, AnyResolver>> = {
   [K in keyof TRecord]: TRecord[K] extends Instance<infer TInstanceType, any>

@@ -25,4 +25,4 @@ export type {
   AnyResolver,
 } from './resolvers/abstract/Module';
 
-export type { LiteralResolver } from './resolvers/abstract/LiteralResolver';
+export type { LiteralResolverDefinition } from './resolvers/LiteralResolver';

@@ -1,11 +1,10 @@
-import { PropType } from '../utils/PropType';
 import { ModuleId } from './ModuleId';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
-import { AnyResolver, MaterializedRecord, Module, PropTypesObject, PropTypesTuple } from '../resolvers/abstract/Module';
+import { AnyResolver, MaterializedRecord, Module, PropTypesTuple } from '../resolvers/abstract/Module';
 import { Instance } from '../resolvers/abstract/Instance';
-import { LiteralResolver, MaterializedContextResolver } from '../resolvers/abstract/LiteralResolver';
+import { LiteralResolver, LiteralResolverDefinition } from '../resolvers/LiteralResolver';
 
 export const module = (name: string) => ModuleBuilder.empty(name);
 export const unit = module;
@@ -35,7 +34,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
   // TODO: is it necessary to return Instance with TDeps?  TDeps are not necessary after the instance is registered
   define<TKey extends string, TValue>(
     name: TKey,
-    resolver: LiteralResolver<MaterializedRecord<TRecord>, TValue>,
+    resolver: LiteralResolverDefinition<MaterializedRecord<TRecord>, TValue>,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
   define<TKey extends string, TValue>(
     name: TKey,
@@ -51,18 +50,18 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     resolver:
       | Instance<TValue, []>
       | Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>
-      | LiteralResolver<MaterializedRecord<TRecord>, TValue>,
+      | LiteralResolverDefinition<MaterializedRecord<TRecord>, TValue>,
     dependencies?: TDepsKeys,
   ): unknown {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
 
-    // const targetResolver = resolver.kind === 'literalResolver' ?
-    //   new MaterializedContextResolver(this, )
+    const targetResolver =
+      resolver.kind === 'literalResolverBuildFn' ? new LiteralResolver(resolver.buildInstance) : resolver;
 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
-        resolverThunk: resolver,
+        resolverThunk: targetResolver,
         dependencies: dependencies || [],
       }) as any,
     ) as any;

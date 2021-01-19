@@ -1,6 +1,6 @@
 import { ContainerContext, Instance } from 'hardwired';
 import { ComponentType, ReactElement } from 'react';
-import { LiteralResolver } from '../../../core/src/resolvers/abstract/LiteralResolver';
+import { LiteralResolverDefinition } from '../../../core/src/resolvers/LiteralResolver';
 
 export type BoundProvider<TProps> = { component: ComponentType<TProps>; props: TProps };
 
@@ -22,9 +22,9 @@ export class ProviderResolver<TProps> extends Instance<BoundProvider<TProps>, [T
 
 export const provider = <TMaterializedRecord, TReturn extends ReactElement>(
   build: (ctx: TMaterializedRecord) => TReturn,
-): LiteralResolver<TMaterializedRecord, TReturn> => {
+): LiteralResolverDefinition<TMaterializedRecord, TReturn> => {
   return {
-    kind: 'literalResolver',
+    kind: 'literalResolverBuildFn',
     buildInstance: build,
   };
 };
