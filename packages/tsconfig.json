@@ -1,6 +1,7 @@
 {
   "files": [],
   "include": [],
+  "composite": true,
   "references": [
     {
       "path": "./core/tsconfig.json"

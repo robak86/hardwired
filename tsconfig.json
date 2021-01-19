@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "composite": true,
     "lib": ["ES2019.Array", "DOM"],
     "declarationMap": true,
     "sourceMap": true,
