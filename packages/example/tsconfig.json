@@ -5,7 +5,8 @@
     "rootDir": "./src",
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "composite": true
   },
   "references": [
     {
@@ -13,9 +14,6 @@
     },
     {
       "path": "../react/tsconfig.json"
-    },
-    {
-      "path": "../redux/tsconfig.json"
     }
   ],
   "include": [

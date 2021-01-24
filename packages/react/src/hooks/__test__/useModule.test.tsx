@@ -1,17 +1,17 @@
-import { container, module, singleton, transient, unit, value } from 'hardwired';
+import { container, module, request, value } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../testing/DummyComponent';
 import * as React from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider';
-import { useDependency } from '../useDependency';
+import { useModule } from '../useModule';
 
-describe(`useDependency`, () => {
+describe(`useModule`, () => {
   describe(`instantiating dependencies`, () => {
     const m1 = module('myModule').define('val1', value('val1')).define('val2', value('val2'));
 
     function setup() {
       const Consumer = () => {
-        const val1 = useDependency(m1, 'val1');
+        const { val1 } = useModule(m1);
         return <DummyComponent value={val1} />;
       };
 
@@ -37,11 +37,11 @@ describe(`useDependency`, () => {
       constructor() {}
     }
 
-    const m1 = module('myModule').define('cls', transient(TestClass));
+    const m1 = module('myModule').define('cls', request(TestClass));
 
     function setup() {
       const Consumer = () => {
-        const cls = useDependency(m1, 'cls');
+        const { cls } = useModule(m1);
         return <DummyComponent value={cls.id.toString()} />;
       };
 

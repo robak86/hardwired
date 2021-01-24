@@ -6,9 +6,7 @@ import { render } from '@testing-library/react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import * as React from 'react';
 
-describe.skip(`ProviderResolver`, () => {
-  it.todo('TODO');
-
+describe(`ProviderResolver`, () => {
   const m1 = module('testModule')
     .define('value', value(456))
     .define(

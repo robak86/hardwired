@@ -4,7 +4,6 @@ import { applyMiddleware, compose, createStore, Reducer, Store } from 'redux';
 import { AppState } from './AppState';
 import { NodesState } from '../nodes/state/NodesState';
 import { composeWithDevTools } from 'redux-devtools-extension';
-import { selectState } from 'hardwired-redux';
 
 class StoreFactory implements Factory<Store<AppState>> {
   constructor(private rootReducer: Reducer<AppState>, private defaultState: AppState) {}
@@ -27,8 +26,5 @@ class InitialStateFactory implements Factory<AppState> {
 export const storeModule = module('app')
   .define('initialState', factory(InitialStateFactory))
   .define('rootReducer', value(rootReducer))
-  .define('store', factory(StoreFactory), ['rootReducer', 'initialState'])
-  .define('state', selectState<AppState>(), ['store']);
-
-export type M = Module.Materialized<typeof storeModule>;
-type W = M['state'];
+  .define('store', factory(StoreFactory), ['rootReducer', 'initialState']);
+// .define('state', selectState<AppState>(), ['store']);
