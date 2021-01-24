@@ -26,3 +26,5 @@ export type {
 } from './resolvers/abstract/Module';
 
 export type { LiteralResolverDefinition } from './resolvers/LiteralResolver';
+export { LiteralResolver, literal } from './resolvers/LiteralResolver';
+export { Scope } from './resolvers/abstract/Instance';

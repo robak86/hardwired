@@ -1,14 +1,14 @@
 import { ContainerContext } from './ContainerContext';
 import { ModuleBuilder } from '../module/ModuleBuilder';
-import { AnyResolver, MaterializedRecord, Module } from '../resolvers/abstract/Module';
+import { Module } from '../resolvers/abstract/Module';
 import { AcquiredInstance, Instance } from '../resolvers/abstract/Instance';
 import { ClassType } from '../utils/ClassType';
 
 export class Container {
   constructor(
     private containerContext: ContainerContext = ContainerContext.empty(),
-    overrides: Module<any>[],
-    eager: Module<any>[],
+    private overrides: Module<any>[],
+    private eager: Module<any>[],
   ) {
     overrides.forEach(m => this.containerContext.override(m));
     eager.forEach(m => this.containerContext.eagerLoad(m));
@@ -26,7 +26,9 @@ export class Container {
   __getByType_experimental<TValue, TResolverClass extends Instance<TValue, any>>(
     type: ClassType<TResolverClass, any>,
   ): TValue[] {
-    return this.containerContext.resolvers.filterByType(type).map(resolver => resolver.build(this.containerContext));
+    return this.containerContext.resolvers.filterByType(type).map(resolver => {
+      return this.containerContext.runResolver(resolver);
+    });
   }
 
   // TODO: how does this relate to scopes ? e.g. request ?
@@ -37,9 +39,17 @@ export class Container {
     return this.containerContext.getInstanceResolver(moduleInstance, name).acquire(this.containerContext);
   }
 
-  asObject<TRecord extends Record<string, AnyResolver>>(module: Module<TRecord>): MaterializedRecord<TRecord> {
+  asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     const requestContext = this.containerContext.forNewRequest();
     return this.containerContext.materializeModule(module, requestContext);
+  }
+
+  getContext(): ContainerContext {
+    return this.containerContext;
+  }
+
+  checkout(): Container {
+    return new Container(this.containerContext.forNewRequest(), this.overrides, this.eager);
   }
 }
 

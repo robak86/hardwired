@@ -55,13 +55,10 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
   ): unknown {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
 
-    const targetResolver =
-      resolver.kind === 'literalResolverBuildFn' ? new LiteralResolver(resolver.buildInstance) : resolver;
-
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
-        resolverThunk: targetResolver,
+        resolverThunk: resolver,
         dependencies: dependencies || [],
       }) as any,
     ) as any;

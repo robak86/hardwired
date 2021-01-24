@@ -1,7 +1,7 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
-import { AnyResolver, MaterializedRecord, Module } from '../resolvers/abstract/Module';
+import { Module } from '../resolvers/abstract/Module';
 import { ImmutableSet } from '../collections/ImmutableSet';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
@@ -79,14 +79,17 @@ export class ContainerContext {
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
     const resolver = this.getInstanceResolver(moduleInstance, name);
+    return this.runResolver(resolver);
+  }
 
+  runResolver(resolver: Instance<any, any>, context: ContainerContext = this) {
     if (resolver.usesMaterializedModule) {
       const module = this.resolvers.getModuleForResolver(resolver.id);
       const materializedModule = this.materializeModule(module);
-      return resolver.build(this, materializedModule);
+      return resolver.build(context, materializedModule);
     }
 
-    return resolver.build(this);
+    return resolver.build(context);
   }
 
   eagerLoad(module: Module<any>) {
@@ -109,12 +112,6 @@ export class ContainerContext {
   getDependencies(uuid: string): Instance<any, any>[] {
     const deps = this.dependencies[uuid];
     invariant(Array.isArray(deps), `Cannot get dependencies. Instance wasn't initialized.`);
-    return deps;
-  }
-
-  getStructuredDependencies(uuid: string): Record<string, Instance<any, any>> {
-    const deps = this.dependencies[uuid];
-    invariant(deps && !Array.isArray(deps), `Cannot get structured dependencies`);
     return deps;
   }
 
@@ -167,6 +164,9 @@ export class ContainerContext {
     return this.globalScope[uuid];
   }
 
+  // TODO: should we return ContainerContext with clean requestScope ? or we should
+  //       or we need some other kind of scope. In theory each react component should create this kind of scope
+  //       and it should be inherited by all children
   forNewRequest(): ContainerContext {
     return new ContainerContext(
       this.globalScope,
@@ -194,10 +194,10 @@ export class ContainerContext {
     return targetModule;
   }
 
-  materializeModule<TRecord extends Record<string, AnyResolver>>(
-    module: Module<TRecord>,
+  materializeModule<TModule extends Module<any>>(
+    module: TModule,
     context: ContainerContext = this,
-  ): MaterializedRecord<TRecord> {
+  ): Module.Materialized<TModule> {
     const materialized: any = {};
 
     module.registry.forEach((boundResolver, key) => {
@@ -205,7 +205,10 @@ export class ContainerContext {
       if (resolver.kind === 'instanceResolver') {
         Object.defineProperty(materialized, key, {
           configurable: false,
-          get: () => this.getInstanceResolver(module, key).build(context),
+          get: () => {
+            const initializedResolver = this.getInstanceResolver(module, key);
+            return this.runResolver(initializedResolver, context);
+          },
         });
       }
 

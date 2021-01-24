@@ -2,6 +2,12 @@ import { createResolverId } from '../../utils/fastId';
 import { ContainerContext } from '../../container/ContainerContext';
 import { InstanceEvents } from '../../container/InstanceEvents';
 
+export enum Scope {
+  singleton = 'singleton',
+  transient = 'transient',
+  request = 'request'
+}
+
 export namespace Instance {
   export type Unbox<T> = T extends Instance<infer TInstance, any>
     ? TInstance
