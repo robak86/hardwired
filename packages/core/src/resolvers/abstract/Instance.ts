@@ -1,11 +1,10 @@
 import { createResolverId } from '../../utils/fastId';
 import { ContainerContext } from '../../container/ContainerContext';
-import { InstanceEvents } from '../../container/InstanceEvents';
 
 export enum Scope {
   singleton = 'singleton',
   transient = 'transient',
-  request = 'request'
+  request = 'request',
 }
 
 export namespace Instance {
@@ -26,38 +25,5 @@ export abstract class Instance<TValue, TDeps extends any[]> {
 
   abstract build(context: ContainerContext, materializedModule?): TValue;
 
-  // TODO: for transient/scoped resolvers each acquisition should be distinguishable (acquisitionId? :/)
-  // TODO: this probably should be abstract and only specific resolvers should implement this (other should throw an error ?) - e.g. for usingWatchable on non watchable instance
-  acquire(context: ContainerContext): AcquiredInstance<TValue> {
-    return new BaseAcquiredInstance(this.id, context, this.build.bind(this));
-  }
-
   onInit?(context: ContainerContext): void;
-}
-
-// TODO: does this object allow for keeping state, listeners, events ??
-export abstract class AcquiredInstance<TValue> {
-  protected instanceEvents = new InstanceEvents();
-
-  protected constructor(protected resolverId: string, protected containerContext: ContainerContext) {}
-  abstract get(): TValue;
-
-  // TODO: use loan pattern ? but how to fit this with other concepts ?
-  abstract dispose(): void;
-
-  getEvents(): InstanceEvents {
-    return this.instanceEvents;
-  }
-}
-
-export class BaseAcquiredInstance<TValue> extends AcquiredInstance<TValue> {
-  constructor(resolverId: string, context: ContainerContext, protected _build: (context: ContainerContext) => TValue) {
-    super(resolverId, context);
-  }
-
-  get(): TValue {
-    return this._build(this.containerContext);
-  }
-
-  dispose(): void {}
 }

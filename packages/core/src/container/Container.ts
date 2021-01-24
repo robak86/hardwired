@@ -1,7 +1,7 @@
 import { ContainerContext } from './ContainerContext';
 import { ModuleBuilder } from '../module/ModuleBuilder';
 import { Module } from '../resolvers/abstract/Module';
-import { AcquiredInstance, Instance } from '../resolvers/abstract/Instance';
+import { Instance } from '../resolvers/abstract/Instance';
 import { ClassType } from '../utils/ClassType';
 
 export class Container {
@@ -29,14 +29,6 @@ export class Container {
     return this.containerContext.resolvers.filterByType(type).map(resolver => {
       return this.containerContext.runResolver(resolver);
     });
-  }
-
-  // TODO: how does this relate to scopes ? e.g. request ?
-  __acquireInstanceResolver_experimental<
-    TLazyModule extends ModuleBuilder<any>,
-    K extends Module.InstancesKeys<TLazyModule> & string
-  >(moduleInstance: TLazyModule, name: K): AcquiredInstance<Module.Materialized<TLazyModule>[K]> {
-    return this.containerContext.getInstanceResolver(moduleInstance, name).acquire(this.containerContext);
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {

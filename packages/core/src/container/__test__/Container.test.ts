@@ -71,18 +71,6 @@ describe(`Container`, () => {
     });
   });
 
-  describe(`.acquireInstanceResolver`, () => {
-    it(`calls acquire on resolver and returns created object`, async () => {
-      const resolver = dependency(123);
-      const m = module('testModule').define('testResolver', resolver);
-      const c = container();
-      jest.spyOn(resolver, 'acquire').mockReturnValue('mocked' as any);
-      const acquired = c.__acquireInstanceResolver_experimental(m, 'testResolver');
-      expect(resolver.acquire).toHaveBeenCalled();
-      expect(acquired).toEqual('mocked');
-    });
-  });
-
   describe(`lazy loading`, () => {
     function setup() {
       const c = container();
