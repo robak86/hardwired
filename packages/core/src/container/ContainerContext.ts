@@ -2,7 +2,7 @@ import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
 import { Module } from '../resolvers/abstract/Module';
-import { ImmutableSet } from '../collections/ImmutableSet';
+import { ImmutableMap } from '../collections/ImmutableMap';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
@@ -22,7 +22,7 @@ export class ContainerContext {
     public modulesResolvers: Record<string, Module<any>> = {},
     public dependencies: Record<string, Instance<any, any>[] | Record<string, Instance<any, any>>> = {},
     public resolvers: ResolversLookup = new ResolversLookup(),
-    public overrides = ImmutableSet.empty(),
+    public overrides = ImmutableMap.empty(),
   ) {}
 
   getInstanceResolver(module: Module<any>, path: string): Instance<any, any> {
@@ -79,13 +79,13 @@ export class ContainerContext {
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
     const resolver = this.getInstanceResolver(moduleInstance, name);
-    return this.runResolver(resolver);
+    return this.runResolver(resolver, this);
   }
 
-  runResolver(resolver: Instance<any, any>, context: ContainerContext = this) {
+  runResolver(resolver: Instance<any, any>, context: ContainerContext) {
     if (resolver.usesMaterializedModule) {
       const module = this.resolvers.getModuleForResolver(resolver.id);
-      const materializedModule = this.materializeModule(module);
+      const materializedModule = this.materializeModule(module, context);
       return resolver.build(context, materializedModule);
     }
 
@@ -196,7 +196,7 @@ export class ContainerContext {
 
   materializeModule<TModule extends Module<any>>(
     module: TModule,
-    context: ContainerContext = this,
+    context: ContainerContext,
   ): Module.Materialized<TModule> {
     const materialized: any = {};
 

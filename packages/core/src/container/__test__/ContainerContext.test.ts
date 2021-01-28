@@ -1,7 +1,6 @@
 import { ContainerContext } from '../ContainerContext';
 import { unit } from '../../module/ModuleBuilder';
 import { dependency } from '../../testing/TestResolvers';
-import { request } from '../../resolvers/ClassRequestResolver';
 
 describe(`ContainerContext`, () => {
   describe(`async scope`, () => {
@@ -45,7 +44,7 @@ describe(`ContainerContext`, () => {
         const m = unit('a').define('a', dependency(1));
         const context = ContainerContext.empty();
 
-        const { a } = context.materializeModule(m);
+        const { a } = context.materializeModule(m, context);
         expect(a).toEqual(1);
       });
 
@@ -60,7 +59,7 @@ describe(`ContainerContext`, () => {
 
         const context = ContainerContext.empty();
 
-        const materialized = context.materializeModule(m);
+        const materialized = context.materializeModule(m, context);
         expect(materialized.child.grandChild.grandChildValue1).toEqual(1);
       });
     });

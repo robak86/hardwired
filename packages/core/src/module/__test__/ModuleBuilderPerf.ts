@@ -512,7 +512,8 @@ const m222 = m
   .define('abcdef9', value('string'))
   .define('abcdefg9', value('string'))
   .define('abcdefgh9', value('string'))
-  .define('num', value(123));
+  .define('num', value(123))
+  .replace('num', value(345))
 
 const mmm = m
   .import('imported', m222)

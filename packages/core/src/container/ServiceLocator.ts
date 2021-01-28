@@ -25,4 +25,9 @@ export class ServiceLocator {
       },
     });
   }
+
+  asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
+    const requestContext = this.containerContext.forNewRequest();
+    return this.containerContext.materializeModule(module, requestContext);
+  }
 }

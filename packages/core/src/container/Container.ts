@@ -27,7 +27,7 @@ export class Container {
     type: ClassType<TResolverClass, any>,
   ): TValue[] {
     return this.containerContext.resolvers.filterByType(type).map(resolver => {
-      return this.containerContext.runResolver(resolver);
+      return this.containerContext.runResolver(resolver, this.containerContext);
     });
   }
 
