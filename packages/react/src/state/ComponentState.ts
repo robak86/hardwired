@@ -1,5 +1,4 @@
-import { CancelFunction, IObservable } from '../abstract/IObservable';
-
+import { IObservable, Unsubscribe } from '../abstract/IObservable';
 
 // TODO: reflects react class component's state
 export class ComponentState<TState> implements IObservable<TState> {
@@ -7,7 +6,7 @@ export class ComponentState<TState> implements IObservable<TState> {
 
   setState(newState: TState) {}
 
-  subscribe(): CancelFunction {
+  subscribe(): Unsubscribe {
     throw new Error('implement me');
   }
 }

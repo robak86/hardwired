@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FunctionComponent, ReactElement, useRef } from 'react';
 import { Container, container as buildContainer } from 'hardwired';
-import { ContainerContext } from './ContainerContext';
+import { ContainerContext } from '../context/ContainerContext';
 import { ProviderResolver } from '../resolvers/ProviderResolver';
 
 export type ContainerProviderProps = {

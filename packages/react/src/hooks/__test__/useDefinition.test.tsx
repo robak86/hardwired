@@ -1,10 +1,9 @@
-import { container, literal, module, request, value } from 'hardwired';
-import { act, render } from '@testing-library/react';
+import { container, module, request, value } from 'hardwired';
+import { render } from '@testing-library/react';
 import { DummyComponent } from '../../testing/DummyComponent';
 import * as React from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { useDefinition } from '../useDefinition';
-import { DummyObservable } from '../../testing/DummyObservable';
 
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
@@ -81,72 +80,6 @@ describe(`useDefinition`, () => {
       expect(render2Consumer1Value).not.toEqual(render2Consumer2Value);
       expect(render1Consumer1Value).toEqual(render2Consumer1Value);
       expect(render1Consumer2Value).toEqual(render2Consumer2Value);
-    });
-  });
-
-  describe(`observability`, () => {
-    it(`calls subscribe and unmount`, async () => {
-      const observable = new DummyObservable(1);
-      const cancelFnSpy = jest.fn();
-      jest.spyOn(observable, 'subscribe').mockReturnValue(cancelFnSpy);
-
-      const m = module('example').define(
-        'observable',
-        literal(() => observable),
-      );
-
-      const TestSubject = () => {
-        const { state } = useDefinition(m, 'observable');
-        return <>{state}</>;
-      };
-
-      const Container = ({ dummyProperty }) => {
-        return (
-          <ContainerProvider>
-            <>{dummyProperty}</>
-            <TestSubject />
-          </ContainerProvider>
-        );
-      };
-
-      const result = render(<Container dummyProperty={1} />);
-      result.rerender(<Container dummyProperty={2} />);
-
-      expect(observable.subscribe).toHaveBeenCalledTimes(1);
-      expect(cancelFnSpy).not.toHaveBeenCalled();
-      result.unmount();
-      expect(cancelFnSpy).toHaveBeenCalled();
-    });
-
-    it(`re-renders view`, async () => {
-      const observable = new DummyObservable(1);
-
-      const m = module('example').define(
-        'observable',
-        literal(() => observable),
-      );
-
-      const TestSubject = () => {
-        const { state } = useDefinition(m, 'observable');
-        return <div data-testid={'value'}>{state}</div>;
-      };
-
-      const Container = () => {
-        return (
-          <ContainerProvider>
-            <TestSubject />
-          </ContainerProvider>
-        );
-      };
-
-      const result = render(<Container />);
-      expect(result.getByTestId('value').textContent).toEqual('1');
-
-      act(() => {
-        observable.setValue(2);
-      });
-
-      expect(result.getByTestId('value').textContent).toEqual('2');
     });
   });
 });

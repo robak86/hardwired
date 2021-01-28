@@ -1,10 +1,9 @@
-export type CancelFunction = () => void;
+export type Unsubscribe = () => void;
 
 export type IObservable<TState> = {
-  readonly state: TState;
-  subscribe<T>(callback: () => void, select?: (state: TState) => T): CancelFunction;
+  subscribe(callback: (newValue: TState) => void): Unsubscribe;
 };
 
 export function isObservable(value: any): value is IObservable<any> {
-  return !!value.subscribe && value.state;
+  return !!value.subscribe;
 }
