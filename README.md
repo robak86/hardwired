@@ -71,7 +71,14 @@ const exampleContainer = container();
 3. Get an instance
 
 ```typescript
-const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance of Logger class
+const loggerInstance = exampleContainer.get(loggerModule, 'logger'); // returns instance of Logger class
+```
+or alternatively using `.asObject` method. All properties of returned object leverage lazy evaluation therefore no
+instance is created until one access directly a property.
+```typescript
+const obj  = exampleContainer.asObject(loggerModule); // no instances were created yet 
+const configuration = obj.configuration;              // instance of LoggerConfiguration was created
+const logger = obj.logger;                            // instance of Logger was created
 ```
 
 ### Registering definitions
@@ -143,7 +150,7 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
   ct.get('someValue') === ct.get(someModule, 'someValue'); // true
   ```
 
-- `factory` - creates an instance of factory class and returns value produced by `build` method. The value acts like singleton.
+- `factory` - creates an instance of factory class and returns value produced by `build` method.
 
   ```typescript
   import { module, factory, Factory } from 'hardwired';
@@ -157,7 +164,7 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
     }
   }
 
-  const someModule = module('example').define('createdByFactory', factory(NumberFactory));
+  const someModule = module('example').define('createdByFactory', factory(NumberFactory, Scope.singleton));
   const ct = container();
 
   ct.get(someModule, 'createdByFactory'); // returns 1
@@ -171,7 +178,7 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
   }
 
   const otherModule = module('example')
-    .define('createdByFactory', factory(NumberFactory))
+    .define('createdByFactory', factory(NumberFactory, Scope.singleton))
     .define('spy1', singleton(ArgsSpy), ['createdByFactory'])
     .define('spy2', singleton(ArgsSpy), ['createdByFactory']);
 
@@ -232,6 +239,24 @@ const logger = exampleContainer.get(loggerModule, 'logger'); // returns instance
   r1.args[0].args[0] === r2.args[1]; // false
   ```
 
+- `literal` - acts like factory function. It allows for accessing module definitions like object properties
+
+  ```typescript
+  import { module, request, Scope } from 'hardwired';
+
+  const someModule = module('literalExample')
+    .define('a', value(2))
+    .define('b', value(3))
+    .define(
+      'resultSingleton',
+      literal(obj => obj.a + obj.b, Scope.singleton),
+    )
+    .define(
+      'resultTransient',
+      literal(obj => obj.a + obj.b, Scope.transient),
+    );
+  ```
+
 #### Modules composition
 
 ```typescript
@@ -258,7 +283,7 @@ const usersModule = module('users')
   .define('usersQuery', singleton(UsersListQuery, ['db.connection']));
 ```
 
-#### Module identity
+#### Module identity / replacing definitions
 
 Each module at the instantiation receives unique identity. This property is used for checking if modules are interchangeable and
 also allows for using modules as a key while creating instances. (`container.get(moduleActingAsKey, 'definitionName')`)
@@ -313,4 +338,48 @@ containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with
 const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
 const containerWithUpdatedConfig = container({ overrides: [updatedDbModule] }); //
 containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
+```
+
+### Definition decorator
+
+`module.decorate(existingDefinitionName, decoratorFn: (originalImpl) => decoratedImpl)`
+
+It acts like `.replace` (does not change module identity), but instead of replacing a definition, it allows for
+decorating previous value.
+
+```typescript
+import { module, value, singleton } from 'hardwired';
+
+class Writer {
+  write() {}
+}
+
+class Document {
+  constructor(private writer: Writer) {}
+
+  save() {
+    this.writer.write();
+  }
+}
+
+const someModule = module('example') // breakme
+  .define('writer', singleton(Writer))
+  .define('document', singleton(Document), ['writer']);
+
+// tests
+it('calls write on save', () => {
+  const c = container({
+    overrides: [
+      someModule.decorate('writer', originalImpl => {
+        jest.spyOn(originalImpl, 'write'); // modifies originalImpl by setting spy on 'write' method
+        return originalImpl;
+      }),
+    ],
+  });
+  
+  const {document, writer} = c.asObject(someModule)
+  document.save();
+  
+  expect(writer.write).toHaveBeenCalled();
+});
 ```
