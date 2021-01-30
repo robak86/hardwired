@@ -7,9 +7,6 @@
     },
     {
       "path": "./react/tsconfig.json"
-    },
-    {
-      "path": "./redux/tsconfig.json"
     }
   ]
 }
