@@ -6,7 +6,7 @@ import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { container } from '../../container/Container';
 import { Module } from '../../resolvers/abstract/Module';
 import { Instance, Scope } from '../../resolvers/abstract/Instance';
-import { TestClassArgs2 } from '../../testing/ArgsDebug';
+import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { literal } from '../../resolvers/LiteralResolver';
 
 describe(`ModuleBuilder`, () => {

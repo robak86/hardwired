@@ -2,7 +2,7 @@ import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
-import { AnyResolver, MaterializedRecord, Module, ModuleRecord, PropTypesTuple } from '../resolvers/abstract/Module';
+import { AnyResolver, Module, ModuleRecord, PropTypesTuple } from '../resolvers/abstract/Module';
 import { Instance } from '../resolvers/abstract/Instance';
 import { LiteralResolverDefinition } from '../resolvers/LiteralResolver';
 import { DecoratorResolver } from '../resolvers/DecoratorResolver';
@@ -34,7 +34,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
   // TODO: is it necessary to return Instance with TDeps?  TDeps are not necessary after the instance is registered
   define<TKey extends string, TValue>(
     name: TKey,
-    resolver: LiteralResolverDefinition<MaterializedRecord<TRecord>, TValue>,
+    resolver: LiteralResolverDefinition<ModuleRecord.Materialized<TRecord>, TValue>,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
   define<TKey extends string, TValue>(
     name: TKey,
@@ -42,15 +42,15 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
   define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
     name: TKey,
-    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>,
+    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>,
     dependencies: TDepsKeys,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>>>;
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>>>;
   define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
     name: TKey,
     resolver:
       | Instance<TValue, []>
-      | Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>
-      | LiteralResolverDefinition<MaterializedRecord<TRecord>, TValue>,
+      | Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>
+      | LiteralResolverDefinition<ModuleRecord.Materialized<TRecord>, TValue>,
     dependencies?: TDepsKeys,
   ): unknown {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
@@ -75,7 +75,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     TDepsKeys extends [TDepKey, ...TDepKey[]]
   >(
     name: TKey,
-    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, MaterializedRecord<TRecord>>>,
+    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>,
     dependencies: TDepsKeys,
   ): ModuleBuilder<TRecord>;
   replace<
@@ -97,7 +97,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
 
   decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
-    decorateFn: (originalValue: TValue, moduleAsObject: MaterializedRecord<TRecord>) => TValue,
+    decorateFn: (originalValue: TValue, moduleAsObject: ModuleRecord.Materialized<TRecord>) => TValue,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>> {
     invariant(this.registry.hasKey(name), `Cannot decorate definition. Definition: ${name} does not exist.`);
 

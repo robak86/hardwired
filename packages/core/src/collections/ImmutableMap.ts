@@ -84,22 +84,22 @@ export class ImmutableMap<D extends Record<string, any>> {
       }
     });
 
-    return new ImmutableMap<T & D>(mergedRecords as any, otherKeys as any);
+    return new ImmutableMap<T & D>(mergedRecords, otherKeys);
   }
 
   get entries(): Array<[string, any]> {
     return this.keys.map(key => [key, this.records[key]]);
   }
 
-  extend<TKey extends string, TValue>(key: TKey, value: TValue): ImmutableMap<D & { [K in TKey & string]: TValue }> {
+  extend<TKey extends string, TValue>(key: TKey, value: TValue): ImmutableMap<D & Record<TKey, TValue>> {
     invariant(!this.records[key], `Cannot extend set with key: ${key}. It already exists`);
 
-    return new ImmutableMap(
+    return new ImmutableMap<D & Record<TKey, TValue>>(
       {
         ...this.records,
         [key]: value,
       },
       [...this.orderedKeys, key],
-    ) as any;
+    );
   }
 }

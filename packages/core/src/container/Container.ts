@@ -1,8 +1,6 @@
 import { ContainerContext } from './ContainerContext';
 import { ModuleBuilder } from '../module/ModuleBuilder';
 import { Module } from '../resolvers/abstract/Module';
-import { Instance } from '../resolvers/abstract/Instance';
-import { ClassType } from '../utils/ClassType';
 
 export class Container {
   constructor(
@@ -19,16 +17,6 @@ export class Container {
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
     return this.containerContext.get(moduleInstance, name);
-  }
-
-  // TODO: allow using resolvers factory, .e.g singleton, selector, store
-  // TODO: it may be very tricky since container leverages lazy loading if possible
-  __getByType_experimental<TValue, TResolverClass extends Instance<TValue, any>>(
-    type: ClassType<TResolverClass, any>,
-  ): TValue[] {
-    return this.containerContext.resolvers.filterByType(type).map(resolver => {
-      return this.containerContext.runResolver(resolver, this.containerContext);
-    });
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
@@ -56,7 +44,10 @@ export type ContainerOptions = {
 export function container({
   context = ContainerContext.empty(),
   overrides = [],
-  eager = [],
+  eager = [], // TODO: eager means that modules are eagerly added to context (in order to enable reflection), but no instances are created. This may be confusing.
+              //       on the other hand how to create instances of definitions ? should we only create singletons ? what
+              //       about transient, request scopes. This would be pointless.
+              //       Probably we should not allow any reflection
 }: ContainerOptions = {}): Container {
   const container = new Container(context, overrides, eager);
   return container as any;

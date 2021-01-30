@@ -2,7 +2,7 @@ import { value, ValueResolver } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { ModuleBuilder } from '../ModuleBuilder';
 import { Module } from '../../resolvers/abstract/Module';
-import { TestClassArgs2 } from '../../testing/ArgsDebug';
+import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 
 const dummy = <TValue>(value: TValue): ValueResolver<TValue> => {
   return new ValueResolver(value);

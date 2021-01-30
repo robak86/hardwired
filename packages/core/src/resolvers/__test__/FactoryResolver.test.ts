@@ -61,4 +61,47 @@ describe(`FactoryResolver`, () => {
       expect(constructorSpy).toBeCalledTimes(1);
     });
   });
+
+  describe(`transient scope`, () => {
+    it(`returns value produced by the factory`, async () => {
+      class DummyFactory implements Factory<any> {
+        build = jest.fn().mockReturnValue('built by factory');
+      }
+
+      const factoryResolver = new FactoryResolver(DummyFactory, Scope.transient);
+      const context = ContainerContext.empty();
+      context.setDependencies(factoryResolver.id, []);
+      const value = factoryResolver.build(context);
+      expect(value).toEqual('built by factory');
+    });
+
+    it(`returns new value on each call`, async () => {
+      class DummyFactory implements Factory<any> {
+        build = jest.fn().mockImplementation(createResolverId);
+      }
+
+      const factoryResolver = new FactoryResolver(DummyFactory, Scope.transient);
+      const context = ContainerContext.empty();
+      context.setDependencies(factoryResolver.id, []);
+      expect(factoryResolver.build(context)).not.toEqual(factoryResolver.build(context));
+    });
+
+    it(`calls build on each request`, async () => {
+      const constructorSpy = jest.fn();
+      class DummyFactory implements Factory<any> {
+        constructor() {
+          constructorSpy();
+        }
+        build = jest.fn().mockImplementation(createResolverId);
+      }
+
+      const factoryResolver = new FactoryResolver(DummyFactory, Scope.transient);
+      const context = ContainerContext.empty();
+      context.setDependencies(factoryResolver.id, []);
+
+      factoryResolver.build(context);
+      factoryResolver.build(context);
+      expect(constructorSpy).toBeCalledTimes(2);
+    });
+  });
 });

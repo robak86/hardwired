@@ -13,16 +13,9 @@ export { factory, FactoryResolver } from './resolvers/FactoryResolver';
 export type { Factory } from './resolvers/FactoryResolver';
 
 export type { ClassType } from './utils/ClassType';
-export { SignalEmitter } from './utils/SignalEmitter';
 
 export { Instance } from './resolvers/abstract/Instance';
-export type {
-  Module,
-  PropTypesObject,
-  PropTypesTuple,
-  MaterializedRecord,
-  AnyResolver,
-} from './resolvers/abstract/Module';
+export type { Module, PropTypesTuple, AnyResolver, ModuleRecord } from './resolvers/abstract/Module';
 
 export type { LiteralResolverDefinition } from './resolvers/LiteralResolver';
 export { LiteralResolver, literal } from './resolvers/LiteralResolver';

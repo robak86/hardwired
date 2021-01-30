@@ -6,7 +6,7 @@ import { ImmutableMap } from '../collections/ImmutableMap';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
-import { ModuleBuilder } from '../module/ModuleBuilder';
+import { ClassType } from '../utils/ClassType';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -74,7 +74,7 @@ export class ContainerContext {
     throw new Error('should not happen');
   }
 
-  get<TLazyModule extends ModuleBuilder<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
+  get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
@@ -192,6 +192,16 @@ export class ContainerContext {
 
     invariant(targetModule, `Cannot get module with moduleId: ${moduleId}`);
     return targetModule;
+  }
+
+  // TODO: allow using resolvers factory, .e.g singleton, selector, store
+  // TODO: it may be very tricky since container leverages lazy loading if possible
+  __getByType_experimental<TValue, TResolverClass extends Instance<TValue, any>>(
+    type: ClassType<TResolverClass, any>,
+  ): TValue[] {
+    return this.resolvers.filterByType(type).map(resolver => {
+      return this.runResolver(resolver, this);
+    });
   }
 
   materializeModule<TModule extends Module<any>>(

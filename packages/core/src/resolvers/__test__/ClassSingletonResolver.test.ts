@@ -1,5 +1,5 @@
 import { singleton } from '../ClassSingletonResolver';
-import { dependency } from '../../testing/TestResolvers';
+import { dependency } from '../../__test__/TestResolvers';
 import { container } from '../../container/Container';
 import { createResolverId } from '../../utils/fastId';
 import { value } from '../ValueResolver';

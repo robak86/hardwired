@@ -1,6 +1,6 @@
 import { ModuleBuilder } from '../../module/ModuleBuilder';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
-import { TestClassArgs2 } from '../../testing/ArgsDebug';
+import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { value } from '../../resolvers/ValueResolver';
 import { container } from '../Container';
 import { serviceLocator } from '../../resolvers/ServiceLocatorResolver';

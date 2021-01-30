@@ -43,7 +43,7 @@ export class LiteralResolver<TValue> extends Instance<TValue, []> {
 
 export const literal = <TMaterializedRecord, TReturn>(
   build: (ctx: TMaterializedRecord) => TReturn,
-  scope: Scope = Scope.transient,
+  scope: Scope = Scope.singleton,
 ): LiteralResolverDefinition<TMaterializedRecord, TReturn> => {
   return new LiteralResolver(build, scope);
 };

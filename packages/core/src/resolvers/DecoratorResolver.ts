@@ -7,9 +7,9 @@ export class DecoratorResolver<TReturn, TDeps> extends Instance<TReturn, any> {
 
   constructor(
     protected decorated: Thunk<Instance<TReturn, any>>,
-    protected decorateFn: <TNew>(original: TReturn, materialized) => TNew,
+    protected decorateFn: <TNew extends TReturn>(original: TReturn, materialized) => TNew,
   ) {
-    super();
+    super(unwrapThunk(decorated).id);
   }
 
   build(context: ContainerContext, materializedModule): TReturn {
