@@ -1,10 +1,10 @@
 import { container, literal, module } from 'hardwired';
 import { act, render } from '@testing-library/react';
-import { DummyComponent } from '../../testing/DummyComponent';
+import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { useObservable } from '../useObservable';
-import { DummyObservable } from '../../testing/DummyObservable';
+import { DummyObservable } from '../../__test__/DummyObservable';
 
 describe(`useObservable`, () => {
   describe(`instantiating dependencies`, () => {

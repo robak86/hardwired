@@ -10,7 +10,7 @@ export type ContainerProviderProps = {
 
 export const ContainerProvider: FunctionComponent<ContainerProviderProps> = ({ children, container }) => {
   const containerInstance = useRef(container || buildContainer());
-  const providers: ReactElement[] = containerInstance.current.__getByType_experimental(ProviderResolver);
+  const providers: ReactElement[] = containerInstance.current.getContext().__getByType_experimental(ProviderResolver);
 
   const Providers: any = providers.reduce((providerChildren: ReactElement<any>, current: ReactElement) => {
     return React.cloneElement(current, { children: providerChildren });

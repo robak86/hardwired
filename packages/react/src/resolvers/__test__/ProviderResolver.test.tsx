@@ -1,7 +1,7 @@
 import { container, module, value } from 'hardwired';
 import { provider } from '../ProviderResolver';
-import { DummyProvider, useDummyProviderValue } from '../../testing/DummyProvider';
-import { DummyComponent } from '../../testing/DummyComponent';
+import { DummyProvider, useDummyProviderValue } from '../../__test__/DummyProvider';
+import { DummyComponent } from '../../__test__/DummyComponent';
 import { render } from '@testing-library/react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import * as React from 'react';

@@ -1,6 +1,6 @@
 import { container, module, request, value } from 'hardwired';
 import { render } from '@testing-library/react';
-import { DummyComponent } from '../../testing/DummyComponent';
+import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { useModule } from '../useModule';
