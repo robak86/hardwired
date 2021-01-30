@@ -2,18 +2,26 @@ import { Instance } from '../resolvers/abstract/Instance';
 import { ClassType } from '../utils/ClassType';
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
+import { Module } from '../resolvers/abstract/Module';
 
 export class ResolversLookup {
   private resolversById: Record<string, Instance<any, any>> = {};
   private resolversByModuleIdAndPath: Record<string, Instance<any, any>> = {};
+  private modulesByResolverId: Record<string, Module<any>> = {};
 
   has(resolver: Instance<any, any>): boolean {
     return !!this.resolversById[resolver.id];
   }
 
-  add(moduleId: ModuleId, path: string, resolver: Instance<any, any>) {
+  add(module: Module<any>, path: string, resolver: Instance<any, any>) {
+    const { moduleId } = module;
     this.resolversById[resolver.id] = resolver;
+    this.modulesByResolverId[resolver.id] = module;
     this.resolversByModuleIdAndPath[moduleId.id + path] = resolver;
+  }
+
+  getModuleForResolver(resolverId: string): Module<any> {
+    return this.modulesByResolverId[resolverId];
   }
 
   getByModule(moduleId: ModuleId, path: string): Instance<any, any> {

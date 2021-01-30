@@ -1,15 +1,12 @@
 import { ContainerContext } from './ContainerContext';
-import invariant from 'tiny-invariant';
 import { ModuleBuilder } from '../module/ModuleBuilder';
 import { Module } from '../resolvers/abstract/Module';
-import { AcquiredInstance, Instance } from '../resolvers/abstract/Instance';
-import { ClassType } from '../utils/ClassType';
 
-export class Container<TModule extends ModuleBuilder<any>> {
+export class Container {
   constructor(
     private containerContext: ContainerContext = ContainerContext.empty(),
-    overrides: Module<any>[],
-    eager: Module<any>[],
+    private overrides: Module<any>[],
+    private eager: Module<any>[],
   ) {
     overrides.forEach(m => this.containerContext.override(m));
     eager.forEach(m => this.containerContext.eagerLoad(m));
@@ -19,28 +16,20 @@ export class Container<TModule extends ModuleBuilder<any>> {
     moduleInstance: TLazyModule,
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
-    const resolver = this.containerContext.getInstanceResolver(moduleInstance, name);
-    return resolver.build(this.containerContext);
+    return this.containerContext.get(moduleInstance, name);
   }
 
-  // TODO: allow using resolvers factory, .e.g singleton, selector, store
-  // TODO: it may be very tricky since container leverages lazy loading if possible
-  __getByType_experimental<TValue, TResolverClass extends Instance<TValue, any>>(
-    type: ClassType<TResolverClass, any>,
-  ): TValue[] {
-    return this.containerContext.resolvers.filterByType(type).map(resolver => resolver.build(this.containerContext));
+  asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
+    const requestContext = this.containerContext.forNewRequest();
+    return this.containerContext.materializeModule(module, requestContext);
   }
 
-  // TODO: how does this relate to scopes ? e.g. request ?
-  __acquireInstanceResolver_experimental<
-    TLazyModule extends ModuleBuilder<any>,
-    K extends Module.InstancesKeys<TLazyModule> & string
-  >(moduleInstance: TLazyModule, name: K): AcquiredInstance<Module.Materialized<TLazyModule>[K]> {
-    return this.containerContext.getInstanceResolver(moduleInstance, name).acquire(this.containerContext);
+  getContext(): ContainerContext {
+    return this.containerContext;
   }
 
-  isLoaded(module: Module<any>): boolean {
-    return this.containerContext.hasModule(module.moduleId);
+  checkout(): Container {
+    return new Container(this.containerContext.forNewRequest(), this.overrides, this.eager);
   }
 }
 
@@ -50,11 +39,16 @@ export type ContainerOptions = {
   context?: ContainerContext;
 };
 
+// TODO: overrides are also eagerly loaded
+// TODO: add runtime check for duplicates in eager, and overrides options
 export function container({
   context = ContainerContext.empty(),
   overrides = [],
-  eager = [],
-}: ContainerOptions = {}): Container<ModuleBuilder<{}>> {
+  eager = [], // TODO: eager means that modules are eagerly added to context (in order to enable reflection), but no instances are created. This may be confusing.
+              //       on the other hand how to create instances of definitions ? should we only create singletons ? what
+              //       about transient, request scopes. This would be pointless.
+              //       Probably we should not allow any reflection
+}: ContainerOptions = {}): Container {
   const container = new Container(context, overrides, eager);
   return container as any;
 }

@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "tsc -b packages/tsconfig.json --watch --pretty",
-    "build": "tsc -b packages/tsconfig.json --pretty",
+    "build": "tsc -b packages/tsconfig.json --pretty && rimraf packages/**/lib/*/__test__ ",
     "test": "yarn run jest --config jest.config.js",
     "postinstall": "yarn run update:tsconfig.json && yarn run update:package.json",
     "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
@@ -55,6 +55,7 @@
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.5.0",
+    "@testing-library/react-hooks": "^5.0.3",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "react": "^17.0.1",

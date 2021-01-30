@@ -2,7 +2,7 @@ import { value, ValueResolver } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { ModuleBuilder } from '../ModuleBuilder';
 import { Module } from '../../resolvers/abstract/Module';
-import { TestClassArgs2 } from '../../testing/ArgsDebug';
+import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 
 const dummy = <TValue>(value: TValue): ValueResolver<TValue> => {
   return new ValueResolver(value);
@@ -512,7 +512,8 @@ const m222 = m
   .define('abcdef9', value('string'))
   .define('abcdefg9', value('string'))
   .define('abcdefgh9', value('string'))
-  .define('num', value(123));
+  .define('num', value(123))
+  .replace('num', value(345))
 
 const mmm = m
   .import('imported', m222)

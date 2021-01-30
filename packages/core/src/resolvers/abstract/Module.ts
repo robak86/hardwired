@@ -1,27 +1,31 @@
 import { ModuleId } from '../../module/ModuleId';
-import { ImmutableSet } from '../../collections/ImmutableSet';
+import { ImmutableMap } from '../../collections/ImmutableMap';
 import { Thunk } from '../../utils/Thunk';
 import { PropType } from '../../utils/PropType';
 import { Instance } from './Instance';
 
 // prettier-ignore
-export type AnyResolver = Instance<any, any> | Module<any>;
-
-export type MaterializedRecord<TRecord extends Record<string, AnyResolver>> = {
-  [K in keyof TRecord]: TRecord[K] extends Instance<infer TInstanceType, any>
-    ? TInstanceType
-    : TRecord[K] extends Module<infer TRecord>
-    ? MaterializedRecord<TRecord>
-    : unknown;
-};
+export type AnyResolver = Instance<any, any> | Module<any> ;
 
 export type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> = {
   [K in keyof T]: PropType<TDeps, T[K] & string>;
 };
 
-export type PropTypesObject<T extends Record<string, any>, TDeps extends Record<string, unknown>> = {
-  [K in keyof T]: PropType<TDeps, T[K] & string>;
-};
+export type ModuleRecord = Record<string, AnyResolver>;
+
+export namespace ModuleRecord {
+  export type InstancesKeys<TRecord> = {
+    [K in keyof TRecord]: TRecord[K] extends Instance<infer A, infer B> ? K : never;
+  }[keyof TRecord];
+
+  export type Materialized<TRecord extends Record<string, AnyResolver>> = {
+    [K in keyof TRecord]: TRecord[K] extends Instance<infer TInstanceType, any>
+      ? TInstanceType
+      : TRecord[K] extends Module<infer TRecord>
+      ? Materialized<TRecord>
+      : unknown;
+  };
+}
 
 // prettier-ignore
 export namespace Module {
@@ -31,15 +35,6 @@ export namespace Module {
 
         TRecord[K] extends Instance<infer TInstance, any> ? TInstance : unknown
     } : never;
-
-  export type ChildModules<TModule extends Module<any>> =
-    TModule extends Module<infer TRecord> ?
-      {
-        [K in keyof TRecord]: TRecord[K] extends Module<any> ? TRecord[K] | ChildModules<TRecord[K]> : never;
-      }[keyof TRecord]
-      : never;
-
-  export type EntriesRecord = Record<string, AnyResolver>
 
   export type InstancesKeys<TModule extends Module<any>> =
     TModule extends Module<infer TRecord> ?
@@ -55,14 +50,14 @@ export namespace Module {
   };
 }
 
-export abstract class Module<TValue extends Record<string, AnyResolver>> {
-  kind: 'moduleResolver' = 'moduleResolver';
+export abstract class Module<TRecord extends Record<string, AnyResolver>> {
+  readonly kind: 'moduleResolver' = 'moduleResolver';
 
-  __dependencies!: TValue; // prevent erasing the type
+  __definitions!: TRecord; // prevent erasing the type
 
   protected constructor(
     public moduleId: ModuleId,
-    public registry: ImmutableSet<Record<string, Module.BoundResolver>>,
+    public registry: ImmutableMap<Record<string, Module.BoundResolver>>,
   ) {}
 
   isEqual(otherModule: Module<any>): boolean {

@@ -1,4 +1,4 @@
-import { dependency, TestTransientResolver } from '../../testing/TestResolvers';
+import { dependency, TestTransientResolver } from '../../__test__/TestResolvers';
 import { container } from '../../container/Container';
 import { func } from '../FunctionResolver';
 import { transient } from '../ClassTransientResolver';

@@ -1,8 +1,8 @@
-import { dependency, DummyResolver } from '../../testing/TestResolvers';
+import { dependency, DummyResolver } from '../../__test__/TestResolvers';
 import { container } from '../Container';
 import { value } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
-import { ArgsDebug, TestClassArgs2 } from '../../testing/ArgsDebug';
+import { ArgsDebug, TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { module } from '../../module/ModuleBuilder';
 import { ContainerContext } from '../ContainerContext';
 
@@ -68,18 +68,6 @@ describe(`Container`, () => {
           args: ['bReplaced'],
         });
       });
-    });
-  });
-
-  describe(`.acquireInstanceResolver`, () => {
-    it(`calls acquire on resolver and returns created object`, async () => {
-      const resolver = dependency(123);
-      const m = module('testModule').define('testResolver', resolver);
-      const c = container();
-      jest.spyOn(resolver, 'acquire').mockReturnValue('mocked' as any);
-      const acquired = c.__acquireInstanceResolver_experimental(m, 'testResolver');
-      expect(resolver.acquire).toHaveBeenCalled();
-      expect(acquired).toEqual('mocked');
     });
   });
 
@@ -278,7 +266,7 @@ describe(`Container`, () => {
         .define('dependency2', dependency(789));
       const c = container({ eager: [m] });
 
-      const instances = c.__getByType_experimental(DummyResolver);
+      const instances = c.getContext().__getByType_experimental(DummyResolver);
       expect(instances).toEqual([456, 789]);
     });
 
@@ -292,7 +280,7 @@ describe(`Container`, () => {
 
       const c = container({ eager: [m] });
 
-      const instances = c.__getByType_experimental(DummyResolver);
+      const instances = c.getContext().__getByType_experimental(DummyResolver);
       expect(instances).toEqual([789, 456]); //TODO: investigate in what order should be returned instances
     });
   });

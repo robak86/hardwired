@@ -1,7 +1,6 @@
 export { container, Container } from './container/Container';
 export { unit, module, ModuleBuilder } from './module/ModuleBuilder';
 export { ContainerContext } from './container/ContainerContext';
-export { InstanceEvents } from './container/InstanceEvents';
 
 export { singleton, ClassSingletonResolver } from './resolvers/ClassSingletonResolver';
 export { transient, ClassTransientResolver } from './resolvers/ClassTransientResolver';
@@ -14,13 +13,10 @@ export { factory, FactoryResolver } from './resolvers/FactoryResolver';
 export type { Factory } from './resolvers/FactoryResolver';
 
 export type { ClassType } from './utils/ClassType';
-export { SignalEmitter } from './utils/SignalEmitter';
 
-export { Instance, AcquiredInstance, BaseAcquiredInstance } from './resolvers/abstract/Instance';
-export type {
-  Module,
-  PropTypesObject,
-  PropTypesTuple,
-  MaterializedRecord,
-  AnyResolver,
-} from './resolvers/abstract/Module';
+export { Instance } from './resolvers/abstract/Instance';
+export type { Module, PropTypesTuple, AnyResolver, ModuleRecord } from './resolvers/abstract/Module';
+
+export type { LiteralResolverDefinition } from './resolvers/LiteralResolver';
+export { LiteralResolver, literal } from './resolvers/LiteralResolver';
+export { Scope } from './resolvers/abstract/Instance';

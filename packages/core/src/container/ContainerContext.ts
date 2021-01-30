@@ -1,12 +1,12 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
-import { ContainerEvents } from './ContainerEvents';
 import { Module } from '../resolvers/abstract/Module';
-import { ImmutableSet } from '../collections/ImmutableSet';
+import { ImmutableMap } from '../collections/ImmutableMap';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
+import { ClassType } from '../utils/ClassType';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -14,16 +14,15 @@ export class ContainerContext {
     return new ContainerContext();
   }
 
-  public requestScope: Record<string, any> = {};
-  public requestScopeAsync: Record<string, PushPromise<any>> = {};
-  public containerEvents = new ContainerEvents();
-  public resolvers: ResolversLookup = new ResolversLookup();
+  private requestScope: Record<string, any> = {};
+  private requestScopeAsync: Record<string, PushPromise<any>> = {};
 
   protected constructor(
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
     public dependencies: Record<string, Instance<any, any>[] | Record<string, Instance<any, any>>> = {},
-    public overrides = ImmutableSet.empty(),
+    public resolvers: ResolversLookup = new ResolversLookup(),
+    public overrides = ImmutableMap.empty(),
   ) {}
 
   getInstanceResolver(module: Module<any>, path: string): Instance<any, any> {
@@ -56,7 +55,7 @@ export class ContainerContext {
       }
 
       if (!this.resolvers.has(resolver)) {
-        this.resolvers.add(targetModule.moduleId, path, resolver);
+        this.resolvers.add(targetModule, path, resolver);
         resolver.onInit?.(this);
       }
 
@@ -67,12 +66,30 @@ export class ContainerContext {
       invariant(instance, `getInstanceResolver is not intended to return module. Path is missing instance target`);
       const instanceResolver = this.getInstanceResolver(resolver, instance);
       if (!this.resolvers.has(instanceResolver)) {
-        this.resolvers.add(targetModule.moduleId, path, instanceResolver);
+        this.resolvers.add(targetModule, path, instanceResolver);
       }
       return instanceResolver;
     }
 
     throw new Error('should not happen');
+  }
+
+  get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
+    moduleInstance: TLazyModule,
+    name: K,
+  ): Module.Materialized<TLazyModule>[K] {
+    const resolver = this.getInstanceResolver(moduleInstance, name);
+    return this.runResolver(resolver, this);
+  }
+
+  runResolver(resolver: Instance<any, any>, context: ContainerContext) {
+    if (resolver.usesMaterializedModule) {
+      const module = this.resolvers.getModuleForResolver(resolver.id);
+      const materializedModule = this.materializeModule(module, context);
+      return resolver.build(context, materializedModule);
+    }
+
+    return resolver.build(context);
   }
 
   eagerLoad(module: Module<any>) {
@@ -95,12 +112,6 @@ export class ContainerContext {
   getDependencies(uuid: string): Instance<any, any>[] {
     const deps = this.dependencies[uuid];
     invariant(Array.isArray(deps), `Cannot get dependencies. Instance wasn't initialized.`);
-    return deps;
-  }
-
-  getStructuredDependencies(uuid: string): Record<string, Instance<any, any>> {
-    const deps = this.dependencies[uuid];
-    invariant(deps && !Array.isArray(deps), `Cannot get structured dependencies`);
     return deps;
   }
 
@@ -153,8 +164,17 @@ export class ContainerContext {
     return this.globalScope[uuid];
   }
 
+  // TODO: should we return ContainerContext with clean requestScope ? or we should
+  //       or we need some other kind of scope. In theory each react component should create this kind of scope
+  //       and it should be inherited by all children
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.modulesResolvers, this.dependencies, this.overrides);
+    return new ContainerContext(
+      this.globalScope,
+      this.modulesResolvers,
+      this.dependencies,
+      this.resolvers,
+      this.overrides,
+    );
   }
 
   protected addModule(module: Module<any>) {
@@ -172,5 +192,44 @@ export class ContainerContext {
 
     invariant(targetModule, `Cannot get module with moduleId: ${moduleId}`);
     return targetModule;
+  }
+
+  // TODO: allow using resolvers factory, .e.g singleton, selector, store
+  // TODO: it may be very tricky since container leverages lazy loading if possible
+  __getByType_experimental<TValue, TResolverClass extends Instance<TValue, any>>(
+    type: ClassType<TResolverClass, any>,
+  ): TValue[] {
+    return this.resolvers.filterByType(type).map(resolver => {
+      return this.runResolver(resolver, this);
+    });
+  }
+
+  materializeModule<TModule extends Module<any>>(
+    module: TModule,
+    context: ContainerContext,
+  ): Module.Materialized<TModule> {
+    const materialized: any = {};
+
+    module.registry.forEach((boundResolver, key) => {
+      const resolver = unwrapThunk(boundResolver.resolverThunk);
+      if (resolver.kind === 'instanceResolver') {
+        Object.defineProperty(materialized, key, {
+          configurable: false,
+          get: () => {
+            const initializedResolver = this.getInstanceResolver(module, key);
+            return this.runResolver(initializedResolver, context);
+          },
+        });
+      }
+
+      if (resolver.kind === 'moduleResolver') {
+        Object.defineProperty(materialized, key, {
+          configurable: false,
+          get: () => this.materializeModule(resolver, context),
+        });
+      }
+    });
+
+    return materialized;
   }
 }

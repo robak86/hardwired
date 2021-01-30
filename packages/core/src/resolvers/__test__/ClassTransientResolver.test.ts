@@ -1,5 +1,5 @@
 import { transient } from '../ClassTransientResolver';
-import { dependency } from '../../testing/TestResolvers';
+import { dependency } from '../../__test__/TestResolvers';
 import { container } from '../../container/Container';
 import { createResolverId } from '../../utils/fastId';
 import { expectType, TypeEqual } from 'ts-expect';

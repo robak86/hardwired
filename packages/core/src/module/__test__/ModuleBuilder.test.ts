@@ -1,14 +1,15 @@
 import { expectType, TypeEqual } from 'ts-expect';
-import { ModuleBuilder, module } from '../ModuleBuilder';
+import { module, ModuleBuilder } from '../ModuleBuilder';
 import { ClassType } from '../../utils/ClassType';
 import { value, ValueResolver } from '../../resolvers/ValueResolver';
 import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { container } from '../../container/Container';
 import { Module } from '../../resolvers/abstract/Module';
-import { Instance } from '../../resolvers/abstract/Instance';
-import { TestClassArgs2 } from '../../testing/ArgsDebug';
+import { Instance, Scope } from '../../resolvers/abstract/Instance';
+import { TestClassArgs2 } from '../../__test__/ArgsDebug';
+import { literal } from '../../resolvers/LiteralResolver';
 
-describe(`Module`, () => {
+describe(`ModuleBuilder`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
     return new ValueResolver(value);
   };
@@ -78,71 +79,6 @@ describe(`Module`, () => {
 
       // @ts-expect-error - dependencies array is not provided
       m2.define('cls', dummyClassResolver(TestClassArgs2));
-    });
-
-    describe(`providing structured deps`, () => {
-      // it(`is typesafe`, async () => {
-      //   class TestClass {
-      //     constructor(private args: { a: string; b: number }) {}
-      //   }
-      //
-      //   const m2 = ModuleBuilder.empty('someModule') // breakme
-      //     .define('string', dummy('string'))
-      //     .define('number', dummy(123));
-      //
-      //   const definition = dummyClassResolver(TestClass);
-      //
-      //   m2.defineStructured('cls', definition, { a: 'string', b: 'number' });
-      //
-      //   // @ts-expect-error - wrong dependency name used
-      //   m2.defineStructured('cls', definition, { a: 'wrong_name', b: 'number' });
-      //
-      //   // @ts-expect-error - wrong dependency key
-      //   m2.defineStructured('cls', definition, { aa: 'string', b: 'number' });
-      //
-      //   // @ts-expect-error - wrong dependencies types passed
-      //   m2.defineStructured('cls', definition, { a: 'number', b: 'number' });
-      //
-      //   // @ts-expect-error - dependencies array is empty
-      //   m2.defineStructured('cls', definition, { a: 'string' });
-      //
-      //   // @ts-expect-error - dependencies array is empty
-      //   m2.defineStructured('cls', definition, {});
-      //
-      //   // @ts-expect-error - dependencies array is not provided
-      //   m2.defineStructured('cls', definition);
-      // });
-      //
-      // it(`is typesafe for optional pros`, async () => {
-      //   class TestClass {
-      //     constructor(private args: { a: string; b?: number }) {}
-      //   }
-      //
-      //   const m2 = ModuleBuilder.empty('someModule') // breakme
-      //     .define('string', dummy('string'))
-      //     .define('number', dummy(123));
-      //
-      //   const definition = dummyClassResolver(TestClass);
-      //
-      //   m2.defineStructured('cls', definition, { a: 'string', b: 'number' });
-      //
-      //   m2.defineStructured('cls', definition, { a: 'string' });
-      //
-      //   // @ts-expect-error - wrong dependency name used
-      //   m2.defineStructured('cls', definition, { a: 'wrong_name', b: 'number' });
-      //
-      //   // @ts-expect-error - wrong dependency key
-      //   m2.defineStructured('cls', definition, { aa: 'string', b: 'number' });
-      //
-      //   // @ts-expect-error - wrong dependencies types passed
-      //   m2.defineStructured('cls', definition, { a: 'number', b: 'number' });
-      //
-      //   // @ts-expect-error - dependencies array is empty
-      //   m2.defineStructured('cls', definition, {});
-      //
-      //   // @ts-expect-error - dependencies array is not provided
-      //   m2.defineStructured('cls', definition);
-      // });
     });
 
     it(`creates correct types for imports`, async () => {
@@ -238,6 +174,143 @@ describe(`Module`, () => {
       const m1 = module('').define('a', value('string'));
       const m2 = m1.replace('a', value('someOtherString'));
       expect(m1.isEqual(m2)).toEqual(true);
+    });
+  });
+
+  describe(`replace`, () => {
+    describe(`types`, () => {
+      it(`does not allow to replace not existing definition`, async () => {
+        const emptyModule = module('empty');
+
+        try {
+          // @ts-expect-error - invalid key
+          emptyModule.replace('should raise compilation error', () => value(1));
+        } catch (err) {
+          // catch runtime error related to missing key
+        }
+      });
+
+      it(`requires that new definition extends the original`, async () => {
+        const emptyModule = module('empty').define('someString', value('string'));
+
+        // @ts-expect-error - value(1) is not compatible with string
+        emptyModule.replace('someString', () => value(1));
+      });
+    });
+  });
+
+  describe(`decorate`, () => {
+    it(`decorates original value`, async () => {
+      const m = module('example')
+        .define('someValue', value(1))
+        .decorate('someValue', val => val + 1);
+
+      const c = container();
+      expect(c.get(m, 'someValue')).toEqual(2);
+    });
+
+    it(`does not affect original module`, async () => {
+      const m = module('example').define('someValue', value(1));
+      const decorated = m.decorate('someValue', val => val + 1);
+
+      expect(container().get(m, 'someValue')).toEqual(1);
+      expect(container().get(decorated, 'someValue')).toEqual(2);
+    });
+
+    it(`allows for multiple decorations`, async () => {
+      const m = module('example')
+        .define('someValue', value(1))
+        .decorate('someValue', val => val + 1)
+        .decorate('someValue', val => val * 3);
+
+      const c = container();
+      expect(c.get(m, 'someValue')).toEqual(6);
+    });
+
+    it(`works allows to using other dependencies`, async () => {
+      const m = module('example')
+        .define('a', value(1))
+        .define('b', value(2))
+        .define('someValue', value(10))
+        .decorate('someValue', (val, { a, b }) => val + a + b);
+
+      const c = container();
+      expect(c.get(m, 'someValue')).toEqual(13);
+    });
+
+    it(`works allows to using other dependencies`, async () => {
+      const m = module('example')
+        .define('a', value(1))
+        .define('b', value(2))
+        .define(
+          'someValue',
+          literal(({ a, b }) => a + b),
+        )
+        .decorate('someValue', (val, { b }) => val * b);
+
+      const c = container();
+      expect(c.get(m, 'someValue')).toEqual(6);
+    });
+
+    describe(`scopes`, () => {
+      it(`preserves singleton scope of the original resolver`, async () => {
+        const m = module('example')
+          .define(
+            'a',
+            literal(() => Math.random(), Scope.singleton),
+          )
+
+          .decorate('a', a => a);
+
+        const c = container();
+        expect(c.get(m, 'a')).toEqual(c.get(m, 'a'));
+      });
+
+      it(`preserves transient scope of the original resolver`, async () => {
+        const m = module('example')
+          .define(
+            'a',
+            literal(() => Math.random(), Scope.transient),
+          )
+
+          .decorate('a', a => a);
+
+        const c = container();
+        expect(c.get(m, 'a')).not.toEqual(c.get(m, 'a'));
+      });
+
+      it(`preserves request scope of the original resolver`, async () => {
+        const m = module('example')
+          .define(
+            'source',
+            literal(() => Math.random(), Scope.request),
+          )
+          .define(
+            'a',
+            literal(({ source }) => source, Scope.request),
+          )
+
+          .decorate('a', a => a);
+
+        const c = container();
+        const req1 = c.asObject(m);
+        const req2 = c.asObject(m);
+
+        expect(req1.source).toEqual(req1.a);
+        expect(req2.source).toEqual(req2.a);
+        expect(req1.source).not.toEqual(req2.source);
+        expect(req1.a).not.toEqual(req2.a);
+      });
+    });
+
+    describe(`overrides`, () => {
+      it(`acts like replace in terms of module identity`, async () => {
+        const m = module('example').define('a', value(1));
+
+        const c = container({ overrides: [m.decorate('a', a => a + 1)] });
+
+        expect(c.get(m, 'a')).toEqual(2);
+      });
     });
   });
 });

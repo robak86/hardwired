@@ -1,21 +1,15 @@
 import * as React from 'react';
-import { FunctionComponent, ReactElement, useMemo } from 'react';
-import { Container } from 'hardwired';
-import { ContainerContext } from './ContainerContext';
-import { BoundProvider, ProviderResolver } from '../resolvers/ProviderResolver';
+import { FunctionComponent, useRef } from 'react';
+import { Container, container as buildContainer } from 'hardwired';
+import { ContainerContext } from '../context/ContainerContext';
 
 export type ContainerProviderProps = {
-  container: Container<any>;
+  container?: Container;
 };
 
 export const ContainerProvider: FunctionComponent<ContainerProviderProps> = ({ children, container }) => {
-  const containerInstance = useMemo(() => container, []);
-  const providers: any[] = containerInstance.__getByType_experimental(ProviderResolver);
-
-  const Providers: any = providers.reduce((element: ReactElement<any>, current: BoundProvider<any>) => {
-    return React.createElement(current.component, current.props, element);
-  }, <>{children}</>);
+  const containerInstance = useRef(container || buildContainer());
 
   // eslint-disable-next-line react/no-children-prop
-  return <ContainerContext.Provider value={{ container: containerInstance }} children={Providers} />;
+  return <ContainerContext.Provider value={{ container: containerInstance.current }} children={children} />;
 };
