@@ -5,6 +5,8 @@ import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord, PropTypesTuple } from '../resolvers/abstract/Module';
 import { Instance } from '../resolvers/abstract/Instance';
 import { LiteralResolverDefinition } from '../resolvers/LiteralResolver';
+import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
+import { singleton } from '../strategies/SingletonStrategy';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
@@ -34,6 +36,20 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
         resolverThunk: resolver,
+        dependencies: [],
+      }) as any,
+    );
+  }
+
+  literal<TKey extends string, TValue>(
+    name: TKey,
+    buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
+    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue> = singleton,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>> {
+    return new ModuleBuilder(
+      ModuleId.next(this.moduleId),
+      this.registry.extend(name, {
+        resolverThunk: buildStrategy(buildFn),
         dependencies: [],
       }) as any,
     );
@@ -75,6 +91,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   }
 
   freeze(): Module<TRecord> {
-    return new Module(this.moduleId, this.registry) as Module<TRecord>
+    return new Module(this.moduleId, this.registry) as Module<TRecord>;
   }
 }
