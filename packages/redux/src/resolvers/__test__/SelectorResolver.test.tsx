@@ -1,7 +1,8 @@
-import { container, module, value } from 'hardwired';
+import { container, value } from 'hardwired';
 import { ContainerProvider, useDefinition } from 'hardwired-react';
 import React, { FunctionComponent } from 'react';
-import { AppState, dispatch, reduxModule, selector, useSelector } from '../../__test__/TestStoreFactory';
+import { incCounter, reduxModule, selectorsModule, useSelector } from '../../__test__/TestStoreFactory';
+import * as rtl from '@testing-library/react';
 import { render } from '@testing-library/react';
 
 export type DummyComponentProps = {
@@ -19,20 +20,11 @@ export const DummyComponent: FunctionComponent<DummyComponentProps> = ({ value, 
   );
 };
 
-const selectStateValue = (state: AppState) => state.value;
-const toUpperCase = (s: string) => s.toUpperCase();
-const updateAction = (newValue: string) => ({ type: 'update', newValue });
-
-const selectorsModule = module('selectors')
-  .define('updateValue', dispatch(updateAction))
-  .define('someSelector', selector(selectStateValue))
-  .define('compositeSelector', selector(toUpperCase), ['someSelector']);
-
 describe(`SelectorResolver`, () => {
   describe(`flat module`, () => {
     function setup() {
       const Container = () => {
-        const value = useSelector(selectorsModule, 'someSelector');
+        const value = useSelector(selectorsModule, 'selectStateValue');
         const onUpdate = useDefinition(selectorsModule, 'updateValue');
         return <DummyComponent value={value} onUpdateClick={onUpdate} />;
       };
@@ -102,7 +94,7 @@ describe(`SelectorResolver`, () => {
     it(`allows for mocking a selector`, async () => {
       const { Component } = setup(
         selectorsModule.replace(
-          'someSelector',
+          'selectStateValue',
           value(() => 'mockedValue'),
         ),
       );
@@ -125,17 +117,6 @@ describe(`SelectorResolver`, () => {
   });
 
   describe(`composite selector using other composite selector`, () => {
-    const selectorsModule = module('selectors')
-      .define('someSelector', selector(selectStateValue))
-      .define('compositeSelector', selector(toUpperCase), ['someSelector'])
-      .define('updateValue', dispatch(updateAction))
-
-      .define(
-        'uberCompositeSelector',
-        selector((arg1, arg2) => arg1 + '_' + arg2),
-        ['someSelector', 'compositeSelector'],
-      );
-
     function setup(...overrides) {
       const Container = () => {
         const value = useSelector(selectorsModule, 'uberCompositeSelector');
@@ -155,7 +136,7 @@ describe(`SelectorResolver`, () => {
 
       return {
         Component,
-        selectorsModule,
+        selectorsModule: selectorsModule,
         container: c,
       };
     }
@@ -178,7 +159,7 @@ describe(`SelectorResolver`, () => {
     it(`allows to easily mock selector`, async () => {
       const { Component } = setup(
         selectorsModule.replace(
-          'someSelector',
+          'selectStateValue',
           value(() => 'mockedValue'),
         ),
       );
@@ -196,6 +177,34 @@ describe(`SelectorResolver`, () => {
       );
       const result = render(<Component />);
       expect(result.getByTestId('value').textContent).toEqual('mockedValue');
+    });
+  });
+
+  describe(`useSelector`, () => {
+    it('notices store updates between render and store subscription effect', () => {
+      const renderedItems: number[] = [];
+
+      const c = container();
+      const { store } = c.asObject(reduxModule);
+
+      const Comp = () => {
+        const count = useSelector(selectorsModule, 'selectStateCount');
+        renderedItems.push(count);
+
+        if (count === 0) {
+          store.dispatch(incCounter());
+        }
+
+        return <div>{count}</div>;
+      };
+
+      rtl.render(
+        <ContainerProvider container={c}>
+          <Comp />
+        </ContainerProvider>,
+      );
+
+      expect(renderedItems).toEqual([0, 1]);
     });
   });
 });

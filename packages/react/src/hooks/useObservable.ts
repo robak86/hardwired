@@ -2,7 +2,7 @@ import { Module, ModuleBuilder } from 'hardwired';
 import { useContainer } from '../context/ContainerContext';
 import { useEffect, useRef } from 'react';
 import { IObservable, isObservable, Unsubscribe } from '../abstract/IObservable';
-import { useForceUpdate } from './helpers/useForceUpdate';
+import { useForceRender } from './helpers/useForceRender';
 import { identity } from '../utils/fp';
 import invariant from 'tiny-invariant';
 
@@ -23,7 +23,7 @@ export type UseObservableHook = {
 
 export const useObservable: UseObservableHook = (module, key, select = identity) => {
   const container = useContainer();
-  const forceUpdate = useForceUpdate();
+  const forceUpdate = useForceRender();
   const instanceRef = useRef(container.get(module, key));
   const subscriptionRef = useRef<null | Unsubscribe>(null);
   const selectedValueRef = useRef<any>(null);

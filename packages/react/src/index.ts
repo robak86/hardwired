@@ -8,4 +8,4 @@ export * from './context/ContainerContext';
 export { provider } from './resolvers/ProviderResolver';
 
 export * from './abstract/IObservable';
-export { useForceUpdate } from './hooks/helpers/useForceUpdate';
+export { useForceRender } from './hooks/helpers/useForceRender';

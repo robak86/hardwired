@@ -2,7 +2,7 @@ import { SelectorResolver } from './resolvers/SelectorResolver';
 import { Instance, Module, ModuleBuilder } from 'hardwired';
 import { Store } from 'redux';
 import { bindDispatchBuilder, DispatchResolverBuilder } from './resolvers/DispatchResolver';
-import { bindUseSelector } from './hooks/bindUseSelector';
+import { bindUseSelector } from './hooks/useSelector';
 
 type SelectorResolverBuilder<TState> = {
   <TReturn>(select: (state: TState) => TReturn): Instance<(state: TState) => TReturn, []>;
@@ -25,7 +25,7 @@ type UseSelectorHook<TState> = {
     ? TReturn
     : `Definition named ${TDefinitionName} does not return selector`;
 
-  <TState, TReturn>(selector: (state: TState) => TReturn): TReturn;
+  // <TState, TReturn>(selector: (state: TState) => TReturn): TReturn;
 };
 
 type BoundHardwiredRedux<TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>> = {

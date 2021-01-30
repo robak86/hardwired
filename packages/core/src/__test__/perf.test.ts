@@ -3,7 +3,7 @@ import { Container, container } from '../container/Container';
 import { ModuleBuilder, unit } from '../module/ModuleBuilder';
 import { value } from '../resolvers/ValueResolver';
 
-describe(`performance`, () => {
+describe.skip(`performance`, () => {
   function registerN(times: number) {
     const result = {
       container: container(),
