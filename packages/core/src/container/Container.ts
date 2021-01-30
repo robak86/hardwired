@@ -1,5 +1,4 @@
 import { ContainerContext } from './ContainerContext';
-import { ModuleBuilder } from '../module/ModuleBuilder';
 import { Module } from '../resolvers/abstract/Module';
 
 export class Container {
@@ -12,7 +11,7 @@ export class Container {
     eager.forEach(m => this.containerContext.eagerLoad(m));
   }
 
-  get<TLazyModule extends ModuleBuilder<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
+  get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
@@ -45,10 +44,10 @@ export function container({
   context = ContainerContext.empty(),
   overrides = [],
   eager = [], // TODO: eager means that modules are eagerly added to context (in order to enable reflection), but no instances are created. This may be confusing.
-              //       on the other hand how to create instances of definitions ? should we only create singletons ? what
-              //       about transient, request scopes. This would be pointless.
-              //       Probably we should not allow any reflection
-}: ContainerOptions = {}): Container {
+}: //       on the other hand how to create instances of definitions ? should we only create singletons ? what
+//       about transient, request scopes. This would be pointless.
+//       Probably we should not allow any reflection
+ContainerOptions = {}): Container {
   const container = new Container(context, overrides, eager);
   return container as any;
 }

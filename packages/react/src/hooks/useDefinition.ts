@@ -1,9 +1,9 @@
-import { Module, ModuleBuilder } from 'hardwired';
+import { Module } from 'hardwired';
 import { useContainer } from '../context/ContainerContext';
 import { useRef } from 'react';
 
 export type UseDefinitionHook = {
-  <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
+  <TModule extends Module<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
     module: TModule,
     name: TDefinitionName & string,
   ): Module.Materialized<TModule>[TDefinitionName];
