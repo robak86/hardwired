@@ -2,13 +2,14 @@ import now from 'performance-now';
 import { Container, container } from '../container/Container';
 import { ModuleBuilder, unit } from '../module/ModuleBuilder';
 import { value } from '../resolvers/ValueResolver';
+import { Module } from '../resolvers/abstract/Module';
 
 describe.skip(`performance`, () => {
   function registerN(times: number) {
     const result = {
       container: container(),
       register: -1,
-      module: unit(),
+      module: unit() as any,
     };
 
     for (let i = 0; i < times; i++) {
@@ -17,11 +18,12 @@ describe.skip(`performance`, () => {
       const end = now();
       result.register = end - start;
     }
+    result.module = result.module.freeze();
 
     return result;
   }
 
-  function resolveN(container: Container, module: ModuleBuilder<any>, times: number) {
+  function resolveN(container: Container, module: Module<any>, times: number) {
     const result = {
       avg: -1,
       max: -1,

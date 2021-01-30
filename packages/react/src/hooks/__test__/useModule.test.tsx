@@ -7,7 +7,7 @@ import { useModule } from '../useModule';
 
 describe(`useModule`, () => {
   describe(`instantiating dependencies`, () => {
-    const m1 = module().define('val1', value('val1')).define('val2', value('val2'));
+    const m1 = module().define('val1', value('val1')).define('val2', value('val2')).freeze();
 
     function setup() {
       const Consumer = () => {
@@ -37,7 +37,7 @@ describe(`useModule`, () => {
       constructor() {}
     }
 
-    const m1 = module().define('cls', request(TestClass));
+    const m1 = module().define('cls', request(TestClass)).freeze();
 
     function setup() {
       const Consumer = () => {

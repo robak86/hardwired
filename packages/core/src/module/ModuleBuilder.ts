@@ -5,14 +5,22 @@ import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord, PropTypesTuple } from '../resolvers/abstract/Module';
 import { Instance } from '../resolvers/abstract/Instance';
 import { LiteralResolverDefinition } from '../resolvers/LiteralResolver';
-import { DecoratorResolver } from '../resolvers/DecoratorResolver';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
 
-export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends Module<TRecord> {
+export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   static empty(): ModuleBuilder<{}> {
     return new ModuleBuilder<{}>(ModuleId.build(), ImmutableMap.empty() as any);
+  }
+
+  protected constructor(
+    public moduleId: ModuleId,
+    public registry: ImmutableMap<Record<string, Module.BoundResolver>>,
+  ) {}
+
+  isEqual(otherModule: Module<any>): boolean {
+    return this.moduleId.id === otherModule.moduleId.id;
   }
 
   import<TKey extends string, TValue extends Module<any>>(
@@ -66,51 +74,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends 
     ) as any;
   }
 
-  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
-    name: TKey,
-    resolver: Instance<TValue, []>,
-  ): ModuleBuilder<TRecord>;
-  replace<
-    TKey extends ModuleRecord.InstancesKeys<TRecord>,
-    TValue extends Instance.Unbox<TRecord[TKey]>,
-    TDepKey extends Module.Paths<TRecord>,
-    TDepsKeys extends [TDepKey, ...TDepKey[]]
-  >(
-    name: TKey,
-    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>,
-    dependencies: TDepsKeys,
-  ): ModuleBuilder<TRecord>;
-  replace<
-    TKey extends ModuleRecord.InstancesKeys<TRecord>,
-    TValue extends Instance.Unbox<TRecord[TKey]>,
-    TDepKey extends Module.Paths<TRecord>,
-    TDepsKeys extends [TDepKey, ...TDepKey[]]
-  >(name: TKey, resolver: Instance<any, any>, dependencies?: TDepsKeys): ModuleBuilder<TRecord> {
-    invariant(this.registry.hasKey(name), `Cannot replace definition. Definition: ${name} does not exist.`);
-
-    return new ModuleBuilder(
-      this.moduleId,
-      this.registry.replace(name, {
-        resolverThunk: resolver,
-        dependencies: dependencies || [],
-      }),
-    );
-  }
-
-  decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
-    name: TKey,
-    decorateFn: (originalValue: TValue, moduleAsObject: ModuleRecord.Materialized<TRecord>) => TValue,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>> {
-    invariant(this.registry.hasKey(name), `Cannot decorate definition. Definition: ${name} does not exist.`);
-
-    const { resolverThunk, dependencies } = this.registry.get(name);
-
-    const decorated = {
-      resolverThunk: new DecoratorResolver(resolverThunk as any, decorateFn),
-      dependencies,
-    };
-
-    const replaced = this.registry.replace(name, decorated);
-    return new ModuleBuilder(this.moduleId, replaced);
+  freeze(): Module<TRecord> {
+    return new Module(this.moduleId, this.registry) as Module<TRecord>
   }
 }

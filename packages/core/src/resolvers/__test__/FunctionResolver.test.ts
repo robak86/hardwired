@@ -51,7 +51,7 @@ describe(`FunctionResolver`, () => {
         const { module } = setup();
         const someFunction = (a: number) => Math.random();
 
-        const set = module.define('fn', func(someFunction, 0));
+        const set = module.define('fn', func(someFunction, 0)).freeze();
 
         const c = container();
 
@@ -67,7 +67,7 @@ describe(`FunctionResolver`, () => {
         const { module, singletonFactorySpy } = setup();
         const someFunction = (a: number) => a;
 
-        const set = module.define('fn', func(someFunction, 1), ['singleton']);
+        const set = module.define('fn', func(someFunction, 1), ['singleton']).freeze();
         const c = container();
 
         const fnBuild1 = c.get(set, 'fn');
@@ -86,7 +86,7 @@ describe(`FunctionResolver`, () => {
         const { module, transientFactorySpy } = setup();
         const someFunction = (a: number) => a;
 
-        const set = module.define('fn', func(someFunction, 1), ['transient']);
+        const set = module.define('fn', func(someFunction, 1), ['transient']).freeze();
 
         const c = container();
 
@@ -104,7 +104,7 @@ describe(`FunctionResolver`, () => {
         const { module, singletonFactorySpy, transientFactorySpy } = setup();
         const someFunction = (a: number, b: number) => [a, b];
 
-        const set = module.define('fn', func(someFunction, 2), ['transient', 'singleton']);
+        const set = module.define('fn', func(someFunction, 2), ['transient', 'singleton']).freeze();
         const c = container();
 
         const fnBuild1 = c.get(set, 'fn');
@@ -121,10 +121,11 @@ describe(`FunctionResolver`, () => {
         it(`it works with partially applied args`, async () => {
           const partiallyApplied = (arg1: string, arg2: string) => `${arg1} -> ${arg2}`;
 
-          const m1 = unit().define('arg', value('original'));
+          const m1 = unit().define('arg', value('original')).freeze();
           const m2 = unit()
             .import('m1', m1)
-            .define('fn', func(partiallyApplied as (arg1: string, arg2: string) => string, 1), ['m1.arg']);
+            .define('fn', func(partiallyApplied as (arg1: string, arg2: string) => string, 1), ['m1.arg'])
+            .freeze();
 
           const containerWithoutOverrides = container();
           const originalResult = containerWithoutOverrides.get(m2, 'fn')('suffix');
@@ -144,7 +145,8 @@ describe(`FunctionResolver`, () => {
           const m1 = unit()
             .define('val', value('original'))
             .define('suffix', value('suffix'))
-            .define('arg', func(partiallyApplied, 2), ['val', 'suffix']);
+            .define('arg', func(partiallyApplied, 2), ['val', 'suffix'])
+            .freeze();
 
           class PartialFactory implements Factory<string> {
             constructor(private original: () => string) {}
@@ -156,7 +158,8 @@ describe(`FunctionResolver`, () => {
 
           const m2 = unit() //breakme
             .import('m1', m1)
-            .define('fn', factory(PartialFactory), ['m1.arg']);
+            .define('fn', factory(PartialFactory), ['m1.arg'])
+            .freeze();
 
           const containerWithoutOverrides = container();
           const originalResult = containerWithoutOverrides.get(m2, 'fn');

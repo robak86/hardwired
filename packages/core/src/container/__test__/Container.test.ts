@@ -9,7 +9,7 @@ import { ContainerContext } from '../ContainerContext';
 describe(`Container`, () => {
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
-      const child2 = module().define('c', dependency('cValue')).define('d', dependency('dValue'));
+      const child2 = module().define('c', dependency('cValue')).define('d', dependency('dValue')).freeze();
       const c = container();
 
       const cValue = c.get(child2, 'c');
@@ -18,7 +18,8 @@ describe(`Container`, () => {
 
     it(`lazily appends new module if module cannot be found`, async () => {
       const notRegistered = module() // breakme
-        .define('a', dependency(1));
+        .define('a', dependency(1))
+        .freeze();
 
       const c = container();
 
@@ -29,13 +30,13 @@ describe(`Container`, () => {
   describe(`.replace`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
-        const m = module().define('a', value(1));
+        const m = module().define('a', value(1)).freeze();
         const updated = m.replace('a', value(2));
         expect(container().get(updated, 'a')).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
-        const m = module().define('a', value(1)).define('b', value('b'));
+        const m = module().define('a', value(1)).define('b', value('b')).freeze();
         const updated = m.replace('a', value(2));
         expect(container().get(updated, 'b')).toEqual('b');
       });
@@ -45,7 +46,8 @@ describe(`Container`, () => {
           .define('a', value('a'))
           .define('aa', value('replaced'))
           .define('b', singleton(ArgsDebug), ['a'])
-          .define('c', singleton(ArgsDebug), ['b']);
+          .define('c', singleton(ArgsDebug), ['b'])
+          .freeze();
 
         // @ts-expect-error - one can replace definition only with the same type - string is not compatible with ArgsDebug Class
         const updated = m.replace('b', value('bReplaced'));
@@ -57,7 +59,8 @@ describe(`Container`, () => {
         const m = module()
           .define('a', value('a'))
           .define('b', singleton(ArgsDebug), ['a'])
-          .define('c', singleton(ArgsDebug), ['b']);
+          .define('c', singleton(ArgsDebug), ['b'])
+          .freeze();
 
         expect(container().get(m, 'b').args).toEqual(['a']);
 
@@ -76,18 +79,16 @@ describe(`Container`, () => {
       const c = container();
 
       const parentChildValue = dependency('parentChild');
-      const parentChild = module().define('value', parentChildValue);
+      const parentChild = module().define('value', parentChildValue).freeze();
 
       const parentSiblingChildValue = dependency('parentSiblingChild');
-      const parentSiblingChild = module().define('value', parentSiblingChildValue);
+      const parentSiblingChild = module().define('value', parentSiblingChildValue).freeze();
 
       const parentValue = dependency('parent');
-      const parent = module().import('child', parentChild).define('value', parentValue);
+      const parent = module().import('child', parentChild).define('value', parentValue).freeze();
 
       const parentSiblingValue = dependency('parentSibling');
-      const parentSibling = module()
-        .import('child', parentSiblingChild)
-        .define('value', parentSiblingValue);
+      const parentSibling = module().import('child', parentSiblingChild).define('value', parentSiblingValue).freeze();
 
       return {
         c,
@@ -120,7 +121,8 @@ describe(`Container`, () => {
       const m = module()
         .define('someNumber', numberResolver)
         .define('someString', stringResolver)
-        .define('cls', singletonResolver, ['someNumber', 'someString']);
+        .define('cls', singletonResolver, ['someNumber', 'someString'])
+        .freeze();
 
       const containerContext = ContainerContext.empty();
 
@@ -191,11 +193,13 @@ describe(`Container`, () => {
 
       const m = module() //breakme
         .define('a', childDef1)
-        .define('b', childDef2);
+        .define('b', childDef2)
+        .freeze();
 
       const p = module() //breakme
         .import('child', m)
-        .define('c', parentDef);
+        .define('c', parentDef)
+        .freeze();
 
       jest.spyOn(childDef1, 'onInit');
       jest.spyOn(childDef2, 'onInit');
@@ -215,11 +219,13 @@ describe(`Container`, () => {
 
       const m = module() //breakme
         .define('a', childDef1)
-        .define('b', childDef2);
+        .define('b', childDef2)
+        .freeze();
 
       const p = module() //breakme
         .import('child', m)
-        .define('c', parentDef);
+        .define('c', parentDef)
+        .freeze();
 
       jest.spyOn(childDef1, 'onInit');
       jest.spyOn(childDef2, 'onInit');
@@ -239,11 +245,13 @@ describe(`Container`, () => {
 
       const m = module() //breakme
         .define('a', childDef1)
-        .define('b', childDef2);
+        .define('b', childDef2)
+        .freeze();
 
       const p = module() //breakme
         .import('child', m)
-        .define('c', parentDef);
+        .define('c', parentDef)
+        .freeze();
 
       jest.spyOn(childDef1, 'onInit');
       jest.spyOn(childDef2, 'onInit');
@@ -263,7 +271,9 @@ describe(`Container`, () => {
       const m = module()
         .define('value', value(123))
         .define('dependency1', dependency(456))
-        .define('dependency2', dependency(789));
+        .define('dependency2', dependency(789))
+        .freeze();
+
       const c = container({ eager: [m] });
 
       const instances = c.getContext().__getByType_experimental(DummyResolver);
@@ -274,9 +284,10 @@ describe(`Container`, () => {
       const m = module()
         .import('imported', () => child)
         .define('value', value(123))
-        .define('dependency1', dependency(456));
+        .define('dependency1', dependency(456))
+        .freeze();
 
-      const child = module().define('dependency2', dependency(789));
+      const child = module().define('dependency2', dependency(789)).freeze();
 
       const c = container({ eager: [m] });
 

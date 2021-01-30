@@ -29,7 +29,8 @@ describe(`ClassSingletonResolver`, () => {
   describe(`single module`, () => {
     const m = unit()
       .define('someValue', dependency('someString'))
-      .define('a', singleton(TestClass), ['someValue']);
+      .define('a', singleton(TestClass), ['someValue'])
+      .freeze();
 
     it(`returns class instance`, async () => {
       const c = container();
@@ -56,19 +57,23 @@ describe(`ClassSingletonResolver`, () => {
       .import('child2', () => child2)
 
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
+      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton'])
+      .freeze();
 
     const child1 = unit()
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
+      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton'])
+      .freeze();
 
     const child2 = unit()
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
+      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton'])
+      .freeze();
 
     const singletonModule = unit()
       .define('value', value('someValue'))
-      .define('theSingleton', singleton(TestClass), ['value']);
+      .define('theSingleton', singleton(TestClass), ['value'])
+      .freeze();
 
     it(`reuses the same instance`, async () => {
       const c = container();
@@ -96,7 +101,8 @@ describe(`ClassSingletonResolver`, () => {
     it(`does not shares instances across multiple containers`, async () => {
       const m = unit()
         .define('someValue', dependency('someString'))
-        .define('a', singleton(TestClass), ['someValue']);
+        .define('a', singleton(TestClass), ['someValue'])
+        .freeze();
 
       const c1 = container();
       const instanceFromC1 = c1.get(m, 'a');

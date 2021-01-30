@@ -27,7 +27,8 @@ describe(`ModuleBuilder`, () => {
         .define(
           'key4',
           dummy(() => 'someString'),
-        );
+        )
+        .freeze();
 
       type ExpectedType = {
         key1: number;
@@ -62,7 +63,8 @@ describe(`ModuleBuilder`, () => {
     it(`providing deps from imported modules`, async () => {
       const child = ModuleBuilder.empty()
         .define('someNumber', value(123))
-        .define('someString', value('content'));
+        .define('someString', value('content'))
+        .freeze();
 
       const m2 = ModuleBuilder.empty().import('imported', () => child);
 
@@ -82,8 +84,8 @@ describe(`ModuleBuilder`, () => {
     });
 
     it(`creates correct types for imports`, async () => {
-      const m1 = ModuleBuilder.empty().define('key1', dummy(123));
-      const m2 = ModuleBuilder.empty().import('imported', m1).define('key1', dummy(123));
+      const m1 = ModuleBuilder.empty().define('key1', dummy(123)).freeze();
+      const m2 = ModuleBuilder.empty().import('imported', m1).define('key1', dummy(123)).freeze();
 
       type ExpectedType = {
         key1: number;
@@ -95,12 +97,13 @@ describe(`ModuleBuilder`, () => {
     });
 
     it(`creates correct types for replace`, async () => {
-      const m1 = ModuleBuilder.empty().define('key1', dummy(123));
+      const m1 = ModuleBuilder.empty().define('key1', dummy(123)).freeze();
 
       const m2 = ModuleBuilder.empty()
         .import('imported', m1)
         .define('key2', dummy('string'))
-        .define('key1', dummy(123));
+        .define('key1', dummy(123))
+        .freeze();
 
       const replaced = m2.replace('key1', dummy(123));
 
@@ -121,11 +124,12 @@ describe(`ModuleBuilder`, () => {
 
   describe(`override`, () => {
     it(`replaces child module`, async () => {
-      const child1 = ModuleBuilder.empty().define('key1', dummy(123)).define('key2', dummy('someString'));
+      const child1 = ModuleBuilder.empty().define('key1', dummy(123)).define('key2', dummy('someString')).freeze();
 
       const root = ModuleBuilder.empty()
         .import('imported', child1)
-        .define('cls', singleton(TestClassArgs2), ['imported.key1', 'imported.key2']);
+        .define('cls', singleton(TestClassArgs2), ['imported.key1', 'imported.key2'])
+        .freeze();
 
       const c = container({
         overrides: [child1.replace('key2', dummy('replacedString'))],
@@ -139,9 +143,10 @@ describe(`ModuleBuilder`, () => {
       const root = ModuleBuilder.empty()
         .import('import1', () => child1)
         .import('import2', () => child1)
-        .define('cls', singleton(TestClassArgs2), ['import1.key1', 'import2.key2']);
+        .define('cls', singleton(TestClassArgs2), ['import1.key1', 'import2.key2'])
+        .freeze();
 
-      const child1 = ModuleBuilder.empty().define('key1', dummy(123)).define('key2', dummy('someString'));
+      const child1 = ModuleBuilder.empty().define('key1', dummy(123)).define('key2', dummy('someString')).freeze();
 
       const c = container({
         overrides: [
@@ -159,19 +164,19 @@ describe(`ModuleBuilder`, () => {
 
   describe(`isEqual`, () => {
     it(`returns false for two newly created empty modules`, async () => {
-      const m1 = module();
-      const m2 = module();
+      const m1 = module().freeze();
+      const m2 = module().freeze();
       expect(m1.isEqual(m2)).toEqual(false);
     });
 
     it(`returns false for module extended with a new definition`, async () => {
       const m1 = module().define('a', value('string'));
-      const m2 = m1.define('b', value('someOtherString'));
+      const m2 = m1.define('b', value('someOtherString')).freeze();
       expect(m1.isEqual(m2)).toEqual(false);
     });
 
     it(`returns true for module with replaced value`, async () => {
-      const m1 = module().define('a', value('string'));
+      const m1 = module().define('a', value('string')).freeze();
       const m2 = m1.replace('a', value('someOtherString'));
       expect(m1.isEqual(m2)).toEqual(true);
     });
@@ -191,7 +196,7 @@ describe(`ModuleBuilder`, () => {
       });
 
       it(`requires that new definition extends the original`, async () => {
-        const emptyModule = module().define('someString', value('string'));
+        const emptyModule = module().define('someString', value('string')).freeze();
 
         // @ts-expect-error - value(1) is not compatible with string
         emptyModule.replace('someString', () => value(1));
@@ -203,6 +208,7 @@ describe(`ModuleBuilder`, () => {
     it(`decorates original value`, async () => {
       const m = module()
         .define('someValue', value(1))
+        .freeze()
         .decorate('someValue', val => val + 1);
 
       const c = container();
@@ -210,7 +216,7 @@ describe(`ModuleBuilder`, () => {
     });
 
     it(`does not affect original module`, async () => {
-      const m = module().define('someValue', value(1));
+      const m = module().define('someValue', value(1)).freeze();
       const decorated = m.decorate('someValue', val => val + 1);
 
       expect(container().get(m, 'someValue')).toEqual(1);
@@ -220,6 +226,7 @@ describe(`ModuleBuilder`, () => {
     it(`allows for multiple decorations`, async () => {
       const m = module()
         .define('someValue', value(1))
+        .freeze()
         .decorate('someValue', val => val + 1)
         .decorate('someValue', val => val * 3);
 
@@ -232,6 +239,7 @@ describe(`ModuleBuilder`, () => {
         .define('a', value(1))
         .define('b', value(2))
         .define('someValue', value(10))
+        .freeze()
         .decorate('someValue', (val, { a, b }) => val + a + b);
 
       const c = container();
@@ -246,6 +254,7 @@ describe(`ModuleBuilder`, () => {
           'someValue',
           literal(({ a, b }) => a + b),
         )
+        .freeze()
         .decorate('someValue', (val, { b }) => val * b);
 
       const c = container();
@@ -259,6 +268,7 @@ describe(`ModuleBuilder`, () => {
             'a',
             literal(() => Math.random(), Scope.singleton),
           )
+          .freeze()
 
           .decorate('a', a => a);
 
@@ -272,7 +282,7 @@ describe(`ModuleBuilder`, () => {
             'a',
             literal(() => Math.random(), Scope.transient),
           )
-
+          .freeze()
           .decorate('a', a => a);
 
         const c = container();
@@ -289,6 +299,7 @@ describe(`ModuleBuilder`, () => {
             'a',
             literal(({ source }) => source, Scope.request),
           )
+          .freeze()
 
           .decorate('a', a => a);
 
@@ -305,7 +316,7 @@ describe(`ModuleBuilder`, () => {
 
     describe(`overrides`, () => {
       it(`acts like replace in terms of module identity`, async () => {
-        const m = module().define('a', value(1));
+        const m = module().define('a', value(1)).freeze();
 
         const c = container({ overrides: [m.decorate('a', a => a + 1)] });
 

@@ -14,7 +14,7 @@ describe(`LiteralResolver`, () => {
         .define(
           'val2',
           literal(() => true),
-        );
+        ).freeze()
 
       type Actual = Module.Materialized<typeof m>['val2'];
 
@@ -38,7 +38,7 @@ describe(`LiteralResolver`, () => {
       const m = unit().define(
         'literal',
         literal(() => 'someValue'),
-      );
+      ).freeze();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('someValue');
     });
@@ -51,7 +51,8 @@ describe(`LiteralResolver`, () => {
         .define(
           'literal',
           literal(({ literalDependency }) => literalDependency),
-        );
+        )
+        .freeze();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('dependency');
     });
@@ -59,17 +60,20 @@ describe(`LiteralResolver`, () => {
 
   describe(`getting dependencies from imported module`, () => {
     it(`returns correct instance`, async () => {
-      const childM = unit().define(
-        'someValue',
-        literal(() => 1),
-      );
+      const childM = unit()
+        .define(
+          'someValue',
+          literal(() => 1),
+        )
+        .freeze();
 
       const parentM = unit()
         .import('imported', childM)
         .define(
           'usesImportedValue',
           literal(({ imported }) => imported.someValue),
-        );
+        )
+        .freeze();
 
       const c = container();
       expect(c.get(parentM, 'usesImportedValue')).toEqual(1);
@@ -78,17 +82,20 @@ describe(`LiteralResolver`, () => {
 
   describe(`overrides`, () => {
     it(`works with overridden imported module`, async () => {
-      const childM = unit().define(
-        'someValue',
-        literal(() => 1),
-      );
+      const childM = unit()
+        .define(
+          'someValue',
+          literal(() => 1),
+        )
+        .freeze();
 
       const parentM = unit()
         .import('imported', childM)
         .define(
           'usesImportedValue',
           literal(({ imported }) => imported.someValue),
-        );
+        )
+        .freeze();
 
       const c = container({ overrides: [childM.replace('someValue', value(123))] });
       expect(c.get(parentM, 'usesImportedValue')).toEqual(123);
@@ -97,10 +104,12 @@ describe(`LiteralResolver`, () => {
 
   describe(`transient scope`, () => {
     it(`returns new instance on each request`, async () => {
-      const mod = unit().define(
-        'someValue',
-        literal(() => ({ someProperty: 1 }), Scope.transient),
-      );
+      const mod = unit()
+        .define(
+          'someValue',
+          literal(() => ({ someProperty: 1 }), Scope.transient),
+        )
+        .freeze();
 
       const c = container();
       expect(c.get(mod, 'someValue')).not.toBe(c.get(mod, 'someValue'));
@@ -109,10 +118,12 @@ describe(`LiteralResolver`, () => {
 
   describe(`singleton scope`, () => {
     it(`returns the same instance`, async () => {
-      const mod = unit().define(
-        'someValue',
-        literal(() => ({ someProperty: 1 }), Scope.singleton),
-      );
+      const mod = unit()
+        .define(
+          'someValue',
+          literal(() => ({ someProperty: 1 }), Scope.singleton),
+        )
+        .freeze();
 
       const c = container();
       expect(c.get(mod, 'someValue')).toBe(c.get(mod, 'someValue'));
@@ -129,15 +140,16 @@ describe(`LiteralResolver`, () => {
         .define(
           'someValueProxy',
           literal(({ someValue }) => someValue, Scope.request),
-        );
+        )
+        .freeze();
 
       const c = container();
       const { someValue, someValueProxy } = c.asObject(mod);
-      expect(someValue === someValueProxy).toEqual(true)
+      expect(someValue === someValueProxy).toEqual(true);
 
       const { someValue: someValueNewRequest, someValueProxy: someValueProxyNewRequest } = c.asObject(mod);
       expect(someValueNewRequest).toBe(someValueProxyNewRequest);
-      expect(someValueNewRequest === someValue).toBe(false)
+      expect(someValueNewRequest === someValue).toBe(false);
     });
   });
 });

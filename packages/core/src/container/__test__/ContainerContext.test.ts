@@ -41,7 +41,7 @@ describe(`ContainerContext`, () => {
   describe(`asObject`, () => {
     describe(`modules own definitions`, () => {
       it(`returns materializes module definitions`, async () => {
-        const m = unit().define('a', dependency(1));
+        const m = unit().define('a', dependency(1)).freeze()
         const context = ContainerContext.empty();
 
         const { a } = context.materializeModule(m, context);
@@ -53,9 +53,9 @@ describe(`ContainerContext`, () => {
 
     describe(`getting nested properties`, () => {
       it(`returns materializes module definitions`, async () => {
-        const grandChildM = unit().define('grandChildValue1', dependency(1));
-        const childM = unit().import('grandChild', grandChildM).define('childVal1', dependency(1));
-        const m = unit().import('child', childM).define('a', dependency(1));
+        const grandChildM = unit().define('grandChildValue1', dependency(1)).freeze();
+        const childM = unit().import('grandChild', grandChildM).define('childVal1', dependency(1)).freeze();
+        const m = unit().import('child', childM).define('a', dependency(1)).freeze();
 
         const context = ContainerContext.empty();
 

@@ -16,7 +16,8 @@ describe(`useObservable`, () => {
       .define(
         'val2',
         literal(() => new DummyObservable('val2')),
-      );
+      )
+      .freeze();
 
     function setup() {
       const Consumer = () => {
@@ -40,10 +41,12 @@ describe(`useObservable`, () => {
   });
 
   describe(`binding transient dependencies to component instance`, () => {
-    const m1 = module().define(
-      'cls',
-      literal(() => new DummyObservable(Math.random())),
-    );
+    const m1 = module()
+      .define(
+        'cls',
+        literal(() => new DummyObservable(Math.random())),
+      )
+      .freeze();
 
     function setup() {
       const Consumer = () => {
@@ -94,10 +97,12 @@ describe(`useObservable`, () => {
       const observable = new DummyObservable(1);
       jest.spyOn(observable, 'subscribe');
 
-      const m = module().define(
-        'observable',
-        literal(() => observable),
-      );
+      const m = module()
+        .define(
+          'observable',
+          literal(() => observable),
+        )
+        .freeze();
 
       const TestSubject = () => {
         const state = useObservable(m, 'observable');
@@ -126,17 +131,19 @@ describe(`useObservable`, () => {
       jest.spyOn(observable, 'subscribe').mockImplementation(subscribeMock);
 
       function subscribeMock(this: DummyObservable<any>, callback) {
-        callback(this)
+        callback(this);
         return cancelFnSpy;
       }
 
-      const m = module().define(
-        'observable',
-        literal(() => observable),
-      );
+      const m = module()
+        .define(
+          'observable',
+          literal(() => observable),
+        )
+        .freeze();
 
       const TestSubject = () => {
-        const {someValue} = useObservable(m, 'observable');
+        const { someValue } = useObservable(m, 'observable');
         return <>{someValue}</>;
       };
 
@@ -161,10 +168,12 @@ describe(`useObservable`, () => {
     it(`re-renders view`, async () => {
       const observable = new DummyObservable(1);
 
-      const m = module().define(
-        'observable',
-        literal(() => observable),
-      );
+      const m = module()
+        .define(
+          'observable',
+          literal(() => observable),
+        )
+        .freeze();
 
       const TestSubject = () => {
         const state = useObservable(m, 'observable', obj => obj.someValue);

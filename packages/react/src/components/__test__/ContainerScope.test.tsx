@@ -9,10 +9,12 @@ describe(`ContainerScope`, () => {
   function setup() {
     let counter = 0;
 
-    const m = module().define(
-      'value',
-      literal(() => (counter += 1), Scope.request),
-    );
+    const m = module()
+      .define(
+        'value',
+        literal(() => (counter += 1), Scope.request),
+      )
+      .freeze();
 
     const ValueRenderer = ({ testId }) => {
       const value = useDefinition(m, 'value');
