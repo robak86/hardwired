@@ -1,7 +1,7 @@
 import { literal, module } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider';
 import React from 'react';
-import { ModuleObject } from '../ModuleObject';
+import { ModuleConsumer } from '../ModuleConsumer';
 import { render } from '@testing-library/react';
 
 describe(`ModuleObject`, () => {
@@ -24,13 +24,13 @@ describe(`ModuleObject`, () => {
 
     const TestSubject = () => (
       <ContainerProvider>
-        <ModuleObject
+        <ModuleConsumer
           module={m1}
           render={({ value }) => {
             return (
               <>
                 <ValueRenderer testId={'topModuleRender'} value={value} />
-                <ModuleObject
+                <ModuleConsumer
                   module={m2}
                   render={({ valueFromM1 }) => {
                     return <ValueRenderer testId={'childModuleRender'} value={valueFromM1} />;

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FunctionComponent, useEffect, useRef } from 'react';
+import { FunctionComponent, useRef } from 'react';
 import { ContainerContext, useContainer } from '../context/ContainerContext';
 
 export const ContainerScope: FunctionComponent = ({ children }) => {
