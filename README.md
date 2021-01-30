@@ -73,12 +73,14 @@ const exampleContainer = container();
 ```typescript
 const loggerInstance = exampleContainer.get(loggerModule, 'logger'); // returns instance of Logger class
 ```
+
 or alternatively using `.asObject` method. All properties of returned object leverage lazy evaluation therefore no
 instance is created until one access directly a property.
+
 ```typescript
-const obj  = exampleContainer.asObject(loggerModule); // no instances were created yet 
-const configuration = obj.configuration;              // instance of LoggerConfiguration was created
-const logger = obj.logger;                            // instance of Logger was created
+const obj = exampleContainer.asObject(loggerModule); // no instances were created yet
+const configuration = obj.configuration; // instance of LoggerConfiguration was created
+const logger = obj.logger; // instance of Logger was created
 ```
 
 ### Registering definitions
@@ -272,7 +274,7 @@ class DbConnection {
 
 const dbModule = module('db')
   .define('config', value(databaseConfig))
-  .define('connection', singleton(DbConnection, ['config']));
+  .define('connection', singleton(DbConnection), ['config']);
 
 class UsersListQuery {
   constructor(private dbConnection: DbConnection) {}
@@ -376,10 +378,10 @@ it('calls write on save', () => {
       }),
     ],
   });
-  
-  const {document, writer} = c.asObject(someModule)
+
+  const { document, writer } = c.asObject(someModule);
   document.save();
-  
+
   expect(writer.write).toHaveBeenCalled();
 });
 ```

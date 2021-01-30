@@ -1,0 +1,1 @@
+export { reduxFor } from './reduxFor';
