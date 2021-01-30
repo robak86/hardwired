@@ -55,7 +55,7 @@ class Logger {
   log(message: string) {}
 }
 
-const loggerModule = module('logger')
+const loggerModule = module()
   .define('configuration', singleton(LoggerConfiguration))
   .define('logger', singleton(Logger), ['configuration']);
 ```
@@ -99,7 +99,7 @@ const logger = obj.logger; // instance of Logger was created
     constructor(private a: number, private b: string) {}
   }
 
-  const m1 = module('example')
+  const m1 = module()
     .define('a', value(123))
     .define('b', value('someString'))
     .define('c', singleton(DummyClass), ['a', 'b']);
@@ -114,7 +114,7 @@ const logger = obj.logger; // instance of Logger was created
 
   class SomeClass {}
 
-  const someModule = module('example').define('transientDependency', transient(SomeClass));
+  const someModule = module().define('transientDependency', transient(SomeClass));
   const ct = container();
 
   ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
@@ -127,7 +127,7 @@ const logger = obj.logger; // instance of Logger was created
 
   class SomeClass {}
 
-  const someModule = module('example').define('someSingleton', singleton(SomeClass));
+  const someModule = module().define('someSingleton', singleton(SomeClass));
   const ct = container();
 
   ct.get(someModule, 'someSingleton') === ct.get(someModule, 'someSingleton'); // true
@@ -146,7 +146,7 @@ const logger = obj.logger; // instance of Logger was created
 
   const someObject = { someProp: 123 };
 
-  const someModule = module('example').define('someValue', value(someObject));
+  const someModule = module().define('someValue', value(someObject));
   const ct = container();
 
   ct.get('someValue') === ct.get(someModule, 'someValue'); // true
@@ -166,7 +166,7 @@ const logger = obj.logger; // instance of Logger was created
     }
   }
 
-  const someModule = module('example').define('createdByFactory', factory(NumberFactory, Scope.singleton));
+  const someModule = module().define('createdByFactory', factory(NumberFactory, Scope.singleton));
   const ct = container();
 
   ct.get(someModule, 'createdByFactory'); // returns 1
@@ -179,7 +179,7 @@ const logger = obj.logger; // instance of Logger was created
     }
   }
 
-  const otherModule = module('example')
+  const otherModule = module()
     .define('createdByFactory', factory(NumberFactory, Scope.singleton))
     .define('spy1', singleton(ArgsSpy), ['createdByFactory'])
     .define('spy2', singleton(ArgsSpy), ['createdByFactory']);
@@ -198,7 +198,7 @@ const logger = obj.logger; // instance of Logger was created
 
   const someFunction = (a: number, b: string, c: boolean): string => 'example';
 
-  const someModule = module('example')
+  const someModule = module()
     .define('arg1', value(1))
     .define('arg2', value('string'))
     .define('arg3', value(false))
@@ -227,7 +227,7 @@ const logger = obj.logger; // instance of Logger was created
     }
   }
 
-  const someModule = module('requestExample')
+  const someModule = module()
     .define('leaf', request(SomeClass))
     .define('child', request(SomeClass), ['leaf'])
     .define('parent', request(SomeClass), ['child', 'leaf']);
@@ -246,7 +246,7 @@ const logger = obj.logger; // instance of Logger was created
   ```typescript
   import { module, request, Scope } from 'hardwired';
 
-  const someModule = module('literalExample')
+  const someModule = module()
     .define('a', value(2))
     .define('b', value(3))
     .define(
@@ -272,7 +272,7 @@ class DbConnection {
   constructor(private config: DatabaseConfig) {}
 }
 
-const dbModule = module('db')
+const dbModule = module()
   .define('config', value(databaseConfig))
   .define('connection', singleton(DbConnection), ['config']);
 
@@ -280,7 +280,7 @@ class UsersListQuery {
   constructor(private dbConnection: DbConnection) {}
 }
 
-const usersModule = module('users')
+const usersModule = module()
   .import('db', dbModule)
   .define('usersQuery', singleton(UsersListQuery, ['db.connection']));
 ```
@@ -291,8 +291,8 @@ Each module at the instantiation receives unique identity. This property is used
 also allows for using modules as a key while creating instances. (`container.get(moduleActingAsKey, 'definitionName')`)
 
 ```typescript
-const m1 = module('example');
-const m2 = module('example');
+const m1 = module();
+const m2 = module();
 
 m1.isEqual(m2); // false - each module at creation received different id
 ```
@@ -300,7 +300,7 @@ m1.isEqual(m2); // false - each module at creation received different id
 Calling `.define` creates a new instance of the module with a different identity.
 
 ```typescript
-const m1 = module('example');
+const m1 = module();
 const m1Extended = m1.define('someVal', value(true));
 
 m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new id
@@ -310,7 +310,7 @@ Module preserves its identity using `.replace`. A new module created this way is
 because `.replace` accepts only a type which is compatible with the original one.
 
 ```typescript
-const m1 = module('example').define('someVal', value(false));
+const m1 = module().define('someVal', value(false));
 const m1WithReplacedValue = m1.replace('someVal', value(true));
 //const m1WithReplacedValue = m1.replace('someVal', value("cannot replace boolean with string")); // compile-time error
 
@@ -330,7 +330,7 @@ class DbConnection {
   constructor(private config: DatabaseConfig) {}
 }
 
-const dbModule = module('db')
+const dbModule = module()
   .define('config', value(databaseConfig))
   .define('connection', singleton(DbConnection, ['config']));
 
@@ -364,7 +364,7 @@ class Document {
   }
 }
 
-const someModule = module('example') // breakme
+const someModule = module() // breakme
   .define('writer', singleton(Writer))
   .define('document', singleton(Document), ['writer']);
 

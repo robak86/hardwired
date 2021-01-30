@@ -8,7 +8,7 @@ import { DummyObservable } from '../../__test__/DummyObservable';
 
 describe(`useObservable`, () => {
   describe(`instantiating dependencies`, () => {
-    const m1 = module('myModule') //breakme
+    const m1 = module() //breakme
       .define(
         'val1',
         literal(() => new DummyObservable('val1')),
@@ -40,7 +40,7 @@ describe(`useObservable`, () => {
   });
 
   describe(`binding transient dependencies to component instance`, () => {
-    const m1 = module('myModule').define(
+    const m1 = module().define(
       'cls',
       literal(() => new DummyObservable(Math.random())),
     );
@@ -94,7 +94,7 @@ describe(`useObservable`, () => {
       const observable = new DummyObservable(1);
       jest.spyOn(observable, 'subscribe');
 
-      const m = module('example').define(
+      const m = module().define(
         'observable',
         literal(() => observable),
       );
@@ -130,7 +130,7 @@ describe(`useObservable`, () => {
         return cancelFnSpy;
       }
 
-      const m = module('example').define(
+      const m = module().define(
         'observable',
         literal(() => observable),
       );
@@ -161,7 +161,7 @@ describe(`useObservable`, () => {
     it(`re-renders view`, async () => {
       const observable = new DummyObservable(1);
 
-      const m = module('example').define(
+      const m = module().define(
         'observable',
         literal(() => observable),
       );

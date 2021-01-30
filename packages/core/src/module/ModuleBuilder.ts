@@ -7,12 +7,12 @@ import { Instance } from '../resolvers/abstract/Instance';
 import { LiteralResolverDefinition } from '../resolvers/LiteralResolver';
 import { DecoratorResolver } from '../resolvers/DecoratorResolver';
 
-export const module = (name: string) => ModuleBuilder.empty(name);
+export const module = () => ModuleBuilder.empty();
 export const unit = module;
 
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> extends Module<TRecord> {
-  static empty(name: string): ModuleBuilder<{}> {
-    return new ModuleBuilder<{}>(ModuleId.build(name), ImmutableMap.empty() as any);
+  static empty(): ModuleBuilder<{}> {
+    return new ModuleBuilder<{}>(ModuleId.build(), ImmutableMap.empty() as any);
   }
 
   import<TKey extends string, TValue extends Module<any>>(

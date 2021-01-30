@@ -8,11 +8,11 @@ import { serviceLocator } from '../../resolvers/ServiceLocatorResolver';
 describe(`ServiceLocator`, () => {
   describe(`overrides`, () => {
     it(`returns instances from overrides modules`, async () => {
-      const child = ModuleBuilder.empty('child')
+      const child = ModuleBuilder.empty()
         .define('someNumber', value(123))
         .define('someString', value('some content'));
 
-      const m = ModuleBuilder.empty('root')
+      const m = ModuleBuilder.empty()
         .import('import', child)
         .define('locator', serviceLocator())
         .define('cls', singleton(TestClassArgs2), ['import.someNumber', 'import.someString']);
@@ -30,11 +30,11 @@ describe(`ServiceLocator`, () => {
   describe(`asObject`, () => {
     describe(`overrides`, () => {
       it(`returns instances from overrides modules`, async () => {
-        const child = ModuleBuilder.empty('child')
+        const child = ModuleBuilder.empty()
           .define('someNumber', value(123))
           .define('someString', value('some content'));
 
-        const m = ModuleBuilder.empty('root')
+        const m = ModuleBuilder.empty()
           .import('import', child)
           .define('locator', serviceLocator())
           .define('cls', singleton(TestClassArgs2), ['import.someNumber', 'import.someString']);

@@ -12,7 +12,7 @@ export class TestClassUsing {
   constructor(private a: TestClassArgs2) {}
 }
 
-const ab0 = ModuleBuilder.empty('a')
+const ab0 = ModuleBuilder.empty()
   .define('a', dummy(1))
   .define('string', dummy('some string'))
   .define('b', dummy(1))
@@ -149,7 +149,7 @@ const ab0 = ModuleBuilder.empty('a')
   .define('aasas110', singleton(TestClassArgs2), ['a', 'string'])
   .define('aasas1123', singleton(TestClassArgs2), ['a', 'string']);
 
-const ab = ModuleBuilder.empty('a')
+const ab = ModuleBuilder.empty()
   // .using(commonDefines)
   .define('a', dummy(1))
   .define('b', dummy(1))
@@ -242,7 +242,7 @@ const ab = ModuleBuilder.empty('a')
   .define('asbak', dummy(1))
   .define('ascba', dummy(1));
 
-const ab1 = ModuleBuilder.empty('a')
+const ab1 = ModuleBuilder.empty()
   // .using(commonDefines)
   .define('a', dummy(1))
   .define('b', dummy(1))
@@ -335,7 +335,7 @@ const ab1 = ModuleBuilder.empty('a')
   .define('asbak', dummy(1))
   .define('ascba', dummy(1));
 
-const ab2 = ModuleBuilder.empty('a')
+const ab2 = ModuleBuilder.empty()
   // .using(commonDefines)
   .define('a', dummy(1))
   .define('b', dummy(1))
@@ -428,7 +428,7 @@ const ab2 = ModuleBuilder.empty('a')
   .define('asbak', dummy(1))
   .define('ascba', dummy(1));
 
-const a = ModuleBuilder.empty('a')
+const a = ModuleBuilder.empty()
   .import('imported0', () => ab0)
   .import('imported', () => ab)
   .import('imported1', () => ab1)
@@ -436,7 +436,7 @@ const a = ModuleBuilder.empty('a')
   .define('asdf', dummy(1))
   .define('cba', singleton(TestClassArgs2), ['imported.a', 'imported0.string']);
 
-const m = ModuleBuilder.empty('');
+const m = ModuleBuilder.empty();
 
 const m222 = m
   .define('a', value(1))

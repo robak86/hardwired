@@ -20,7 +20,7 @@ describe(`ComponentState`, () => {
   }
 
   describe(`instantiating dependencies`, () => {
-    const m1 = module('myModule') //breakme
+    const m1 = module() //breakme
       .define('val1', singleton(DummyComponentState));
 
     function setup() {
@@ -46,7 +46,7 @@ describe(`ComponentState`, () => {
 
   describe(`observability`, () => {
     it(`re-renders view`, async () => {
-      const m = module('example').define('componentState', singleton(DummyComponentState));
+      const m = module().define('componentState', singleton(DummyComponentState));
 
       const TestSubject = () => {
         const state = useObservable(m, 'componentState', obj => obj.value);

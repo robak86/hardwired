@@ -9,7 +9,7 @@ describe(`ContainerScope`, () => {
   function setup() {
     let counter = 0;
 
-    const m = module('example').define(
+    const m = module().define(
       'value',
       literal(() => (counter += 1), Scope.request),
     );

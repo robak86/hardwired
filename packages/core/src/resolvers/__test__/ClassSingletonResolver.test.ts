@@ -27,7 +27,7 @@ describe(`ClassSingletonResolver`, () => {
   });
 
   describe(`single module`, () => {
-    const m = unit('root')
+    const m = unit()
       .define('someValue', dependency('someString'))
       .define('a', singleton(TestClass), ['someValue']);
 
@@ -51,22 +51,22 @@ describe(`ClassSingletonResolver`, () => {
   });
 
   describe(`singleton shared across multiple modules hierarchy`, () => {
-    const root = unit('root')
+    const root = unit()
       .import('child1', () => child1)
       .import('child2', () => child2)
 
       .import('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
-    const child1 = unit('child1')
+    const child1 = unit()
       .import('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
-    const child2 = unit('child2')
+    const child2 = unit()
       .import('singletonModule', () => singletonModule)
       .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton']);
 
-    const singletonModule = unit('child1')
+    const singletonModule = unit()
       .define('value', value('someValue'))
       .define('theSingleton', singleton(TestClass), ['value']);
 
@@ -94,7 +94,7 @@ describe(`ClassSingletonResolver`, () => {
 
   describe(`multiple containers`, () => {
     it(`does not shares instances across multiple containers`, async () => {
-      const m = unit('root')
+      const m = unit()
         .define('someValue', dependency('someString'))
         .define('a', singleton(TestClass), ['someValue']);
 

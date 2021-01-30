@@ -16,7 +16,7 @@ describe(`FunctionResolver`, () => {
     const transientFactorySpy = jest.fn().mockImplementation(() => Math.random());
     const transientResolver = new TestTransientResolver(transientFactorySpy);
 
-    const m = unit('test').define('singleton', singletonResolver).define('transient', transientResolver);
+    const m = unit().define('singleton', singletonResolver).define('transient', transientResolver);
 
     return { module: m, singletonFactorySpy, transientFactorySpy };
   }
@@ -121,8 +121,8 @@ describe(`FunctionResolver`, () => {
         it(`it works with partially applied args`, async () => {
           const partiallyApplied = (arg1: string, arg2: string) => `${arg1} -> ${arg2}`;
 
-          const m1 = unit('partArgProvider').define('arg', value('original'));
-          const m2 = unit('withPartiallyAppliedFun')
+          const m1 = unit().define('arg', value('original'));
+          const m2 = unit()
             .import('m1', m1)
             .define('fn', func(partiallyApplied as (arg1: string, arg2: string) => string, 1), ['m1.arg']);
 
@@ -141,7 +141,7 @@ describe(`FunctionResolver`, () => {
         it(`it works with factory`, async () => {
           const partiallyApplied = (arg1: string, arg2: string) => `${arg1} -> ${arg2}`;
 
-          const m1 = unit('partArgProvider')
+          const m1 = unit()
             .define('val', value('original'))
             .define('suffix', value('suffix'))
             .define('arg', func(partiallyApplied, 2), ['val', 'suffix']);
@@ -154,7 +154,7 @@ describe(`FunctionResolver`, () => {
             }
           }
 
-          const m2 = unit('withPartiallyAppliedFun') //breakme
+          const m2 = unit() //breakme
             .import('m1', m1)
             .define('fn', factory(PartialFactory), ['m1.arg']);
 

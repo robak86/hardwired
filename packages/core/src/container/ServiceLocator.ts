@@ -19,7 +19,7 @@ export class ServiceLocator {
     return factory({
       get: (module, key) => {
         const instanceResolver = requestContext.getInstanceResolver(module, key);
-        invariant(instanceResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
+        invariant(instanceResolver, `Cannot find definition ${key}`);
 
         return instanceResolver.build(requestContext) as any;
       },

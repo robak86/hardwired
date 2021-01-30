@@ -9,7 +9,7 @@ import { ContainerContext } from '../ContainerContext';
 describe(`Container`, () => {
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
-      const child2 = module('child').define('c', dependency('cValue')).define('d', dependency('dValue'));
+      const child2 = module().define('c', dependency('cValue')).define('d', dependency('dValue'));
       const c = container();
 
       const cValue = c.get(child2, 'c');
@@ -17,7 +17,7 @@ describe(`Container`, () => {
     });
 
     it(`lazily appends new module if module cannot be found`, async () => {
-      const notRegistered = module('notUsed') // breakme
+      const notRegistered = module() // breakme
         .define('a', dependency(1));
 
       const c = container();
@@ -29,19 +29,19 @@ describe(`Container`, () => {
   describe(`.replace`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
-        const m = module('m').define('a', value(1));
+        const m = module().define('a', value(1));
         const updated = m.replace('a', value(2));
         expect(container().get(updated, 'a')).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
-        const m = module('m').define('a', value(1)).define('b', value('b'));
+        const m = module().define('a', value(1)).define('b', value('b'));
         const updated = m.replace('a', value(2));
         expect(container().get(updated, 'b')).toEqual('b');
       });
 
       it.skip(`can use all previously registered definitions`, async () => {
-        const m = module('m')
+        const m = module()
           .define('a', value('a'))
           .define('aa', value('replaced'))
           .define('b', singleton(ArgsDebug), ['a'])
@@ -54,7 +54,7 @@ describe(`Container`, () => {
       });
 
       it.skip(`can use all previously registered definitions`, async () => {
-        const m = module('m')
+        const m = module()
           .define('a', value('a'))
           .define('b', singleton(ArgsDebug), ['a'])
           .define('c', singleton(ArgsDebug), ['b']);
@@ -76,16 +76,16 @@ describe(`Container`, () => {
       const c = container();
 
       const parentChildValue = dependency('parentChild');
-      const parentChild = module('parentChild').define('value', parentChildValue);
+      const parentChild = module().define('value', parentChildValue);
 
       const parentSiblingChildValue = dependency('parentSiblingChild');
-      const parentSiblingChild = module('parentSiblingChild').define('value', parentSiblingChildValue);
+      const parentSiblingChild = module().define('value', parentSiblingChildValue);
 
       const parentValue = dependency('parent');
-      const parent = module('parent').import('child', parentChild).define('value', parentValue);
+      const parent = module().import('child', parentChild).define('value', parentValue);
 
       const parentSiblingValue = dependency('parentSibling');
-      const parentSibling = module('parentSibling')
+      const parentSibling = module()
         .import('child', parentSiblingChild)
         .define('value', parentSiblingValue);
 
@@ -117,7 +117,7 @@ describe(`Container`, () => {
       (singletonResolver as any).onInit = () => null;
       jest.spyOn(singletonResolver, 'onInit');
 
-      const m = module('parent')
+      const m = module()
         .define('someNumber', numberResolver)
         .define('someString', stringResolver)
         .define('cls', singletonResolver, ['someNumber', 'someString']);
@@ -189,11 +189,11 @@ describe(`Container`, () => {
       const childDef2 = dependency('child2');
       const parentDef = dependency('parent1');
 
-      const m = module('childModule') //breakme
+      const m = module() //breakme
         .define('a', childDef1)
         .define('b', childDef2);
 
-      const p = module('parent') //breakme
+      const p = module() //breakme
         .import('child', m)
         .define('c', parentDef);
 
@@ -213,11 +213,11 @@ describe(`Container`, () => {
       const childDef2 = dependency('child2');
       const parentDef = dependency('parent1');
 
-      const m = module('childModule') //breakme
+      const m = module() //breakme
         .define('a', childDef1)
         .define('b', childDef2);
 
-      const p = module('parent') //breakme
+      const p = module() //breakme
         .import('child', m)
         .define('c', parentDef);
 
@@ -237,11 +237,11 @@ describe(`Container`, () => {
       const childDef2 = dependency('child2');
       const parentDef = dependency('parent1');
 
-      const m = module('childModule') //breakme
+      const m = module() //breakme
         .define('a', childDef1)
         .define('b', childDef2);
 
-      const p = module('parent') //breakme
+      const p = module() //breakme
         .import('child', m)
         .define('c', parentDef);
 
@@ -260,7 +260,7 @@ describe(`Container`, () => {
 
   describe(`getByType`, () => {
     it(`returns instances by resolver types`, async () => {
-      const m = module('test')
+      const m = module()
         .define('value', value(123))
         .define('dependency1', dependency(456))
         .define('dependency2', dependency(789));
@@ -271,12 +271,12 @@ describe(`Container`, () => {
     });
 
     it(`returns instances by resolver types from imported modules`, async () => {
-      const m = module('test')
+      const m = module()
         .import('imported', () => child)
         .define('value', value(123))
         .define('dependency1', dependency(456));
 
-      const child = module('child').define('dependency2', dependency(789));
+      const child = module().define('dependency2', dependency(789));
 
       const c = container({ eager: [m] });
 

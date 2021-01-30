@@ -8,7 +8,7 @@ describe.skip(`performance`, () => {
     const result = {
       container: container(),
       register: -1,
-      module: unit('flatModule'),
+      module: unit(),
     };
 
     for (let i = 0; i < times; i++) {
@@ -69,7 +69,6 @@ describe.skip(`performance`, () => {
 
   it('appends 5K new definitions in less than 2 ms', () => {
     const result5K = registerN(5000);
-    console.log(result5K.register);
     expect(result5K.register).toBeLessThan(2);
   });
 

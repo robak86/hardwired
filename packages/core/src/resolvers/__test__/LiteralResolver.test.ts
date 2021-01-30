@@ -9,7 +9,7 @@ import { Scope } from '../abstract/Instance';
 describe(`LiteralResolver`, () => {
   describe(`types`, () => {
     it(`return defines correct return type`, async () => {
-      const m = ModuleBuilder.empty('child')
+      const m = ModuleBuilder.empty()
         .define('val1', value(123))
         .define(
           'val2',
@@ -22,7 +22,7 @@ describe(`LiteralResolver`, () => {
     });
 
     it(`uses correct materialized module type`, async () => {
-      const m = ModuleBuilder.empty('child')
+      const m = ModuleBuilder.empty()
         .define('val1', value(123))
         .define(
           'val2',
@@ -35,7 +35,7 @@ describe(`LiteralResolver`, () => {
 
   describe(`no dependencies`, () => {
     it(`returns correct instance`, async () => {
-      const m = unit('a').define(
+      const m = unit().define(
         'literal',
         literal(() => 'someValue'),
       );
@@ -46,7 +46,7 @@ describe(`LiteralResolver`, () => {
 
   describe(`using dependencies from the same module`, () => {
     it(`returns correct instance`, async () => {
-      const m = unit('a')
+      const m = unit()
         .define('literalDependency', value('dependency'))
         .define(
           'literal',
@@ -59,12 +59,12 @@ describe(`LiteralResolver`, () => {
 
   describe(`getting dependencies from imported module`, () => {
     it(`returns correct instance`, async () => {
-      const childM = unit('childM').define(
+      const childM = unit().define(
         'someValue',
         literal(() => 1),
       );
 
-      const parentM = unit('parentM')
+      const parentM = unit()
         .import('imported', childM)
         .define(
           'usesImportedValue',
@@ -78,12 +78,12 @@ describe(`LiteralResolver`, () => {
 
   describe(`overrides`, () => {
     it(`works with overridden imported module`, async () => {
-      const childM = unit('childM').define(
+      const childM = unit().define(
         'someValue',
         literal(() => 1),
       );
 
-      const parentM = unit('parentM')
+      const parentM = unit()
         .import('imported', childM)
         .define(
           'usesImportedValue',
@@ -97,7 +97,7 @@ describe(`LiteralResolver`, () => {
 
   describe(`transient scope`, () => {
     it(`returns new instance on each request`, async () => {
-      const mod = unit('childM').define(
+      const mod = unit().define(
         'someValue',
         literal(() => ({ someProperty: 1 }), Scope.transient),
       );
@@ -109,7 +109,7 @@ describe(`LiteralResolver`, () => {
 
   describe(`singleton scope`, () => {
     it(`returns the same instance`, async () => {
-      const mod = unit('childM').define(
+      const mod = unit().define(
         'someValue',
         literal(() => ({ someProperty: 1 }), Scope.singleton),
       );
@@ -121,7 +121,7 @@ describe(`LiteralResolver`, () => {
 
   describe(`request scope`, () => {
     it(`returns the same instance`, async () => {
-      const mod = unit('childM')
+      const mod = unit()
         .define(
           'someValue',
           literal(() => ({ someProperty: 1 }), Scope.request),

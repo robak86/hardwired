@@ -6,12 +6,12 @@ import { render } from '@testing-library/react';
 
 describe(`ModuleObject`, () => {
   function setup() {
-    const m1 = module('example').define(
+    const m1 = module().define(
       'value',
       literal(() => 1),
     );
 
-    const m2 = module('example')
+    const m2 = module()
       .import('m1', m1)
       .define(
         'valueFromM1',

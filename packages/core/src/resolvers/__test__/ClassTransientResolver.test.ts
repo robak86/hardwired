@@ -20,7 +20,7 @@ describe(`ClassTransientResolver`, () => {
     });
   });
 
-  const m = unit('root').define('someValue', dependency('someString')).define('a', transient(TestClass), ['someValue']);
+  const m = unit().define('someValue', dependency('someString')).define('a', transient(TestClass), ['someValue']);
 
   it(`returns class instance`, async () => {
     const c = container();
