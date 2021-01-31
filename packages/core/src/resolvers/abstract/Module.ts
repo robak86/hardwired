@@ -41,7 +41,6 @@ export namespace Module {
 
   export type BoundResolver = {
     resolverThunk: Thunk<AnyResolver>;
-    dependencies: (string | Record<string, string>)[];
   };
 }
 
@@ -99,11 +98,10 @@ export class Module<TRecord extends Record<string, AnyResolver>> {
   ): Module<TRecord & Record<TKey, Instance<TValue, []>>> {
     invariant(this.registry.hasKey(name), `Cannot decorate definition. Definition: ${name} does not exist.`);
 
-    const { resolverThunk, dependencies } = this.registry.get(name);
+    const { resolverThunk } = this.registry.get(name);
 
     const decorated = {
       resolverThunk: new DecoratorResolver(resolverThunk as any, decorateFn),
-      dependencies,
     };
 
     const replaced = this.registry.replace(name, decorated);

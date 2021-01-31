@@ -6,6 +6,7 @@ import { Module } from '../../resolvers/abstract/Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { transient } from '../../strategies/TransientStrategy';
 import { request } from '../../strategies/RequestStrategy';
+import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ModuleBuilder`, () => {
   describe(`define`, () => {
@@ -110,6 +111,31 @@ describe(`ModuleBuilder`, () => {
 
       // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
       m2.replace('key1', () => 'sdf');
+    });
+
+    it(`allows for returning strategy instead of result`, async () => {
+      const m = module()
+        .define('a', () => 1)
+        .define('b', () => 2)
+        .define('c', c => singleton(c2 => c.a + c2.b))
+        .build();
+
+      const testContainer = container();
+      const { c } = testContainer.asObject(m);
+      expect(c).toEqual(3);
+    });
+
+    it(`allows for returning strategy and composing it with strategy param `, async () => {
+      const m = module()
+        .define('a', () => 1)
+        .define('b', () => 2)
+        .define('c', c => transient(c2 => c.a + c2.b + Math.random()), singleton)
+        .build();
+
+      const testContainer = container();
+      const req1 = testContainer.asObject(m);
+      const req2 = testContainer.asObject(m);
+      expect(req1.c).not.toEqual(req2.c); // singleton in c definition caches transient strategy which calls each time it's factory function
     });
   });
 
@@ -342,7 +368,7 @@ describe(`ModuleBuilder`, () => {
     it(`produces module with next unique id`, async () => {
       const prevModule = module();
       const frozen = prevModule.build();
-      expect(prevModule.moduleId.id).not.toEqual(frozen.moduleId.id)
+      expect(prevModule.moduleId.id).not.toEqual(frozen.moduleId.id);
     });
   });
 

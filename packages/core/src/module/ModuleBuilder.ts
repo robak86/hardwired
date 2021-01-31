@@ -44,7 +44,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   define<TKey extends string, TInstance extends Instance<any, any>>(
     name: TKey,
-    instance: TInstance, // TODO: TInstance | (ctx: ModuleRecord.Materialized<TRecord>) => TInstance - detection needs to be determined at instance creation
+    instance: TInstance | ((ctx: ModuleRecord.Materialized<TRecord>) => TInstance),
   ): ModuleBuilder<TRecord & Record<TKey, TInstance>>;
 
   define<TKey extends string, TValue>(
@@ -60,11 +60,11 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
 
-    if (buildFnOrInstance instanceof Instance) {
+    if (typeof buildFnOrInstance === 'function') {
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
-          resolverThunk: buildFnOrInstance,
+          resolverThunk: buildStrategy(buildFnOrInstance),
           dependencies: [],
         }) as any,
         this.isFrozenRef,
@@ -74,7 +74,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
-        resolverThunk: buildStrategy(buildFnOrInstance),
+        resolverThunk: buildFnOrInstance,
         dependencies: [],
       }) as any,
       this.isFrozenRef,

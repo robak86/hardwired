@@ -36,24 +36,14 @@ export class ContainerContext {
     const targetModule: Module<any> = this.getModule(module.moduleId);
     const [moduleOrInstance, instance] = path.split('.');
 
-    const { resolverThunk, dependencies } = targetModule.registry.get(moduleOrInstance);
+    const { resolverThunk } = targetModule.registry.get(moduleOrInstance);
     const resolver = unwrapThunk(resolverThunk);
 
     invariant(resolver, `Cannot return instance resolver for path ${path}. ${moduleOrInstance} does not exist.`);
 
     if (resolver.kind === 'instanceResolver') {
       if (!this.resolvers.has(resolver)) {
-        const depsInstances = dependencies.map(d => {
-          if (typeof d === 'string') {
-            return this.getInstanceResolver(targetModule, d);
-          }
-          throw new Error('implement me');
-        });
-      }
-
-      if (!this.resolvers.has(resolver)) {
         this.resolvers.add(targetModule, path, resolver);
-        resolver.onInit?.(this);
       }
 
       return resolver;
@@ -80,13 +70,15 @@ export class ContainerContext {
   }
 
   runResolver(resolver: Instance<any, any>, context: ContainerContext) {
-    if (resolver.usesMaterializedModule) {
-      const module = this.resolvers.getModuleForResolver(resolver.id);
-      const materializedModule = this.materializeModule(module, context);
-      return resolver.build(context, materializedModule);
+    const module = this.resolvers.getModuleForResolver(resolver.id);
+    const materializedModule = this.materializeModule(module, context);
+    const result = resolver.build(context, materializedModule);
+    
+    if (result.kind === 'instanceResolver') {
+      return result.build(context, materializedModule);
     }
 
-    return resolver.build(context);
+    return result;
   }
 
   eagerLoad(module: Module<any>) {
