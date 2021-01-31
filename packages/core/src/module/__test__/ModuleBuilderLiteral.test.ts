@@ -6,14 +6,14 @@ import { container } from '../../container/Container';
 describe(`literal`, () => {
   it(`works`, async () => {
     const m = module()
-      .literal('v1', _ => 1, singleton)
-      .literal('v2', _ => 'someString', singleton)
-      .literal('cls', ctx => new TestClassArgs2(ctx.v1, ctx.v2), singleton)
+      .literal('someNumber', _ => 1, singleton)
+      .literal('someString', _ => 'someString', singleton)
+      .literal('cls', ctx => new TestClassArgs2(ctx.someNumber, ctx.someString), singleton)
       .freeze();
 
     const c = container();
-    const { v1, v2, cls } = c.asObject(m);
-    expect(cls.someString).toEqual('someString')
-    expect(cls.someNumber).toEqual(1)
+    const { someNumber, someString, cls } = c.asObject(m);
+    expect(cls.someString).toEqual('someString');
+    expect(cls.someNumber).toEqual(1);
   });
 });
