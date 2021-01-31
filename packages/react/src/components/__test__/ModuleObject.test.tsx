@@ -1,4 +1,4 @@
-import { literal, module } from 'hardwired';
+import { module } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider';
 import React from 'react';
 import { ModuleConsumer } from '../ModuleConsumer';
@@ -6,17 +6,14 @@ import { render } from '@testing-library/react';
 
 describe(`ModuleObject`, () => {
   function setup() {
-    const m1 = module('example').define(
-      'value',
-      literal(() => 1),
-    );
+    const m1 = module()
+      .define('value', () => 1)
+      .build();
 
-    const m2 = module('example')
+    const m2 = module()
       .import('m1', m1)
-      .define(
-        'valueFromM1',
-        literal(({ m1 }) => m1.value + 10),
-      );
+      .define('valueFromM1', ({ m1 }) => m1.value + 10)
+      .build();
 
     const ValueRenderer = ({ testId, value }) => {
       return <div data-testid={testId}>{value}</div>;

@@ -1,15 +1,12 @@
-import { value } from '../ValueResolver';
 import { createResolverId } from '../../utils/fastId';
-import { request } from '../ClassRequestResolver';
-import { singleton } from '../ClassSingletonResolver';
 import { serviceLocator } from '../ServiceLocatorResolver';
 import { container } from '../../container/Container';
-import { factory } from '../FactoryResolver';
 import { unit } from '../../module/ModuleBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { ServiceLocator } from '../../container/ServiceLocator';
-import { Module } from '../abstract/Module';
 import { Instance } from '../abstract/Instance';
+import { request } from '../../strategies/RequestStrategy';
+import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -28,16 +25,18 @@ describe(`ServiceLocatorResolver`, () => {
     }
   }
 
-  const root = unit('root')
+  const root = unit()
     .define('locator', serviceLocator())
     .import('singletonModule', () => singletonModule)
-    .define('producedByFactory', factory(DummyFactory))
-    .define('singletonConsumer', request(TestClassConsumer), ['singletonModule.reqScoped']);
+    .define('producedByFactory', () => new DummyFactory())
+    .define('singletonConsumer', ({ singletonModule }) => new TestClassConsumer(singletonModule.reqScoped), request)
+    .build();
 
-  const singletonModule = unit('child1')
-    .define('value', value('someValue'))
-    .define('reqScoped', request(TestClass), ['value'])
-    .define('singleton', singleton(TestClass), ['value']);
+  const singletonModule = unit()
+    .define('value', () => 'someValue')
+    .define('reqScoped', c => new TestClass(c.value), request)
+    .define('singleton', c => new TestClass(c.value), singleton)
+    .build();
 
   describe(`serviceLocator`, () => {
     it(`return Instance type`, async () => {

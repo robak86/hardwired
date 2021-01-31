@@ -1,5 +1,4 @@
 import { Instance } from '../resolvers/abstract/Instance';
-import { ClassType } from '../utils/ClassType';
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { Module } from '../resolvers/abstract/Module';
@@ -32,11 +31,5 @@ export class ResolversLookup {
 
   hasByModule(moduleId: ModuleId, path: string): boolean {
     return !!this.resolversByModuleIdAndPath[moduleId.id + path];
-  }
-
-  filterByType<TResolverClass extends Instance<any, any>>(
-    resolverClass: ClassType<TResolverClass, any>,
-  ): TResolverClass[] {
-    return Object.values(this.resolversById).filter(resolver => resolver instanceof resolverClass) as any;
   }
 }

@@ -1,11 +1,11 @@
 import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
-import { ModuleBuilder } from '../module/ModuleBuilder';
+
 import { Module, ModuleRecord } from '../resolvers/abstract/Module';
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends ModuleRecord, K extends keyof ModuleRecord.Materialized<TRegistryRecord> & string>(
-    module: ModuleBuilder<TRegistryRecord>,
+    module: Module<TRegistryRecord>,
     key: K,
   ): ModuleRecord.Materialized<TRegistryRecord>[K];
 };
@@ -19,9 +19,9 @@ export class ServiceLocator {
     return factory({
       get: (module, key) => {
         const instanceResolver = requestContext.getInstanceResolver(module, key);
-        invariant(instanceResolver, `Cannot find definition named: ${key} in module: ${module.moduleId.name}`);
+        invariant(instanceResolver, `Cannot find definition ${key}`);
 
-        return instanceResolver.build(requestContext) as any;
+        return requestContext.runResolver(instanceResolver, requestContext)
       },
     });
   }

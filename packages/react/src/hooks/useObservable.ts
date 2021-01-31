@@ -1,4 +1,4 @@
-import { Module, ModuleBuilder } from 'hardwired';
+import { Module } from 'hardwired';
 import { useContainer } from '../context/ContainerContext';
 import { useEffect, useRef } from 'react';
 import { IObservable, isObservable, Unsubscribe } from '../abstract/IObservable';
@@ -7,12 +7,12 @@ import { identity } from '../utils/fp';
 import invariant from 'tiny-invariant';
 
 export type UseObservableHook = {
-  <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
+  <TModule extends Module<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
     module: TModule,
     name: TDefinitionName & string,
   ): Module.Materialized<TModule>[TDefinitionName] extends IObservable<infer TState> ? TState : unknown;
 
-  <TModule extends ModuleBuilder<any>, TDefinitionName extends Module.InstancesKeys<TModule>, TReturn>(
+  <TModule extends Module<any>, TDefinitionName extends Module.InstancesKeys<TModule>, TReturn>(
     module: TModule,
     name: TDefinitionName & string,
     select: (

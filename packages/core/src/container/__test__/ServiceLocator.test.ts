@@ -1,23 +1,24 @@
 import { ModuleBuilder } from '../../module/ModuleBuilder';
-import { singleton } from '../../resolvers/ClassSingletonResolver';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
-import { value } from '../../resolvers/ValueResolver';
 import { container } from '../Container';
 import { serviceLocator } from '../../resolvers/ServiceLocatorResolver';
+import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ServiceLocator`, () => {
   describe(`overrides`, () => {
     it(`returns instances from overrides modules`, async () => {
-      const child = ModuleBuilder.empty('child')
-        .define('someNumber', value(123))
-        .define('someString', value('some content'));
+      const child = ModuleBuilder.empty()
+        .define('someNumber', () => 123)
+        .define('someString', () => 'some content')
+        .build();
 
-      const m = ModuleBuilder.empty('root')
-        .import('import', child)
+      const m = ModuleBuilder.empty()
+        .import('imported', child)
         .define('locator', serviceLocator())
-        .define('cls', singleton(TestClassArgs2), ['import.someNumber', 'import.someString']);
+        .define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString), singleton)
+        .build();
 
-      const c = container({ overrides: [child.replace('someNumber', value(456))] });
+      const c = container({ overrides: [child.replace('someNumber', () => 456)] });
 
       const locator = c.get(m, 'locator');
       const cls = locator.withScope(({ get }) => get(m, 'cls'));
@@ -30,16 +31,18 @@ describe(`ServiceLocator`, () => {
   describe(`asObject`, () => {
     describe(`overrides`, () => {
       it(`returns instances from overrides modules`, async () => {
-        const child = ModuleBuilder.empty('child')
-          .define('someNumber', value(123))
-          .define('someString', value('some content'));
+        const child = ModuleBuilder.empty()
+          .define('someNumber', () => 123)
+          .define('someString', () => 'some content')
+          .build();
 
-        const m = ModuleBuilder.empty('root')
-          .import('import', child)
+        const m = ModuleBuilder.empty()
+          .import('imported', child)
           .define('locator', serviceLocator())
-          .define('cls', singleton(TestClassArgs2), ['import.someNumber', 'import.someString']);
+          .define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString), singleton)
+          .build();
 
-        const c = container({ overrides: [child.replace('someNumber', value(456))] });
+        const c = container({ overrides: [child.replace('someNumber', () => 456)] });
 
         const locator = c.get(m, 'locator');
         const { cls } = locator.asObject(m);

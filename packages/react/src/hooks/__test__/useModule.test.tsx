@@ -1,4 +1,4 @@
-import { container, module, request, value } from 'hardwired';
+import { container, module, request } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
@@ -7,7 +7,10 @@ import { useModule } from '../useModule';
 
 describe(`useModule`, () => {
   describe(`instantiating dependencies`, () => {
-    const m1 = module('myModule').define('val1', value('val1')).define('val2', value('val2'));
+    const m1 = module()
+      .define('val1', () => 'val1')
+      .define('val2', () => 'val2')
+      .build();
 
     function setup() {
       const Consumer = () => {
@@ -37,7 +40,9 @@ describe(`useModule`, () => {
       constructor() {}
     }
 
-    const m1 = module('myModule').define('cls', request(TestClass));
+    const m1 = module()
+      .define('cls', () => new TestClass(), request)
+      .build();
 
     function setup() {
       const Consumer = () => {

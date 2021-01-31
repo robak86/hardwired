@@ -1,4 +1,4 @@
-import { container, literal, module } from 'hardwired';
+import { container, module } from 'hardwired';
 import { act, render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
@@ -8,15 +8,10 @@ import { DummyObservable } from '../../__test__/DummyObservable';
 
 describe(`useObservable`, () => {
   describe(`instantiating dependencies`, () => {
-    const m1 = module('myModule') //breakme
-      .define(
-        'val1',
-        literal(() => new DummyObservable('val1')),
-      )
-      .define(
-        'val2',
-        literal(() => new DummyObservable('val2')),
-      );
+    const m1 = module() //breakme
+      .define('val1', () => new DummyObservable('val1'))
+      .define('val2', () => new DummyObservable('val2'))
+      .build();
 
     function setup() {
       const Consumer = () => {
@@ -40,10 +35,9 @@ describe(`useObservable`, () => {
   });
 
   describe(`binding transient dependencies to component instance`, () => {
-    const m1 = module('myModule').define(
-      'cls',
-      literal(() => new DummyObservable(Math.random())),
-    );
+    const m1 = module()
+      .define('cls', () => new DummyObservable(Math.random()))
+      .build();
 
     function setup() {
       const Consumer = () => {
@@ -94,10 +88,9 @@ describe(`useObservable`, () => {
       const observable = new DummyObservable(1);
       jest.spyOn(observable, 'subscribe');
 
-      const m = module('example').define(
-        'observable',
-        literal(() => observable),
-      );
+      const m = module()
+        .define('observable', () => observable)
+        .build();
 
       const TestSubject = () => {
         const state = useObservable(m, 'observable');
@@ -126,17 +119,16 @@ describe(`useObservable`, () => {
       jest.spyOn(observable, 'subscribe').mockImplementation(subscribeMock);
 
       function subscribeMock(this: DummyObservable<any>, callback) {
-        callback(this)
+        callback(this);
         return cancelFnSpy;
       }
 
-      const m = module('example').define(
-        'observable',
-        literal(() => observable),
-      );
+      const m = module()
+        .define('observable', () => observable)
+        .build();
 
       const TestSubject = () => {
-        const {someValue} = useObservable(m, 'observable');
+        const { someValue } = useObservable(m, 'observable');
         return <>{someValue}</>;
       };
 
@@ -161,10 +153,9 @@ describe(`useObservable`, () => {
     it(`re-renders view`, async () => {
       const observable = new DummyObservable(1);
 
-      const m = module('example').define(
-        'observable',
-        literal(() => observable),
-      );
+      const m = module()
+        .define('observable', () => observable)
+        .build();
 
       const TestSubject = () => {
         const state = useObservable(m, 'observable', obj => obj.someValue);

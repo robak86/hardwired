@@ -1,4 +1,4 @@
-import { literal, module, Scope } from 'hardwired';
+import { module, request } from 'hardwired';
 import React from 'react';
 import { ContainerProvider } from '../ContainerProvider';
 import { ContainerScope } from '../ContainerScope';
@@ -9,10 +9,9 @@ describe(`ContainerScope`, () => {
   function setup() {
     let counter = 0;
 
-    const m = module('example').define(
-      'value',
-      literal(() => (counter += 1), Scope.request),
-    );
+    const m = module()
+      .define('value', () => (counter += 1), request)
+      .build();
 
     const ValueRenderer = ({ testId }) => {
       const value = useDefinition(m, 'value');
