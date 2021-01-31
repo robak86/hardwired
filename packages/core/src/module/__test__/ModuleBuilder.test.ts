@@ -352,4 +352,32 @@ describe(`ModuleBuilder`, () => {
       expect(() => prefModule.freeze()).toThrow();
     });
   });
+
+  describe(`materializing context`, () => {
+    it(`uses the same instance for each definition`, async () => {
+      const objCalls: any[] = [];
+      const a = module()
+        .literal('a', obj => {
+          objCalls.push(obj);
+          return 1;
+        })
+        .literal('b', obj => {
+          objCalls.push(obj);
+          return 2;
+        })
+        .literal('c', obj => {
+          objCalls.push(obj);
+          return 3;
+        })
+        .freeze();
+
+      const c = container();
+      const obj = c.asObject(a);
+
+      objCalls.reduce((prev, current) => {
+        expect(prev).toBe(current);
+        return current;
+      }, obj);
+    });
+  });
 });
