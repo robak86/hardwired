@@ -36,7 +36,7 @@ npm install hardwired
 The library uses three main concepts:
 
 - **Module** - immutable object containing resolvers registered by names
-- **Resolver** - encapsulates details of objects instantiation, (e.g. `singleton`, `transient`, `request`)
+- **Strategy** - encapsulates details of objects instantiation, (e.g. `singleton`, `transient`, `request`)
 - **Container** - returns and optionally caches object instances created by the resolvers.
 
 #### Example
@@ -56,8 +56,8 @@ class Logger {
 }
 
 const loggerModule = module()
-  .define('configuration', singleton(LoggerConfiguration))
-  .define('logger', singleton(Logger), ['configuration']);
+  .define('configuration', () => new LoggerConfiguration(), singleton)
+  .define('logger', m => new Logger(m.configuration), singleton);
 ```
 
 2. Create a container
@@ -85,12 +85,12 @@ const logger = obj.logger; // instance of Logger was created
 
 ### Registering definitions
 
-- `.define(name, resolver, dependencies)` - returns a new instance of the module and appends new definition
+- `.define(name, buildFn, strategy)` - returns a new instance of the module and appends new definition
 
   - `name` - name of the definition
-  - `resolver` - resolver bound to specific class, function, or value (e.g. `singleton(MyClass)`, `value(appConfig)`)
-  - `dependencies` - array of paths targeting dependencies required by the resolver. Validity of all references is checked
-    at compile-time.
+  - `buildFn` - factory function producing value for given definition. It's called with object containing all
+    previous definitions available as properties
+  - `strategy` - encapsulates details of `buildFn` calls and returned value caching. By default, it's `singleton`.
 
   ```typescript
   import { module, value } from 'hardwired';
@@ -100,12 +100,12 @@ const logger = obj.logger; // instance of Logger was created
   }
 
   const m1 = module()
-    .define('a', value(123))
-    .define('b', value('someString'))
-    .define('c', singleton(DummyClass), ['a', 'b']);
+    .define('a', () => 123)
+    .define('b', () => 'someString')
+    .define('c', ({ a, b }) => new DummyClass(a, b), singleton);
   ```
 
-#### Available resolvers (lifetimes, scopes)
+#### Available strategies (lifetimes, scopes)
 
 - `transient` - creates a new instance for each `.get` request
 
@@ -114,7 +114,7 @@ const logger = obj.logger; // instance of Logger was created
 
   class SomeClass {}
 
-  const someModule = module().define('transientDependency', transient(SomeClass));
+  const someModule = module().define('transientDependency', () => new SomeClass(), transient);
   const ct = container();
 
   ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
@@ -127,7 +127,7 @@ const logger = obj.logger; // instance of Logger was created
 
   class SomeClass {}
 
-  const someModule = module().define('someSingleton', singleton(SomeClass));
+  const someModule = module().define('someSingleton', () => new SomeClass(), singleton);
   const ct = container();
 
   ct.get(someModule, 'someSingleton') === ct.get(someModule, 'someSingleton'); // true
@@ -138,82 +138,6 @@ const logger = obj.logger; // instance of Logger was created
 
   _Notice that loggerModule is stateless in terms of holding any reference to created singleton instances. All instances
   live in the containers_
-
-- `value` - similar to `singleton`, but takes a value instead of class
-
-  ```typescript
-  import { module, value } from 'hardwired';
-
-  const someObject = { someProp: 123 };
-
-  const someModule = module().define('someValue', value(someObject));
-  const ct = container();
-
-  ct.get('someValue') === ct.get(someModule, 'someValue'); // true
-  ```
-
-- `factory` - creates an instance of factory class and returns value produced by `build` method.
-
-  ```typescript
-  import { module, factory, Factory } from 'hardwired';
-
-  class NumberFactory implements Factory<number> {
-    private count = 0;
-
-    build(): number {
-      this.count += 1;
-      return this.count;
-    }
-  }
-
-  const someModule = module().define('createdByFactory', factory(NumberFactory, Scope.singleton));
-  const ct = container();
-
-  ct.get(someModule, 'createdByFactory'); // returns 1
-  ct.get(someModule, 'createdByFactory'); // returns 1
-
-  class ArgsSpy {
-    args: any[];
-    constructor(...args: []) {
-      this.args = args;
-    }
-  }
-
-  const otherModule = module()
-    .define('createdByFactory', factory(NumberFactory, Scope.singleton))
-    .define('spy1', singleton(ArgsSpy), ['createdByFactory'])
-    .define('spy2', singleton(ArgsSpy), ['createdByFactory']);
-
-  const ct2 = container();
-
-  ct2.get(someModule, 'spy1').args[0]; // equals to 1
-  ct2.get(someModule, 'spy2').args[0]; // equals to 1
-  ct2.get(someModule, 'createByFactory'); // returns 1
-  ```
-
-- `func` - creates function with partially applied arguments
-
-  ```typescript
-  import { module, func, value } from 'hardwired';
-
-  const someFunction = (a: number, b: string, c: boolean): string => 'example';
-
-  const someModule = module()
-    .define('arg1', value(1))
-    .define('arg2', value('string'))
-    .define('arg3', value(false))
-    .define('noArgsApplied', func(someFunction, 0))
-    .define('partiallyApplied1', func(someFunction, 1), ['arg1'])
-    .define('partiallyApplied2', func(someFunction, 2), ['arg1', 'arg2'])
-    .define('partiallyApplied3', func(someFunction, 3), ['arg1', 'arg2', 'arg3']);
-
-  const ct = container();
-
-  ct.get(someModule, 'noArgsApplied'); // (a: number, b: string, c: boolean) => string
-  ct.get(someModule, 'partiallyApplied1'); // (b: string, c: boolean) => string
-  ct.get(someModule, 'partiallyApplied2'); // (c: boolean) => string
-  ct.get(someModule, 'partiallyApplied3'); // () => string
-  ```
 
 - `request` - creates new singleton instance for each new request
 
@@ -228,9 +152,9 @@ const logger = obj.logger; // instance of Logger was created
   }
 
   const someModule = module()
-    .define('leaf', request(SomeClass))
-    .define('child', request(SomeClass), ['leaf'])
-    .define('parent', request(SomeClass), ['child', 'leaf']);
+    .define('leaf', m => new SomeClass())
+    .define('child', m => new SomeClass(m.leaf), request)
+    .define('parent', m => new SomeClass(m.child, m.leaf), request);
 
   const ct = container();
 
@@ -239,24 +163,6 @@ const logger = obj.logger; // instance of Logger was created
 
   const r2 = ct.get(someModule, 'parent');
   r1.args[0].args[0] === r2.args[1]; // false
-  ```
-
-- `literal` - acts like factory function. It allows for accessing module definitions like object properties
-
-  ```typescript
-  import { module, request, Scope } from 'hardwired';
-
-  const someModule = module()
-    .define('a', value(2))
-    .define('b', value(3))
-    .define(
-      'resultSingleton',
-      literal(obj => obj.a + obj.b, Scope.singleton),
-    )
-    .define(
-      'resultTransient',
-      literal(obj => obj.a + obj.b, Scope.transient),
-    );
   ```
 
 #### Modules composition
@@ -273,8 +179,8 @@ class DbConnection {
 }
 
 const dbModule = module()
-  .define('config', value(databaseConfig))
-  .define('connection', singleton(DbConnection), ['config']);
+  .define('config', () => databaseConfig)
+  .define('connection', ({ config }) => new DbConnection(config));
 
 class UsersListQuery {
   constructor(private dbConnection: DbConnection) {}
@@ -282,7 +188,7 @@ class UsersListQuery {
 
 const usersModule = module()
   .import('db', dbModule)
-  .define('usersQuery', singleton(UsersListQuery, ['db.connection']));
+  .define('usersQuery', ({ db }) => new UsersListQuery(db.connection));
 ```
 
 #### Module identity / replacing definitions
@@ -301,7 +207,7 @@ Calling `.define` creates a new instance of the module with a different identity
 
 ```typescript
 const m1 = module();
-const m1Extended = m1.define('someVal', value(true));
+const m1Extended = m1.define('someVal', () => true);
 
 m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new id
 ```
@@ -310,9 +216,9 @@ Module preserves its identity using `.replace`. A new module created this way is
 because `.replace` accepts only a type which is compatible with the original one.
 
 ```typescript
-const m1 = module().define('someVal', value(false));
-const m1WithReplacedValue = m1.replace('someVal', value(true));
-//const m1WithReplacedValue = m1.replace('someVal', value("cannot replace boolean with string")); // compile-time error
+const m1 = module().define('someVal', () => false);
+const m1WithReplacedValue = m1.replace('someVal', () => true);
+//const m1WithReplacedValue = m1.replace('someVal', () => "cannot replace boolean with string"); // compile-time error
 
 m1.isEqual(m1WithReplacedValue); // true - modules still have the same identities and they are interchangeable
 ```
@@ -331,13 +237,13 @@ class DbConnection {
 }
 
 const dbModule = module()
-  .define('config', value(databaseConfig))
-  .define('connection', singleton(DbConnection, ['config']));
+  .define('config', () => databaseConfig)
+  .define('connection', c => new DbConnection(c.config));
 
 const containerWithOriginalConfig = container();
 containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
 
-const updatedDbModule = dbModule.replace('config', value({ url: 'updated' }));
+const updatedDbModule = dbModule.replace('config', () => ({ url: 'updated' }));
 const containerWithUpdatedConfig = container({ overrides: [updatedDbModule] }); //
 containerWithUpdatedConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to 'updated'
 ```
@@ -365,8 +271,8 @@ class Document {
 }
 
 const someModule = module() // breakme
-  .define('writer', singleton(Writer))
-  .define('document', singleton(Document), ['writer']);
+  .define('writer', c => new Writer())
+  .define('document', c => new Document(c.writer));
 
 // tests
 it('calls write on save', () => {
