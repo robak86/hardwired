@@ -16,6 +16,7 @@ export class ContainerContext {
 
   private requestScope: Record<string, any> = {};
   private requestScopeAsync: Record<string, PushPromise<any>> = {};
+  private materializedObjects: Record<string, any> = {};
 
   protected constructor(
     public globalScope: Record<string, any> = {},
@@ -208,6 +209,10 @@ export class ContainerContext {
     module: TModule,
     context: ContainerContext,
   ): Module.Materialized<TModule> {
+    if (context.materializedObjects[module.moduleId.id]) {
+      return context.materializedObjects[module.moduleId.id];
+    }
+
     const materialized: any = {};
 
     module.registry.forEach((boundResolver, key) => {
@@ -229,6 +234,8 @@ export class ContainerContext {
         });
       }
     });
+
+    context.materializedObjects[module.moduleId.id] = materialized;
 
     return materialized;
   }

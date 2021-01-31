@@ -63,6 +63,11 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   // TODO: is it necessary to return Instance with TDeps?  TDeps are not necessary after the instance is registered
   define<TKey extends string, TValue>(
     name: TKey,
+    buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
+    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
+  define<TKey extends string, TValue>(
+    name: TKey,
     resolver: LiteralResolverDefinition<ModuleRecord.Materialized<TRecord>, TValue>,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
   define<TKey extends string, TValue>(
@@ -81,8 +86,10 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     resolver:
       | Instance<TValue, []>
       | Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>
-      | LiteralResolverDefinition<ModuleRecord.Materialized<TRecord>, TValue>,
-    dependencies?: TDepsKeys,
+      | LiteralResolverDefinition<ModuleRecord.Materialized<TRecord>, TValue>
+      | ((ctx: ModuleRecord.Materialized<TRecord>) => TValue),
+
+    dependencies?: TDepsKeys | BuildStrategy<TValue>,
   ): unknown {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);

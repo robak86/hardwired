@@ -14,7 +14,8 @@ describe(`LiteralResolver`, () => {
         .define(
           'val2',
           literal(() => true),
-        ).freeze()
+        )
+        .freeze();
 
       type Actual = Module.Materialized<typeof m>['val2'];
 
@@ -35,10 +36,12 @@ describe(`LiteralResolver`, () => {
 
   describe(`no dependencies`, () => {
     it(`returns correct instance`, async () => {
-      const m = unit().define(
-        'literal',
-        literal(() => 'someValue'),
-      ).freeze();
+      const m = unit()
+        .define(
+          'literal',
+          literal(() => 'someValue'),
+        )
+        .freeze();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('someValue');
     });
@@ -135,7 +138,7 @@ describe(`LiteralResolver`, () => {
       const mod = unit()
         .define(
           'someValue',
-          literal(() => ({ someProperty: 1 }), Scope.request),
+          literal(() => ({ someProperty: Math.random() }), Scope.request),
         )
         .define(
           'someValueProxy',
@@ -144,12 +147,12 @@ describe(`LiteralResolver`, () => {
         .freeze();
 
       const c = container();
-      const { someValue, someValueProxy } = c.asObject(mod);
-      expect(someValue === someValueProxy).toEqual(true);
+      const req1 = c.asObject(mod);
+      const req2 = c.asObject(mod);
 
-      const { someValue: someValueNewRequest, someValueProxy: someValueProxyNewRequest } = c.asObject(mod);
-      expect(someValueNewRequest).toBe(someValueProxyNewRequest);
-      expect(someValueNewRequest === someValue).toBe(false);
+      expect(req1.someValue === req1.someValueProxy).toEqual(true);
+      expect(req2.someValue === req2.someValueProxy).toEqual(true);
+      expect(req1 === req2).toEqual(true);
     });
   });
 });

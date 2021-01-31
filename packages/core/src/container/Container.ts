@@ -19,15 +19,14 @@ export class Container {
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    const requestContext = this.containerContext.forNewRequest();
-    return this.containerContext.materializeModule(module, requestContext);
+    return this.containerContext.materializeModule(module, this.containerContext);
   }
 
   getContext(): ContainerContext {
     return this.containerContext;
   }
 
-  checkout(): Container {
+  usingNewRequestScope(): Container {
     return new Container(this.containerContext.forNewRequest(), this.overrides, this.eager);
   }
 }

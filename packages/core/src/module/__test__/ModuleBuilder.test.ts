@@ -290,7 +290,7 @@ describe(`ModuleBuilder`, () => {
         expect(c.get(m, 'a')).not.toEqual(c.get(m, 'a'));
       });
 
-      it(`preserves request scope of the original resolver`, async () => {
+      it(`uses the same request scope for each subsequent asObject call`, async () => {
         const m = module()
           .define(
             'source',
@@ -310,8 +310,8 @@ describe(`ModuleBuilder`, () => {
 
         expect(req1.source).toEqual(req1.a);
         expect(req2.source).toEqual(req2.a);
-        expect(req1.source).not.toEqual(req2.source);
-        expect(req1.a).not.toEqual(req2.a);
+        expect(req1.source).toEqual(req2.source);
+        expect(req1.a).toEqual(req2.a);
       });
 
       it(`caches produced object`, async () => {
