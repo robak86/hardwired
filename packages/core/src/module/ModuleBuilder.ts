@@ -84,6 +84,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   freeze(): Module<TRecord> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot freeze the module. Module is already frozen.`);
     this.isFrozenRef.isFrozen = true;
-    return new Module(this.moduleId, this.registry) as Module<TRecord>;
+    return new Module(ModuleId.next(this.moduleId), this.registry) as Module<TRecord>;
   }
 }

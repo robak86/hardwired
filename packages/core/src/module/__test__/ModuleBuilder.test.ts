@@ -338,6 +338,12 @@ describe(`ModuleBuilder`, () => {
       const nextModule = prefModule.define('a', () => 1).freeze();
       expect(() => prefModule.freeze()).toThrow();
     });
+
+    it(`produces module with next unique id`, async () => {
+      const prevModule = module();
+      const frozen = prevModule.freeze();
+      expect(prevModule.moduleId.id).not.toEqual(frozen.moduleId.id)
+    });
   });
 
   describe(`materializing context`, () => {
