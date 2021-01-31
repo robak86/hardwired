@@ -57,7 +57,8 @@ class Logger {
 
 const loggerModule = module()
   .define('configuration', () => new LoggerConfiguration(), singleton)
-  .define('logger', m => new Logger(m.configuration), singleton);
+  .define('logger', m => new Logger(m.configuration), singleton)
+  .build();
 ```
 
 2. Create a container
@@ -102,7 +103,8 @@ const logger = obj.logger; // instance of Logger was created
   const m1 = module()
     .define('a', () => 123)
     .define('b', () => 'someString')
-    .define('c', ({ a, b }) => new DummyClass(a, b), singleton);
+    .define('c', ({ a, b }) => new DummyClass(a, b), singleton)
+    .build();
   ```
 
 #### Available strategies (lifetimes, scopes)
@@ -114,7 +116,10 @@ const logger = obj.logger; // instance of Logger was created
 
   class SomeClass {}
 
-  const someModule = module().define('transientDependency', () => new SomeClass(), transient);
+  const someModule = module()
+    .define('transientDependency', () => new SomeClass(), transient)
+    .build();
+
   const ct = container();
 
   ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
@@ -127,7 +132,10 @@ const logger = obj.logger; // instance of Logger was created
 
   class SomeClass {}
 
-  const someModule = module().define('someSingleton', () => new SomeClass(), singleton);
+  const someModule = module()
+    .define('someSingleton', () => new SomeClass(), singleton)
+    .build();
+
   const ct = container();
 
   ct.get(someModule, 'someSingleton') === ct.get(someModule, 'someSingleton'); // true
@@ -154,7 +162,8 @@ const logger = obj.logger; // instance of Logger was created
   const someModule = module()
     .define('leaf', m => new SomeClass())
     .define('child', m => new SomeClass(m.leaf), request)
-    .define('parent', m => new SomeClass(m.child, m.leaf), request);
+    .define('parent', m => new SomeClass(m.child, m.leaf), request)
+    .build();
 
   const ct = container();
 
@@ -180,7 +189,8 @@ class DbConnection {
 
 const dbModule = module()
   .define('config', () => databaseConfig)
-  .define('connection', ({ config }) => new DbConnection(config));
+  .define('connection', ({ config }) => new DbConnection(config))
+  .build();
 
 class UsersListQuery {
   constructor(private dbConnection: DbConnection) {}
@@ -188,7 +198,8 @@ class UsersListQuery {
 
 const usersModule = module()
   .import('db', dbModule)
-  .define('usersQuery', ({ db }) => new UsersListQuery(db.connection));
+  .define('usersQuery', ({ db }) => new UsersListQuery(db.connection))
+  .build();
 ```
 
 #### Module identity / replacing definitions
@@ -207,7 +218,7 @@ Calling `.define` creates a new instance of the module with a different identity
 
 ```typescript
 const m1 = module();
-const m1Extended = m1.define('someVal', () => true);
+const m1Extended = m1.define('someVal', () => true).build();
 
 m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new id
 ```
@@ -216,7 +227,10 @@ Module preserves its identity using `.replace`. A new module created this way is
 because `.replace` accepts only a type which is compatible with the original one.
 
 ```typescript
-const m1 = module().define('someVal', () => false);
+const m1 = module()
+  .define('someVal', () => false)
+  .build();
+
 const m1WithReplacedValue = m1.replace('someVal', () => true);
 //const m1WithReplacedValue = m1.replace('someVal', () => "cannot replace boolean with string"); // compile-time error
 
@@ -238,7 +252,8 @@ class DbConnection {
 
 const dbModule = module()
   .define('config', () => databaseConfig)
-  .define('connection', c => new DbConnection(c.config));
+  .define('connection', c => new DbConnection(c.config))
+  .build();
 
 const containerWithOriginalConfig = container();
 containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
@@ -272,7 +287,8 @@ class Document {
 
 const someModule = module() // breakme
   .define('writer', c => new Writer())
-  .define('document', c => new Document(c.writer));
+  .define('document', c => new Document(c.writer))
+  .build();
 
 // tests
 it('calls write on save', () => {
