@@ -20,7 +20,6 @@ export class ContainerContext {
   protected constructor(
     public globalScope: Record<string, any> = {},
     public modulesResolvers: Record<string, Module<any>> = {},
-    public dependencies: Record<string, Instance<any, any>[] | Record<string, Instance<any, any>>> = {},
     public resolvers: ResolversLookup = new ResolversLookup(),
     public overrides = ImmutableMap.empty(),
   ) {}
@@ -43,15 +42,13 @@ export class ContainerContext {
     invariant(resolver, `Cannot return instance resolver for path ${path}. ${moduleOrInstance} does not exist.`);
 
     if (resolver.kind === 'instanceResolver') {
-      if (!this.hasWiredDependencies(resolver.id)) {
+      if (!this.resolvers.has(resolver)) {
         const depsInstances = dependencies.map(d => {
           if (typeof d === 'string') {
             return this.getInstanceResolver(targetModule, d);
           }
           throw new Error('implement me');
         });
-
-        this.setDependencies(resolver.id, depsInstances);
       }
 
       if (!this.resolvers.has(resolver)) {
@@ -105,20 +102,6 @@ export class ContainerContext {
     });
   }
 
-  setDependencies(uuid: string, instances: Instance<any, any>[] | Record<string, Instance<any, any>>) {
-    this.dependencies[uuid] = instances;
-  }
-
-  getDependencies(uuid: string): Instance<any, any>[] {
-    const deps = this.dependencies[uuid];
-    invariant(Array.isArray(deps), `Cannot get dependencies. Instance wasn't initialized.`);
-    return deps;
-  }
-
-  protected hasWiredDependencies(uuid: string): boolean {
-    return !!this.dependencies[uuid];
-  }
-
   setForGlobalScope(uuid: string, instance: any) {
     this.globalScope[uuid] = instance;
   }
@@ -168,13 +151,7 @@ export class ContainerContext {
   //       or we need some other kind of scope. In theory each react component should create this kind of scope
   //       and it should be inherited by all children
   forNewRequest(): ContainerContext {
-    return new ContainerContext(
-      this.globalScope,
-      this.modulesResolvers,
-      this.dependencies,
-      this.resolvers,
-      this.overrides,
-    );
+    return new ContainerContext(this.globalScope, this.modulesResolvers, this.resolvers, this.overrides);
   }
 
   protected addModule(module: Module<any>) {
