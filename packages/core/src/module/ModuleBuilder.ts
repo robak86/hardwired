@@ -2,9 +2,8 @@ import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
-import { AnyResolver, Module, ModuleRecord, PropTypesTuple } from '../resolvers/abstract/Module';
+import { AnyResolver, Module, ModuleRecord } from '../resolvers/abstract/Module';
 import { Instance } from '../resolvers/abstract/Instance';
-import { LiteralResolverDefinition } from '../resolvers/LiteralResolver';
 import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 import { singleton } from '../strategies/SingletonStrategy';
 
@@ -43,64 +42,43 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     );
   }
 
-  literal<TKey extends string, TValue>(
+  define<TKey extends string, TInstance extends Instance<any, any>>(
+    name: TKey,
+    instance: TInstance, // TODO: TInstance | (ctx: ModuleRecord.Materialized<TRecord>) => TInstance - detection needs to be determined at instance creation
+  ): ModuleBuilder<TRecord & Record<TKey, TInstance>>;
+
+  define<TKey extends string, TValue>(
     name: TKey,
     buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
-    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue> = singleton,
+    buildStrategy?: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
+
+  define<TKey extends string, TValue>(
+    name: TKey,
+    buildFnOrInstance: ((ctx: ModuleRecord.Materialized<TRecord>) => TValue) | Instance<TValue, []>,
+    buildStrategy = singleton,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
+
+    if (buildFnOrInstance instanceof Instance) {
+      return new ModuleBuilder(
+        ModuleId.next(this.moduleId),
+        this.registry.extend(name, {
+          resolverThunk: buildFnOrInstance,
+          dependencies: [],
+        }) as any,
+        this.isFrozenRef,
+      );
+    }
 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
-        resolverThunk: buildStrategy(buildFn),
+        resolverThunk: buildStrategy(buildFnOrInstance),
         dependencies: [],
       }) as any,
       this.isFrozenRef,
     );
-  }
-
-  // TODO: is it necessary to return Instance with TDeps?  TDeps are not necessary after the instance is registered
-  define<TKey extends string, TValue>(
-    name: TKey,
-    buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
-    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
-  define<TKey extends string, TValue>(
-    name: TKey,
-    resolver: LiteralResolverDefinition<ModuleRecord.Materialized<TRecord>, TValue>,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
-  define<TKey extends string, TValue>(
-    name: TKey,
-    resolver: Instance<TValue, []>,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
-  define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
-    name: TKey,
-    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>,
-    dependencies: TDepsKeys,
-  ): ModuleBuilder<
-    TRecord & Record<TKey, Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>>
-  >;
-  define<TKey extends string, TValue, TDepKey extends Module.Paths<TRecord>, TDepsKeys extends [TDepKey, ...TDepKey[]]>(
-    name: TKey,
-    resolver:
-      | Instance<TValue, []>
-      | Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>
-      | LiteralResolverDefinition<ModuleRecord.Materialized<TRecord>, TValue>
-      | ((ctx: ModuleRecord.Materialized<TRecord>) => TValue),
-
-    dependencies?: TDepsKeys | BuildStrategy<TValue>,
-  ): unknown {
-    invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
-    invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
-    return new ModuleBuilder(
-      ModuleId.next(this.moduleId),
-      this.registry.extend(name, {
-        resolverThunk: resolver,
-        dependencies: dependencies || [],
-      }) as any,
-      this.isFrozenRef,
-    ) as any;
   }
 
   freeze(): Module<TRecord> {

@@ -1,10 +1,7 @@
-import { transient } from '../ClassTransientResolver';
-import { dependency } from '../../__test__/TestResolvers';
 import { container } from '../../container/Container';
 import { createResolverId } from '../../utils/fastId';
-import { expectType, TypeEqual } from 'ts-expect';
 import { unit } from '../../module/ModuleBuilder';
-import { Instance } from '../abstract/Instance';
+import { transient } from '../TransientStrategy';
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {
@@ -14,15 +11,15 @@ describe(`ClassTransientResolver`, () => {
   }
 
   describe(`transient`, () => {
-    it(`return Instance type`, async () => {
-      const s = transient(TestClass);
-      expectType<TypeEqual<typeof s, Instance<TestClass, [string]>>>(true);
-    });
+    // it(`return Instance type`, async () => {
+    //   const s = transient(TestClass);
+    //   expectType<TypeEqual<typeof s, Instance<TestClass, [string]>>>(true);
+    // });
   });
 
   const m = unit()
-    .define('someValue', dependency('someString'))
-    .define('a', transient(TestClass), ['someValue'])
+    .define('someValue', () => 'someString')
+    .define('a', c => new TestClass(c.someValue), transient)
     .freeze();
 
   it(`returns class instance`, async () => {

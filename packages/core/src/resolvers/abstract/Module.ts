@@ -1,18 +1,15 @@
 import { ModuleId } from '../../module/ModuleId';
 import { ImmutableMap } from '../../collections/ImmutableMap';
 import { Thunk } from '../../utils/Thunk';
-import { PropType } from '../../utils/PropType';
+
 import { Instance } from './Instance';
 import invariant from 'tiny-invariant';
 import { DecoratorResolver } from '../DecoratorResolver';
+import { BuildStrategy } from '../../strategies/abstract/BuildStrategy';
+import { singleton } from '../../strategies/SingletonStrategy';
 
 // prettier-ignore
 export type AnyResolver = Instance<any, any> | Module<any> ;
-
-export type PropTypesTuple<T extends string[], TDeps extends Record<string, unknown>> = {
-  [K in keyof T]: PropType<TDeps, T[K] & string>;
-};
-
 export type ModuleRecord = Record<string, AnyResolver>;
 
 export namespace ModuleRecord {
@@ -42,10 +39,6 @@ export namespace Module {
     TModule extends Module<infer TRecord> ?
       ({ [K in keyof TRecord]: TRecord[K] extends Instance<infer A, infer B> ? K : never })[keyof TRecord] : unknown
 
-  export type Paths<TRecord extends Record<string, AnyResolver>> = {
-    [K in keyof TRecord & string]: TRecord[K] extends Module<infer TChildEntry> ? `${K}.${Paths<TChildEntry>}` : K;
-  }[keyof TRecord & string];
-
   export type BoundResolver = {
     resolverThunk: Thunk<AnyResolver>;
     dependencies: (string | Record<string, string>)[];
@@ -65,31 +58,37 @@ export class Module<TRecord extends Record<string, AnyResolver>> {
 
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
-    resolver: Instance<TValue, []>,
+    instance: Instance<TValue, []>, // TODO: TInstance | (ctx: ModuleRecord.Materialized<TRecord>) => TInstance - detection needs to be determined at instance creation
   ): Module<TRecord>;
-  replace<
-    TKey extends ModuleRecord.InstancesKeys<TRecord>,
-    TValue extends Instance.Unbox<TRecord[TKey]>,
-    TDepKey extends Module.Paths<TRecord>,
-    TDepsKeys extends [TDepKey, ...TDepKey[]]
-  >(
+
+  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
-    resolver: Instance<TValue, PropTypesTuple<TDepsKeys, ModuleRecord.Materialized<TRecord>>>,
-    dependencies: TDepsKeys,
+    buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
+    buildStrategy?: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
   ): Module<TRecord>;
-  replace<
-    TKey extends ModuleRecord.InstancesKeys<TRecord>,
-    TValue extends Instance.Unbox<TRecord[TKey]>,
-    TDepKey extends Module.Paths<TRecord>,
-    TDepsKeys extends [TDepKey, ...TDepKey[]]
-  >(name: TKey, resolver: Instance<any, any>, dependencies?: TDepsKeys): Module<TRecord> {
+
+  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
+    name: TKey,
+    buildFnOrInstance: ((ctx: ModuleRecord.Materialized<TRecord>) => TValue) | Instance<TValue, []>,
+    buildStrategy = singleton,
+  ): Module<TRecord> {
     invariant(this.registry.hasKey(name), `Cannot replace definition. Definition: ${name} does not exist.`);
+
+    if (typeof buildFnOrInstance === 'function') {
+      return new Module(
+        this.moduleId,
+        this.registry.replace(name, {
+          resolverThunk: buildStrategy(buildFnOrInstance),
+          dependencies: [],
+        }),
+      );
+    }
 
     return new Module(
       this.moduleId,
       this.registry.replace(name, {
-        resolverThunk: resolver,
-        dependencies: dependencies || [],
+        resolverThunk: buildFnOrInstance,
+        dependencies: [],
       }),
     );
   }

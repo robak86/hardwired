@@ -1,12 +1,8 @@
-import { singleton } from '../ClassSingletonResolver';
-import { dependency } from '../../__test__/TestResolvers';
 import { container } from '../../container/Container';
 import { createResolverId } from '../../utils/fastId';
-import { value } from '../ValueResolver';
-import { transient } from '../ClassTransientResolver';
-import { expectType, TypeEqual } from 'ts-expect';
 import { unit } from '../../module/ModuleBuilder';
-import { Instance } from '../abstract/Instance';
+import { singleton, SingletonStrategy } from '../SingletonStrategy';
+import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {
@@ -21,15 +17,15 @@ describe(`ClassSingletonResolver`, () => {
 
   describe(`singleton`, () => {
     it(`return Instance type`, async () => {
-      const s = singleton(TestClass);
-      expectType<TypeEqual<typeof s, Instance<TestClass, [string]>>>(true);
+      const s = singleton(() => new TestClass(''));
+      expectType<TypeEqual<typeof s, SingletonStrategy<TestClass>>>(true);
     });
   });
 
   describe(`single module`, () => {
     const m = unit()
-      .define('someValue', dependency('someString'))
-      .define('a', singleton(TestClass), ['someValue'])
+      .define('someValue', () => 'someString', singleton)
+      .define('a', ctx => new TestClass(ctx.someValue))
       .freeze();
 
     it(`returns class instance`, async () => {
@@ -57,22 +53,34 @@ describe(`ClassSingletonResolver`, () => {
       .import('child2', () => child2)
 
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton'])
+      .define(
+        'singletonConsumer',
+        ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
+        singleton,
+      )
       .freeze();
 
     const child1 = unit()
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton'])
+      .define(
+        'singletonConsumer',
+        ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
+        singleton,
+      )
       .freeze();
 
     const child2 = unit()
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', transient(TestClassConsumer), ['singletonModule.theSingleton'])
+      .define(
+        'singletonConsumer',
+        ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
+        singleton,
+      )
       .freeze();
 
     const singletonModule = unit()
-      .define('value', value('someValue'))
-      .define('theSingleton', singleton(TestClass), ['value'])
+      .define('value', () => 'someValue')
+      .define('theSingleton', ctx => new TestClass(ctx.value))
       .freeze();
 
     it(`reuses the same instance`, async () => {
@@ -100,8 +108,8 @@ describe(`ClassSingletonResolver`, () => {
   describe(`multiple containers`, () => {
     it(`does not shares instances across multiple containers`, async () => {
       const m = unit()
-        .define('someValue', dependency('someString'))
-        .define('a', singleton(TestClass), ['someValue'])
+        .define('someValue', () => 'someString')
+        .define('a', _ => new TestClass(_.someValue), singleton)
         .freeze();
 
       const c1 = container();

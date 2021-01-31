@@ -1,7 +1,7 @@
 import now from 'performance-now';
 import { Container, container } from '../container/Container';
-import { ModuleBuilder, unit } from '../module/ModuleBuilder';
-import { value } from '../resolvers/ValueResolver';
+import { unit } from '../module/ModuleBuilder';
+
 import { Module } from '../resolvers/abstract/Module';
 
 describe.skip(`performance`, () => {
@@ -14,7 +14,7 @@ describe.skip(`performance`, () => {
 
     for (let i = 0; i < times; i++) {
       const start = now();
-      result.module = result.module.define(`SOME_ID_${i}`, value({ test: 1 }));
+      result.module = result.module.define(`SOME_ID_${i}`, () => ({ test: 1 }));
       const end = now();
       result.register = end - start;
     }

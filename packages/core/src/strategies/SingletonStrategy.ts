@@ -1,6 +1,5 @@
 import { ContainerContext } from '../container/ContainerContext';
 import { BuildStrategy } from './abstract/BuildStrategy';
-import { TransientStrategy } from './TransientStrategy';
 
 export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
   build(context: ContainerContext, materializedModule): TValue {

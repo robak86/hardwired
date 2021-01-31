@@ -1,4 +1,4 @@
-import { container, literal, module } from 'hardwired';
+import { container, module } from 'hardwired';
 import { act, render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
@@ -9,14 +9,8 @@ import { DummyObservable } from '../../__test__/DummyObservable';
 describe(`useObservable`, () => {
   describe(`instantiating dependencies`, () => {
     const m1 = module() //breakme
-      .define(
-        'val1',
-        literal(() => new DummyObservable('val1')),
-      )
-      .define(
-        'val2',
-        literal(() => new DummyObservable('val2')),
-      )
+      .define('val1', () => new DummyObservable('val1'))
+      .define('val2', () => new DummyObservable('val2'))
       .freeze();
 
     function setup() {
@@ -42,10 +36,7 @@ describe(`useObservable`, () => {
 
   describe(`binding transient dependencies to component instance`, () => {
     const m1 = module()
-      .define(
-        'cls',
-        literal(() => new DummyObservable(Math.random())),
-      )
+      .define('cls', () => new DummyObservable(Math.random()))
       .freeze();
 
     function setup() {
@@ -98,10 +89,7 @@ describe(`useObservable`, () => {
       jest.spyOn(observable, 'subscribe');
 
       const m = module()
-        .define(
-          'observable',
-          literal(() => observable),
-        )
+        .define('observable', () => observable)
         .freeze();
 
       const TestSubject = () => {
@@ -136,10 +124,7 @@ describe(`useObservable`, () => {
       }
 
       const m = module()
-        .define(
-          'observable',
-          literal(() => observable),
-        )
+        .define('observable', () => observable)
         .freeze();
 
       const TestSubject = () => {
@@ -169,10 +154,7 @@ describe(`useObservable`, () => {
       const observable = new DummyObservable(1);
 
       const m = module()
-        .define(
-          'observable',
-          literal(() => observable),
-        )
+        .define('observable', () => observable)
         .freeze();
 
       const TestSubject = () => {

@@ -6,7 +6,6 @@ import { ImmutableMap } from '../collections/ImmutableMap';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
-import { ClassType } from '../utils/ClassType';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -193,16 +192,6 @@ export class ContainerContext {
 
     invariant(targetModule, `Cannot get module with moduleId: ${moduleId}`);
     return targetModule;
-  }
-
-  // TODO: allow using resolvers factory, .e.g singleton, selector, store
-  // TODO: it may be very tricky since container leverages lazy loading if possible
-  __getByType_experimental<TValue, TResolverClass extends Instance<TValue, any>>(
-    type: ClassType<TResolverClass, any>,
-  ): TValue[] {
-    return this.resolvers.filterByType(type).map(resolver => {
-      return this.runResolver(resolver, this);
-    });
   }
 
   materializeModule<TModule extends Module<any>>(

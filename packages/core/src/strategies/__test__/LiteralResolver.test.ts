@@ -1,20 +1,18 @@
 import { ModuleBuilder, unit } from '../../module/ModuleBuilder';
-import { literal } from '../LiteralResolver';
+
 import { container } from '../../container/Container';
-import { value } from '../ValueResolver';
-import { Module } from '../abstract/Module';
+import { Module } from '../../resolvers/abstract/Module';
 import { expectType, TypeEqual } from 'ts-expect';
-import { Scope } from '../abstract/Instance';
+import { transient } from '../TransientStrategy';
+import { request } from '../RequestStrategy';
+import { singleton } from '../SingletonStrategy';
 
 describe(`LiteralResolver`, () => {
   describe(`types`, () => {
     it(`return defines correct return type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('val1', value(123))
-        .define(
-          'val2',
-          literal(() => true),
-        )
+        .define('val1', () => 123)
+        .define('val2', () => true)
         .freeze();
 
       type Actual = Module.Materialized<typeof m>['val2'];
@@ -24,23 +22,17 @@ describe(`LiteralResolver`, () => {
 
     it(`uses correct materialized module type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('val1', value(123))
-        .define(
-          'val2',
-          literal(materializedModule => {
-            expectType<TypeEqual<typeof materializedModule, { val1: number }>>(true);
-          }),
-        );
+        .define('val1', () => 123)
+        .define('val2', materializedModule => {
+          expectType<TypeEqual<typeof materializedModule, { val1: number }>>(true);
+        });
     });
   });
 
   describe(`no dependencies`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
-        .define(
-          'literal',
-          literal(() => 'someValue'),
-        )
+        .define('literal', () => 'someValue')
         .freeze();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('someValue');
@@ -50,11 +42,8 @@ describe(`LiteralResolver`, () => {
   describe(`using dependencies from the same module`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
-        .define('literalDependency', value('dependency'))
-        .define(
-          'literal',
-          literal(({ literalDependency }) => literalDependency),
-        )
+        .define('literalDependency', () => 'dependency')
+        .define('literal', ({ literalDependency }) => literalDependency)
         .freeze();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('dependency');
@@ -64,18 +53,12 @@ describe(`LiteralResolver`, () => {
   describe(`getting dependencies from imported module`, () => {
     it(`returns correct instance`, async () => {
       const childM = unit()
-        .define(
-          'someValue',
-          literal(() => 1),
-        )
+        .define('someValue', () => 1)
         .freeze();
 
       const parentM = unit()
         .import('imported', childM)
-        .define(
-          'usesImportedValue',
-          literal(({ imported }) => imported.someValue),
-        )
+        .define('usesImportedValue', ({ imported }) => imported.someValue)
         .freeze();
 
       const c = container();
@@ -86,21 +69,15 @@ describe(`LiteralResolver`, () => {
   describe(`overrides`, () => {
     it(`works with overridden imported module`, async () => {
       const childM = unit()
-        .define(
-          'someValue',
-          literal(() => 1),
-        )
+        .define('someValue', () => 1)
         .freeze();
 
       const parentM = unit()
         .import('imported', childM)
-        .define(
-          'usesImportedValue',
-          literal(({ imported }) => imported.someValue),
-        )
+        .define('usesImportedValue', ({ imported }) => imported.someValue)
         .freeze();
 
-      const c = container({ overrides: [childM.replace('someValue', value(123))] });
+      const c = container({ overrides: [childM.replace('someValue', () => 123)] });
       expect(c.get(parentM, 'usesImportedValue')).toEqual(123);
     });
   });
@@ -108,10 +85,7 @@ describe(`LiteralResolver`, () => {
   describe(`transient scope`, () => {
     it(`returns new instance on each request`, async () => {
       const mod = unit()
-        .define(
-          'someValue',
-          literal(() => ({ someProperty: 1 }), Scope.transient),
-        )
+        .define('someValue', () => ({ someProperty: 1 }), transient)
         .freeze();
 
       const c = container();
@@ -122,10 +96,8 @@ describe(`LiteralResolver`, () => {
   describe(`singleton scope`, () => {
     it(`returns the same instance`, async () => {
       const mod = unit()
-        .define(
-          'someValue',
-          literal(() => ({ someProperty: 1 }), Scope.singleton),
-        )
+        .define('someValue', () => ({ someProperty: 1 }), singleton)
+
         .freeze();
 
       const c = container();
@@ -136,14 +108,8 @@ describe(`LiteralResolver`, () => {
   describe(`request scope`, () => {
     it(`returns the same instance`, async () => {
       const mod = unit()
-        .define(
-          'someValue',
-          literal(() => ({ someProperty: Math.random() }), Scope.request),
-        )
-        .define(
-          'someValueProxy',
-          literal(({ someValue }) => someValue, Scope.request),
-        )
+        .define('someValue', () => ({ someProperty: Math.random() }), request)
+        .define('someValueProxy', ({ someValue }) => someValue, request)
         .freeze();
 
       const c = container();
