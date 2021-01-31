@@ -45,7 +45,7 @@ export namespace Module {
 }
 
 export class Module<TRecord extends Record<string, AnyResolver>> {
-  readonly kind: 'moduleResolver' = 'moduleResolver';
+  readonly __kind: 'moduleResolver' = 'moduleResolver';
 
   __definitions!: TRecord; // prevent erasing the type
 

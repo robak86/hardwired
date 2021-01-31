@@ -41,7 +41,7 @@ export class ContainerContext {
 
     invariant(resolver, `Cannot return instance resolver for path ${path}. ${moduleOrInstance} does not exist.`);
 
-    if (resolver.kind === 'instanceResolver') {
+    if (resolver.__kind === 'instanceResolver') {
       if (!this.resolvers.has(resolver)) {
         this.resolvers.add(targetModule, path, resolver);
       }
@@ -49,7 +49,7 @@ export class ContainerContext {
       return resolver;
     }
 
-    if (resolver.kind === 'moduleResolver') {
+    if (resolver.__kind === 'moduleResolver') {
       invariant(instance, `getInstanceResolver is not intended to return module. Path is missing instance target`);
       const instanceResolver = this.getInstanceResolver(resolver, instance);
       if (!this.resolvers.has(instanceResolver)) {
@@ -73,8 +73,8 @@ export class ContainerContext {
     const module = this.resolvers.getModuleForResolver(resolver.id);
     const materializedModule = this.materializeModule(module, context);
     const result = resolver.build(context, materializedModule);
-    
-    if (result.kind === 'instanceResolver') {
+
+    if (result.__kind === 'instanceResolver') {
       return result.build(context, materializedModule);
     }
 
@@ -84,11 +84,11 @@ export class ContainerContext {
   eagerLoad(module: Module<any>) {
     module.registry.forEach((boundResolver, key) => {
       const resolver = unwrapThunk(boundResolver.resolverThunk);
-      if (resolver.kind === 'moduleResolver') {
+      if (resolver.__kind === 'moduleResolver') {
         this.eagerLoad(resolver);
       }
 
-      if (resolver.kind === 'instanceResolver') {
+      if (resolver.__kind === 'instanceResolver') {
         this.getInstanceResolver(module, key);
       }
     });
@@ -175,7 +175,7 @@ export class ContainerContext {
 
     module.registry.forEach((boundResolver, key) => {
       const resolver = unwrapThunk(boundResolver.resolverThunk);
-      if (resolver.kind === 'instanceResolver') {
+      if (resolver.__kind === 'instanceResolver') {
         Object.defineProperty(materialized, key, {
           configurable: false,
           get: () => {
@@ -185,7 +185,7 @@ export class ContainerContext {
         });
       }
 
-      if (resolver.kind === 'moduleResolver') {
+      if (resolver.__kind === 'moduleResolver') {
         Object.defineProperty(materialized, key, {
           configurable: false,
           get: () => this.materializeModule(resolver, context),

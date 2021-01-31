@@ -14,7 +14,7 @@ export namespace Instance {
 }
 
 export abstract class Instance<TValue, TDeps extends any[]> {
-  readonly kind: 'instanceResolver' = 'instanceResolver';
+  readonly __kind: 'instanceResolver' = 'instanceResolver';
 
   // make sure that generic types won't be erased
   readonly __TValue!: TValue;
