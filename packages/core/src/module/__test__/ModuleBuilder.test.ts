@@ -8,6 +8,7 @@ import { Module } from '../../resolvers/abstract/Module';
 import { Instance, Scope } from '../../resolvers/abstract/Instance';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { literal } from '../../resolvers/LiteralResolver';
+import { transient } from '../../strategies/TransientStrategy';
 
 describe(`ModuleBuilder`, () => {
   const dummy = <TValue>(value: TValue): Instance<TValue, []> => {
@@ -312,6 +313,19 @@ describe(`ModuleBuilder`, () => {
         expect(req1.source).not.toEqual(req2.source);
         expect(req1.a).not.toEqual(req2.a);
       });
+
+      it(`caches produced object`, async () => {
+        const m = module()
+          .literal('a', () => Math.random(), transient)
+          .literal('b', () => Math.random(), transient)
+          .freeze();
+
+        const c = container();
+        const obj1 = c.asObject(m);
+        const obj2 = c.asObject(m);
+
+        expect(obj1).toBe(obj2);
+      });
     });
 
     describe(`overrides`, () => {
@@ -322,6 +336,20 @@ describe(`ModuleBuilder`, () => {
 
         expect(c.get(m, 'a')).toEqual(2);
       });
+    });
+  });
+
+  describe(`freezing`, () => {
+    it(`throws if one tries to extend module which is already frozen`, async () => {
+      const prevModule = module();
+      const def1 = prevModule.literal('a', () => 1).freeze();
+      expect(() => prevModule.literal('b', () => 2)).toThrow();
+    });
+
+    it(`throws if one tries to freeze a parent module while child module is frozen`, async () => {
+      const prefModule = module();
+      const nextModule = prefModule.literal('a', () => 1).freeze();
+      expect(() => prefModule.freeze()).toThrow();
     });
   });
 });

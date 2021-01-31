@@ -13,12 +13,13 @@ export const unit = module;
 
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   static empty(): ModuleBuilder<{}> {
-    return new ModuleBuilder<{}>(ModuleId.build(), ImmutableMap.empty() as any);
+    return new ModuleBuilder<{}>(ModuleId.build(), ImmutableMap.empty() as any, { isFrozen: false });
   }
 
   protected constructor(
     public moduleId: ModuleId,
     public registry: ImmutableMap<Record<string, Module.BoundResolver>>,
+    private isFrozenRef: { isFrozen: boolean },
   ) {}
 
   isEqual(otherModule: Module<any>): boolean {
@@ -30,14 +31,15 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     resolver: Thunk<TValue>,
   ): ModuleBuilder<TRecord & Record<TKey, TValue>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
+    invariant(!this.isFrozenRef.isFrozen, `Module is frozen. Cannot import additional modules.`);
 
-    //TODO: should we autofreeze a module here ? and throw next time module is imported but it's extended with additional definitions ?
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
         resolverThunk: resolver,
         dependencies: [],
       }) as any,
+      this.isFrozenRef,
     );
   }
 
@@ -46,12 +48,15 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
     buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue> = singleton,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>> {
+    invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
+
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
         resolverThunk: buildStrategy(buildFn),
         dependencies: [],
       }) as any,
+      this.isFrozenRef,
     );
   }
 
@@ -80,17 +85,20 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     dependencies?: TDepsKeys,
   ): unknown {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
-
+    invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
         resolverThunk: resolver,
         dependencies: dependencies || [],
       }) as any,
+      this.isFrozenRef,
     ) as any;
   }
 
   freeze(): Module<TRecord> {
+    invariant(!this.isFrozenRef.isFrozen, `Cannot freeze the module. Module is already frozen.`);
+    this.isFrozenRef.isFrozen = true;
     return new Module(this.moduleId, this.registry) as Module<TRecord>;
   }
 }
