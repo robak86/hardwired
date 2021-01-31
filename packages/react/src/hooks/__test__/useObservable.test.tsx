@@ -11,7 +11,7 @@ describe(`useObservable`, () => {
     const m1 = module() //breakme
       .define('val1', () => new DummyObservable('val1'))
       .define('val2', () => new DummyObservable('val2'))
-      .freeze();
+      .build();
 
     function setup() {
       const Consumer = () => {
@@ -37,7 +37,7 @@ describe(`useObservable`, () => {
   describe(`binding transient dependencies to component instance`, () => {
     const m1 = module()
       .define('cls', () => new DummyObservable(Math.random()))
-      .freeze();
+      .build();
 
     function setup() {
       const Consumer = () => {
@@ -90,7 +90,7 @@ describe(`useObservable`, () => {
 
       const m = module()
         .define('observable', () => observable)
-        .freeze();
+        .build();
 
       const TestSubject = () => {
         const state = useObservable(m, 'observable');
@@ -125,7 +125,7 @@ describe(`useObservable`, () => {
 
       const m = module()
         .define('observable', () => observable)
-        .freeze();
+        .build();
 
       const TestSubject = () => {
         const { someValue } = useObservable(m, 'observable');
@@ -155,7 +155,7 @@ describe(`useObservable`, () => {
 
       const m = module()
         .define('observable', () => observable)
-        .freeze();
+        .build();
 
       const TestSubject = () => {
         const state = useObservable(m, 'observable', obj => obj.someValue);

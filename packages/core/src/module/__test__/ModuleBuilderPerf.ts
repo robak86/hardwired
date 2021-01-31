@@ -143,7 +143,7 @@ const ab0 = ModuleBuilder.empty()
   .define('aasas119', c => new TestClassArgs2(c.a, c.string), singleton)
   .define('aasas110', c => new TestClassArgs2(c.a, c.string), singleton)
   .define('aasas1123', c => new TestClassArgs2(c.a, c.string), singleton)
-  .freeze();
+  .build();
 
 const ab = ModuleBuilder.empty()
   // .using(commonDefines)
@@ -237,7 +237,7 @@ const ab = ModuleBuilder.empty()
   .define('asbaj', () => 1)
   .define('asbak', () => 1)
   .define('ascba', () => 1)
-  .freeze();
+  .build();
 
 const ab1 = ModuleBuilder.empty()
   // .using(commonDefines)
@@ -331,7 +331,7 @@ const ab1 = ModuleBuilder.empty()
   .define('asbaj', () => 1)
   .define('asbak', () => 1)
   .define('ascba', () => 1)
-  .freeze();
+  .build();
 
 const ab2 = ModuleBuilder.empty()
   // .using(commonDefines)
@@ -425,7 +425,7 @@ const ab2 = ModuleBuilder.empty()
   .define('asbaj', () => 1)
   .define('asbak', () => 1)
   .define('ascba', () => 1)
-  .freeze();
+  .build();
 
 const a = ModuleBuilder.empty()
   .import('imported0', () => ab0)
@@ -512,7 +512,7 @@ const m222 = m
   .define('abcdefg9', () => 'string')
   .define('abcdefgh9', () => 'string')
   .define('num', () => 123)
-  .freeze()
+  .build()
   .replace('num', () => 345);
 
 const mmm = m
@@ -520,6 +520,6 @@ const mmm = m
   .define('b', () => 'string')
   .define('sdf', c => new TestClassArgs2(c.imported.num, c.b), singleton)
   .define('sdf2', c => new TestClassUsing(c.sdf), singleton)
-  .freeze();
+  .build();
 
 type Mat = Module.Materialized<typeof mmm>;

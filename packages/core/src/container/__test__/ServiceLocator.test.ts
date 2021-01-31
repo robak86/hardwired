@@ -10,13 +10,13 @@ describe(`ServiceLocator`, () => {
       const child = ModuleBuilder.empty()
         .define('someNumber', () => 123)
         .define('someString', () => 'some content')
-        .freeze();
+        .build();
 
       const m = ModuleBuilder.empty()
         .import('imported', child)
         .define('locator', serviceLocator())
         .define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString), singleton)
-        .freeze();
+        .build();
 
       const c = container({ overrides: [child.replace('someNumber', () => 456)] });
 
@@ -34,13 +34,13 @@ describe(`ServiceLocator`, () => {
         const child = ModuleBuilder.empty()
           .define('someNumber', () => 123)
           .define('someString', () => 'some content')
-          .freeze();
+          .build();
 
         const m = ModuleBuilder.empty()
           .import('imported', child)
           .define('locator', serviceLocator())
           .define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString), singleton)
-          .freeze();
+          .build();
 
         const c = container({ overrides: [child.replace('someNumber', () => 456)] });
 

@@ -30,13 +30,13 @@ describe(`ServiceLocatorResolver`, () => {
     .import('singletonModule', () => singletonModule)
     .define('producedByFactory', () => new DummyFactory())
     .define('singletonConsumer', ({ singletonModule }) => new TestClassConsumer(singletonModule.reqScoped), request)
-    .freeze();
+    .build();
 
   const singletonModule = unit()
     .define('value', () => 'someValue')
     .define('reqScoped', c => new TestClass(c.value), request)
     .define('singleton', c => new TestClass(c.value), singleton)
-    .freeze();
+    .build();
 
   describe(`serviceLocator`, () => {
     it(`return Instance type`, async () => {

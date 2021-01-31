@@ -43,7 +43,7 @@ describe(`ContainerContext`, () => {
       it(`returns materializes module definitions`, async () => {
         const m = unit()
           .define('a', () => 1)
-          .freeze();
+          .build();
         const context = ContainerContext.empty();
 
         const { a } = context.materializeModule(m, context);
@@ -57,15 +57,15 @@ describe(`ContainerContext`, () => {
       it(`returns materializes module definitions`, async () => {
         const grandChildM = unit()
           .define('grandChildValue1', () => 1)
-          .freeze();
+          .build();
         const childM = unit()
           .import('grandChild', grandChildM)
           .define('childVal1', () => 1)
-          .freeze();
+          .build();
         const m = unit()
           .import('child', childM)
           .define('a', () => 1)
-          .freeze();
+          .build();
 
         const context = ContainerContext.empty();
 

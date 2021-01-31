@@ -26,7 +26,7 @@ describe(`ClassSingletonResolver`, () => {
     const m = unit()
       .define('someValue', () => 'someString', singleton)
       .define('a', ctx => new TestClass(ctx.someValue))
-      .freeze();
+      .build();
 
     it(`returns class instance`, async () => {
       const c = container();
@@ -58,7 +58,7 @@ describe(`ClassSingletonResolver`, () => {
         ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
         singleton,
       )
-      .freeze();
+      .build();
 
     const child1 = unit()
       .import('singletonModule', () => singletonModule)
@@ -67,7 +67,7 @@ describe(`ClassSingletonResolver`, () => {
         ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
         singleton,
       )
-      .freeze();
+      .build();
 
     const child2 = unit()
       .import('singletonModule', () => singletonModule)
@@ -76,12 +76,12 @@ describe(`ClassSingletonResolver`, () => {
         ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
         singleton,
       )
-      .freeze();
+      .build();
 
     const singletonModule = unit()
       .define('value', () => 'someValue')
       .define('theSingleton', ctx => new TestClass(ctx.value))
-      .freeze();
+      .build();
 
     it(`reuses the same instance`, async () => {
       const c = container();
@@ -110,7 +110,7 @@ describe(`ClassSingletonResolver`, () => {
       const m = unit()
         .define('someValue', () => 'someString')
         .define('a', _ => new TestClass(_.someValue), singleton)
-        .freeze();
+        .build();
 
       const c1 = container();
       const instanceFromC1 = c1.get(m, 'a');

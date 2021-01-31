@@ -11,7 +11,7 @@ describe(`ContainerScope`, () => {
 
     const m = module()
       .define('value', () => (counter += 1), request)
-      .freeze();
+      .build();
 
     const ValueRenderer = ({ testId }) => {
       const value = useDefinition(m, 'value');

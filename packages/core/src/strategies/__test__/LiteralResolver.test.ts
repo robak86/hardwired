@@ -13,7 +13,7 @@ describe(`LiteralResolver`, () => {
       const m = ModuleBuilder.empty()
         .define('val1', () => 123)
         .define('val2', () => true)
-        .freeze();
+        .build();
 
       type Actual = Module.Materialized<typeof m>['val2'];
 
@@ -33,7 +33,7 @@ describe(`LiteralResolver`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
         .define('literal', () => 'someValue')
-        .freeze();
+        .build();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('someValue');
     });
@@ -44,7 +44,7 @@ describe(`LiteralResolver`, () => {
       const m = unit()
         .define('literalDependency', () => 'dependency')
         .define('literal', ({ literalDependency }) => literalDependency)
-        .freeze();
+        .build();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('dependency');
     });
@@ -54,12 +54,12 @@ describe(`LiteralResolver`, () => {
     it(`returns correct instance`, async () => {
       const childM = unit()
         .define('someValue', () => 1)
-        .freeze();
+        .build();
 
       const parentM = unit()
         .import('imported', childM)
         .define('usesImportedValue', ({ imported }) => imported.someValue)
-        .freeze();
+        .build();
 
       const c = container();
       expect(c.get(parentM, 'usesImportedValue')).toEqual(1);
@@ -70,12 +70,12 @@ describe(`LiteralResolver`, () => {
     it(`works with overridden imported module`, async () => {
       const childM = unit()
         .define('someValue', () => 1)
-        .freeze();
+        .build();
 
       const parentM = unit()
         .import('imported', childM)
         .define('usesImportedValue', ({ imported }) => imported.someValue)
-        .freeze();
+        .build();
 
       const c = container({ overrides: [childM.replace('someValue', () => 123)] });
       expect(c.get(parentM, 'usesImportedValue')).toEqual(123);
@@ -86,7 +86,7 @@ describe(`LiteralResolver`, () => {
     it(`returns new instance on each request`, async () => {
       const mod = unit()
         .define('someValue', () => ({ someProperty: 1 }), transient)
-        .freeze();
+        .build();
 
       const c = container();
       expect(c.get(mod, 'someValue')).not.toBe(c.get(mod, 'someValue'));
@@ -98,7 +98,7 @@ describe(`LiteralResolver`, () => {
       const mod = unit()
         .define('someValue', () => ({ someProperty: 1 }), singleton)
 
-        .freeze();
+        .build();
 
       const c = container();
       expect(c.get(mod, 'someValue')).toBe(c.get(mod, 'someValue'));
@@ -110,7 +110,7 @@ describe(`LiteralResolver`, () => {
       const mod = unit()
         .define('someValue', () => ({ someProperty: Math.random() }), request)
         .define('someValueProxy', ({ someValue }) => someValue, request)
-        .freeze();
+        .build();
 
       const c = container();
       const req1 = c.asObject(mod);

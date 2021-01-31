@@ -22,7 +22,7 @@ describe(`ComponentState`, () => {
   describe(`instantiating dependencies`, () => {
     const m1 = module() //breakme
       .define('val1', () => new DummyComponentState(), singleton)
-      .freeze();
+      .build();
 
     function setup() {
       const Consumer = () => {
@@ -49,7 +49,7 @@ describe(`ComponentState`, () => {
     it(`re-renders view`, async () => {
       const m = module()
         .define('componentState', () => new DummyComponentState(), singleton)
-        .freeze();
+        .build();
 
       const TestSubject = () => {
         const state = useObservable(m, 'componentState', obj => obj.value);

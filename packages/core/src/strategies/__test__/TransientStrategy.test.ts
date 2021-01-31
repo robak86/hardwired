@@ -20,7 +20,7 @@ describe(`ClassTransientResolver`, () => {
   const m = unit()
     .define('someValue', () => 'someString')
     .define('a', c => new TestClass(c.someValue), transient)
-    .freeze();
+    .build();
 
   it(`returns class instance`, async () => {
     const c = container();

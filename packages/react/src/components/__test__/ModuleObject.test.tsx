@@ -8,12 +8,12 @@ describe(`ModuleObject`, () => {
   function setup() {
     const m1 = module()
       .define('value', () => 1)
-      .freeze();
+      .build();
 
     const m2 = module()
       .import('m1', m1)
       .define('valueFromM1', ({ m1 }) => m1.value + 10)
-      .freeze();
+      .build();
 
     const ValueRenderer = ({ testId, value }) => {
       return <div data-testid={testId}>{value}</div>;

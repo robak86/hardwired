@@ -10,7 +10,7 @@ describe(`useModule`, () => {
     const m1 = module()
       .define('val1', () => 'val1')
       .define('val2', () => 'val2')
-      .freeze();
+      .build();
 
     function setup() {
       const Consumer = () => {
@@ -42,7 +42,7 @@ describe(`useModule`, () => {
 
     const m1 = module()
       .define('cls', () => new TestClass(), request)
-      .freeze();
+      .build();
 
     function setup() {
       const Consumer = () => {

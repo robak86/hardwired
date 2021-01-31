@@ -11,7 +11,7 @@ describe(`Container`, () => {
       const child2 = module()
         .define('c', () => 'cValue')
         .define('d', () => 'dValue')
-        .freeze();
+        .build();
       const c = container();
 
       const cValue = c.get(child2, 'c');
@@ -21,7 +21,7 @@ describe(`Container`, () => {
     it(`lazily appends new module if module cannot be found`, async () => {
       const notRegistered = module() // breakme
         .define('a', () => 1)
-        .freeze();
+        .build();
 
       const c = container();
 
@@ -34,7 +34,7 @@ describe(`Container`, () => {
       it(`returns replaced value`, async () => {
         const m = module()
           .define('a', () => 1)
-          .freeze();
+          .build();
         const updated = m.replace('a', () => 2);
         expect(container().get(updated, 'a')).toEqual(2);
       });
@@ -43,7 +43,7 @@ describe(`Container`, () => {
         const m = module()
           .define('a', () => 1)
           .define('b', () => 'b')
-          .freeze();
+          .build();
         const updated = m.replace('a', () => 2);
         expect(container().get(updated, 'b')).toEqual('b');
       });
@@ -54,7 +54,7 @@ describe(`Container`, () => {
           .define('aa', () => 'replaced')
           .define('b', ({ a }) => new ArgsDebug(a), singleton)
           .define('c', ({ b }) => new ArgsDebug(b), singleton)
-          .freeze();
+          .build();
 
         // @ts-expect-error - one can replace definition only with the same type - string is not compatible with ArgsDebug Class
         const updated = m.replaceAdvanced('b', value('bReplaced'));
@@ -67,7 +67,7 @@ describe(`Container`, () => {
           .define('a', () => 'a')
           .define('b', ({ a }) => new ArgsDebug(a), singleton)
           .define('c', ({ b }) => new ArgsDebug(b), singleton)
-          .freeze();
+          .build();
 
         expect(container().get(m, 'b').args).toEqual(['a']);
 
@@ -86,16 +86,16 @@ describe(`Container`, () => {
       const c = container();
 
       const parentChildValue = () => 'parentChild';
-      const parentChild = module().define('value', parentChildValue).freeze();
+      const parentChild = module().define('value', parentChildValue).build();
 
       const parentSiblingChildValue = () => 'parentSiblingChild';
-      const parentSiblingChild = module().define('value', parentSiblingChildValue).freeze();
+      const parentSiblingChild = module().define('value', parentSiblingChildValue).build();
 
       const parentValue = () => 'parent';
-      const parent = module().import('child', parentChild).define('value', parentValue).freeze();
+      const parent = module().import('child', parentChild).define('value', parentValue).build();
 
       const parentSiblingValue = () => 'parentSibling';
-      const parentSibling = module().import('child', parentSiblingChild).define('value', parentSiblingValue).freeze();
+      const parentSibling = module().import('child', parentSiblingChild).define('value', parentSiblingValue).build();
 
       return {
         c,
