@@ -14,7 +14,7 @@ export class ImmutableMap<D extends Record<string, any>> {
     return this.records[key];
   }
 
-  getOr<K extends keyof D & string>(key: K, defaultValue: D[K]): D[K] {
+  getOr<K extends string>(key: K, defaultValue: D[K]): D[K] {
     return this.get(key) || defaultValue;
   }
 
@@ -37,7 +37,7 @@ export class ImmutableMap<D extends Record<string, any>> {
 
     return new ImmutableMap<Omit<D, TKey>>(
       cloned,
-      this.orderedKeys.filter(key => key !== key),
+      this.orderedKeys.filter(existingKey => existingKey !== key),
     );
   }
 

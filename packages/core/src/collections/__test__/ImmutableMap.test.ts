@@ -82,4 +82,47 @@ describe(`ImmutableMap`, () => {
       expect(a.set('a', 2).get('a')).toEqual(2);
     });
   });
+
+  describe(`reverse`, () => {
+    it(`reverses the order of keys`, async () => {
+      const a = ImmutableMap.empty().extend('a', 1).extend('b', 2);
+      const reversed = a.reverse();
+      expect(reversed.keys).toEqual(['b', 'a']);
+    });
+
+    it(`does not mutate original collection`, async () => {
+      const a = ImmutableMap.empty().extend('a', 1).extend('b', 2);
+      const reversed = a.reverse();
+      expect(a.keys).toEqual(['a', 'b']);
+    });
+  });
+
+  describe(`remove`, () => {
+    it(`removes a item`, async () => {
+      const a = ImmutableMap.empty().extend('a', 1).extend('b', 2);
+      const withoutA = a.remove('a');
+      expect(withoutA.entries).toEqual([['b', 2]]);
+    });
+
+    it(`does not mutate original collection`, async () => {
+      const a = ImmutableMap.empty().extend('a', 1).extend('b', 2);
+      const withoutA = a.remove('a');
+      expect(a.entries).toEqual([
+        ['a', 1],
+        ['b', 2],
+      ]);
+    });
+  });
+
+  describe(`getOr`, () => {
+    it(`returns existing value if present`, async () => {
+      const a = ImmutableMap.empty().extend('a', 1).extend('b', 2);
+      expect(a.getOr('a', 123)).toEqual(1);
+    });
+
+    it(`returns default value if map is missing given key`, async () => {
+      const a = ImmutableMap.empty().extend('a', 1).extend('b', 2);
+      expect(a.getOr('c', 123)).toEqual(123);
+    });
+  });
 });
