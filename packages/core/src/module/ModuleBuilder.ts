@@ -36,13 +36,12 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
         resolverThunk: resolver,
-        dependencies: [],
-      }) as any,
+      }),
       this.isFrozenRef,
     );
   }
 
-  define<TKey extends string, TInstance extends Instance<any, any>>(
+  define<TKey extends string, TInstance extends Instance<any>>(
     name: TKey,
     instance: TInstance | ((ctx: ModuleRecord.Materialized<TRecord>) => TInstance),
   ): ModuleBuilder<TRecord & Record<TKey, TInstance>>;
@@ -51,22 +50,21 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     name: TKey,
     buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
     buildStrategy?: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
 
   define<TKey extends string, TValue>(
     name: TKey,
-    buildFnOrInstance: ((ctx: ModuleRecord.Materialized<TRecord>) => TValue) | Instance<TValue, []>,
+    buildFnOrInstance: ((ctx: ModuleRecord.Materialized<TRecord>) => TValue) | Instance<TValue>,
     buildStrategy = singleton,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>> {
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
 
     if (typeof buildFnOrInstance === 'function') {
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
-          resolverThunk: buildStrategy(buildFnOrInstance),
-          dependencies: [],
-        }) as any,
+          resolverThunk: buildStrategy(buildFnOrInstance) as any,
+        }),
         this.isFrozenRef,
       );
     }
@@ -74,9 +72,8 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
-        resolverThunk: buildFnOrInstance,
-        dependencies: [],
-      }) as any,
+        resolverThunk: buildFnOrInstance as any,
+      }),
       this.isFrozenRef,
     );
   }

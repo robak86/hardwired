@@ -24,7 +24,7 @@ export class ContainerContext {
     public overrides = ImmutableMap.empty(),
   ) {}
 
-  getInstanceResolver(module: Module<any>, path: string): Instance<any, any> {
+  getInstanceResolver(module: Module<any>, path: string): Instance<any> {
     if (this.resolvers.hasByModule(module.moduleId, path)) {
       return this.resolvers.getByModule(module.moduleId, path);
     }
@@ -69,7 +69,7 @@ export class ContainerContext {
     return this.runResolver(resolver, this);
   }
 
-  runResolver(resolver: Instance<any, any>, context: ContainerContext) {
+  runResolver(resolver: Instance<any>, context: ContainerContext) {
     const module = this.resolvers.getModuleForResolver(resolver.id);
     const materializedModule = this.materializeModule(module, context);
     const result = resolver.build(context, materializedModule);

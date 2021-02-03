@@ -22,10 +22,6 @@ export class Container {
     return this.containerContext.materializeModule(module, this.containerContext);
   }
 
-  getContext(): ContainerContext {
-    return this.containerContext;
-  }
-
   usingNewRequestScope(): Container {
     return new Container(this.containerContext.forNewRequest(), this.overrides, this.eager);
   }

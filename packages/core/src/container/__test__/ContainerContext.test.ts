@@ -1,6 +1,5 @@
 import { ContainerContext } from '../ContainerContext';
 import { unit } from '../../module/ModuleBuilder';
-import { dependency } from '../../__test__/TestResolvers';
 
 describe(`ContainerContext`, () => {
   describe(`async scope`, () => {

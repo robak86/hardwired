@@ -1,6 +1,5 @@
 import { container } from '../Container';
 
-
 import { ArgsDebug } from '../../__test__/ArgsDebug';
 import { module } from '../../module/ModuleBuilder';
 import { singleton } from '../../strategies/SingletonStrategy';
@@ -39,6 +38,45 @@ describe(`Container`, () => {
         expect(container().get(updated, 'a')).toEqual(2);
       });
 
+      it(`allows returning strategy instead of instance`, async () => {
+        const m = module()
+          .define('a', () => 1)
+          .build();
+        const updated = m.replace('a', () => singleton(() => 3));
+        expect(container().get(updated, 'a')).toEqual(3);
+      });
+
+      it(`calls provided function with materialized module`, async () => {
+        const m = module()
+          .define('b', () => 2)
+          .define('a', () => 1)
+          .build();
+
+        const factoryFunctionSpy = jest.fn().mockImplementation(ctx => {
+          return singleton(() => 3);
+        });
+
+        const updated = m.replace('a', factoryFunctionSpy);
+
+        const testContainer = container();
+        testContainer.get(updated, 'a');
+
+        expect(factoryFunctionSpy.mock.calls[0][0]).toEqual(testContainer.asObject(updated));
+      });
+
+      it(`forbids to reference replaced value from the context`, async () => {
+        const m = module()
+          .define('b', () => 2)
+          .define('a', () => 1)
+          .build();
+
+        const updated = m.replace('a', ctx => {
+          // @ts-expect-error - a shouldn't be available in the ctx to avoid Maximum call stack size exceeded
+          ctx.a;
+          return singleton(() => 1);
+        });
+      });
+
       it(`does not affect other definitions`, async () => {
         const m = module()
           .define('a', () => 1)
@@ -60,23 +98,6 @@ describe(`Container`, () => {
         const updated = m.replaceAdvanced('b', value('bReplaced'));
 
         expect(container().get(m, 'b').args).toEqual(['a']);
-      });
-
-      it.skip(`can use all previously registered definitions`, async () => {
-        const m = module()
-          .define('a', () => 'a')
-          .define('b', ({ a }) => new ArgsDebug(a), singleton)
-          .define('c', ({ b }) => new ArgsDebug(b), singleton)
-          .build();
-
-        expect(container().get(m, 'b').args).toEqual(['a']);
-
-        const updated = m.replace('b', c => new ArgsDebug(c.b), singleton);
-
-        expect(container().get(updated, 'b')).toEqual('bReplaced');
-        expect(container().get(updated, 'c')).toEqual({
-          args: ['bReplaced'],
-        });
       });
     });
   });

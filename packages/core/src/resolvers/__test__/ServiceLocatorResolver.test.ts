@@ -41,7 +41,7 @@ describe(`ServiceLocatorResolver`, () => {
   describe(`serviceLocator`, () => {
     it(`return Instance type`, async () => {
       const s = serviceLocator();
-      expectType<TypeEqual<typeof s, Instance<ServiceLocator, []>>>(true);
+      expectType<TypeEqual<typeof s, Instance<ServiceLocator>>>(true);
     });
   });
 

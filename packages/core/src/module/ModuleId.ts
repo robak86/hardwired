@@ -12,7 +12,6 @@ export const ModuleId = {
   },
   next(m: ModuleId): ModuleId {
     return {
-
       id: createResolverId(),
     };
   },

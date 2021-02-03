@@ -8,17 +8,18 @@ export enum Scope {
 }
 
 export namespace Instance {
-  export type Unbox<T> = T extends Instance<infer TInstance, any>
-    ? TInstance
-    : 'Cannot unbox instance type from Instance';
+  export type Unbox<T> = T extends Instance<infer TInstance> ? TInstance : 'Cannot unbox instance type from Instance';
 }
 
-export abstract class Instance<TValue, TDeps extends any[]> {
+export const isInstance = (instance: any): instance is Instance<any> => {
+  return instance.__kind === 'instanceResolver';
+};
+
+export abstract class Instance<TValue> {
   readonly __kind: 'instanceResolver' = 'instanceResolver';
 
   // make sure that generic types won't be erased
   readonly __TValue!: TValue;
-  readonly __TDeps!: TDeps;
 
   protected constructor(public readonly id: string = createResolverId()) {}
 

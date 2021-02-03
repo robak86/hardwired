@@ -2,7 +2,7 @@ import { ServiceLocator } from '../container/ServiceLocator';
 import { ContainerContext } from '../container/ContainerContext';
 import { Instance } from './abstract/Instance';
 
-export class ServiceLocatorResolver extends Instance<ServiceLocator, []> {
+export class ServiceLocatorResolver extends Instance<ServiceLocator> {
   constructor() {
     super();
   }
@@ -18,4 +18,4 @@ export class ServiceLocatorResolver extends Instance<ServiceLocator, []> {
   }
 }
 
-export const serviceLocator = (): Instance<ServiceLocator, []> => new ServiceLocatorResolver();
+export const serviceLocator = (): Instance<ServiceLocator> => new ServiceLocatorResolver();
