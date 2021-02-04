@@ -1,7 +1,7 @@
 import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import invariant from 'tiny-invariant';
-import { Thunk } from '../utils/Thunk';
+import { Thunk, unwrapThunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord } from '../resolvers/abstract/Module';
 import { Instance } from '../resolvers/abstract/Instance';
 import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
@@ -9,6 +9,10 @@ import { singleton } from '../strategies/SingletonStrategy';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
+
+function buildResolverId(module: ModuleBuilder<any>, name: string): string {
+  return `${module.moduleId.id}:${name}`; // TODO: potential gc issue
+}
 
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   static empty(): ModuleBuilder<{}> {
@@ -35,6 +39,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
+        type: 'module',
         resolverThunk: resolver,
       }),
       this.isFrozenRef,
@@ -63,8 +68,10 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
+          id: buildResolverId(this, name),
+          type: 'resolver' as const,
           resolverThunk: buildStrategy(buildFnOrInstance) as any,
-        }),
+        }) as any,
         this.isFrozenRef,
       );
     }
@@ -72,8 +79,10 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
+        id: buildResolverId(this, name),
+        type: 'resolver' as const,
         resolverThunk: buildFnOrInstance as any,
-      }),
+      }) as any,
       this.isFrozenRef,
     );
   }

@@ -4,9 +4,6 @@ import { Thunk } from '../../utils/Thunk';
 
 import { Instance } from './Instance';
 import invariant from 'tiny-invariant';
-import { DecoratorResolver } from '../DecoratorResolver';
-import { BuildStrategy } from '../../strategies/abstract/BuildStrategy';
-import { singleton } from '../../strategies/SingletonStrategy';
 import { ModulePatch } from './ModulePatch';
 
 // prettier-ignore
@@ -42,12 +39,18 @@ export namespace Module {
       ({ [K in keyof TRecord]: TRecord[K] extends Instance<infer A> ? K : never })[keyof TRecord] : unknown
 
   export type BoundResolver = {
-    resolverThunk: Thunk<AnyResolver>;
-  };
+    id: string,
+    type: 'resolver'
+    resolverThunk: Thunk<Instance<any>>;
+  } |
+    {
+      type: 'module',
+      resolverThunk: Thunk<Module<any>>;
+    }
 }
 
 export class Module<TRecord extends Record<string, AnyResolver>> extends ModulePatch<TRecord> {
-  readonly __kind: 'moduleResolver' = 'moduleResolver';
+  // readonly __kind: 'moduleResolver' = 'moduleResolver';
 
   __definitions!: TRecord; // prevent erasing the type
 

@@ -55,11 +55,17 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
       `Cannot replace definition. Patch already contains replaced definition`,
     );
 
+    invariant(this.registry.hasKey(name), `Cannot replace definition: ${name} does not exist.`);
+    const prev = this.registry.get(name);
+    invariant(prev.type === 'resolver', `Cannot replace import`);
+
     if (typeof buildFnOrInstance === 'function') {
       return new ModulePatch(
         this.moduleId,
         this.registry,
         this.patchedResolvers.extend(name, {
+          id: prev.id,
+          type: 'resolver',
           resolverThunk: buildStrategy(buildFnOrInstance),
         }) as any,
       );
@@ -69,6 +75,8 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
       this.moduleId,
       this.registry,
       this.patchedResolvers.extend(name, {
+        id: prev.id,
+        type: 'resolver',
         resolverThunk: buildFnOrInstance,
       }) as any,
     );
@@ -78,9 +86,15 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     name: TKey,
     decorateFn: (originalValue: TValue, moduleAsObject: ModuleRecord.Materialized<TRecord>) => TValue,
   ): ModulePatch<TRecord & Record<TKey, Instance<TValue>>> {
-    const { resolverThunk } = this.patchedResolvers.get(name) || this.registry.get(name);
+    const boundResolver = this.patchedResolvers.get(name) || this.registry.get(name);
+
+    invariant(boundResolver.type === 'resolver', `Cannot decorate module import`);
+
+    const { id, resolverThunk } = boundResolver;
 
     const decorated = {
+      id,
+      type: 'resolver',
       resolverThunk: new DecoratorResolver(resolverThunk as any, decorateFn),
     };
 

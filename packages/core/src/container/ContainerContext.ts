@@ -1,4 +1,3 @@
-import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
 import { Module } from '../resolvers/abstract/Module';
@@ -38,13 +37,11 @@ export class ContainerContext {
 
     const targetModule: Module<any> = this.getModule(module);
     const [moduleOrInstance, instance] = path.split('.');
+    const boundResolver = targetModule.registry.get(moduleOrInstance);
 
-    const { resolverThunk } = targetModule.registry.get(moduleOrInstance);
-    const resolver = unwrapThunk(resolverThunk);
+    if (boundResolver.type === 'resolver') {
+      const resolver = unwrapThunk(boundResolver.resolverThunk);
 
-    invariant(resolver, `Cannot return instance resolver for path ${path}. ${moduleOrInstance} does not exist.`);
-
-    if (resolver.__kind === 'instanceResolver') {
       if (!this.resolvers.has(resolver)) {
         this.resolvers.add(targetModule, path, resolver);
       }
@@ -52,8 +49,9 @@ export class ContainerContext {
       return resolver;
     }
 
-    if (resolver.__kind === 'moduleResolver') {
+    if (boundResolver.type === 'module') {
       invariant(instance, `getInstanceResolver is not intended to return module. Path is missing instance target`);
+      const resolver = unwrapThunk(boundResolver.resolverThunk);
       const instanceResolver = this.getInstanceResolver(resolver, instance);
       if (!this.resolvers.has(instanceResolver)) {
         this.resolvers.add(targetModule, path, instanceResolver);
@@ -75,10 +73,12 @@ export class ContainerContext {
   runResolver(resolver: Instance<any>, context: ContainerContext) {
     const module = this.resolvers.getModuleForResolver(resolver.id);
     const materializedModule = this.materializeModule(module, context);
-    const result = resolver.build(context, materializedModule);
+    const result = resolver.build('todo', context, materializedModule);
 
-    if (result.__kind === 'instanceResolver') {
-      return result.build(context, materializedModule);
+
+    // TODO: use some more reliable detection ?
+    if (result instanceof Instance) {
+      return result.build('todo', context, materializedModule);
     }
 
     return result;
@@ -86,12 +86,12 @@ export class ContainerContext {
 
   eagerLoad(module: Module<any>) {
     module.registry.forEach((boundResolver, key) => {
-      const resolver = unwrapThunk(boundResolver.resolverThunk);
-      if (resolver.__kind === 'moduleResolver') {
+      if (boundResolver.type === 'module') {
+        const resolver = unwrapThunk(boundResolver.resolverThunk);
         this.eagerLoad(resolver);
       }
 
-      if (resolver.__kind === 'instanceResolver') {
+      if (boundResolver.type === 'resolver') {
         this.getInstanceResolver(module, key);
       }
     });
@@ -171,8 +171,7 @@ export class ContainerContext {
     const materialized: any = {};
 
     module.registry.forEach((boundResolver, key) => {
-      const resolver = unwrapThunk(boundResolver.resolverThunk);
-      if (resolver.__kind === 'instanceResolver') {
+      if (boundResolver.type === 'resolver') {
         Object.defineProperty(materialized, key, {
           configurable: false,
           get: () => {
@@ -182,10 +181,13 @@ export class ContainerContext {
         });
       }
 
-      if (resolver.__kind === 'moduleResolver') {
+      if (boundResolver.type === 'module') {
         Object.defineProperty(materialized, key, {
           configurable: false,
-          get: () => this.materializeModule(resolver, context),
+          get: () => {
+            const resolver = unwrapThunk(boundResolver.resolverThunk);
+            return this.materializeModule(resolver, context);
+          },
         });
       }
     });

@@ -10,7 +10,7 @@ export class DecoratorResolver<TReturn, TDeps> extends Instance<TReturn> {
     super(unwrapThunk(decorated).id);
   }
 
-  build(context: ContainerContext, materializedModule): TReturn {
-    return this.decorateFn(unwrapThunk(this.decorated).build(context, materializedModule), materializedModule);
+  build(id: string, context: ContainerContext, materializedModule): TReturn {
+    return this.decorateFn(unwrapThunk(this.decorated).build(id, context, materializedModule), materializedModule);
   }
 }
