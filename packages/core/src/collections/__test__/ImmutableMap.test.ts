@@ -12,6 +12,30 @@ describe(`ImmutableMap`, () => {
         ['c', 33],
       ]);
     });
+
+    it(`merges other map into current, ex.2`, async () => {
+      const m1 = ImmutableMap.empty().extend('a', 1).extend('b', 2).extend('a_plus_b', 3);
+      const m2 = m1.replace('b', 20);
+      const merged = m1.merge(m2);
+      expect(merged.entries).toEqual([
+        ['a', 1],
+        ['b', 20],
+        ['a_plus_b', 3],
+      ]);
+    });
+
+    it(`concatenates two sets without intersection`, async () => {
+      const a = ImmutableMap.empty().extend('a', 1).extend('b', 2).extend('c', 3);
+      const b = ImmutableMap.empty().extend('d', 22).extend('e', 33);
+      const merged = a.merge(b);
+      expect(merged.entries).toEqual([
+        ['a', 1],
+        ['b', 2],
+        ['c', 3],
+        ['d', 22],
+        ['e', 33],
+      ]);
+    });
   });
 
   describe(`replace`, () => {
@@ -20,10 +44,10 @@ describe(`ImmutableMap`, () => {
       expect(a.replace('a', 2).get('a')).toEqual(2);
     });
 
-    it(`adds replaced key at the end of keys`, async () => {
+    it(`preserves keys order`, async () => {
       const a = ImmutableMap.empty().extend('a', 1).extend('b', 2);
       const updated = a.replace('a', 2);
-      expect(updated.keys).toEqual(['b', 'a']);
+      expect(updated.keys).toEqual(['a', 'b']);
     });
   });
 
@@ -60,8 +84,8 @@ describe(`ImmutableMap`, () => {
 
       updated.forEach(iterSpy);
       expect(iterSpy.mock.calls).toEqual([
-        ['bVal', 'b'],
         ['aReplaced', 'a'],
+        ['bVal', 'b'],
       ]);
     });
   });

@@ -7,6 +7,7 @@ import invariant from 'tiny-invariant';
 import { DecoratorResolver } from '../DecoratorResolver';
 import { BuildStrategy } from '../../strategies/abstract/BuildStrategy';
 import { singleton } from '../../strategies/SingletonStrategy';
+import { ModulePatch } from './ModulePatch';
 
 // prettier-ignore
 export type AnyResolver = Instance<any> | Module<any> ;
@@ -15,7 +16,8 @@ export type ModuleRecord = Record<string, AnyResolver>;
 export namespace ModuleRecord {
   export type InstancesKeys<TRecord> = {
     [K in keyof TRecord]: TRecord[K] extends Instance<infer A> ? K : never;
-  }[keyof TRecord];
+  }[keyof TRecord] &
+    string;
 
   export type Materialized<TRecord extends Record<string, AnyResolver>> = {
     [K in keyof TRecord]: TRecord[K] extends Instance<infer TInstanceType>
@@ -44,67 +46,19 @@ export namespace Module {
   };
 }
 
-export class Module<TRecord extends Record<string, AnyResolver>> {
+export class Module<TRecord extends Record<string, AnyResolver>> extends ModulePatch<TRecord> {
   readonly __kind: 'moduleResolver' = 'moduleResolver';
 
   __definitions!: TRecord; // prevent erasing the type
 
-  constructor(public moduleId: ModuleId, public registry: ImmutableMap<Record<string, Module.BoundResolver>>) {}
-
-  isEqual(otherModule: Module<any>): boolean {
-    return this.moduleId.id === otherModule.moduleId.id;
+  constructor(moduleId: ModuleId, registry: ImmutableMap<Record<string, Module.BoundResolver>>) {
+    super(moduleId, registry, ImmutableMap.empty());
   }
 
-  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
-    name: TKey,
-    instance: Instance<TValue> | ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => Instance<TValue>),
-  ): Module<TRecord>;
+  // TODO: this should not be exposed!! should be internal detail - we should forbid the user to create modules with applied patches
+  patch<TRecord extends Record<string, AnyResolver>>(otherModule: ModulePatch<TRecord>): Module<TRecord> {
+    invariant(this.moduleId.id === otherModule.moduleId.id, `Cannot apply patch from module with different id`);
 
-  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
-    name: TKey,
-    buildFn: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
-    buildStrategy?: (
-      resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
-    ) => BuildStrategy<TValue>,
-  ): Module<TRecord>;
-
-  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
-    name: TKey,
-    buildFnOrInstance: ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) | Instance<TValue>,
-    buildStrategy = singleton,
-  ): Module<TRecord> {
-    invariant(this.registry.hasKey(name), `Cannot replace definition. Definition: ${name} does not exist.`);
-
-    if (typeof buildFnOrInstance === 'function') {
-      return new Module(
-        this.moduleId,
-        this.registry.replace(name, {
-          resolverThunk: buildStrategy(buildFnOrInstance),
-        }),
-      );
-    }
-
-    return new Module(
-      this.moduleId,
-      this.registry.replace(name, {
-        resolverThunk: buildFnOrInstance,
-      }),
-    );
-  }
-
-  decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
-    name: TKey,
-    decorateFn: (originalValue: TValue, moduleAsObject: ModuleRecord.Materialized<TRecord>) => TValue,
-  ): Module<TRecord & Record<TKey, Instance<TValue>>> {
-    invariant(this.registry.hasKey(name), `Cannot decorate definition. Definition: ${name} does not exist.`);
-
-    const { resolverThunk } = this.registry.get(name);
-
-    const decorated = {
-      resolverThunk: new DecoratorResolver(resolverThunk as any, decorateFn),
-    };
-
-    const replaced = this.registry.replace(name, decorated);
-    return new Module(this.moduleId, replaced);
+    return new Module<TRecord>({ id: this.moduleId.id }, this.registry.merge(otherModule.patchedResolvers));
   }
 }

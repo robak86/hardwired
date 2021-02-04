@@ -34,16 +34,16 @@ describe(`Container`, () => {
         const m = module()
           .define('a', () => 1)
           .build();
-        const updated = m.replace('a', () => 2);
-        expect(container().get(updated, 'a')).toEqual(2);
+        const mPatch = m.replace('a', () => 2);
+        expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(2);
       });
 
       it(`allows returning strategy instead of instance`, async () => {
         const m = module()
           .define('a', () => 1)
           .build();
-        const updated = m.replace('a', () => singleton(() => 3));
-        expect(container().get(updated, 'a')).toEqual(3);
+        const mPatch = m.replace('a', () => singleton(() => 3));
+        expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(3);
       });
 
       it(`calls provided function with materialized module`, async () => {
@@ -56,12 +56,12 @@ describe(`Container`, () => {
           return singleton(() => 3);
         });
 
-        const updated = m.replace('a', factoryFunctionSpy);
+        const mPatch = m.replace('a', factoryFunctionSpy);
 
-        const testContainer = container();
-        testContainer.get(updated, 'a');
+        const testContainer = container({ overrides: [mPatch] });
+        testContainer.get(m, 'a');
 
-        expect(factoryFunctionSpy.mock.calls[0][0]).toEqual(testContainer.asObject(updated));
+        expect(factoryFunctionSpy.mock.calls[0][0]).toEqual(testContainer.asObject(m));
       });
 
       it(`forbids to reference replaced value from the context`, async () => {
@@ -82,8 +82,9 @@ describe(`Container`, () => {
           .define('a', () => 1)
           .define('b', () => 'b')
           .build();
-        const updated = m.replace('a', () => 2);
-        expect(container().get(updated, 'b')).toEqual('b');
+
+        const mPatch = m.replace('a', () => 2);
+        expect(container({ overrides: [mPatch] }).get(m, 'b')).toEqual('b');
       });
 
       it.skip(`can use all previously registered definitions`, async () => {
@@ -321,6 +322,27 @@ describe(`Container`, () => {
       //
       // const instances = c.getContext().__getByType_experimental(DummyResolver);
       // expect(instances).toEqual([789, 456]); //TODO: investigate in what order should be returned instances
+    });
+  });
+
+  describe(`overrides`, () => {
+    it(`merges modules with the same id`, async () => {
+      const m = module()
+        .define('a', () => 1)
+        .define('b', () => 2)
+        .define('a_plus_b', ({ a, b }) => a + b)
+        .build();
+
+      const c = container({
+        overrides: [
+          //breakme
+          m.replace('a', () => 10),
+          m.replace('b', () => 20),
+        ],
+      });
+
+      const { a_plus_b } = c.asObject(m);
+      expect(a_plus_b).toEqual(30);
     });
   });
 });

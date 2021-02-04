@@ -1,13 +1,14 @@
 import { ContainerContext } from './ContainerContext';
 import { Module } from '../resolvers/abstract/Module';
+import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 
 export class Container {
   constructor(
-    private containerContext: ContainerContext = ContainerContext.empty(),
-    private overrides: Module<any>[],
-    private eager: Module<any>[],
+    private readonly containerContext: ContainerContext,
+    private readonly overrides: ModulePatch<any>[],
+    private readonly eager: Module<any>[],
   ) {
-    overrides.forEach(m => this.containerContext.override(m));
+    this.containerContext = ContainerContext.withOverrides(overrides);
     eager.forEach(m => this.containerContext.eagerLoad(m));
   }
 
@@ -27,8 +28,11 @@ export class Container {
   }
 }
 
+
+// TODO: we need to have ability to provide patches which are not overridable by patches provided to nested scopes (testing!)
+// or just clear distinction that patches provided to container are irreplaceable by patches provided to scopes
 export type ContainerOptions = {
-  overrides?: Module<any>[];
+  overrides?: ModulePatch<any>[];
   eager?: Module<any>[];
   context?: ContainerContext;
 };

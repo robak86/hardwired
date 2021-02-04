@@ -7,6 +7,7 @@ import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { transient } from '../../strategies/TransientStrategy';
 import { request } from '../../strategies/RequestStrategy';
 import { singleton } from '../../strategies/SingletonStrategy';
+import { ModulePatch } from '../../resolvers/abstract/ModulePatch';
 
 describe(`ModuleBuilder`, () => {
   describe(`define`, () => {
@@ -107,7 +108,7 @@ describe(`ModuleBuilder`, () => {
         key1: number;
       };
 
-      expectType<TypeEqual<Module.Materialized<typeof replaced>, ExpectedType>>(true);
+      expectType<TypeEqual<ModulePatch.Materialized<typeof replaced>, ExpectedType>>(true);
 
       // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
       m2.replace('key1', () => 'sdf');
@@ -202,6 +203,7 @@ describe(`ModuleBuilder`, () => {
       const m1 = module()
         .define('a', () => 'string')
         .build();
+
       const m2 = m1.replace('a', () => 'someOtherString');
       expect(m1.isEqual(m2)).toEqual(true);
     });
@@ -235,10 +237,11 @@ describe(`ModuleBuilder`, () => {
     it(`decorates original value`, async () => {
       const m = module()
         .define('someValue', () => 1)
-        .build()
-        .decorate('someValue', val => val + 1);
+        .build();
 
-      const c = container();
+      const mPatch = m.decorate('someValue', val => val + 1);
+
+      const c = container({ overrides: [mPatch] });
       expect(c.get(m, 'someValue')).toEqual(2);
     });
 
@@ -246,20 +249,20 @@ describe(`ModuleBuilder`, () => {
       const m = module()
         .define('someValue', () => 1)
         .build();
-      const decorated = m.decorate('someValue', val => val + 1);
+      const mPatch = m.decorate('someValue', val => val + 1);
 
       expect(container().get(m, 'someValue')).toEqual(1);
-      expect(container().get(decorated, 'someValue')).toEqual(2);
+      expect(container({ overrides: [mPatch] }).get(m, 'someValue')).toEqual(2);
     });
 
     it(`allows for multiple decorations`, async () => {
       const m = module()
         .define('someValue', () => 1)
-        .build()
-        .decorate('someValue', val => val + 1)
-        .decorate('someValue', val => val * 3);
+        .build();
 
-      const c = container();
+      const mPatch = m.decorate('someValue', val => val + 1).decorate('someValue', val => val * 3);
+
+      const c = container({ overrides: [mPatch] });
       expect(c.get(m, 'someValue')).toEqual(6);
     });
 
@@ -268,10 +271,11 @@ describe(`ModuleBuilder`, () => {
         .define('a', () => 1)
         .define('b', () => 2)
         .define('someValue', () => 10)
-        .build()
-        .decorate('someValue', (val, { a, b }) => val + a + b);
+        .build();
 
-      const c = container();
+      const mPatch = m.decorate('someValue', (val, { a, b }) => val + a + b);
+
+      const c = container({ overrides: [mPatch] });
       expect(c.get(m, 'someValue')).toEqual(13);
     });
 
@@ -280,10 +284,11 @@ describe(`ModuleBuilder`, () => {
         .define('a', () => 1)
         .define('b', () => 2)
         .define('someValue', ({ a, b }) => a + b)
-        .build()
-        .decorate('someValue', (val, { b }) => val * b);
+        .build();
 
-      const c = container();
+      const mPatch = m.decorate('someValue', (val, { b }) => val * b);
+
+      const c = container({ overrides: [mPatch] });
       expect(c.get(m, 'someValue')).toEqual(6);
     });
 
@@ -291,20 +296,22 @@ describe(`ModuleBuilder`, () => {
       it(`preserves singleton scope of the original resolver`, async () => {
         const m = module()
           .define('a', () => Math.random())
-          .build()
-          .decorate('a', a => a);
+          .build();
 
-        const c = container();
+        const mPatch = m.decorate('a', a => a);
+
+        const c = container({ overrides: [mPatch] });
         expect(c.get(m, 'a')).toEqual(c.get(m, 'a'));
       });
 
       it(`preserves transient scope of the original resolver`, async () => {
         const m = module()
           .define('a', () => Math.random(), transient)
-          .build()
-          .decorate('a', a => a);
+          .build();
 
-        const c = container();
+        const mPatch = m.decorate('a', a => a);
+
+        const c = container({ overrides: [mPatch] });
         expect(c.get(m, 'a')).not.toEqual(c.get(m, 'a'));
       });
 
@@ -312,10 +319,11 @@ describe(`ModuleBuilder`, () => {
         const m = module()
           .define('source', () => Math.random(), request)
           .define('a', ({ source }) => source, request)
-          .build()
-          .decorate('a', a => a);
+          .build();
 
-        const c = container();
+        const mPatch = m.decorate('a', a => a);
+
+        const c = container({ overrides: [mPatch] });
         const req1 = c.asObject(m);
         const req2 = c.asObject(m);
 

@@ -6,6 +6,8 @@ import { ImmutableMap } from '../collections/ImmutableMap';
 import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
+import { reducePatches } from '../module/utils/reducePatches';
+import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -13,15 +15,20 @@ export class ContainerContext {
     return new ContainerContext();
   }
 
+  static withOverrides(overrides: ModulePatch<any>[]): ContainerContext {
+    const reducedOverrides = reducePatches(overrides);
+    return new ContainerContext({}, {}, new ResolversLookup(), reducedOverrides);
+  }
+
   private requestScope: Record<string, any> = {};
   private requestScopeAsync: Record<string, PushPromise<any>> = {};
   private materializedObjects: Record<string, any> = {};
 
   protected constructor(
-    public globalScope: Record<string, any> = {},
-    public modulesResolvers: Record<string, Module<any>> = {},
-    public resolvers: ResolversLookup = new ResolversLookup(),
-    public overrides = ImmutableMap.empty(),
+    private globalScope: Record<string, any> = {},
+    private patchedModules: Record<string, Module<any>> = {},
+    private resolvers: ResolversLookup = new ResolversLookup(),
+    private modulesPatches = ImmutableMap.empty(),
   ) {}
 
   getInstanceResolver(module: Module<any>, path: string): Instance<any> {
@@ -29,11 +36,7 @@ export class ContainerContext {
       return this.resolvers.getByModule(module.moduleId, path);
     }
 
-    if (!this.hasModule(module.moduleId)) {
-      this.addModule(module);
-    }
-
-    const targetModule: Module<any> = this.getModule(module.moduleId);
+    const targetModule: Module<any> = this.getModule(module);
     const [moduleOrInstance, instance] = path.split('.');
 
     const { resolverThunk } = targetModule.registry.get(moduleOrInstance);
@@ -102,10 +105,6 @@ export class ContainerContext {
     this.requestScope[uuid] = instance;
   }
 
-  override(module: Module<any>) {
-    this.overrides = this.overrides.extend(module.moduleId.id, module);
-  }
-
   hasInGlobalScope(uuid: string): boolean {
     return !!this.globalScope[uuid];
   }
@@ -143,24 +142,22 @@ export class ContainerContext {
   //       or we need some other kind of scope. In theory each react component should create this kind of scope
   //       and it should be inherited by all children
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.modulesResolvers, this.resolvers, this.overrides);
+    return new ContainerContext(this.globalScope, this.patchedModules, this.resolvers, this.modulesPatches);
   }
 
-  protected addModule(module: Module<any>) {
-    this.modulesResolvers[module.moduleId.id] = module;
-  }
+  getModule(module: Module<any>): Module<any> {
+    const { moduleId } = module;
 
-  hasModule(moduleId: ModuleId): boolean {
-    return !!this.modulesResolvers[moduleId.id];
-  }
+    if (!this.patchedModules[moduleId.id]) {
+      if (this.modulesPatches.hasKey(moduleId.id)) {
+        const modulePatch = this.modulesPatches.get(moduleId.id);
+        this.patchedModules[moduleId.id] = module.patch(modulePatch);
+      } else {
+        this.patchedModules[moduleId.id] = module;
+      }
+    }
 
-  getModule(moduleId: ModuleId): Module<any> {
-    const targetModule: Module<any> = this.overrides.hasKey(moduleId.id)
-      ? this.overrides.get(moduleId.id)
-      : this.modulesResolvers[moduleId.id];
-
-    invariant(targetModule, `Cannot get module with moduleId: ${moduleId}`);
-    return targetModule;
+    return this.patchedModules[moduleId.id];
   }
 
   materializeModule<TModule extends Module<any>>(
