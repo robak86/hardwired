@@ -8,5 +8,3 @@ export * from './strategies/TransientStrategy';
 
 export { Instance } from './resolvers/abstract/Instance';
 export type { Module, AnyResolver, ModuleRecord } from './resolvers/abstract/Module';
-
-export { Scope } from './resolvers/abstract/Instance';

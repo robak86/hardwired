@@ -38,12 +38,15 @@ export namespace Module {
     TModule extends Module<infer TRecord> ?
       ({ [K in keyof TRecord]: TRecord[K] extends Instance<infer A> ? K : never })[keyof TRecord] : unknown
 
-  export type BoundResolver = {
+  export type BoundResolver = BoundInstance | BoundModule
+
+  export type BoundInstance = {
     id: string,
     type: 'resolver'
     resolverThunk: Thunk<Instance<any>>;
-  } |
-    {
+  }
+
+    export type BoundModule = {
       type: 'module',
       resolverThunk: Thunk<Module<any>>;
     }

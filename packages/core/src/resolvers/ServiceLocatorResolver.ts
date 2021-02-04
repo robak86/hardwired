@@ -7,12 +7,12 @@ export class ServiceLocatorResolver extends Instance<ServiceLocator> {
     super();
   }
 
-  build(id:string, cache: ContainerContext): ServiceLocator {
-    if (cache.hasInGlobalScope(this.id)) {
-      return cache.getFromGlobalScope(this.id);
+  build(id: string, cache: ContainerContext): ServiceLocator {
+    if (cache.hasInGlobalScope(id)) {
+      return cache.getFromGlobalScope(id);
     } else {
       const instance = new ServiceLocator(cache);
-      cache.setForGlobalScope(this.id, instance);
+      cache.setForGlobalScope(id, instance);
       return instance;
     }
   }

@@ -10,10 +10,6 @@ import { singleton } from '../strategies/SingletonStrategy';
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
 
-function buildResolverId(module: ModuleBuilder<any>, name: string): string {
-  return `${module.moduleId.id}:${name}`; // TODO: potential gc issue
-}
-
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   static empty(): ModuleBuilder<{}> {
     return new ModuleBuilder<{}>(ModuleId.build(), ImmutableMap.empty() as any, { isFrozen: false });
@@ -63,6 +59,9 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     buildStrategy = singleton,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
+
+    // TODO: potential gc issue while getting by id
+    const buildResolverId = (module: ModuleBuilder<any>, name: string) => `${module.moduleId.id}:${name}`;
 
     if (typeof buildFnOrInstance === 'function') {
       return new ModuleBuilder(

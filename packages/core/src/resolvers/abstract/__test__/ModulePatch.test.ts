@@ -18,8 +18,8 @@ describe(`ModulePatch`, () => {
       );
 
       const withReplacedA = m.replace('a', () => 2);
-      const updatedAResolver = unwrapThunk(withReplacedA.patchedResolvers.get('a').resolverThunk) as Instance<any>;
-      expect(updatedAResolver.id).toEqual(originalAResolver.id);
+      const updatedAResolver = withReplacedA.patchedResolvers.get('a') as Module.BoundInstance;
+      expect(updatedAResolver.id).toEqual('a');
     });
   });
 
@@ -58,9 +58,9 @@ describe(`ModulePatch`, () => {
       const patched = m.patch(m1).patch(m2);
 
       expect(patched.registry.entries).toEqual([
-        ['a_plus_b', { id: 'c', resolverThunk: a_plus_b_Resolver }],
-        ['a', { id: 'a', resolverThunk: aReplacementResolver }],
-        ['b', { id: 'b', resolverThunk: bReplacementResolver }],
+        ['a_plus_b', { id: 'c', type: 'resolver', resolverThunk: a_plus_b_Resolver }],
+        ['a', { id: 'a', type: 'resolver', resolverThunk: aReplacementResolver }],
+        ['b', { id: 'b', type: 'resolver', resolverThunk: bReplacementResolver }],
       ]);
     });
 
@@ -99,9 +99,9 @@ describe(`ModulePatch`, () => {
       const patched = m.patch(m1).patch(m2);
 
       expect(patched.registry.entries).toEqual([
-        ['b', { id: 'b', resolverThunk: bOriginalResolver }],
-        ['a_plus_b', { id: 'c', resolverThunk: a_plus_b_Resolver }],
-        ['a', { id: 'a', resolverThunk: yetAnotherAReplacement }],
+        ['b', { id: 'b', type: 'resolver', resolverThunk: bOriginalResolver }],
+        ['a_plus_b', { id: 'c', type: 'resolver', resolverThunk: a_plus_b_Resolver }],
+        ['a', { id: 'a', type: 'resolver', resolverThunk: yetAnotherAReplacement }],
       ]);
     });
   });

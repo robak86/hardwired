@@ -115,10 +115,16 @@ describe(`ModuleBuilder`, () => {
     });
 
     it(`allows for returning strategy instead of result`, async () => {
+      // const m = module()
+      //   .define('a', () => 1)
+      //   .define('b', () => 2)
+      //   .define('c', c => singleton(c2 => c.a + c2.b))
+      //   .build();
+
       const m = module()
-        .define('a', () => 1)
-        .define('b', () => 2)
-        .define('c', c => singleton(c2 => c.a + c2.b))
+        // .define('a', () => 1)
+        // .define('b', () => 2)
+        .define('c', c => singleton(c2 => 3))
         .build();
 
       const testContainer = container();

@@ -2,7 +2,6 @@ import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
 import { Module } from '../resolvers/abstract/Module';
 import { ImmutableMap } from '../collections/ImmutableMap';
-import { Instance } from '../resolvers/abstract/Instance';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
 import { reducePatches } from '../module/utils/reducePatches';
@@ -30,7 +29,7 @@ export class ContainerContext {
     private modulesPatches = ImmutableMap.empty(),
   ) {}
 
-  getInstanceResolver(module: Module<any>, path: string): Instance<any> {
+  getInstanceResolver(module: Module<any>, path: string): Module.BoundInstance {
     if (this.resolvers.hasByModule(module.moduleId, path)) {
       return this.resolvers.getByModule(module.moduleId, path);
     }
@@ -40,13 +39,11 @@ export class ContainerContext {
     const boundResolver = targetModule.registry.get(moduleOrInstance);
 
     if (boundResolver.type === 'resolver') {
-      const resolver = unwrapThunk(boundResolver.resolverThunk);
-
-      if (!this.resolvers.has(resolver)) {
-        this.resolvers.add(targetModule, path, resolver);
+      if (!this.resolvers.has(boundResolver)) {
+        this.resolvers.add(targetModule, path, boundResolver);
       }
 
-      return resolver;
+      return boundResolver;
     }
 
     if (boundResolver.type === 'module') {
@@ -70,18 +67,11 @@ export class ContainerContext {
     return this.runResolver(resolver, this);
   }
 
-  runResolver(resolver: Instance<any>, context: ContainerContext) {
-    const module = this.resolvers.getModuleForResolver(resolver.id);
+  runResolver(boundResolver: Module.BoundInstance, context: ContainerContext) {
+    const module = this.resolvers.getModuleForResolver(boundResolver.id);
     const materializedModule = this.materializeModule(module, context);
-    const result = resolver.build('todo', context, materializedModule);
-
-
-    // TODO: use some more reliable detection ?
-    if (result instanceof Instance) {
-      return result.build('todo', context, materializedModule);
-    }
-
-    return result;
+    const resolver = unwrapThunk(boundResolver.resolverThunk);
+    return resolver.build(boundResolver.id, context, materializedModule);
   }
 
   eagerLoad(module: Module<any>) {
@@ -175,7 +165,7 @@ export class ContainerContext {
         Object.defineProperty(materialized, key, {
           configurable: false,
           get: () => {
-            const initializedResolver = this.getInstanceResolver(module, key);
+            const initializedResolver = this.getInstanceResolver(module, key); //TODO: move into closure so above this is called only once for all get calls
             return this.runResolver(initializedResolver, context);
           },
         });
