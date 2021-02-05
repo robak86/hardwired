@@ -22,7 +22,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   ) {}
 
   isEqual(otherModule: Module<any>): boolean {
-    return this.moduleId.id === otherModule.moduleId.id;
+    return this.moduleId.revision === otherModule.moduleId.revision;
   }
 
   import<TKey extends string, TValue extends Module<any>>(

@@ -2,10 +2,10 @@ import { ContainerContext } from '../container/ContainerContext';
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { Instance } from '../resolvers/abstract/Instance';
 
-export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
+export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
   build(id: string, context: ContainerContext, materializedModule): TValue {
-    if (context.hasInRequestScope(id)) {
-      return context.getFromRequestScope(id);
+    if (context.hasInHierarchicalScope(id)) {
+      return context.getFromHierarchicalScope(id);
     } else {
       const instanceOrStrategy = this.buildFunction(materializedModule);
 
@@ -13,12 +13,12 @@ export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
         return instanceOrStrategy.build(id, context, materializedModule);
       }
 
-      context.setForRequestScope(id, instanceOrStrategy);
+      context.setForHierarchicalScope(id, instanceOrStrategy);
       return instanceOrStrategy;
     }
   }
 }
 
-export const request = <TReturn>(buildFunction: (ctx) => TReturn) => {
-  return new RequestStrategy(buildFunction);
+export const scoped = <TReturn>(buildFunction: (ctx) => TReturn) => {
+  return new ScopeStrategy(buildFunction);
 };

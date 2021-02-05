@@ -1,15 +1,13 @@
 import { ImmutableMap } from '../../../collections/ImmutableMap';
 import { singleton, SingletonStrategy } from '../../../strategies/SingletonStrategy';
 import { Module } from '../Module';
-import { unwrapThunk } from '../../../utils/Thunk';
-import { Instance } from '../Instance';
 
 describe(`ModulePatch`, () => {
   describe(`replace`, () => {
     it(`preserves previous resolver id if strategy factory function is used`, async () => {
       const originalAResolver = singleton(() => 1);
       const m = new Module<{ a: SingletonStrategy<number> }>(
-        { id: 'someId' },
+        { id: 'id', revision: 'someId' },
         ImmutableMap.empty().extend('a', {
           id: 'a',
           type: 'resolver' as const,
@@ -21,6 +19,19 @@ describe(`ModulePatch`, () => {
       const updatedAResolver = withReplacedA.patchedResolvers.get('a') as Module.BoundInstance;
       expect(updatedAResolver.id).toEqual('a');
     });
+
+    it(`preserves module original id`, async () => {
+      const m = new Module<{ a: SingletonStrategy<number> }>(
+        { id: 'id', revision: 'someId' },
+        ImmutableMap.empty().extend('a', {
+          id: 'a',
+          type: 'resolver' as const,
+          resolverThunk: singleton(() => 1),
+        }),
+      );
+      const patch = m.replace('a', () => 3);
+      expect(patch.moduleId).toEqual(m.moduleId)
+    });
   });
 
   describe(`patch`, () => {
@@ -28,7 +39,7 @@ describe(`ModulePatch`, () => {
       const a_plus_b_Resolver = singleton(() => 3);
 
       const m = new Module<any>(
-        { id: 'someId' },
+        { id: 'id',revision: 'someId' },
         ImmutableMap.empty()
           .extend('a', {
             id: 'a',
@@ -69,7 +80,7 @@ describe(`ModulePatch`, () => {
       const bOriginalResolver = singleton(() => 2);
 
       const m = new Module<any>(
-        { id: 'someId' },
+        { id: 'id', revision: 'someId' },
         ImmutableMap.empty()
           .extend('a', {
             id: 'a',

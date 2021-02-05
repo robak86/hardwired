@@ -4,7 +4,7 @@ import { ContainerContext, useContainer } from '../context/ContainerContext';
 
 export const ContainerScope: FunctionComponent = ({ children }) => {
   const container = useContainer();
-  const childContainer = useRef(container.usingNewRequestScope());
+  const childContainer = useRef(container.checkoutChildScope());
 
   // useEffect(()=> {
   // TODO: dispose scope on unmount ??. Probably not possible, because we cannot be sure that all async calls within scope

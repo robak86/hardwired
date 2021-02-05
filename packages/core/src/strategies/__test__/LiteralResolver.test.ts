@@ -118,7 +118,8 @@ describe(`LiteralResolver`, () => {
 
       expect(req1.someValue === req1.someValueProxy).toEqual(true);
       expect(req2.someValue === req2.someValueProxy).toEqual(true);
-      expect(req1 === req2).toEqual(true);
+      expect(req1.someValue).not.toEqual(req2.someValue)
+      expect(req1.someValueProxy).not.toEqual(req2.someValueProxy)
     });
   });
 });

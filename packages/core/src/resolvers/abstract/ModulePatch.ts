@@ -29,7 +29,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   ) {}
 
   isEqual(otherModule: ModulePatch<any>): boolean {
-    return this.moduleId.id === otherModule.moduleId.id;
+    return this.moduleId.revision === otherModule.moduleId.revision;
   }
 
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
@@ -103,10 +103,10 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   }
 
   merge<TRecord extends Record<string, AnyResolver>>(otherModule: ModulePatch<TRecord>): ModulePatch<TRecord> {
-    invariant(this.moduleId.id === otherModule.moduleId.id, `Cannot apply patch from module with different id`);
+    invariant(this.moduleId.revision === otherModule.moduleId.revision, `Cannot apply patch from module with different id`);
 
     return new ModulePatch<TRecord>(
-      { id: this.moduleId.id },
+      this.moduleId,
       this.registry,
       this.patchedResolvers.merge(otherModule.patchedResolvers),
     );

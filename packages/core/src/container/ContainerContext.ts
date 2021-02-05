@@ -1,11 +1,44 @@
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
 import { Module } from '../resolvers/abstract/Module';
-import { ImmutableMap } from '../collections/ImmutableMap';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
 import { reducePatches } from '../module/utils/reducePatches';
 import { ModulePatch } from '../resolvers/abstract/ModulePatch';
+
+class SingletonScope {
+  private ownEntries: Record<string, any> = {};
+
+  constructor(private ownOverriddenKeys: string[] = [], private parent: SingletonScope) {}
+
+  checkoutChild(overriddenKeys: string[]): SingletonScope {
+    return new SingletonScope(overriddenKeys, this);
+  }
+
+  set(key, value) {
+    if (this.ownOverriddenKeys.includes(key) || !this.parent) {
+      this.ownEntries[key] = value;
+    } else {
+      this.parent.set(key, value);
+    }
+  }
+
+  get(key) {
+    if (this.ownOverriddenKeys.includes(key) || !this.parent) {
+      return this.ownEntries[key];
+    } else {
+      return this.parent.get(key);
+    }
+  }
+
+  has(key: string) {
+    if (this.ownOverriddenKeys.includes(key) || !this.parent) {
+      return !!this.ownEntries[key];
+    }
+
+    return this.parent.has(key);
+  }
+}
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -24,9 +57,10 @@ export class ContainerContext {
 
   protected constructor(
     private globalScope: Record<string, any> = {},
-    private patchedModules: Record<string, Module<any>> = {},
+    private loadedModules: Record<string, Module<any>> = {},
     private resolvers: ResolversLookup = new ResolversLookup(),
-    private modulesPatches = ImmutableMap.empty(),
+    private modulesPatches: Record<string, ModulePatch<any>> = {},
+    private hierarchicalScope: Record<string, any> = {},
   ) {}
 
   getInstanceResolver(module: Module<any>, path: string): Module.BoundInstance {
@@ -64,7 +98,7 @@ export class ContainerContext {
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
     const resolver = this.getInstanceResolver(moduleInstance, name);
-    return this.runResolver(resolver, this);
+    return this.runResolver(resolver, this.forNewRequest());
   }
 
   runResolver(boundResolver: Module.BoundInstance, context: ContainerContext) {
@@ -132,22 +166,36 @@ export class ContainerContext {
   //       or we need some other kind of scope. In theory each react component should create this kind of scope
   //       and it should be inherited by all children
   forNewRequest(): ContainerContext {
-    return new ContainerContext(this.globalScope, this.patchedModules, this.resolvers, this.modulesPatches);
+    return new ContainerContext(
+      this.globalScope,
+      this.loadedModules,
+      this.resolvers,
+      this.modulesPatches,
+      this.hierarchicalScope,
+    );
+  }
+
+  childScope(patches: ModulePatch<any>[] = []): ContainerContext {
+    const childScopePatches = reducePatches(patches, this.modulesPatches);
+    const inheritedSingletonScope = { ...this.globalScope };
+    Object.keys(childScopePatches).forEach(moduleId => {
+      childScopePatches[moduleId].registry.forEach((resolver, key) => {
+        delete inheritedSingletonScope[`${moduleId}:${key}`];
+      });
+    });
+    return new ContainerContext(inheritedSingletonScope, {}, new ResolversLookup(), childScopePatches, {});
   }
 
   getModule(module: Module<any>): Module<any> {
     const { moduleId } = module;
 
-    if (!this.patchedModules[moduleId.id]) {
-      if (this.modulesPatches.hasKey(moduleId.id)) {
-        const modulePatch = this.modulesPatches.get(moduleId.id);
-        this.patchedModules[moduleId.id] = module.patch(modulePatch);
-      } else {
-        this.patchedModules[moduleId.id] = module;
-      }
+    if (!this.loadedModules[moduleId.id]) {
+      this.loadedModules[moduleId.id] = this.modulesPatches[moduleId.id]
+        ? module.patch(this.modulesPatches[moduleId.id])
+        : module;
     }
 
-    return this.patchedModules[moduleId.id];
+    return this.loadedModules[moduleId.id];
   }
 
   materializeModule<TModule extends Module<any>>(
@@ -185,5 +233,17 @@ export class ContainerContext {
     context.materializedObjects[module.moduleId.id] = materialized;
 
     return materialized;
+  }
+
+  hasInHierarchicalScope(id: string) {
+    return !!this.hierarchicalScope[id];
+  }
+
+  getFromHierarchicalScope(id: string) {
+    return this.hierarchicalScope[id];
+  }
+
+  setForHierarchicalScope(id: string, instanceOrStrategy: any) {
+    this.hierarchicalScope[id] = instanceOrStrategy;
   }
 }

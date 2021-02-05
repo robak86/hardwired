@@ -1,8 +1,10 @@
-import { ImmutableMap } from '../../collections/ImmutableMap';
 import { ModulePatch } from '../../resolvers/abstract/ModulePatch';
 
-export function reducePatches(modules: ModulePatch<any>[]): ImmutableMap<any> {
-  const modulesById = {};
+export function reducePatches(
+  modules: ModulePatch<any>[],
+  previousPatches: Record<string, ModulePatch<any>> = {},
+): Record<string, ModulePatch<any>> {
+  const modulesById = { ...previousPatches };
 
   modules.forEach(module => {
     if (modulesById[module.moduleId.id]) {
@@ -12,5 +14,5 @@ export function reducePatches(modules: ModulePatch<any>[]): ImmutableMap<any> {
     }
   });
 
-  return ImmutableMap.fromObjectUnordered(modulesById);
+  return modulesById;
 }

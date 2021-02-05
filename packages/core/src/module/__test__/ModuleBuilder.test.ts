@@ -158,8 +158,10 @@ describe(`ModuleBuilder`, () => {
         .define('cls', ({ imported }) => new TestClassArgs2(imported.key1, imported.key2))
         .build();
 
+      const mPatch = child1.replace('key2', () => 'replacedString');
+
       const c = container({
-        overrides: [child1.replace('key2', () => 'replacedString')],
+        overrides: [mPatch],
       });
 
       const classInstance = c.get(root, 'cls');
@@ -321,7 +323,7 @@ describe(`ModuleBuilder`, () => {
         expect(c.get(m, 'a')).not.toEqual(c.get(m, 'a'));
       });
 
-      it(`uses the same request scope for each subsequent asObject call`, async () => {
+      it(`uses different request scope for each subsequent asObject call`, async () => {
         const m = module()
           .define('source', () => Math.random(), request)
           .define('a', ({ source }) => source, request)
@@ -335,21 +337,21 @@ describe(`ModuleBuilder`, () => {
 
         expect(req1.source).toEqual(req1.a);
         expect(req2.source).toEqual(req2.a);
-        expect(req1.source).toEqual(req2.source);
-        expect(req1.a).toEqual(req2.a);
+        expect(req1.source).not.toEqual(req2.source);
+        expect(req1.a).not.toEqual(req2.a);
       });
 
-      it(`caches produced object`, async () => {
+      it(`does not cache produced object`, async () => {
         const m = module()
-          .define('a', () => Math.random(), transient)
-          .define('b', () => Math.random(), transient)
+          .define('a', () => Math.random(), request)
+          .define('b', () => Math.random(), request)
           .build();
 
         const c = container();
         const obj1 = c.asObject(m);
         const obj2 = c.asObject(m);
 
-        expect(obj1).toBe(obj2);
+        expect(obj1).not.toBe(obj2);
       });
     });
 
@@ -382,7 +384,7 @@ describe(`ModuleBuilder`, () => {
     it(`produces module with next unique id`, async () => {
       const prevModule = module();
       const frozen = prevModule.build();
-      expect(prevModule.moduleId.id).not.toEqual(frozen.moduleId.id);
+      expect(prevModule.moduleId.revision).not.toEqual(frozen.moduleId.revision);
     });
   });
 

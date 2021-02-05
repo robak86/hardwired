@@ -8,7 +8,6 @@ export class Container {
     private readonly overrides: ModulePatch<any>[],
     private readonly eager: Module<any>[],
   ) {
-    this.containerContext = ContainerContext.withOverrides(overrides);
     eager.forEach(m => this.containerContext.eagerLoad(m));
   }
 
@@ -20,14 +19,17 @@ export class Container {
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    return this.containerContext.materializeModule(module, this.containerContext);
+    return this.containerContext.materializeModule(module, this.containerContext.forNewRequest());
   }
 
   usingNewRequestScope(): Container {
-    return new Container(this.containerContext.forNewRequest(), this.overrides, this.eager);
+    return new Container(this.containerContext.forNewRequest(), [], []);
+  }
+
+  checkoutChildScope(...patches: ModulePatch<any>[]): Container {
+    return new Container(this.containerContext.childScope(patches), [], []);
   }
 }
-
 
 // TODO: we need to have ability to provide patches which are not overridable by patches provided to nested scopes (testing!)
 // or just clear distinction that patches provided to container are irreplaceable by patches provided to scopes
@@ -46,7 +48,8 @@ export function container({
 }: //       on the other hand how to create instances of definitions ? should we only create singletons ? what
 //       about transient, request scopes. This would be pointless.
 //       Probably we should not allow any reflection
+// TODO: rename eager -> load|discoverable ? this could be use for instantiating definitions with some tag
 ContainerOptions = {}): Container {
-  const container = new Container(context, overrides, eager);
+  const container = new Container(ContainerContext.withOverrides(overrides), overrides, eager);
   return container as any;
 }

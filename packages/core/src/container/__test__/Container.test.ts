@@ -1,8 +1,10 @@
 import { container } from '../Container';
 
 import { ArgsDebug } from '../../__test__/ArgsDebug';
-import { module } from '../../module/ModuleBuilder';
+import { module, unit } from '../../module/ModuleBuilder';
 import { singleton } from '../../strategies/SingletonStrategy';
+import { request } from '../../strategies/RequestStrategy';
+import { scoped } from '../../strategies/ScopeStrategy';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -103,228 +105,6 @@ describe(`Container`, () => {
     });
   });
 
-  describe(`lazy loading`, () => {
-    function setup() {
-      const c = container();
-
-      const parentChildValue = () => 'parentChild';
-      const parentChild = module().define('value', parentChildValue).build();
-
-      const parentSiblingChildValue = () => 'parentSiblingChild';
-      const parentSiblingChild = module().define('value', parentSiblingChildValue).build();
-
-      const parentValue = () => 'parent';
-      const parent = module().import('child', parentChild).define('value', parentValue).build();
-
-      const parentSiblingValue = () => 'parentSibling';
-      const parentSibling = module().import('child', parentSiblingChild).define('value', parentSiblingValue).build();
-
-      return {
-        c,
-        parent,
-        parentValue,
-        parentSibling,
-        parentSiblingValue,
-        parentChild,
-        parentChildValue,
-        parentSiblingChild,
-        parentSiblingChildValue,
-      };
-    }
-
-    it.skip(`calls onInit on parent definitions`, async () => {
-      // const { c, parent, parentValue } = setup();
-      // jest.spyOn(parentValue, 'onInit');
-      // c.get(parent, 'value');
-      // expect(parentValue.onInit).toHaveBeenCalled();
-    });
-
-    it.skip(`calls onInit with dependencies resolvers id's`, async () => {
-      const numberResolver = () => 123;
-      const stringResolver = () => 'some string';
-      // const singletonResolver = singleton(TestClassArgs2);
-
-      // (singletonResolver as any).onInit = () => null;
-      // jest.spyOn(singletonResolver, 'onInit');
-      //
-      // const m = module()
-      //   .define('someNumber', numberResolver)
-      //   .define('someString', stringResolver)
-      //   .define('cls', c => new TestClassArgs2(c.someNumber, c.someString), singleton)
-      //   .freeze();
-      //
-      // const containerContext = ContainerContext.empty();
-      //
-      // const c = container({ context: containerContext });
-      // c.get(m, 'someString');
-      //
-      // expect(singletonResolver.onInit).toHaveBeenCalledWith(containerContext);
-    });
-
-    it.skip(`calls onInit on child definition`, async () => {
-      // const { c, parentChild, parentChildValue } = setup();
-      // jest.spyOn(parentChildValue, 'onInit');
-      // c.get(parentChild, 'value');
-      // expect(parentChildValue.onInit).toHaveBeenCalled();
-    });
-
-    it.skip(`does not call onInit on parent module while instantiating definitions from child`, async () => {
-      // const { c, parentValue, parentChild } = setup();
-      // jest.spyOn(parentValue, 'onInit');
-      // c.get(parentChild, 'value');
-      //
-      // expect(parentValue.onInit).not.toHaveBeenCalled();
-    });
-
-    it.skip(`does not call onInit on child definitions which are not used as dependencies`, async () => {
-      // const { c, parent, parentValue, parentChildValue } = setup();
-      // jest.spyOn(parentValue, 'onInit');
-      // jest.spyOn(parentChildValue, 'onInit');
-      //
-      // c.get(parent, 'value');
-      //
-      // expect(parentValue.onInit).toHaveBeenCalled();
-      // expect(parentChildValue.onInit).not.toHaveBeenCalled();
-    });
-
-    it.skip(`does not reinitialize definitions after the module is lazily loaded for the firs time`, async () => {
-      // const { c, parent, parentChild, parentValue, parentChildValue } = setup();
-      // jest.spyOn(parentValue, 'onInit');
-      // jest.spyOn(parentChildValue, 'onInit');
-      //
-      // c.get(parent, 'value');
-      // c.get(parentChild, 'value');
-      //
-      // expect(parentValue.onInit).toHaveBeenCalledTimes(1);
-      // expect(parentChildValue.onInit).toHaveBeenCalledTimes(1);
-    });
-
-    it.skip(`initializes child module definitions while initializing definitions from parent referencing child module`, async () => {
-      // const { c, parent, parentChild, parentValue, parentChildValue } = setup();
-      // jest.spyOn(parentValue, 'onInit');
-      // jest.spyOn(parentChildValue, 'onInit');
-      //
-      // c.get(parentChild, 'value');
-      // c.get(parent, 'value');
-      //
-      // expect(parentValue.onInit).toHaveBeenCalledTimes(1);
-      // expect(parentChildValue.onInit).toHaveBeenCalledTimes(1);
-    });
-
-    it.todo(`Eagerly initializes parent module while instantiating definition from child module?? `);
-  });
-
-  describe(`eager loading`, () => {
-    it(`calls onInit on every definition`, async () => {
-      // const childDef1 = () => ('child1');
-      // const childDef2 = () => ('child2');
-      // const parentDef = () => ('parent1');
-      //
-      // const m = module() //breakme
-      //   .defineAdvanced('a', childDef1)
-      //   .defineAdvanced('b', childDef2)
-      //   .freeze();
-      //
-      // const p = module() //breakme
-      //   .import('child', m)
-      //   .defineAdvanced('c', parentDef)
-      //   .freeze();
-      //
-      // jest.spyOn(childDef1, 'onInit');
-      // jest.spyOn(childDef2, 'onInit');
-      // jest.spyOn(parentDef, 'onInit');
-      //
-      // const c = container({ eager: [p] });
-      //
-      // expect(childDef1.onInit).toHaveBeenCalledTimes(1);
-      // expect(childDef2.onInit).toHaveBeenCalledTimes(1);
-      // expect(parentDef.onInit).toHaveBeenCalledTimes(1);
-    });
-
-    it(`does not call onInit on parent modules`, async () => {
-      // const childDef1 = dependency('child1');
-      // const childDef2 = dependency('child2');
-      // const parentDef = dependency('parent1');
-      //
-      // const m = module() //breakme
-      //   .defineAdvanced('a', childDef1)
-      //   .defineAdvanced('b', childDef2)
-      //   .freeze();
-      //
-      // const p = module() //breakme
-      //   .import('child', m)
-      //   .defineAdvanced('c', parentDef)
-      //   .freeze();
-      //
-      // jest.spyOn(childDef1, 'onInit');
-      // jest.spyOn(childDef2, 'onInit');
-      // jest.spyOn(parentDef, 'onInit');
-      //
-      // const c = container({ eager: [m] });
-      //
-      // expect(childDef1.onInit).toHaveBeenCalledTimes(1);
-      // expect(childDef2.onInit).toHaveBeenCalledTimes(1);
-      // expect(parentDef.onInit).toHaveBeenCalledTimes(0);
-    });
-
-    it(`does not call onInit multiple times`, async () => {
-      // const childDef1 = dependency('child1');
-      // const childDef2 = dependency('child2');
-      // const parentDef = dependency('parent1');
-      //
-      // const m = module() //breakme
-      //   .defineAdvanced('a', childDef1)
-      //   .defineAdvanced('b', childDef2)
-      //   .freeze();
-      //
-      // const p = module() //breakme
-      //   .import('child', m)
-      //   .defineAdvanced('c', parentDef)
-      //   .freeze();
-      //
-      // jest.spyOn(childDef1, 'onInit');
-      // jest.spyOn(childDef2, 'onInit');
-      // jest.spyOn(parentDef, 'onInit');
-      //
-      // const c = container({ eager: [m] });
-      // c.get(p, 'c');
-      //
-      // expect(childDef1.onInit).toHaveBeenCalledTimes(1);
-      // expect(childDef2.onInit).toHaveBeenCalledTimes(1);
-      // expect(parentDef.onInit).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe(`getByType`, () => {
-    it(`returns instances by resolver types`, async () => {
-      // const m = module()
-      //   .defineAdvanced('value', value(123))
-      //   .defineAdvanced('dependency1', dependency(456))
-      //   .defineAdvanced('dependency2', dependency(789))
-      //   .freeze();
-      //
-      // const c = container({ eager: [m] });
-      //
-      // const instances = c.getContext().__getByType_experimental(DummyResolver);
-      // expect(instances).toEqual([456, 789]);
-    });
-
-    it(`returns instances by resolver types from imported modules`, async () => {
-      // const m = module()
-      //   .import('imported', () => child)
-      //   .defineAdvanced('value', value(123))
-      //   .defineAdvanced('dependency1', dependency(456))
-      //   .freeze();
-      //
-      // const child = module().defineAdvanced('dependency2', dependency(789)).freeze();
-      //
-      // const c = container({ eager: [m] });
-      //
-      // const instances = c.getContext().__getByType_experimental(DummyResolver);
-      // expect(instances).toEqual([789, 456]); //TODO: investigate in what order should be returned instances
-    });
-  });
-
   describe(`overrides`, () => {
     it(`merges modules with the same id`, async () => {
       const m = module()
@@ -343,6 +123,119 @@ describe(`Container`, () => {
 
       const { a_plus_b } = c.asObject(m);
       expect(a_plus_b).toEqual(30);
+    });
+
+    describe(`overrides for child scope`, () => {
+      it(`replaces definitions for request scope`, async () => {
+        const m = unit()
+          .define('a', () => 1, request)
+          .build();
+        const c = container();
+        expect(c.get(m, 'a')).toEqual(1);
+
+        const mPatch = m.replace('a', () => 2, request);
+        const childC = c.checkoutChildScope(mPatch);
+        expect(childC.get(m, 'a')).toEqual(2);
+      });
+
+      it(`replaces definitions for scoped scope`, async () => {
+        const m = unit()
+          .define('a', () => 1, scoped)
+          .build();
+        const c = container();
+        expect(c.get(m, 'a')).toEqual(1);
+
+        const mPatch = m.replace('a', () => 2, scoped);
+        const childC = c.checkoutChildScope(mPatch);
+        expect(childC.get(m, 'a')).toEqual(2);
+      });
+
+      it(`replaces definitions for singleton scope`, async () => {
+        const m = unit()
+          .define('a', () => 1, singleton)
+          .build();
+        const c = container();
+        expect(c.get(m, 'a')).toEqual(1);
+
+        const mPatch = m.replace('a', () => 2, singleton);
+        const childC = c.checkoutChildScope(mPatch);
+        expect(childC.get(m, 'a')).toEqual(2);
+      });
+
+      it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
+        const m = unit()
+          .define('a', () => Math.random(), singleton)
+          .build();
+        const parentC = container();
+        const childC = parentC.checkoutChildScope();
+
+        const req1 = childC.get(m, 'a'); // important that childC is called as first
+        const req2 = parentC.get(m, 'a');
+        expect(req1).toEqual(req2);
+      });
+    });
+  });
+
+  describe(`scopes`, () => {
+    describe(`request`, () => {
+      describe(`get`, () => {
+        it(`uses new request scope for each call`, async () => {
+          const m = unit()
+            .define('a', () => Math.random(), request)
+            .build();
+
+          const c = container();
+          const req1 = c.get(m, 'a');
+          const req2 = c.get(m, 'a');
+
+          expect(req1).not.toEqual(req2);
+        });
+      });
+
+      describe(`asObject`, () => {
+        it(`runs asObject each time with new request scope `, async () => {
+          const m = unit()
+            .define('a', () => Math.random(), request)
+            .build();
+
+          const c = container();
+          const req1 = c.asObject(m);
+          const req2 = c.asObject(m);
+
+          expect(req1.a).not.toEqual(req2.a);
+        });
+      });
+
+      describe(`childScope`, () => {
+        it(`does not inherit any values from parent scope`, async () => {
+          const m = unit()
+            .define('a', () => Math.random(), request)
+            .build();
+
+          const c = container();
+          const req1 = c.asObject(m);
+
+          const childC = c.checkoutChildScope();
+          const req2 = childC.asObject(m);
+
+          expect(req1.a).not.toEqual(req2.a);
+        });
+      });
+    });
+  });
+
+  describe(`scoped`, () => {
+    it(`acts like singleton limited to given scope`, async () => {
+      const m = unit()
+        .define('a', () => Math.random(), scoped)
+        .build();
+
+      const c = container();
+      expect(c.get(m, 'a')).toEqual(c.get(m, 'a'));
+
+      const childScope = c.checkoutChildScope();
+      expect(childScope.get(m, 'a')).toEqual(childScope.get(m, 'a'));
+      expect(c.get(m, 'a')).not.toEqual(childScope.get(m, 'a'));
     });
   });
 });
