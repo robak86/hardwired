@@ -4,7 +4,7 @@
 
 **!!! WARNING - Library is still in alpha stage !!!**
 
-Minimalistic, type-safe dependency injection solution for TypeScript.
+Minimalistic, type-safe DI/IoC solution for TypeScript.
 
 - [x] Type-safe, all dependencies checked at compile time
 - [x] No decorators, no reflection
@@ -58,7 +58,7 @@ class Logger {
 const loggerModule = module()
   .define('configuration', () => new LoggerConfiguration(), singleton)
   .define('logger', m => new Logger(m.configuration), singleton)
-  .build();
+  .build(); // this method just builds/freezes the module. Configuration and logger instances are not created yet
 ```
 
 2. Create a container
