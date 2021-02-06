@@ -1,11 +1,11 @@
 import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import invariant from 'tiny-invariant';
-import { Thunk, unwrapThunk } from '../utils/Thunk';
+import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord } from '../resolvers/abstract/Module';
 import { Instance } from '../resolvers/abstract/Instance';
-import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 import { singleton } from '../strategies/SingletonStrategy';
+import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
@@ -42,15 +42,16 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     );
   }
 
-  define<TKey extends string, TInstance extends Instance<any>>(
+  // TODO: types allows returning strategy instead of value - add conditional type validation on return type ?
+  define<TKey extends string, TValue>(
     name: TKey,
-    instance: TInstance | ((ctx: ModuleRecord.Materialized<TRecord>) => TInstance),
-  ): ModuleBuilder<TRecord & Record<TKey, TInstance>>;
+    instance: Instance<TValue>,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
 
   define<TKey extends string, TValue>(
     name: TKey,
     buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
-    buildStrategy?: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
+    buildStrategy?: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => Instance<TValue>,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
 
   define<TKey extends string, TValue>(
@@ -68,22 +69,28 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
           id: buildResolverId(this, name),
-          type: 'resolver' as const,
-          resolverThunk: buildStrategy(buildFnOrInstance) as any,
+          type: 'resolver',
+          strategyTag: isStrategyTagged(buildStrategy) ? getStrategyTag(buildStrategy) : undefined,
+          resolverThunk: buildStrategy(buildFnOrInstance),
         }) as any,
         this.isFrozenRef,
       );
     }
 
-    return new ModuleBuilder(
-      ModuleId.next(this.moduleId),
-      this.registry.extend(name, {
-        id: buildResolverId(this, name),
-        type: 'resolver' as const,
-        resolverThunk: buildFnOrInstance as any,
-      }) as any,
-      this.isFrozenRef,
-    );
+    if (buildFnOrInstance instanceof Instance) {
+      return new ModuleBuilder(
+        ModuleId.next(this.moduleId),
+        this.registry.extend(name, {
+          id: buildResolverId(this, name),
+          type: 'resolver',
+          strategyTag: buildFnOrInstance.strategyTag,
+          resolverThunk: buildFnOrInstance,
+        }) as any,
+        this.isFrozenRef,
+      );
+    }
+
+    throw new Error('Wrong params');
   }
 
   build(): Module<TRecord> {

@@ -6,6 +6,7 @@ import { singleton } from '../../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
 import { DecoratorResolver } from '../DecoratorResolver';
 import { AnyResolver, Module, ModuleRecord } from './Module';
+import { getStrategyTag, isStrategyTagged } from '../../strategies/utils/strategyTagging';
 
 export namespace ModulePatch {
   export type Materialized<TModule extends ModulePatch<any>> = TModule extends ModulePatch<infer TRecord>
@@ -66,6 +67,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
         this.patchedResolvers.extend(name, {
           id: prev.id,
           type: 'resolver',
+          strategyTag: isStrategyTagged(buildStrategy) ? getStrategyTag(buildStrategy) : undefined,
           resolverThunk: buildStrategy(buildFnOrInstance),
         }) as any,
       );
@@ -77,6 +79,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
       this.patchedResolvers.extend(name, {
         id: prev.id,
         type: 'resolver',
+        strategyTag: buildFnOrInstance.strategyTag,
         resolverThunk: buildFnOrInstance,
       }) as any,
     );

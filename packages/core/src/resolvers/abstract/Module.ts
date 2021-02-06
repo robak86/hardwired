@@ -41,10 +41,11 @@ export namespace Module {
   export type BoundResolver = BoundInstance | BoundModule
 
   export type BoundInstance = {
-    id: string,
-    type: 'resolver'
+    id: string;
+    type: 'resolver';
+    strategyTag: symbol;
     resolverThunk: Thunk<Instance<any>>;
-  }
+  };
 
     export type BoundModule = {
       type: 'module',

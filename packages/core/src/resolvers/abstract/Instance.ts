@@ -7,6 +7,7 @@ export namespace Instance {
 export abstract class Instance<TValue> {
   // make sure that generic types won't be erased
   readonly __TValue!: TValue;
+  readonly strategyTag: symbol | undefined;
 
   abstract build(id: string, context: ContainerContext, materializedModule?): TValue;
 }

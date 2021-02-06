@@ -40,14 +40,6 @@ describe(`Container`, () => {
         expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(2);
       });
 
-      it(`allows returning strategy instead of instance`, async () => {
-        const m = module()
-          .define('a', () => 1)
-          .build();
-        const mPatch = m.replace('a', () => singleton(() => 3));
-        expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(3);
-      });
-
       it(`calls provided function with materialized module`, async () => {
         const m = module()
           .define('b', () => 2)

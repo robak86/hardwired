@@ -1,6 +1,7 @@
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { ContainerContext } from '../container/ContainerContext';
 import { Instance } from '../resolvers/abstract/Instance';
+import { buildTaggedStrategy } from './utils/strategyTagging';
 
 export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
   build(id: string, context: ContainerContext, materializedModule): TValue {
@@ -12,6 +13,9 @@ export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
   }
 }
 
-export const transient = <TReturn>(buildFunction: (ctx) => TReturn) => {
-  return new TransientStrategy(buildFunction);
-};
+export const transientStrategyTag = Symbol();
+
+export const transient = buildTaggedStrategy(
+  <TReturn>(buildFunction: (ctx) => TReturn) => new TransientStrategy(buildFunction),
+  transientStrategyTag,
+);

@@ -1,16 +1,19 @@
 import { ImmutableMap } from '../../../collections/ImmutableMap';
-import { singleton, SingletonStrategy } from '../../../strategies/SingletonStrategy';
+import { singleton, SingletonStrategy, singletonStrategyTag } from '../../../strategies/SingletonStrategy';
 import { Module } from '../Module';
 
 describe(`ModulePatch`, () => {
   describe(`replace`, () => {
     it(`preserves previous resolver id if strategy factory function is used`, async () => {
       const originalAResolver = singleton(() => 1);
+      const dummyStrategyTag = Symbol();
+
       const m = new Module<{ a: SingletonStrategy<number> }>(
         { id: 'id', revision: 'someId' },
         ImmutableMap.empty().extend('a', {
           id: 'a',
           type: 'resolver' as const,
+          strategyTag: dummyStrategyTag,
           resolverThunk: originalAResolver,
         }),
       );
@@ -21,16 +24,19 @@ describe(`ModulePatch`, () => {
     });
 
     it(`preserves module original id`, async () => {
+      const dummyStrategyTag = Symbol();
+
       const m = new Module<{ a: SingletonStrategy<number> }>(
         { id: 'id', revision: 'someId' },
         ImmutableMap.empty().extend('a', {
           id: 'a',
           type: 'resolver' as const,
+          strategyTag: dummyStrategyTag,
           resolverThunk: singleton(() => 1),
         }),
       );
       const patch = m.replace('a', () => 3);
-      expect(patch.moduleId).toEqual(m.moduleId)
+      expect(patch.moduleId).toEqual(m.moduleId);
     });
   });
 
@@ -39,21 +45,24 @@ describe(`ModulePatch`, () => {
       const a_plus_b_Resolver = singleton(() => 3);
 
       const m = new Module<any>(
-        { id: 'id',revision: 'someId' },
+        { id: 'id', revision: 'someId' },
         ImmutableMap.empty()
           .extend('a', {
             id: 'a',
             type: 'resolver' as const,
+            strategyTag: singletonStrategyTag,
             resolverThunk: singleton(() => 1),
           })
           .extend('b', {
             id: 'b',
             type: 'resolver' as const,
+            strategyTag: singletonStrategyTag,
             resolverThunk: singleton(() => 2),
           })
           .extend('a_plus_b', {
             id: 'c',
             type: 'resolver' as const,
+            strategyTag: singletonStrategyTag,
             resolverThunk: a_plus_b_Resolver,
           }),
       );
@@ -69,9 +78,12 @@ describe(`ModulePatch`, () => {
       const patched = m.patch(m1).patch(m2);
 
       expect(patched.registry.entries).toEqual([
-        ['a_plus_b', { id: 'c', type: 'resolver', resolverThunk: a_plus_b_Resolver }],
-        ['a', { id: 'a', type: 'resolver', resolverThunk: aReplacementResolver }],
-        ['b', { id: 'b', type: 'resolver', resolverThunk: bReplacementResolver }],
+        [
+          'a_plus_b',
+          { id: 'c', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: a_plus_b_Resolver },
+        ],
+        ['a', { id: 'a', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: aReplacementResolver }],
+        ['b', { id: 'b', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: bReplacementResolver }],
       ]);
     });
 
@@ -85,16 +97,19 @@ describe(`ModulePatch`, () => {
           .extend('a', {
             id: 'a',
             type: 'resolver' as const,
+            strategyTag: singletonStrategyTag,
             resolverThunk: singleton(() => 1),
           })
           .extend('b', {
             id: 'b',
             type: 'resolver' as const,
+            strategyTag: singletonStrategyTag,
             resolverThunk: bOriginalResolver,
           })
           .extend('a_plus_b', {
             id: 'c',
             type: 'resolver' as const,
+            strategyTag: singletonStrategyTag,
             resolverThunk: a_plus_b_Resolver,
           }),
       );
@@ -110,9 +125,12 @@ describe(`ModulePatch`, () => {
       const patched = m.patch(m1).patch(m2);
 
       expect(patched.registry.entries).toEqual([
-        ['b', { id: 'b', type: 'resolver', resolverThunk: bOriginalResolver }],
-        ['a_plus_b', { id: 'c', type: 'resolver', resolverThunk: a_plus_b_Resolver }],
-        ['a', { id: 'a', type: 'resolver', resolverThunk: yetAnotherAReplacement }],
+        ['b', { id: 'b', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: bOriginalResolver }],
+        [
+          'a_plus_b',
+          { id: 'c', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: a_plus_b_Resolver },
+        ],
+        ['a', { id: 'a', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: yetAnotherAReplacement }],
       ]);
     });
   });
