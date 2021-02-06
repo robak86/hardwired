@@ -3,15 +3,15 @@ import invariant from 'tiny-invariant';
 import { Module } from '../resolvers/abstract/Module';
 
 export class ResolversLookup {
-  private resolversById: Record<string, Module.BoundInstance> = {};
-  private resolversByModuleIdAndPath: Record<string, Module.BoundInstance> = {};
+  private resolversById: Record<string, Module.InstanceDefinition> = {};
+  private resolversByModuleIdAndPath: Record<string, Module.InstanceDefinition> = {};
   private modulesByResolverId: Record<string, Module<any>> = {};
 
-  has(resolver: Module.BoundInstance): boolean {
+  has(resolver: Module.InstanceDefinition): boolean {
     return !!this.resolversById[resolver.id];
   }
 
-  add(module: Module<any>, path: string, resolver: Module.BoundInstance) {
+  add(module: Module<any>, path: string, resolver: Module.InstanceDefinition) {
     const { moduleId } = module;
     this.resolversById[resolver.id] = resolver;
     this.modulesByResolverId[resolver.id] = module;
@@ -22,7 +22,7 @@ export class ResolversLookup {
     return this.modulesByResolverId[resolverId];
   }
 
-  getByModule(moduleId: ModuleId, path: string): Module.BoundInstance {
+  getByModule(moduleId: ModuleId, path: string): Module.InstanceDefinition {
     const resolver = this.resolversByModuleIdAndPath[moduleId.revision + path];
     invariant(resolver, `Cannot get resolver for moduleId ${moduleId} and path ${path}`);
     return resolver;

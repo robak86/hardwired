@@ -5,7 +5,7 @@ import { BuildStrategy } from '../../strategies/abstract/BuildStrategy';
 import { singleton } from '../../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
 import { DecoratorResolver } from '../DecoratorResolver';
-import { AnyResolver, Module, ModuleRecord } from './Module';
+import { AnyResolver, isInstanceDefinition, Module, ModuleRecord } from './Module';
 import { getStrategyTag, isStrategyTagged } from '../../strategies/utils/strategyTagging';
 
 export namespace ModulePatch {
@@ -25,8 +25,8 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
 
   constructor(
     public moduleId: ModuleId,
-    public registry: ImmutableMap<Record<string, Module.BoundResolver>>,
-    public patchedResolvers: ImmutableMap<Record<string, Module.BoundResolver>>,
+    public registry: ImmutableMap<Record<string, Module.Definition>>,
+    public patchedResolvers: ImmutableMap<Record<string, Module.Definition>>,
   ) {}
 
   isEqual(otherModule: ModulePatch<any>): boolean {
@@ -89,11 +89,11 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     name: TKey,
     decorateFn: (originalValue: TValue, moduleAsObject: ModuleRecord.Materialized<TRecord>) => TValue,
   ): ModulePatch<TRecord & Record<TKey, Instance<TValue>>> {
-    const boundResolver = this.patchedResolvers.get(name) || this.registry.get(name);
+    const definition = this.patchedResolvers.get(name) || this.registry.get(name);
 
-    invariant(boundResolver.type === 'resolver', `Cannot decorate module import`);
+    invariant(isInstanceDefinition(definition), `Cannot decorate module import`);
 
-    const { id, resolverThunk } = boundResolver;
+    const { id, resolverThunk } = definition;
 
     const decorated = {
       id,
@@ -106,7 +106,10 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   }
 
   merge<TRecord extends Record<string, AnyResolver>>(otherModule: ModulePatch<TRecord>): ModulePatch<TRecord> {
-    invariant(this.moduleId.revision === otherModule.moduleId.revision, `Cannot apply patch from module with different id`);
+    invariant(
+      this.moduleId.revision === otherModule.moduleId.revision,
+      `Cannot apply patch from module with different id`,
+    );
 
     return new ModulePatch<TRecord>(
       this.moduleId,

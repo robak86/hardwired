@@ -5,6 +5,7 @@ import { module, unit } from '../../module/ModuleBuilder';
 import { singleton } from '../../strategies/SingletonStrategy';
 import { request } from '../../strategies/RequestStrategy';
 import { scoped } from '../../strategies/ScopeStrategy';
+import { transient } from '../../strategies/TransientStrategy';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -27,6 +28,52 @@ describe(`Container`, () => {
       const c = container();
 
       expect(c.get(notRegistered, 'a')).toEqual(1);
+    });
+  });
+
+  describe(`.getByStrategy`, () => {
+    it(`returns all instances by given strategy`, async () => {
+      const m = unit()
+        .define('a', () => 1, singleton)
+        .define('b', () => 2, singleton)
+        .define('c', () => 3, transient)
+        .build();
+
+      const c = container({ eager: [m] });
+      const allSingletons = c.getByStrategy(singleton);
+      expect(allSingletons).toEqual([1, 2]);
+    });
+
+    it(`replaces eagerly loaded modules with overrides`, async () => {
+      const m = unit()
+        .define('a', () => 1, singleton)
+        .define('b', () => 2, singleton)
+        .define('c', () => 3, transient)
+        .build();
+
+      const c = container({
+        eager: [m],
+        overrides: [m.replace('b', () => 20, singleton)],
+      });
+
+      const allSingletons = c.getByStrategy(singleton);
+      expect(allSingletons).toEqual([1, 20]);
+    });
+
+    it(`uses replaces strategy for filtering`, async () => {
+      const m = unit()
+        .define('a', () => 1, singleton)
+        .define('b', () => 2, singleton)
+        .define('c', () => 3, transient)
+        .build();
+
+      const c = container({
+        eager: [m],
+        overrides: [m.replace('b', () => 20, transient)],
+      });
+
+      const allSingletons = c.getByStrategy(singleton);
+      expect(allSingletons).toEqual([1]);
     });
   });
 

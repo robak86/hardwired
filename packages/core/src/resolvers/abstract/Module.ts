@@ -5,8 +5,7 @@ import { Thunk } from '../../utils/Thunk';
 import { Instance } from './Instance';
 import invariant from 'tiny-invariant';
 import { ModulePatch } from './ModulePatch';
-import BoundResolver = Module.BoundResolver;
-import BoundInstance = Module.BoundInstance;
+
 
 // prettier-ignore
 export type AnyResolver = Instance<any> | Module<any> ;
@@ -27,8 +26,12 @@ export namespace ModuleRecord {
   };
 }
 
-export function isInstanceDefinition(definition: BoundResolver): definition is BoundInstance {
+export function isInstanceDefinition(definition: Module.Definition): definition is Module.InstanceDefinition {
   return definition.type === 'resolver';
+}
+
+export function isModuleDefinition(definition: Module.Definition): definition is Module.ImportDefinition {
+  return definition.type === 'module';
 }
 
 // prettier-ignore
@@ -44,18 +47,16 @@ export namespace Module {
     TModule extends Module<infer TRecord> ?
       ({ [K in keyof TRecord]: TRecord[K] extends Instance<infer A> ? K : never })[keyof TRecord] : unknown
 
-  export type BoundResolver = BoundInstance | BoundModule
+  export type Definition = InstanceDefinition | ImportDefinition
 
-
-  //TODO: extract from Module to resolvers/abstract
-  export type BoundInstance = {
+  export type InstanceDefinition = {
     id: string;
     type: 'resolver';
     strategyTag: symbol;
     resolverThunk: Thunk<Instance<any>>;
   };
 
-    export type BoundModule = {
+    export type ImportDefinition = {
       type: 'module',
       resolverThunk: Thunk<Module<any>>;
     }
@@ -66,7 +67,7 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends ModuleP
 
   __definitions!: TRecord; // prevent erasing the type
 
-  constructor(moduleId: ModuleId, registry: ImmutableMap<Record<string, Module.BoundResolver>>) {
+  constructor(moduleId: ModuleId, registry: ImmutableMap<Record<string, Module.Definition>>) {
     super(moduleId, registry, ImmutableMap.empty());
   }
 

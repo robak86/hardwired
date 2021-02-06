@@ -17,7 +17,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   protected constructor(
     public moduleId: ModuleId,
-    public registry: ImmutableMap<Record<string, Module.BoundResolver>>,
+    public registry: ImmutableMap<Record<string, Module.Definition>>,
     private isFrozenRef: { isFrozen: boolean },
   ) {}
 

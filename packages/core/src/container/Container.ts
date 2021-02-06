@@ -30,7 +30,7 @@ export class Container {
     const definitions = this.containerContext.filterLoadedResolvers(resolver => resolver.strategyTag === expectedTag);
     const context = this.containerContext.forNewRequest();
     return definitions.map(definition => {
-      return this.containerContext.runResolver(definition, context);
+      return this.containerContext.runInstanceDefinition(definition, context);
     });
   }
 

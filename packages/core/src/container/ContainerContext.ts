@@ -1,14 +1,12 @@
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
-import { isInstanceDefinition, Module } from '../resolvers/abstract/Module';
+import { isInstanceDefinition, isModuleDefinition, Module } from '../resolvers/abstract/Module';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
 import { reducePatches } from '../module/utils/reducePatches';
 import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
 import { SingletonScope } from './SingletonScope';
-import { Instance } from '../resolvers/abstract/Instance';
-import BoundInstance = Module.BoundInstance;
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -35,26 +33,26 @@ export class ContainerContext {
   ) {}
 
   // TODO: move to ResolversLookup - getModule may make it impossible :/
-  getInstanceResolver(module: Module<any>, path: string): Module.BoundInstance {
+  getInstanceResolver(module: Module<any>, path: string): Module.InstanceDefinition {
     if (this.resolvers.hasByModule(module.moduleId, path)) {
       return this.resolvers.getByModule(module.moduleId, path);
     }
 
     const targetModule: Module<any> = this.getModule(module);
     const [moduleOrInstance, instance] = path.split('.');
-    const boundResolver = targetModule.registry.get(moduleOrInstance);
+    const definition = targetModule.registry.get(moduleOrInstance);
 
-    if (boundResolver.type === 'resolver') {
-      if (!this.resolvers.has(boundResolver)) {
-        this.resolvers.add(targetModule, path, boundResolver);
+    if (definition.type === 'resolver') {
+      if (!this.resolvers.has(definition)) {
+        this.resolvers.add(targetModule, path, definition);
       }
 
-      return boundResolver;
+      return definition;
     }
 
-    if (boundResolver.type === 'module') {
+    if (definition.type === 'module') {
       invariant(instance, `getInstanceResolver is not intended to return module. Path is missing instance target`);
-      const resolver = unwrapThunk(boundResolver.resolverThunk);
+      const resolver = unwrapThunk(definition.resolverThunk);
       const instanceResolver = this.getInstanceResolver(resolver, instance);
       if (!this.resolvers.has(instanceResolver)) {
         this.resolvers.add(targetModule, path, instanceResolver);
@@ -70,37 +68,37 @@ export class ContainerContext {
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
     const resolver = this.getInstanceResolver(moduleInstance, name);
-    return this.runResolver(resolver, this.forNewRequest());
+    return this.runInstanceDefinition(resolver, this.forNewRequest());
   }
 
-  runResolver(boundResolver: Module.BoundInstance, context: ContainerContext) {
-    const module = this.resolvers.getModuleForResolver(boundResolver.id);
+  runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, context: ContainerContext) {
+    const module = this.resolvers.getModuleForResolver(instanceDefinition.id);
     const materializedModule = this.materializeModule(module, context);
-    const resolver = unwrapThunk(boundResolver.resolverThunk);
-    return resolver.build(boundResolver.id, context, materializedModule);
+    const resolver = unwrapThunk(instanceDefinition.resolverThunk);
+    return resolver.build(instanceDefinition.id, context, materializedModule);
   }
 
   eagerLoad(module: Module<any>) {
-    module.registry.forEach((boundResolver, key) => {
-      if (boundResolver.type === 'module') {
-        const resolver = unwrapThunk(boundResolver.resolverThunk);
+    module.registry.forEach((definition, key) => {
+      if (isModuleDefinition(definition)) {
+        const resolver = unwrapThunk(definition.resolverThunk);
         this.eagerLoad(resolver);
       }
 
-      if (boundResolver.type === 'resolver') {
+      if (isInstanceDefinition(definition)) {
         this.getInstanceResolver(module, key);
       }
     });
   }
 
-  filterLoadedResolvers(predicate: (resolver: BoundInstance) => boolean): BoundInstance[] {
+  filterLoadedResolvers(predicate: (resolver: Module.InstanceDefinition) => boolean): Module.InstanceDefinition[] {
     return Object.keys(this.loadedModules).flatMap(moduleId => {
       const module = this.loadedModules[moduleId];
       const definitions = module.registry.values;
 
-      return definitions.filter(boundResolver => {
-        return isInstanceDefinition(boundResolver) && predicate(boundResolver);
-      }) as BoundInstance[];
+      return definitions.filter(definition => {
+        return isInstanceDefinition(definition) && predicate(definition);
+      }) as Module.InstanceDefinition[];
     });
   }
 
@@ -193,22 +191,22 @@ export class ContainerContext {
 
     const materialized: any = {};
 
-    module.registry.forEach((boundResolver, key) => {
-      if (boundResolver.type === 'resolver') {
+    module.registry.forEach((definition, key) => {
+      if (isInstanceDefinition(definition)) {
         Object.defineProperty(materialized, key, {
           configurable: false,
           get: () => {
             const initializedResolver = this.getInstanceResolver(module, key); //TODO: move into closure so above this is called only once for all get calls
-            return this.runResolver(initializedResolver, context);
+            return this.runInstanceDefinition(initializedResolver, context);
           },
         });
       }
 
-      if (boundResolver.type === 'module') {
+      if (isModuleDefinition(definition)) {
         Object.defineProperty(materialized, key, {
           configurable: false,
           get: () => {
-            const resolver = unwrapThunk(boundResolver.resolverThunk);
+            const resolver = unwrapThunk(definition.resolverThunk);
             return this.materializeModule(resolver, context);
           },
         });

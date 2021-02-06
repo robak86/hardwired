@@ -19,7 +19,7 @@ describe(`ModulePatch`, () => {
       );
 
       const withReplacedA = m.replace('a', () => 2);
-      const updatedAResolver = withReplacedA.patchedResolvers.get('a') as Module.BoundInstance;
+      const updatedAResolver = withReplacedA.patchedResolvers.get('a') as Module.InstanceDefinition;
       expect(updatedAResolver.id).toEqual('a');
     });
 
