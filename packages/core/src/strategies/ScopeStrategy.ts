@@ -1,7 +1,10 @@
 import { ContainerContext } from '../container/ContainerContext';
 import { BuildStrategy } from './abstract/BuildStrategy';
+import { buildTaggedStrategy } from './utils/strategyTagging';
 
 export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
+  readonly strategyTag = scopeStrategyTag;
+
   build(id: string, context: ContainerContext, materializedModule): TValue {
     if (context.hasInHierarchicalScope(id)) {
       return context.getFromHierarchicalScope(id);
@@ -13,6 +16,9 @@ export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
   }
 }
 
-export const scoped = <TReturn>(buildFunction: (ctx) => TReturn) => {
-  return new ScopeStrategy(buildFunction);
-};
+const scopeStrategyTag = Symbol();
+
+export const scoped = buildTaggedStrategy(
+  <TReturn>(buildFunction: (ctx) => TReturn) => new ScopeStrategy(buildFunction),
+  scopeStrategyTag,
+);

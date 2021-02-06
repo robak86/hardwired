@@ -2,7 +2,7 @@ import { ContainerContext } from './ContainerContext';
 import { Module } from '../resolvers/abstract/Module';
 import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';
-import { isStrategyTagged } from '../strategies/utils/strategyTagging';
+import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import invariant from 'tiny-invariant';
 
 export class Container {
@@ -24,8 +24,14 @@ export class Container {
   getByStrategy<TValue, TStrategy extends BuildStrategyFactory<any, TValue>>(
     strategy: TStrategy,
   ): ExtractBuildStrategyFactoryType<TStrategy>[] {
-    invariant(isStrategyTagged(strategy), `Cannot use given strategy for`)
-    throw new Error('Implement me');
+    invariant(isStrategyTagged(strategy), `Cannot use given strategy for`);
+
+    const expectedTag = getStrategyTag(strategy);
+    const definitions = this.containerContext.filterLoadedResolvers(resolver => resolver.strategyTag === expectedTag);
+    const context = this.containerContext.forNewRequest();
+    return definitions.map(definition => {
+      return this.containerContext.runResolver(definition, context);
+    });
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {

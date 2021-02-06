@@ -65,12 +65,14 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     const buildResolverId = (module: ModuleBuilder<any>, name: string) => `${module.moduleId.id}:${name}`;
 
     if (typeof buildFnOrInstance === 'function') {
+      invariant(isStrategyTagged(buildStrategy), `Missing strategy for ${buildStrategy}`);
+
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
           id: buildResolverId(this, name),
           type: 'resolver',
-          strategyTag: isStrategyTagged(buildStrategy) ? getStrategyTag(buildStrategy) : undefined,
+          strategyTag: getStrategyTag(buildStrategy),
           resolverThunk: buildStrategy(buildFnOrInstance),
         }) as any,
         this.isFrozenRef,
@@ -83,7 +85,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
         this.registry.extend(name, {
           id: buildResolverId(this, name),
           type: 'resolver',
-          strategyTag: buildFnOrInstance.strategyTag,
+          strategyTag: getStrategyTag(buildFnOrInstance),
           resolverThunk: buildFnOrInstance,
         }) as any,
         this.isFrozenRef,

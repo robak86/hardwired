@@ -4,6 +4,8 @@ import { Instance } from '../resolvers/abstract/Instance';
 import { buildTaggedStrategy } from './utils/strategyTagging';
 
 export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
+  readonly strategyTag = transientStrategyTag;
+
   build(id: string, context: ContainerContext, materializedModule): TValue {
     const result = this.buildFunction(materializedModule);
     if (result instanceof Instance) {

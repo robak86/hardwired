@@ -37,6 +37,10 @@ export class ImmutableMap<D extends Record<string, any>> {
     return this.orderedKeys;
   }
 
+  get values(): Array<D[keyof D]> {
+    return this.keys.map(key => this.records[key]);
+  }
+
   remove<TKey extends keyof D>(key: TKey): ImmutableMap<Omit<D, TKey>> {
     const cloned = { ...this.records };
 

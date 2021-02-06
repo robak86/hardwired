@@ -1,7 +1,10 @@
 import { ContainerContext } from '../container/ContainerContext';
 import { BuildStrategy } from './abstract/BuildStrategy';
+import { buildTaggedStrategy } from './utils/strategyTagging';
 
 export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
+  readonly strategyTag = requestStrategyTag;
+
   build(id: string, context: ContainerContext, materializedModule): TValue {
     if (context.hasInRequestScope(id)) {
       return context.getFromRequestScope(id);
@@ -13,6 +16,9 @@ export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
   }
 }
 
-export const request = <TReturn>(buildFunction: (ctx) => TReturn) => {
-  return new RequestStrategy(buildFunction);
-};
+export const requestStrategyTag = Symbol();
+
+export const request = buildTaggedStrategy(
+  <TReturn>(buildFunction: (ctx) => TReturn) => new RequestStrategy(buildFunction),
+  requestStrategyTag,
+);

@@ -5,6 +5,8 @@ import { Thunk } from '../../utils/Thunk';
 import { Instance } from './Instance';
 import invariant from 'tiny-invariant';
 import { ModulePatch } from './ModulePatch';
+import BoundResolver = Module.BoundResolver;
+import BoundInstance = Module.BoundInstance;
 
 // prettier-ignore
 export type AnyResolver = Instance<any> | Module<any> ;
@@ -25,6 +27,10 @@ export namespace ModuleRecord {
   };
 }
 
+export function isInstanceDefinition(definition: BoundResolver): definition is BoundInstance {
+  return definition.type === 'resolver';
+}
+
 // prettier-ignore
 export namespace Module {
   export type Materialized<TModule extends Module<any>> =
@@ -40,6 +46,8 @@ export namespace Module {
 
   export type BoundResolver = BoundInstance | BoundModule
 
+
+  //TODO: extract from Module to resolvers/abstract
   export type BoundInstance = {
     id: string;
     type: 'resolver';
@@ -64,7 +72,10 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends ModuleP
 
   // TODO: this should not be exposed!! should be internal detail - we should forbid the user to create modules with applied patches
   patch<TRecord extends Record<string, AnyResolver>>(otherModule: ModulePatch<TRecord>): Module<TRecord> {
-    invariant(this.moduleId.revision === otherModule.moduleId.revision, `Cannot apply patch from module with different id`);
+    invariant(
+      this.moduleId.revision === otherModule.moduleId.revision,
+      `Cannot apply patch from module with different id`,
+    );
 
     return new Module<TRecord>(this.moduleId, this.registry.merge(otherModule.patchedResolvers));
   }

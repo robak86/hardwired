@@ -3,6 +3,8 @@ import { ContainerContext } from '../container/ContainerContext';
 import { Instance } from './abstract/Instance';
 
 export class ServiceLocatorResolver extends Instance<ServiceLocator> {
+  readonly strategyTag = strategyLocatorTag;
+
   constructor() {
     super();
   }
@@ -17,5 +19,7 @@ export class ServiceLocatorResolver extends Instance<ServiceLocator> {
     }
   }
 }
+
+export const strategyLocatorTag = Symbol();
 
 export const serviceLocator = (): Instance<ServiceLocator> => new ServiceLocatorResolver();

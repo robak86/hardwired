@@ -1,12 +1,14 @@
 import invariant from 'tiny-invariant';
 import { PushPromise } from '../utils/PushPromise';
-import { Module } from '../resolvers/abstract/Module';
+import { isInstanceDefinition, Module } from '../resolvers/abstract/Module';
 import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
 import { reducePatches } from '../module/utils/reducePatches';
 import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
 import { SingletonScope } from './SingletonScope';
+import { Instance } from '../resolvers/abstract/Instance';
+import BoundInstance = Module.BoundInstance;
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -88,6 +90,17 @@ export class ContainerContext {
       if (boundResolver.type === 'resolver') {
         this.getInstanceResolver(module, key);
       }
+    });
+  }
+
+  filterLoadedResolvers(predicate: (resolver: BoundInstance) => boolean): BoundInstance[] {
+    return Object.keys(this.loadedModules).flatMap(moduleId => {
+      const module = this.loadedModules[moduleId];
+      const definitions = module.registry.values;
+
+      return definitions.filter(boundResolver => {
+        return isInstanceDefinition(boundResolver) && predicate(boundResolver);
+      }) as BoundInstance[];
     });
   }
 
