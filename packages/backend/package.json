@@ -1,0 +1,36 @@
+{
+  "name": "backend",
+  "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
+  "author": "Tomasz Robaczewski <robak86@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/robak86/hardwired",
+  "keywords": [
+    "ioc",
+    "dependency injection",
+    "di",
+    "container",
+    "type-safe"
+  ],
+  "version": "0.3.0",
+  "dependencies": {
+    "tiny-invariant": "^1.1.0",
+    "hardwired": "*",
+    "find-my-way": "^3.0.5"
+  },
+  "devDependencies": {
+    "performance-now": "^2.1.0"
+  },
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:robak86/hardwired.git"
+  }
+}
