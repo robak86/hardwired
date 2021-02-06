@@ -5,40 +5,8 @@ import { ResolversLookup } from './ResolversLookup';
 import { unwrapThunk } from '../utils/Thunk';
 import { reducePatches } from '../module/utils/reducePatches';
 import { ModulePatch } from '../resolvers/abstract/ModulePatch';
-
-class SingletonScope {
-  private ownEntries: Record<string, any> = {};
-
-  constructor(private ownOverriddenKeys: string[] = [], private parent: SingletonScope) {}
-
-  checkoutChild(overriddenKeys: string[]): SingletonScope {
-    return new SingletonScope(overriddenKeys, this);
-  }
-
-  set(key, value) {
-    if (this.ownOverriddenKeys.includes(key) || !this.parent) {
-      this.ownEntries[key] = value;
-    } else {
-      this.parent.set(key, value);
-    }
-  }
-
-  get(key) {
-    if (this.ownOverriddenKeys.includes(key) || !this.parent) {
-      return this.ownEntries[key];
-    } else {
-      return this.parent.get(key);
-    }
-  }
-
-  has(key: string) {
-    if (this.ownOverriddenKeys.includes(key) || !this.parent) {
-      return !!this.ownEntries[key];
-    }
-
-    return this.parent.has(key);
-  }
-}
+import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
+import { SingletonScope } from './SingletonScope';
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -48,7 +16,8 @@ export class ContainerContext {
 
   static withOverrides(overrides: ModulePatch<any>[]): ContainerContext {
     const reducedOverrides = reducePatches(overrides);
-    return new ContainerContext({}, {}, new ResolversLookup(), reducedOverrides);
+    const ownKeys = getPatchesDefinitionsIds(reducedOverrides);
+    return new ContainerContext(new SingletonScope(ownKeys), {}, new ResolversLookup(), reducedOverrides);
   }
 
   private requestScope: Record<string, any> = {};
@@ -56,13 +25,14 @@ export class ContainerContext {
   private materializedObjects: Record<string, any> = {};
 
   protected constructor(
-    private globalScope: Record<string, any> = {},
+    private globalScope: SingletonScope = new SingletonScope(),
     private loadedModules: Record<string, Module<any>> = {},
     private resolvers: ResolversLookup = new ResolversLookup(),
     private modulesPatches: Record<string, ModulePatch<any>> = {},
     private hierarchicalScope: Record<string, any> = {},
   ) {}
 
+  // TODO: move to ResolversLookup - getModule may make it impossible :/
   getInstanceResolver(module: Module<any>, path: string): Module.BoundInstance {
     if (this.resolvers.hasByModule(module.moduleId, path)) {
       return this.resolvers.getByModule(module.moduleId, path);
@@ -122,7 +92,7 @@ export class ContainerContext {
   }
 
   setForGlobalScope(uuid: string, instance: any) {
-    this.globalScope[uuid] = instance;
+    this.globalScope.set(uuid, instance);
   }
 
   setForRequestScope(uuid: string, instance: any) {
@@ -130,7 +100,7 @@ export class ContainerContext {
   }
 
   hasInGlobalScope(uuid: string): boolean {
-    return !!this.globalScope[uuid];
+    return this.globalScope.has(uuid);
   }
 
   hasInRequestScope(uuid: string): boolean {
@@ -158,8 +128,8 @@ export class ContainerContext {
   }
 
   getFromGlobalScope(uuid: string) {
-    invariant(!!this.globalScope[uuid], `Dependency with given uuid doesn't exists in global scope`);
-    return this.globalScope[uuid];
+    invariant(!!this.globalScope.has(uuid), `Dependency with given uuid doesn't exists in global scope`);
+    return this.globalScope.get(uuid);
   }
 
   // TODO: should we return ContainerContext with clean requestScope ? or we should
@@ -177,13 +147,15 @@ export class ContainerContext {
 
   childScope(patches: ModulePatch<any>[] = []): ContainerContext {
     const childScopePatches = reducePatches(patches, this.modulesPatches);
-    const inheritedSingletonScope = { ...this.globalScope };
-    Object.keys(childScopePatches).forEach(moduleId => {
-      childScopePatches[moduleId].registry.forEach((resolver, key) => {
-        delete inheritedSingletonScope[`${moduleId}:${key}`];
-      });
-    });
-    return new ContainerContext(inheritedSingletonScope, {}, new ResolversLookup(), childScopePatches, {});
+    const ownKeys = getPatchesDefinitionsIds(childScopePatches);
+
+    return new ContainerContext(
+      this.globalScope.checkoutChild(ownKeys),
+      {},
+      new ResolversLookup(),
+      childScopePatches,
+      {},
+    );
   }
 
   getModule(module: Module<any>): Module<any> {

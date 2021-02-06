@@ -1,4 +1,3 @@
-import { Instance } from '../resolvers/abstract/Instance';
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
 import { Module } from '../resolvers/abstract/Module';

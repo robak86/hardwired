@@ -162,6 +162,19 @@ describe(`Container`, () => {
         expect(childC.get(m, 'a')).toEqual(2);
       });
 
+      it(`inherits singletons from parent scope for singleton`, async () => {
+        const m = unit()
+          .define('a', () => 1, singleton)
+          .build();
+        const root = container();
+        expect(root.get(m, 'a')).toEqual(1);
+
+        const patch = m.replace('a', () => 2, singleton);
+        const level1 = root.checkoutChildScope(patch);
+        const level2 = level1.checkoutChildScope();
+        expect(level2.get(m, 'a')).toEqual(2);
+      });
+
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
         const m = unit()
           .define('a', () => Math.random(), singleton)
@@ -172,6 +185,49 @@ describe(`Container`, () => {
         const req1 = childC.get(m, 'a'); // important that childC is called as first
         const req2 = parentC.get(m, 'a');
         expect(req1).toEqual(req2);
+      });
+
+      it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
+        const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
+
+        const m = unit().define('a', randomFactorySpy, singleton).build();
+
+        const root = container();
+        const level1 = root.checkoutChildScope();
+        const level2 = level1.checkoutChildScope(m.replace('a', () => 1));
+        const level3 = level2.checkoutChildScope();
+
+        const level3Call = level3.get(m, 'a'); // important that level1 is called as first
+        const level2Call = level2.get(m, 'a');
+        const level1Call = level1.get(m, 'a');
+        const rootCall = root.get(m, 'a');
+
+        expect(level1Call).toEqual(rootCall);
+        expect(level2Call).toEqual(level3Call);
+        expect(level2Call).toEqual(1);
+        expect(randomFactorySpy).toHaveBeenCalledTimes(1);
+      });
+
+      it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
+        const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
+
+        const m = unit().define('a', randomFactorySpy, singleton).build();
+
+        const root = container();
+        const level1 = root.checkoutChildScope(m.replace('a', () => 1));
+        const level2 = level1.checkoutChildScope(m.replace('a', () => 2));
+        const level3 = level2.checkoutChildScope();
+
+        const level3Call = level3.get(m, 'a'); // important that level1 is called as first
+        const level2Call = level2.get(m, 'a');
+        const level1Call = level1.get(m, 'a');
+        const rootCall = root.get(m, 'a');
+
+        expect(level3Call).toEqual(level2Call);
+        expect(level2Call).toEqual(2);
+        expect(level1Call).toEqual(1);
+        expect(rootCall).not.toEqual(level3);
+        expect(randomFactorySpy).toHaveBeenCalledTimes(1);
       });
     });
   });
