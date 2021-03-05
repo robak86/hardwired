@@ -5,7 +5,7 @@ import { Thunk } from '../../utils/Thunk';
 import { Instance } from './Instance';
 import invariant from 'tiny-invariant';
 import { ModulePatch } from './ModulePatch';
-
+import { ContainerContext } from '../../container/ContainerContext';
 
 // prettier-ignore
 export type AnyResolver = Instance<any> | Module<any> ;
@@ -79,5 +79,9 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends ModuleP
     );
 
     return new Module<TRecord>(this.moduleId, this.registry.merge(otherModule.patchedResolvers));
+  }
+
+  select(ctx: ContainerContext): ModuleRecord.Materialized<TRecord> {
+    return ctx.materializeModule(this as any, ctx) as any;
   }
 }

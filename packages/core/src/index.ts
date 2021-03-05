@@ -9,3 +9,5 @@ export * from './strategies/ScopeStrategy';
 
 export { Instance } from './resolvers/abstract/Instance';
 export type { Module, AnyResolver, ModuleRecord } from './resolvers/abstract/Module';
+export { buildTaggedStrategy } from './strategies/utils/strategyTagging';
+export { inject } from './container/inject';

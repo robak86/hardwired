@@ -16,4 +16,3 @@ export function reducePatches(
 
   return modulesById;
 }
-

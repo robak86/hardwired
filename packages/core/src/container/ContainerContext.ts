@@ -7,6 +7,8 @@ import { reducePatches } from '../module/utils/reducePatches';
 import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
 import { SingletonScope } from './SingletonScope';
+import { ContainerScopeOptions } from './Container';
+import InstanceDefinition = Module.InstanceDefinition;
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {
@@ -66,9 +68,10 @@ export class ContainerContext {
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
     name: K,
+    context = this.forNewRequest(),
   ): Module.Materialized<TLazyModule>[K] {
     const resolver = this.getInstanceResolver(moduleInstance, name);
-    return this.runInstanceDefinition(resolver, this.forNewRequest());
+    return this.runInstanceDefinition(resolver, context);
   }
 
   runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, context: ContainerContext) {
@@ -76,6 +79,13 @@ export class ContainerContext {
     const materializedModule = this.materializeModule(module, context);
     const resolver = unwrapThunk(instanceDefinition.resolverThunk);
     return resolver.build(instanceDefinition.id, context, materializedModule);
+  }
+
+  runWithPredicate(predicate: (resolver: Module.InstanceDefinition) => boolean, context: ContainerContext): unknown[] {
+    const definitions = this.filterLoadedDefinitions(predicate);
+    return definitions.map(definition => {
+      return this.runInstanceDefinition(definition, context);
+    });
   }
 
   eagerLoad(module: Module<any>) {
@@ -91,7 +101,7 @@ export class ContainerContext {
     });
   }
 
-  filterLoadedResolvers(predicate: (resolver: Module.InstanceDefinition) => boolean): Module.InstanceDefinition[] {
+  filterLoadedDefinitions(predicate: (resolver: Module.InstanceDefinition) => boolean): Module.InstanceDefinition[] {
     return Object.keys(this.loadedModules).flatMap(moduleId => {
       const module = this.loadedModules[moduleId];
       const definitions = module.registry.values;
@@ -156,17 +166,24 @@ export class ContainerContext {
     );
   }
 
-  childScope(patches: ModulePatch<any>[] = []): ContainerContext {
-    const childScopePatches = reducePatches(patches, this.modulesPatches);
+  childScope(options: ContainerScopeOptions = {}): ContainerContext {
+    const { overrides = [], eager = [] } = options;
+    const childScopePatches = reducePatches(overrides, this.modulesPatches);
     const ownKeys = getPatchesDefinitionsIds(childScopePatches);
 
-    return new ContainerContext(
+    // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
+
+    const childScopeContext = new ContainerContext(
       this.globalScope.checkoutChild(ownKeys),
       {},
       new ResolversLookup(),
       childScopePatches,
       {},
     );
+
+    eager.forEach(module => childScopeContext.eagerLoad(module));
+
+    return childScopeContext;
   }
 
   getModule(module: Module<any>): Module<any> {

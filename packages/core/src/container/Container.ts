@@ -4,6 +4,7 @@ import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import invariant from 'tiny-invariant';
+import { unwrapThunk } from '../utils/Thunk';
 
 export class Container {
   constructor(
@@ -21,17 +22,30 @@ export class Container {
     return this.containerContext.get(moduleInstance, name);
   }
 
+  getSlice<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
+    return inject(this.containerContext.forNewRequest());
+  }
+
+  // TODO: remove
   getByStrategy<TValue, TStrategy extends BuildStrategyFactory<any, TValue>>(
     strategy: TStrategy,
   ): ExtractBuildStrategyFactoryType<TStrategy>[] {
     invariant(isStrategyTagged(strategy), `Cannot use given strategy for`);
 
     const expectedTag = getStrategyTag(strategy);
-    const definitions = this.containerContext.filterLoadedResolvers(resolver => resolver.strategyTag === expectedTag);
+    const definitions = this.containerContext.filterLoadedDefinitions(resolver => resolver.strategyTag === expectedTag);
     const context = this.containerContext.forNewRequest();
     return definitions.map(definition => {
       return this.containerContext.runInstanceDefinition(definition, context);
     });
+  }
+
+  getByTag(tag: symbol): unknown[] {
+    const context = this.containerContext.forNewRequest();
+    return this.containerContext.runWithPredicate(
+      definition => unwrapThunk(definition.resolverThunk).tags.includes(tag),
+      context,
+    );
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
@@ -42,30 +56,31 @@ export class Container {
     return new Container(this.containerContext.forNewRequest(), [], []);
   }
 
-  checkoutChildScope(...patches: ModulePatch<any>[]): Container {
-    return new Container(this.containerContext.childScope(patches), [], []);
+  checkoutChildScope(options: ContainerScopeOptions = {}): Container {
+    return new Container(this.containerContext.childScope(options), [], []);
+  }
+
+  getContext(): ContainerContext {
+    return this.containerContext;
   }
 }
 
 // TODO: we need to have ability to provide patches which are not overridable by patches provided to nested scopes (testing!)
 // or just clear distinction that patches provided to container are irreplaceable by patches provided to scopes
 export type ContainerOptions = {
+  context?: ContainerContext;
+} & ContainerScopeOptions;
+
+export type ContainerScopeOptions = {
   overrides?: ModulePatch<any>[];
   eager?: Module<any>[];
-  context?: ContainerContext;
 };
 
-// TODO: overrides are also eagerly loaded
-// TODO: add runtime check for duplicates in eager, and overrides options
 export function container({
   context = ContainerContext.empty(),
   overrides = [],
-  eager = [], // TODO: eager means that modules are eagerly added to context (in order to enable reflection), but no instances are created. This may be confusing.
-}: //       on the other hand how to create instances of definitions ? should we only create singletons ? what
-//       about transient, request scopes. This would be pointless.
-//       Probably we should not allow any reflection
-// TODO: rename eager -> load|discoverable ? this could be use for instantiating definitions with some tag
-ContainerOptions = {}): Container {
+  eager = [], // TODO: consider renaming to load - since eager may implicate that some instances are created
+}: ContainerOptions = {}): Container {
   const container = new Container(ContainerContext.withOverrides(overrides), overrides, eager);
   return container as any;
 }

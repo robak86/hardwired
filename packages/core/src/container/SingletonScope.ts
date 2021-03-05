@@ -4,8 +4,7 @@ export class SingletonScope {
   constructor(
     private ownOverriddenKeys: string[] = [],
     private parent: SingletonScope | undefined = undefined, // private nonOverridableKeys: string[] = [], //TODO
-  ) {
-  }
+  ) {}
 
   checkoutChild(overriddenKeys: string[]): SingletonScope {
     return new SingletonScope(overriddenKeys, this);

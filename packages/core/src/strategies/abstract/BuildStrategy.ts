@@ -7,9 +7,9 @@ export abstract class BuildStrategy<TValue> extends Instance<TValue> {
 }
 
 export type BuildStrategyFactory<TContext, TReturn> = {
-  (buildFunction: (ctx: TContext) => TReturn): BuildStrategy<TReturn>;
+  (buildFunction: (ctx: TContext) => TReturn): Instance<TReturn>;
 };
 
 // prettier-ignore
 export type ExtractBuildStrategyFactoryType<T> =
-  T extends <T>(buildFn: (...args:any[]) => T) => BuildStrategy<infer TType> ? TType : never
+  T extends <T>(buildFn: (...args:any[]) => T) => Instance<infer TType> ? TType : never

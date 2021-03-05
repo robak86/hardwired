@@ -512,8 +512,8 @@ const m222 = m
   .define('abcdefg9', () => 'string')
   .define('abcdefgh9', () => 'string')
   .define('num', () => 123)
-  .build()
-  // .replace('num', () => 345);
+  .build();
+// .replace('num', () => 345);
 
 const mmm = m
   .import('imported', m222)
