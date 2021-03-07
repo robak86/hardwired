@@ -18,7 +18,8 @@ export class ContainerContext {
   static withOverrides(overrides: ModulePatch<any>[]): ContainerContext {
     const reducedOverrides = reducePatches(overrides);
     const ownKeys = getPatchesDefinitionsIds(reducedOverrides);
-    return new ContainerContext(new SingletonScope(ownKeys), {}, new ResolversLookup(), reducedOverrides);
+
+    return new ContainerContext(new SingletonScope(ownKeys), reducedOverrides, new ResolversLookup(), {});
   }
 
   private requestScope: Record<string, any> = {};
@@ -167,20 +168,20 @@ export class ContainerContext {
 
   childScope(options: ContainerScopeOptions = {}): ContainerContext {
     const { overrides = [], eager = [] } = options;
-    const childScopePatches = reducePatches(overrides, this.modulesPatches);
+    const childScopePatches = reducePatches(overrides, this.loadedModules);
     const ownKeys = getPatchesDefinitionsIds(childScopePatches);
 
     // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
 
     const childScopeContext = new ContainerContext(
       this.globalScope.checkoutChild(ownKeys),
-      {},
-      new ResolversLookup(),
       childScopePatches,
+      new ResolversLookup(),
+      {},
       {},
     );
 
-    eager.forEach(module => childScopeContext.eagerLoad(module));
+    // eager.forEach(module => childScopeContext.eagerLoad(module));
 
     return childScopeContext;
   }

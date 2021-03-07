@@ -63,8 +63,6 @@ export namespace Module {
 }
 
 export class Module<TRecord extends Record<string, AnyResolver>> extends ModulePatch<TRecord> {
-  // readonly __kind: 'moduleResolver' = 'moduleResolver';
-
   static fromPatchedModule<TRecord extends Record<string, AnyResolver>>(
     patchedModule: ModulePatch<TRecord>,
   ): Module<TRecord> {

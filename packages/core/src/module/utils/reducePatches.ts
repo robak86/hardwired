@@ -1,16 +1,20 @@
 import { ModulePatch } from '../../resolvers/abstract/ModulePatch';
+import { Module } from '../../resolvers/abstract/Module';
 
 export function reducePatches(
-  modules: ModulePatch<any>[],
-  previousPatches: Record<string, ModulePatch<any>> = {},
-): Record<string, ModulePatch<any>> {
+  patchedModules: ModulePatch<any>[],
+  previousPatches: Record<string, Module<any>> = {},
+): Record<string, Module<any>> {
   const modulesById = { ...previousPatches };
 
-  modules.forEach(module => {
-    if (modulesById[module.moduleId.id]) {
-      modulesById[module.moduleId.id] = modulesById[module.moduleId.id].merge(module);
+  // TODO: optimize
+  patchedModules.forEach(patchedModule => {
+    if (modulesById[patchedModule.moduleId.id]) {
+      modulesById[patchedModule.moduleId.id] = Module.fromPatchedModule(
+        modulesById[patchedModule.moduleId.id].merge(patchedModule),
+      );
     } else {
-      modulesById[module.moduleId.id] = module;
+      modulesById[patchedModule.moduleId.id] = Module.fromPatchedModule(patchedModule);
     }
   });
 
