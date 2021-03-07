@@ -8,7 +8,6 @@ import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
 import { SingletonScope } from './SingletonScope';
 import { ContainerScopeOptions } from './Container';
-import InstanceDefinition = Module.InstanceDefinition;
 
 // TODO: Create scope objects (request scope, global scope, ?modules scope?)
 export class ContainerContext {

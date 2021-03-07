@@ -73,10 +73,7 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends ModuleP
 
   // TODO: this should not be exposed!! should be internal detail - we should forbid the user to create modules with applied patches
   patch<TRecord extends Record<string, AnyResolver>>(otherModule: ModulePatch<TRecord>): Module<TRecord> {
-    invariant(
-      this.moduleId.revision === otherModule.moduleId.revision,
-      `Cannot apply patch from module with different id`,
-    );
+    invariant(this.moduleId.id === otherModule.moduleId.id, `Cannot apply patch from module with different id`);
 
     return new Module<TRecord>(this.moduleId, this.registry.merge(otherModule.patchedResolvers));
   }

@@ -131,4 +131,8 @@ export class ImmutableMap<D extends Record<string, any>> {
       return this.extend(key, value);
     }
   }
+
+  toReadonly(): this {
+    throw new Error('Implement me');
+  }
 }
