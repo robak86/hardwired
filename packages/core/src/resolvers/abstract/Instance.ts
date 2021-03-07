@@ -1,4 +1,3 @@
-import { ContainerContext } from '../../container/ContainerContext';
 import { ContextRecord } from '../../container/ContainerContextStorage';
 
 export namespace Instance {

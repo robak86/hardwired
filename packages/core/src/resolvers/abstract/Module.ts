@@ -5,7 +5,8 @@ import { Thunk } from '../../utils/Thunk';
 import { Instance } from './Instance';
 import invariant from 'tiny-invariant';
 import { ModulePatch } from './ModulePatch';
-import { ContainerContext } from '../../container/ContainerContext';
+import { ContextRecord } from '../../container/ContainerContextStorage';
+import { ContextService } from '../../container/ContextService';
 
 // prettier-ignore
 export type AnyResolver = Instance<any> | Module<any> ;
@@ -84,7 +85,7 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends ModuleP
     super(moduleId, registry, ImmutableMap.empty());
   }
 
-  select(ctx: ContainerContext): ModuleRecord.Materialized<TRecord> {
-    return ctx.materializeModule(this as any, ctx) as any;
+  select(ctx: ContextRecord): ModuleRecord.Materialized<TRecord> {
+    return ContextService.materializeModule(this, ctx) as any;
   }
 }

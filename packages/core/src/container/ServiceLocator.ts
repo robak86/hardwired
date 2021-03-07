@@ -1,6 +1,4 @@
-import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
-
 import { Module, ModuleRecord } from '../resolvers/abstract/Module';
 import { IContainer } from './IContainer';
 import { ContextRecord } from './ContainerContextStorage';

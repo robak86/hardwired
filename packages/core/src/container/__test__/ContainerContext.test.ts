@@ -1,7 +1,8 @@
-import { ContainerContext } from '../ContainerContext';
 import { unit } from '../../module/ModuleBuilder';
+import { ContextRecord } from '../ContainerContextStorage';
+import { ContextService } from '../ContextService';
 
-describe(`ContainerContext`, () => {
+describe(`ContainerRecord`, () => {
   describe(`async scope`, () => {
     // it(`acquires "lock" on async resource and returns single instance for all interested parties`, async () => {
     //   const ctx = ContainerContext.empty();
@@ -43,9 +44,9 @@ describe(`ContainerContext`, () => {
         const m = unit()
           .define('a', () => 1)
           .build();
-        const context = ContainerContext.empty();
+        const context = ContextRecord.empty();
 
-        const { a } = context.materializeModule(m, context);
+        const { a } = ContextService.materializeModule(m, context);
         expect(a).toEqual(1);
       });
 
@@ -66,9 +67,9 @@ describe(`ContainerContext`, () => {
           .define('a', () => 1)
           .build();
 
-        const context = ContainerContext.empty();
+        const context = ContextRecord.empty();
 
-        const materialized = context.materializeModule(m, context);
+        const materialized = ContextService.materializeModule(m, context);
         expect(materialized.child.grandChild.grandChildValue1).toEqual(1);
       });
     });

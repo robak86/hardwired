@@ -1,5 +1,4 @@
 import { ServiceLocator } from '../container/ServiceLocator';
-import { ContainerContext } from '../container/ContainerContext';
 import { Instance } from './abstract/Instance';
 import { ContextRecord } from '../container/ContainerContextStorage';
 import { ContextLookup } from '../container/ContextLookup';

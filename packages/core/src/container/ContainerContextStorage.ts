@@ -56,6 +56,10 @@ export const ContextRecord = {
     return context;
   },
 
+  empty() {
+    return ContextRecord.create([]);
+  },
+
   create(overrides: ModulePatch<any>[]): ContextRecord {
     const reducedOverrides = reducePatches(overrides);
     const ownKeys = getPatchesDefinitionsIds(reducedOverrides);

@@ -1,5 +1,4 @@
 import { BuildStrategy } from './abstract/BuildStrategy';
-import { ContainerContext } from '../container/ContainerContext';
 import { Instance } from '../resolvers/abstract/Instance';
 import { buildTaggedStrategy } from './utils/strategyTagging';
 import { ContextRecord } from '../container/ContainerContextStorage';

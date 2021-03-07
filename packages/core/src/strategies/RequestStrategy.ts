@@ -1,4 +1,3 @@
-import { ContainerContext } from '../container/ContainerContext';
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { buildTaggedStrategy } from './utils/strategyTagging';
 import { ContextRecord } from '../container/ContainerContextStorage';

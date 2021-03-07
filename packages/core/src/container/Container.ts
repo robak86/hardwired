@@ -1,4 +1,3 @@
-import { ContainerContext } from './ContainerContext';
 import { Module } from '../resolvers/abstract/Module';
 import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';

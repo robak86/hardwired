@@ -2,7 +2,6 @@ import { ContextRecord } from './ContainerContextStorage';
 import invariant from 'tiny-invariant';
 import { isInstanceDefinition, Module } from '../resolvers/abstract/Module';
 import { ModuleId } from '../module/ModuleId';
-import { ContainerContext } from './ContainerContext';
 
 export const ContextLookup = {
   hasInHierarchicalScope(id: string, context: ContextRecord) {

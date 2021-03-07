@@ -1,5 +1,4 @@
 import { Instance } from './abstract/Instance';
-import { ContainerContext } from '../container/ContainerContext';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
 import { ContextRecord } from '../container/ContainerContextStorage';
 

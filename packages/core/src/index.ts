@@ -1,6 +1,5 @@
 export { container, Container } from './container/Container';
 export { unit, module, ModuleBuilder } from './module/ModuleBuilder';
-export { ContainerContext } from './container/ContainerContext';
 
 export * from './strategies/RequestStrategy';
 export * from './strategies/SingletonStrategy';
