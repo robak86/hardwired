@@ -6,7 +6,7 @@ import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsI
 import { ContainerScopeOptions } from './Container';
 import { ContextService } from './ContextService';
 
-export type ContextRecord = {
+export type ContainerContext = {
   resolversById: Record<string, Module.InstanceDefinition>;
   resolversByModuleIdAndPath: Record<string, Module.InstanceDefinition>;
   modulesByResolverId: Record<string, Module<any>>;
@@ -18,8 +18,8 @@ export type ContextRecord = {
 };
 
 // TODO: do not deep copy - implement copy on write strategy
-export const ContextRecord = {
-  checkoutRequestScope(prevContext: ContextRecord): ContextRecord {
+export const ContainerContext = {
+  checkoutRequestScope(prevContext: ContainerContext): ContainerContext {
     return {
       resolversById: prevContext.resolversById,
       modulesByResolverId: prevContext.modulesByResolverId,
@@ -32,7 +32,7 @@ export const ContextRecord = {
     };
   },
 
-  childScope(options: ContainerScopeOptions, prevContext: ContextRecord): ContextRecord {
+  childScope(options: ContainerScopeOptions, prevContext: ContainerContext): ContainerContext {
     const { overrides = [], eager = [] } = options;
     const childScopePatches = reducePatches(overrides, prevContext.loadedModules);
     const ownKeys = getPatchesDefinitionsIds(childScopePatches);
@@ -57,10 +57,10 @@ export const ContextRecord = {
   },
 
   empty() {
-    return ContextRecord.create([]);
+    return ContainerContext.create([]);
   },
 
-  create(overrides: ModulePatch<any>[]): ContextRecord {
+  create(overrides: ModulePatch<any>[]): ContainerContext {
     const reducedOverrides = reducePatches(overrides);
     const ownKeys = getPatchesDefinitionsIds(reducedOverrides);
 

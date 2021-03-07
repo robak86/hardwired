@@ -1,13 +1,13 @@
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContextRecord } from '../container/ContainerContextStorage';
+import { ContainerContext } from '../container/ContainerContext';
 import { ContextLookup } from '../container/ContextLookup';
 import { ContextMutations } from '../container/ContextMutations';
 
 export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = requestStrategyTag;
 
-  build(id: string, context: ContextRecord, materializedModule): TValue {
+  build(id: string, context: ContainerContext, materializedModule): TValue {
     if (ContextLookup.hasInRequestScope(id, context)) {
       return ContextLookup.getFromRequestScope(id, context);
     } else {

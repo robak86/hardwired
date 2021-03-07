@@ -1,4 +1,4 @@
-import { ContextRecord } from '../../container/ContainerContextStorage';
+import { ContainerContext } from '../../container/ContainerContext';
 
 export namespace Instance {
   export type Unbox<T> = T extends Instance<infer TInstance> ? TInstance : 'Cannot unbox instance type from Instance';
@@ -10,5 +10,5 @@ export abstract class Instance<TValue> {
   readonly strategyTag: symbol | undefined;
   readonly tags: symbol[] = [];
 
-  abstract build(id: string, context: ContextRecord, materializedModule?): TValue;
+  abstract build(id: string, context: ContainerContext, materializedModule?): TValue;
 }

@@ -1,6 +1,6 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { Instance } from './abstract/Instance';
-import { ContextRecord } from '../container/ContainerContextStorage';
+import { ContainerContext } from '../container/ContainerContext';
 import { ContextLookup } from '../container/ContextLookup';
 import { ContextMutations } from '../container/ContextMutations';
 
@@ -11,7 +11,7 @@ export class ServiceLocatorResolver extends Instance<ServiceLocator> {
     super();
   }
 
-  build(id: string, context: ContextRecord): ServiceLocator {
+  build(id: string, context: ContainerContext): ServiceLocator {
     if (ContextLookup.hasInGlobalScope(id, context)) {
       return ContextLookup.getFromGlobalScope(id, context);
     } else {

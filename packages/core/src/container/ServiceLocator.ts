@@ -1,7 +1,7 @@
 import invariant from 'tiny-invariant';
 import { Module, ModuleRecord } from '../resolvers/abstract/Module';
 import { IContainer } from './IContainer';
-import { ContextRecord } from './ContainerContextStorage';
+import { ContainerContext } from './ContainerContext';
 import { ContextService } from './ContextService';
 
 type ServiceLocatorGet = {
@@ -12,10 +12,10 @@ type ServiceLocatorGet = {
 };
 
 export class ServiceLocator {
-  constructor(private containerContext: ContextRecord) {}
+  constructor(private containerContext: ContainerContext) {}
 
   withScope<T>(factory: (obj: { get: ServiceLocatorGet }) => T): T {
-    const requestContext = ContextRecord.checkoutRequestScope(this.containerContext);
+    const requestContext = ContainerContext.checkoutRequestScope(this.containerContext);
 
     return factory({
       get: (module, key) => {
@@ -28,7 +28,7 @@ export class ServiceLocator {
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    const requestContext = ContextRecord.checkoutRequestScope(this.containerContext);
+    const requestContext = ContainerContext.checkoutRequestScope(this.containerContext);
     return ContextService.materializeModule(module, requestContext);
   }
 

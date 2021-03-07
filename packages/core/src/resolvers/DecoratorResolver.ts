@@ -1,6 +1,6 @@
 import { Instance } from './abstract/Instance';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
-import { ContextRecord } from '../container/ContainerContextStorage';
+import { ContainerContext } from '../container/ContainerContext';
 
 export class DecoratorResolver<TReturn, TDeps> extends Instance<TReturn> {
   constructor(
@@ -10,7 +10,7 @@ export class DecoratorResolver<TReturn, TDeps> extends Instance<TReturn> {
     super();
   }
 
-  build(id: string, context: ContextRecord, materializedModule): TReturn {
+  build(id: string, context: ContainerContext, materializedModule): TReturn {
     return this.decorateFn(unwrapThunk(this.decorated).build(id, context, materializedModule), materializedModule);
   }
 }

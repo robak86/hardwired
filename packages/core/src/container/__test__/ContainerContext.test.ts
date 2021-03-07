@@ -1,5 +1,5 @@
 import { unit } from '../../module/ModuleBuilder';
-import { ContextRecord } from '../ContainerContextStorage';
+import { ContainerContext } from '../ContainerContext';
 import { ContextService } from '../ContextService';
 
 describe(`ContainerRecord`, () => {
@@ -44,7 +44,7 @@ describe(`ContainerRecord`, () => {
         const m = unit()
           .define('a', () => 1)
           .build();
-        const context = ContextRecord.empty();
+        const context = ContainerContext.empty();
 
         const { a } = ContextService.materializeModule(m, context);
         expect(a).toEqual(1);
@@ -67,7 +67,7 @@ describe(`ContainerRecord`, () => {
           .define('a', () => 1)
           .build();
 
-        const context = ContextRecord.empty();
+        const context = ContainerContext.empty();
 
         const materialized = ContextService.materializeModule(m, context);
         expect(materialized.child.grandChild.grandChildValue1).toEqual(1);

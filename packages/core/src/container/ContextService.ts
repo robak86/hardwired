@@ -1,7 +1,7 @@
 import { isInstanceDefinition, isModuleDefinition, Module } from '../resolvers/abstract/Module';
 import invariant from 'tiny-invariant';
 import { unwrapThunk } from '../utils/Thunk';
-import { ContextRecord } from './ContainerContextStorage';
+import { ContainerContext } from './ContainerContext';
 import { ContextLookup } from './ContextLookup';
 import { ContextMutations } from './ContextMutations';
 
@@ -9,13 +9,13 @@ export const ContextService = {
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
     name: K,
-    context: ContextRecord,
+    context: ContainerContext,
   ): Module.Materialized<TLazyModule>[K] {
     const resolver = ContextService.getInstanceResolver(moduleInstance, name, context);
     return ContextService.runInstanceDefinition(resolver, context);
   },
 
-  getInstanceResolver(module: Module<any>, path: string, context: ContextRecord) {
+  getInstanceResolver(module: Module<any>, path: string, context: ContainerContext) {
     if (ContextLookup.hasResolverByModuleAndPath(module.moduleId, path, context)) {
       return ContextLookup.getResolverByModuleAndPath(module.moduleId, path, context);
     }
@@ -45,14 +45,14 @@ export const ContextService = {
     throw new Error('should not happen');
   },
 
-  runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, context: ContextRecord) {
+  runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, context: ContainerContext) {
     const module = ContextLookup.getModuleForResolverByResolverId(instanceDefinition.id, context);
     const materializedModule = ContextService.materializeModule(module, context);
     const resolver = unwrapThunk(instanceDefinition.resolverThunk);
     return resolver.build(instanceDefinition.id, context, materializedModule);
   },
 
-  getModule(module: Module<any>, context: ContextRecord): Module<any> {
+  getModule(module: Module<any>, context: ContainerContext): Module<any> {
     const { moduleId } = module;
 
     if (!context.loadedModules[moduleId.id]) {
@@ -62,20 +62,20 @@ export const ContextService = {
     return context.loadedModules[moduleId.id];
   },
 
-  runWithPredicate(predicate: (resolver: Module.InstanceDefinition) => boolean, context: ContextRecord): unknown[] {
+  runWithPredicate(predicate: (resolver: Module.InstanceDefinition) => boolean, context: ContainerContext): unknown[] {
     const definitions = ContextLookup.filterLoadedDefinitions(predicate, context);
     return definitions.map(definition => {
       return this.runInstanceDefinition(definition, context);
     });
   },
 
-  loadModules(modules: Module<any>[], context: ContextRecord) {
+  loadModules(modules: Module<any>[], context: ContainerContext) {
     modules.forEach(module => {
       this.eagerLoad(module, context);
     });
   },
 
-  eagerLoad(module: Module<any>, context: ContextRecord) {
+  eagerLoad(module: Module<any>, context: ContainerContext) {
     module.registry.forEach((definition, key) => {
       if (isModuleDefinition(definition)) {
         const resolver = unwrapThunk(definition.resolverThunk);
@@ -90,7 +90,7 @@ export const ContextService = {
 
   materializeModule<TModule extends Module<any>>(
     module: TModule,
-    context: ContextRecord,
+    context: ContainerContext,
   ): Module.Materialized<TModule> {
     if (context.materializedObjects[module.moduleId.id]) {
       return context.materializedObjects[module.moduleId.id];
