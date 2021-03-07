@@ -3892,11 +3892,6 @@ falafel@^2.1.0:
     isarray "^2.0.1"
     object-keys "^1.0.6"
 
-fast-decode-uri-component@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/fast-decode-uri-component/-/fast-decode-uri-component-1.0.1.tgz#46f8b6c22b30ff7a81357d4f59abfae938202543"
-  integrity sha512-WKgKWg5eUxvRZGwW8FvfbaH7AXSh2cL+3j5fMGzUMCxWBJ3dV3a7Wz8y2f/uQ0e3B6WmodD3oS54jTQ9HVTIIg==
-
 fast-deep-equal@^3.1.1:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
@@ -4005,15 +4000,6 @@ filter-console@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/filter-console/-/filter-console-0.1.1.tgz#6242be28982bba7415bcc6db74a79f4a294fa67c"
   integrity sha512-zrXoV1Uaz52DqPs+qEwNJWJFAWZpYJ47UNmpN9q4j+/EYsz85uV0DC9k8tRND5kYmoVzL0W+Y75q4Rg8sRJCdg==
-
-find-my-way@^3.0.5:
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/find-my-way/-/find-my-way-3.0.5.tgz#f71c5ef1b4865401e1b97ba428121a8f55439eec"
-  integrity sha512-FweGg0cv1sBX8z7WhvBX5B5AECW4Zdh/NiB38Oa0qwSNIyPgRBCl/YjxuZn/rz38E/MMBHeVKJ22i7W3c626Gg==
-  dependencies:
-    fast-decode-uri-component "^1.0.1"
-    safe-regex2 "^2.0.0"
-    semver-store "^0.3.0"
 
 find-up@^4.0.0, find-up@^4.1.0:
   version "4.1.0"
@@ -5895,16 +5881,6 @@ mkdirp@^0.5.1, mkdirp@~0.5.1:
   dependencies:
     minimist "^1.2.5"
 
-mock-req@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/mock-req/-/mock-req-0.2.0.tgz#749446804d2c006169342ee7be6bba1cffd534c2"
-  integrity sha1-dJRGgE0sAGFpNC7nvmu6HP/VNMI=
-
-mock-res@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/mock-res/-/mock-res-0.5.0.tgz#98368beb09df753f64f66d94e5536a97b36a2430"
-  integrity sha1-mDaL6wnfdT9k9m2U5VNql7NqJDA=
-
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -7426,11 +7402,6 @@ ret@~0.1.10:
   resolved "https://registry.yarnpkg.com/ret/-/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"
   integrity sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==
 
-ret@~0.2.0:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/ret/-/ret-0.2.2.tgz#b6861782a1f4762dce43402a71eb7a283f44573c"
-  integrity sha512-M0b3YWQs7R3Z917WRQy1HHA7Ba7D8hvZg6UE5mLykJxQVE2ju0IXbGlaHPPlkY+WN7wFP+wUMXmBFA0aV6vYGQ==
-
 reusify@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/reusify/-/reusify-1.0.4.tgz#90da382b1e126efc02146e90845a88db12925d76"
@@ -7495,13 +7466,6 @@ safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
   integrity sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==
 
-safe-regex2@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/safe-regex2/-/safe-regex2-2.0.0.tgz#b287524c397c7a2994470367e0185e1916b1f5b9"
-  integrity sha512-PaUSFsUaNNuKwkBijoAPHAK6/eM6VirvyPWlZ7BAQy4D+hCvh4B6lIG+nPdhbFfIbP+gTGBcrdsOaUs0F+ZBOQ==
-  dependencies:
-    ret "~0.2.0"
-
 safe-regex@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/safe-regex/-/safe-regex-1.1.0.tgz#40a3669f3b077d1e943d44629e157dd48023bf2e"
@@ -7565,11 +7529,6 @@ semver-regex@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/semver-regex/-/semver-regex-2.0.0.tgz#a93c2c5844539a770233379107b38c7b4ac9d338"
   integrity sha512-mUdIBBvdn0PLOeP3TEkMH7HHeUP3GjsXCwKarjv/kGmUFOYg1VqEemKhoQpWMu6X2I8kHeuVdGibLGkVK+/5Qw==
-
-semver-store@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/semver-store/-/semver-store-0.3.0.tgz#ce602ff07df37080ec9f4fb40b29576547befbe9"
-  integrity sha512-TcZvGMMy9vodEFSse30lWinkj+JgOBvPn8wRItpQRSayhc+4ssDs335uklkfvQQJgL/WvmHLVj4Ycv2s7QCQMg==
 
 "semver@2 || 3 || 4 || 5", semver@^5.4.1, semver@^5.5.0:
   version "5.7.1"

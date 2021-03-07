@@ -9,9 +9,6 @@
       "path": "./react/tsconfig.json"
     },
     {
-      "path": "./backend/tsconfig.json"
-    },
-    {
       "path": "./example/tsconfig.json"
     }
   ]

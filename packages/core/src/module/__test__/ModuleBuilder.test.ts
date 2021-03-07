@@ -6,7 +6,6 @@ import { Module } from '../../resolvers/abstract/Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { transient } from '../../strategies/TransientStrategy';
 import { request } from '../../strategies/RequestStrategy';
-import { singleton } from '../../strategies/SingletonStrategy';
 import { ModulePatch } from '../../resolvers/abstract/ModulePatch';
 
 describe(`ModuleBuilder`, () => {
