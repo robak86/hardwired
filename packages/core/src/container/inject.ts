@@ -1,26 +1,27 @@
 import { Module } from '../resolvers/abstract/Module';
-import { ContainerContext } from './ContainerContext';
+import { ContextRecord } from './ContainerContextStorage';
+import { ContextService } from './ContextService';
 
-type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: ContainerContext) => any>]> = {
-  [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
+type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: ContextRecord) => any>]> = {
+  [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContextRecord) => infer TReturn ? TReturn : unknown;
 };
 
 type MaterializeDependenciesRecord<TDependencies extends Record<string, any>> = {
-  [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
+  [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContextRecord) => infer TReturn ? TReturn : unknown;
 };
 
 const select = <TModule extends Module<any>, TKey extends Module.InstancesKeys<TModule>>(
   module: TModule,
   name: TKey,
 ) => {
-  return (container: ContainerContext): Module.Materialized<TModule>[TKey] => {
-    return container.get(module, name);
+  return (context: ContextRecord): Module.Materialized<TModule>[TKey] => {
+    return ContextService.get(module, name, context);
   };
 };
 
-const record = <TDependencies extends Record<string, (ctx: ContainerContext) => any>>(
+const record = <TDependencies extends Record<string, (ctx: ContextRecord) => any>>(
   deps: TDependencies,
-): ((ctx: ContainerContext) => MaterializeDependenciesRecord<TDependencies>) => {
+): ((ctx: ContextRecord) => MaterializeDependenciesRecord<TDependencies>) => {
   return ctx => {
     const instances = {} as any;
     Object.keys(deps).forEach(key => {
@@ -31,12 +32,12 @@ const record = <TDependencies extends Record<string, (ctx: ContainerContext) => 
 };
 
 const tuple = <
-  TDependencyEntry extends (ctx: ContainerContext) => any,
+  TDependencyEntry extends (ctx: ContextRecord) => any,
   TDependencies extends [TDependencyEntry, ...TDependencyEntry[]]
 >(
   ...deps: TDependencies
 ) => {
-  return (ctx: ContainerContext): MaterializeDependenciesTuple<TDependencies> => {
+  return (ctx: ContextRecord): MaterializeDependenciesTuple<TDependencies> => {
     return deps.map(d => d(ctx)) as any;
   };
 };

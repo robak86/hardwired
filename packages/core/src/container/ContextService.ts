@@ -6,6 +6,15 @@ import { ContextLookup } from './ContextLookup';
 import { ContextMutations } from './ContextMutations';
 
 export const ContextService = {
+  get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
+    moduleInstance: TLazyModule,
+    name: K,
+    context: ContextRecord,
+  ): Module.Materialized<TLazyModule>[K] {
+    const resolver = ContextService.getInstanceResolver(moduleInstance, name, context);
+    return ContextService.runInstanceDefinition(resolver, context);
+  },
+
   getInstanceResolver(module: Module<any>, path: string, context: ContextRecord) {
     if (ContextLookup.hasResolverByModuleAndPath(module.moduleId, path, context)) {
       return ContextLookup.getResolverByModuleAndPath(module.moduleId, path, context);
