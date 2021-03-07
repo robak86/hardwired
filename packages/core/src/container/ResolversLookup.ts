@@ -15,7 +15,7 @@ export class ResolversLookup {
     const { moduleId } = module;
     this.resolversById[resolver.id] = resolver;
     this.modulesByResolverId[resolver.id] = module;
-    this.resolversByModuleIdAndPath[moduleId.revision + path] = resolver;
+    this.resolversByModuleIdAndPath[moduleId.id + path] = resolver;
   }
 
   getModuleForResolver(resolverId: string): Module<any> {
@@ -23,12 +23,12 @@ export class ResolversLookup {
   }
 
   getByModule(moduleId: ModuleId, path: string): Module.InstanceDefinition {
-    const resolver = this.resolversByModuleIdAndPath[moduleId.revision + path];
+    const resolver = this.resolversByModuleIdAndPath[moduleId.id + path];
     invariant(resolver, `Cannot get resolver for moduleId ${moduleId} and path ${path}`);
     return resolver;
   }
 
   hasByModule(moduleId: ModuleId, path: string): boolean {
-    return !!this.resolversByModuleIdAndPath[moduleId.revision + path];
+    return !!this.resolversByModuleIdAndPath[moduleId.id + path];
   }
 }
