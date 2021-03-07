@@ -19,7 +19,7 @@ export class ContainerContext {
     const reducedOverrides = reducePatches(overrides);
     const ownKeys = getPatchesDefinitionsIds(reducedOverrides);
 
-    return new ContainerContext(new SingletonScope(ownKeys), reducedOverrides, new ResolversLookup(), {});
+    return new ContainerContext(new SingletonScope(ownKeys), reducedOverrides, new ResolversLookup());
   }
 
   private requestScope: Record<string, any> = {};
@@ -30,7 +30,6 @@ export class ContainerContext {
     private globalScope: SingletonScope = new SingletonScope(),
     private loadedModules: Record<string, Module<any>> = {},
     private resolvers: ResolversLookup = new ResolversLookup(),
-    private modulesPatches: Record<string, ModulePatch<any>> = {},
     private hierarchicalScope: Record<string, any> = {},
   ) {}
 
@@ -157,13 +156,7 @@ export class ContainerContext {
   //       or we need some other kind of scope. In theory each react component should create this kind of scope
   //       and it should be inherited by all children
   forNewRequest(): ContainerContext {
-    return new ContainerContext(
-      this.globalScope,
-      this.loadedModules,
-      this.resolvers,
-      this.modulesPatches,
-      this.hierarchicalScope,
-    );
+    return new ContainerContext(this.globalScope, this.loadedModules, this.resolvers, this.hierarchicalScope);
   }
 
   childScope(options: ContainerScopeOptions = {}): ContainerContext {
@@ -173,26 +166,14 @@ export class ContainerContext {
 
     // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
 
-    const childScopeContext = new ContainerContext(
-      this.globalScope.checkoutChild(ownKeys),
-      childScopePatches,
-      new ResolversLookup(),
-      {},
-      {},
-    );
-
-    // eager.forEach(module => childScopeContext.eagerLoad(module));
-
-    return childScopeContext;
+    return new ContainerContext(this.globalScope.checkoutChild(ownKeys), childScopePatches, new ResolversLookup(), {});
   }
 
   getModule(module: Module<any>): Module<any> {
     const { moduleId } = module;
 
     if (!this.loadedModules[moduleId.id]) {
-      this.loadedModules[moduleId.id] = this.modulesPatches[moduleId.id]
-        ? Module.fromPatchedModule(this.modulesPatches[moduleId.id])
-        : module;
+      this.loadedModules[moduleId.id] = module;
     }
 
     return this.loadedModules[moduleId.id];
