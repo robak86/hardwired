@@ -4,9 +4,9 @@ import { SingletonScope } from './SingletonScope';
 import { reducePatches } from '../module/utils/reducePatches';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
 import { ContainerScopeOptions } from './Container';
-import { ResolversLookup } from './ResolversLookup';
+import { ContextService } from './ContextService';
 
-export type ContainerContextData = {
+export type ContextRecord = {
   resolversById: Record<string, Module.InstanceDefinition>;
   resolversByModuleIdAndPath: Record<string, Module.InstanceDefinition>;
   modulesByResolverId: Record<string, Module<any>>;
@@ -18,8 +18,8 @@ export type ContainerContextData = {
 };
 
 // TODO: do not deep copy - implement copy on write strategy
-export const ContainerContextData = {
-  checkoutRequestScope(overrides, prevContext: ContainerContextData): ContainerContextData {
+export const ContextRecord = {
+  checkoutRequestScope(prevContext: ContextRecord): ContextRecord {
     return {
       resolversById: prevContext.resolversById,
       modulesByResolverId: prevContext.modulesByResolverId,
@@ -32,14 +32,14 @@ export const ContainerContextData = {
     };
   },
 
-  childScope(options: ContainerScopeOptions, prevContext: ContainerContextData): ContainerContextData {
+  childScope(options: ContainerScopeOptions, prevContext: ContextRecord): ContextRecord {
     const { overrides = [], eager = [] } = options;
     const childScopePatches = reducePatches(overrides, prevContext.loadedModules);
     const ownKeys = getPatchesDefinitionsIds(childScopePatches);
 
     // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
 
-    return {
+    const context = {
       resolversById: {},
       requestScope: {},
       modulesByResolverId: {},
@@ -49,13 +49,18 @@ export const ContainerContextData = {
       globalScope: prevContext.globalScope.checkoutChild(ownKeys),
       loadedModules: childScopePatches,
     };
+
+    // TODO: this should be atomic with assigning loadedModules property
+    ContextService.loadModules(Object.values(childScopePatches), context);
+
+    return context;
   },
 
-  create(overrides: ModulePatch<any>[]): ContainerContextData {
+  create(overrides: ModulePatch<any>[]): ContextRecord {
     const reducedOverrides = reducePatches(overrides);
     const ownKeys = getPatchesDefinitionsIds(reducedOverrides);
 
-    return {
+    const context = {
       resolversById: {},
       requestScope: {},
       modulesByResolverId: {},
@@ -65,5 +70,10 @@ export const ContainerContextData = {
       hierarchicalScope: {},
       loadedModules: reducedOverrides,
     };
+
+    // TODO: this should be atomic with assigning loadedModules property
+    ContextService.loadModules(Object.values(reducedOverrides), context);
+
+    return context;
   },
 };

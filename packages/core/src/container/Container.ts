@@ -5,14 +5,14 @@ import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strate
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import invariant from 'tiny-invariant';
 import { unwrapThunk } from '../utils/Thunk';
+import { ContextRecord } from './ContainerContextStorage';
 
 export class Container {
   constructor(
-    private readonly containerContext: ContainerContext,
-    private readonly overrides: ModulePatch<any>[],
-    private readonly eager: Module<any>[],
-  ) {
-    eager.forEach(m => this.containerContext.eagerLoad(m));
+    private readonly containerContext: ContainerContext, // private readonly overrides: ModulePatch<any>[],
+  ) // private readonly eager: Module<any>[],
+  {
+    // this.containerContext = new ContainerContext(ContextRecord.create(eager))
   }
 
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
@@ -53,11 +53,11 @@ export class Container {
   }
 
   usingNewRequestScope(): Container {
-    return new Container(this.containerContext.forNewRequest(), [], []);
+    return new Container(this.containerContext.forNewRequest());
   }
 
   checkoutChildScope(options: ContainerScopeOptions = {}): Container {
-    return new Container(this.containerContext.childScope(options), [], []);
+    return new Container(this.containerContext.childScope(options));
   }
 
   getContext(): ContainerContext {
@@ -77,10 +77,10 @@ export type ContainerScopeOptions = {
 };
 
 export function container({
-  context = ContainerContext.empty(),
+  context,
   overrides = [],
   eager = [], // TODO: consider renaming to load - since eager may implicate that some instances are created
 }: ContainerOptions = {}): Container {
-  const container = new Container(ContainerContext.withOverrides(overrides), overrides, eager);
+  const container = new Container(context || ContainerContext.withOverrides([...eager, ...overrides]));
   return container as any;
 }
