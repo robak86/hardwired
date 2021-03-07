@@ -65,17 +65,25 @@ export namespace Module {
 export class Module<TRecord extends Record<string, AnyResolver>> extends ModulePatch<TRecord> {
   // readonly __kind: 'moduleResolver' = 'moduleResolver';
 
+  static fromPatchedModule<TRecord extends Record<string, AnyResolver>>(
+    patchedModule: ModulePatch<TRecord>,
+  ): Module<TRecord> {
+    return new Module<TRecord>(patchedModule.moduleId, patchedModule.registry.merge(patchedModule.patchedResolvers));
+  }
+
+  static fromPatchedModules<TRecord extends Record<string, AnyResolver>>(
+    patchedModules: ModulePatch<TRecord>[],
+  ): Module<TRecord> {
+    const patched = patchedModules.reduce((composedPatchedModule, currentPatchedModule) => {
+      return composedPatchedModule.merge(currentPatchedModule);
+    });
+    return Module.fromPatchedModule(patched);
+  }
+
   __definitions!: TRecord; // prevent erasing the type
 
   constructor(moduleId: ModuleId, registry: ImmutableMap<Record<string, Module.Definition>>) {
     super(moduleId, registry, ImmutableMap.empty());
-  }
-
-  // TODO: this should not be exposed!! should be internal detail - we should forbid the user to create modules with applied patches
-  patch<TRecord extends Record<string, AnyResolver>>(otherModule: ModulePatch<TRecord>): Module<TRecord> {
-    invariant(this.moduleId.id === otherModule.moduleId.id, `Cannot apply patch from module with different id`);
-
-    return new Module<TRecord>(this.moduleId, this.registry.merge(otherModule.patchedResolvers));
   }
 
   select(ctx: ContainerContext): ModuleRecord.Materialized<TRecord> {

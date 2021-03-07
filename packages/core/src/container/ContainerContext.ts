@@ -190,7 +190,7 @@ export class ContainerContext {
 
     if (!this.loadedModules[moduleId.id]) {
       this.loadedModules[moduleId.id] = this.modulesPatches[moduleId.id]
-        ? module.patch(this.modulesPatches[moduleId.id])
+        ? Module.fromPatchedModule(this.modulesPatches[moduleId.id])
         : module;
     }
 

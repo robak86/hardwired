@@ -75,7 +75,7 @@ describe(`ModulePatch`, () => {
 
       const m2 = m.replace('b', bReplacementResolver);
 
-      const patched = m.patch(m1).patch(m2);
+      const patched = Module.fromPatchedModules([m1, m2]);
 
       expect(patched.registry.entries).toEqual([
         [
@@ -122,7 +122,7 @@ describe(`ModulePatch`, () => {
 
       const m2 = m.replace('a', yetAnotherAReplacement);
 
-      const patched = m.patch(m1).patch(m2);
+      const patched = Module.fromPatchedModules([m1, m2]);
 
       expect(patched.registry.entries).toEqual([
         ['b', { id: 'b', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: bOriginalResolver }],

@@ -20,6 +20,7 @@ export namespace ModulePatch {
     : never;
 }
 
+// TODO: rename to PatchedModule (it is module with patches - not only the patches)
 export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   __definitions!: TRecord; // prevent erasing the type
 
