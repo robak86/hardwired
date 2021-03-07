@@ -4,7 +4,6 @@ import { unwrapThunk } from '../utils/Thunk';
 import { ContextRecord } from './ContainerContextStorage';
 import { ContextLookup } from './ContextLookup';
 import { ContextMutations } from './ContextMutations';
-import { ContainerContext } from './ContainerContext';
 
 export const ContextService = {
   getInstanceResolver(module: Module<any>, path: string, context: ContextRecord) {
@@ -41,7 +40,7 @@ export const ContextService = {
     const module = ContextLookup.getModuleForResolverByResolverId(instanceDefinition.id, context);
     const materializedModule = ContextService.materializeModule(module, context);
     const resolver = unwrapThunk(instanceDefinition.resolverThunk);
-    return resolver.build(instanceDefinition.id, new ContainerContext(context), materializedModule);
+    return resolver.build(instanceDefinition.id, context, materializedModule);
   },
 
   getModule(module: Module<any>, context: ContextRecord): Module<any> {

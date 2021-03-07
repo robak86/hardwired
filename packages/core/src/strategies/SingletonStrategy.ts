@@ -1,16 +1,18 @@
-import { ContainerContext } from '../container/ContainerContext';
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { buildTaggedStrategy } from './utils/strategyTagging';
+import { ContextRecord } from '../container/ContainerContextStorage';
+import { ContextLookup } from '../container/ContextLookup';
+import { ContextMutations } from '../container/ContextMutations';
 
 export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = singletonStrategyTag;
 
-  build(id: string, context: ContainerContext, materializedModule): TValue {
-    if (context.hasInGlobalScope(id)) {
-      return context.getFromGlobalScope(id);
+  build(id: string, context: ContextRecord, materializedModule): TValue {
+    if (ContextLookup.hasInGlobalScope(id, context)) {
+      return ContextLookup.getFromGlobalScope(id, context);
     } else {
       const instance = this.buildFunction(materializedModule);
-      context.setForGlobalScope(id, instance);
+      ContextMutations.setForGlobalScope(id, instance, context);
       return instance;
     }
   }

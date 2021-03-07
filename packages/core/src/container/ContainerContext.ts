@@ -44,22 +44,14 @@ export class ContainerContext {
   filterLoadedDefinitions(predicate: (resolver: Module.InstanceDefinition) => boolean): Module.InstanceDefinition[] {
     return ContextLookup.filterLoadedDefinitions(predicate, this.record);
   }
-
-  setForGlobalScope(uuid: string, instance: any) {
-    return ContextMutations.setForGlobalScope(uuid, instance, this.record);
-  }
-
-  setForRequestScope(uuid: string, instance: any) {
-    return ContextMutations.setForRequestScope(uuid, instance, this.record);
-  }
-
-  hasInGlobalScope(uuid: string): boolean {
-    return ContextLookup.hasInGlobalScope(uuid, this.record);
-  }
-
-  hasInRequestScope(uuid: string): boolean {
-    return ContextLookup.hasInRequestScope(uuid, this.record);
-  }
+  //
+  // setForRequestScope(uuid: string, instance: any) {
+  //   return ContextMutations.setForRequestScope(uuid, instance, this.record);
+  // }
+  //
+  // hasInRequestScope(uuid: string): boolean {
+  //   return ContextLookup.hasInRequestScope(uuid, this.record);
+  // }
 
   // hasInAsyncRequestScope(uuid: string): boolean {
   //   return !!this.requestScopeAsync[uuid];
@@ -76,13 +68,13 @@ export class ContainerContext {
   //   return this.requestScopeAsync[uuid].get();
   // }
 
-  getFromRequestScope(uuid: string) {
-    return ContextLookup.getFromRequestScope(uuid, this.record);
-  }
-
-  getFromGlobalScope(uuid: string) {
-    return ContextLookup.getFromGlobalScope(uuid, this.record);
-  }
+  // getFromRequestScope(uuid: string) {
+  //   return ContextLookup.getFromRequestScope(uuid, this.record);
+  // }
+  //
+  // getFromGlobalScope(uuid: string) {
+  //   return ContextLookup.getFromGlobalScope(uuid, this.record);
+  // }
 
   // TODO: should we return ContainerContext with clean requestScope ? or we should
   //       or we need some other kind of scope. In theory each react component should create this kind of scope

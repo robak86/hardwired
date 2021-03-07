@@ -17,24 +17,24 @@ describe(`ContainerContext`, () => {
   });
 
   describe(`request scope`, () => {
-    it(`sets value for request scope cache`, async () => {
-      const ctx = ContainerContext.empty();
-      const resourceId = 'someId';
-
-      expect(ctx.hasInRequestScope(resourceId)).toEqual(false);
-      expect(ctx.setForRequestScope(resourceId, 123));
-      expect(ctx.getFromRequestScope(resourceId)).toEqual(123);
-    });
-
-    it(`does not inherit values from parent request scope`, async () => {
-      const ctx = ContainerContext.empty();
-      const resourceId = 'someId';
-
-      expect(ctx.setForRequestScope(resourceId, 123));
-
-      const childScope = ctx.forNewRequest();
-      expect(childScope.hasInRequestScope(resourceId)).toEqual(false);
-    });
+    // it(`sets value for request scope cache`, async () => {
+    //   const ctx = ContainerContext.empty();
+    //   const resourceId = 'someId';
+    //
+    //   expect(ctx.hasInRequestScope(resourceId)).toEqual(false);
+    //   expect(ctx.setForRequestScope(resourceId, 123));
+    //   expect(ctx.getFromRequestScope(resourceId)).toEqual(123);
+    // });
+    //
+    // it(`does not inherit values from parent request scope`, async () => {
+    //   const ctx = ContainerContext.empty();
+    //   const resourceId = 'someId';
+    //
+    //   expect(ctx.setForRequestScope(resourceId, 123));
+    //
+    //   const childScope = ctx.forNewRequest();
+    //   expect(childScope.hasInRequestScope(resourceId)).toEqual(false);
+    // });
   });
 
   describe(`asObject`, () => {
