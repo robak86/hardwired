@@ -27,7 +27,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   constructor(
     public moduleId: ModuleId,
     public registry: ImmutableMap<Record<string, Module.Definition>>,
-    public patchedResolvers: ImmutableMap<Record<string, Module.Definition>>,
+    public patchedResolvers: ImmutableMap<Record<string, Module.Definition>>, //TODO: maybe we should apply patches directly to this.registry ?
   ) {}
 
   isEqual(otherModule: ModulePatch<any>): boolean {
