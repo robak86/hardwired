@@ -53,7 +53,7 @@ describe(`Container`, () => {
 
       const c = container({
         eager: [m],
-        overrides: [m.replace('b', () => 20, singleton)],
+        invariants: [m.replace('b', () => 20, singleton)],
       });
 
       const allSingletons = c.getByStrategy(singleton);
@@ -69,7 +69,7 @@ describe(`Container`, () => {
 
       const c = container({
         eager: [m],
-        overrides: [m.replace('b', () => 20, transient)],
+        invariants: [m.replace('b', () => 20, transient)],
       });
 
       const allSingletons = c.getByStrategy(singleton);
@@ -84,7 +84,7 @@ describe(`Container`, () => {
           .define('a', () => 1)
           .build();
         const mPatch = m.replace('a', () => 2);
-        expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(2);
+        expect(container({ invariants: [mPatch] }).get(m, 'a')).toEqual(2);
       });
 
       it(`calls provided function with materialized module`, async () => {
@@ -99,7 +99,7 @@ describe(`Container`, () => {
 
         const mPatch = m.replace('a', factoryFunctionSpy);
 
-        const testContainer = container({ overrides: [mPatch] });
+        const testContainer = container({ invariants: [mPatch] });
         testContainer.get(m, 'a');
 
         expect(factoryFunctionSpy.mock.calls[0][0]).toEqual(testContainer.asObject(m));
@@ -125,7 +125,7 @@ describe(`Container`, () => {
           .build();
 
         const mPatch = m.replace('a', () => 2);
-        expect(container({ overrides: [mPatch] }).get(m, 'b')).toEqual('b');
+        expect(container({ invariants: [mPatch] }).get(m, 'b')).toEqual('b');
       });
 
       it.skip(`can use all previously registered definitions`, async () => {
@@ -153,7 +153,7 @@ describe(`Container`, () => {
         .build();
 
       const c = container({
-        overrides: [
+        invariants: [
           //breakme
           m.replace('a', () => 10),
           m.replace('b', () => 20),
@@ -173,7 +173,7 @@ describe(`Container`, () => {
         expect(c.get(m, 'a')).toEqual(1);
 
         const mPatch = m.replace('a', () => 2, request);
-        const childC = c.checkoutChildScope({ overrides: [mPatch] });
+        const childC = c.checkoutChildScope({ invariants: [mPatch] });
         expect(childC.get(m, 'a')).toEqual(2);
       });
 
@@ -185,7 +185,7 @@ describe(`Container`, () => {
         expect(c.get(m, 'a')).toEqual(1);
 
         const mPatch = m.replace('a', () => 2, scoped);
-        const childC = c.checkoutChildScope({ overrides: [mPatch] });
+        const childC = c.checkoutChildScope({ invariants: [mPatch] });
         expect(childC.get(m, 'a')).toEqual(2);
       });
 
@@ -196,7 +196,7 @@ describe(`Container`, () => {
         const c = container();
 
         const mPatch = m.replace('a', () => 2, singleton);
-        const childC = c.checkoutChildScope({ overrides: [mPatch] });
+        const childC = c.checkoutChildScope({ invariants: [mPatch] });
 
         expect(childC.get(m, 'a')).toEqual(2);
         expect(c.get(m, 'a')).toEqual(1);
@@ -209,7 +209,7 @@ describe(`Container`, () => {
         const root = container();
 
         const patch = m.replace('a', () => 2, singleton);
-        const level1 = root.checkoutChildScope({ overrides: [patch] });
+        const level1 = root.checkoutChildScope({ invariants: [patch] });
         const level2 = level1.checkoutChildScope();
 
         expect(level2.get(m, 'a')).toEqual(2);
@@ -235,7 +235,7 @@ describe(`Container`, () => {
 
         const root = container();
         const level1 = root.checkoutChildScope();
-        const level2 = level1.checkoutChildScope({ overrides: [m.replace('a', () => 1)] });
+        const level2 = level1.checkoutChildScope({ invariants: [m.replace('a', () => 1)] });
         const level3 = level2.checkoutChildScope();
 
         const level3Call = level3.get(m, 'a'); // important that level1 is called as first
@@ -255,8 +255,8 @@ describe(`Container`, () => {
         const m = unit().define('a', randomFactorySpy, singleton).build();
 
         const root = container();
-        const level1 = root.checkoutChildScope({ overrides: [m.replace('a', () => 1)] });
-        const level2 = level1.checkoutChildScope({ overrides: [m.replace('a', () => 2)] });
+        const level1 = root.checkoutChildScope({ invariants: [m.replace('a', () => 1)] });
+        const level2 = level1.checkoutChildScope({ invariants: [m.replace('a', () => 2)] });
         const level3 = level2.checkoutChildScope();
 
         const level3Call = level3.get(m, 'a'); // important that level1 is called as first

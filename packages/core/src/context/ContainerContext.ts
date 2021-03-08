@@ -15,11 +15,11 @@ export type ContainerContext = {
   hierarchicalScope: Record<string, any>;
   loadedModules: Record<string, Module<any>>;
   requestScope: Record<string, any>;
+  frozenOverrides: Record<string, Module.InstanceDefinition>;
 };
 
 // TODO: do not deep copy - implement copy on write strategy
 export const ContainerContext = {
-
   empty() {
     return ContainerContext.create([]);
   },
@@ -35,6 +35,7 @@ export const ContainerContext = {
       materializedObjects: {},
       resolversByModuleIdAndPath: {},
       hierarchicalScope: {},
+      frozenOverrides: {},
       globalScope: new SingletonScope(ownKeys),
       loadedModules: reducedOverrides,
     };

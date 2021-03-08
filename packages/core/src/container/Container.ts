@@ -75,16 +75,16 @@ export type ContainerOptions = {
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: ModulePatch<any>[];
+  invariants?: ModulePatch<any>[];       // TODO: container probably don't requires overrides which can by overriden by child scopes
   eager?: Module<any>[];
 };
 
 export function container({
   context,
-  overrides = [],
+  invariants = [],
   useProxy = true,
   eager = [], // TODO: consider renaming to load - since eager may implicate that some instances are created
 }: ContainerOptions = {}): Container {
-  const container = new Container(context || ContainerContext.create([...eager, ...overrides]), useProxy);
+  const container = new Container(context || ContainerContext.create([...eager, ...invariants]), useProxy);
   return container as any;
 }

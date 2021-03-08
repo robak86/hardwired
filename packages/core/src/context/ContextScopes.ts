@@ -13,14 +13,15 @@ export const ContextScopes = {
       globalScope: prevContext.globalScope,
       hierarchicalScope: prevContext.hierarchicalScope,
       loadedModules: prevContext.loadedModules,
+      frozenOverrides: prevContext.frozenOverrides,
       requestScope: {},
       materializedObjects: {},
     };
   },
 
   childScope(options: ContainerScopeOptions, prevContext: ContainerContext): ContainerContext {
-    const { overrides = [], eager = [] } = options;
-    const childScopePatches = reducePatches(overrides, prevContext.loadedModules);
+    const { invariants = [], eager = [] } = options;
+    const childScopePatches = reducePatches(invariants, prevContext.loadedModules);
     const ownKeys = getPatchesDefinitionsIds(childScopePatches);
 
     // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
@@ -32,6 +33,7 @@ export const ContextScopes = {
       materializedObjects: {},
       resolversByModuleIdAndPath: {},
       hierarchicalScope: {},
+      frozenOverrides: prevContext.frozenOverrides,
       globalScope: prevContext.globalScope.checkoutChild(ownKeys),
       loadedModules: childScopePatches,
     };
