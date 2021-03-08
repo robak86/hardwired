@@ -88,10 +88,8 @@ export const ContextService = {
     });
   },
 
-  materialize<TModule extends Module<any>>(
-    module: TModule,
-    context: ContainerContext,
-  ): Module.Materialized<TModule> {
+  materialize<TModule extends Module<any>>(module: TModule, context: ContainerContext): Module.Materialized<TModule> {
+    // TODO: we should probably cache also by context!
     if (context.materializedObjects[module.moduleId.id]) {
       return context.materializedObjects[module.moduleId.id];
     }
@@ -129,13 +127,10 @@ export const ContextService = {
     m: TModule,
     context: ContainerContext,
   ): Module.Materialized<TModule> {
-    if (context.materializedObjects[m.moduleId.id]) {
-      return context.materializedObjects[m.moduleId.id];
-    }
 
-    // TODO: since all materialization is synchronous we can reuse the instance of Proxy??
+    // TODO: since all materialization is synchronous we can somehow reuse the instance of Proxy??
     const handler: ProxyHandler<ContainerContext> = {
-      get: function (target: ContainerContext, property: string, receiver: any) {
+      get: (target: ContainerContext, property: string, receiver: any) => {
         const module = ContextService.getModule(m, context);
 
         if (!module.registry.hasKey(property)) {
@@ -158,13 +153,13 @@ export const ContextService = {
         }
       },
 
-      ownKeys: function () {
-        const module = ContextService.getModule(m, context);
-        return module.registry.keys;
+      set: (target: ContainerContext, p: string, value: any, receiver: any) => {
+        throw new Error(`Materialized modules is readonly. Cannot update property ${p}`);
       },
 
-      isExtensible: function () {
-        return false;
+      ownKeys: () => {
+        const module = ContextService.getModule(m, context);
+        return module.registry.keys;
       },
     };
 
