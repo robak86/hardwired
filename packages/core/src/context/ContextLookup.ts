@@ -1,6 +1,6 @@
 import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
-import { isInstanceDefinition, Module } from '../resolvers/abstract/Module';
+import { isInstanceDefinition, Module } from '../module/Module';
 import { ModuleId } from '../module/ModuleId';
 
 export const ContextLookup = {

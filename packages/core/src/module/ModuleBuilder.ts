@@ -2,7 +2,7 @@ import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
-import { AnyResolver, Module, ModuleRecord } from '../resolvers/abstract/Module';
+import { AnyResolver, Module, ModuleRecord } from './Module';
 import { Instance } from '../resolvers/abstract/Instance';
 import { singleton } from '../strategies/SingletonStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';

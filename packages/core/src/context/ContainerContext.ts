@@ -1,5 +1,5 @@
-import { Module } from '../resolvers/abstract/Module';
-import { PatchedModule } from '../resolvers/abstract/PatchedModule';
+import { Module } from '../module/Module';
+import { PatchedModule } from '../module/PatchedModule';
 import { SingletonScope } from '../container/SingletonScope';
 import { reducePatches } from '../module/utils/reducePatches';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';

@@ -1,12 +1,11 @@
-import { ModuleId } from '../../module/ModuleId';
-import { ImmutableMap } from '../../collections/ImmutableMap';
-import { Thunk } from '../../utils/Thunk';
+import { ModuleId } from './ModuleId';
+import { ImmutableMap } from '../collections/ImmutableMap';
+import { Thunk } from '../utils/Thunk';
 
-import { Instance } from './Instance';
-import invariant from 'tiny-invariant';
+import { Instance } from '../resolvers/abstract/Instance';
 import { PatchedModule } from './PatchedModule';
-import { ContainerContext } from '../../context/ContainerContext';
-import { ContextService } from '../../context/ContextService';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextService } from '../context/ContextService';
 
 // prettier-ignore
 export type AnyResolver = Instance<any> | Module<any> ;

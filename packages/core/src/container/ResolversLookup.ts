@@ -1,6 +1,6 @@
 import { ModuleId } from '../module/ModuleId';
 import invariant from 'tiny-invariant';
-import { Module } from '../resolvers/abstract/Module';
+import { Module } from '../module/Module';
 
 export class ResolversLookup {
   private resolversById: Record<string, Module.InstanceDefinition> = {};

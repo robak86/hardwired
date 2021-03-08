@@ -1,4 +1,4 @@
-import { isInstanceDefinition, isModuleDefinition, Module } from '../resolvers/abstract/Module';
+import { isInstanceDefinition, isModuleDefinition, Module } from '../module/Module';
 import invariant from 'tiny-invariant';
 import { unwrapThunk } from '../utils/Thunk';
 import { ContainerContext } from './ContainerContext';

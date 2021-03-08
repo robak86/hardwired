@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant';
-import { Module, ModuleRecord } from '../resolvers/abstract/Module';
+import { Module, ModuleRecord } from '../module/Module';
 import { IContainer } from './IContainer';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';

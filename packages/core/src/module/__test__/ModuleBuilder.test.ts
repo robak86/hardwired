@@ -2,11 +2,11 @@ import { expectType, TypeEqual } from 'ts-expect';
 import { module, ModuleBuilder } from '../ModuleBuilder';
 
 import { container } from '../../container/Container';
-import { Module } from '../../resolvers/abstract/Module';
+import { Module } from '../Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { transient } from '../../strategies/TransientStrategy';
 import { request } from '../../strategies/RequestStrategy';
-import { PatchedModule } from '../../resolvers/abstract/PatchedModule';
+import { PatchedModule } from '../PatchedModule';
 
 describe(`ModuleBuilder`, () => {
   describe(`define`, () => {

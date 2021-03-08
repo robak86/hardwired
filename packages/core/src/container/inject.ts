@@ -1,4 +1,4 @@
-import { Module } from '../resolvers/abstract/Module';
+import { Module } from '../module/Module';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';
 

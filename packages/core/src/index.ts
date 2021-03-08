@@ -7,7 +7,7 @@ export * from './strategies/TransientStrategy';
 export * from './strategies/ScopeStrategy';
 
 export { Instance } from './resolvers/abstract/Instance';
-export type { Module, AnyResolver, ModuleRecord } from './resolvers/abstract/Module';
+export type { Module, AnyResolver, ModuleRecord } from './module/Module';
 export { buildTaggedStrategy } from './strategies/utils/strategyTagging';
 export { inject } from './container/inject';
 export { ContainerContext } from './context/ContainerContext';

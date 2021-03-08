@@ -1,7 +1,7 @@
 import now from 'performance-now';
 import { Container, container } from '../container/Container';
 import { unit } from '../module/ModuleBuilder';
-import { Module } from '../resolvers/abstract/Module';
+import { Module } from '../module/Module';
 
 function registerN(times: number) {
   const result = {

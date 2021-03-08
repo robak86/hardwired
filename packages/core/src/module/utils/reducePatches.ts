@@ -1,5 +1,5 @@
-import { PatchedModule } from '../../resolvers/abstract/PatchedModule';
-import { Module } from '../../resolvers/abstract/Module';
+import { PatchedModule } from '../PatchedModule';
+import { Module } from '../Module';
 
 export function reducePatches(
   patchedModules: PatchedModule<any>[],

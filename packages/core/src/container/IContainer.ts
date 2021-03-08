@@ -1,4 +1,4 @@
-import { Module } from '../resolvers/abstract/Module';
+import { Module } from '../module/Module';
 
 export interface IContainer {
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(

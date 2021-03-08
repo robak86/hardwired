@@ -1,5 +1,5 @@
 import { ModuleBuilder } from '../ModuleBuilder';
-import { Module } from '../../resolvers/abstract/Module';
+import { Module } from '../Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { singleton } from '../../strategies/SingletonStrategy';
 

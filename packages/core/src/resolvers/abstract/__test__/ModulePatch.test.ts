@@ -1,6 +1,6 @@
 import { ImmutableMap } from '../../../collections/ImmutableMap';
 import { singleton, SingletonStrategy, singletonStrategyTag } from '../../../strategies/SingletonStrategy';
-import { Module } from '../Module';
+import { Module } from '../../../module/Module';
 
 describe(`ModulePatch`, () => {
   describe(`replace`, () => {

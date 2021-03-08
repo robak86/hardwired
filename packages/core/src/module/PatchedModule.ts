@@ -1,12 +1,12 @@
-import { ModuleId } from '../../module/ModuleId';
-import { ImmutableMap } from '../../collections/ImmutableMap';
-import { Instance } from './Instance';
-import { BuildStrategy } from '../../strategies/abstract/BuildStrategy';
-import { singleton } from '../../strategies/SingletonStrategy';
+import { ModuleId } from './ModuleId';
+import { ImmutableMap } from '../collections/ImmutableMap';
+import { Instance } from '../resolvers/abstract/Instance';
+import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
+import { singleton } from '../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
-import { DecoratorResolver } from '../DecoratorResolver';
+import { DecoratorResolver } from '../resolvers/DecoratorResolver';
 import { AnyResolver, isInstanceDefinition, Module, ModuleRecord } from './Module';
-import { getStrategyTag, isStrategyTagged } from '../../strategies/utils/strategyTagging';
+import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 
 export namespace PatchedModule {
   export type Materialized<TModule extends PatchedModule<any>> = TModule extends PatchedModule<infer TRecord>

@@ -1,5 +1,5 @@
 import { ContainerContext } from './ContainerContext';
-import { Module } from '../resolvers/abstract/Module';
+import { Module } from '../module/Module';
 import invariant from 'tiny-invariant';
 
 export const ContextMutations = {

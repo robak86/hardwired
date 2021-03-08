@@ -1,5 +1,5 @@
-import { Module } from '../resolvers/abstract/Module';
-import { PatchedModule } from '../resolvers/abstract/PatchedModule';
+import { Module } from '../module/Module';
+import { PatchedModule } from '../module/PatchedModule';
 import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import invariant from 'tiny-invariant';

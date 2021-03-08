@@ -1,7 +1,7 @@
 import { ModuleBuilder, unit } from '../../module/ModuleBuilder';
 
 import { container } from '../../container/Container';
-import { Module } from '../../resolvers/abstract/Module';
+import { Module } from '../../module/Module';
 import { expectType, TypeEqual } from 'ts-expect';
 import { transient } from '../TransientStrategy';
 import { request } from '../RequestStrategy';
