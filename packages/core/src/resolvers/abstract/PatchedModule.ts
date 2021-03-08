@@ -8,10 +8,10 @@ import { DecoratorResolver } from '../DecoratorResolver';
 import { AnyResolver, isInstanceDefinition, Module, ModuleRecord } from './Module';
 import { getStrategyTag, isStrategyTagged } from '../../strategies/utils/strategyTagging';
 
-export namespace ModulePatch {
-  export type Materialized<TModule extends ModulePatch<any>> = TModule extends ModulePatch<infer TRecord>
+export namespace PatchedModule {
+  export type Materialized<TModule extends PatchedModule<any>> = TModule extends PatchedModule<infer TRecord>
     ? {
-        [K in keyof TRecord & string]: TRecord[K] extends ModulePatch<infer TModule>
+        [K in keyof TRecord & string]: TRecord[K] extends PatchedModule<infer TModule>
           ? Materialized<TRecord[K]>
           : TRecord[K] extends Instance<infer TInstance>
           ? TInstance
@@ -20,8 +20,7 @@ export namespace ModulePatch {
     : never;
 }
 
-// TODO: rename to PatchedModule (it is module with patches - not only the patches)
-export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
+export class PatchedModule<TRecord extends Record<string, AnyResolver>> {
   __definitions!: TRecord; // prevent erasing the type
 
   constructor(
@@ -30,14 +29,14 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     public patchedResolvers: ImmutableMap<Record<string, Module.Definition>>, //TODO: maybe we should apply patches directly to this.registry ?
   ) {}
 
-  isEqual(otherModule: ModulePatch<any>): boolean {
+  isEqual(otherModule: PatchedModule<any>): boolean {
     return this.moduleId.revision === otherModule.moduleId.revision;
   }
 
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
     instance: Instance<TValue> | ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => Instance<TValue>),
-  ): ModulePatch<TRecord>;
+  ): PatchedModule<TRecord>;
 
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
@@ -45,13 +44,13 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     buildStrategy?: (
       resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
     ) => BuildStrategy<TValue>,
-  ): ModulePatch<TRecord>;
+  ): PatchedModule<TRecord>;
 
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
     buildFnOrInstance: ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) | Instance<TValue>,
     buildStrategy = singleton,
-  ): ModulePatch<TRecord> {
+  ): PatchedModule<TRecord> {
     invariant(
       !this.patchedResolvers.hasKey(name),
       `Cannot replace definition. Patch already contains replaced definition`,
@@ -62,7 +61,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     invariant(prev.type === 'resolver', `Cannot replace import`);
 
     if (typeof buildFnOrInstance === 'function') {
-      return new ModulePatch(
+      return new PatchedModule(
         this.moduleId,
         this.registry,
         this.patchedResolvers.extend(name, {
@@ -74,7 +73,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
       );
     }
 
-    return new ModulePatch(
+    return new PatchedModule(
       this.moduleId,
       this.registry,
       this.patchedResolvers.extend(name, {
@@ -89,7 +88,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
     decorateFn: (originalValue: TValue, moduleAsObject: ModuleRecord.Materialized<TRecord>) => TValue,
-  ): ModulePatch<TRecord & Record<TKey, Instance<TValue>>> {
+  ): PatchedModule<TRecord & Record<TKey, Instance<TValue>>> {
     const definition = this.patchedResolvers.get(name) || this.registry.get(name);
 
     invariant(isInstanceDefinition(definition), `Cannot decorate module import`);
@@ -103,16 +102,16 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     };
 
     const replaced = this.patchedResolvers.extendOrSet(name, decorated);
-    return new ModulePatch(this.moduleId, this.registry, replaced as any);
+    return new PatchedModule(this.moduleId, this.registry, replaced as any);
   }
 
-  merge<TRecord extends Record<string, AnyResolver>>(otherModule: ModulePatch<TRecord>): ModulePatch<TRecord> {
+  merge<TRecord extends Record<string, AnyResolver>>(otherModule: PatchedModule<TRecord>): PatchedModule<TRecord> {
     invariant(
       this.moduleId.revision === otherModule.moduleId.revision,
       `Cannot apply patch from module with different id`,
     );
 
-    return new ModulePatch<TRecord>(
+    return new PatchedModule<TRecord>(
       this.moduleId,
       this.registry,
       this.patchedResolvers.merge(otherModule.patchedResolvers),

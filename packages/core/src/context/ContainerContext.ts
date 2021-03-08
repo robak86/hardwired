@@ -1,5 +1,5 @@
 import { Module } from '../resolvers/abstract/Module';
-import { ModulePatch } from '../resolvers/abstract/ModulePatch';
+import { PatchedModule } from '../resolvers/abstract/PatchedModule';
 import { SingletonScope } from '../container/SingletonScope';
 import { reducePatches } from '../module/utils/reducePatches';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
@@ -60,7 +60,7 @@ export const ContainerContext = {
     return ContainerContext.create([]);
   },
 
-  create(overrides: ModulePatch<any>[]): ContainerContext {
+  create(overrides: PatchedModule<any>[]): ContainerContext {
     const reducedOverrides = reducePatches(overrides);
     const ownKeys = getPatchesDefinitionsIds(reducedOverrides);
 

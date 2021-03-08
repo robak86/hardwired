@@ -4,7 +4,7 @@ import { Thunk } from '../../utils/Thunk';
 
 import { Instance } from './Instance';
 import invariant from 'tiny-invariant';
-import { ModulePatch } from './ModulePatch';
+import { PatchedModule } from './PatchedModule';
 import { ContainerContext } from '../../context/ContainerContext';
 import { ContextService } from '../../context/ContextService';
 
@@ -63,15 +63,15 @@ export namespace Module {
     }
 }
 
-export class Module<TRecord extends Record<string, AnyResolver>> extends ModulePatch<TRecord> {
+export class Module<TRecord extends Record<string, AnyResolver>> extends PatchedModule<TRecord> {
   static fromPatchedModule<TRecord extends Record<string, AnyResolver>>(
-    patchedModule: ModulePatch<TRecord>,
+    patchedModule: PatchedModule<TRecord>,
   ): Module<TRecord> {
     return new Module<TRecord>(patchedModule.moduleId, patchedModule.registry.merge(patchedModule.patchedResolvers));
   }
 
   static fromPatchedModules<TRecord extends Record<string, AnyResolver>>(
-    patchedModules: ModulePatch<TRecord>[],
+    patchedModules: PatchedModule<TRecord>[],
   ): Module<TRecord> {
     const patched = patchedModules.reduce((composedPatchedModule, currentPatchedModule) => {
       return composedPatchedModule.merge(currentPatchedModule);

@@ -1,8 +1,8 @@
-import { ModulePatch } from '../../resolvers/abstract/ModulePatch';
+import { PatchedModule } from '../../resolvers/abstract/PatchedModule';
 import { Module } from '../../resolvers/abstract/Module';
 
 export function reducePatches(
-  patchedModules: ModulePatch<any>[],
+  patchedModules: PatchedModule<any>[],
   previousPatches: Record<string, Module<any>> = {},
 ): Record<string, Module<any>> {
   const modulesById = { ...previousPatches };

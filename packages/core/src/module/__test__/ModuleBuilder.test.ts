@@ -6,7 +6,7 @@ import { Module } from '../../resolvers/abstract/Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { transient } from '../../strategies/TransientStrategy';
 import { request } from '../../strategies/RequestStrategy';
-import { ModulePatch } from '../../resolvers/abstract/ModulePatch';
+import { PatchedModule } from '../../resolvers/abstract/PatchedModule';
 
 describe(`ModuleBuilder`, () => {
   describe(`define`, () => {
@@ -107,7 +107,7 @@ describe(`ModuleBuilder`, () => {
         key1: number;
       };
 
-      expectType<TypeEqual<ModulePatch.Materialized<typeof replaced>, ExpectedType>>(true);
+      expectType<TypeEqual<PatchedModule.Materialized<typeof replaced>, ExpectedType>>(true);
 
       // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
       m2.replace('key1', () => 'sdf');
