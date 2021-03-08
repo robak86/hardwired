@@ -6,6 +6,7 @@ import invariant from 'tiny-invariant';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';
 import { ContextLookup } from '../context/ContextLookup';
+import { ContextScopes } from '../context/ContextScopes';
 
 export class Container {
   constructor(private readonly containerContext: ContainerContext) {}
@@ -14,12 +15,12 @@ export class Container {
     moduleInstance: TLazyModule,
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
-    const requestContext = ContainerContext.checkoutRequestScope(this.containerContext);
+    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
     return ContextService.get(moduleInstance, name, requestContext);
   }
 
   getSlice<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
-    return inject(ContainerContext.checkoutRequestScope(this.containerContext));
+    return inject(ContextScopes.checkoutRequestScope(this.containerContext));
   }
 
   // TODO: remove
@@ -33,7 +34,7 @@ export class Container {
       resolver => resolver.strategyTag === expectedTag,
       this.containerContext,
     );
-    const context = ContainerContext.checkoutRequestScope(this.containerContext);
+    const context = ContextScopes.checkoutRequestScope(this.containerContext);
 
     return definitions.map(definition => {
       return ContextService.runInstanceDefinition(definition, context);
@@ -49,7 +50,7 @@ export class Container {
   // }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    const requestContext = ContainerContext.checkoutRequestScope(this.containerContext);
+    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
     return ContextService.materializeModule(module, requestContext);
   }
 
@@ -58,7 +59,7 @@ export class Container {
   // }
 
   checkoutChildScope(options: ContainerScopeOptions = {}): Container {
-    return new Container(ContainerContext.childScope(options, this.containerContext));
+    return new Container(ContextScopes.childScope(options, this.containerContext));
   }
 }
 

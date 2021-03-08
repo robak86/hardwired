@@ -194,11 +194,12 @@ describe(`Container`, () => {
           .define('a', () => 1, singleton)
           .build();
         const c = container();
-        expect(c.get(m, 'a')).toEqual(1);
 
         const mPatch = m.replace('a', () => 2, singleton);
         const childC = c.checkoutChildScope({ overrides: [mPatch] });
+
         expect(childC.get(m, 'a')).toEqual(2);
+        expect(c.get(m, 'a')).toEqual(1);
       });
 
       it(`inherits singletons from parent scope for singleton`, async () => {
@@ -206,12 +207,13 @@ describe(`Container`, () => {
           .define('a', () => 1, singleton)
           .build();
         const root = container();
-        expect(root.get(m, 'a')).toEqual(1);
 
         const patch = m.replace('a', () => 2, singleton);
         const level1 = root.checkoutChildScope({ overrides: [patch] });
         const level2 = level1.checkoutChildScope();
+
         expect(level2.get(m, 'a')).toEqual(2);
+        expect(root.get(m, 'a')).toEqual(1);
       });
 
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {

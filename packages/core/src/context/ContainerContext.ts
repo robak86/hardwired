@@ -19,42 +19,6 @@ export type ContainerContext = {
 
 // TODO: do not deep copy - implement copy on write strategy
 export const ContainerContext = {
-  checkoutRequestScope(prevContext: ContainerContext): ContainerContext {
-    return {
-      resolversById: prevContext.resolversById,
-      modulesByResolverId: prevContext.modulesByResolverId,
-      resolversByModuleIdAndPath: prevContext.resolversByModuleIdAndPath,
-      globalScope: prevContext.globalScope,
-      hierarchicalScope: prevContext.hierarchicalScope,
-      loadedModules: prevContext.loadedModules,
-      requestScope: {},
-      materializedObjects: {},
-    };
-  },
-
-  childScope(options: ContainerScopeOptions, prevContext: ContainerContext): ContainerContext {
-    const { overrides = [], eager = [] } = options;
-    const childScopePatches = reducePatches(overrides, prevContext.loadedModules);
-    const ownKeys = getPatchesDefinitionsIds(childScopePatches);
-
-    // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
-
-    const context = {
-      resolversById: {},
-      requestScope: {},
-      modulesByResolverId: {},
-      materializedObjects: {},
-      resolversByModuleIdAndPath: {},
-      hierarchicalScope: {},
-      globalScope: prevContext.globalScope.checkoutChild(ownKeys),
-      loadedModules: childScopePatches,
-    };
-
-    // TODO: this should be atomic with assigning loadedModules property
-    ContextService.loadModules(Object.values(childScopePatches), context);
-
-    return context;
-  },
 
   empty() {
     return ContainerContext.create([]);
@@ -70,12 +34,11 @@ export const ContainerContext = {
       modulesByResolverId: {},
       materializedObjects: {},
       resolversByModuleIdAndPath: {},
-      globalScope: new SingletonScope(ownKeys),
       hierarchicalScope: {},
+      globalScope: new SingletonScope(ownKeys),
       loadedModules: reducedOverrides,
     };
 
-    // TODO: this should be atomic with assigning loadedModules property
     ContextService.loadModules(Object.values(reducedOverrides), context);
 
     return context;

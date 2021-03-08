@@ -3,6 +3,7 @@ import { Module, ModuleRecord } from '../module/Module';
 import { IContainer } from './IContainer';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';
+import { ContextScopes } from '../context/ContextScopes';
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends ModuleRecord, K extends keyof ModuleRecord.Materialized<TRegistryRecord> & string>(
@@ -15,7 +16,7 @@ export class ServiceLocator {
   constructor(private containerContext: ContainerContext) {}
 
   withScope<T>(factory: (obj: { get: ServiceLocatorGet }) => T): T {
-    const requestContext = ContainerContext.checkoutRequestScope(this.containerContext);
+    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
 
     return factory({
       get: (module, key) => {
@@ -28,7 +29,7 @@ export class ServiceLocator {
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    const requestContext = ContainerContext.checkoutRequestScope(this.containerContext);
+    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
     return ContextService.materializeModule(module, requestContext);
   }
 
