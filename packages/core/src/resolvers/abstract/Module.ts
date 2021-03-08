@@ -5,8 +5,8 @@ import { Thunk } from '../../utils/Thunk';
 import { Instance } from './Instance';
 import invariant from 'tiny-invariant';
 import { ModulePatch } from './ModulePatch';
-import { ContainerContext } from '../../container/ContainerContext';
-import { ContextService } from '../../container/ContextService';
+import { ContainerContext } from '../../context/ContainerContext';
+import { ContextService } from '../../context/ContextService';
 
 // prettier-ignore
 export type AnyResolver = Instance<any> | Module<any> ;

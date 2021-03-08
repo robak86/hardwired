@@ -1,8 +1,8 @@
 import invariant from 'tiny-invariant';
 import { Module, ModuleRecord } from '../resolvers/abstract/Module';
 import { IContainer } from './IContainer';
-import { ContainerContext } from './ContainerContext';
-import { ContextService } from './ContextService';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextService } from '../context/ContextService';
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends ModuleRecord, K extends keyof ModuleRecord.Materialized<TRegistryRecord> & string>(

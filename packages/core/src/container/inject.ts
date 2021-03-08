@@ -1,6 +1,6 @@
 import { Module } from '../resolvers/abstract/Module';
-import { ContainerContext } from './ContainerContext';
-import { ContextService } from './ContextService';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextService } from '../context/ContextService';
 
 type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: ContainerContext) => any>]> = {
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;

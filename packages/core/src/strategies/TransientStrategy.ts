@@ -1,7 +1,7 @@
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { Instance } from '../resolvers/abstract/Instance';
 import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContainerContext } from '../container/ContainerContext';
+import { ContainerContext } from '../context/ContainerContext';
 
 export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = transientStrategyTag;

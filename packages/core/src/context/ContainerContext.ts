@@ -1,9 +1,9 @@
 import { Module } from '../resolvers/abstract/Module';
 import { ModulePatch } from '../resolvers/abstract/ModulePatch';
-import { SingletonScope } from './SingletonScope';
+import { SingletonScope } from '../container/SingletonScope';
 import { reducePatches } from '../module/utils/reducePatches';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
-import { ContainerScopeOptions } from './Container';
+import { ContainerScopeOptions } from '../container/Container';
 import { ContextService } from './ContextService';
 
 export type ContainerContext = {

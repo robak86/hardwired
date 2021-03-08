@@ -3,17 +3,12 @@ import { ModulePatch } from '../resolvers/abstract/ModulePatch';
 import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import invariant from 'tiny-invariant';
-import { unwrapThunk } from '../utils/Thunk';
-import { ContainerContext } from './ContainerContext';
-import { ContextService } from './ContextService';
-import { ContextLookup } from './ContextLookup';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextService } from '../context/ContextService';
+import { ContextLookup } from '../context/ContextLookup';
 
 export class Container {
-  constructor(
-    private readonly containerContext: ContainerContext, // private readonly overrides: ModulePatch<any>[], // private readonly eager: Module<any>[],
-  ) {
-    // this.containerContext = new ContainerContext(ContainerContext.create(eager))
-  }
+  constructor(private readonly containerContext: ContainerContext) {}
 
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
@@ -64,10 +59,6 @@ export class Container {
 
   checkoutChildScope(options: ContainerScopeOptions = {}): Container {
     return new Container(ContainerContext.childScope(options, this.containerContext));
-  }
-
-  getContext(): ContainerContext {
-    return this.containerContext;
   }
 }
 

@@ -1,8 +1,8 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { Instance } from './abstract/Instance';
-import { ContainerContext } from '../container/ContainerContext';
-import { ContextLookup } from '../container/ContextLookup';
-import { ContextMutations } from '../container/ContextMutations';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextLookup } from '../context/ContextLookup';
+import { ContextMutations } from '../context/ContextMutations';
 
 export class ServiceLocatorResolver extends Instance<ServiceLocator> {
   readonly strategyTag = strategyLocatorTag;

@@ -1,6 +1,6 @@
 import { Instance } from './abstract/Instance';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
-import { ContainerContext } from '../container/ContainerContext';
+import { ContainerContext } from '../context/ContainerContext';
 
 export class DecoratorResolver<TReturn, TDeps> extends Instance<TReturn> {
   constructor(

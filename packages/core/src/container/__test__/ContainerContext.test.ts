@@ -1,6 +1,6 @@
 import { unit } from '../../module/ModuleBuilder';
-import { ContainerContext } from '../ContainerContext';
-import { ContextService } from '../ContextService';
+import { ContainerContext } from '../../context/ContainerContext';
+import { ContextService } from '../../context/ContextService';
 
 describe(`ContainerRecord`, () => {
   describe(`async scope`, () => {

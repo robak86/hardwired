@@ -1,4 +1,4 @@
-import { ContainerContext } from '../../container/ContainerContext';
+import { ContainerContext } from '../../context/ContainerContext';
 
 export namespace Instance {
   export type Unbox<T> = T extends Instance<infer TInstance> ? TInstance : 'Cannot unbox instance type from Instance';

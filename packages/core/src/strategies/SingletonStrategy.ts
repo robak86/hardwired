@@ -1,8 +1,8 @@
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContainerContext } from '../container/ContainerContext';
-import { ContextLookup } from '../container/ContextLookup';
-import { ContextMutations } from '../container/ContextMutations';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextLookup } from '../context/ContextLookup';
+import { ContextMutations } from '../context/ContextMutations';
 
 export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = singletonStrategyTag;
