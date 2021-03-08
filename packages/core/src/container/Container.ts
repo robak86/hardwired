@@ -1,5 +1,5 @@
 import { Module } from '../module/Module';
-import { PatchedModule } from '../module/PatchedModule';
+import { ModulePatch } from '../module/ModulePatch';
 import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import invariant from 'tiny-invariant';
@@ -75,7 +75,7 @@ export type ContainerOptions = {
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: PatchedModule<any>[];
+  overrides?: ModulePatch<any>[];
   eager?: Module<any>[];
 };
 

@@ -3,7 +3,7 @@ import { ImmutableMap } from '../collections/ImmutableMap';
 import { Thunk } from '../utils/Thunk';
 
 import { Instance } from '../resolvers/abstract/Instance';
-import { PatchedModule } from './PatchedModule';
+import { ModulePatch } from './ModulePatch';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';
 
@@ -62,15 +62,15 @@ export namespace Module {
     }
 }
 
-export class Module<TRecord extends Record<string, AnyResolver>> extends PatchedModule<TRecord> {
+export class Module<TRecord extends Record<string, AnyResolver>> extends ModulePatch<TRecord> {
   static fromPatchedModule<TRecord extends Record<string, AnyResolver>>(
-    patchedModule: PatchedModule<TRecord>,
+    patchedModule: ModulePatch<TRecord>,
   ): Module<TRecord> {
     return new Module<TRecord>(patchedModule.moduleId, patchedModule.registry.merge(patchedModule.patchedResolvers));
   }
 
   static fromPatchedModules<TRecord extends Record<string, AnyResolver>>(
-    patchedModules: PatchedModule<TRecord>[],
+    patchedModules: ModulePatch<TRecord>[],
   ): Module<TRecord> {
     const patched = patchedModules.reduce((composedPatchedModule, currentPatchedModule) => {
       return composedPatchedModule.merge(currentPatchedModule);

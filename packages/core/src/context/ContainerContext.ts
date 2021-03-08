@@ -1,5 +1,5 @@
 import { Module } from '../module/Module';
-import { PatchedModule } from '../module/PatchedModule';
+import { ModulePatch } from '../module/ModulePatch';
 import { SingletonScope } from '../container/SingletonScope';
 import { reducePatches } from '../module/utils/reducePatches';
 import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
@@ -24,7 +24,7 @@ export const ContainerContext = {
     return ContainerContext.create([]);
   },
 
-  create(overrides: PatchedModule<any>[]): ContainerContext {
+  create(overrides: ModulePatch<any>[]): ContainerContext {
     const reducedOverrides = reducePatches(overrides);
     const ownKeys = getPatchesDefinitionsIds(reducedOverrides);
 

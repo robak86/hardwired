@@ -1,8 +1,8 @@
-import { PatchedModule } from '../PatchedModule';
+import { ModulePatch } from '../ModulePatch';
 import { Module } from '../Module';
 
 export function reducePatches(
-  patchedModules: PatchedModule<any>[],
+  patchedModules: ModulePatch<any>[],
   previousPatches: Record<string, Module<any>> = {},
 ): Record<string, Module<any>> {
   const modulesById = { ...previousPatches };

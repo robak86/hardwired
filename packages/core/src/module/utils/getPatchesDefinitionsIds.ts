@@ -1,6 +1,6 @@
-import { PatchedModule } from '../PatchedModule';
+import { ModulePatch } from '../ModulePatch';
 
-export function getPatchesDefinitionsIds(patchesByModuleId: Record<string, PatchedModule<any>>): string[] {
+export function getPatchesDefinitionsIds(patchesByModuleId: Record<string, ModulePatch<any>>): string[] {
   return Object.keys(patchesByModuleId).flatMap(moduleId => {
     return patchesByModuleId[moduleId].registry.keys.map(key => `${moduleId}:${key}`);
   });
