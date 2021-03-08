@@ -9,7 +9,7 @@ import { ContextLookup } from '../context/ContextLookup';
 import { ContextScopes } from '../context/ContextScopes';
 
 export class Container {
-  constructor(private readonly containerContext: ContainerContext) {}
+  constructor(private readonly containerContext: ContainerContext, private useProxy: boolean) {}
 
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
@@ -51,7 +51,11 @@ export class Container {
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
-    return ContextService.materializeModule(module, requestContext);
+    if (this.useProxy) {
+      return ContextService.materializeWithProxy(module, requestContext);
+    } else {
+      return ContextService.materialize(module, requestContext);
+    }
   }
 
   // usingNewRequestScope(): Container {
@@ -59,7 +63,7 @@ export class Container {
   // }
 
   checkoutChildScope(options: ContainerScopeOptions = {}): Container {
-    return new Container(ContextScopes.childScope(options, this.containerContext));
+    return new Container(ContextScopes.childScope(options, this.containerContext), this.useProxy);
   }
 }
 
@@ -67,6 +71,7 @@ export class Container {
 // or just clear distinction that patches provided to container are irreplaceable by patches provided to scopes
 export type ContainerOptions = {
   context?: ContainerContext;
+  useProxy?: boolean;
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
@@ -77,8 +82,9 @@ export type ContainerScopeOptions = {
 export function container({
   context,
   overrides = [],
+  useProxy = true,
   eager = [], // TODO: consider renaming to load - since eager may implicate that some instances are created
 }: ContainerOptions = {}): Container {
-  const container = new Container(context || ContainerContext.create([...eager, ...overrides]));
+  const container = new Container(context || ContainerContext.create([...eager, ...overrides]), useProxy);
   return container as any;
 }

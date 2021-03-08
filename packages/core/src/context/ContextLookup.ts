@@ -40,7 +40,7 @@ export const ContextLookup = {
 
   getResolverByModuleAndPath(moduleId: ModuleId, path: string, context: ContainerContext) {
     const resolver = context.resolversByModuleIdAndPath[moduleId.id + path];
-    invariant(resolver, `Cannot get resolver for moduleId = ${moduleId} and path ${path}`);
+    invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
     return resolver;
   },
 
@@ -62,5 +62,9 @@ export const ContextLookup = {
         return isInstanceDefinition(definition) && predicate(definition);
       }) as Module.InstanceDefinition[];
     });
+  },
+
+  isLoaded(module: Module<any>, context: ContainerContext): boolean {
+    return !!context.loadedModules[module.moduleId.id];
   },
 };

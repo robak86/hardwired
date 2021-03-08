@@ -47,7 +47,7 @@ export const ContextService = {
 
   runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, context: ContainerContext) {
     const module = ContextLookup.getModuleForResolverByResolverId(instanceDefinition.id, context);
-    const materializedModule = ContextService.materializeModule(module, context);
+    const materializedModule = ContextService.materialize(module, context);
     const resolver = unwrapThunk(instanceDefinition.resolverThunk);
     return resolver.build(instanceDefinition.id, context, materializedModule);
   },
@@ -88,7 +88,7 @@ export const ContextService = {
     });
   },
 
-  materializeModule<TModule extends Module<any>>(
+  materialize<TModule extends Module<any>>(
     module: TModule,
     context: ContainerContext,
   ): Module.Materialized<TModule> {
@@ -114,13 +114,62 @@ export const ContextService = {
           configurable: false,
           get: () => {
             const resolver = unwrapThunk(definition.resolverThunk);
-            return this.materializeModule(resolver, context);
+            return this.materialize(resolver, context);
           },
         });
       }
     });
 
     context.materializedObjects[module.moduleId.id] = materialized;
+
+    return materialized;
+  },
+
+  materializeWithProxy<TModule extends Module<any>>(
+    m: TModule,
+    context: ContainerContext,
+  ): Module.Materialized<TModule> {
+    if (context.materializedObjects[m.moduleId.id]) {
+      return context.materializedObjects[m.moduleId.id];
+    }
+
+    // TODO: since all materialization is synchronous we can reuse the instance of Proxy??
+    const handler: ProxyHandler<ContainerContext> = {
+      get: function (target: ContainerContext, property: string, receiver: any) {
+        const module = ContextService.getModule(m, context);
+
+        if (!module.registry.hasKey(property)) {
+          return {};
+        }
+
+        const definition = module.registry.get(property);
+
+        if (isInstanceDefinition(definition)) {
+          if (!ContextLookup.hasResolver(definition, context)) {
+            ContextMutations.addResolver(module, property, definition, context);
+          }
+
+          return ContextService.runInstanceDefinition(definition, context);
+        }
+
+        if (isModuleDefinition(definition)) {
+          const resolver = unwrapThunk(definition.resolverThunk);
+          return ContextService.materializeWithProxy(resolver, context);
+        }
+      },
+
+      ownKeys: function () {
+        const module = ContextService.getModule(m, context);
+        return module.registry.keys;
+      },
+
+      isExtensible: function () {
+        return false;
+      },
+    };
+
+    const materialized = new Proxy(context, handler) as any;
+    context.materializedObjects[m.moduleId.id] = materialized;
 
     return materialized;
   },

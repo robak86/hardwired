@@ -85,6 +85,6 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends Patched
   }
 
   select(ctx: ContainerContext): ModuleRecord.Materialized<TRecord> {
-    return ContextService.materializeModule(this, ctx) as any;
+    return ContextService.materialize(this, ctx) as any;
   }
 }

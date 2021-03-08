@@ -46,7 +46,7 @@ describe(`ContainerRecord`, () => {
           .build();
         const context = ContainerContext.empty();
 
-        const { a } = ContextService.materializeModule(m, context);
+        const { a } = ContextService.materialize(m, context);
         expect(a).toEqual(1);
       });
 
@@ -69,7 +69,7 @@ describe(`ContainerRecord`, () => {
 
         const context = ContainerContext.empty();
 
-        const materialized = ContextService.materializeModule(m, context);
+        const materialized = ContextService.materialize(m, context);
         expect(materialized.child.grandChild.grandChildValue1).toEqual(1);
       });
     });
