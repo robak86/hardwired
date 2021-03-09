@@ -36,12 +36,15 @@ export function isModuleDefinition(definition: Module.Definition): definition is
 
 // prettier-ignore
 export namespace Module {
-  export type Materialized<TModule extends Module<any>> =
-    TModule extends Module<infer TRecord> ? {
-      [K in keyof TRecord & string]: TRecord[K] extends Module<infer TModule> ? Materialized<TRecord[K]> :
 
-        TRecord[K] extends Instance<infer TInstance> ? TInstance : unknown
-    } : never;
+  //TODO: rename to AsObject (one may want to use this type for defining type alias)
+  export type Materialized<TModule extends Module<any>> =
+    TModule extends Module<infer TRecord> ? ModuleRecord.Materialized<TRecord>: never;
+
+  //TODO: rename to AsObjectMany (one may want to use this type for defining type alias)
+  export type MaterializedArray<TModules extends Module<any>[]> = {
+    [K in keyof TModules]: TModules[K] extends Module<infer TRecord> ? ModuleRecord.Materialized<TRecord> : unknown
+  }
 
   export type InstancesKeys<TModule extends Module<any>> =
     TModule extends Module<infer TRecord> ?

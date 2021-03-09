@@ -13,7 +13,7 @@ export type ContainerContext = {
   materializedObjects: Record<string, any>;
   globalScope: SingletonScope; // TODO: probably we shouldn't allow for such complex scopes rules (this feature may be harmful)
   hierarchicalScope: Record<string, any>;
-  loadedModules: Record<string, Module<any>>;
+  loadedModules: Record<string, Module<any>>; // TODO: probably we don't need to hold references to modules!!!!! loadingModules should store module's resolvers in resolver related properties
   requestScope: Record<string, any>;
   frozenOverrides: Record<string, Module.InstanceDefinition>;
 };

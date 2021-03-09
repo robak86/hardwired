@@ -1,7 +1,7 @@
 export { ContainerProvider } from './components/ContainerProvider';
 export type { ContainerProviderProps } from './components/ContainerProvider';
-export { ModuleConsumer } from './components/ModuleConsumer';
-export type { ModuleConsumerProps } from './components/ModuleConsumer';
+export { ModulesConsumer } from './components/ModulesConsumer';
+export type { ModulesConsumerProps } from './components/ModulesConsumer';
 export { ContainerScope } from './components/ContainerScope';
 
 export { useDefinition } from './hooks/useDefinition';

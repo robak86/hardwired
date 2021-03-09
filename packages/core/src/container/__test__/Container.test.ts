@@ -6,6 +6,7 @@ import { singleton } from '../../strategies/SingletonStrategy';
 import { request } from '../../strategies/RequestStrategy';
 import { scoped } from '../../strategies/ScopeStrategy';
 import { transient } from '../../strategies/TransientStrategy';
+import { Module } from '../../module/Module';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -270,6 +271,23 @@ describe(`Container`, () => {
         expect(rootCall).not.toEqual(level3);
         expect(randomFactorySpy).toHaveBeenCalledTimes(1);
       });
+    });
+  });
+
+  describe(`asObjectMany`, () => {
+    it(`returns array of materialized modules`, async () => {
+      const m1 = unit()
+        .define('a', () => 1, request)
+        .build();
+
+      const m2 = unit()
+        .define('b', () => 2, request)
+        .build();
+
+      const c = container();
+      const [{ a }, { b }] = c.asObjectMany(m1, m2);
+      expect(a).toEqual(1);
+      expect(b).toEqual(2);
     });
   });
 

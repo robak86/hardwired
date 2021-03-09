@@ -58,9 +58,18 @@ export class Container {
     }
   }
 
-  // usingNewRequestScope(): Container {
-  //   return new Container(this.containerContext.forNewRequest());
-  // }
+  asObjectMany<TModule extends Module<any>, TModules extends [TModule, ...TModule[]]>(
+    ...modules: TModules
+  ): Module.MaterializedArray<TModules> {
+    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
+    return modules.map(module => {
+      if (this.useProxy) {
+        return ContextService.materializeWithProxy(module, requestContext);
+      } else {
+        return ContextService.materialize(module, requestContext);
+      }
+    }) as any;
+  }
 
   checkoutChildScope(options: ContainerScopeOptions = {}): Container {
     return new Container(ContextScopes.childScope(options, this.containerContext), this.useProxy);
@@ -75,7 +84,7 @@ export type ContainerOptions = {
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  invariants?: ModulePatch<any>[];       // TODO: container probably don't requires overrides which can by overriden by child scopes
+  invariants?: ModulePatch<any>[]; // TODO: container probably don't requires overrides which can by overriden by child scopes
   eager?: Module<any>[];
 };
 
