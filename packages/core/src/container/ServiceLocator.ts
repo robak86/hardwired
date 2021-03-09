@@ -30,7 +30,7 @@ export class ServiceLocator {
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
-    return ContextService.materialize(module, requestContext);
+    return ContextService.materializeWithAccessors(module, requestContext);
   }
 
   checkoutScope(overrides: Module<any>[]): IContainer {

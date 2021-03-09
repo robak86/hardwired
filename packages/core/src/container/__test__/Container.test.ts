@@ -95,7 +95,7 @@ describe(`Container`, () => {
           .build();
 
         const factoryFunctionSpy = jest.fn().mockImplementation(ctx => {
-          return singleton(() => 3);
+          return () => 3;
         });
 
         const mPatch = m.replace('a', factoryFunctionSpy);
@@ -103,7 +103,7 @@ describe(`Container`, () => {
         const testContainer = container({ invariants: [mPatch] });
         testContainer.get(m, 'a');
 
-        expect(factoryFunctionSpy.mock.calls[0][0]).toEqual(testContainer.asObject(m));
+        expect({ ...factoryFunctionSpy.mock.calls[0][0] }).toEqual({ ...testContainer.asObject(m) });
       });
 
       it(`forbids to reference replaced value from the context`, async () => {

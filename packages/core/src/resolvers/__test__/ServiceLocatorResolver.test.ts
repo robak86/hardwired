@@ -1,4 +1,4 @@
-import { createResolverId } from '../../utils/fastId';
+import { createModuleId } from '../../utils/fastId';
 import { serviceLocator } from '../ServiceLocatorResolver';
 import { container } from '../../container/Container';
 import { unit } from '../../module/ModuleBuilder';
@@ -10,7 +10,7 @@ import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
-    public id = createResolverId();
+    public id = createModuleId();
 
     constructor(public value: string) {}
   }

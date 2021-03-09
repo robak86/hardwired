@@ -4,6 +4,9 @@ import { unwrapThunk } from '../utils/Thunk';
 import { ContainerContext } from './ContainerContext';
 import { ContextLookup } from './ContextLookup';
 import { ContextMutations } from './ContextMutations';
+import { ModulePatch } from '../module/ModulePatch';
+
+export const useProxy = typeof Proxy !== 'undefined';
 
 export const ContextService = {
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
@@ -15,18 +18,26 @@ export const ContextService = {
     return ContextService.runInstanceDefinition(resolver, context);
   },
 
+  loadResolver(module: Module<any>, path: string, resolver, context: ContainerContext) {
+    invariant(
+      ContextLookup.hasResolverByModuleAndPath(module.moduleId, path, context),
+      `Resolver path=${path} from module ${module.moduleId.id}is already loaded`,
+    );
+
+    ContextMutations.addResolver(module, path, resolver, context);
+  },
+
   getInstanceResolver(module: Module<any>, path: string, context: ContainerContext) {
     if (ContextLookup.hasResolverByModuleAndPath(module.moduleId, path, context)) {
       return ContextLookup.getResolverByModuleAndPath(module.moduleId, path, context);
     }
 
-    const targetModule: Module<any> = ContextService.getModule(module, context);
     const [moduleOrInstance, instance] = path.split('.');
-    const definition = targetModule.registry.get(moduleOrInstance);
+    const definition = module.registry.get(moduleOrInstance);
 
     if (isInstanceDefinition(definition)) {
       if (!ContextLookup.hasResolver(definition, context)) {
-        ContextMutations.addResolver(targetModule, path, definition, context);
+        ContextMutations.addResolver(module, path, definition, context);
       }
 
       return definition;
@@ -37,7 +48,7 @@ export const ContextService = {
       const resolver = unwrapThunk(definition.resolverThunk);
       const instanceResolver = ContextService.getInstanceResolver(resolver, instance, context);
       if (!ContextLookup.hasResolver(instanceResolver, context)) {
-        ContextMutations.addResolver(targetModule, path, instanceResolver, context);
+        ContextMutations.addResolver(module, path, instanceResolver, context);
       }
       return instanceResolver;
     }
@@ -52,16 +63,6 @@ export const ContextService = {
     return resolver.build(instanceDefinition.id, context, materializedModule);
   },
 
-  getModule(module: Module<any>, context: ContainerContext): Module<any> {
-    const { moduleId } = module;
-
-    if (!context.loadedModules[moduleId.id]) {
-      context.loadedModules[moduleId.id] = module;
-    }
-
-    return context.loadedModules[moduleId.id];
-  },
-
   runWithPredicate(predicate: (resolver: Module.InstanceDefinition) => boolean, context: ContainerContext): unknown[] {
     const definitions = ContextLookup.filterLoadedDefinitions(predicate, context);
     return definitions.map(definition => {
@@ -72,6 +73,14 @@ export const ContextService = {
   loadModules(modules: Module<any>[], context: ContainerContext) {
     modules.forEach(module => {
       this.eagerLoad(module, context);
+    });
+  },
+
+  loadPatches(patches: ModulePatch<any>[], context: ContainerContext) {
+    patches.reverse().forEach(modulePatch => {
+      modulePatch.patchedResolvers.forEach(patchedResolver => {
+        ContextMutations.addPatchedResolver(Module.fromPatchedModule(modulePatch), patchedResolver, context);
+      });
     });
   },
 
@@ -89,6 +98,17 @@ export const ContextService = {
   },
 
   materialize<TModule extends Module<any>>(module: TModule, context: ContainerContext): Module.Materialized<TModule> {
+    if (useProxy) {
+      return ContextService.materializeWithProxy(module, context);
+    } else {
+      return ContextService.materializeWithAccessors(module, context);
+    }
+  },
+
+  materializeWithAccessors<TModule extends Module<any>>(
+    module: TModule,
+    context: ContainerContext,
+  ): Module.Materialized<TModule> {
     // TODO: we should probably cache also by context!
     if (context.materializedObjects[module.moduleId.id]) {
       return context.materializedObjects[module.moduleId.id];
@@ -127,21 +147,26 @@ export const ContextService = {
     m: TModule,
     context: ContainerContext,
   ): Module.Materialized<TModule> {
-
     // TODO: since all materialization is synchronous we can somehow reuse the instance of Proxy??
     const handler: ProxyHandler<ContainerContext> = {
-      get: (target: ContainerContext, property: string, receiver: any) => {
-        const module = ContextService.getModule(m, context);
+      get: (target: ContainerContext, property: any, receiver: any) => {
+        // if (property === Symbol.for('ORIGINAL')) return target;
+        //
+        // if (property === 'toJSON') {
+        //   return () => ({ name: 'bar' })
+        // }
 
-        if (!module.registry.hasKey(property)) {
-          return {};
+        const definition = ContextLookup.hasResolverByModuleAndPath(m.moduleId, property, context)
+          ? ContextLookup.getResolverByModuleAndPath(m.moduleId, property, context)
+          : m.registry.get(property);
+
+        if (!definition) {
+          return undefined;
         }
-
-        const definition = module.registry.get(property);
 
         if (isInstanceDefinition(definition)) {
           if (!ContextLookup.hasResolver(definition, context)) {
-            ContextMutations.addResolver(module, property, definition, context);
+            ContextMutations.addResolver(m, property, definition, context);
           }
 
           return ContextService.runInstanceDefinition(definition, context);
@@ -157,9 +182,20 @@ export const ContextService = {
         throw new Error(`Materialized modules is readonly. Cannot update property ${p}`);
       },
 
-      ownKeys: () => {
-        const module = ContextService.getModule(m, context);
-        return module.registry.keys;
+      has(target: any, p: string | symbol): boolean {
+        return m.registry.hasKey(p);
+      },
+
+      ownKeys: target => {
+        return m.registry.keys;
+      },
+
+      getOwnPropertyDescriptor(k) {
+        return {
+          enumerable: true,
+          configurable: true,
+          writable: false,
+        };
       },
     };
 

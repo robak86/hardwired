@@ -1,7 +1,8 @@
 import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
-import { isInstanceDefinition, Module } from '../module/Module';
+import { Module } from '../module/Module';
 import { ModuleId } from '../module/ModuleId';
+import { buildResolverId } from '../module/ModuleBuilder';
 
 export const ContextLookup = {
   hasInHierarchicalScope(id: string, context: ContainerContext) {
@@ -35,11 +36,11 @@ export const ContextLookup = {
   },
 
   hasResolverByModuleAndPath(moduleId: ModuleId, path: string, context: ContainerContext): boolean {
-    return !!context.resolversByModuleIdAndPath[moduleId.id + path];
+    return !!context.resolversById[buildResolverId({ moduleId }, path)];
   },
 
   getResolverByModuleAndPath(moduleId: ModuleId, path: string, context: ContainerContext) {
-    const resolver = context.resolversByModuleIdAndPath[moduleId.id + path];
+    const resolver = context.resolversById[buildResolverId({ moduleId }, path)];
     invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
     return resolver;
   },
@@ -54,17 +55,12 @@ export const ContextLookup = {
     predicate: (resolver: Module.InstanceDefinition) => boolean,
     context: ContainerContext,
   ): Module.InstanceDefinition[] {
-    return Object.keys(context.loadedModules).flatMap(moduleId => {
-      const module = context.loadedModules[moduleId];
-      const definitions = module.registry.values;
-
-      return definitions.filter(definition => {
-        return isInstanceDefinition(definition) && predicate(definition);
-      }) as Module.InstanceDefinition[];
+    return Object.values(context.resolversById).filter(definition => {
+      return predicate(definition);
     });
   },
 
-  isLoaded(module: Module<any>, context: ContainerContext): boolean {
-    return !!context.loadedModules[module.moduleId.id];
-  },
+  // isLoaded(module: Module<any>, context: ContainerContext): boolean {
+  //   return !!context.loadedModules[module.moduleId.id];
+  // },
 };

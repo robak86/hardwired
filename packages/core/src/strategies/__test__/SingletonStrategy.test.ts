@@ -1,12 +1,12 @@
 import { container } from '../../container/Container';
-import { createResolverId } from '../../utils/fastId';
+import { createModuleId } from '../../utils/fastId';
 import { unit } from '../../module/ModuleBuilder';
 import { singleton, SingletonStrategy } from '../SingletonStrategy';
 import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`ClassSingletonResolver`, () => {
   class TestClass {
-    public id = createResolverId();
+    public id = createModuleId();
 
     constructor(public value: string) {}
   }

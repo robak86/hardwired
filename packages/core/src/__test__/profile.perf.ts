@@ -57,11 +57,11 @@ function resolveByObject(container: Container, module: Module<any>, times: numbe
 const { module } = registerN(10000);
 
 console.log('no proxy');
-const cWithoutProxy = container({ useProxy: false });
+const cWithoutProxy = container();
 const result10KWithoutProxy = resolveByObject(cWithoutProxy, module, 100);
 console.log(result10KWithoutProxy);
 
 console.log('using proxy');
-const cWithProxy = container({ useProxy: true });
+const cWithProxy = container();
 const result10KWithProxy = resolveByObject(cWithProxy, module, 100);
 console.log(result10KWithProxy);

@@ -26,7 +26,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   constructor(
     public moduleId: ModuleId,
     public registry: ImmutableMap<Record<string, Module.Definition>>,
-    public patchedResolvers: ImmutableMap<Record<string, Module.Definition>>, //TODO: maybe we should apply patches directly to this.registry ?
+    public patchedResolvers: ImmutableMap<Record<string, Module.InstanceDefinition>>, //TODO: maybe we should apply patches directly to this.registry ?
   ) {}
 
   isEqual(otherModule: ModulePatch<any>): boolean {
@@ -58,7 +58,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
 
     invariant(this.registry.hasKey(name), `Cannot replace definition: ${name} does not exist.`);
     const prev = this.registry.get(name);
-    invariant(prev.type === 'resolver', `Cannot replace import`);
+    invariant(prev?.type === 'resolver', `Cannot replace import`);
 
     if (typeof buildFnOrInstance === 'function') {
       return new ModulePatch(

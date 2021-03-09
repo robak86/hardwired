@@ -10,6 +10,9 @@ import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTa
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
 
+export type IdentifiableModule = { moduleId: ModuleId };
+export const buildResolverId = (module: IdentifiableModule, name: string) => `${module.moduleId.id}:${name}`;
+
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   static empty(): ModuleBuilder<{}> {
     return new ModuleBuilder<{}>(ModuleId.build(), ImmutableMap.empty() as any, { isFrozen: false });
@@ -62,7 +65,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
 
     // TODO: potential gc issue while getting by id
-    const buildResolverId = (module: ModuleBuilder<any>, name: string) => `${module.moduleId.id}:${name}`;
 
     if (typeof buildFnOrInstance === 'function') {
       invariant(isStrategyTagged(buildStrategy), `Missing strategy for ${buildStrategy}`);

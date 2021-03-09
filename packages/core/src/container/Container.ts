@@ -9,7 +9,7 @@ import { ContextLookup } from '../context/ContextLookup';
 import { ContextScopes } from '../context/ContextScopes';
 
 export class Container {
-  constructor(private readonly containerContext: ContainerContext, private useProxy: boolean) {}
+  constructor(private readonly containerContext: ContainerContext) {}
 
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
@@ -51,11 +51,7 @@ export class Container {
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
-    if (this.useProxy) {
-      return ContextService.materializeWithProxy(module, requestContext);
-    } else {
-      return ContextService.materialize(module, requestContext);
-    }
+    return ContextService.materialize(module, requestContext);
   }
 
   asObjectMany<TModule extends Module<any>, TModules extends [TModule, ...TModule[]]>(
@@ -63,16 +59,12 @@ export class Container {
   ): Module.MaterializedArray<TModules> {
     const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
     return modules.map(module => {
-      if (this.useProxy) {
-        return ContextService.materializeWithProxy(module, requestContext);
-      } else {
-        return ContextService.materialize(module, requestContext);
-      }
+      return ContextService.materialize(module, requestContext);
     }) as any;
   }
 
   checkoutChildScope(options: ContainerScopeOptions = {}): Container {
-    return new Container(ContextScopes.childScope(options, this.containerContext), this.useProxy);
+    return new Container(ContextScopes.childScope(options, this.containerContext));
   }
 }
 
@@ -80,7 +72,6 @@ export class Container {
 // or just clear distinction that patches provided to container are irreplaceable by patches provided to scopes
 export type ContainerOptions = {
   context?: ContainerContext;
-  useProxy?: boolean;
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
@@ -91,9 +82,8 @@ export type ContainerScopeOptions = {
 export function container({
   context,
   invariants = [],
-  useProxy = true,
   eager = [], // TODO: consider renaming to load - since eager may implicate that some instances are created
 }: ContainerOptions = {}): Container {
-  const container = new Container(context || ContainerContext.create([...eager, ...invariants]), useProxy);
+  const container = new Container(context || ContainerContext.create(eager, invariants));
   return container as any;
 }

@@ -108,7 +108,7 @@ export class ImmutableMap<D extends Record<string, any>> {
     return new ImmutableMap<T & D>(mergedRecords, otherKeys);
   }
 
-  get entries(): Array<[string, any]> {
+  get entries(): [string, any][] {
     return this.keys.map(key => [key, this.records[key]]);
   }
 

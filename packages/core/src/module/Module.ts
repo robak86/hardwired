@@ -88,6 +88,6 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends ModuleP
   }
 
   select(ctx: ContainerContext): ModuleRecord.Materialized<TRecord> {
-    return ContextService.materialize(this, ctx) as any;
+    return ContextService.materializeWithAccessors(this, ctx) as any;
   }
 }

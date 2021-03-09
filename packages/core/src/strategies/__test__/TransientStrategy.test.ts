@@ -1,11 +1,11 @@
 import { container } from '../../container/Container';
-import { createResolverId } from '../../utils/fastId';
+import { createModuleId } from '../../utils/fastId';
 import { unit } from '../../module/ModuleBuilder';
 import { transient } from '../TransientStrategy';
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {
-    public id = createResolverId();
+    public id = createModuleId();
 
     constructor(public value: string) {}
   }

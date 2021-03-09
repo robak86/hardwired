@@ -1,18 +1,24 @@
 import { ContainerContext } from './ContainerContext';
 import { ContainerScopeOptions } from '../container/Container';
-import { reducePatches } from '../module/utils/reducePatches';
-import { getPatchesDefinitionsIds } from '../module/utils/getPatchesDefinitionsIds';
 import { ContextService } from './ContextService';
+import { ModulePatch } from '../module/ModulePatch';
+
+export function getPatchedResolversIds(loadTarget: ModulePatch<any>[]) {
+  return loadTarget.flatMap(m => {
+    return m.patchedResolvers.values.map(patchedResolver => {
+      return patchedResolver.id;
+    });
+  });
+}
 
 export const ContextScopes = {
   checkoutRequestScope(prevContext: ContainerContext): ContainerContext {
     return {
       resolversById: prevContext.resolversById,
+      patchedResolversById: prevContext.patchedResolversById,
       modulesByResolverId: prevContext.modulesByResolverId,
-      resolversByModuleIdAndPath: prevContext.resolversByModuleIdAndPath,
       globalScope: prevContext.globalScope,
       hierarchicalScope: prevContext.hierarchicalScope,
-      loadedModules: prevContext.loadedModules,
       frozenOverrides: prevContext.frozenOverrides,
       requestScope: {},
       materializedObjects: {},
@@ -21,24 +27,24 @@ export const ContextScopes = {
 
   childScope(options: ContainerScopeOptions, prevContext: ContainerContext): ContainerContext {
     const { invariants = [], eager = [] } = options;
-    const childScopePatches = reducePatches(invariants, prevContext.loadedModules);
-    const ownKeys = getPatchesDefinitionsIds(childScopePatches);
+    const loadTarget = [...invariants, ...eager];
+    const ownOverrides = getPatchedResolversIds(loadTarget);
 
     // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
 
     const context = {
-      resolversById: {},
       requestScope: {},
-      modulesByResolverId: {},
       materializedObjects: {},
       resolversByModuleIdAndPath: {},
       hierarchicalScope: {},
+      resolversById: { ...prevContext.resolversById }, // TODO: introduce separate property for storing patchedResolvers (it will have less items, so copying whole object should be faster)
+      patchedResolversById: { ...prevContext.patchedResolversById },
+      modulesByResolverId: prevContext.modulesByResolverId,
       frozenOverrides: prevContext.frozenOverrides,
-      globalScope: prevContext.globalScope.checkoutChild(ownKeys),
-      loadedModules: childScopePatches,
+      globalScope: prevContext.globalScope.checkoutChild(ownOverrides),
     };
 
-    ContextService.loadModules(Object.values(childScopePatches), context);
+    ContextService.loadPatches(loadTarget, context);
 
     return context;
   },

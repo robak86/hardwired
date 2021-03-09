@@ -1,4 +1,4 @@
-import { createResolverId } from '../utils/fastId';
+import { createModuleId } from '../utils/fastId';
 
 export type ModuleId = {
   readonly id: string;
@@ -8,14 +8,14 @@ export type ModuleId = {
 export const ModuleId = {
   build(): ModuleId {
     return {
-      id: createResolverId(),
-      revision: createResolverId(),
+      id: createModuleId(),
+      revision: createModuleId(),
     };
   },
   next(m: ModuleId): ModuleId {
     return {
       id: m.id,
-      revision: createResolverId(),
+      revision: createModuleId(),
     };
   },
 };
