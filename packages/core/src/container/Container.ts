@@ -8,6 +8,10 @@ import { ContextService } from '../context/ContextService';
 import { ContextLookup } from '../context/ContextLookup';
 import { ContextScopes } from '../context/ContextScopes';
 
+export type ChildScopeOptions = {
+  overrides?: ModulePatch<any>[];
+};
+
 export class Container {
   constructor(private readonly containerContext: ContainerContext) {}
 
@@ -63,7 +67,7 @@ export class Container {
     }) as any;
   }
 
-  checkoutChildScope(options: ContainerScopeOptions = {}): Container {
+  checkoutChildScope(options: ChildScopeOptions = {}): Container {
     return new Container(ContextScopes.childScope(options, this.containerContext));
   }
 }
@@ -75,15 +79,17 @@ export type ContainerOptions = {
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  invariants?: ModulePatch<any>[]; // TODO: container probably don't requires overrides which can by overriden by child scopes
+  overrides?: ModulePatch<any>[]; // TODO: container probably don't requires overrides which can by overriden by child scopes
   eager?: Module<any>[];
+  invariants?: ModulePatch<any>[];
 };
 
 export function container({
   context,
+  overrides = [],
+  eager = [], // TODO: consider renaming to load|discoverable|preload - since eager may implicate that some instances are created
   invariants = [],
-  eager = [], // TODO: consider renaming to load - since eager may implicate that some instances are created
 }: ContainerOptions = {}): Container {
-  const container = new Container(context || ContainerContext.create(eager, invariants));
+  const container = new Container(context || ContainerContext.create(eager, overrides, invariants));
   return container as any;
 }

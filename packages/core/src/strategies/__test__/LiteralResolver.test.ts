@@ -77,7 +77,7 @@ describe(`LiteralResolver`, () => {
         .define('usesImportedValue', ({ imported }) => imported.someValue)
         .build();
 
-      const c = container({ invariants: [childM.replace('someValue', () => 123)] });
+      const c = container({ overrides: [childM.replace('someValue', () => 123)] });
       expect(c.get(parentM, 'usesImportedValue')).toEqual(123);
     });
   });

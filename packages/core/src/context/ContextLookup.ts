@@ -39,9 +39,19 @@ export const ContextLookup = {
     return !!context.resolversById[buildResolverId({ moduleId }, path)];
   },
 
+  hasInvariantResolver(moduleId: ModuleId, path: string, context: ContainerContext): boolean {
+    return !!context.invariantResolversById[buildResolverId({ moduleId }, path)];
+  },
+
   getResolverByModuleAndPath(moduleId: ModuleId, path: string, context: ContainerContext) {
     const resolver = context.resolversById[buildResolverId({ moduleId }, path)];
     invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
+    return resolver;
+  },
+
+  getInvariantResolverByModuleAndPath(moduleId: ModuleId, path: string, context: ContainerContext) {
+    const resolver = context.invariantResolversById[buildResolverId({ moduleId }, path)];
+    invariant(resolver, `Cannot get invariant resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
     return resolver;
   },
 

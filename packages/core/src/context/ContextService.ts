@@ -7,6 +7,7 @@ import { ContextMutations } from './ContextMutations';
 import { ModulePatch } from '../module/ModulePatch';
 
 export const useProxy = typeof Proxy !== 'undefined';
+// export const useProxy = typeof Proxy !== 'undefined';
 
 export const ContextService = {
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
@@ -14,26 +15,20 @@ export const ContextService = {
     name: K,
     context: ContainerContext,
   ): Module.Materialized<TLazyModule>[K] {
-    const resolver = ContextService.getInstanceResolver(moduleInstance, name, context);
+    const resolver = ContextService.getModuleInstanceResolver(moduleInstance, name, context);
     return ContextService.runInstanceDefinition(resolver, context);
   },
 
-  loadResolver(module: Module<any>, path: string, resolver, context: ContainerContext) {
-    invariant(
-      ContextLookup.hasResolverByModuleAndPath(module.moduleId, path, context),
-      `Resolver path=${path} from module ${module.moduleId.id}is already loaded`,
-    );
+  getModuleDefinition(module: Module<any>, path: string, context: ContainerContext): Module.Definition {
+    if (ContextLookup.hasInvariantResolver(module.moduleId, path, context)) {
+      return ContextLookup.getInvariantResolverByModuleAndPath(module.moduleId, path, context);
+    }
 
-    ContextMutations.addResolver(module, path, resolver, context);
-  },
-
-  getInstanceResolver(module: Module<any>, path: string, context: ContainerContext) {
     if (ContextLookup.hasResolverByModuleAndPath(module.moduleId, path, context)) {
       return ContextLookup.getResolverByModuleAndPath(module.moduleId, path, context);
     }
 
-    const [moduleOrInstance, instance] = path.split('.');
-    const definition = module.registry.get(moduleOrInstance);
+    const definition = module.registry.get(path);
 
     if (isInstanceDefinition(definition)) {
       if (!ContextLookup.hasResolver(definition, context)) {
@@ -44,16 +39,16 @@ export const ContextService = {
     }
 
     if (isModuleDefinition(definition)) {
-      invariant(instance, `getInstanceResolver is not intended to return module. Path is missing instance target`);
-      const resolver = unwrapThunk(definition.resolverThunk);
-      const instanceResolver = ContextService.getInstanceResolver(resolver, instance, context);
-      if (!ContextLookup.hasResolver(instanceResolver, context)) {
-        ContextMutations.addResolver(module, path, instanceResolver, context);
-      }
-      return instanceResolver;
+      return definition;
     }
 
-    throw new Error('should not happen');
+    invariant(false, `Returned instance should be Module or Instance Resolver`);
+  },
+
+  getModuleInstanceResolver(module: Module<any>, path: string, context: ContainerContext): Module.InstanceDefinition {
+    const resolver = ContextService.getModuleDefinition(module, path, context);
+    invariant(isInstanceDefinition(resolver), `Given path ${path} should return instance resolver`);
+    return resolver;
   },
 
   runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, context: ContainerContext) {
@@ -71,8 +66,21 @@ export const ContextService = {
   },
 
   loadModules(modules: Module<any>[], context: ContainerContext) {
+    function eagerLoad(module: Module<any>, context: ContainerContext) {
+      module.registry.forEach((definition, key) => {
+        if (isModuleDefinition(definition)) {
+          const resolver = unwrapThunk(definition.resolverThunk);
+          eagerLoad(resolver, context);
+        }
+
+        if (isInstanceDefinition(definition)) {
+          ContextService.getModuleDefinition(module, key, context);
+        }
+      });
+    }
+
     modules.forEach(module => {
-      this.eagerLoad(module, context);
+      eagerLoad(module, context);
     });
   },
 
@@ -84,16 +92,11 @@ export const ContextService = {
     });
   },
 
-  eagerLoad(module: Module<any>, context: ContainerContext) {
-    module.registry.forEach((definition, key) => {
-      if (isModuleDefinition(definition)) {
-        const resolver = unwrapThunk(definition.resolverThunk);
-        ContextService.eagerLoad(resolver, context);
-      }
-
-      if (isInstanceDefinition(definition)) {
-        ContextService.getInstanceResolver(module, key, context);
-      }
+  loadInvariants(patches: ModulePatch<any>[], context: ContainerContext) {
+    patches.reverse().forEach(modulePatch => {
+      modulePatch.patchedResolvers.forEach(patchedResolver => {
+        ContextMutations.addInvariantResolver(Module.fromPatchedModule(modulePatch), patchedResolver, context);
+      });
     });
   },
 
@@ -121,7 +124,8 @@ export const ContextService = {
         Object.defineProperty(materialized, key, {
           configurable: false,
           get: () => {
-            const initializedResolver = this.getInstanceResolver(module, key, context); //TODO: move into closure so above this is called only once for all get calls
+            //TODO: move into closure so above this is called only once for all get calls
+            const initializedResolver = this.getModuleInstanceResolver(module, key, context);
             return this.runInstanceDefinition(initializedResolver, context);
           },
         });
@@ -132,7 +136,7 @@ export const ContextService = {
           configurable: false,
           get: () => {
             const resolver = unwrapThunk(definition.resolverThunk);
-            return this.materialize(resolver, context);
+            return ContextService.materialize(resolver, context);
           },
         });
       }
@@ -150,31 +154,15 @@ export const ContextService = {
     // TODO: since all materialization is synchronous we can somehow reuse the instance of Proxy??
     const handler: ProxyHandler<ContainerContext> = {
       get: (target: ContainerContext, property: any, receiver: any) => {
-        // if (property === Symbol.for('ORIGINAL')) return target;
-        //
-        // if (property === 'toJSON') {
-        //   return () => ({ name: 'bar' })
-        // }
-
-        const definition = ContextLookup.hasResolverByModuleAndPath(m.moduleId, property, context)
-          ? ContextLookup.getResolverByModuleAndPath(m.moduleId, property, context)
-          : m.registry.get(property);
-
-        if (!definition) {
-          return undefined;
-        }
+        const definition = ContextService.getModuleDefinition(m, property, context);
 
         if (isInstanceDefinition(definition)) {
-          if (!ContextLookup.hasResolver(definition, context)) {
-            ContextMutations.addResolver(m, property, definition, context);
-          }
-
           return ContextService.runInstanceDefinition(definition, context);
         }
 
         if (isModuleDefinition(definition)) {
           const resolver = unwrapThunk(definition.resolverThunk);
-          return ContextService.materializeWithProxy(resolver, context);
+          return ContextService.materialize(resolver, context);
         }
       },
 

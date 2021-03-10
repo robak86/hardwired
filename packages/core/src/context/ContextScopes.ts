@@ -15,6 +15,7 @@ export const ContextScopes = {
   checkoutRequestScope(prevContext: ContainerContext): ContainerContext {
     return {
       resolversById: prevContext.resolversById,
+      invariantResolversById: prevContext.invariantResolversById,
       patchedResolversById: prevContext.patchedResolversById,
       modulesByResolverId: prevContext.modulesByResolverId,
       globalScope: prevContext.globalScope,
@@ -26,18 +27,18 @@ export const ContextScopes = {
   },
 
   childScope(options: ContainerScopeOptions, prevContext: ContainerContext): ContainerContext {
-    const { invariants = [], eager = [] } = options;
-    const loadTarget = [...invariants, ...eager];
+    const { overrides = [], eager = [] } = options;
+    const loadTarget = [...overrides, ...eager];
     const ownOverrides = getPatchedResolversIds(loadTarget);
 
     // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
 
-    const context = {
+    const context: ContainerContext = {
       requestScope: {},
       materializedObjects: {},
-      resolversByModuleIdAndPath: {},
       hierarchicalScope: {},
       resolversById: { ...prevContext.resolversById }, // TODO: introduce separate property for storing patchedResolvers (it will have less items, so copying whole object should be faster)
+      invariantResolversById: prevContext.invariantResolversById,
       patchedResolversById: { ...prevContext.patchedResolversById },
       modulesByResolverId: prevContext.modulesByResolverId,
       frozenOverrides: prevContext.frozenOverrides,

@@ -6,7 +6,6 @@ import { singleton } from '../../strategies/SingletonStrategy';
 import { request } from '../../strategies/RequestStrategy';
 import { scoped } from '../../strategies/ScopeStrategy';
 import { transient } from '../../strategies/TransientStrategy';
-import { Module } from '../../module/Module';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -54,7 +53,7 @@ describe(`Container`, () => {
 
       const c = container({
         eager: [m],
-        invariants: [m.replace('b', () => 20, singleton)],
+        overrides: [m.replace('b', () => 20, singleton)],
       });
 
       const allSingletons = c.getByStrategy(singleton);
@@ -70,7 +69,7 @@ describe(`Container`, () => {
 
       const c = container({
         eager: [m],
-        invariants: [m.replace('b', () => 20, transient)],
+        overrides: [m.replace('b', () => 20, transient)],
       });
 
       const allSingletons = c.getByStrategy(singleton);
@@ -85,7 +84,7 @@ describe(`Container`, () => {
           .define('a', () => 1)
           .build();
         const mPatch = m.replace('a', () => 2);
-        expect(container({ invariants: [mPatch] }).get(m, 'a')).toEqual(2);
+        expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(2);
       });
 
       it(`calls provided function with materialized module`, async () => {
@@ -100,7 +99,7 @@ describe(`Container`, () => {
 
         const mPatch = m.replace('a', factoryFunctionSpy);
 
-        const testContainer = container({ invariants: [mPatch] });
+        const testContainer = container({ overrides: [mPatch] });
         testContainer.get(m, 'a');
 
         expect({ ...factoryFunctionSpy.mock.calls[0][0] }).toEqual({ ...testContainer.asObject(m) });
@@ -126,7 +125,7 @@ describe(`Container`, () => {
           .build();
 
         const mPatch = m.replace('a', () => 2);
-        expect(container({ invariants: [mPatch] }).get(m, 'b')).toEqual('b');
+        expect(container({ overrides: [mPatch] }).get(m, 'b')).toEqual('b');
       });
 
       it.skip(`can use all previously registered definitions`, async () => {
@@ -154,7 +153,7 @@ describe(`Container`, () => {
         .build();
 
       const c = container({
-        invariants: [
+        overrides: [
           //breakme
           m.replace('a', () => 10),
           m.replace('b', () => 20),
@@ -171,10 +170,11 @@ describe(`Container`, () => {
           .define('a', () => 1, request)
           .build();
         const c = container();
-        expect(c.get(m, 'a')).toEqual(1);
 
         const mPatch = m.replace('a', () => 2, request);
-        const childC = c.checkoutChildScope({ invariants: [mPatch] });
+        const childC = c.checkoutChildScope({ overrides: [mPatch] });
+
+        expect(c.get(m, 'a')).toEqual(1);
         expect(childC.get(m, 'a')).toEqual(2);
       });
 
@@ -186,7 +186,7 @@ describe(`Container`, () => {
         expect(c.get(m, 'a')).toEqual(1);
 
         const mPatch = m.replace('a', () => 2, scoped);
-        const childC = c.checkoutChildScope({ invariants: [mPatch] });
+        const childC = c.checkoutChildScope({ overrides: [mPatch] });
         expect(childC.get(m, 'a')).toEqual(2);
       });
 
@@ -197,7 +197,7 @@ describe(`Container`, () => {
         const c = container();
 
         const mPatch = m.replace('a', () => 2, singleton);
-        const childC = c.checkoutChildScope({ invariants: [mPatch] });
+        const childC = c.checkoutChildScope({ overrides: [mPatch] });
 
         expect(childC.get(m, 'a')).toEqual(2);
         expect(c.get(m, 'a')).toEqual(1);
@@ -210,7 +210,7 @@ describe(`Container`, () => {
         const root = container();
 
         const patch = m.replace('a', () => 2, singleton);
-        const level1 = root.checkoutChildScope({ invariants: [patch] });
+        const level1 = root.checkoutChildScope({ overrides: [patch] });
         const level2 = level1.checkoutChildScope();
 
         expect(level2.get(m, 'a')).toEqual(2);
@@ -236,7 +236,7 @@ describe(`Container`, () => {
 
         const root = container();
         const level1 = root.checkoutChildScope();
-        const level2 = level1.checkoutChildScope({ invariants: [m.replace('a', () => 1)] });
+        const level2 = level1.checkoutChildScope({ overrides: [m.replace('a', () => 1)] });
         const level3 = level2.checkoutChildScope();
 
         const level3Call = level3.get(m, 'a'); // important that level1 is called as first
@@ -245,8 +245,8 @@ describe(`Container`, () => {
         const rootCall = root.get(m, 'a');
 
         expect(level1Call).toEqual(rootCall);
-        expect(level2Call).toEqual(level3Call);
         expect(level2Call).toEqual(1);
+        expect(level3Call).toEqual(1);
         expect(randomFactorySpy).toHaveBeenCalledTimes(1);
       });
 
@@ -256,8 +256,8 @@ describe(`Container`, () => {
         const m = unit().define('a', randomFactorySpy, singleton).build();
 
         const root = container();
-        const level1 = root.checkoutChildScope({ invariants: [m.replace('a', () => 1)] });
-        const level2 = level1.checkoutChildScope({ invariants: [m.replace('a', () => 2)] });
+        const level1 = root.checkoutChildScope({ overrides: [m.replace('a', () => 1)] });
+        const level2 = level1.checkoutChildScope({ overrides: [m.replace('a', () => 2)] });
         const level3 = level2.checkoutChildScope();
 
         const level3Call = level3.get(m, 'a'); // important that level1 is called as first
@@ -270,6 +270,76 @@ describe(`Container`, () => {
         expect(level1Call).toEqual(1);
         expect(rootCall).not.toEqual(level3);
         expect(randomFactorySpy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('invariant resolvers', function () {
+      describe(`request scope`, () => {
+        it(`cannot be replaced by overrides`, async () => {
+          const m = module()
+            .define('k1', () => Math.random(), request)
+            .build();
+
+          const invariantPatch = m.replace('k1', () => 1, request);
+          const childScopePatch = m.replace('k1', () => 2, request);
+
+          const c = container({ invariants: [invariantPatch] });
+          expect(c.asObject(m).k1).toEqual(1);
+
+          const childScope = c.checkoutChildScope({ overrides: [childScopePatch] });
+          expect(childScope.asObject(m).k1).toEqual(1);
+        });
+
+        it(`allows for overrides for other keys than ones changes invariants array`, async () => {
+          const m = module()
+            .define('k1', () => Math.random(), request)
+            .define('k2', () => Math.random(), request)
+            .build();
+
+          const invariantPatch = m.replace('k1', () => 1, request);
+          const childScopePatch = m.replace('k2', () => 2, request);
+
+          const c = container({ invariants: [invariantPatch] });
+          expect(c.asObject(m).k1).toEqual(1);
+
+          const childScope = c.checkoutChildScope({ overrides: [childScopePatch] });
+          expect(childScope.asObject(m).k1).toEqual(1);
+          expect(childScope.asObject(m).k2).toEqual(2);
+        });
+      });
+
+      describe(`singleton scope`, () => {
+        it(`cannot be replaced by overrides`, async () => {
+          const m = module()
+            .define('k1', () => Math.random(), singleton)
+            .build();
+
+          const invariantPatch = m.replace('k1', () => 1, singleton);
+          const childScopePatch = m.replace('k1', () => 2, singleton);
+
+          const c = container({ invariants: [invariantPatch] });
+          expect(c.asObject(m).k1).toEqual(1);
+
+          const childScope = c.checkoutChildScope({ overrides: [childScopePatch] });
+          expect(childScope.asObject(m).k1).toEqual(1);
+        });
+
+        it(`allows for overrides for other keys than ones changes invariants array`, async () => {
+          const m = module()
+            .define('k1', () => Math.random(), singleton)
+            .define('k2', () => Math.random(), singleton)
+            .build();
+
+          const invariantPatch = m.replace('k1', () => 1, singleton);
+          const childScopePatch = m.replace('k2', () => 2, singleton);
+
+          const c = container({ invariants: [invariantPatch] });
+          expect(c.asObject(m).k1).toEqual(1);
+
+          const childScope = c.checkoutChildScope({ overrides: [childScopePatch] });
+          expect(childScope.asObject(m).k1).toEqual(1);
+          expect(childScope.asObject(m).k2).toEqual(2);
+        });
       });
     });
   });

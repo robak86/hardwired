@@ -7,6 +7,7 @@ import { getPatchedResolversIds } from './ContextScopes';
 export type ContainerContext = {
   patchedResolversById: Record<string, Module.InstanceDefinition>;
   resolversById: Record<string, Module.InstanceDefinition>;
+  invariantResolversById: Record<string, Module.InstanceDefinition>;
   modulesByResolverId: Record<string, Module<any>>;
   materializedObjects: Record<string, any>;
   frozenOverrides: Record<string, Module.InstanceDefinition>;
@@ -19,19 +20,19 @@ export type ContainerContext = {
 // TODO: do not deep copy - implement copy on write strategy
 export const ContainerContext = {
   empty() {
-    return ContainerContext.create([], []);
+    return ContainerContext.create([], [], []);
   },
 
-  create(eager: ModulePatch<any>[], overrides: ModulePatch<any>[]): ContainerContext {
-    const ownKeys = getPatchedResolversIds(overrides);
+  create(eager: ModulePatch<any>[], overrides: ModulePatch<any>[], invariants: ModulePatch<any>[]): ContainerContext {
+    const ownKeys = getPatchedResolversIds(invariants);
 
-    const context = {
+    const context: ContainerContext = {
       resolversById: {},
+      invariantResolversById: {},
       patchedResolversById: {},
       requestScope: {},
       modulesByResolverId: {},
       materializedObjects: {},
-      resolversByModuleIdAndPath: {},
       hierarchicalScope: {},
       frozenOverrides: {},
       globalScope: new SingletonScope(ownKeys),
@@ -39,7 +40,7 @@ export const ContainerContext = {
 
     ContextService.loadModules(eager.map(Module.fromPatchedModule), context);
     ContextService.loadPatches(overrides, context);
-    //TODO: add ContextService.loadInvariants
+    ContextService.loadInvariants(invariants, context);
 
     return context;
   },

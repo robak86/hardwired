@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant';
-import { Module, ModuleRecord } from '../module/Module';
+import { isInstanceDefinition, Module, ModuleRecord } from '../module/Module';
 import { IContainer } from './IContainer';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';
@@ -20,9 +20,7 @@ export class ServiceLocator {
 
     return factory({
       get: (module, key) => {
-        const instanceResolver = ContextService.getInstanceResolver(module, key, requestContext);
-        invariant(instanceResolver, `Cannot find definition ${key}`);
-
+        const instanceResolver = ContextService.getModuleInstanceResolver(module, key, requestContext);
         return ContextService.runInstanceDefinition(instanceResolver, requestContext);
       },
     });

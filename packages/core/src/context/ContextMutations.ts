@@ -16,12 +16,17 @@ export const ContextMutations = {
     context.globalScope.set(uuid, instance);
   },
 
-  addPatchedResolver(
-    module: Module<any>,
-    resolver: Module.InstanceDefinition,
-    context: ContainerContext,
-  ) {
+  addPatchedResolver(module: Module<any>, resolver: Module.InstanceDefinition, context: ContainerContext) {
     context.resolversById[resolver.id] = resolver;
+    context.modulesByResolverId[resolver.id] = module;
+  },
+
+  addInvariantResolver(module: Module<any>, resolver: Module.InstanceDefinition, context: ContainerContext) {
+    invariant(
+      !context.invariantResolversById[resolver.id],
+      `Invariant resolves cannot be updated after container creation`,
+    );
+    context.invariantResolversById[resolver.id] = resolver;
     context.modulesByResolverId[resolver.id] = module;
   },
 
