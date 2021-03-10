@@ -423,4 +423,38 @@ describe(`Container`, () => {
       expect(c.get(m, 'a')).not.toEqual(childScope.get(m, 'a'));
     });
   });
+
+  describe(`async definition`, () => {
+    it(`properly resolves async definitions`, async () => {
+      let counter = 0;
+      const u = module()
+        .define('k1', async () => (counter += 1), singleton)
+        .define('k2', async () => (counter += 1), singleton)
+        .define('k3', async ({ k1, k2 }) => (await k1) + (await k2))
+        .build();
+
+      const c = container();
+      const { k3 } = c.asObject(u);
+      expect(await k3).toEqual(3);
+    });
+
+    it(`does not evaluated promise if key is not accessed`, async () => {
+      let counter = 0;
+      const k1Factory = jest.fn(async () => (counter += 1));
+      const k2Factory = jest.fn(async () => (counter += 1));
+      const k3Factory = jest.fn(async ({ k1, k2 }) => (await k1) + (await k2));
+
+      const u = module()
+        .define('k1', k1Factory, singleton)
+        .define('k2', k2Factory, singleton)
+        .define('k3', k3Factory, singleton)
+        .build();
+
+      const c = container();
+      const { k1 } = c.asObject(u);
+      expect(k1Factory).toHaveBeenCalled();
+      expect(k2Factory).not.toHaveBeenCalled();
+      expect(k3Factory).not.toHaveBeenCalled();
+    });
+  });
 });
