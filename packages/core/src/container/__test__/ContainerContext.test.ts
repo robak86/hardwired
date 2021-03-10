@@ -1,6 +1,7 @@
 import { unit } from '../../module/ModuleBuilder';
 import { ContainerContext } from '../../context/ContainerContext';
 import { ContextService } from '../../context/ContextService';
+import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ContainerRecord`, () => {
   describe(`async scope`, () => {
@@ -42,7 +43,7 @@ describe(`ContainerRecord`, () => {
     describe(`modules own definitions`, () => {
       it(`returns materializes module definitions`, async () => {
         const m = unit()
-          .define('a', () => 1)
+          .define('a', () => 1, singleton)
           .build();
         const context = ContainerContext.empty();
 
@@ -56,15 +57,15 @@ describe(`ContainerRecord`, () => {
     describe(`getting nested properties`, () => {
       it(`returns materializes module definitions`, async () => {
         const grandChildM = unit()
-          .define('grandChildValue1', () => 1)
+          .define('grandChildValue1', () => 1, singleton)
           .build();
         const childM = unit()
           .import('grandChild', grandChildM)
-          .define('childVal1', () => 1)
+          .define('childVal1', () => 1, singleton)
           .build();
         const m = unit()
           .import('child', childM)
-          .define('a', () => 1)
+          .define('a', () => 1, singleton)
           .build();
 
         const context = ContainerContext.empty();

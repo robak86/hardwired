@@ -11,8 +11,8 @@ describe(`LiteralResolver`, () => {
   describe(`types`, () => {
     it(`return defines correct return type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('val1', () => 123)
-        .define('val2', () => true)
+        .define('val1', () => 123, singleton)
+        .define('val2', () => true, singleton)
         .build();
 
       type Actual = Module.Materialized<typeof m>['val2'];
@@ -22,17 +22,17 @@ describe(`LiteralResolver`, () => {
 
     it(`uses correct materialized module type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('val1', () => 123)
+        .define('val1', () => 123, singleton)
         .define('val2', materializedModule => {
           expectType<TypeEqual<typeof materializedModule, { val1: number }>>(true);
-        });
+        }, singleton);
     });
   });
 
   describe(`no dependencies`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
-        .define('literal', () => 'someValue')
+        .define('literal', () => 'someValue', singleton)
         .build();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('someValue');
@@ -42,8 +42,8 @@ describe(`LiteralResolver`, () => {
   describe(`using dependencies from the same module`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
-        .define('literalDependency', () => 'dependency')
-        .define('literal', ({ literalDependency }) => literalDependency)
+        .define('literalDependency', () => 'dependency', singleton)
+        .define('literal', ({ literalDependency }) => literalDependency, singleton)
         .build();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('dependency');
@@ -53,12 +53,12 @@ describe(`LiteralResolver`, () => {
   describe(`getting dependencies from imported module`, () => {
     it(`returns correct instance`, async () => {
       const childM = unit()
-        .define('someValue', () => 1)
+        .define('someValue', () => 1, singleton)
         .build();
 
       const parentM = unit()
         .import('imported', childM)
-        .define('usesImportedValue', ({ imported }) => imported.someValue)
+        .define('usesImportedValue', ({ imported }) => imported.someValue, singleton)
         .build();
 
       const c = container();
@@ -69,12 +69,12 @@ describe(`LiteralResolver`, () => {
   describe(`overrides`, () => {
     it(`works with overridden imported module`, async () => {
       const childM = unit()
-        .define('someValue', () => 1)
+        .define('someValue', () => 1, singleton)
         .build();
 
       const parentM = unit()
         .import('imported', childM)
-        .define('usesImportedValue', ({ imported }) => imported.someValue)
+        .define('usesImportedValue', ({ imported }) => imported.someValue, singleton)
         .build();
 
       const c = container({ overrides: [childM.replace('someValue', () => 123)] });

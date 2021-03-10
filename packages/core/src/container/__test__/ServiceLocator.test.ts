@@ -8,8 +8,8 @@ describe(`ServiceLocator`, () => {
   describe(`overrides`, () => {
     it(`returns instances from overrides modules`, async () => {
       const child = ModuleBuilder.empty()
-        .define('someNumber', () => 123)
-        .define('someString', () => 'some content')
+        .define('someNumber', () => 123, singleton)
+        .define('someString', () => 'some content', singleton)
         .build();
 
       const m = ModuleBuilder.empty()
@@ -32,8 +32,8 @@ describe(`ServiceLocator`, () => {
     describe(`overrides`, () => {
       it(`returns instances from overrides modules`, async () => {
         const child = ModuleBuilder.empty()
-          .define('someNumber', () => 123)
-          .define('someString', () => 'some content')
+          .define('someNumber', () => 123, singleton)
+          .define('someString', () => 'some content', singleton)
           .build();
 
         const m = ModuleBuilder.empty()

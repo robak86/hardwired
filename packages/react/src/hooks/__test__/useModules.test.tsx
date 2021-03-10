@@ -4,15 +4,16 @@ import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { useModules } from '../useModules';
+import { singleton } from 'hardwired';
 
 describe(`useModules`, () => {
   describe(`instantiating dependencies`, () => {
     const m1 = module()
-      .define('val1', () => 'val1')
+      .define('val1', () => 'val1', singleton)
       .build();
 
     const m2 = module()
-      .define('val2', () => 'val2')
+      .define('val2', () => 'val2', singleton)
       .build();
 
     function setup() {

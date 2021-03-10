@@ -1,4 +1,4 @@
-import { Module, module } from 'hardwired';
+import { Module, module, singleton } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider';
 import React from 'react';
 import { ModulesConsumer } from '../ModulesConsumer';
@@ -8,12 +8,12 @@ describe(`ModulesConsumer`, () => {
   describe(`nesting modules`, () => {
     function setup() {
       const m1 = module()
-        .define('value', () => 1)
+        .define('value', () => 1, singleton)
         .build();
 
       const m2 = module()
         .import('m1', m1)
-        .define('valueFromM1', ({ m1 }) => m1.value + 10)
+        .define('valueFromM1', ({ m1 }) => m1.value + 10, singleton)
         .build();
 
       const ValueRenderer = ({ testId, value }) => {
@@ -56,12 +56,12 @@ describe(`ModulesConsumer`, () => {
   describe(`using modules array`, () => {
     function setup() {
       const m1 = module()
-        .define('value', () => 1)
+        .define('value', () => 1, singleton)
         .build();
 
       const m2 = module()
         .import('m1', m1)
-        .define('valueFromM1', ({ m1 }) => m1.value + 10)
+        .define('valueFromM1', ({ m1 }) => m1.value + 10, singleton)
         .build();
 
       const ValueRenderer = ({ testId, value }) => {

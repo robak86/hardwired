@@ -1,4 +1,4 @@
-import { container, module, request } from 'hardwired';
+import { container, module, request, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
@@ -8,8 +8,8 @@ import { useDefinition } from '../useDefinition';
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
     const m1 = module()
-      .define('val1', () => 'val1')
-      .define('val2', () => 'val2')
+      .define('val1', () => 'val1', singleton)
+      .define('val2', () => 'val2', singleton)
       .build();
 
     function setup() {

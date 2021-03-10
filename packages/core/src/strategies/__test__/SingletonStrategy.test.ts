@@ -25,7 +25,7 @@ describe(`ClassSingletonResolver`, () => {
   describe(`single module`, () => {
     const m = unit()
       .define('someValue', () => 'someString', singleton)
-      .define('a', ctx => new TestClass(ctx.someValue))
+      .define('a', ctx => new TestClass(ctx.someValue), singleton)
       .build();
 
     it(`returns class instance`, async () => {
@@ -79,8 +79,8 @@ describe(`ClassSingletonResolver`, () => {
       .build();
 
     const singletonModule = unit()
-      .define('value', () => 'someValue')
-      .define('theSingleton', ctx => new TestClass(ctx.value))
+      .define('value', () => 'someValue', singleton)
+      .define('theSingleton', ctx => new TestClass(ctx.value), singleton)
       .build();
 
     it(`reuses the same instance`, async () => {
@@ -108,7 +108,7 @@ describe(`ClassSingletonResolver`, () => {
   describe(`multiple containers`, () => {
     it(`does not shares instances across multiple containers`, async () => {
       const m = unit()
-        .define('someValue', () => 'someString')
+        .define('someValue', () => 'someString', singleton)
         .define('a', _ => new TestClass(_.someValue), singleton)
         .build();
 

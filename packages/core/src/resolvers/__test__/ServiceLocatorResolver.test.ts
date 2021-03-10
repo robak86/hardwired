@@ -28,12 +28,12 @@ describe(`ServiceLocatorResolver`, () => {
   const root = unit()
     .define('locator', serviceLocator())
     .import('singletonModule', () => singletonModule)
-    .define('producedByFactory', () => new DummyFactory())
+    .define('producedByFactory', () => new DummyFactory(), singleton)
     .define('singletonConsumer', ({ singletonModule }) => new TestClassConsumer(singletonModule.reqScoped), request)
     .build();
 
   const singletonModule = unit()
-    .define('value', () => 'someValue')
+    .define('value', () => 'someValue', singleton)
     .define('reqScoped', c => new TestClass(c.value), request)
     .define('singleton', c => new TestClass(c.value), singleton)
     .build();

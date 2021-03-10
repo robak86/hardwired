@@ -2,6 +2,7 @@ import { container } from '../../container/Container';
 import { createModuleId } from '../../utils/fastId';
 import { unit } from '../../module/ModuleBuilder';
 import { transient } from '../TransientStrategy';
+import { singleton } from '../SingletonStrategy';
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {
@@ -18,7 +19,7 @@ describe(`ClassTransientResolver`, () => {
   });
 
   const m = unit()
-    .define('someValue', () => 'someString')
+    .define('someValue', () => 'someString', singleton)
     .define('a', c => new TestClass(c.someValue), transient)
     .build();
 

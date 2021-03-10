@@ -7,15 +7,16 @@ import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { transient } from '../../strategies/TransientStrategy';
 import { request } from '../../strategies/RequestStrategy';
 import { ModulePatch } from '../ModulePatch';
+import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ModuleBuilder`, () => {
   describe(`define`, () => {
     it(`creates correct type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('key1', () => 123)
-        .define('key2', () => true)
-        .define('key3', () => 'string')
-        .define('key4', () => () => 'someString')
+        .define('key1', () => 123, singleton)
+        .define('key2', () => true, singleton)
+        .define('key3', () => 'string', singleton)
+        .define('key4', () => () => 'someString', singleton)
         .build();
 
       type ExpectedType = {
@@ -32,49 +33,49 @@ describe(`ModuleBuilder`, () => {
 
     it(`providing deps`, async () => {
       const m2 = ModuleBuilder.empty()
-        .define('string', () => 'string')
-        .define('number', () => 123);
+        .define('string', () => 'string', singleton)
+        .define('number', () => 123, singleton);
 
-      m2.define('cls', ({ number, string }) => new TestClassArgs2(number, string)); //, ['number', 'string']);
+      m2.define('cls', ({ number, string }) => new TestClassArgs2(number, string), singleton); //, ['number', 'string']);
 
       // @ts-expect-error - dependencies were passed in the wrong order
-      m2.define('cls', ({ number, string }) => new TestClassArgs2(string, number)); //, ['string', 'number']);
+      m2.define('cls', ({ number, string }) => new TestClassArgs2(string, number), singleton); //, ['string', 'number']);
 
       // @ts-expect-error - on of the dependencies is missing
-      m2.define('cls', ({ number }) => new TestClassArgs2(number)); //, ['number']);
+      m2.define('cls', ({ number }) => new TestClassArgs2(number), singleton); //, ['number']);
 
       // @ts-expect-error - dependencies array is empty
-      m2.define('cls', () => new TestClassArgs2()); //, []);
+      m2.define('cls', () => new TestClassArgs2(), singleton); //, []);
     });
 
     it(`providing deps from imported modules`, async () => {
       const child = ModuleBuilder.empty()
-        .define('someNumber', () => 123)
-        .define('someString', () => 'content')
+        .define('someNumber', () => 123, singleton)
+        .define('someString', () => 'content', singleton)
         .build();
 
       const m2 = ModuleBuilder.empty().import('imported', () => child);
 
-      m2.define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString));
+      m2.define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString), singleton);
 
       // @ts-expect-error - dependencies were passed in the wrong order
-      m2.define('cls', ({ imported }) => new TestClassArgs2(imported.someString, imported.someNumber));
+      m2.define('cls', ({ imported }) => new TestClassArgs2(imported.someString, imported.someNumber), singleton);
 
       // @ts-expect-error - on of the dependencies is missing
-      m2.define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber));
+      m2.define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber), singleton);
 
       // @ts-expect-error - dependencies array is empty
-      m2.define('cls', ({ imported }) => new TestClassArgs2()); //, []);
+      m2.define('cls', ({ imported }) => new TestClassArgs2(), singleton); //, []);
     });
 
     it(`creates correct types for imports`, async () => {
       const m1 = ModuleBuilder.empty()
-        .define('key1', () => 123)
+        .define('key1', () => 123, singleton)
         .build();
 
       const m2 = ModuleBuilder.empty()
         .import('imported', m1)
-        .define('key1', () => 123)
+        .define('key1', () => 123, singleton)
         .build();
 
       type ExpectedType = {
@@ -88,13 +89,13 @@ describe(`ModuleBuilder`, () => {
 
     it(`creates correct types for replace`, async () => {
       const m1 = ModuleBuilder.empty()
-        .define('key1', () => 123)
+        .define('key1', () => 123, singleton)
         .build();
 
       const m2 = ModuleBuilder.empty()
         .import('imported', m1)
-        .define('key2', () => 'string')
-        .define('key1', () => 123)
+        .define('key2', () => 'string', singleton)
+        .define('key1', () => 123, singleton)
         .build();
 
       const replaced = m2.replace('key1', () => 123);
@@ -117,13 +118,13 @@ describe(`ModuleBuilder`, () => {
   describe(`override`, () => {
     it(`replaces child module`, async () => {
       const child1 = ModuleBuilder.empty()
-        .define('key1', () => 123)
-        .define('key2', () => 'someString')
+        .define('key1', () => 123, singleton)
+        .define('key2', () => 'someString', singleton)
         .build();
 
       const root = ModuleBuilder.empty()
         .import('imported', child1)
-        .define('cls', ({ imported }) => new TestClassArgs2(imported.key1, imported.key2))
+        .define('cls', ({ imported }) => new TestClassArgs2(imported.key1, imported.key2), singleton)
         .build();
 
       const mPatch = child1.replace('key2', () => 'replacedString');
@@ -140,12 +141,12 @@ describe(`ModuleBuilder`, () => {
       const root = ModuleBuilder.empty()
         .import('import1', () => child1)
         .import('import2', () => child1)
-        .define('cls', ({ import1, import2 }) => new TestClassArgs2(import1.key1, import2.key2))
+        .define('cls', ({ import1, import2 }) => new TestClassArgs2(import1.key1, import2.key2), singleton)
         .build();
 
       const child1 = ModuleBuilder.empty()
-        .define('key1', () => 123)
-        .define('key2', () => 'someString')
+        .define('key1', () => 123, singleton)
+        .define('key2', () => 'someString', singleton)
         .build();
 
       const c = container({
@@ -170,14 +171,14 @@ describe(`ModuleBuilder`, () => {
     });
 
     it(`returns false for module extended with a new definition`, async () => {
-      const m1 = module().define('a', () => 'string');
-      const m2 = m1.define('b', () => 'someOtherString').build();
+      const m1 = module().define('a', () => 'string', singleton);
+      const m2 = m1.define('b', () => 'someOtherString', singleton).build();
       expect(m1.isEqual(m2)).toEqual(false);
     });
 
     it(`returns true for module with replaced value`, async () => {
       const m1 = module()
-        .define('a', () => 'string')
+        .define('a', () => 'string', singleton)
         .build();
 
       const m2 = m1.replace('a', () => 'someOtherString');
@@ -200,7 +201,7 @@ describe(`ModuleBuilder`, () => {
 
       it(`requires that new definition extends the original`, async () => {
         const emptyModule = module()
-          .define('someString', () => 'string')
+          .define('someString', () => 'string', singleton)
           .build();
 
         // @ts-expect-error - value(1) is not compatible with string
@@ -212,7 +213,7 @@ describe(`ModuleBuilder`, () => {
   describe(`decorate`, () => {
     it(`decorates original value`, async () => {
       const m = module()
-        .define('someValue', () => 1)
+        .define('someValue', () => 1, singleton)
         .build();
 
       const mPatch = m.decorate('someValue', val => val + 1);
@@ -223,7 +224,7 @@ describe(`ModuleBuilder`, () => {
 
     it(`does not affect original module`, async () => {
       const m = module()
-        .define('someValue', () => 1)
+        .define('someValue', () => 1, singleton)
         .build();
       const mPatch = m.decorate('someValue', val => val + 1);
 
@@ -233,7 +234,7 @@ describe(`ModuleBuilder`, () => {
 
     it(`allows for multiple decorations`, async () => {
       const m = module()
-        .define('someValue', () => 1)
+        .define('someValue', () => 1, singleton)
         .build();
 
       const mPatch = m.decorate('someValue', val => val + 1).decorate('someValue', val => val * 3);
@@ -244,9 +245,9 @@ describe(`ModuleBuilder`, () => {
 
     it(`works allows to using other dependencies`, async () => {
       const m = module()
-        .define('a', () => 1)
-        .define('b', () => 2)
-        .define('someValue', () => 10)
+        .define('a', () => 1, singleton)
+        .define('b', () => 2, singleton)
+        .define('someValue', () => 10, singleton)
         .build();
 
       const mPatch = m.decorate('someValue', (val, { a, b }) => val + a + b);
@@ -257,9 +258,9 @@ describe(`ModuleBuilder`, () => {
 
     it(`works allows to using other dependencies`, async () => {
       const m = module()
-        .define('a', () => 1)
-        .define('b', () => 2)
-        .define('someValue', ({ a, b }) => a + b)
+        .define('a', () => 1, singleton)
+        .define('b', () => 2, singleton)
+        .define('someValue', ({ a, b }) => a + b, singleton)
         .build();
 
       const mPatch = m.decorate('someValue', (val, { b }) => val * b);
@@ -271,7 +272,7 @@ describe(`ModuleBuilder`, () => {
     describe(`scopes`, () => {
       it(`preserves singleton scope of the original resolver`, async () => {
         const m = module()
-          .define('a', () => Math.random())
+          .define('a', () => Math.random(), singleton)
           .build();
 
         const mPatch = m.decorate('a', a => a);
@@ -326,7 +327,7 @@ describe(`ModuleBuilder`, () => {
     describe(`overrides`, () => {
       it(`acts like replace in terms of module identity`, async () => {
         const m = module()
-          .define('a', () => 1)
+          .define('a', () => 1, singleton)
           .build();
 
         const c = container({ overrides: [m.decorate('a', a => a + 1)] });
@@ -339,13 +340,13 @@ describe(`ModuleBuilder`, () => {
   describe(`freezing`, () => {
     it(`throws if one tries to extend module which is already frozen`, async () => {
       const prevModule = module();
-      const def1 = prevModule.define('a', () => 1).build();
-      expect(() => prevModule.define('b', () => 2)).toThrow();
+      const def1 = prevModule.define('a', () => 1, singleton).build();
+      expect(() => prevModule.define('b', () => 2, singleton)).toThrow();
     });
 
     it(`throws if one tries to freeze a parent module while child module is frozen`, async () => {
       const prefModule = module();
-      const nextModule = prefModule.define('a', () => 1).build();
+      const nextModule = prefModule.define('a', () => 1, singleton).build();
       expect(() => prefModule.build()).toThrow();
     });
 
@@ -363,15 +364,15 @@ describe(`ModuleBuilder`, () => {
         .define('a', obj => {
           objCalls.push(obj);
           return 1;
-        })
+        }, singleton)
         .define('b', obj => {
           objCalls.push(obj);
           return 2;
-        })
+        }, singleton)
         .define('c', obj => {
           objCalls.push(obj);
           return 3;
-        })
+        }, singleton)
         .build();
 
       const c = container();

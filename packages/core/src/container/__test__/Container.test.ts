@@ -11,8 +11,8 @@ describe(`Container`, () => {
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
       const child2 = module()
-        .define('c', () => 'cValue')
-        .define('d', () => 'dValue')
+        .define('c', () => 'cValue', singleton)
+        .define('d', () => 'dValue', singleton)
         .build();
       const c = container();
 
@@ -22,7 +22,7 @@ describe(`Container`, () => {
 
     it(`lazily appends new module if module cannot be found`, async () => {
       const notRegistered = module() // breakme
-        .define('a', () => 1)
+        .define('a', () => 1, singleton)
         .build();
 
       const c = container();
@@ -81,7 +81,7 @@ describe(`Container`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
         const m = module()
-          .define('a', () => 1)
+          .define('a', () => 1, singleton)
           .build();
         const mPatch = m.replace('a', () => 2);
         expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(2);
@@ -89,8 +89,8 @@ describe(`Container`, () => {
 
       it(`calls provided function with materialized module`, async () => {
         const m = module()
-          .define('b', () => 2)
-          .define('a', () => 1)
+          .define('b', () => 2, singleton)
+          .define('a', () => 1, singleton)
           .build();
 
         const factoryFunctionSpy = jest.fn().mockImplementation(ctx => {
@@ -107,8 +107,8 @@ describe(`Container`, () => {
 
       it(`forbids to reference replaced value from the context`, async () => {
         const m = module()
-          .define('b', () => 2)
-          .define('a', () => 1)
+          .define('b', () => 2, singleton)
+          .define('a', () => 1, singleton)
           .build();
 
         const updated = m.replace('a', ctx => {
@@ -120,8 +120,8 @@ describe(`Container`, () => {
 
       it(`does not affect other definitions`, async () => {
         const m = module()
-          .define('a', () => 1)
-          .define('b', () => 'b')
+          .define('a', () => 1, singleton)
+          .define('b', () => 'b', singleton)
           .build();
 
         const mPatch = m.replace('a', () => 2);
@@ -130,8 +130,8 @@ describe(`Container`, () => {
 
       it.skip(`can use all previously registered definitions`, async () => {
         const m = module()
-          .define('a', () => 'a')
-          .define('aa', () => 'replaced')
+          .define('a', () => 'a', singleton)
+          .define('aa', () => 'replaced', singleton)
           .define('b', ({ a }) => new ArgsDebug(a), singleton)
           .define('c', ({ b }) => new ArgsDebug(b), singleton)
           .build();
@@ -147,9 +147,9 @@ describe(`Container`, () => {
   describe(`overrides`, () => {
     it(`merges modules with the same id`, async () => {
       const m = module()
-        .define('a', () => 1)
-        .define('b', () => 2)
-        .define('a_plus_b', ({ a, b }) => a + b)
+        .define('a', () => 1, singleton)
+        .define('b', () => 2, singleton)
+        .define('a_plus_b', ({ a, b }) => a + b, singleton)
         .build();
 
       const c = container({
@@ -430,7 +430,7 @@ describe(`Container`, () => {
       const u = module()
         .define('k1', async () => (counter += 1), singleton)
         .define('k2', async () => (counter += 1), singleton)
-        .define('k3', async ({ k1, k2 }) => (await k1) + (await k2))
+        .define('k3', async ({ k1, k2 }) => (await k1) + (await k2), singleton)
         .build();
 
       const c = container();

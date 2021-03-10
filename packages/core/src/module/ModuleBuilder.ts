@@ -6,6 +6,7 @@ import { AnyResolver, Module, ModuleRecord } from './Module';
 import { Instance } from '../resolvers/abstract/Instance';
 import { singleton } from '../strategies/SingletonStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
+import { request } from '../strategies/RequestStrategy';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
@@ -54,13 +55,13 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   define<TKey extends string, TValue>(
     name: TKey,
     buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
-    buildStrategy?: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => Instance<TValue>,
+    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => Instance<TValue>,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
 
   define<TKey extends string, TValue>(
     name: TKey,
     buildFnOrInstance: ((ctx: ModuleRecord.Materialized<TRecord>) => TValue) | Instance<TValue>,
-    buildStrategy = singleton,
+    buildStrategy?,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
 
