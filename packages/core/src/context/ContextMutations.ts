@@ -1,7 +1,6 @@
 import { ContainerContext } from './ContainerContext';
 import { Module } from '../module/Module';
 import invariant from 'tiny-invariant';
-import { buildResolverId } from '../module/ModuleBuilder';
 
 export const ContextMutations = {
   setForRequestScope(uuid: string, instance: any, context: ContainerContext): void {
@@ -17,7 +16,7 @@ export const ContextMutations = {
   },
 
   addPatchedResolver(module: Module<any>, resolver: Module.InstanceDefinition, context: ContainerContext) {
-    context.resolversById[resolver.id] = resolver;
+    context.patchedResolversById[resolver.id] = resolver;
     context.modulesByResolverId[resolver.id] = module;
   },
 

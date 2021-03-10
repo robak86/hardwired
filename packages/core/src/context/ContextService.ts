@@ -24,6 +24,10 @@ export const ContextService = {
       return ContextLookup.getInvariantResolverByModuleAndPath(module.moduleId, path, context);
     }
 
+    if (ContextLookup.hasPatchedResolver(module.moduleId, path, context)) {
+      return ContextLookup.getPatchedResolver(module.moduleId, path, context);
+    }
+
     if (ContextLookup.hasResolverByModuleAndPath(module.moduleId, path, context)) {
       return ContextLookup.getResolverByModuleAndPath(module.moduleId, path, context);
     }
@@ -74,7 +78,11 @@ export const ContextService = {
         }
 
         if (isInstanceDefinition(definition)) {
-          ContextService.getModuleDefinition(module, key, context);
+          try {
+            ContextMutations.addResolver(module, key, definition, context);
+          } catch (err) {
+            throw new Error('Eagerly loaded modules array contains duplicated entries');
+          }
         }
       });
     }

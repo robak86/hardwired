@@ -37,7 +37,7 @@ export const ContextScopes = {
       requestScope: {},
       materializedObjects: {},
       hierarchicalScope: {},
-      resolversById: { ...prevContext.resolversById }, // TODO: introduce separate property for storing patchedResolvers (it will have less items, so copying whole object should be faster)
+      resolversById: prevContext.resolversById,
       invariantResolversById: prevContext.invariantResolversById,
       patchedResolversById: { ...prevContext.patchedResolversById },
       modulesByResolverId: prevContext.modulesByResolverId,

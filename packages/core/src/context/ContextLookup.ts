@@ -43,6 +43,16 @@ export const ContextLookup = {
     return !!context.invariantResolversById[buildResolverId({ moduleId }, path)];
   },
 
+  hasPatchedResolver(moduleId: ModuleId, path: string, context: ContainerContext): boolean {
+    return !!context.patchedResolversById[buildResolverId({ moduleId }, path)];
+  },
+
+  getPatchedResolver(moduleId: ModuleId, path: string, context: ContainerContext) {
+    const resolver = context.patchedResolversById[buildResolverId({ moduleId }, path)];
+    invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
+    return resolver;
+  },
+
   getResolverByModuleAndPath(moduleId: ModuleId, path: string, context: ContainerContext) {
     const resolver = context.resolversById[buildResolverId({ moduleId }, path)];
     invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
@@ -65,12 +75,8 @@ export const ContextLookup = {
     predicate: (resolver: Module.InstanceDefinition) => boolean,
     context: ContainerContext,
   ): Module.InstanceDefinition[] {
-    return Object.values(context.resolversById).filter(definition => {
+    return Object.values({ ...context.resolversById, ...context.patchedResolversById }).filter(definition => {
       return predicate(definition);
     });
   },
-
-  // isLoaded(module: Module<any>, context: ContainerContext): boolean {
-  //   return !!context.loadedModules[module.moduleId.id];
-  // },
 };
