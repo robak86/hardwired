@@ -7,7 +7,6 @@ import { ContextMutations } from './ContextMutations';
 import { ModulePatch } from '../module/ModulePatch';
 
 export const useProxy = typeof Proxy !== 'undefined';
-// export const useProxy = typeof Proxy !== 'undefined';
 
 export const ContextService = {
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
@@ -131,6 +130,7 @@ export const ContextService = {
       if (isInstanceDefinition(definition)) {
         Object.defineProperty(materialized, key, {
           configurable: false,
+          enumerable: true,
           get: () => {
             //TODO: move into closure so above this is called only once for all get calls
             const initializedResolver = this.getModuleInstanceResolver(module, key, context);
@@ -142,6 +142,7 @@ export const ContextService = {
       if (isModuleDefinition(definition)) {
         Object.defineProperty(materialized, key, {
           configurable: false,
+          enumerable: true,
           get: () => {
             const resolver = unwrapThunk(definition.resolverThunk);
             return ContextService.materialize(resolver, context);

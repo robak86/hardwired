@@ -6,8 +6,17 @@ type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: Containe
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
 };
 
+
+
 type MaterializeDependenciesRecord<TDependencies extends Record<string, any>> = {
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
+};
+
+// prettier-ignore
+type MaterializeDependenciesRecordAsync<TDependencies extends Record<string, any>> = {
+  [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn
+    ? TReturn extends Promise<infer TUnboxedPromise> ? TUnboxedPromise : TReturn
+    : unknown;
 };
 
 const select = <TModule extends Module<any>, TKey extends Module.InstancesKeys<TModule>>(
@@ -25,8 +34,34 @@ const record = <TDependencies extends Record<string, (ctx: ContainerContext) => 
   return ctx => {
     const instances = {} as any;
     Object.keys(deps).forEach(key => {
-      instances[key as keyof TDependencies] = deps[key](ctx);
+      Object.defineProperty(instances, key, {
+        configurable: false,
+        enumerable: true,
+        get: () => {
+          return deps[key](ctx);
+        },
+      });
     });
+    return instances;
+  };
+};
+
+const asyncRecord = <TDependencies extends Record<string, (ctx: ContainerContext) => any>>(
+  deps: TDependencies,
+): ((ctx: ContainerContext) => Promise<MaterializeDependenciesRecordAsync<TDependencies>>) => {
+  return async ctx => {
+    const instances = {} as any;
+
+    const unwrapped = await Promise.all(
+      Object.values(deps).map(dep => {
+        return dep(ctx);
+      }),
+    );
+
+    Object.keys(deps).forEach((key, idx) => {
+      instances[key as keyof TDependencies] = unwrapped[idx];
+    });
+
     return instances;
   };
 };
@@ -46,4 +81,5 @@ export const inject = {
   select,
   record,
   tuple,
+  asyncRecord,
 };

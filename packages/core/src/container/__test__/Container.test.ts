@@ -452,7 +452,8 @@ describe(`Container`, () => {
 
       const c = container();
       const { k1 } = c.asObject(u);
-      expect(k1Factory).toHaveBeenCalled();
+      const { k1: k1NextRequest } = c.asObject(u);
+      expect(k1Factory).toHaveBeenCalledTimes(1);
       expect(k2Factory).not.toHaveBeenCalled();
       expect(k3Factory).not.toHaveBeenCalled();
     });

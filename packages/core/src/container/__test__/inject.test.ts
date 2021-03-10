@@ -1,4 +1,4 @@
-import { unit } from '../../module/ModuleBuilder';
+import { module, unit } from '../../module/ModuleBuilder';
 import { inject } from '../inject';
 import { container } from '../Container';
 import { expectType, TypeEqual } from 'ts-expect';
@@ -83,6 +83,31 @@ describe(`inject`, () => {
       const c = container();
       const result = c.getSlice(slice);
       expect(result).toEqual([1, 20]);
+    });
+  });
+
+  describe(`asyncRecord`, () => {
+    it(`batches all async properties`, async () => {
+      const m1 = module()
+        .define('p1', async () => 1)
+        .define('p2', async () => 2)
+        .build();
+      const m2 = module()
+        .define('val1', () => 10)
+        .define('val2', async () => 20)
+        .build();
+
+      const selector = inject.asyncRecord({
+        a: inject.select(m1, 'p1'),
+        b: inject.select(m1, 'p2'),
+        c: inject.select(m2, 'val1'),
+      });
+
+      const c = container();
+      const selected = await c.getSlice(selector);
+      const expected: typeof selected = { a: 1, b: 2, c: 10 };
+
+      expect(selected).toEqual(expected);
     });
   });
 });
