@@ -11,8 +11,8 @@ describe(`LiteralResolver`, () => {
   describe(`types`, () => {
     it(`return defines correct return type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('val1', () => 123, singleton)
-        .define('val2', () => true, singleton)
+        .define('val1', singleton, () => 123)
+        .define('val2', singleton, () => true)
         .build();
 
       type Actual = Module.Materialized<typeof m>['val2'];
@@ -22,17 +22,17 @@ describe(`LiteralResolver`, () => {
 
     it(`uses correct materialized module type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('val1', () => 123, singleton)
-        .define('val2', materializedModule => {
+        .define('val1', singleton, () => 123)
+        .define('val2', singleton, materializedModule => {
           expectType<TypeEqual<typeof materializedModule, { val1: number }>>(true);
-        }, singleton);
+        });
     });
   });
 
   describe(`no dependencies`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
-        .define('literal', () => 'someValue', singleton)
+        .define('literal', singleton, () => 'someValue')
         .build();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('someValue');
@@ -42,8 +42,8 @@ describe(`LiteralResolver`, () => {
   describe(`using dependencies from the same module`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
-        .define('literalDependency', () => 'dependency', singleton)
-        .define('literal', ({ literalDependency }) => literalDependency, singleton)
+        .define('literalDependency', singleton, () => 'dependency')
+        .define('literal', singleton, ({ literalDependency }) => literalDependency)
         .build();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('dependency');
@@ -53,12 +53,12 @@ describe(`LiteralResolver`, () => {
   describe(`getting dependencies from imported module`, () => {
     it(`returns correct instance`, async () => {
       const childM = unit()
-        .define('someValue', () => 1, singleton)
+        .define('someValue', singleton, () => 1)
         .build();
 
       const parentM = unit()
         .import('imported', childM)
-        .define('usesImportedValue', ({ imported }) => imported.someValue, singleton)
+        .define('usesImportedValue', singleton, ({ imported }) => imported.someValue)
         .build();
 
       const c = container();
@@ -69,12 +69,12 @@ describe(`LiteralResolver`, () => {
   describe(`overrides`, () => {
     it(`works with overridden imported module`, async () => {
       const childM = unit()
-        .define('someValue', () => 1, singleton)
+        .define('someValue', singleton, () => 1)
         .build();
 
       const parentM = unit()
         .import('imported', childM)
-        .define('usesImportedValue', ({ imported }) => imported.someValue, singleton)
+        .define('usesImportedValue', singleton, ({ imported }) => imported.someValue)
         .build();
 
       const c = container({ overrides: [childM.replace('someValue', () => 123)] });
@@ -85,7 +85,7 @@ describe(`LiteralResolver`, () => {
   describe(`transient scope`, () => {
     it(`returns new instance on each request`, async () => {
       const mod = unit()
-        .define('someValue', () => ({ someProperty: 1 }), transient)
+        .define('someValue', transient, () => ({ someProperty: 1 }))
         .build();
 
       const c = container();
@@ -96,7 +96,7 @@ describe(`LiteralResolver`, () => {
   describe(`singleton scope`, () => {
     it(`returns the same instance`, async () => {
       const mod = unit()
-        .define('someValue', () => ({ someProperty: 1 }), singleton)
+        .define('someValue', singleton, () => ({ someProperty: 1 }))
 
         .build();
 
@@ -108,8 +108,8 @@ describe(`LiteralResolver`, () => {
   describe(`request scope`, () => {
     it(`returns the same instance`, async () => {
       const mod = unit()
-        .define('someValue', () => ({ someProperty: Math.random() }), request)
-        .define('someValueProxy', ({ someValue }) => someValue, request)
+        .define('someValue', request, () => ({ someProperty: Math.random() }))
+        .define('someValueProxy', request, ({ someValue }) => someValue)
         .build();
 
       const c = container();

@@ -9,13 +9,13 @@ describe(`inject`, () => {
     describe(`types`, () => {
       it(`returns object with correct types`, async () => {
         const m1 = unit()
-          .define('a', () => 1, singleton)
-          .define('b', () => 2, singleton)
+          .define('a', singleton, () => 1)
+          .define('b', singleton, () => 2)
           .build();
 
         const m2 = unit()
-          .define('a', () => 10, singleton)
-          .define('b', () => 20, singleton)
+          .define('a', singleton, () => 10)
+          .define('b', singleton, () => 20)
           .build();
 
         const slice = inject.record({
@@ -29,13 +29,13 @@ describe(`inject`, () => {
 
     it(`builds function returning correct dependencies`, async () => {
       const m1 = unit()
-        .define('a', () => 1, singleton)
-        .define('b', () => 2, singleton)
+        .define('a', singleton, () => 1)
+        .define('b', singleton, () => 2)
         .build();
 
       const m2 = unit()
-        .define('a', () => 10, singleton)
-        .define('b', () => 20, singleton)
+        .define('a', singleton, () => 10)
+        .define('b', singleton, () => 20)
         .build();
 
       const slice = inject.record({
@@ -53,13 +53,13 @@ describe(`inject`, () => {
     describe(`types`, () => {
       it(`returns object with correct types`, async () => {
         const m1 = unit()
-          .define('a', () => 1, singleton)
-          .define('b', () => '2', singleton)
+          .define('a', singleton, () => 1)
+          .define('b', singleton, () => '2')
           .build();
 
         const m2 = unit()
-          .define('a', () => 10, singleton)
-          .define('b', () => '20', singleton)
+          .define('a', singleton, () => 10)
+          .define('b', singleton, () => '20')
           .build();
 
         const slice = inject.tuple(inject.select(m1, 'a'), inject.select(m2, 'b'));
@@ -70,13 +70,13 @@ describe(`inject`, () => {
 
     it(`builds function returning correct dependencies`, async () => {
       const m1 = unit()
-        .define('a', () => 1, singleton)
-        .define('b', () => 2, singleton)
+        .define('a', singleton, () => 1)
+        .define('b', singleton, () => 2)
         .build();
 
       const m2 = unit()
-        .define('a', () => 10, singleton)
-        .define('b', () => 20, singleton)
+        .define('a', singleton, () => 10)
+        .define('b', singleton, () => 20)
         .build();
 
       const slice = inject.tuple(inject.select(m1, 'a'), inject.select(m2, 'b'));
@@ -90,12 +90,12 @@ describe(`inject`, () => {
   describe(`asyncRecord`, () => {
     it(`batches all async properties`, async () => {
       const m1 = module()
-        .define('p1', async () => 1, singleton)
-        .define('p2', async () => 2, singleton)
+        .define('p1', singleton, async () => 1)
+        .define('p2', singleton, async () => 2)
         .build();
       const m2 = module()
-        .define('val1', () => 10, singleton)
-        .define('val2', async () => 20, singleton)
+        .define('val1', singleton, () => 10)
+        .define('val2', singleton, async () => 20)
         .build();
 
       const selector = inject.asyncRecord({

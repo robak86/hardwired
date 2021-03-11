@@ -11,8 +11,8 @@ describe(`Container`, () => {
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
       const child2 = module()
-        .define('c', () => 'cValue', singleton)
-        .define('d', () => 'dValue', singleton)
+        .define('c', singleton, () => 'cValue')
+        .define('d', singleton, () => 'dValue')
         .build();
       const c = container();
 
@@ -22,7 +22,7 @@ describe(`Container`, () => {
 
     it(`lazily appends new module if module cannot be found`, async () => {
       const notRegistered = module() // breakme
-        .define('a', () => 1, singleton)
+        .define('a', singleton, () => 1)
         .build();
 
       const c = container();
@@ -34,9 +34,9 @@ describe(`Container`, () => {
   describe(`.getByStrategy`, () => {
     it(`returns all instances by given strategy`, async () => {
       const m = unit()
-        .define('a', () => 1, singleton)
-        .define('b', () => 2, singleton)
-        .define('c', () => 3, transient)
+        .define('a', singleton, () => 1)
+        .define('b', singleton, () => 2)
+        .define('c', transient, () => 3)
         .build();
 
       const c = container({ eager: [m] });
@@ -46,9 +46,9 @@ describe(`Container`, () => {
 
     it(`replaces eagerly loaded modules with overrides`, async () => {
       const m = unit()
-        .define('a', () => 1, singleton)
-        .define('b', () => 2, singleton)
-        .define('c', () => 3, transient)
+        .define('a', singleton, () => 1)
+        .define('b', singleton, () => 2)
+        .define('c', transient, () => 3)
         .build();
 
       const c = container({
@@ -62,9 +62,9 @@ describe(`Container`, () => {
 
     it(`uses replaces strategy for filtering`, async () => {
       const m = unit()
-        .define('a', () => 1, singleton)
-        .define('b', () => 2, singleton)
-        .define('c', () => 3, transient)
+        .define('a', singleton, () => 1)
+        .define('b', singleton, () => 2)
+        .define('c', transient, () => 3)
         .build();
 
       const c = container({
@@ -81,7 +81,7 @@ describe(`Container`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
         const m = module()
-          .define('a', () => 1, singleton)
+          .define('a', singleton, () => 1)
           .build();
         const mPatch = m.replace('a', () => 2);
         expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(2);
@@ -89,8 +89,8 @@ describe(`Container`, () => {
 
       it(`calls provided function with materialized module`, async () => {
         const m = module()
-          .define('b', () => 2, singleton)
-          .define('a', () => 1, singleton)
+          .define('b', singleton, () => 2)
+          .define('a', singleton, () => 1)
           .build();
 
         const factoryFunctionSpy = jest.fn().mockImplementation(ctx => {
@@ -107,8 +107,8 @@ describe(`Container`, () => {
 
       it(`forbids to reference replaced value from the context`, async () => {
         const m = module()
-          .define('b', () => 2, singleton)
-          .define('a', () => 1, singleton)
+          .define('b', singleton, () => 2)
+          .define('a', singleton, () => 1)
           .build();
 
         const updated = m.replace('a', ctx => {
@@ -120,8 +120,8 @@ describe(`Container`, () => {
 
       it(`does not affect other definitions`, async () => {
         const m = module()
-          .define('a', () => 1, singleton)
-          .define('b', () => 'b', singleton)
+          .define('a', singleton, () => 1)
+          .define('b', singleton, () => 'b')
           .build();
 
         const mPatch = m.replace('a', () => 2);
@@ -130,10 +130,10 @@ describe(`Container`, () => {
 
       it.skip(`can use all previously registered definitions`, async () => {
         const m = module()
-          .define('a', () => 'a', singleton)
-          .define('aa', () => 'replaced', singleton)
-          .define('b', ({ a }) => new ArgsDebug(a), singleton)
-          .define('c', ({ b }) => new ArgsDebug(b), singleton)
+          .define('a', singleton, () => 'a')
+          .define('aa', singleton, () => 'replaced')
+          .define('b', singleton, ({ a }) => new ArgsDebug(a))
+          .define('c', singleton, ({ b }) => new ArgsDebug(b))
           .build();
 
         // @ts-expect-error - one can replace definition only with the same type - string is not compatible with ArgsDebug Class
@@ -147,9 +147,9 @@ describe(`Container`, () => {
   describe(`overrides`, () => {
     it(`merges modules with the same id`, async () => {
       const m = module()
-        .define('a', () => 1, singleton)
-        .define('b', () => 2, singleton)
-        .define('a_plus_b', ({ a, b }) => a + b, singleton)
+        .define('a', singleton, () => 1)
+        .define('b', singleton, () => 2)
+        .define('a_plus_b', singleton, ({ a, b }) => a + b)
         .build();
 
       const c = container({
@@ -167,7 +167,7 @@ describe(`Container`, () => {
     describe(`overrides for child scope`, () => {
       it(`replaces definitions for request scope`, async () => {
         const m = unit()
-          .define('a', () => 1, request)
+          .define('a', request, () => 1)
           .build();
         const c = container();
 
@@ -180,7 +180,7 @@ describe(`Container`, () => {
 
       it(`replaces definitions for scoped scope`, async () => {
         const m = unit()
-          .define('a', () => 1, scoped)
+          .define('a', scoped, () => 1)
           .build();
         const c = container();
         expect(c.get(m, 'a')).toEqual(1);
@@ -192,7 +192,7 @@ describe(`Container`, () => {
 
       it(`replaces definitions for singleton scope`, async () => {
         const m = unit()
-          .define('a', () => 1, singleton)
+          .define('a', singleton, () => 1)
           .build();
         const c = container();
 
@@ -205,7 +205,7 @@ describe(`Container`, () => {
 
       it(`inherits singletons from parent scope for singleton`, async () => {
         const m = unit()
-          .define('a', () => 1, singleton)
+          .define('a', singleton, () => 1)
           .build();
         const root = container();
 
@@ -219,7 +219,7 @@ describe(`Container`, () => {
 
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
         const m = unit()
-          .define('a', () => Math.random(), singleton)
+          .define('a', singleton, () => Math.random())
           .build();
         const parentC = container();
         const childC = parentC.checkoutChildScope();
@@ -232,7 +232,7 @@ describe(`Container`, () => {
       it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
         const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
 
-        const m = unit().define('a', randomFactorySpy, singleton).build();
+        const m = unit().define('a', singleton, randomFactorySpy).build();
 
         const root = container();
         const level1 = root.checkoutChildScope();
@@ -253,7 +253,7 @@ describe(`Container`, () => {
       it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
         const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
 
-        const m = unit().define('a', randomFactorySpy, singleton).build();
+        const m = unit().define('a', singleton, randomFactorySpy).build();
 
         const root = container();
         const level1 = root.checkoutChildScope({ overrides: [m.replace('a', () => 1)] });
@@ -277,7 +277,7 @@ describe(`Container`, () => {
       describe(`request scope`, () => {
         it(`cannot be replaced by overrides`, async () => {
           const m = module()
-            .define('k1', () => Math.random(), request)
+            .define('k1', request, () => Math.random())
             .build();
 
           const invariantPatch = m.replace('k1', () => 1, request);
@@ -292,8 +292,8 @@ describe(`Container`, () => {
 
         it(`allows for overrides for other keys than ones changes invariants array`, async () => {
           const m = module()
-            .define('k1', () => Math.random(), request)
-            .define('k2', () => Math.random(), request)
+            .define('k1', request, () => Math.random())
+            .define('k2', request, () => Math.random())
             .build();
 
           const invariantPatch = m.replace('k1', () => 1, request);
@@ -311,7 +311,7 @@ describe(`Container`, () => {
       describe(`singleton scope`, () => {
         it(`cannot be replaced by overrides`, async () => {
           const m = module()
-            .define('k1', () => Math.random(), singleton)
+            .define('k1', singleton, () => Math.random())
             .build();
 
           const invariantPatch = m.replace('k1', () => 1, singleton);
@@ -326,8 +326,8 @@ describe(`Container`, () => {
 
         it(`allows for overrides for other keys than ones changes invariants array`, async () => {
           const m = module()
-            .define('k1', () => Math.random(), singleton)
-            .define('k2', () => Math.random(), singleton)
+            .define('k1', singleton, () => Math.random())
+            .define('k2', singleton, () => Math.random())
             .build();
 
           const invariantPatch = m.replace('k1', () => 1, singleton);
@@ -347,11 +347,11 @@ describe(`Container`, () => {
   describe(`asObjectMany`, () => {
     it(`returns array of materialized modules`, async () => {
       const m1 = unit()
-        .define('a', () => 1, request)
+        .define('a', request, () => 1)
         .build();
 
       const m2 = unit()
-        .define('b', () => 2, request)
+        .define('b', request, () => 2)
         .build();
 
       const c = container();
@@ -366,7 +366,7 @@ describe(`Container`, () => {
       describe(`get`, () => {
         it(`uses new request scope for each call`, async () => {
           const m = unit()
-            .define('a', () => Math.random(), request)
+            .define('a', request, () => Math.random())
             .build();
 
           const c = container();
@@ -380,7 +380,7 @@ describe(`Container`, () => {
       describe(`asObject`, () => {
         it(`runs asObject each time with new request scope `, async () => {
           const m = unit()
-            .define('a', () => Math.random(), request)
+            .define('a', request, () => Math.random())
             .build();
 
           const c = container();
@@ -394,7 +394,7 @@ describe(`Container`, () => {
       describe(`childScope`, () => {
         it(`does not inherit any values from parent scope`, async () => {
           const m = unit()
-            .define('a', () => Math.random(), request)
+            .define('a', request, () => Math.random())
             .build();
 
           const c = container();
@@ -412,7 +412,7 @@ describe(`Container`, () => {
   describe(`scoped`, () => {
     it(`acts like singleton limited to given scope`, async () => {
       const m = unit()
-        .define('a', () => Math.random(), scoped)
+        .define('a', scoped, () => Math.random())
         .build();
 
       const c = container();
@@ -428,9 +428,9 @@ describe(`Container`, () => {
     it(`properly resolves async definitions`, async () => {
       let counter = 0;
       const u = module()
-        .define('k1', async () => (counter += 1), singleton)
-        .define('k2', async () => (counter += 1), singleton)
-        .define('k3', async ({ k1, k2 }) => (await k1) + (await k2), singleton)
+        .define('k1', singleton, async () => (counter += 1))
+        .define('k2', singleton, async () => (counter += 1))
+        .define('k3', singleton, async ({ k1, k2 }) => (await k1) + (await k2))
         .build();
 
       const c = container();
@@ -445,9 +445,9 @@ describe(`Container`, () => {
       const k3Factory = jest.fn(async ({ k1, k2 }) => (await k1) + (await k2));
 
       const u = module()
-        .define('k1', k1Factory, singleton)
-        .define('k2', k2Factory, singleton)
-        .define('k3', k3Factory, singleton)
+        .define('k1', singleton, k1Factory)
+        .define('k2', singleton, k2Factory)
+        .define('k3', singleton, k3Factory)
         .build();
 
       const c = container();

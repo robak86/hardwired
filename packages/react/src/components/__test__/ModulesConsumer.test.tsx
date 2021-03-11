@@ -8,12 +8,12 @@ describe(`ModulesConsumer`, () => {
   describe(`nesting modules`, () => {
     function setup() {
       const m1 = module()
-        .define('value', () => 1, singleton)
+        .define('value', singleton, () => 1)
         .build();
 
       const m2 = module()
         .import('m1', m1)
-        .define('valueFromM1', ({ m1 }) => m1.value + 10, singleton)
+        .define('valueFromM1', singleton, ({ m1 }) => m1.value + 10)
         .build();
 
       const ValueRenderer = ({ testId, value }) => {
@@ -56,12 +56,12 @@ describe(`ModulesConsumer`, () => {
   describe(`using modules array`, () => {
     function setup() {
       const m1 = module()
-        .define('value', () => 1, singleton)
+        .define('value', singleton, () => 1)
         .build();
 
       const m2 = module()
         .import('m1', m1)
-        .define('valueFromM1', ({ m1 }) => m1.value + 10, singleton)
+        .define('valueFromM1', singleton, ({ m1 }) => m1.value + 10)
         .build();
 
       const ValueRenderer = ({ testId, value }) => {

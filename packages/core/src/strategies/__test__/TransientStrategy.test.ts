@@ -19,8 +19,8 @@ describe(`ClassTransientResolver`, () => {
   });
 
   const m = unit()
-    .define('someValue', () => 'someString', singleton)
-    .define('a', c => new TestClass(c.someValue), transient)
+    .define('someValue', singleton, () => 'someString')
+    .define('a', transient, c => new TestClass(c.someValue))
     .build();
 
   it(`returns class instance`, async () => {

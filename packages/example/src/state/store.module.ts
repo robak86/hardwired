@@ -12,8 +12,8 @@ const dispatchAction = (store: Store<any>) => <TPayload, TAction extends AnyActi
 };
 
 export const storeModule = module()
-  .define('initialState', () => AppState.build(), singleton)
-  .define('appReducer', () => appReducer, singleton)
-  .define('store', m => createAppStore(m.appReducer, m.initialState), singleton)
-  .define('boundAction', ({ store }) => dispatchAction(store), singleton)
+  .define('initialState', singleton, () => AppState.build())
+  .define('appReducer', singleton, () => appReducer)
+  .define('store', singleton, m => createAppStore(m.appReducer, m.initialState))
+  .define('boundAction', singleton, ({ store }) => dispatchAction(store))
   .build();

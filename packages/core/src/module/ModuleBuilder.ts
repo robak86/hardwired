@@ -4,9 +4,7 @@ import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord } from './Module';
 import { Instance } from '../resolvers/abstract/Instance';
-import { singleton } from '../strategies/SingletonStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
-import { request } from '../strategies/RequestStrategy';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
@@ -47,6 +45,13 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   }
 
   // TODO: types allows returning strategy instead of value - add conditional type validation on return type ?
+
+  define<TKey extends string, TValue>(
+    name: TKey,
+    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => any) => Instance<any>,
+    buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
+
   define<TKey extends string, TValue>(
     name: TKey,
     instance: Instance<TValue>,
@@ -54,42 +59,38 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   define<TKey extends string, TValue>(
     name: TKey,
-    buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
-    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => Instance<TValue>,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
-
-  define<TKey extends string, TValue>(
-    name: TKey,
-    buildFnOrInstance: ((ctx: ModuleRecord.Materialized<TRecord>) => TValue) | Instance<TValue>,
-    buildStrategy?,
+    instanceOrStrategy:
+      | Instance<TValue>
+      | ((resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => Instance<TValue>),
+    buildFn?: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
   ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
 
-    // TODO: potential gc issue while getting by id
-
-    if (typeof buildFnOrInstance === 'function') {
-      invariant(isStrategyTagged(buildStrategy), `Missing strategy for ${buildStrategy}`);
-
+    if (instanceOrStrategy instanceof Instance) {
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
           id: buildResolverId(this, name),
           type: 'resolver',
-          strategyTag: getStrategyTag(buildStrategy),
-          resolverThunk: buildStrategy(buildFnOrInstance),
+          strategyTag: getStrategyTag(instanceOrStrategy),
+          resolverThunk: instanceOrStrategy,
         }) as any,
         this.isFrozenRef,
       );
     }
 
-    if (buildFnOrInstance instanceof Instance) {
+    // TODO: potential gc issue while getting by id
+
+    if (buildFn && typeof instanceOrStrategy === 'function') {
+      invariant(isStrategyTagged(instanceOrStrategy), `Missing strategy for ${instanceOrStrategy}`);
+
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
           id: buildResolverId(this, name),
           type: 'resolver',
-          strategyTag: getStrategyTag(buildFnOrInstance),
-          resolverThunk: buildFnOrInstance,
+          strategyTag: getStrategyTag(instanceOrStrategy),
+          resolverThunk: instanceOrStrategy(buildFn),
         }) as any,
         this.isFrozenRef,
       );

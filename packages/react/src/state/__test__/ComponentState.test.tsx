@@ -21,7 +21,7 @@ describe(`ComponentState`, () => {
 
   describe(`instantiating dependencies`, () => {
     const m1 = module() //breakme
-      .define('val1', () => new DummyComponentState(), singleton)
+      .define('val1', singleton, () => new DummyComponentState())
       .build();
 
     function setup() {
@@ -48,7 +48,7 @@ describe(`ComponentState`, () => {
   describe(`observability`, () => {
     it(`re-renders view`, async () => {
       const m = module()
-        .define('componentState', () => new DummyComponentState(), singleton)
+        .define('componentState', singleton, () => new DummyComponentState())
         .build();
 
       const TestSubject = () => {

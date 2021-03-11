@@ -22,7 +22,7 @@ const dispatchAction = <TPayload, TAction extends AnyAction>(
 
 export const nodesModule = unit()
   .import('storeModule', storeModule)
-  .define('selectNodesIds', () => selectNodesIds, singleton)
-  .define('selectNodePosition', () => selectNodePosition, singleton)
-  .define('setNodePosition', ({ storeModule }) => storeModule.boundAction(setNodePositionAction), singleton)
+  .define('selectNodesIds', singleton, () => selectNodesIds)
+  .define('selectNodePosition', singleton, () => selectNodePosition)
+  .define('setNodePosition', singleton, ({ storeModule }) => storeModule.boundAction(setNodePositionAction))
   .build();

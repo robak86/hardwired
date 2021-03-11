@@ -9,11 +9,11 @@ import { singleton } from 'hardwired';
 describe(`useModules`, () => {
   describe(`instantiating dependencies`, () => {
     const m1 = module()
-      .define('val1', () => 'val1', singleton)
+      .define('val1', singleton, () => 'val1')
       .build();
 
     const m2 = module()
-      .define('val2', () => 'val2', singleton)
+      .define('val2', singleton, () => 'val2')
       .build();
 
     function setup() {
@@ -46,7 +46,7 @@ describe(`useModules`, () => {
     }
 
     const m1 = module()
-      .define('cls', () => new TestClass(), request)
+      .define('cls', request, () => new TestClass())
       .build();
 
     function setup() {

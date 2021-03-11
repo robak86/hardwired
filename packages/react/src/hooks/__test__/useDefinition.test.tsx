@@ -8,8 +8,8 @@ import { useDefinition } from '../useDefinition';
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
     const m1 = module()
-      .define('val1', () => 'val1', singleton)
-      .define('val2', () => 'val2', singleton)
+      .define('val1', singleton, () => 'val1')
+      .define('val2', singleton, () => 'val2')
       .build();
 
     function setup() {
@@ -41,7 +41,7 @@ describe(`useDefinition`, () => {
     }
 
     const m1 = module()
-      .define('cls', () => new TestClass(), request)
+      .define('cls', request, () => new TestClass())
       .build();
 
     function setup() {

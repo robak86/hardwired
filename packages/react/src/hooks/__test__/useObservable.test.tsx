@@ -10,8 +10,8 @@ import { singleton } from '../../../../core/src/strategies/SingletonStrategy';
 describe(`useObservable`, () => {
   describe(`instantiating dependencies`, () => {
     const m1 = module() //breakme
-      .define('val1', () => new DummyObservable('val1'), singleton)
-      .define('val2', () => new DummyObservable('val2'), singleton)
+      .define('val1', singleton, () => new DummyObservable('val1'))
+      .define('val2', singleton, () => new DummyObservable('val2'))
       .build();
 
     function setup() {
@@ -37,7 +37,7 @@ describe(`useObservable`, () => {
 
   describe(`binding transient dependencies to component instance`, () => {
     const m1 = module()
-      .define('cls', () => new DummyObservable(Math.random()), singleton)
+      .define('cls', singleton, () => new DummyObservable(Math.random()))
       .build();
 
     function setup() {
@@ -90,7 +90,7 @@ describe(`useObservable`, () => {
       jest.spyOn(observable, 'subscribe');
 
       const m = module()
-        .define('observable', () => observable, singleton)
+        .define('observable', singleton, () => observable)
         .build();
 
       const TestSubject = () => {
@@ -125,7 +125,7 @@ describe(`useObservable`, () => {
       }
 
       const m = module()
-        .define('observable', () => observable, singleton)
+        .define('observable', singleton, () => observable)
         .build();
 
       const TestSubject = () => {
@@ -155,7 +155,7 @@ describe(`useObservable`, () => {
       const observable = new DummyObservable(1);
 
       const m = module()
-        .define('observable', () => observable, singleton)
+        .define('observable', singleton, () => observable)
         .build();
 
       const TestSubject = () => {

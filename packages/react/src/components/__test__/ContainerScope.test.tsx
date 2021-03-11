@@ -11,7 +11,7 @@ describe(`ContainerScope`, () => {
     let counter = 0;
 
     const m = module()
-      .define('value', () => (counter += 1), scoped)
+      .define('value', scoped, () => (counter += 1))
       .build();
 
     const ValueRenderer = ({ testId }) => {
