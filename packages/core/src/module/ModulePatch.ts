@@ -2,7 +2,6 @@ import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import { Instance } from '../resolvers/abstract/Instance';
 import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
-import { singleton } from '../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
 import { DecoratorResolver } from '../resolvers/DecoratorResolver';
 import { AnyResolver, isInstanceDefinition, Module, ModuleRecord } from './Module';
@@ -35,21 +34,21 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
 
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
-    instance: Instance<TValue> | ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => Instance<TValue>),
-  ): ModulePatch<TRecord>;
-
-  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
-    name: TKey,
+    strategy: (resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) => BuildStrategy<TValue>,
     buildFn: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
-    buildStrategy?: (
-      resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
-    ) => BuildStrategy<TValue>,
   ): ModulePatch<TRecord>;
 
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
-    buildFnOrInstance: ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) | Instance<TValue>,
-    buildStrategy = singleton,
+    instance: Instance<TValue>,
+  ): ModulePatch<TRecord>;
+
+  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
+    name: TKey,
+    instanceOrStrategy:
+      | Instance<TValue>
+      | ((resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) => BuildStrategy<TValue>),
+    buildFn?: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
   ): ModulePatch<TRecord> {
     invariant(
       !this.patchedResolvers.hasKey(name),
@@ -60,29 +59,33 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     const prev = this.registry.get(name);
     invariant(prev?.type === 'resolver', `Cannot replace import`);
 
-    if (typeof buildFnOrInstance === 'function') {
+    if (buildFn && typeof instanceOrStrategy === 'function') {
       return new ModulePatch(
         this.moduleId,
         this.registry,
         this.patchedResolvers.extend(name, {
           id: prev.id,
           type: 'resolver',
-          strategyTag: isStrategyTagged(buildStrategy) ? getStrategyTag(buildStrategy) : undefined,
-          resolverThunk: buildStrategy(buildFnOrInstance),
+          strategyTag: isStrategyTagged(instanceOrStrategy) ? getStrategyTag(instanceOrStrategy) : undefined,
+          resolverThunk: instanceOrStrategy(buildFn),
         }) as any,
       );
     }
 
-    return new ModulePatch(
-      this.moduleId,
-      this.registry,
-      this.patchedResolvers.extend(name, {
-        id: prev.id,
-        type: 'resolver',
-        strategyTag: buildFnOrInstance.strategyTag,
-        resolverThunk: buildFnOrInstance,
-      }) as any,
-    );
+    if (instanceOrStrategy instanceof Instance) {
+      return new ModulePatch(
+        this.moduleId,
+        this.registry,
+        this.patchedResolvers.extend(name, {
+          id: prev.id,
+          type: 'resolver',
+          strategyTag: isStrategyTagged(instanceOrStrategy) ? getStrategyTag(instanceOrStrategy) : undefined,
+          resolverThunk: instanceOrStrategy,
+        }) as any,
+      );
+    }
+
+    throw new Error('Wrong params');
   }
 
   decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
