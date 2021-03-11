@@ -7,6 +7,7 @@ import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';
 import { ContextLookup } from '../context/ContextLookup';
 import { ContextScopes } from '../context/ContextScopes';
+import { unwrapThunk } from '../utils/Thunk';
 
 export type ChildScopeOptions = {
   overrides?: ModulePatch<any>[];
@@ -27,7 +28,6 @@ export class Container {
     return inject(ContextScopes.checkoutRequestScope(this.containerContext));
   }
 
-  // TODO: remove
   getByStrategy<TValue, TStrategy extends BuildStrategyFactory<any, TValue>>(
     strategy: TStrategy,
   ): ExtractBuildStrategyFactoryType<TStrategy>[] {
@@ -45,13 +45,13 @@ export class Container {
     });
   }
 
-  // getByTag(tag: symbol): unknown[] {
-  //   const context = this.containerContext.forNewRequest();
-  //   return this.containerContext.runWithPredicate(
-  //     definition => unwrapThunk(definition.resolverThunk).tags.includes(tag),
-  //     context,
-  //   );
-  // }
+  getByTag(tag: symbol): unknown[] {
+    const context = ContextScopes.checkoutRequestScope(this.containerContext);
+    return ContextService.runWithPredicate(
+      definition => unwrapThunk(definition.resolverThunk).tags.includes(tag),
+      context,
+    );
+  }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
@@ -72,16 +72,14 @@ export class Container {
   }
 }
 
-// TODO: we need to have ability to provide patches which are not overridable by patches provided to nested scopes (testing!)
-// or just clear distinction that patches provided to container are irreplaceable by patches provided to scopes
 export type ContainerOptions = {
   context?: ContainerContext;
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: ModulePatch<any>[]; // TODO: container probably don't requires overrides which can by overriden by child scopes
-  eager?: Module<any>[];
+  overrides?: ModulePatch<any>[];
   invariants?: ModulePatch<any>[];
+  eager?: Module<any>[];
 };
 
 export function container({
