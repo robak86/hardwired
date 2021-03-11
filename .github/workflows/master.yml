@@ -24,7 +24,7 @@ jobs:
 
       - run: yarn install
       - run: yarn build
-      - run: yarn test --selectProjects core --coverage
+      - run: yarn test --coverage
 
       - name: Copy core documentation
         run: cp ./README.md ./packages/core/README.md
