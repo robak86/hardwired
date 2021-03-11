@@ -26,7 +26,7 @@ export class ImmutableMap<D extends Record<string, any>> {
   }
 
   hasKey(key): key is keyof D {
-    return !!this.records[key]; //TODO: wont work for null|0|''|undefined values :D
+    return this.keys.includes(key);
   }
 
   reverse(): ImmutableMap<D> {
