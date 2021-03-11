@@ -18,7 +18,7 @@ describe(`ServiceLocator`, () => {
         .define('cls', singleton, ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString))
         .build();
 
-      const c = container({ overrides: [child.replace('someNumber', singleton, () => 456)] });
+      const c = container({ overrides: [child.replace('someNumber', () => 456)] });
 
       const locator = c.get(m, 'locator');
       const cls = locator.withScope(({ get }) => get(m, 'cls'));
@@ -42,7 +42,7 @@ describe(`ServiceLocator`, () => {
           .define('cls', singleton, ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString))
           .build();
 
-        const c = container({ overrides: [child.replace('someNumber', singleton, () => 456)] });
+        const c = container({ overrides: [child.replace('someNumber', () => 456)] });
 
         const locator = c.get(m, 'locator');
         const { cls } = locator.asObject(m);

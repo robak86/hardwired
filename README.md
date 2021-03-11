@@ -11,7 +11,7 @@ Minimalistic, type-safe DI/IoC solution for TypeScript.
 - [x] Lazy instantiation of the dependencies
 - [x] Easy mocking and testing
 - [x] Extendable design
-- [x] Allows writing code that is not coupled to DI container
+- [x] Allows writing code which is not coupled to DI container
   - does not pollute user code with DI specific code (usually decorators or static properties)
 - [x] Designed for structural typing
 

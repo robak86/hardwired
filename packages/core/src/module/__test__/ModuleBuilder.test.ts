@@ -98,7 +98,7 @@ describe(`ModuleBuilder`, () => {
         .define('key1', singleton, () => 123)
         .build();
 
-      const replaced = m2.replace('key1', singleton, () => 123);
+      const replaced = m2.replace('key1', () => 123);
 
       type ExpectedType = {
         imported: {
@@ -111,7 +111,7 @@ describe(`ModuleBuilder`, () => {
       expectType<TypeEqual<ModulePatch.Materialized<typeof replaced>, ExpectedType>>(true);
 
       // @ts-expect-error - replacing is only allowed for the same types (cannot replace int with string)
-      m2.replace('key1', singleton, () => 'sdf');
+      m2.replace('key1', () => 'sdf');
     });
   });
 
@@ -127,7 +127,7 @@ describe(`ModuleBuilder`, () => {
         .define('cls', singleton, ({ imported }) => new TestClassArgs2(imported.key1, imported.key2))
         .build();
 
-      const mPatch = child1.replace('key2', singleton, () => 'replacedString');
+      const mPatch = child1.replace('key2', () => 'replacedString');
 
       const c = container({
         overrides: [mPatch],
@@ -152,8 +152,8 @@ describe(`ModuleBuilder`, () => {
       const c = container({
         overrides: [
           child1 //breakme
-            .replace('key1', singleton, () => 456)
-            .replace('key2', singleton, () => 'replacedString'),
+            .replace('key1', () => 456)
+            .replace('key2', () => 'replacedString'),
         ],
       });
 
@@ -181,7 +181,7 @@ describe(`ModuleBuilder`, () => {
         .define('a', singleton, () => 'string')
         .build();
 
-      const m2 = m1.replace('a', singleton, () => 'someOtherString');
+      const m2 = m1.replace('a', () => 'someOtherString');
       expect(m1.isEqual(m2)).toEqual(true);
     });
   });
@@ -193,7 +193,7 @@ describe(`ModuleBuilder`, () => {
 
         try {
           // @ts-expect-error - invalid key
-          emptyModule.replace('should raise compilation error', undefined, () => 1);
+          emptyModule.replace('should raise compilation error', () => 1);
         } catch (err) {
           // catch runtime error related to missing key
         }
@@ -205,7 +205,7 @@ describe(`ModuleBuilder`, () => {
           .build();
 
         // @ts-expect-error - value(1) is not compatible with string
-        emptyModule.replace('someString', singleton, () => 1);
+        emptyModule.replace('someString', () => 1);
       });
     });
   });

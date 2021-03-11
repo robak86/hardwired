@@ -18,7 +18,7 @@ describe(`ModulePatch`, () => {
         }),
       );
 
-      const withReplacedA = m.replace('a', singleton, () => 2);
+      const withReplacedA = m.replace('a', () => 2);
       const updatedAResolver = withReplacedA.patchedResolvers.get('a') as Module.InstanceDefinition;
       expect(updatedAResolver.id).toEqual('a');
     });
@@ -35,7 +35,7 @@ describe(`ModulePatch`, () => {
           resolverThunk: singleton(() => 1),
         }),
       );
-      const patch = m.replace('a', singleton, () => 3);
+      const patch = m.replace('a', () => 3);
       expect(patch.moduleId).toEqual(m.moduleId);
     });
   });
@@ -67,13 +67,13 @@ describe(`ModulePatch`, () => {
           }),
       );
 
-      const aReplacementResolver = () => 20;
+      const aReplacementResolver = singleton(() => 20);
 
-      const m1 = m.replace('a', singleton, aReplacementResolver);
+      const m1 = m.replace('a', aReplacementResolver);
 
-      const bReplacementResolver = () => 30;
+      const bReplacementResolver = singleton(() => 30);
 
-      const m2 = m.replace('b', singleton, bReplacementResolver);
+      const m2 = m.replace('b', bReplacementResolver);
 
       const patched = Module.fromPatchedModules([m1, m2]);
 
@@ -82,24 +82,8 @@ describe(`ModulePatch`, () => {
           'a_plus_b',
           { id: 'c', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: a_plus_b_Resolver },
         ],
-        [
-          'a',
-          {
-            id: 'a',
-            type: 'resolver',
-            strategyTag: singletonStrategyTag,
-            resolverThunk: singleton(aReplacementResolver),
-          },
-        ],
-        [
-          'b',
-          {
-            id: 'b',
-            type: 'resolver',
-            strategyTag: singletonStrategyTag,
-            resolverThunk: singleton(bReplacementResolver),
-          },
-        ],
+        ['a', { id: 'a', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: aReplacementResolver }],
+        ['b', { id: 'b', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: bReplacementResolver }],
       ]);
     });
 
@@ -130,13 +114,13 @@ describe(`ModulePatch`, () => {
           }),
       );
 
-      const aReplacementResolver = () => 20;
+      const aReplacementResolver = singleton(() => 20);
 
-      const m1 = m.replace('a', singleton, aReplacementResolver);
+      const m1 = m.replace('a', aReplacementResolver);
 
-      const yetAnotherAReplacement = () => 30;
+      const yetAnotherAReplacement = singleton(() => 30);
 
-      const m2 = m.replace('a', singleton, yetAnotherAReplacement);
+      const m2 = m.replace('a', yetAnotherAReplacement);
 
       const patched = Module.fromPatchedModules([m1, m2]);
 
@@ -146,15 +130,7 @@ describe(`ModulePatch`, () => {
           'a_plus_b',
           { id: 'c', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: a_plus_b_Resolver },
         ],
-        [
-          'a',
-          {
-            id: 'a',
-            type: 'resolver',
-            strategyTag: singletonStrategyTag,
-            resolverThunk: singleton(yetAnotherAReplacement),
-          },
-        ],
+        ['a', { id: 'a', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: yetAnotherAReplacement }],
       ]);
     });
   });

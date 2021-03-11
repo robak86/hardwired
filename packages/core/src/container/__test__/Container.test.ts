@@ -53,7 +53,7 @@ describe(`Container`, () => {
 
       const c = container({
         eager: [m],
-        overrides: [m.replace('b', singleton, () => 20)],
+        overrides: [m.replace('b', () => 20, singleton)],
       });
 
       const allSingletons = c.__getByStrategy(singleton);
@@ -69,7 +69,7 @@ describe(`Container`, () => {
 
       const c = container({
         eager: [m],
-        overrides: [m.replace('b', transient, () => 20)],
+        overrides: [m.replace('b', () => 20, transient)],
       });
 
       const allSingletons = c.__getByStrategy(singleton);
@@ -83,7 +83,7 @@ describe(`Container`, () => {
         const m = module()
           .define('a', singleton, () => 1)
           .build();
-        const mPatch = m.replace('a', singleton, () => 2);
+        const mPatch = m.replace('a', () => 2);
         expect(container({ overrides: [mPatch] }).get(m, 'a')).toEqual(2);
       });
 
@@ -97,7 +97,7 @@ describe(`Container`, () => {
           return () => 3;
         });
 
-        const mPatch = m.replace('a', singleton, factoryFunctionSpy);
+        const mPatch = m.replace('a', factoryFunctionSpy);
 
         const testContainer = container({ overrides: [mPatch] });
         testContainer.get(m, 'a');
@@ -111,10 +111,10 @@ describe(`Container`, () => {
           .define('a', singleton, () => 1)
           .build();
 
-        const updated = m.replace('a', singleton, ctx => {
+        const updated = m.replace('a', ctx => {
           // @ts-expect-error - a shouldn't be available in the ctx to avoid Maximum call stack size exceeded
           ctx.a;
-          return 1;
+          return singleton(() => 1);
         });
       });
 
@@ -124,7 +124,7 @@ describe(`Container`, () => {
           .define('b', singleton, () => 'b')
           .build();
 
-        const mPatch = m.replace('a', singleton, () => 2);
+        const mPatch = m.replace('a', () => 2);
         expect(container({ overrides: [mPatch] }).get(m, 'b')).toEqual('b');
       });
 
@@ -155,8 +155,8 @@ describe(`Container`, () => {
       const c = container({
         overrides: [
           //breakme
-          m.replace('a', singleton, () => 10),
-          m.replace('b', singleton, () => 20),
+          m.replace('a', () => 10),
+          m.replace('b', () => 20),
         ],
       });
 
@@ -171,7 +171,7 @@ describe(`Container`, () => {
           .build();
         const c = container();
 
-        const mPatch = m.replace('a', request, () => 2);
+        const mPatch = m.replace('a', () => 2, request);
         const childC = c.checkoutChildScope({ overrides: [mPatch] });
 
         expect(c.get(m, 'a')).toEqual(1);
@@ -185,7 +185,7 @@ describe(`Container`, () => {
         const c = container();
         expect(c.get(m, 'a')).toEqual(1);
 
-        const mPatch = m.replace('a', scoped, () => 2);
+        const mPatch = m.replace('a', () => 2, scoped);
         const childC = c.checkoutChildScope({ overrides: [mPatch] });
         expect(childC.get(m, 'a')).toEqual(2);
       });
@@ -196,7 +196,7 @@ describe(`Container`, () => {
           .build();
         const c = container();
 
-        const mPatch = m.replace('a', singleton, () => 2);
+        const mPatch = m.replace('a', () => 2, singleton);
         const childC = c.checkoutChildScope({ overrides: [mPatch] });
 
         expect(childC.get(m, 'a')).toEqual(2);
@@ -209,7 +209,7 @@ describe(`Container`, () => {
           .build();
         const root = container();
 
-        const patch = m.replace('a', singleton, () => 2);
+        const patch = m.replace('a', () => 2, singleton);
         const level1 = root.checkoutChildScope({ overrides: [patch] });
         const level2 = level1.checkoutChildScope();
 
@@ -236,7 +236,7 @@ describe(`Container`, () => {
 
         const root = container();
         const level1 = root.checkoutChildScope();
-        const level2 = level1.checkoutChildScope({ overrides: [m.replace('a', singleton, () => 1)] });
+        const level2 = level1.checkoutChildScope({ overrides: [m.replace('a', () => 1)] });
         const level3 = level2.checkoutChildScope();
 
         const level3Call = level3.get(m, 'a'); // important that level1 is called as first
@@ -256,8 +256,8 @@ describe(`Container`, () => {
         const m = unit().define('a', singleton, randomFactorySpy).build();
 
         const root = container();
-        const level1 = root.checkoutChildScope({ overrides: [m.replace('a', singleton, () => 1)] });
-        const level2 = level1.checkoutChildScope({ overrides: [m.replace('a', singleton, () => 2)] });
+        const level1 = root.checkoutChildScope({ overrides: [m.replace('a', () => 1)] });
+        const level2 = level1.checkoutChildScope({ overrides: [m.replace('a', () => 2)] });
         const level3 = level2.checkoutChildScope();
 
         const level3Call = level3.get(m, 'a'); // important that level1 is called as first
@@ -280,8 +280,8 @@ describe(`Container`, () => {
             .define('k1', request, () => Math.random())
             .build();
 
-          const invariantPatch = m.replace('k1', request, () => 1);
-          const childScopePatch = m.replace('k1', request, () => 2);
+          const invariantPatch = m.replace('k1', () => 1, request);
+          const childScopePatch = m.replace('k1', () => 2, request);
 
           const c = container({ invariants: [invariantPatch] });
           expect(c.asObject(m).k1).toEqual(1);
@@ -296,8 +296,8 @@ describe(`Container`, () => {
             .define('k2', request, () => Math.random())
             .build();
 
-          const invariantPatch = m.replace('k1', request, () => 1);
-          const childScopePatch = m.replace('k2', request, () => 2);
+          const invariantPatch = m.replace('k1', () => 1, request);
+          const childScopePatch = m.replace('k2', () => 2, request);
 
           const c = container({ invariants: [invariantPatch] });
           expect(c.asObject(m).k1).toEqual(1);
@@ -314,8 +314,8 @@ describe(`Container`, () => {
             .define('k1', singleton, () => Math.random())
             .build();
 
-          const invariantPatch = m.replace('k1', singleton, () => 1);
-          const childScopePatch = m.replace('k1', singleton, () => 2);
+          const invariantPatch = m.replace('k1', () => 1, singleton);
+          const childScopePatch = m.replace('k1', () => 2, singleton);
 
           const c = container({ invariants: [invariantPatch] });
           expect(c.asObject(m).k1).toEqual(1);
@@ -330,8 +330,8 @@ describe(`Container`, () => {
             .define('k2', singleton, () => Math.random())
             .build();
 
-          const invariantPatch = m.replace('k1', singleton, () => 1);
-          const childScopePatch = m.replace('k2', singleton, () => 2);
+          const invariantPatch = m.replace('k1', () => 1, singleton);
+          const childScopePatch = m.replace('k2', () => 2, singleton);
 
           const c = container({ invariants: [invariantPatch] });
           expect(c.asObject(m).k1).toEqual(1);
