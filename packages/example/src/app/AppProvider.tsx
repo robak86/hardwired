@@ -1,9 +1,8 @@
 import { ContainerProvider } from 'hardwired-react';
 import { Container } from 'hardwired';
-import { FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import { ModulesConsumer } from '../../../react/src/components/ModulesConsumer';
 import { storeModule } from '../state/store.module';
-import React from 'react';
 import { Provider as StoreProvider } from 'react-redux';
 
 export type AppProviderProps = {

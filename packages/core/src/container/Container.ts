@@ -28,7 +28,7 @@ export class Container {
     return inject(ContextScopes.checkoutRequestScope(this.containerContext));
   }
 
-  getByStrategy<TValue, TStrategy extends BuildStrategyFactory<any, TValue>>(
+  __getByStrategy<TValue, TStrategy extends BuildStrategyFactory<any, TValue>>(
     strategy: TStrategy,
   ): ExtractBuildStrategyFactoryType<TStrategy>[] {
     invariant(isStrategyTagged(strategy), `Cannot use given strategy for`);
@@ -45,7 +45,7 @@ export class Container {
     });
   }
 
-  getByTag(tag: symbol): unknown[] {
+  __getByTag(tag: symbol): unknown[] {
     const context = ContextScopes.checkoutRequestScope(this.containerContext);
     return ContextService.runWithPredicate(
       definition => unwrapThunk(definition.resolverThunk).tags.includes(tag),

@@ -40,7 +40,7 @@ describe(`Container`, () => {
         .build();
 
       const c = container({ eager: [m] });
-      const allSingletons = c.getByStrategy(singleton);
+      const allSingletons = c.__getByStrategy(singleton);
       expect(allSingletons).toEqual([1, 2]);
     });
 
@@ -56,7 +56,7 @@ describe(`Container`, () => {
         overrides: [m.replace('b', () => 20, singleton)],
       });
 
-      const allSingletons = c.getByStrategy(singleton);
+      const allSingletons = c.__getByStrategy(singleton);
       expect(allSingletons).toEqual([1, 20]);
     });
 
@@ -72,7 +72,7 @@ describe(`Container`, () => {
         overrides: [m.replace('b', () => 20, transient)],
       });
 
-      const allSingletons = c.getByStrategy(singleton);
+      const allSingletons = c.__getByStrategy(singleton);
       expect(allSingletons).toEqual([1]);
     });
   });
