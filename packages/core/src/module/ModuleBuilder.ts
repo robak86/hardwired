@@ -2,13 +2,15 @@ import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
-import { AnyResolver, Module, ModuleRecord } from '../resolvers/abstract/Module';
+import { AnyResolver, Module, ModuleRecord } from './Module';
 import { Instance } from '../resolvers/abstract/Instance';
-import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
-import { singleton } from '../strategies/SingletonStrategy';
+import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
+
+export type IdentifiableModule = { moduleId: ModuleId };
+export const buildResolverId = (module: IdentifiableModule, name: string) => `${module.moduleId.id}:${name}`;
 
 export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   static empty(): ModuleBuilder<{}> {
@@ -17,12 +19,12 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   protected constructor(
     public moduleId: ModuleId,
-    public registry: ImmutableMap<Record<string, Module.BoundResolver>>,
+    public registry: ImmutableMap<Record<string, Module.Definition>>,
     private isFrozenRef: { isFrozen: boolean },
   ) {}
 
   isEqual(otherModule: Module<any>): boolean {
-    return this.moduleId.id === otherModule.moduleId.id;
+    return this.moduleId.revision === otherModule.moduleId.revision;
   }
 
   import<TKey extends string, TValue extends Module<any>>(
@@ -35,50 +37,66 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
+        type: 'module',
         resolverThunk: resolver,
-        dependencies: [],
-      }) as any,
+      }),
       this.isFrozenRef,
     );
   }
 
-  define<TKey extends string, TInstance extends Instance<any, any>>(
-    name: TKey,
-    instance: TInstance | ((ctx: ModuleRecord.Materialized<TRecord>) => TInstance),
-  ): ModuleBuilder<TRecord & Record<TKey, TInstance>>;
+  // TODO: types allows returning strategy instead of value - add conditional type validation on return type ?
 
   define<TKey extends string, TValue>(
     name: TKey,
+    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => any) => Instance<any>,
     buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
-    buildStrategy?: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>>;
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
 
   define<TKey extends string, TValue>(
     name: TKey,
-    buildFnOrInstance: ((ctx: ModuleRecord.Materialized<TRecord>) => TValue) | Instance<TValue, []>,
-    buildStrategy = singleton,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue, []>>> {
+    instance: Instance<TValue>,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
+
+  define<TKey extends string, TValue>(
+    name: TKey,
+    instanceOrStrategy:
+      | Instance<TValue>
+      | ((resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => Instance<TValue>),
+    buildFn?: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
+  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
 
-    if (typeof buildFnOrInstance === 'function') {
+    if (instanceOrStrategy instanceof Instance) {
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
-          resolverThunk: buildStrategy(buildFnOrInstance),
-          dependencies: [],
+          id: buildResolverId(this, name),
+          type: 'resolver',
+          strategyTag: getStrategyTag(instanceOrStrategy),
+          resolverThunk: instanceOrStrategy,
         }) as any,
         this.isFrozenRef,
       );
     }
 
-    return new ModuleBuilder(
-      ModuleId.next(this.moduleId),
-      this.registry.extend(name, {
-        resolverThunk: buildFnOrInstance,
-        dependencies: [],
-      }) as any,
-      this.isFrozenRef,
-    );
+    // TODO: potential gc issue while getting by id
+
+    if (buildFn && typeof instanceOrStrategy === 'function') {
+      invariant(isStrategyTagged(instanceOrStrategy), `Missing strategy for ${instanceOrStrategy}`);
+
+      return new ModuleBuilder(
+        ModuleId.next(this.moduleId),
+        this.registry.extend(name, {
+          id: buildResolverId(this, name),
+          type: 'resolver',
+          strategyTag: getStrategyTag(instanceOrStrategy),
+          resolverThunk: instanceOrStrategy(buildFn),
+        }) as any,
+        this.isFrozenRef,
+      );
+    }
+
+    throw new Error('Wrong params');
   }
 
   build(): Module<TRecord> {

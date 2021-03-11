@@ -1,7 +1,9 @@
-import { ContainerContext } from './ContainerContext';
 import invariant from 'tiny-invariant';
-
-import { Module, ModuleRecord } from '../resolvers/abstract/Module';
+import { isInstanceDefinition, Module, ModuleRecord } from '../module/Module';
+import { IContainer } from './IContainer';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextService } from '../context/ContextService';
+import { ContextScopes } from '../context/ContextScopes';
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends ModuleRecord, K extends keyof ModuleRecord.Materialized<TRegistryRecord> & string>(
@@ -14,20 +16,26 @@ export class ServiceLocator {
   constructor(private containerContext: ContainerContext) {}
 
   withScope<T>(factory: (obj: { get: ServiceLocatorGet }) => T): T {
-    const requestContext = this.containerContext.forNewRequest();
+    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
 
     return factory({
       get: (module, key) => {
-        const instanceResolver = requestContext.getInstanceResolver(module, key);
-        invariant(instanceResolver, `Cannot find definition ${key}`);
-
-        return requestContext.runResolver(instanceResolver, requestContext)
+        const instanceResolver = ContextService.getModuleInstanceResolver(module, key, requestContext);
+        return ContextService.runInstanceDefinition(instanceResolver, requestContext);
       },
     });
   }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    const requestContext = this.containerContext.forNewRequest();
-    return this.containerContext.materializeModule(module, requestContext);
+    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
+    return ContextService.materializeWithAccessors(module, requestContext);
+  }
+
+  checkoutScope(overrides: Module<any>[]): IContainer {
+    throw new Error('Implement me');
+  }
+
+  buildScope(builder): IContainer {
+    throw new Error('Implement me');
   }
 }

@@ -6,7 +6,7 @@ export type UseModuleHook = <TModule extends Module<any>>(module: TModule) => Mo
 
 export const useModule: UseModuleHook = module => {
   const container = useContainer();
-  const instanceRef = useRef(container.getContext().forNewRequest());
+  const instanceRef = useRef(container.asObject(module));
 
-  return instanceRef.current.materializeModule(module, instanceRef.current);
+  return instanceRef.current;
 };

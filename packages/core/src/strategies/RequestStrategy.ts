@@ -1,18 +1,26 @@
-import { ContainerContext } from '../container/ContainerContext';
 import { BuildStrategy } from './abstract/BuildStrategy';
+import { buildTaggedStrategy } from './utils/strategyTagging';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextLookup } from '../context/ContextLookup';
+import { ContextMutations } from '../context/ContextMutations';
 
 export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
-  build(context: ContainerContext, materializedModule): TValue {
-    if (context.hasInRequestScope(this.id)) {
-      return context.getFromRequestScope(this.id);
+  readonly strategyTag = requestStrategyTag;
+
+  build(id: string, context: ContainerContext, materializedModule): TValue {
+    if (ContextLookup.hasInRequestScope(id, context)) {
+      return ContextLookup.getFromRequestScope(id, context);
     } else {
       const instance = this.buildFunction(materializedModule);
-      context.setForRequestScope(this.id, instance);
+      ContextMutations.setForRequestScope(id, instance, context);
       return instance;
     }
   }
 }
 
-export const request = <TReturn>(buildFunction: (ctx) => TReturn) => {
-  return new RequestStrategy(buildFunction);
-};
+export const requestStrategyTag = Symbol();
+
+export const request = buildTaggedStrategy(
+  <TReturn>(buildFunction: (ctx) => TReturn) => new RequestStrategy(buildFunction),
+  requestStrategyTag,
+);

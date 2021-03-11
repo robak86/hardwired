@@ -1,7 +1,7 @@
 import { ModuleBuilder, unit } from '../../module/ModuleBuilder';
 
 import { container } from '../../container/Container';
-import { Module } from '../../resolvers/abstract/Module';
+import { Module } from '../../module/Module';
 import { expectType, TypeEqual } from 'ts-expect';
 import { transient } from '../TransientStrategy';
 import { request } from '../RequestStrategy';
@@ -11,8 +11,8 @@ describe(`LiteralResolver`, () => {
   describe(`types`, () => {
     it(`return defines correct return type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('val1', () => 123)
-        .define('val2', () => true)
+        .define('val1', singleton, () => 123)
+        .define('val2', singleton, () => true)
         .build();
 
       type Actual = Module.Materialized<typeof m>['val2'];
@@ -22,8 +22,8 @@ describe(`LiteralResolver`, () => {
 
     it(`uses correct materialized module type`, async () => {
       const m = ModuleBuilder.empty()
-        .define('val1', () => 123)
-        .define('val2', materializedModule => {
+        .define('val1', singleton, () => 123)
+        .define('val2', singleton, materializedModule => {
           expectType<TypeEqual<typeof materializedModule, { val1: number }>>(true);
         });
     });
@@ -32,7 +32,7 @@ describe(`LiteralResolver`, () => {
   describe(`no dependencies`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
-        .define('literal', () => 'someValue')
+        .define('literal', singleton, () => 'someValue')
         .build();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('someValue');
@@ -42,8 +42,8 @@ describe(`LiteralResolver`, () => {
   describe(`using dependencies from the same module`, () => {
     it(`returns correct instance`, async () => {
       const m = unit()
-        .define('literalDependency', () => 'dependency')
-        .define('literal', ({ literalDependency }) => literalDependency)
+        .define('literalDependency', singleton, () => 'dependency')
+        .define('literal', singleton, ({ literalDependency }) => literalDependency)
         .build();
       const c = container();
       expect(c.get(m, 'literal')).toEqual('dependency');
@@ -53,12 +53,12 @@ describe(`LiteralResolver`, () => {
   describe(`getting dependencies from imported module`, () => {
     it(`returns correct instance`, async () => {
       const childM = unit()
-        .define('someValue', () => 1)
+        .define('someValue', singleton, () => 1)
         .build();
 
       const parentM = unit()
         .import('imported', childM)
-        .define('usesImportedValue', ({ imported }) => imported.someValue)
+        .define('usesImportedValue', singleton, ({ imported }) => imported.someValue)
         .build();
 
       const c = container();
@@ -69,12 +69,12 @@ describe(`LiteralResolver`, () => {
   describe(`overrides`, () => {
     it(`works with overridden imported module`, async () => {
       const childM = unit()
-        .define('someValue', () => 1)
+        .define('someValue', singleton, () => 1)
         .build();
 
       const parentM = unit()
         .import('imported', childM)
-        .define('usesImportedValue', ({ imported }) => imported.someValue)
+        .define('usesImportedValue', singleton, ({ imported }) => imported.someValue)
         .build();
 
       const c = container({ overrides: [childM.replace('someValue', () => 123)] });
@@ -85,7 +85,7 @@ describe(`LiteralResolver`, () => {
   describe(`transient scope`, () => {
     it(`returns new instance on each request`, async () => {
       const mod = unit()
-        .define('someValue', () => ({ someProperty: 1 }), transient)
+        .define('someValue', transient, () => ({ someProperty: 1 }))
         .build();
 
       const c = container();
@@ -96,7 +96,7 @@ describe(`LiteralResolver`, () => {
   describe(`singleton scope`, () => {
     it(`returns the same instance`, async () => {
       const mod = unit()
-        .define('someValue', () => ({ someProperty: 1 }), singleton)
+        .define('someValue', singleton, () => ({ someProperty: 1 }))
 
         .build();
 
@@ -108,8 +108,8 @@ describe(`LiteralResolver`, () => {
   describe(`request scope`, () => {
     it(`returns the same instance`, async () => {
       const mod = unit()
-        .define('someValue', () => ({ someProperty: Math.random() }), request)
-        .define('someValueProxy', ({ someValue }) => someValue, request)
+        .define('someValue', request, () => ({ someProperty: Math.random() }))
+        .define('someValueProxy', request, ({ someValue }) => someValue)
         .build();
 
       const c = container();
@@ -118,7 +118,8 @@ describe(`LiteralResolver`, () => {
 
       expect(req1.someValue === req1.someValueProxy).toEqual(true);
       expect(req2.someValue === req2.someValueProxy).toEqual(true);
-      expect(req1 === req2).toEqual(true);
+      expect(req1.someValue).not.toEqual(req2.someValue);
+      expect(req1.someValueProxy).not.toEqual(req2.someValueProxy);
     });
   });
 });

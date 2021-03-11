@@ -8,14 +8,14 @@ describe(`ServiceLocator`, () => {
   describe(`overrides`, () => {
     it(`returns instances from overrides modules`, async () => {
       const child = ModuleBuilder.empty()
-        .define('someNumber', () => 123)
-        .define('someString', () => 'some content')
+        .define('someNumber', singleton, () => 123)
+        .define('someString', singleton, () => 'some content')
         .build();
 
       const m = ModuleBuilder.empty()
         .import('imported', child)
         .define('locator', serviceLocator())
-        .define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString), singleton)
+        .define('cls', singleton, ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString))
         .build();
 
       const c = container({ overrides: [child.replace('someNumber', () => 456)] });
@@ -32,14 +32,14 @@ describe(`ServiceLocator`, () => {
     describe(`overrides`, () => {
       it(`returns instances from overrides modules`, async () => {
         const child = ModuleBuilder.empty()
-          .define('someNumber', () => 123)
-          .define('someString', () => 'some content')
+          .define('someNumber', singleton, () => 123)
+          .define('someString', singleton, () => 'some content')
           .build();
 
         const m = ModuleBuilder.empty()
           .import('imported', child)
           .define('locator', serviceLocator())
-          .define('cls', ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString), singleton)
+          .define('cls', singleton, ({ imported }) => new TestClassArgs2(imported.someNumber, imported.someString))
           .build();
 
         const c = container({ overrides: [child.replace('someNumber', () => 456)] });

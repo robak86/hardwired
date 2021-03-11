@@ -1,18 +1,26 @@
-import { ContainerContext } from '../container/ContainerContext';
 import { BuildStrategy } from './abstract/BuildStrategy';
+import { buildTaggedStrategy } from './utils/strategyTagging';
+import { ContainerContext } from '../context/ContainerContext';
+import { ContextLookup } from '../context/ContextLookup';
+import { ContextMutations } from '../context/ContextMutations';
 
 export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
-  build(context: ContainerContext, materializedModule): TValue {
-    if (context.hasInGlobalScope(this.id)) {
-      return context.getFromGlobalScope(this.id);
+  readonly strategyTag = singletonStrategyTag;
+
+  build(id: string, context: ContainerContext, materializedModule): TValue {
+    if (ContextLookup.hasInGlobalScope(id, context)) {
+      return ContextLookup.getFromGlobalScope(id, context);
     } else {
       const instance = this.buildFunction(materializedModule);
-      context.setForGlobalScope(this.id, instance);
+      ContextMutations.setForGlobalScope(id, instance, context);
       return instance;
     }
   }
 }
 
-export const singleton = <TReturn>(buildFunction: (ctx) => TReturn) => {
-  return new SingletonStrategy(buildFunction);
-};
+export const singletonStrategyTag = Symbol();
+
+export const singleton = buildTaggedStrategy(
+  <TReturn>(buildFunction: (ctx) => TReturn) => new SingletonStrategy(buildFunction),
+  singletonStrategyTag,
+);

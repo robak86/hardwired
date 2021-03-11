@@ -5,6 +5,13 @@ export class ImmutableMap<D extends Record<string, any>> {
     return new ImmutableMap<{}>({}, []);
   }
 
+  static fromObjectUnordered<TObj extends Record<string, any>>(
+    obj: TObj,
+    orderedKeys: string[] = Object.keys(obj),
+  ): ImmutableMap<TObj> {
+    return new ImmutableMap<TObj>(obj, orderedKeys);
+  }
+
   protected constructor(
     protected readonly records: { [K in keyof D]: D[K] },
     protected readonly orderedKeys: string[],
@@ -14,12 +21,12 @@ export class ImmutableMap<D extends Record<string, any>> {
     return this.records[key];
   }
 
-  getOr<K extends keyof D & string>(key: K, defaultValue: D[K]): D[K] {
+  getOr<K extends string>(key: K, defaultValue: D[K]): D[K] {
     return this.get(key) || defaultValue;
   }
 
   hasKey(key): key is keyof D {
-    return !!this.records[key];
+    return this.keys.includes(key);
   }
 
   reverse(): ImmutableMap<D> {
@@ -30,6 +37,10 @@ export class ImmutableMap<D extends Record<string, any>> {
     return this.orderedKeys;
   }
 
+  get values(): Array<D[keyof D]> {
+    return this.keys.map(key => this.records[key]);
+  }
+
   remove<TKey extends keyof D>(key: TKey): ImmutableMap<Omit<D, TKey>> {
     const cloned = { ...this.records };
 
@@ -37,7 +48,7 @@ export class ImmutableMap<D extends Record<string, any>> {
 
     return new ImmutableMap<Omit<D, TKey>>(
       cloned,
-      this.orderedKeys.filter(key => key !== key),
+      this.orderedKeys.filter(existingKey => existingKey !== key),
     );
   }
 
@@ -49,7 +60,7 @@ export class ImmutableMap<D extends Record<string, any>> {
         ...this.records,
         [key]: value,
       },
-      [...this.orderedKeys, key],
+      [...this.orderedKeys],
     );
   }
 
@@ -61,8 +72,18 @@ export class ImmutableMap<D extends Record<string, any>> {
         ...this.records,
         [key]: value,
       },
-      [...this.orderedKeys.filter(existingKey => existingKey !== key), key],
+      [...this.keys],
     );
+  }
+
+  update<TKey extends keyof D & string, TValue extends D[TKey]>(
+    key: TKey,
+    fn: (prevValue: TValue) => TValue,
+  ): ImmutableMap<D> {
+    invariant(this.records[key], `Cannot replaced not existing value: ${key}`);
+
+    const newValue = fn(this.records[key]);
+    return this.replace(key, newValue);
   }
 
   forEach(iterFn: (val: D[keyof D], key: keyof D) => void) {
@@ -87,7 +108,7 @@ export class ImmutableMap<D extends Record<string, any>> {
     return new ImmutableMap<T & D>(mergedRecords, otherKeys);
   }
 
-  get entries(): Array<[string, any]> {
+  get entries(): [string, any][] {
     return this.keys.map(key => [key, this.records[key]]);
   }
 
@@ -101,5 +122,17 @@ export class ImmutableMap<D extends Record<string, any>> {
       },
       [...this.orderedKeys, key],
     );
+  }
+
+  extendOrSet<TKey extends string, TValue>(key: TKey, value: TValue): ImmutableMap<D & Record<TKey, TValue>> {
+    if (this.hasKey(key)) {
+      return this.set(key, value as D[TKey]);
+    } else {
+      return this.extend(key, value);
+    }
+  }
+
+  toReadonly(): this {
+    throw new Error('Implement me');
   }
 }

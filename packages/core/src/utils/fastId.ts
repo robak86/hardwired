@@ -1,5 +1,5 @@
 let c = 0;
 
-export function createResolverId(): string {
-  return `id_${(c += 1)}`;
+export function createModuleId(): string {
+  return `mod_${(c += 1)}`;
 }

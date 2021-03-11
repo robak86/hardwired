@@ -4,13 +4,14 @@ import { ContainerProvider } from '../ContainerProvider';
 import { ContainerScope } from '../ContainerScope';
 import { useDefinition } from '../../hooks/useDefinition';
 import { render } from '@testing-library/react';
+import { scoped } from 'hardwired';
 
 describe(`ContainerScope`, () => {
   function setup() {
     let counter = 0;
 
     const m = module()
-      .define('value', () => (counter += 1), request)
+      .define('value', scoped, () => (counter += 1))
       .build();
 
     const ValueRenderer = ({ testId }) => {

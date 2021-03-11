@@ -1,4 +1,4 @@
-import { createResolverId } from '../../utils/fastId';
+import { createModuleId } from '../../utils/fastId';
 import { serviceLocator } from '../ServiceLocatorResolver';
 import { container } from '../../container/Container';
 import { unit } from '../../module/ModuleBuilder';
@@ -10,7 +10,7 @@ import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
-    public id = createResolverId();
+    public id = createModuleId();
 
     constructor(public value: string) {}
   }
@@ -28,20 +28,20 @@ describe(`ServiceLocatorResolver`, () => {
   const root = unit()
     .define('locator', serviceLocator())
     .import('singletonModule', () => singletonModule)
-    .define('producedByFactory', () => new DummyFactory())
-    .define('singletonConsumer', ({ singletonModule }) => new TestClassConsumer(singletonModule.reqScoped), request)
+    .define('producedByFactory', singleton, () => new DummyFactory())
+    .define('singletonConsumer', request, ({ singletonModule }) => new TestClassConsumer(singletonModule.reqScoped))
     .build();
 
   const singletonModule = unit()
-    .define('value', () => 'someValue')
-    .define('reqScoped', c => new TestClass(c.value), request)
-    .define('singleton', c => new TestClass(c.value), singleton)
+    .define('value', singleton, () => 'someValue')
+    .define('reqScoped', request, c => new TestClass(c.value))
+    .define('singleton', singleton, c => new TestClass(c.value))
     .build();
 
   describe(`serviceLocator`, () => {
     it(`return Instance type`, async () => {
       const s = serviceLocator();
-      expectType<TypeEqual<typeof s, Instance<ServiceLocator, []>>>(true);
+      expectType<TypeEqual<typeof s, Instance<ServiceLocator>>>(true);
     });
   });
 

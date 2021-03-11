@@ -1,26 +1,14 @@
-import { createResolverId } from '../../utils/fastId';
-import { ContainerContext } from '../../container/ContainerContext';
-
-export enum Scope {
-  singleton = 'singleton',
-  transient = 'transient',
-  request = 'request',
-}
+import { ContainerContext } from '../../context/ContainerContext';
 
 export namespace Instance {
-  export type Unbox<T> = T extends Instance<infer TInstance, any>
-    ? TInstance
-    : 'Cannot unbox instance type from Instance';
+  export type Unbox<T> = T extends Instance<infer TInstance> ? TInstance : 'Cannot unbox instance type from Instance';
 }
 
-export abstract class Instance<TValue, TDeps extends any[]> {
-  readonly __kind: 'instanceResolver' = 'instanceResolver';
-
+export abstract class Instance<TValue> {
   // make sure that generic types won't be erased
   readonly __TValue!: TValue;
-  readonly __TDeps!: TDeps;
+  readonly strategyTag: symbol | undefined;
+  readonly tags: symbol[] = [];
 
-  protected constructor(public readonly id: string = createResolverId()) {}
-
-  abstract build(context: ContainerContext, materializedModule?): TValue;
+  abstract build(id: string, context: ContainerContext, materializedModule?): TValue;
 }

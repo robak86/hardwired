@@ -2,9 +2,9 @@
 
 ![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/robak86/hardwired/branch/master/graph/badge.svg?token=50RAYIVVTT)](https://codecov.io/gh/robak86/hardwired)
 
-**!!! WARNING - Library is still in alpha stage !!!**
+**!!! WARNING - The library is still in early development stage !!!**
 
-Minimalistic, type-safe dependency injection solution for TypeScript.
+Minimalistic, type-safe DI/IoC solution for TypeScript.
 
 - [x] Type-safe, all dependencies checked at compile time
 - [x] No decorators, no reflection
@@ -56,9 +56,9 @@ class Logger {
 }
 
 const loggerModule = module()
-  .define('configuration', () => new LoggerConfiguration(), singleton)
-  .define('logger', m => new Logger(m.configuration), singleton)
-  .build();
+  .define('configuration',singleton, () => new LoggerConfiguration())
+  .define('logger', singleton, m => new Logger(m.configuration))
+  .build(); // this method just builds/freezes the module. Configuration and logger instances are not created yet
 ```
 
 2. Create a container
@@ -86,24 +86,24 @@ const logger = obj.logger; // instance of Logger was created
 
 ### Registering definitions
 
-- `.define(name, buildFn, strategy)` - returns a new instance of the module and appends new definition
+- `.define(name, strategy, buildFn)` - returns a new instance of the module and appends new definition
 
   - `name` - name of the definition
   - `buildFn` - factory function producing value for given definition. It's called with object containing all
     previous definitions available as properties
-  - `strategy` - encapsulates details of `buildFn` calls and returned value caching. By default, it's `singleton`.
+  - `strategy` - encapsulates details of `buildFn` calls and returned value caching.
 
   ```typescript
-  import { module, value } from 'hardwired';
+  import { module, value, singleton } from 'hardwired';
 
   class DummyClass {
     constructor(private a: number, private b: string) {}
   }
 
   const m1 = module()
-    .define('a', () => 123)
-    .define('b', () => 'someString')
-    .define('c', ({ a, b }) => new DummyClass(a, b), singleton)
+    .define('a', singleton, () => 123)
+    .define('b', singleton, () => 'someString')
+    .define('c', singleton, ({ a, b }) => new DummyClass(a, b), singleton)
     .build();
   ```
 
@@ -117,7 +117,7 @@ const logger = obj.logger; // instance of Logger was created
   class SomeClass {}
 
   const someModule = module()
-    .define('transientDependency', () => new SomeClass(), transient)
+    .define('transientDependency', transient, () => new SomeClass())
     .build();
 
   const ct = container();
@@ -133,7 +133,7 @@ const logger = obj.logger; // instance of Logger was created
   class SomeClass {}
 
   const someModule = module()
-    .define('someSingleton', () => new SomeClass(), singleton)
+    .define('someSingleton', singleton, () => new SomeClass())
     .build();
 
   const ct = container();
@@ -150,7 +150,7 @@ const logger = obj.logger; // instance of Logger was created
 - `request` - creates new singleton instance for each new request
 
   ```typescript
-  import { module, request } from 'hardwired';
+  import { module, request, request, singleton } from 'hardwired';
 
   class SomeClass {
     args: any[];
@@ -160,9 +160,9 @@ const logger = obj.logger; // instance of Logger was created
   }
 
   const someModule = module()
-    .define('leaf', m => new SomeClass())
-    .define('child', m => new SomeClass(m.leaf), request)
-    .define('parent', m => new SomeClass(m.child, m.leaf), request)
+    .define('leaf', singleton, m => new SomeClass())
+    .define('child', request, m => new SomeClass(m.leaf))
+    .define('parent', request, m => new SomeClass(m.child, m.leaf))
     .build();
 
   const ct = container();
@@ -188,8 +188,8 @@ class DbConnection {
 }
 
 const dbModule = module()
-  .define('config', () => databaseConfig)
-  .define('connection', ({ config }) => new DbConnection(config))
+  .define('config', singleton, () => databaseConfig)
+  .define('connection', singleton, ({ config }) => new DbConnection(config))
   .build();
 
 class UsersListQuery {
@@ -198,7 +198,7 @@ class UsersListQuery {
 
 const usersModule = module()
   .import('db', dbModule)
-  .define('usersQuery', ({ db }) => new UsersListQuery(db.connection))
+  .define('usersQuery', singleton, ({ db }) => new UsersListQuery(db.connection))
   .build();
 ```
 
@@ -218,7 +218,7 @@ Calling `.define` creates a new instance of the module with a different identity
 
 ```typescript
 const m1 = module();
-const m1Extended = m1.define('someVal', () => true).build();
+const m1Extended = m1.define('someVal', singleton, () => true).build();
 
 m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new id
 ```
@@ -231,7 +231,7 @@ const m1 = module()
   .define('someVal', () => false)
   .build();
 
-const m1WithReplacedValue = m1.replace('someVal', () => true);
+const m1WithReplacedValue = m1.replace('someVal', singleton, () => true);
 //const m1WithReplacedValue = m1.replace('someVal', () => "cannot replace boolean with string"); // compile-time error
 
 m1.isEqual(m1WithReplacedValue); // true - modules still have the same identities and they are interchangeable
@@ -251,8 +251,8 @@ class DbConnection {
 }
 
 const dbModule = module()
-  .define('config', () => databaseConfig)
-  .define('connection', c => new DbConnection(c.config))
+  .define('config', singleton, () => databaseConfig)
+  .define('connection', singleton, c => new DbConnection(c.config))
   .build();
 
 const containerWithOriginalConfig = container();
@@ -286,14 +286,14 @@ class Document {
 }
 
 const someModule = module() // breakme
-  .define('writer', c => new Writer())
-  .define('document', c => new Document(c.writer))
+  .define('writer', singleton, c => new Writer())
+  .define('document', singleton, c => new Document(c.writer))
   .build();
 
 // tests
 it('calls write on save', () => {
   const c = container({
-    overrides: [
+    invariants: [ // replaces all references to "writer" with decorated value
       someModule.decorate('writer', originalImpl => {
         jest.spyOn(originalImpl, 'write'); // modifies originalImpl by setting spy on 'write' method
         return originalImpl;

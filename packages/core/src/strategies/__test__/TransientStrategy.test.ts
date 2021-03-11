@@ -1,11 +1,12 @@
 import { container } from '../../container/Container';
-import { createResolverId } from '../../utils/fastId';
+import { createModuleId } from '../../utils/fastId';
 import { unit } from '../../module/ModuleBuilder';
 import { transient } from '../TransientStrategy';
+import { singleton } from '../SingletonStrategy';
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {
-    public id = createResolverId();
+    public id = createModuleId();
 
     constructor(public value: string) {}
   }
@@ -18,8 +19,8 @@ describe(`ClassTransientResolver`, () => {
   });
 
   const m = unit()
-    .define('someValue', () => 'someString')
-    .define('a', c => new TestClass(c.someValue), transient)
+    .define('someValue', singleton, () => 'someString')
+    .define('a', transient, c => new TestClass(c.someValue))
     .build();
 
   it(`returns class instance`, async () => {
