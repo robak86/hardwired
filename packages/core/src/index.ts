@@ -11,3 +11,5 @@ export type { Module, AnyResolver, ModuleRecord } from './module/Module';
 export { buildTaggedStrategy } from './strategies/utils/strategyTagging';
 export { inject } from './container/inject';
 export { ContainerContext } from './context/ContainerContext';
+export { ServiceLocator } from './container/ServiceLocator';
+export { serviceLocator } from './resolvers/ServiceLocatorResolver';

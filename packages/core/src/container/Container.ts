@@ -14,7 +14,7 @@ export type ChildScopeOptions = {
 };
 
 export class Container {
-  constructor(private readonly containerContext: ContainerContext) {}
+  constructor(protected readonly containerContext: ContainerContext) {}
 
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
     moduleInstance: TLazyModule,
