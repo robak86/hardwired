@@ -1,9 +1,8 @@
-import invariant from 'tiny-invariant';
-import { isInstanceDefinition, Module, ModuleRecord } from '../module/Module';
-import { IContainer } from './IContainer';
 import { ContainerContext } from '../context/ContainerContext';
-import { ContextService } from '../context/ContextService';
+import { Container } from './Container';
+import { Module, ModuleRecord } from '../module/Module';
 import { ContextScopes } from '../context/ContextScopes';
+import { ContextService } from '../context/ContextService';
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends ModuleRecord, K extends keyof ModuleRecord.Materialized<TRegistryRecord> & string>(
@@ -12,8 +11,10 @@ type ServiceLocatorGet = {
   ): ModuleRecord.Materialized<TRegistryRecord>[K];
 };
 
-export class ServiceLocator {
-  constructor(private containerContext: ContainerContext) {}
+export class ServiceLocator extends Container {
+  constructor(containerContext: ContainerContext) {
+    super(containerContext);
+  }
 
   withScope<T>(factory: (obj: { get: ServiceLocatorGet }) => T): T {
     const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
@@ -24,18 +25,5 @@ export class ServiceLocator {
         return ContextService.runInstanceDefinition(instanceResolver, requestContext);
       },
     });
-  }
-
-  asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
-    return ContextService.materializeWithAccessors(module, requestContext);
-  }
-
-  checkoutScope(overrides: Module<any>[]): IContainer {
-    throw new Error('Implement me');
-  }
-
-  buildScope(builder): IContainer {
-    throw new Error('Implement me');
   }
 }
