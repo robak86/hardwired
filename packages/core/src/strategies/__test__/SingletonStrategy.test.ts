@@ -53,17 +53,29 @@ describe(`ClassSingletonResolver`, () => {
       .import('child2', () => child2)
 
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', singleton, ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton))
+      .define(
+        'singletonConsumer',
+        singleton,
+        ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
+      )
       .build();
 
     const child1 = unit()
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', singleton, ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton))
+      .define(
+        'singletonConsumer',
+        singleton,
+        ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
+      )
       .build();
 
     const child2 = unit()
       .import('singletonModule', () => singletonModule)
-      .define('singletonConsumer', singleton, ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton))
+      .define(
+        'singletonConsumer',
+        singleton,
+        ({ singletonModule }) => new TestClassConsumer(singletonModule.theSingleton),
+      )
       .build();
 
     const singletonModule = unit()

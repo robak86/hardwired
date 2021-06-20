@@ -1,11 +1,10 @@
-import { container, module } from 'hardwired';
+import { container, module, singleton } from 'hardwired';
 import { act, render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { useObservable } from '../useObservable';
 import { DummyObservable } from '../../__test__/DummyObservable';
-import { singleton } from '../../../../core/src/strategies/SingletonStrategy';
 
 describe(`useObservable`, () => {
   describe(`instantiating dependencies`, () => {
