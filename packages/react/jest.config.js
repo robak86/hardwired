@@ -2,5 +2,6 @@ const defaults = require('../../jest.shared.js');
 
 module.exports = {
   ...defaults,
-  displayName: 'react'
+  displayName: 'react',
+  testEnvironment: 'jsdom',
 };
