@@ -2,9 +2,9 @@ import { buildTaggedStrategy } from './utils/strategyTagging';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextLookup } from '../context/ContextLookup';
 import { ContextMutations } from '../context/ContextMutations';
-import { Instance } from '../resolvers/abstract/Instance';
+import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 
-export class ScopeStrategy<TValue> extends Instance<TValue> {
+export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = scopeStrategyTag;
 
   constructor(protected buildFunction: (ctx) => TValue) {

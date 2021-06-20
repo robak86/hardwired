@@ -3,7 +3,7 @@ import { ImmutableMap } from '../collections/ImmutableMap';
 import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord } from './Module';
-import { Instance } from '../resolvers/abstract/Instance';
+import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 
 export const module = () => ModuleBuilder.empty();
@@ -48,25 +48,25 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   define<TKey extends string, TValue>(
     name: TKey,
-    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => any) => Instance<any>,
+    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => any) => BuildStrategy<any>,
     buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
+  ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>>;
 
   define<TKey extends string, TValue>(
     name: TKey,
-    instance: Instance<TValue>,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>>;
+    instance: BuildStrategy<TValue>,
+  ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>>;
 
   define<TKey extends string, TValue>(
     name: TKey,
     instanceOrStrategy:
-      | Instance<TValue>
-      | ((resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => Instance<TValue>),
+      | BuildStrategy<TValue>
+      | ((resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>),
     buildFn?: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
-  ): ModuleBuilder<TRecord & Record<TKey, Instance<TValue>>> {
+  ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
 
-    if (instanceOrStrategy instanceof Instance) {
+    if (instanceOrStrategy instanceof BuildStrategy) {
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {

@@ -1,10 +1,10 @@
-import { Instance } from './abstract/Instance';
+import { BuildStrategy } from './abstract/BuildStrategy';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
 import { ContainerContext } from '../context/ContainerContext';
 
-export class DecoratorResolver<TReturn, TDeps> extends Instance<TReturn> {
+export class DecoratorResolver<TReturn, TDeps> extends BuildStrategy<TReturn> {
   constructor(
-    protected decorated: Thunk<Instance<TReturn>>,
+    protected decorated: Thunk<BuildStrategy<TReturn>>,
     protected decorateFn: <TNew extends TReturn>(original: TReturn, materialized) => TNew,
   ) {
     super();

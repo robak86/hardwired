@@ -1,8 +1,8 @@
-import { Instance } from '../resolvers/abstract/Instance';
+import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { buildTaggedStrategy } from './utils/strategyTagging';
 import { ContainerContext } from '../context/ContainerContext';
 
-export class TransientStrategy<TValue> extends Instance<TValue> {
+export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = transientStrategyTag;
 
   constructor(protected buildFunction: (ctx) => TValue) {
@@ -11,7 +11,7 @@ export class TransientStrategy<TValue> extends Instance<TValue> {
 
   build(id: string, context: ContainerContext, materializedModule): TValue {
     const result = this.buildFunction(materializedModule);
-    if (result instanceof Instance) {
+    if (result instanceof BuildStrategy) {
       return result.build(id, context, materializedModule);
     }
     return result;

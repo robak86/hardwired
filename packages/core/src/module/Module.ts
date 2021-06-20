@@ -2,23 +2,23 @@ import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import { Thunk } from '../utils/Thunk';
 
-import { Instance } from '../resolvers/abstract/Instance';
+import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { ModulePatch } from './ModulePatch';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';
 
 // prettier-ignore
-export type AnyResolver = Instance<any> | Module<any> ;
+export type AnyResolver = BuildStrategy<any> | Module<any> ;
 export type ModuleRecord = Record<string, AnyResolver>;
 
 export namespace ModuleRecord {
   export type InstancesKeys<TRecord> = {
-    [K in keyof TRecord]: TRecord[K] extends Instance<infer A> ? K : never;
+    [K in keyof TRecord]: TRecord[K] extends BuildStrategy<infer A> ? K : never;
   }[keyof TRecord] &
     string;
 
   export type Materialized<TRecord extends Record<string, AnyResolver>> = {
-    [K in keyof TRecord]: TRecord[K] extends Instance<infer TInstanceType>
+    [K in keyof TRecord]: TRecord[K] extends BuildStrategy<infer TInstanceType>
       ? TInstanceType
       : TRecord[K] extends Module<infer TRecord>
       ? Materialized<TRecord>
@@ -48,7 +48,7 @@ export namespace Module {
 
   export type InstancesKeys<TModule extends Module<any>> =
     TModule extends Module<infer TRecord> ?
-      ({ [K in keyof TRecord]: TRecord[K] extends Instance<infer A> ? K : never })[keyof TRecord] : unknown
+      ({ [K in keyof TRecord]: TRecord[K] extends BuildStrategy<infer A> ? K : never })[keyof TRecord] : unknown
 
   export type Definition = InstanceDefinition | ImportDefinition
 
@@ -56,7 +56,7 @@ export namespace Module {
     id: string;
     type: 'resolver';
     strategyTag: symbol;
-    resolverThunk: Thunk<Instance<any>>;
+    resolverThunk: Thunk<BuildStrategy<any>>;
   };
 
     export type ImportDefinition = {

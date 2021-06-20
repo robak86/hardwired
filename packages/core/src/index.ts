@@ -6,7 +6,7 @@ export * from './strategies/SingletonStrategy';
 export * from './strategies/TransientStrategy';
 export * from './strategies/ScopeStrategy';
 
-export { Instance } from './resolvers/abstract/Instance';
+export { BuildStrategy } from './resolvers/abstract/BuildStrategy';
 export type { Module, AnyResolver, ModuleRecord } from './module/Module';
 export { buildTaggedStrategy } from './strategies/utils/strategyTagging';
 export { inject } from './container/inject';

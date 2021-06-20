@@ -1,6 +1,6 @@
 import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
-import { Instance } from '../resolvers/abstract/Instance';
+import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { singleton } from '../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
 import { DecoratorResolver } from '../resolvers/DecoratorResolver';
@@ -12,7 +12,7 @@ export namespace ModulePatch {
     ? {
         [K in keyof TRecord & string]: TRecord[K] extends ModulePatch<infer TModule>
           ? Materialized<TRecord[K]>
-          : TRecord[K] extends Instance<infer TInstance>
+          : TRecord[K] extends BuildStrategy<infer TInstance>
           ? TInstance
           : unknown;
       }
@@ -32,20 +32,22 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     return this.moduleId.revision === otherModule.moduleId.revision;
   }
 
-  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
+  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
     name: TKey,
-    instance: Instance<TValue> | ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => Instance<TValue>),
+    instance: BuildStrategy<TValue> | ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => BuildStrategy<TValue>),
   ): ModulePatch<TRecord>;
 
-  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
+  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
     name: TKey,
     buildFn: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
-    buildStrategy?: (resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) => Instance<TValue>,
+    buildStrategy?: (
+      resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
+    ) => BuildStrategy<TValue>,
   ): ModulePatch<TRecord>;
 
-  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
+  replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
     name: TKey,
-    buildFnOrInstance: ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) | Instance<TValue>,
+    buildFnOrInstance: ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) | BuildStrategy<TValue>,
     buildStrategy = singleton,
   ): ModulePatch<TRecord> {
     invariant(
@@ -82,10 +84,10 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     );
   }
 
-  decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
+  decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
     name: TKey,
     decorateFn: (originalValue: TValue, moduleAsObject: ModuleRecord.Materialized<TRecord>) => TValue,
-  ): ModulePatch<TRecord & Record<TKey, Instance<TValue>>> {
+  ): ModulePatch<TRecord & Record<TKey, BuildStrategy<TValue>>> {
     const definition = this.patchedResolvers.get(name) || this.registry.get(name);
 
     invariant(isInstanceDefinition(definition), `Cannot decorate module import`);

@@ -1,10 +1,10 @@
 import { ServiceLocator } from '../container/ServiceLocator';
-import { Instance } from './abstract/Instance';
+import { BuildStrategy } from './abstract/BuildStrategy';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextLookup } from '../context/ContextLookup';
 import { ContextMutations } from '../context/ContextMutations';
 
-export class ServiceLocatorResolver extends Instance<ServiceLocator> {
+export class ServiceLocatorResolver extends BuildStrategy<ServiceLocator> {
   readonly strategyTag = strategyLocatorTag;
 
   constructor() {
@@ -24,4 +24,4 @@ export class ServiceLocatorResolver extends Instance<ServiceLocator> {
 
 export const strategyLocatorTag = Symbol();
 
-export const serviceLocator = (): Instance<ServiceLocator> => new ServiceLocatorResolver();
+export const serviceLocator = (): BuildStrategy<ServiceLocator> => new ServiceLocatorResolver();
