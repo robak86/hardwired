@@ -1,11 +1,15 @@
-import { BuildStrategy } from './abstract/BuildStrategy';
 import { buildTaggedStrategy } from './utils/strategyTagging';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextLookup } from '../context/ContextLookup';
 import { ContextMutations } from '../context/ContextMutations';
+import { Instance } from '../resolvers/abstract/Instance';
 
-export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
+export class SingletonStrategy<TValue> extends Instance<TValue> {
   readonly strategyTag = singletonStrategyTag;
+
+  constructor(protected buildFunction: (ctx) => TValue) {
+    super();
+  }
 
   build(id: string, context: ContainerContext, materializedModule): TValue {
     if (ContextLookup.hasInGlobalScope(id, context)) {

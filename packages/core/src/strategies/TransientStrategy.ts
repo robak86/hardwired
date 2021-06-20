@@ -1,10 +1,13 @@
-import { BuildStrategy } from './abstract/BuildStrategy';
 import { Instance } from '../resolvers/abstract/Instance';
 import { buildTaggedStrategy } from './utils/strategyTagging';
 import { ContainerContext } from '../context/ContainerContext';
 
-export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
+export class TransientStrategy<TValue> extends Instance<TValue> {
   readonly strategyTag = transientStrategyTag;
+
+  constructor(protected buildFunction: (ctx) => TValue) {
+    super();
+  }
 
   build(id: string, context: ContainerContext, materializedModule): TValue {
     const result = this.buildFunction(materializedModule);

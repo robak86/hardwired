@@ -1,7 +1,6 @@
 import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import { Instance } from '../resolvers/abstract/Instance';
-import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 import { singleton } from '../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
 import { DecoratorResolver } from '../resolvers/DecoratorResolver';
@@ -41,9 +40,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
     name: TKey,
     buildFn: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
-    buildStrategy?: (
-      resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue,
-    ) => BuildStrategy<TValue>,
+    buildStrategy?: (resolver: (ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => TValue) => Instance<TValue>,
   ): ModulePatch<TRecord>;
 
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends Instance.Unbox<TRecord[TKey]>>(
