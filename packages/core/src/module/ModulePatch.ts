@@ -84,6 +84,13 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     );
   }
 
+  bindValue<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
+    name: TKey,
+    value: TValue,
+  ): ModulePatch<TRecord> {
+    return this.replace(name, () => value, singleton);
+  }
+
   decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
     name: TKey,
     decorateFn: (originalValue: TValue, moduleAsObject: ModuleRecord.Materialized<TRecord>) => TValue,
