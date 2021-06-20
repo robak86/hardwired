@@ -29,7 +29,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   import<TKey extends string, TValue extends Module<any>>(
     name: TKey,
-    resolver: Thunk<TValue>,
+    moduleThunk: Thunk<TValue>,
   ): ModuleBuilder<TRecord & Record<TKey, TValue>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
     invariant(!this.isFrozenRef.isFrozen, `Module is frozen. Cannot import additional modules.`);
@@ -38,7 +38,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
       ModuleId.next(this.moduleId),
       this.registry.extend(name, {
         type: 'module',
-        resolverThunk: resolver,
+        resolverThunk: moduleThunk,
       }),
       this.isFrozenRef,
     );
@@ -48,32 +48,32 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   define<TKey extends string, TValue>(
     name: TKey,
-    buildStrategy: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => any) => BuildStrategy<any>,
+    buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
     buildFn: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
   ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>>;
 
   define<TKey extends string, TValue>(
     name: TKey,
-    instance: BuildStrategy<TValue>,
+    buildStrategy: BuildStrategy<TValue>,
   ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>>;
 
   define<TKey extends string, TValue>(
     name: TKey,
-    instanceOrStrategy:
+    wrapperOrStrategy:
       | BuildStrategy<TValue>
       | ((resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>),
     buildFn?: (ctx: ModuleRecord.Materialized<TRecord>) => TValue,
   ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot add definitions to frozen module`);
 
-    if (instanceOrStrategy instanceof BuildStrategy) {
+    if (wrapperOrStrategy instanceof BuildStrategy) {
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
           id: buildResolverId(this, name),
           type: 'resolver',
-          strategyTag: getStrategyTag(instanceOrStrategy),
-          resolverThunk: instanceOrStrategy,
+          strategyTag: getStrategyTag(wrapperOrStrategy),
+          resolverThunk: wrapperOrStrategy,
         }) as any,
         this.isFrozenRef,
       );
@@ -81,16 +81,16 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
     // TODO: potential gc issue while getting by id
 
-    if (buildFn && typeof instanceOrStrategy === 'function') {
-      invariant(isStrategyTagged(instanceOrStrategy), `Missing strategy for ${instanceOrStrategy}`);
+    if (buildFn && typeof wrapperOrStrategy === 'function') {
+      invariant(isStrategyTagged(wrapperOrStrategy), `Missing strategy for ${wrapperOrStrategy}`);
 
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
           id: buildResolverId(this, name),
           type: 'resolver',
-          strategyTag: getStrategyTag(instanceOrStrategy),
-          resolverThunk: instanceOrStrategy(buildFn),
+          strategyTag: getStrategyTag(wrapperOrStrategy),
+          resolverThunk: wrapperOrStrategy(buildFn),
         }) as any,
         this.isFrozenRef,
       );
@@ -104,4 +104,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     this.isFrozenRef.isFrozen = true;
     return new Module(ModuleId.next(this.moduleId), this.registry) as Module<TRecord>;
   }
+
+  freeze = this.build;
 }
