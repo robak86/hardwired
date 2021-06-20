@@ -8,7 +8,7 @@ export type UseModulesHook = <TModules extends [...Module<any>[]]>(
 
 export const useModules: UseModulesHook = (...modules) => {
   const container = useContainer();
-  const instanceRef = useRef(container.asObjectMany(...modules as any));
+  const instanceRef = useRef(container.asObjectMany(...(modules as any)));
 
   return instanceRef.current as any;
 };

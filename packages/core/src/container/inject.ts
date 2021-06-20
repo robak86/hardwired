@@ -6,8 +6,6 @@ type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: Containe
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
 };
 
-
-
 type MaterializeDependenciesRecord<TDependencies extends Record<string, any>> = {
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
 };
@@ -68,7 +66,7 @@ const asyncRecord = <TDependencies extends Record<string, (ctx: ContainerContext
 
 const tuple = <
   TDependencyEntry extends (ctx: ContainerContext) => any,
-  TDependencies extends [TDependencyEntry, ...TDependencyEntry[]]
+  TDependencies extends [TDependencyEntry, ...TDependencyEntry[]],
 >(
   ...deps: TDependencies
 ) => {

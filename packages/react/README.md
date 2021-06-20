@@ -4,10 +4,10 @@ Integration for hardwired library and react.
 
 ## Motivation
 
-React context is an elegant, composable mechanism which is used for injecting dependencies, but composing
-multiple providers, enabling mocking for tests may be sometimes verbose and error prone.
+React context is an elegant, composable mechanism which can be used for injecting dependencies, but composing
+multiple providers, enabling mocking for tests may be sometimes too verbose and error prone.
 The goal for this library is to provide thin abstraction over a React context exposing
-more unified and convenient API for defining, consuming and mocking dependencies.
+more unified and convenient API for defining, consuming and mocking dependencies using hardwired 
 
 ### Example
 
