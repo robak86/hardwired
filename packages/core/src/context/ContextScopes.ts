@@ -27,22 +27,22 @@ export const ContextScopes = {
   },
 
   childScope(options: ContainerScopeOptions, prevContext: ContainerContext): ContainerContext {
-    const { overrides = [], eager = [] } = options;
-    const loadTarget = [...overrides, ...eager];
+    const { scopeOverrides = [], eager = [] } = options;
+    const loadTarget = [...scopeOverrides, ...eager];
     const ownOverrides = getPatchedResolversIds(loadTarget);
 
     // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
 
     const context: ContainerContext = {
-      requestScope: {},
-      materializedObjects: {},
-      hierarchicalScope: {},
       resolversById: prevContext.resolversById,
       invariantResolversById: prevContext.invariantResolversById,
       patchedResolversById: { ...prevContext.patchedResolversById },
       modulesByResolverId: prevContext.modulesByResolverId,
       frozenOverrides: prevContext.frozenOverrides,
       globalScope: prevContext.globalScope.checkoutChild(ownOverrides),
+      requestScope: {},
+      materializedObjects: {},
+      hierarchicalScope: {}, // scope created by by checkoutChildScope -
     };
 
     ContextService.loadPatches(loadTarget, context);

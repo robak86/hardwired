@@ -4,7 +4,21 @@ import { ContainerContext, useContainer } from '../context/ContainerContext';
 
 export const ContainerScope: FunctionComponent = ({ children }) => {
   const container = useContainer();
-  const childContainer = useRef(container.checkoutChildScope());
+  const childContainer = useRef(container.checkoutScope());
+
+  // useEffect(()=> {
+  // TODO: dispose scope on unmount ??. Probably not possible, because we cannot be sure that all async calls within scope
+  //       were finished
+  // return () => {};
+  // }, []);
+
+  // eslint-disable-next-line react/no-children-prop
+  return <ContainerContext.Provider value={{ container: childContainer.current }} children={children} />;
+};
+
+export const ContainerScope2: FunctionComponent = ({ children }) => {
+  const container = useContainer();
+  const childContainer = useRef(container.checkoutScope());
 
   // useEffect(()=> {
   // TODO: dispose scope on unmount ??. Probably not possible, because we cannot be sure that all async calls within scope

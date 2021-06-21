@@ -54,7 +54,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   define<TKey extends string, TValue>(
     name: TKey,
-    buildStrategy: BuildStrategy<TValue>,
+    buildStrategy: BuildStrategy<TValue>, //TODO this may be kind of useless/limited, because we cannot pass Materialized ctx into Strategy
   ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>>;
 
   define<TKey extends string, TValue>(

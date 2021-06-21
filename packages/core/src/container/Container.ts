@@ -10,7 +10,7 @@ import { ContextScopes } from '../context/ContextScopes';
 import { unwrapThunk } from '../utils/Thunk';
 
 export type ChildScopeOptions = {
-  overrides?: ModulePatch<any>[];
+  scopeOverrides?: ModulePatch<any>[];
 };
 
 export class Container {
@@ -67,7 +67,7 @@ export class Container {
     }) as any;
   }
 
-  checkoutChildScope(options: ChildScopeOptions = {}): Container {
+  checkoutScope(options: ChildScopeOptions = {}): Container {
     return new Container(ContextScopes.childScope(options, this.containerContext));
   }
 }
@@ -77,17 +77,17 @@ export type ContainerOptions = {
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: ModulePatch<any>[];
-  invariants?: ModulePatch<any>[];
+  scopeOverrides?: ModulePatch<any>[]; // used only in descendent scopes (can be overridden)
+  globalOverrides?: ModulePatch<any>[]; // propagated to whole dependencies graph
   eager?: Module<any>[];
 };
 
 export function container({
   context,
-  overrides = [],
+  scopeOverrides = [],
   eager = [], // TODO: consider renaming to load|discoverable|preload - since eager may implicate that some instances are created
-  invariants = [],
+  globalOverrides = [],
 }: ContainerOptions = {}): Container {
-  const container = new Container(context || ContainerContext.create(eager, overrides, invariants));
+  const container = new Container(context || ContainerContext.create(eager, scopeOverrides, globalOverrides));
   return container as any;
 }
