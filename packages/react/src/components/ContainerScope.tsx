@@ -1,31 +1,37 @@
 import * as React from 'react';
-import { FunctionComponent, useRef } from 'react';
+import { FC, FunctionComponent, useEffect, useRef, useState } from 'react';
 import { ContainerContext, useContainer } from '../context/ContainerContext';
+import { Container } from 'hardwired';
 
-export const ContainerScope: FunctionComponent = ({ children }) => {
-  const container = useContainer();
-  const childContainer = useRef(container.checkoutScope());
-
-  // useEffect(()=> {
-  // TODO: dispose scope on unmount ??. Probably not possible, because we cannot be sure that all async calls within scope
-  //       were finished
-  // return () => {};
-  // }, []);
-
-  // eslint-disable-next-line react/no-children-prop
-  return <ContainerContext.Provider value={{ container: childContainer.current }} children={children} />;
+export type ContainerScopeProps = {
+  invalidateKeys?: ReadonlyArray<any>;
 };
 
-export const ContainerScope2: FunctionComponent = ({ children }) => {
-  const container = useContainer();
-  const childContainer = useRef(container.checkoutScope());
+const areKeysShallowEqual = (arr1: ReadonlyArray<any>, arr2: ReadonlyArray<any>) => {
+  return arr1.length === arr2.length && arr1.every((val, idx) => val === arr2[idx]);
+};
 
-  // useEffect(()=> {
-  // TODO: dispose scope on unmount ??. Probably not possible, because we cannot be sure that all async calls within scope
-  //       were finished
-  // return () => {};
-  // }, []);
+export const ContainerScope: FC<ContainerScopeProps> = ({ children, invalidateKeys = [] }) => {
+  const container = useContainer();
+  const [scopedContainer, setScopedContainer] = useState<{
+    invalidationKeys: ReadonlyArray<any>;
+    container: Container | undefined;
+  }>({ invalidationKeys: [], container: undefined });
+
+  useEffect(() => {
+    const areKeysShallowEqual1 = areKeysShallowEqual(invalidateKeys, scopedContainer.invalidationKeys);
+    if (!areKeysShallowEqual1 || !scopedContainer.container) {
+      setScopedContainer({ invalidationKeys: [...invalidateKeys], container: container.checkoutScope() });
+    }
+    return () => {
+      // TODO: dispose ?
+    };
+  }, invalidateKeys);
+
+  if (!scopedContainer.container) {
+    return null;
+  }
 
   // eslint-disable-next-line react/no-children-prop
-  return <ContainerContext.Provider value={{ container: childContainer.current }} children={children} />;
+  return <ContainerContext.Provider value={{ container: scopedContainer.container }} children={children} />;
 };

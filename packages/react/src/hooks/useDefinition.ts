@@ -1,6 +1,5 @@
 import { Module } from 'hardwired';
 import { useContainer } from '../context/ContainerContext';
-import { useRef } from 'react';
 
 export type UseDefinitionHook = {
   <TModule extends Module<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
@@ -11,7 +10,5 @@ export type UseDefinitionHook = {
 
 export const useDefinition: UseDefinitionHook = (module, key) => {
   const container = useContainer();
-  const instanceRef = useRef(container.get(module, key));
-
-  return instanceRef.current;
+  return container.get(module, key);
 };
