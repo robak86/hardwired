@@ -3,8 +3,10 @@ import { ModulePatch } from '../module/ModulePatch';
 import { SingletonScope } from '../container/SingletonScope';
 import { ContextService } from './ContextService';
 import { getPatchedResolversIds } from './ContextScopes';
+import { createContainerId } from '../utils/fastId';
 
 export type ContainerContext = {
+  id: string;
   patchedResolversById: Record<string, Module.InstanceDefinition>;
   resolversById: Record<string, Module.InstanceDefinition>;
   invariantResolversById: Record<string, Module.InstanceDefinition>;
@@ -27,6 +29,7 @@ export const ContainerContext = {
     const ownKeys = getPatchedResolversIds(invariants);
 
     const context: ContainerContext = {
+      id: createContainerId(),
       resolversById: {},
       invariantResolversById: {},
       patchedResolversById: {},
