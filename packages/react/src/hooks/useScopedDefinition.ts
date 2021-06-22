@@ -1,18 +1,21 @@
 import { Module } from 'hardwired';
 import { useContainer } from '../context/ContainerContext';
-import { useRef } from 'react';
+import { useMemoized } from '../utils/useMemoized';
 
 export type UseDefinitionHook = {
   <TModule extends Module<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
-    invalidateKey: string | number,
+    invalidateKeys: ReadonlyArray<any>,
     module: TModule,
     name: TDefinitionName & string,
   ): Module.Materialized<TModule>[TDefinitionName];
 };
 
-export const useScopedDefinition: UseDefinitionHook = (invalidateKey: string | number, module, key) => {
+export const useScopedDefinition: UseDefinitionHook = (invalidateKeys, module, key) => {
   const container = useContainer();
-  const instanceRef = useRef(container.get(module, key));
+  const getInstance = useMemoized(() => {
+    const scoped = container.checkoutScope();
+    return scoped.get(module, key);
+  });
 
-  return instanceRef.current;
+  return getInstance(invalidateKeys);
 };

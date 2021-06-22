@@ -8,3 +8,4 @@ export type { ModulesConsumerProps } from './components/ModulesConsumer';
 export { useDefinition } from './hooks/useDefinition';
 export { useModule } from './hooks/useModule';
 export { useModules } from './hooks/useModules';
+export { useScopedDefinition } from './hooks/useScopedDefinition';
