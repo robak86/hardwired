@@ -1,10 +1,7 @@
 export class SingletonScope {
   private ownEntries: Record<string, any> = {};
 
-  constructor(
-    private ownOverriddenKeys: string[] = [],
-    private parent: SingletonScope | undefined = undefined, // private nonOverridableKeys: string[] = [], //TODO
-  ) {}
+  constructor(private ownOverriddenKeys: string[] = [], private parent: SingletonScope | undefined = undefined) {}
 
   checkoutChild(overriddenKeys: string[]): SingletonScope {
     return new SingletonScope(overriddenKeys, this);

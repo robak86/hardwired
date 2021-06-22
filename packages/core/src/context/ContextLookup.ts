@@ -5,12 +5,12 @@ import { ModuleId } from '../module/ModuleId';
 import { buildResolverId } from '../module/ModuleBuilder';
 
 export const ContextLookup = {
-  hasInHierarchicalScope(id: string, context: ContainerContext) {
-    return !!context.hierarchicalScope[id];
+  hasInCurrentScope(id: string, context: ContainerContext) {
+    return !!context.currentScope[id];
   },
 
-  getFromHierarchicalScope(id: string, context: ContainerContext) {
-    return context.hierarchicalScope[id];
+  getFromCurrentScope(id: string, context: ContainerContext) {
+    return context.currentScope[id];
   },
 
   hasInRequestScope(uuid: string, context: ContainerContext): boolean {

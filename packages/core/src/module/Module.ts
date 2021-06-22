@@ -37,7 +37,7 @@ export function isModuleDefinition(definition: Module.Definition): definition is
 // prettier-ignore
 export namespace Module {
 
-  //TODO: rename to AsObject (one may want to use this type for defining type alias)
+  //TODO: rename to AsObject or TypeOf(one may want to use this type for defining type alias)
   export type Materialized<TModule extends Module<any>> =
     TModule extends Module<infer TRecord> ? ModuleRecord.Materialized<TRecord>: never;
 

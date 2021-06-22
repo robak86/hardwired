@@ -12,8 +12,8 @@ export type ContainerContext = {
   materializedObjects: Record<string, any>;
   frozenOverrides: Record<string, Module.InstanceDefinition>;
 
-  globalScope: SingletonScope; // TODO: probably we shouldn't allow for such complex scopes rules (this feature may be harmful)
-  hierarchicalScope: Record<string, any>;
+  globalScope: SingletonScope; // TODO: probably we shouldn't allow for such complex scopes rules (this feature may by slow and introduces unnecessary complexity)
+  currentScope: Record<string, any>;
   requestScope: Record<string, any>;
 };
 
@@ -33,7 +33,7 @@ export const ContainerContext = {
       requestScope: {},
       modulesByResolverId: {},
       materializedObjects: {},
-      hierarchicalScope: {},
+      currentScope: {},
       frozenOverrides: {},
       globalScope: new SingletonScope(ownKeys),
     };

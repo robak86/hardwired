@@ -12,8 +12,8 @@ export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
   }
 
   build(id: string, context: ContainerContext, materializedModule): TValue {
-    if (ContextLookup.hasInHierarchicalScope(id, context)) {
-      return ContextLookup.getFromHierarchicalScope(id, context);
+    if (ContextLookup.hasInCurrentScope(id, context)) {
+      return ContextLookup.getFromCurrentScope(id, context);
     } else {
       const instance = this.buildFunction(materializedModule);
       ContextMutations.setForHierarchicalScope(id, instance, context);

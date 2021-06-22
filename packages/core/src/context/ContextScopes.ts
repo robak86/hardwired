@@ -19,7 +19,7 @@ export const ContextScopes = {
       patchedResolversById: prevContext.patchedResolversById,
       modulesByResolverId: prevContext.modulesByResolverId,
       globalScope: prevContext.globalScope,
-      hierarchicalScope: prevContext.hierarchicalScope,
+      currentScope: prevContext.currentScope,
       frozenOverrides: prevContext.frozenOverrides,
       requestScope: {},
       materializedObjects: {},
@@ -42,7 +42,7 @@ export const ContextScopes = {
       globalScope: prevContext.globalScope.checkoutChild(ownOverrides),
       requestScope: {},
       materializedObjects: {},
-      hierarchicalScope: {}, // scope created by by checkoutChildScope -
+      currentScope: {}, // scope created by by checkoutChildScope -
     };
 
     ContextService.loadPatches(loadTarget, context);

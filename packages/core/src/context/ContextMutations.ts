@@ -8,7 +8,7 @@ export const ContextMutations = {
   },
 
   setForHierarchicalScope(id: string, instanceOrStrategy: any, context: ContainerContext) {
-    context.hierarchicalScope[id] = instanceOrStrategy;
+    context.currentScope[id] = instanceOrStrategy;
   },
 
   setForGlobalScope(uuid: string, instance: any, context: ContainerContext) {

@@ -1,6 +1,5 @@
 import { IObservable, Unsubscribe } from '../abstract/IObservable';
 
-// TODO
 export abstract class ReducerState<TState> implements IObservable<TState> {
   private listeners: Array<(event: TState) => void> = [];
   abstract state: TState;
