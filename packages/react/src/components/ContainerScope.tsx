@@ -13,25 +13,20 @@ const areKeysShallowEqual = (arr1: ReadonlyArray<any>, arr2: ReadonlyArray<any>)
 
 export const ContainerScope: FC<ContainerScopeProps> = ({ children, invalidateKeys = [] }) => {
   const container = useContainer();
-  const [scopedContainer, setScopedContainer] = useState<{
+  const scopedContainer = useRef<{
     invalidationKeys: ReadonlyArray<any>;
     container: Container | undefined;
   }>({ invalidationKeys: [], container: undefined });
 
-  useEffect(() => {
-    const areKeysShallowEqual1 = areKeysShallowEqual(invalidateKeys, scopedContainer.invalidationKeys);
-    if (!areKeysShallowEqual1 || !scopedContainer.container) {
-      setScopedContainer({ invalidationKeys: [...invalidateKeys], container: container.checkoutScope() });
+  function getScopedContainer(keys: ReadonlyArray<any>) {
+    const areKeysShallowEqual1 = areKeysShallowEqual(keys, scopedContainer.current.invalidationKeys);
+    if (!areKeysShallowEqual1 || !scopedContainer.current.container) {
+      scopedContainer.current = { invalidationKeys: [...keys], container: container.checkoutScope() };
     }
-    return () => {
-      // TODO: dispose ?
-    };
-  }, invalidateKeys);
 
-  if (!scopedContainer.container) {
-    return null;
+    return scopedContainer.current.container;
   }
 
   // eslint-disable-next-line react/no-children-prop
-  return <ContainerContext.Provider value={{ container: scopedContainer.container }} children={children} />;
+  return <ContainerContext.Provider value={{ container: getScopedContainer(invalidateKeys) }} children={children} />;
 };
