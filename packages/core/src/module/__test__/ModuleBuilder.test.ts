@@ -130,7 +130,7 @@ describe(`ModuleBuilder`, () => {
       const mPatch = child1.replace('key2', () => 'replacedString');
 
       const c = container({
-        overrides: [mPatch],
+        scopeOverrides: [mPatch],
       });
 
       const classInstance = c.get(root, 'cls');
@@ -150,7 +150,7 @@ describe(`ModuleBuilder`, () => {
         .build();
 
       const c = container({
-        overrides: [
+        scopeOverrides: [
           child1 //breakme
             .replace('key1', () => 456)
             .replace('key2', () => 'replacedString'),
@@ -218,7 +218,7 @@ describe(`ModuleBuilder`, () => {
 
       const mPatch = m.decorate('someValue', val => val + 1);
 
-      const c = container({ overrides: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       expect(c.get(m, 'someValue')).toEqual(2);
     });
 
@@ -229,7 +229,7 @@ describe(`ModuleBuilder`, () => {
       const mPatch = m.decorate('someValue', val => val + 1);
 
       expect(container().get(m, 'someValue')).toEqual(1);
-      expect(container({ overrides: [mPatch] }).get(m, 'someValue')).toEqual(2);
+      expect(container({ scopeOverrides: [mPatch] }).get(m, 'someValue')).toEqual(2);
     });
 
     it(`allows for multiple decorations`, async () => {
@@ -239,7 +239,7 @@ describe(`ModuleBuilder`, () => {
 
       const mPatch = m.decorate('someValue', val => val + 1).decorate('someValue', val => val * 3);
 
-      const c = container({ overrides: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       expect(c.get(m, 'someValue')).toEqual(6);
     });
 
@@ -252,7 +252,7 @@ describe(`ModuleBuilder`, () => {
 
       const mPatch = m.decorate('someValue', (val, { a, b }) => val + a + b);
 
-      const c = container({ overrides: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       expect(c.get(m, 'someValue')).toEqual(13);
     });
 
@@ -265,7 +265,7 @@ describe(`ModuleBuilder`, () => {
 
       const mPatch = m.decorate('someValue', (val, { b }) => val * b);
 
-      const c = container({ overrides: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       expect(c.get(m, 'someValue')).toEqual(6);
     });
 
@@ -277,7 +277,7 @@ describe(`ModuleBuilder`, () => {
 
         const mPatch = m.decorate('a', a => a);
 
-        const c = container({ overrides: [mPatch] });
+        const c = container({ scopeOverrides: [mPatch] });
         expect(c.get(m, 'a')).toEqual(c.get(m, 'a'));
       });
 
@@ -288,7 +288,7 @@ describe(`ModuleBuilder`, () => {
 
         const mPatch = m.decorate('a', a => a);
 
-        const c = container({ overrides: [mPatch] });
+        const c = container({ scopeOverrides: [mPatch] });
         expect(c.get(m, 'a')).not.toEqual(c.get(m, 'a'));
       });
 
@@ -300,7 +300,7 @@ describe(`ModuleBuilder`, () => {
 
         const mPatch = m.decorate('a', a => a);
 
-        const c = container({ overrides: [mPatch] });
+        const c = container({ scopeOverrides: [mPatch] });
         const req1 = c.asObject(m);
         const req2 = c.asObject(m);
 
@@ -330,7 +330,7 @@ describe(`ModuleBuilder`, () => {
           .define('a', singleton, () => 1)
           .build();
 
-        const c = container({ overrides: [m.decorate('a', a => a + 1)] });
+        const c = container({ scopeOverrides: [m.decorate('a', a => a + 1)] });
 
         expect(c.get(m, 'a')).toEqual(2);
       });

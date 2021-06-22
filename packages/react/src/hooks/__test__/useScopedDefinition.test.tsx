@@ -1,11 +1,11 @@
 import { module, scoped } from 'hardwired';
 import React, { FC } from 'react';
-import { ContainerProvider } from '../ContainerProvider';
-import { ContainerScope } from '../ContainerScope';
-import { useDefinition } from '../../hooks/useDefinition';
-import { render } from '@testing-library/react';
 
-describe(`ContainerScope`, () => {
+import { render } from '@testing-library/react';
+import { useScopedDefinition } from '../useScopedDefinition';
+import { ContainerProvider } from '../../components/ContainerProvider';
+
+describe(`useScopedDefinition`, () => {
   describe(`without invalidation keys`, () => {
     function setup() {
       let counter = 0;
@@ -14,20 +14,16 @@ describe(`ContainerScope`, () => {
         .define('value', scoped, () => (counter += 1))
         .build();
 
-      const ValueRenderer = ({ testId }) => {
-        const value = useDefinition(m, 'value');
+      const ValueRenderer = ({ testId, deps }) => {
+        const value = useScopedDefinition(deps, m, 'value');
 
         return <div data-testid={testId}>{value}</div>;
       };
 
       const TestSubject = () => (
         <ContainerProvider>
-          <ContainerScope>
-            <ValueRenderer testId={'scope1'} />
-          </ContainerScope>
-          <ContainerScope>
-            <ValueRenderer testId={'scope2'} />
-          </ContainerScope>
+          <ValueRenderer testId={'scope1'} deps={[]} />
+          <ValueRenderer testId={'scope2'} deps={[]} />
         </ContainerProvider>
       );
 
@@ -60,8 +56,9 @@ describe(`ContainerScope`, () => {
         .define('value', scoped, () => (counter += 1))
         .build();
 
-      const ValueRenderer = ({ testId }) => {
-        const value = useDefinition(m, 'value');
+      const ValueRenderer = ({ testId, deps }) => {
+        const value = useScopedDefinition(deps, m, 'value');
+
         return <div data-testid={testId}>{value}</div>;
       };
 
@@ -70,12 +67,8 @@ describe(`ContainerScope`, () => {
         scope2Keys,
       }) => (
         <ContainerProvider>
-          <ContainerScope invalidateKeys={scope1Keys}>
-            <ValueRenderer testId={'scope1'} />
-          </ContainerScope>
-          <ContainerScope invalidateKeys={scope2Keys}>
-            <ValueRenderer testId={'scope2'} />
-          </ContainerScope>
+          <ValueRenderer testId={'scope1'} deps={scope1Keys} />
+          <ValueRenderer testId={'scope2'} deps={scope2Keys} />
         </ContainerProvider>
       );
 

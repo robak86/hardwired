@@ -1,11 +1,14 @@
-import { BuildStrategy } from './abstract/BuildStrategy';
 import { buildTaggedStrategy } from './utils/strategyTagging';
 import { ContainerContext } from '../context/ContainerContext';
 import { ContextLookup } from '../context/ContextLookup';
 import { ContextMutations } from '../context/ContextMutations';
+import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 
 export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = requestStrategyTag;
+  constructor(protected buildFunction: (ctx) => TValue) {
+    super();
+  }
 
   build(id: string, context: ContainerContext, materializedModule): TValue {
     if (ContextLookup.hasInRequestScope(id, context)) {

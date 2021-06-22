@@ -4,7 +4,7 @@ import { container } from '../../container/Container';
 import { unit } from '../../module/ModuleBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { ServiceLocator } from '../../container/ServiceLocator';
-import { Instance } from '../abstract/Instance';
+import { BuildStrategy } from '../abstract/BuildStrategy';
 import { request } from '../../strategies/RequestStrategy';
 import { singleton } from '../../strategies/SingletonStrategy';
 
@@ -41,7 +41,7 @@ describe(`ServiceLocatorResolver`, () => {
   describe(`serviceLocator`, () => {
     it(`return Instance type`, async () => {
       const s = serviceLocator();
-      expectType<TypeEqual<typeof s, Instance<ServiceLocator>>>(true);
+      expectType<TypeEqual<typeof s, BuildStrategy<ServiceLocator>>>(true);
     });
   });
 

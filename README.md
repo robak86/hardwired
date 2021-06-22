@@ -293,7 +293,7 @@ const someModule = module() // breakme
 // tests
 it('calls write on save', () => {
   const c = container({
-    invariants: [ // replaces all references to "writer" with decorated value
+    globalOverrides: [ // replaces all references to "writer" with decorated value
       someModule.decorate('writer', originalImpl => {
         jest.spyOn(originalImpl, 'write'); // modifies originalImpl by setting spy on 'write' method
         return originalImpl;

@@ -2,6 +2,7 @@ import { ContainerContext } from './ContainerContext';
 import { ContainerScopeOptions } from '../container/Container';
 import { ContextService } from './ContextService';
 import { ModulePatch } from '../module/ModulePatch';
+import { createContainerId } from '../utils/fastId';
 
 export function getPatchedResolversIds(loadTarget: ModulePatch<any>[]) {
   return loadTarget.flatMap(m => {
@@ -14,12 +15,13 @@ export function getPatchedResolversIds(loadTarget: ModulePatch<any>[]) {
 export const ContextScopes = {
   checkoutRequestScope(prevContext: ContainerContext): ContainerContext {
     return {
+      id: createContainerId(), // TODO: add composite id - rootId-requestId-scopeId
       resolversById: prevContext.resolversById,
       invariantResolversById: prevContext.invariantResolversById,
       patchedResolversById: prevContext.patchedResolversById,
       modulesByResolverId: prevContext.modulesByResolverId,
       globalScope: prevContext.globalScope,
-      hierarchicalScope: prevContext.hierarchicalScope,
+      currentScope: prevContext.currentScope,
       frozenOverrides: prevContext.frozenOverrides,
       requestScope: {},
       materializedObjects: {},
@@ -27,22 +29,23 @@ export const ContextScopes = {
   },
 
   childScope(options: ContainerScopeOptions, prevContext: ContainerContext): ContainerContext {
-    const { overrides = [], eager = [] } = options;
-    const loadTarget = [...overrides, ...eager];
+    const { scopeOverrides = [], eager = [] } = options;
+    const loadTarget = [...scopeOverrides, ...eager];
     const ownOverrides = getPatchedResolversIds(loadTarget);
 
     // TODO: possible optimizations if patches array is empty ? beware to not mutate parent scope
 
     const context: ContainerContext = {
-      requestScope: {},
-      materializedObjects: {},
-      hierarchicalScope: {},
+      id: createContainerId(),
       resolversById: prevContext.resolversById,
       invariantResolversById: prevContext.invariantResolversById,
       patchedResolversById: { ...prevContext.patchedResolversById },
       modulesByResolverId: prevContext.modulesByResolverId,
       frozenOverrides: prevContext.frozenOverrides,
       globalScope: prevContext.globalScope.checkoutChild(ownOverrides),
+      requestScope: {},
+      materializedObjects: {},
+      currentScope: {}, // scope created by by checkoutChildScope -
     };
 
     ContextService.loadPatches(loadTarget, context);

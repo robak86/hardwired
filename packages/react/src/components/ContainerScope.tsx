@@ -1,17 +1,16 @@
 import * as React from 'react';
-import { FunctionComponent, useRef } from 'react';
+import { FC } from 'react';
 import { ContainerContext, useContainer } from '../context/ContainerContext';
+import { useMemoized } from '../utils/useMemoized';
 
-export const ContainerScope: FunctionComponent = ({ children }) => {
+export type ContainerScopeProps = {
+  invalidateKeys?: ReadonlyArray<any>;
+};
+
+export const ContainerScope: FC<ContainerScopeProps> = ({ children, invalidateKeys = [] }) => {
   const container = useContainer();
-  const childContainer = useRef(container.checkoutChildScope());
-
-  // useEffect(()=> {
-  // TODO: dispose scope on unmount ??. Probably not possible, because we cannot be sure that all async calls within scope
-  //       were finished
-  // return () => {};
-  // }, []);
+  const getScopedContainer = useMemoized(() => container.checkoutScope());
 
   // eslint-disable-next-line react/no-children-prop
-  return <ContainerContext.Provider value={{ container: childContainer.current }} children={children} />;
+  return <ContainerContext.Provider value={{ container: getScopedContainer(invalidateKeys) }} children={children} />;
 };

@@ -27,7 +27,7 @@ const c = container();
 const hd = new memwatch.HeapDiff();
 
 for (let i = 0; i < 1000000; i++) {
-  const scope = c.checkoutChildScope();
+  const scope = c.checkoutScope();
   const d = scope.get(m, 'd2');
 
   if (i % 100 === 0) {
