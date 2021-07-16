@@ -9,3 +9,4 @@ export { useDefinition } from './hooks/useDefinition';
 export { useModule } from './hooks/useModule';
 export { useModules } from './hooks/useModules';
 export { useScopedDefinition } from './hooks/useScopedDefinition';
+export { useMemoized } from './utils/useMemoized';
