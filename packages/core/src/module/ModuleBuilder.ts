@@ -5,6 +5,11 @@ import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord } from './Module';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
+import dot from 'dot-prop';
+
+import { ObjectPaths } from '../utils/ObjectPaths';
+import { PropType } from '../utils/PropType';
+import { ClassType } from '../utils/ClassType';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
@@ -40,6 +45,37 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
         type: 'module',
         resolverThunk: moduleThunk,
       }),
+      this.isFrozenRef,
+    );
+  }
+
+  bind<
+    TKey extends string,
+    TDependencyPath extends ObjectPaths<ModuleRecord.Materialized<TRecord>>,
+    TDependenciesPaths extends [TDependencyPath, ...TDependencyPath[]],
+    TValue,
+    TDeps extends {
+      [K in keyof TDependenciesPaths]: PropType<ModuleRecord.Materialized<TRecord>, TDependenciesPaths[K]>;
+    },
+  >(
+    name: TKey,
+    buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
+    klass: ClassType<TValue, TDeps>,
+    args: TDependenciesPaths,
+  ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>> {
+    const buildFn = ctx => {
+      const deps: any = args.map(argPath => dot.get(ctx, argPath));
+      return new klass(...deps);
+    };
+
+    return new ModuleBuilder(
+      ModuleId.next(this.moduleId),
+      this.registry.extend(name, {
+        id: buildResolverId(this, name),
+        type: 'resolver',
+        strategyTag: getStrategyTag(buildStrategyWrapper),
+        resolverThunk: buildStrategyWrapper(buildFn),
+      }) as any,
       this.isFrozenRef,
     );
   }

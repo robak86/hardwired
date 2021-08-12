@@ -8,8 +8,61 @@ import { transient } from '../../strategies/TransientStrategy';
 import { request } from '../../strategies/RequestStrategy';
 import { ModulePatch } from '../ModulePatch';
 import { singleton } from '../../strategies/SingletonStrategy';
+import { ClassType } from '../../utils/ClassType';
 
 describe(`ModuleBuilder`, () => {
+  describe('bind', () => {
+    describe(`class has constructor params`, () => {
+      it(`registers correct entry in module`, async () => {
+        class SomeClass {
+          constructor(public a: number, public b: string) {}
+        }
+
+        const extra = ModuleBuilder.empty()
+          .define('b', singleton, () => 'valueFromImportedModule')
+          .freeze();
+
+        const m = ModuleBuilder.empty()
+          .import('imported', extra)
+          .define('a', singleton, () => 1)
+          .define('z', singleton, () => 'sdf')
+          .bind('kls', singleton, SomeClass, ['a', 'imported.b', 'z'])
+          .freeze();
+
+        const c = container().get(m, 'kls');
+
+        expectType<SomeClass>(c);
+        expect(c.a).toEqual(1);
+        expect(c.b).toEqual('valueFromImportedModule');
+      });
+    });
+
+    describe(`class does not have any constructor params`, () => {
+      it(`registers correct entry in module`, async () => {
+        it(`registers correct entry in module`, async () => {
+          class SomeClass {
+            constructor() {}
+          }
+
+          const extra = ModuleBuilder.empty()
+            .define('b', singleton, () => 'valueFromImportedModule')
+            .freeze();
+
+          const m = ModuleBuilder.empty()
+            .import('imported', extra)
+            .define('a', singleton, () => 1)
+            .define('z', singleton, () => 'sdf')
+            .bind('kls', singleton, SomeClass, ['z'])
+            .freeze();
+
+          const c = container().get(m, 'kls');
+
+          expectType<SomeClass>(c);
+        });
+      });
+    });
+  });
+
   describe(`define`, () => {
     it(`creates correct type`, async () => {
       const m = ModuleBuilder.empty()
