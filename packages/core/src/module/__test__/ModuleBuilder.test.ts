@@ -26,7 +26,7 @@ describe(`ModuleBuilder`, () => {
           .import('imported', extra)
           .define('a', singleton, () => 1)
           .define('z', singleton, () => 'sdf')
-          .bind('kls', singleton, SomeClass, ['a', 'imported.b', 'z'])
+          .bind3('kls', SomeClass, ['a', 'imported.b'])
           .freeze();
 
         const c = container().get(m, 'kls');

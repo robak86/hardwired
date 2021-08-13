@@ -5,16 +5,14 @@ import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { ClassType } from '../utils/ClassType';
 import { ModuleBuilder } from './ModuleBuilder';
 
-export interface IBindMethod<TRecord extends Record<string, AnyResolver>, TCLs> {
-  <TKey extends string, TValue>(
-    name: TKey,
-    buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
-    klass: ClassType<TValue, []>,
-  ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>>;
+// TODO: reversing args and klass parameters makes ts print more precise error message in case of invalid paramaters
+export interface IBindMethod<TRecord extends Record<string, AnyResolver>> {
+  <TKey extends string, TValue>(name: TKey, klass: ClassType<TValue, []>): ModuleBuilder<
+    TRecord & Record<TKey, BuildStrategy<TValue>>
+  >;
 
   <TKey extends string, TDep1 extends ObjectPaths<ModuleRecord.Materialized<TRecord>>, TValue>(
     name: TKey,
-    buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
     klass: ClassType<TValue, [PropType<ModuleRecord.Materialized<TRecord>, TDep1>]>,
     args: [TDep1],
   ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>>;
@@ -26,7 +24,6 @@ export interface IBindMethod<TRecord extends Record<string, AnyResolver>, TCLs> 
     TValue,
   >(
     name: TKey,
-    buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
     klass: ClassType<
       TValue,
       [PropType<ModuleRecord.Materialized<TRecord>, TDep1>, PropType<ModuleRecord.Materialized<TRecord>, TDep2>]
@@ -42,7 +39,6 @@ export interface IBindMethod<TRecord extends Record<string, AnyResolver>, TCLs> 
     TValue,
   >(
     name: TKey,
-    buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
     klass: ClassType<
       TValue,
       [
