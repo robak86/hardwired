@@ -44,7 +44,7 @@ export class ContainerContext {
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
     const resolver = this.resolversRegistry.getModuleInstanceResolver(moduleInstance, name);
-    return this.materialization.runInstanceDefinition(resolver, this.instancesCache);
+    return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
   }
 
   materialize<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {

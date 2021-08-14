@@ -21,8 +21,12 @@ export class ModuleMaterialization {
     }
   }
 
-  runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, instancesCache: InstancesCache) {
-    const module = this.resolversRegistry.getModuleForResolverByResolverId(instanceDefinition.id);
+  runInstanceDefinition(
+    module: Module<any>,
+    instanceDefinition: Module.InstanceDefinition,
+    instancesCache: InstancesCache,
+  ) {
+    // const module = this.resolversRegistry.getModuleForResolverByResolverId(instanceDefinition.id);
     const materializedModule = this.materialize(module, instancesCache);
     const resolver = unwrapThunk(instanceDefinition.resolverThunk);
     return resolver.build(instanceDefinition.id, instancesCache, this.resolversRegistry, materializedModule);
@@ -47,7 +51,7 @@ export class ModuleMaterialization {
           get: () => {
             //TODO: move into closure so above this is called only once for all get calls
             const initializedResolver = this.resolversRegistry.getModuleInstanceResolver(module, key);
-            return this.runInstanceDefinition(initializedResolver, instancesCache);
+            return this.runInstanceDefinition(module, initializedResolver, instancesCache);
           },
         });
       }
@@ -79,7 +83,7 @@ export class ModuleMaterialization {
         const definition = this.resolversRegistry.getModuleDefinition(module, property);
 
         if (isInstanceDefinition(definition)) {
-          return this.runInstanceDefinition(definition, instancesCache);
+          return this.runInstanceDefinition(module, definition, instancesCache);
         }
 
         if (isImportDefinition(definition)) {
