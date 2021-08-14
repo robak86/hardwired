@@ -1,8 +1,6 @@
 import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContainerContext } from '../context/ContainerContext';
-import { ContextLookup } from '../context/ContextLookup';
-import { ContextMutations } from '../context/ContextMutations';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
+import { InstancesCache } from '../context/InstancesCache';
 
 export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = singletonStrategyTag;
@@ -11,12 +9,12 @@ export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: ContainerContext, materializedModule): TValue {
-    if (ContextLookup.hasInGlobalScope(id, context)) {
-      return ContextLookup.getFromGlobalScope(id, context);
+  build(id: string, context: InstancesCache, materializedModule?): TValue {
+    if (context.hasInGlobalScope(id)) {
+      return context.getFromGlobalScope(id);
     } else {
       const instance = this.buildFunction(materializedModule);
-      ContextMutations.setForGlobalScope(id, instance, context);
+      context.setForGlobalScope(id, instance);
       return instance;
     }
   }

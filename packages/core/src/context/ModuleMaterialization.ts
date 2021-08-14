@@ -1,9 +1,9 @@
 import { isInstanceDefinition, isModuleDefinition, Module } from '../module/Module';
-import { ContainerContext } from './ContainerContext';
-import { ContextLookup } from './ContextLookup';
 import { unwrapThunk } from '../utils/Thunk';
 import { useProxy } from './ContextService';
 import { ResolversRegistry } from './ResolversRegistry';
+import { NewContainerContext } from './NewContainerContext';
+import { InstancesCache } from './InstancesCache';
 
 export class ModuleMaterialization {
   private materializedObjects: Record<string, any> = {};
@@ -11,7 +11,7 @@ export class ModuleMaterialization {
   constructor(private resolversRegistry: ResolversRegistry) {}
 
   // TODO: use some interface instead of ContainerContext
-  materialize<TModule extends Module<any>>(module: TModule, context: ContainerContext): Module.Materialized<TModule> {
+  materialize<TModule extends Module<any>>(module: TModule, context: InstancesCache): Module.Materialized<TModule> {
     if (useProxy) {
       return this.materializeWithProxy(module, context);
     } else {
@@ -19,8 +19,8 @@ export class ModuleMaterialization {
     }
   }
 
-  runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, context: ContainerContext) {
-    const module = ContextLookup.getModuleForResolverByResolverId(instanceDefinition.id, context);
+  runInstanceDefinition(instanceDefinition: Module.InstanceDefinition, context: InstancesCache) {
+    const module = this.resolversRegistry.getModuleForResolverByResolverId(instanceDefinition.id);
     const materializedModule = this.materialize(module, context);
     const resolver = unwrapThunk(instanceDefinition.resolverThunk);
     return resolver.build(instanceDefinition.id, context, materializedModule);
@@ -28,7 +28,7 @@ export class ModuleMaterialization {
 
   private materializeWithAccessors<TModule extends Module<any>>(
     module: TModule,
-    context: ContainerContext,
+    context: InstancesCache,
   ): Module.Materialized<TModule> {
     // TODO: we should probably cache also by context!
     if (this.materializedObjects[module.moduleId.id]) {
@@ -69,11 +69,11 @@ export class ModuleMaterialization {
 
   private materializeWithProxy<TModule extends Module<any>>(
     m: TModule,
-    context: ContainerContext,
+    context: InstancesCache,
   ): Module.Materialized<TModule> {
     // TODO: since all materialization is synchronous we can somehow reuse the instance of Proxy??
-    const handler: ProxyHandler<ContainerContext> = {
-      get: (target: ContainerContext, property: any, receiver: any) => {
+    const handler: ProxyHandler<InstancesCache> = {
+      get: (target: InstancesCache, property: any, receiver: any) => {
         const definition = this.resolversRegistry.getModuleDefinition(m, property);
 
         if (isInstanceDefinition(definition)) {
@@ -86,7 +86,7 @@ export class ModuleMaterialization {
         }
       },
 
-      set: (target: ContainerContext, p: string, value: any, receiver: any) => {
+      set: (target: InstancesCache, p: string, value: any, receiver: any) => {
         throw new Error(`Materialized modules is readonly. Cannot update property ${p}`);
       },
 

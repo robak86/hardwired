@@ -1,8 +1,6 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { BuildStrategy } from './abstract/BuildStrategy';
-import { ContainerContext } from '../context/ContainerContext';
-import { ContextLookup } from '../context/ContextLookup';
-import { ContextMutations } from '../context/ContextMutations';
+import { InstancesCache } from '../context/InstancesCache';
 
 export class ServiceLocatorResolver extends BuildStrategy<ServiceLocator> {
   readonly strategyTag = strategyLocatorTag;
@@ -11,13 +9,14 @@ export class ServiceLocatorResolver extends BuildStrategy<ServiceLocator> {
     super();
   }
 
-  build(id: string, context: ContainerContext): ServiceLocator {
-    if (ContextLookup.hasInGlobalScope(id, context)) {
-      return ContextLookup.getFromGlobalScope(id, context);
+  build(id: string, context: InstancesCache): ServiceLocator {
+    if (context.hasInGlobalScope(id)) {
+      return context.getFromGlobalScope(id);
     } else {
-      const instance = new ServiceLocator(context);
-      ContextMutations.setForGlobalScope(id, instance, context);
-      return instance;
+      throw new Error("Service locator strategy not implemented!")
+      // const instance = new ServiceLocator(context);
+      // ContextMutations.setForGlobalScope(id, instance, context);
+      // return instance;
     }
   }
 }

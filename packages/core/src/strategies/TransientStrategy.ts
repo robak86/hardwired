@@ -1,6 +1,6 @@
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContainerContext } from '../context/ContainerContext';
+import { InstancesCache } from '../context/InstancesCache';
 
 export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = transientStrategyTag;
@@ -9,7 +9,7 @@ export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: ContainerContext, materializedModule): TValue {
+  build(id: string, context: InstancesCache, materializedModule?): TValue {
     const result = this.buildFunction(materializedModule);
     if (result instanceof BuildStrategy) {
       return result.build(id, context, materializedModule);

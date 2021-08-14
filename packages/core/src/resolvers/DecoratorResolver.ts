@@ -1,6 +1,6 @@
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
-import { ContainerContext } from '../context/ContainerContext';
+import { InstancesCache } from '../context/InstancesCache';
 
 export class DecoratorResolver<TReturn, TDeps> extends BuildStrategy<TReturn> {
   constructor(
@@ -10,7 +10,7 @@ export class DecoratorResolver<TReturn, TDeps> extends BuildStrategy<TReturn> {
     super();
   }
 
-  build(id: string, context: ContainerContext, materializedModule): TReturn {
+  build(id: string, context: InstancesCache, materializedModule?): TReturn {
     return this.decorateFn(unwrapThunk(this.decorated).build(id, context, materializedModule), materializedModule);
   }
 }

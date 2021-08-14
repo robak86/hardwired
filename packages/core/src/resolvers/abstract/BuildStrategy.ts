@@ -1,4 +1,4 @@
-import { ContainerContext } from '../../context/ContainerContext';
+import { InstancesCache } from '../../context/InstancesCache';
 
 export namespace BuildStrategy {
   export type Unbox<T> = T extends BuildStrategy<infer TInstance>
@@ -11,5 +11,5 @@ export abstract class BuildStrategy<TValue> {
   readonly strategyTag: symbol | undefined;
   readonly tags: symbol[] = [];
 
-  abstract build(id: string, context: ContainerContext, materializedModule?): TValue;
+  abstract build(id: string, context: InstancesCache, materializedModule?): TValue;
 }

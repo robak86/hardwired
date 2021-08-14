@@ -1,8 +1,6 @@
 import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContainerContext } from '../context/ContainerContext';
-import { ContextLookup } from '../context/ContextLookup';
-import { ContextMutations } from '../context/ContextMutations';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
+import { InstancesCache } from '../context/InstancesCache';
 
 export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = scopeStrategyTag;
@@ -11,12 +9,12 @@ export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: ContainerContext, materializedModule): TValue {
-    if (ContextLookup.hasInCurrentScope(id, context)) {
-      return ContextLookup.getFromCurrentScope(id, context);
+  build(id: string, instancesCache: InstancesCache, materializedModule?): TValue {
+    if (instancesCache.hasInCurrentScope(id)) {
+      return instancesCache.getFromCurrentScope(id);
     } else {
       const instance = this.buildFunction(materializedModule);
-      ContextMutations.setForHierarchicalScope(id, instance, context);
+      instancesCache.setForHierarchicalScope(id, instance);
       return instance;
     }
   }

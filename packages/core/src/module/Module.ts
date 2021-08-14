@@ -4,8 +4,8 @@ import { Thunk } from '../utils/Thunk';
 
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { ModulePatch } from './ModulePatch';
-import { ContainerContext } from '../context/ContainerContext';
 import { ContextService } from '../context/ContextService';
+import { NewContainerContext } from '../context/NewContainerContext';
 
 // prettier-ignore
 export type AnyResolver = BuildStrategy<any> | Module<any> ;
@@ -87,7 +87,7 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends ModuleP
     super(moduleId, registry, ImmutableMap.empty());
   }
 
-  select(ctx: ContainerContext): ModuleRecord.Materialized<TRecord> {
-    return ContextService.materializeWithAccessors(this, ctx) as any;
-  }
+  // select(ctx: NewContainerContext): ModuleRecord.Materialized<TRecord> {
+  //   return ContextService.materializeWithAccessors(this, ctx) as any;
+  // }
 }

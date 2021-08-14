@@ -1,8 +1,6 @@
 import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContainerContext } from '../context/ContainerContext';
-import { ContextLookup } from '../context/ContextLookup';
-import { ContextMutations } from '../context/ContextMutations';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
+import { InstancesCache } from '../context/InstancesCache';
 
 export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
   readonly strategyTag = requestStrategyTag;
@@ -10,12 +8,12 @@ export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: ContainerContext, materializedModule): TValue {
-    if (ContextLookup.hasInRequestScope(id, context)) {
-      return ContextLookup.getFromRequestScope(id, context);
+  build(id: string, context: InstancesCache, materializedModule?): TValue {
+    if (context.hasInRequestScope(id)) {
+      return context.getFromRequestScope(id);
     } else {
       const instance = this.buildFunction(materializedModule);
-      ContextMutations.setForRequestScope(id, instance, context);
+      context.setForRequestScope(id, instance);
       return instance;
     }
   }

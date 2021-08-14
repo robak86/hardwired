@@ -2,17 +2,62 @@ import { isInstanceDefinition, isModuleDefinition, Module } from '../module/Modu
 import invariant from 'tiny-invariant';
 import { ModuleId } from '../module/ModuleId';
 import { buildResolverId } from '../module/ModuleBuilder';
-import { ContainerContext } from './ContainerContext';
-import { ContextLookup } from './ContextLookup';
-import { ContextMutations } from './ContextMutations';
+import { ModulePatch } from '../module/ModulePatch';
 
 export class ResolversRegistry {
+  static empty(): ResolversRegistry {
+    return new ResolversRegistry({}, {}, {}, {});
+  }
+
+  static create(scopeOverrides: ModulePatch<any>[], globalOverrides: ModulePatch<any>[]): ResolversRegistry {
+    const registry = ResolversRegistry.empty();
+
+    registry.loadPatches(scopeOverrides);
+    registry.loadInvariants(globalOverrides);
+
+    return registry;
+  }
+
   constructor(
     private patchedResolversById: Record<string, Module.InstanceDefinition>,
     private resolversById: Record<string, Module.InstanceDefinition>,
     private globalOverrideResolversById: Record<string, Module.InstanceDefinition>,
     private modulesByResolverId: Record<string, Module<any>>,
   ) {}
+
+  checkoutForRequestScope() {
+    return this;
+  }
+
+  checkoutForScope(scopeResolversOverrides: ModulePatch<any>[]) {
+    const newRegistry = new ResolversRegistry(
+      { ...this.patchedResolversById },
+      this.resolversById,
+      this.globalOverrideResolversById,
+      this.modulesByResolverId,
+    );
+
+    newRegistry.loadPatches(scopeResolversOverrides)
+
+    return newRegistry;
+  }
+
+  // TODO: rename -> append? set? replace? - be precise
+  loadInvariants(patches: ModulePatch<any>[]) {
+    patches.reverse().forEach(modulePatch => {
+      modulePatch.patchedResolvers.forEach(patchedResolver => {
+        this.addGlobalOverrideResolver(Module.fromPatchedModule(modulePatch), patchedResolver);
+      });
+    });
+  }
+
+  loadPatches(patches: ModulePatch<any>[]) {
+    patches.reverse().forEach(modulePatch => {
+      modulePatch.patchedResolvers.forEach(patchedResolver => {
+        this.addPatchedResolver(Module.fromPatchedModule(modulePatch), patchedResolver);
+      });
+    });
+  }
 
   addResolver(module: Module<any>, path: string, resolver: Module.InstanceDefinition) {
     invariant(
@@ -111,5 +156,11 @@ export class ResolversRegistry {
     const resolver = this.getModuleDefinition(module, path);
     invariant(isInstanceDefinition(resolver), `Given path ${path} should return instance resolver`);
     return resolver;
+  }
+
+  filterLoadedDefinitions(predicate: (resolver: Module.InstanceDefinition) => boolean): Module.InstanceDefinition[] {
+    return Object.values({ ...this.resolversById, ...this.patchedResolversById }).filter(definition => {
+      return predicate(definition);
+    });
   }
 }

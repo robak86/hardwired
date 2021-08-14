@@ -1,7 +1,7 @@
 import { unit } from '../../module/ModuleBuilder';
-import { ContainerContext } from '../../context/ContainerContext';
 import { ContextService } from '../../context/ContextService';
 import { singleton } from '../../strategies/SingletonStrategy';
+import { NewContainerContext } from '../../context/NewContainerContext';
 
 describe(`ContainerRecord`, () => {
   describe(`async scope`, () => {
@@ -45,9 +45,9 @@ describe(`ContainerRecord`, () => {
         const m = unit()
           .define('a', singleton, () => 1)
           .build();
-        const context = ContainerContext.empty();
+        const context = NewContainerContext.empty();
 
-        const { a } = ContextService.materializeWithAccessors(m, context);
+        const { a } = context.materialize(m);
         expect(a).toEqual(1);
       });
 
@@ -68,9 +68,9 @@ describe(`ContainerRecord`, () => {
           .define('a', singleton, () => 1)
           .build();
 
-        const context = ContainerContext.empty();
+        const context = NewContainerContext.empty();
 
-        const materialized = ContextService.materializeWithAccessors(m, context);
+        const materialized = context.materialize(m);
         expect(materialized.child.grandChild.grandChildValue1).toEqual(1);
       });
     });

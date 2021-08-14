@@ -3,18 +3,19 @@ import { ModulePatch } from '../module/ModulePatch';
 import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';
 import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import invariant from 'tiny-invariant';
-import { ContainerContext } from '../context/ContainerContext';
+
 import { ContextService } from '../context/ContextService';
 import { ContextLookup } from '../context/ContextLookup';
 import { ContextScopes } from '../context/ContextScopes';
 import { unwrapThunk } from '../utils/Thunk';
+import { NewContainerContext } from '../context/NewContainerContext';
 
 export type ChildScopeOptions = {
   scopeOverrides?: ModulePatch<any>[];
 };
 
 export class Container {
-  constructor(protected readonly containerContext: ContainerContext) {}
+  constructor(protected readonly containerContext: NewContainerContext) {}
 
   get id(): string {
     return this.containerContext.id;
@@ -24,13 +25,13 @@ export class Container {
     moduleInstance: TLazyModule,
     name: K,
   ): Module.Materialized<TLazyModule>[K] {
-    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
-    return ContextService.get(moduleInstance, name, requestContext);
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.get(moduleInstance, name);
   }
 
   // TODO: rename to select
-  getSlice<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
-    return inject(ContextScopes.checkoutRequestScope(this.containerContext));
+  getSlice<TReturn>(inject: (ctx: NewContainerContext) => TReturn): TReturn {
+    return inject(this.containerContext.checkoutRequestScope());
   }
 
   __getByStrategy<TValue, TStrategy extends BuildStrategyFactory<any, TValue>>(
@@ -39,36 +40,35 @@ export class Container {
     invariant(isStrategyTagged(strategy), `Cannot use given strategy for`);
 
     const expectedTag = getStrategyTag(strategy);
-    const definitions = ContextLookup.filterLoadedDefinitions(
-      resolver => resolver.strategyTag === expectedTag,
-      this.containerContext,
-    );
-    const context = ContextScopes.checkoutRequestScope(this.containerContext);
+    const definitions = this.containerContext.filterLoadedDefinitions(resolver => resolver.strategyTag === expectedTag);
+    // const context = ContextScopes.checkoutRequestScope(this.containerContext);
+    const context = this.containerContext.checkoutRequestScope();
 
     return definitions.map(definition => {
-      return ContextService.runInstanceDefinition(definition, context);
+      return context.runInstanceDefinition(definition);
     });
   }
 
-  __getByTag(tag: symbol): unknown[] {
-    const context = ContextScopes.checkoutRequestScope(this.containerContext);
-    return ContextService.runWithPredicate(
-      definition => unwrapThunk(definition.resolverThunk).tags.includes(tag),
-      context,
-    );
-  }
+  // __getByTag(tag: symbol): unknown[] {
+  //   const context = this.containerContext.checkoutRequestScope();
+  //
+  //   return ContextService.runWithPredicate(
+  //     definition => unwrapThunk(definition.resolverThunk).tags.includes(tag),
+  //     context,
+  //   );
+  // }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
-    return ContextService.materialize(module, requestContext);
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.materialize(module);
   }
 
   asObjectMany<TModule extends Module<any>, TModules extends [TModule, ...TModule[]]>(
     ...modules: TModules
   ): Module.MaterializedArray<TModules> {
-    const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
+    const requestContext = this.containerContext.checkoutRequestScope();
     return modules.map(module => {
-      return ContextService.materialize(module, requestContext);
+      return requestContext.materialize(module);
     }) as any;
   }
 
@@ -79,12 +79,12 @@ export class Container {
    * @param options
    */
   checkoutScope(options: ChildScopeOptions = {}): Container {
-    return new Container(ContextScopes.childScope(options, this.containerContext));
+    return new Container(this.containerContext.childScope(options));
   }
 }
 
 export type ContainerOptions = {
-  context?: ContainerContext;
+  context?: NewContainerContext;
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
@@ -99,6 +99,6 @@ export function container({
   eager = [], // TODO: consider renaming to load|discoverable|preload - since eager may implicate that some instances are created
   globalOverrides = [],
 }: ContainerOptions = {}): Container {
-  const container = new Container(context || ContainerContext.create(eager, scopeOverrides, globalOverrides));
+  const container = new Container(context || NewContainerContext.create(eager, scopeOverrides, globalOverrides));
   return container as any;
 }

@@ -3,6 +3,10 @@ import { createContainerId } from '../utils/fastId';
 import invariant from 'tiny-invariant';
 
 export class InstancesCache {
+  static create(scopeOverridesResolverIds: string[]): InstancesCache {
+    return new InstancesCache(createContainerId(), new SingletonScope(scopeOverridesResolverIds), {}, {}, {});
+  }
+
   constructor(
     private id: string,
     private globalScope: SingletonScope,
@@ -15,13 +19,13 @@ export class InstancesCache {
     return new InstancesCache(
       createContainerId(),
       this.globalScope.checkoutChild(scopeOverridesResolversIds),
-      this.currentScope,
-      this.requestScope,
+      {},
+      {},
       this.globalOverridesScope,
     );
   }
 
-  checkoutRequestScope(): InstancesCache {
+  checkoutForRequestScope(): InstancesCache {
     return new InstancesCache(createContainerId(), this.globalScope, this.currentScope, {}, this.globalOverridesScope);
   }
 
@@ -49,5 +53,17 @@ export class InstancesCache {
   getFromGlobalScope(uuid: string) {
     invariant(!!this.globalScope.has(uuid), `Dependency with given uuid doesn't exists in global scope`);
     return this.globalScope.get(uuid);
+  }
+
+  setForRequestScope(uuid: string, instance: any): void {
+    this.requestScope[uuid] = instance;
+  }
+
+  setForHierarchicalScope(id: string, instanceOrStrategy: any) {
+    this.currentScope[id] = instanceOrStrategy;
+  }
+
+  setForGlobalScope(uuid: string, instance: any) {
+    this.globalScope.set(uuid, instance);
   }
 }
