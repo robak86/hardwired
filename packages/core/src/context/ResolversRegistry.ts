@@ -71,11 +71,11 @@ export class ResolversRegistry {
     return resolver;
   }
 
-  private addScopeOverrideResolver(module: Module<any>, resolver: Module.InstanceDefinition) {
+  private addScopeOverrideResolver(resolver: Module.InstanceDefinition) {
     this.scopeOverrideResolversById[resolver.id] = resolver;
   }
 
-  private addGlobalOverrideResolver(module: Module<any>, resolver: Module.InstanceDefinition) {
+  private addGlobalOverrideResolver(resolver: Module.InstanceDefinition) {
     invariant(
       !this.globalOverrideResolversById[resolver.id],
       `Invariant resolves cannot be updated after container creation`,
@@ -86,7 +86,7 @@ export class ResolversRegistry {
   private addGlobalOverrides(patches: ModulePatch<any>[]) {
     patches.reverse().forEach(modulePatch => {
       modulePatch.patchedResolvers.forEach(patchedResolver => {
-        this.addGlobalOverrideResolver(Module.fromPatchedModule(modulePatch), patchedResolver);
+        this.addGlobalOverrideResolver(patchedResolver);
       });
     });
   }
@@ -94,7 +94,7 @@ export class ResolversRegistry {
   private addScopeOverrides(patches: ModulePatch<any>[]) {
     patches.reverse().forEach(modulePatch => {
       modulePatch.patchedResolvers.forEach(patchedResolver => {
-        this.addScopeOverrideResolver(Module.fromPatchedModule(modulePatch), patchedResolver);
+        this.addScopeOverrideResolver(patchedResolver);
       });
     });
   }
