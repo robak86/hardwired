@@ -1,10 +1,7 @@
-import { buildTaggedStrategy } from './utils/strategyTagging';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
 
 export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
-  readonly strategyTag = singletonStrategyTag;
-
   constructor(protected buildFunction: (ctx) => TValue) {
     super();
   }
@@ -20,9 +17,4 @@ export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
   }
 }
 
-export const singletonStrategyTag = Symbol();
-
-export const singleton = buildTaggedStrategy(
-  <TReturn>(buildFunction: (ctx) => TReturn) => new SingletonStrategy(buildFunction),
-  singletonStrategyTag,
-);
+export const singleton = <TReturn>(buildFunction: (ctx) => TReturn) => new SingletonStrategy(buildFunction);

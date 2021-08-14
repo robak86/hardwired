@@ -31,52 +31,6 @@ describe(`Container`, () => {
     });
   });
 
-  describe(`.getByStrategy`, () => {
-    it(`returns all instances by given strategy`, async () => {
-      const m = unit()
-        .define('a', singleton, () => 1)
-        .define('b', singleton, () => 2)
-        .define('c', transient, () => 3)
-        .build();
-
-      const c = container({ eager: [m] });
-      const allSingletons = c.__getByStrategy(singleton);
-      expect(allSingletons).toEqual([1, 2]);
-    });
-
-    it(`replaces eagerly loaded modules with overrides`, async () => {
-      const m = unit()
-        .define('a', singleton, () => 1)
-        .define('b', singleton, () => 2)
-        .define('c', transient, () => 3)
-        .build();
-
-      const c = container({
-        eager: [m],
-        scopeOverrides: [m.replace('b', () => 20, singleton)],
-      });
-
-      const allSingletons = c.__getByStrategy(singleton);
-      expect(allSingletons).toEqual([1, 20]);
-    });
-
-    it(`uses replaces strategy for filtering`, async () => {
-      const m = unit()
-        .define('a', singleton, () => 1)
-        .define('b', singleton, () => 2)
-        .define('c', transient, () => 3)
-        .build();
-
-      const c = container({
-        eager: [m],
-        scopeOverrides: [m.replace('b', () => 20, transient)],
-      });
-
-      const allSingletons = c.__getByStrategy(singleton);
-      expect(allSingletons).toEqual([1]);
-    });
-  });
-
   describe(`.replace`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
@@ -352,9 +306,9 @@ describe(`Container`, () => {
             let val = start - 1;
 
             return () => {
-              return val += 1;
-            }
-          }
+              return (val += 1);
+            };
+          };
 
           const k1Counter = buildCounter(1);
           const k2Counter = buildCounter(2);
@@ -363,7 +317,6 @@ describe(`Container`, () => {
           const childScopePatch = m.replace('k1', k2Counter, scoped);
 
           const c = container({ globalOverrides: [invariantPatch] });
-
 
           expect(c.asObject(m).k1).toEqual(1);
 

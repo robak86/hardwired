@@ -1,9 +1,7 @@
-import { buildTaggedStrategy } from './utils/strategyTagging';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
 
 export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
-  readonly strategyTag = scopeStrategyTag;
 
   constructor(protected buildFunction: (ctx) => TValue) {
     super();
@@ -20,9 +18,4 @@ export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
   }
 }
 
-const scopeStrategyTag = Symbol();
-
-export const scoped = buildTaggedStrategy(
-  <TReturn>(buildFunction: (ctx) => TReturn) => new ScopeStrategy(buildFunction),
-  scopeStrategyTag,
-);
+export const scoped = <TReturn>(buildFunction: (ctx) => TReturn) => new ScopeStrategy(buildFunction);

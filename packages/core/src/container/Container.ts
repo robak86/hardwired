@@ -1,7 +1,6 @@
 import { Module } from '../module/Module';
 import { ModulePatch } from '../module/ModulePatch';
 import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';
-import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import invariant from 'tiny-invariant';
 
 import { ContextService } from '../context/ContextService';
@@ -33,30 +32,6 @@ export class Container {
   getSlice<TReturn>(inject: (ctx: NewContainerContext) => TReturn): TReturn {
     return inject(this.containerContext.checkoutRequestScope());
   }
-
-  __getByStrategy<TValue, TStrategy extends BuildStrategyFactory<any, TValue>>(
-    strategy: TStrategy,
-  ): ExtractBuildStrategyFactoryType<TStrategy>[] {
-    invariant(isStrategyTagged(strategy), `Cannot use given strategy for`);
-
-    const expectedTag = getStrategyTag(strategy);
-    const definitions = this.containerContext.filterLoadedDefinitions(resolver => resolver.strategyTag === expectedTag);
-    // const context = ContextScopes.checkoutRequestScope(this.containerContext);
-    const context = this.containerContext.checkoutRequestScope();
-
-    return definitions.map(definition => {
-      return context.runInstanceDefinition(definition);
-    });
-  }
-
-  // __getByTag(tag: symbol): unknown[] {
-  //   const context = this.containerContext.checkoutRequestScope();
-  //
-  //   return ContextService.runWithPredicate(
-  //     definition => unwrapThunk(definition.resolverThunk).tags.includes(tag),
-  //     context,
-  //   );
-  // }
 
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     const requestContext = this.containerContext.checkoutRequestScope();

@@ -1,9 +1,7 @@
-import { buildTaggedStrategy } from './utils/strategyTagging';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
 
 export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
-  readonly strategyTag = requestStrategyTag;
   constructor(protected buildFunction: (ctx) => TValue) {
     super();
   }
@@ -19,9 +17,4 @@ export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
   }
 }
 
-export const requestStrategyTag = Symbol();
-
-export const request = buildTaggedStrategy(
-  <TReturn>(buildFunction: (ctx) => TReturn) => new RequestStrategy(buildFunction),
-  requestStrategyTag,
-);
+export const request = <TReturn>(buildFunction: (ctx) => TReturn) => new RequestStrategy(buildFunction);

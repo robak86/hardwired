@@ -4,7 +4,6 @@ import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord } from './Module';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
-import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
 import dot from 'dot-prop';
 
 import { ObjectPaths } from '../utils/ObjectPaths';
@@ -124,7 +123,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
       this.registry.extend(name, {
         id: buildResolverId(this, name),
         type: 'resolver',
-        strategyTag: getStrategyTag(buildStrategyWrapper),
         resolverThunk: buildStrategyWrapper(buildFn),
       }) as any,
       this.isFrozenRef,
@@ -159,7 +157,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
         this.registry.extend(name, {
           id: buildResolverId(this, name),
           type: 'resolver',
-          strategyTag: getStrategyTag(wrapperOrStrategy),
           resolverThunk: wrapperOrStrategy,
         }) as any,
         this.isFrozenRef,
@@ -169,14 +166,12 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     // TODO: potential gc issue while getting by id
 
     if (buildFn && typeof wrapperOrStrategy === 'function') {
-      invariant(isStrategyTagged(wrapperOrStrategy), `Missing strategy for ${wrapperOrStrategy}`);
 
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
           id: buildResolverId(this, name),
           type: 'resolver',
-          strategyTag: getStrategyTag(wrapperOrStrategy),
           resolverThunk: wrapperOrStrategy(buildFn),
         }) as any,
         this.isFrozenRef,

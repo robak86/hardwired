@@ -55,7 +55,6 @@ export namespace Module {
   export type InstanceDefinition = {
     id: string;
     type: 'resolver';
-    strategyTag: symbol;
     resolverThunk: Thunk<BuildStrategy<any>>;
   };
 

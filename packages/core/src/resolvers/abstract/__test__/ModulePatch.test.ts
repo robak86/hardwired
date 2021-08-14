@@ -1,5 +1,5 @@
 import { ImmutableMap } from '../../../collections/ImmutableMap';
-import { singleton, SingletonStrategy, singletonStrategyTag } from '../../../strategies/SingletonStrategy';
+import { singleton, SingletonStrategy } from '../../../strategies/SingletonStrategy';
 import { Module } from '../../../module/Module';
 
 describe(`ModulePatch`, () => {
@@ -50,19 +50,16 @@ describe(`ModulePatch`, () => {
           .extend('a', {
             id: 'a',
             type: 'resolver' as const,
-            strategyTag: singletonStrategyTag,
             resolverThunk: singleton(() => 1),
           })
           .extend('b', {
             id: 'b',
             type: 'resolver' as const,
-            strategyTag: singletonStrategyTag,
             resolverThunk: singleton(() => 2),
           })
           .extend('a_plus_b', {
             id: 'c',
             type: 'resolver' as const,
-            strategyTag: singletonStrategyTag,
             resolverThunk: a_plus_b_Resolver,
           }),
       );
@@ -80,10 +77,10 @@ describe(`ModulePatch`, () => {
       expect(patched.registry.entries).toEqual([
         [
           'a_plus_b',
-          { id: 'c', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: a_plus_b_Resolver },
+          { id: 'c', type: 'resolver',  resolverThunk: a_plus_b_Resolver },
         ],
-        ['a', { id: 'a', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: aReplacementResolver }],
-        ['b', { id: 'b', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: bReplacementResolver }],
+        ['a', { id: 'a', type: 'resolver',  resolverThunk: aReplacementResolver }],
+        ['b', { id: 'b', type: 'resolver',  resolverThunk: bReplacementResolver }],
       ]);
     });
 
@@ -97,19 +94,16 @@ describe(`ModulePatch`, () => {
           .extend('a', {
             id: 'a',
             type: 'resolver' as const,
-            strategyTag: singletonStrategyTag,
             resolverThunk: singleton(() => 1),
           })
           .extend('b', {
             id: 'b',
             type: 'resolver' as const,
-            strategyTag: singletonStrategyTag,
             resolverThunk: bOriginalResolver,
           })
           .extend('a_plus_b', {
             id: 'c',
             type: 'resolver' as const,
-            strategyTag: singletonStrategyTag,
             resolverThunk: a_plus_b_Resolver,
           }),
       );
@@ -125,12 +119,12 @@ describe(`ModulePatch`, () => {
       const patched = Module.fromPatchedModules([m1, m2]);
 
       expect(patched.registry.entries).toEqual([
-        ['b', { id: 'b', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: bOriginalResolver }],
+        ['b', { id: 'b', type: 'resolver', resolverThunk: bOriginalResolver }],
         [
           'a_plus_b',
-          { id: 'c', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: a_plus_b_Resolver },
+          { id: 'c', type: 'resolver', resolverThunk: a_plus_b_Resolver },
         ],
-        ['a', { id: 'a', type: 'resolver', strategyTag: singletonStrategyTag, resolverThunk: yetAnotherAReplacement }],
+        ['a', { id: 'a', type: 'resolver', resolverThunk: yetAnotherAReplacement }],
       ]);
     });
   });
