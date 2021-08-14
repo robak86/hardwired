@@ -5,7 +5,6 @@ import { Module } from '../module/Module';
 import { createContainerId } from '../utils/fastId';
 import { ContainerScopeOptions } from '../container/Container';
 import { ModulePatch } from '../module/ModulePatch';
-import { getPatchedResolversIds } from './getPatchedResolversIds';
 
 export class ContainerContext {
   static empty() {
@@ -20,13 +19,12 @@ export class ContainerContext {
   }
 
   static create(scopeOverrides: ModulePatch<any>[], globalOverrides: ModulePatch<any>[]): ContainerContext {
-    const ownKeys = getPatchedResolversIds(scopeOverrides);
     const resolversRegistry = ResolversRegistry.create(scopeOverrides, globalOverrides);
 
     return new ContainerContext(
       createContainerId(),
       resolversRegistry,
-      InstancesCache.create(ownKeys),
+      InstancesCache.create(scopeOverrides),
       new ModuleMaterialization(resolversRegistry),
     );
   }
@@ -61,12 +59,11 @@ export class ContainerContext {
 
   childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): ContainerContext {
     const { scopeOverrides = [] } = options;
-    const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
     return new ContainerContext(
       createContainerId(),
       this.resolversRegistry.checkoutForScope(scopeOverrides),
-      this.instancesCache.childScope(scopeOverridesResolversIds),
+      this.instancesCache.childScope(scopeOverrides),
       new ModuleMaterialization(this.resolversRegistry),
     );
   }

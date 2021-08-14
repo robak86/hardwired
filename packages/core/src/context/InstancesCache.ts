@@ -1,10 +1,20 @@
 import { SingletonScope } from '../container/SingletonScope';
 import { createContainerId } from '../utils/fastId';
 import invariant from 'tiny-invariant';
+import { ModulePatch } from '../module/ModulePatch';
+
+function getPatchedResolversIds(loadTarget: ModulePatch<any>[]) {
+  return loadTarget.flatMap(m => {
+    return m.patchedResolvers.values.map(patchedResolver => {
+      return patchedResolver.id;
+    });
+  });
+}
 
 export class InstancesCache {
-  static create(scopeOverridesResolverIds: string[]): InstancesCache {
-    return new InstancesCache(createContainerId(), new SingletonScope(scopeOverridesResolverIds), {}, {}, {});
+  static create(scopeOverrides: ModulePatch<any>[]): InstancesCache {
+    const ownKeys = getPatchedResolversIds(scopeOverrides);
+    return new InstancesCache(createContainerId(), new SingletonScope(ownKeys), {}, {}, {});
   }
 
   constructor(
@@ -15,7 +25,9 @@ export class InstancesCache {
     private globalOverridesScope: Record<string, any>,
   ) {}
 
-  childScope(scopeOverridesResolversIds: string[]): InstancesCache {
+  childScope(scopeOverrides: ModulePatch<any>[]): InstancesCache {
+    const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
+
     return new InstancesCache(
       createContainerId(),
       this.globalScope.checkoutChild(scopeOverridesResolversIds),

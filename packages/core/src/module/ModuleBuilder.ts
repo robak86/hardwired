@@ -5,11 +5,9 @@ import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord } from './Module';
 import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import dot from 'dot-prop';
-
 import { ObjectPaths } from '../utils/ObjectPaths';
 import { PropType } from '../utils/PropType';
 import { ClassType } from '../utils/ClassType';
-import { IBindMethod } from './IBindMethod';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
