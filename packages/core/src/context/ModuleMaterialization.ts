@@ -1,9 +1,9 @@
-import { isInstanceDefinition, isModuleDefinition, Module } from '../module/Module';
-import { unwrapThunk } from '../utils/Thunk';
-import { useProxy } from './ContextService';
-import { ResolversRegistry } from './ResolversRegistry';
-import { NewContainerContext } from './NewContainerContext';
-import { InstancesCache } from './InstancesCache';
+import {isInstanceDefinition, isModuleDefinition, Module} from '../module/Module';
+import {unwrapThunk} from '../utils/Thunk';
+import {ResolversRegistry} from './ResolversRegistry';
+import {InstancesCache} from './InstancesCache';
+
+export const useProxy = typeof Proxy !== 'undefined';
 
 export class ModuleMaterialization {
   private materializedObjects: Record<string, any> = {};

@@ -1,7 +1,4 @@
 import { Module } from '../module/Module';
-// import { ContainerContext } from '../context/ContainerContext';
-import { ContextScopes } from '../context/ContextScopes';
-import { ContextService } from '../context/ContextService';
 import { NewContainerContext } from '../context/NewContainerContext';
 
 export interface IServiceLocator {

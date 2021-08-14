@@ -4,9 +4,9 @@ import { ModuleMaterialization } from './ModuleMaterialization';
 import { Module } from '../module/Module';
 import { createContainerId } from '../utils/fastId';
 import { ContainerScopeOptions } from '../container/Container';
-import { getPatchedResolversIds } from './ContextScopes';
 import { ModulePatch } from '../module/ModulePatch';
 import { unwrapThunk } from '../utils/Thunk';
+import { getPatchedResolversIds } from "./getPatchedResolversIds";
 
 export class NewContainerContext {
   static empty() {

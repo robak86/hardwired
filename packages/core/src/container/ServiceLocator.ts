@@ -1,7 +1,4 @@
-import { Container } from './Container';
 import { Module, ModuleRecord } from '../module/Module';
-import { ContextScopes } from '../context/ContextScopes';
-import { ContextService } from '../context/ContextService';
 import { InstancesCache } from '../context/InstancesCache';
 import { ResolversRegistry } from '../context/ResolversRegistry';
 import { NewContainerContext } from '../context/NewContainerContext';

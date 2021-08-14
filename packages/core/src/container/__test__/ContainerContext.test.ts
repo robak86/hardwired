@@ -1,7 +1,6 @@
-import { unit } from '../../module/ModuleBuilder';
-import { ContextService } from '../../context/ContextService';
-import { singleton } from '../../strategies/SingletonStrategy';
-import { NewContainerContext } from '../../context/NewContainerContext';
+import {unit} from '../../module/ModuleBuilder';
+import {singleton} from '../../strategies/SingletonStrategy';
+import {NewContainerContext} from '../../context/NewContainerContext';
 
 describe(`ContainerRecord`, () => {
   describe(`async scope`, () => {
