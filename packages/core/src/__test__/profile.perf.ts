@@ -5,7 +5,7 @@ import { Module } from '../module/Module';
 import { singleton } from '../strategies/SingletonStrategy';
 
 function registerN(times: number) {
-  const result:any = {
+  const result: any = {
     container: container(),
     register: -1,
     module: unit(),

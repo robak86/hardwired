@@ -48,24 +48,24 @@ export class ResolversRegistry {
     return module;
   }
 
-  getModuleDefinition(module: Module<any>, path: string): Module.Definition {
-    if (this.hasGlobalOverrideResolver(module.moduleId, path)) {
-      return this.getGlobalOverrideResolverByModuleAndPath(module.moduleId, path);
+  getModuleDefinition(module: Module<any>, name: string): Module.Definition {
+    if (this.hasGlobalOverrideResolver(module.moduleId, name)) {
+      return this.getGlobalOverrideResolverByModuleAndPath(module.moduleId, name);
     }
 
-    if (this.hasScopeOverrideResolver(module.moduleId, path)) {
-      return this.getScopeOverrideResolver(module.moduleId, path);
+    if (this.hasScopeOverrideResolver(module.moduleId, name)) {
+      return this.getScopeOverrideResolver(module.moduleId, name);
     }
 
-    if (this.hasResolverByModuleAndPath(module.moduleId, path)) {
-      return this.getResolverByModuleAndPath(module.moduleId, path);
+    if (this.hasResolverByModuleAndPath(module.moduleId, name)) {
+      return this.getResolverByModuleAndPath(module.moduleId, name);
     }
 
-    const definition = module.registry.get(path);
+    const definition = module.registry.get(name);
 
     if (isInstanceDefinition(definition)) {
       if (!this.hasResolver(definition)) {
-        this.addResolver(module, path, definition);
+        this.addResolver(module, name, definition);
       }
 
       return definition;

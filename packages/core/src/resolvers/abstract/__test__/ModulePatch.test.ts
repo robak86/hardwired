@@ -75,12 +75,9 @@ describe(`ModulePatch`, () => {
       const patched = Module.fromPatchedModules([m1, m2]);
 
       expect(patched.registry.entries).toEqual([
-        [
-          'a_plus_b',
-          { id: 'c', type: 'resolver',  resolverThunk: a_plus_b_Resolver },
-        ],
-        ['a', { id: 'a', type: 'resolver',  resolverThunk: aReplacementResolver }],
-        ['b', { id: 'b', type: 'resolver',  resolverThunk: bReplacementResolver }],
+        ['a_plus_b', { id: 'c', type: 'resolver', resolverThunk: a_plus_b_Resolver }],
+        ['a', { id: 'a', type: 'resolver', resolverThunk: aReplacementResolver }],
+        ['b', { id: 'b', type: 'resolver', resolverThunk: bReplacementResolver }],
       ]);
     });
 
@@ -120,10 +117,7 @@ describe(`ModulePatch`, () => {
 
       expect(patched.registry.entries).toEqual([
         ['b', { id: 'b', type: 'resolver', resolverThunk: bOriginalResolver }],
-        [
-          'a_plus_b',
-          { id: 'c', type: 'resolver', resolverThunk: a_plus_b_Resolver },
-        ],
+        ['a_plus_b', { id: 'c', type: 'resolver', resolverThunk: a_plus_b_Resolver }],
         ['a', { id: 'a', type: 'resolver', resolverThunk: yetAnotherAReplacement }],
       ]);
     });

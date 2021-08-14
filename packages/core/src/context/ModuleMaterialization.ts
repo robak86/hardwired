@@ -70,13 +70,13 @@ export class ModuleMaterialization {
   }
 
   private materializeWithProxy<TModule extends Module<any>>(
-    m: TModule,
+    module: TModule,
     instancesCache: InstancesCache,
   ): Module.Materialized<TModule> {
     // TODO: since all materialization is synchronous we can somehow reuse the instance of Proxy??
     const handler: ProxyHandler<InstancesCache> = {
       get: (target: InstancesCache, property: any, receiver: any) => {
-        const definition = this.resolversRegistry.getModuleDefinition(m, property);
+        const definition = this.resolversRegistry.getModuleDefinition(module, property);
 
         if (isInstanceDefinition(definition)) {
           return this.runInstanceDefinition(definition, instancesCache);
@@ -93,11 +93,11 @@ export class ModuleMaterialization {
       },
 
       has(target: any, p: string | symbol): boolean {
-        return m.registry.hasKey(p);
+        return module.registry.hasKey(p);
       },
 
       ownKeys: target => {
-        return m.registry.keys;
+        return module.registry.keys;
       },
 
       getOwnPropertyDescriptor(k) {
@@ -110,7 +110,7 @@ export class ModuleMaterialization {
     };
 
     const materialized = new Proxy(instancesCache, handler) as any;
-    this.materializedObjects[m.moduleId.id] = materialized;
+    this.materializedObjects[module.moduleId.id] = materialized;
 
     return materialized;
   }

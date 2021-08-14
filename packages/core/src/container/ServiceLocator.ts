@@ -34,7 +34,7 @@ export class ServiceLocator {
 
     return factory({
       get: (module, key) => {
-        return requestContext.get(module, key as any)
+        return requestContext.get(module, key as any);
       },
     });
   }

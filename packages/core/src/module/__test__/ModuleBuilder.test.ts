@@ -38,26 +38,26 @@ describe(`ModuleBuilder`, () => {
     });
 
     describe(`class does not have any constructor params`, () => {
-        it(`registers correct entry in module`, async () => {
-          class SomeClass {
-            constructor() {}
-          }
+      it(`registers correct entry in module`, async () => {
+        class SomeClass {
+          constructor() {}
+        }
 
-          const extra = ModuleBuilder.empty()
-            .define('b', singleton, () => 'valueFromImportedModule')
-            .freeze();
+        const extra = ModuleBuilder.empty()
+          .define('b', singleton, () => 'valueFromImportedModule')
+          .freeze();
 
-          const m = ModuleBuilder.empty()
-            .import('imported', extra)
-            .define('a', singleton, () => 1)
-            .define('z', singleton, () => 'sdf')
-            .bind('kls', singleton, SomeClass, ['z'])
-            .freeze();
+        const m = ModuleBuilder.empty()
+          .import('imported', extra)
+          .define('a', singleton, () => 1)
+          .define('z', singleton, () => 'sdf')
+          .bind('kls', singleton, SomeClass, ['z'])
+          .freeze();
 
-          const c = container().get(m, 'kls');
+        const c = container().get(m, 'kls');
 
-          expectType<SomeClass>(c);
-        });
+        expectType<SomeClass>(c);
+      });
     });
   });
 

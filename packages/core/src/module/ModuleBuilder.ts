@@ -166,7 +166,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     // TODO: potential gc issue while getting by id
 
     if (buildFn && typeof wrapperOrStrategy === 'function') {
-
       return new ModuleBuilder(
         ModuleId.next(this.moduleId),
         this.registry.extend(name, {
@@ -190,6 +189,5 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   freeze = this.build;
 }
 function buildStrategyWrapper(buildFn: (ctx: any) => any): any {
-    throw new Error('Function not implemented.');
+  throw new Error('Function not implemented.');
 }
-
