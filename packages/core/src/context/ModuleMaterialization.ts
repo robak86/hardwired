@@ -1,7 +1,7 @@
-import {isInstanceDefinition, isModuleDefinition, Module} from '../module/Module';
-import {unwrapThunk} from '../utils/Thunk';
-import {ResolversRegistry} from './ResolversRegistry';
-import {InstancesCache} from './InstancesCache';
+import { isInstanceDefinition, isImportDefinition, Module } from '../module/Module';
+import { unwrapThunk } from '../utils/Thunk';
+import { ResolversRegistry } from './ResolversRegistry';
+import { InstancesCache } from './InstancesCache';
 
 export const useProxy = typeof Proxy !== 'undefined';
 
@@ -10,7 +10,6 @@ export class ModuleMaterialization {
 
   constructor(private resolversRegistry: ResolversRegistry) {}
 
-  // TODO: use some interface instead of ContainerContext
   materialize<TModule extends Module<any>>(module: TModule, context: InstancesCache): Module.Materialized<TModule> {
     if (useProxy) {
       return this.materializeWithProxy(module, context);
@@ -50,7 +49,7 @@ export class ModuleMaterialization {
         });
       }
 
-      if (isModuleDefinition(definition)) {
+      if (isImportDefinition(definition)) {
         Object.defineProperty(materialized, key, {
           configurable: false,
           enumerable: true,
@@ -80,7 +79,7 @@ export class ModuleMaterialization {
           return this.runInstanceDefinition(definition, context);
         }
 
-        if (isModuleDefinition(definition)) {
+        if (isImportDefinition(definition)) {
           const resolver = unwrapThunk(definition.resolverThunk);
           return this.materialize(resolver, context);
         }

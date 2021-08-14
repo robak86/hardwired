@@ -1,8 +1,8 @@
-import {isInstanceDefinition, isModuleDefinition, Module} from '../module/Module';
+import { isInstanceDefinition, isImportDefinition, Module } from '../module/Module';
 import invariant from 'tiny-invariant';
-import {ModuleId} from '../module/ModuleId';
-import {buildResolverId} from '../module/ModuleBuilder';
-import {ModulePatch} from '../module/ModulePatch';
+import { ModuleId } from '../module/ModuleId';
+import { buildResolverId } from '../module/ModuleBuilder';
+import { ModulePatch } from '../module/ModulePatch';
 
 export class ResolversRegistry {
   static empty(): ResolversRegistry {
@@ -58,51 +58,6 @@ export class ResolversRegistry {
     });
   }
 
-  addResolver(module: Module<any>, path: string, resolver: Module.InstanceDefinition) {
-    invariant(
-      !this.resolversById[resolver.id],
-      `Cannot add resolver. Resolver with id=${resolver.id} for path=${path} already exists.`,
-    );
-    this.resolversById[resolver.id] = resolver;
-    this.modulesByResolverId[resolver.id] = module;
-  }
-
-
-
-  hasResolver(resolver: Module.InstanceDefinition): boolean {
-    return !!this.resolversById[resolver.id];
-  }
-
-  hasResolverByModuleAndPath(moduleId: ModuleId, path: string): boolean {
-    return !!this.resolversById[buildResolverId({ moduleId }, path)];
-  }
-
-  hasGlobalOverrideResolver(moduleId: ModuleId, path: string): boolean {
-    return !!this.globalOverrideResolversById[buildResolverId({ moduleId }, path)];
-  }
-
-  hasScopeOverrideResolver(moduleId: ModuleId, path: string): boolean {
-    return !!this.scopeOverrideResolversById[buildResolverId({ moduleId }, path)];
-  }
-
-  getScopeOverrideResolver(moduleId: ModuleId, path: string) {
-    const resolver = this.scopeOverrideResolversById[buildResolverId({ moduleId }, path)];
-    invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
-    return resolver;
-  }
-
-  getResolverByModuleAndPath(moduleId: ModuleId, path: string) {
-    const resolver = this.resolversById[buildResolverId({ moduleId }, path)];
-    invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
-    return resolver;
-  }
-
-  getGlobalOverrideResolverByModuleAndPath(moduleId: ModuleId, path: string) {
-    const resolver = this.globalOverrideResolversById[buildResolverId({ moduleId }, path)];
-    invariant(resolver, `Cannot get invariant resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
-    return resolver;
-  }
-
   getModuleForResolverByResolverId(resolverId: string): Module<any> {
     const module = this.modulesByResolverId[resolverId];
     invariant(module, `Cannot find module for resolverId=${resolverId}`);
@@ -132,7 +87,7 @@ export class ResolversRegistry {
       return definition;
     }
 
-    if (isModuleDefinition(definition)) {
+    if (isImportDefinition(definition)) {
       return definition;
     }
 
@@ -145,6 +100,49 @@ export class ResolversRegistry {
     return resolver;
   }
 
+  private addResolver(module: Module<any>, path: string, resolver: Module.InstanceDefinition) {
+    invariant(
+      !this.resolversById[resolver.id],
+      `Cannot add resolver. Resolver with id=${resolver.id} for path=${path} already exists.`,
+    );
+    this.resolversById[resolver.id] = resolver;
+    this.modulesByResolverId[resolver.id] = module;
+  }
+
+  private hasResolver(resolver: Module.InstanceDefinition): boolean {
+    return !!this.resolversById[resolver.id];
+  }
+
+  private hasResolverByModuleAndPath(moduleId: ModuleId, path: string): boolean {
+    return !!this.resolversById[buildResolverId({ moduleId }, path)];
+  }
+
+  private hasGlobalOverrideResolver(moduleId: ModuleId, path: string): boolean {
+    return !!this.globalOverrideResolversById[buildResolverId({ moduleId }, path)];
+  }
+
+  private hasScopeOverrideResolver(moduleId: ModuleId, path: string): boolean {
+    return !!this.scopeOverrideResolversById[buildResolverId({ moduleId }, path)];
+  }
+
+  private getScopeOverrideResolver(moduleId: ModuleId, path: string) {
+    const resolver = this.scopeOverrideResolversById[buildResolverId({ moduleId }, path)];
+    invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
+    return resolver;
+  }
+
+  private getResolverByModuleAndPath(moduleId: ModuleId, path: string) {
+    const resolver = this.resolversById[buildResolverId({ moduleId }, path)];
+    invariant(resolver, `Cannot get resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
+    return resolver;
+  }
+
+  private getGlobalOverrideResolverByModuleAndPath(moduleId: ModuleId, path: string) {
+    const resolver = this.globalOverrideResolversById[buildResolverId({ moduleId }, path)];
+    invariant(resolver, `Cannot get invariant resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
+    return resolver;
+  }
+
   private addScopeOverrideResolver(module: Module<any>, resolver: Module.InstanceDefinition) {
     this.scopeOverrideResolversById[resolver.id] = resolver;
     this.modulesByResolverId[resolver.id] = module;
@@ -152,8 +150,8 @@ export class ResolversRegistry {
 
   private addGlobalOverrideResolver(module: Module<any>, resolver: Module.InstanceDefinition) {
     invariant(
-        !this.globalOverrideResolversById[resolver.id],
-        `Invariant resolves cannot be updated after container creation`,
+      !this.globalOverrideResolversById[resolver.id],
+      `Invariant resolves cannot be updated after container creation`,
     );
     this.globalOverrideResolversById[resolver.id] = resolver;
     this.modulesByResolverId[resolver.id] = module;

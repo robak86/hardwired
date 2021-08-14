@@ -58,15 +58,9 @@ export type ContainerOptions = {
 export type ContainerScopeOptions = {
   scopeOverrides?: ModulePatch<any>[]; // used only in descendent scopes (can be overridden)
   globalOverrides?: ModulePatch<any>[]; // propagated to whole dependencies graph
-  eager?: Module<any>[];
 };
 
-export function container({
-  context,
-  scopeOverrides = [],
-  eager = [], // TODO: consider renaming to load|discoverable|preload - since eager may implicate that some instances are created
-  globalOverrides = [],
-}: ContainerOptions = {}): Container {
-  const container = new Container(context || ContainerContext.create(eager, scopeOverrides, globalOverrides));
+export function container({ context, scopeOverrides = [], globalOverrides = [] }: ContainerOptions = {}): Container {
+  const container = new Container(context || ContainerContext.create(scopeOverrides, globalOverrides));
   return container as any;
 }

@@ -28,7 +28,7 @@ export function isInstanceDefinition(definition: Module.Definition): definition 
   return definition.type === 'resolver';
 }
 
-export function isModuleDefinition(definition: Module.Definition): definition is Module.ImportDefinition {
+export function isImportDefinition(definition: Module.Definition): definition is Module.ImportDefinition {
   return definition.type === 'module';
 }
 
