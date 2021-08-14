@@ -42,22 +42,6 @@ export class ResolversRegistry {
     return newRegistry;
   }
 
-  addGlobalOverrides(patches: ModulePatch<any>[]) {
-    patches.reverse().forEach(modulePatch => {
-      modulePatch.patchedResolvers.forEach(patchedResolver => {
-        this.addGlobalOverrideResolver(Module.fromPatchedModule(modulePatch), patchedResolver);
-      });
-    });
-  }
-
-  addScopeOverrides(patches: ModulePatch<any>[]) {
-    patches.reverse().forEach(modulePatch => {
-      modulePatch.patchedResolvers.forEach(patchedResolver => {
-        this.addScopeOverrideResolver(Module.fromPatchedModule(modulePatch), patchedResolver);
-      });
-    });
-  }
-
   getModuleForResolverByResolverId(resolverId: string): Module<any> {
     const module = this.modulesByResolverId[resolverId];
     invariant(module, `Cannot find module for resolverId=${resolverId}`);
@@ -155,5 +139,21 @@ export class ResolversRegistry {
     );
     this.globalOverrideResolversById[resolver.id] = resolver;
     this.modulesByResolverId[resolver.id] = module;
+  }
+
+  private addGlobalOverrides(patches: ModulePatch<any>[]) {
+    patches.reverse().forEach(modulePatch => {
+      modulePatch.patchedResolvers.forEach(patchedResolver => {
+        this.addGlobalOverrideResolver(Module.fromPatchedModule(modulePatch), patchedResolver);
+      });
+    });
+  }
+
+  private addScopeOverrides(patches: ModulePatch<any>[]) {
+    patches.reverse().forEach(modulePatch => {
+      modulePatch.patchedResolvers.forEach(patchedResolver => {
+        this.addScopeOverrideResolver(Module.fromPatchedModule(modulePatch), patchedResolver);
+      });
+    });
   }
 }
