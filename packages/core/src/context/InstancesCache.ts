@@ -37,6 +37,18 @@ export class InstancesCache {
     return this.currentScope[id];
   }
 
+  hasInGlobalOverride(id: string) {
+    return !!this.globalOverridesScope[id];
+  }
+
+  getFromGlobalOverride(id: string) {
+    return this.globalOverridesScope[id];
+  }
+
+  setForGlobalOverrideScope(uuid: string, instance: any): void {
+    this.globalOverridesScope[uuid] = instance;
+  }
+
   hasInRequestScope(uuid: string): boolean {
     return !!this.requestScope[uuid];
   }

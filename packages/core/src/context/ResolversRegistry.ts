@@ -34,11 +34,13 @@ export class ResolversRegistry {
   }
 
   getModuleDefinition(module: Module<any>, name: string): Module.Definition {
-    if (this.hasGlobalOverrideResolver(module.moduleId, name)) {
+    const resolverId = buildResolverId(module, name);
+
+    if (this.hasGlobalOverrideResolver(resolverId)) {
       return this.getGlobalOverrideResolverByModuleAndPath(module.moduleId, name);
     }
 
-    if (this.hasScopeOverrideResolver(module.moduleId, name)) {
+    if (this.hasScopeOverrideResolver(resolverId)) {
       return this.getScopeOverrideResolver(module.moduleId, name);
     }
 
@@ -51,12 +53,12 @@ export class ResolversRegistry {
     return resolver;
   }
 
-  private hasGlobalOverrideResolver(moduleId: ModuleId, path: string): boolean {
-    return !!this.globalOverrideResolversById[buildResolverId({ moduleId }, path)];
+  hasGlobalOverrideResolver(resolverId: string): boolean {
+    return !!this.globalOverrideResolversById[resolverId];
   }
 
-  private hasScopeOverrideResolver(moduleId: ModuleId, path: string): boolean {
-    return !!this.scopeOverrideResolversById[buildResolverId({ moduleId }, path)];
+  private hasScopeOverrideResolver(resolverId: string): boolean {
+    return !!this.scopeOverrideResolversById[resolverId];
   }
 
   private getScopeOverrideResolver(moduleId: ModuleId, path: string) {

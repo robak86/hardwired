@@ -6,12 +6,22 @@ export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: InstancesCache, resolvers, materializedModule?): TValue {
-    if (context.hasInRequestScope(id)) {
-      return context.getFromRequestScope(id);
+  build(id: string, instancesCache: InstancesCache, resolvers, materializedModule?): TValue {
+    if (resolvers.hasGlobalOverrideResolver(id)) {
+      if (instancesCache.hasInGlobalOverride(id)) {
+        return instancesCache.getFromGlobalOverride(id);
+      } else {
+        const instance = this.buildFunction(materializedModule);
+        instancesCache.setForGlobalOverrideScope(id, instance);
+        return instance;
+      }
+    }
+
+    if (instancesCache.hasInRequestScope(id)) {
+      return instancesCache.getFromRequestScope(id);
     } else {
       const instance = this.buildFunction(materializedModule);
-      context.setForRequestScope(id, instance);
+      instancesCache.setForRequestScope(id, instance);
       return instance;
     }
   }
