@@ -5,15 +5,19 @@ import { ContextService } from './ContextService';
 import { getPatchedResolversIds } from './ContextScopes';
 import { createContainerId } from '../utils/fastId';
 
+
+
 export type ContainerContext = {
   id: string;
   patchedResolversById: Record<string, Module.InstanceDefinition>;
   resolversById: Record<string, Module.InstanceDefinition>;
-  invariantResolversById: Record<string, Module.InstanceDefinition>;
+  globalOverrideResolversById: Record<string, Module.InstanceDefinition>;
   modulesByResolverId: Record<string, Module<any>>;
-  materializedObjects: Record<string, any>;
-  frozenOverrides: Record<string, Module.InstanceDefinition>;
 
+
+  materializedObjects: Record<string, any>;
+
+  globalOverridesScope: Record<string, Module.InstanceDefinition>;
   globalScope: SingletonScope; // TODO: probably we shouldn't allow for such complex scopes rules (this feature may by slow and introduces unnecessary complexity)
   currentScope: Record<string, any>;
   requestScope: Record<string, any>;
@@ -31,13 +35,14 @@ export const ContainerContext = {
     const context: ContainerContext = {
       id: createContainerId(),
       resolversById: {},
-      invariantResolversById: {},
+      globalOverrideResolversById: {},
       patchedResolversById: {},
+      globalOverridesScope: {},
       requestScope: {},
       modulesByResolverId: {},
       materializedObjects: {},
       currentScope: {},
-      frozenOverrides: {},
+      // frozenOverrides: {},
       globalScope: new SingletonScope(ownKeys),
     };
 

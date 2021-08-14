@@ -102,7 +102,7 @@ export const ContextService = {
   loadInvariants(patches: ModulePatch<any>[], context: ContainerContext) {
     patches.reverse().forEach(modulePatch => {
       modulePatch.patchedResolvers.forEach(patchedResolver => {
-        ContextMutations.addInvariantResolver(Module.fromPatchedModule(modulePatch), patchedResolver, context);
+        ContextMutations.addGlobalOverrideResolver(Module.fromPatchedModule(modulePatch), patchedResolver, context);
       });
     });
   },

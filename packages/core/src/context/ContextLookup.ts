@@ -31,6 +31,10 @@ export const ContextLookup = {
     return context.globalScope.get(uuid);
   },
 
+  isGloballyOverridden(uuid: string, context: ContainerContext){
+
+  },
+
   hasResolver(resolver: Module.InstanceDefinition, context: ContainerContext): boolean {
     return !!context.resolversById[resolver.id];
   },
@@ -40,7 +44,7 @@ export const ContextLookup = {
   },
 
   hasInvariantResolver(moduleId: ModuleId, path: string, context: ContainerContext): boolean {
-    return !!context.invariantResolversById[buildResolverId({ moduleId }, path)];
+    return !!context.globalOverrideResolversById[buildResolverId({ moduleId }, path)];
   },
 
   hasPatchedResolver(moduleId: ModuleId, path: string, context: ContainerContext): boolean {
@@ -60,7 +64,7 @@ export const ContextLookup = {
   },
 
   getInvariantResolverByModuleAndPath(moduleId: ModuleId, path: string, context: ContainerContext) {
-    const resolver = context.invariantResolversById[buildResolverId({ moduleId }, path)];
+    const resolver = context.globalOverrideResolversById[buildResolverId({ moduleId }, path)];
     invariant(resolver, `Cannot get invariant resolver for moduleId = ${JSON.stringify(moduleId.id)} and path ${path}`);
     return resolver;
   },

@@ -28,6 +28,7 @@ export class Container {
     return ContextService.get(moduleInstance, name, requestContext);
   }
 
+  // TODO: rename to select
   getSlice<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
     return inject(ContextScopes.checkoutRequestScope(this.containerContext));
   }

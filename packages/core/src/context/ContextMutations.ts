@@ -20,12 +20,12 @@ export const ContextMutations = {
     context.modulesByResolverId[resolver.id] = module;
   },
 
-  addInvariantResolver(module: Module<any>, resolver: Module.InstanceDefinition, context: ContainerContext) {
+  addGlobalOverrideResolver(module: Module<any>, resolver: Module.InstanceDefinition, context: ContainerContext) {
     invariant(
-      !context.invariantResolversById[resolver.id],
+      !context.globalOverrideResolversById[resolver.id],
       `Invariant resolves cannot be updated after container creation`,
     );
-    context.invariantResolversById[resolver.id] = resolver;
+    context.globalOverrideResolversById[resolver.id] = resolver;
     context.modulesByResolverId[resolver.id] = module;
   },
 

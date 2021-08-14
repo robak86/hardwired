@@ -49,56 +49,56 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
       this.isFrozenRef,
     );
   }
-  bind3: IBindMethod<TRecord> = (name: any, klass: ClassType<any, any>, args: any[] = []): any => {
-    const buildFn = ctx => {
-      const deps: any = args.map(argPath => dot.get(ctx, argPath));
-      return new klass(...deps);
-    };
-
-    return new ModuleBuilder(
-      ModuleId.next(this.moduleId),
-      this.registry.extend(name, {
-        id: buildResolverId(this, name),
-        type: 'resolver',
-        strategyTag: getStrategyTag(buildStrategyWrapper),
-        resolverThunk: buildStrategyWrapper(buildFn),
-      }) as any,
-      this.isFrozenRef,
-    );
-  };
-
-  bind2<
-    TKey extends string,
-    TDependencyPath extends ObjectPaths<ModuleRecord.Materialized<TRecord>>,
-    TDependenciesPaths extends [TDependencyPath, ...TDependencyPath[]],
-    TValue,
-  >(
-    name: TKey,
-    buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
-    args: TDependenciesPaths,
-    klass: ClassType<
-      TValue,
-      {
-        [K in keyof TDependenciesPaths]: PropType<ModuleRecord.Materialized<TRecord>, TDependenciesPaths[K]>;
-      }
-    >,
-  ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>> {
-    const buildFn = ctx => {
-      const deps: any = args.map(argPath => dot.get(ctx, argPath));
-      return new klass(...deps);
-    };
-
-    return new ModuleBuilder(
-      ModuleId.next(this.moduleId),
-      this.registry.extend(name, {
-        id: buildResolverId(this, name),
-        type: 'resolver',
-        strategyTag: getStrategyTag(buildStrategyWrapper),
-        resolverThunk: buildStrategyWrapper(buildFn),
-      }) as any,
-      this.isFrozenRef,
-    );
-  }
+  // bind3: IBindMethod<TRecord> = (name: any, klass: ClassType<any, any>, args: any[] = []): any => {
+  //   const buildFn = ctx => {
+  //     const deps: any = args.map(argPath => dot.get(ctx, argPath));
+  //     return new klass(...deps);
+  //   };
+  //
+  //   return new ModuleBuilder(
+  //     ModuleId.next(this.moduleId),
+  //     this.registry.extend(name, {
+  //       id: buildResolverId(this, name),
+  //       type: 'resolver',
+  //       strategyTag: getStrategyTag(buildStrategyWrapper),
+  //       resolverThunk: buildStrategyWrapper(buildFn),
+  //     }) as any,
+  //     this.isFrozenRef,
+  //   );
+  // };
+  //
+  // bind2<
+  //   TKey extends string,
+  //   TDependencyPath extends ObjectPaths<ModuleRecord.Materialized<TRecord>>,
+  //   TDependenciesPaths extends [TDependencyPath, ...TDependencyPath[]],
+  //   TValue,
+  // >(
+  //   name: TKey,
+  //   buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
+  //   args: TDependenciesPaths,
+  //   klass: ClassType<
+  //     TValue,
+  //     {
+  //       [K in keyof TDependenciesPaths]: PropType<ModuleRecord.Materialized<TRecord>, TDependenciesPaths[K]>;
+  //     }
+  //   >,
+  // ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>> {
+  //   const buildFn = ctx => {
+  //     const deps: any = args.map(argPath => dot.get(ctx, argPath));
+  //     return new klass(...deps);
+  //   };
+  //
+  //   return new ModuleBuilder(
+  //     ModuleId.next(this.moduleId),
+  //     this.registry.extend(name, {
+  //       id: buildResolverId(this, name),
+  //       type: 'resolver',
+  //       strategyTag: getStrategyTag(buildStrategyWrapper),
+  //       resolverThunk: buildStrategyWrapper(buildFn),
+  //     }) as any,
+  //     this.isFrozenRef,
+  //   );
+  // }
 
   bind<
     TKey extends string,
@@ -194,3 +194,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   freeze = this.build;
 }
+function buildStrategyWrapper(buildFn: (ctx: any) => any): any {
+    throw new Error('Function not implemented.');
+}
+

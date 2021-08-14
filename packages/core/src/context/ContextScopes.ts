@@ -17,18 +17,19 @@ export const ContextScopes = {
     return {
       id: createContainerId(), // TODO: add composite id - rootId-requestId-scopeId
       resolversById: prevContext.resolversById,
-      invariantResolversById: prevContext.invariantResolversById,
+      globalOverrideResolversById: prevContext.globalOverrideResolversById,
       patchedResolversById: prevContext.patchedResolversById,
       modulesByResolverId: prevContext.modulesByResolverId,
+      globalOverridesScope: prevContext.globalOverridesScope,
       globalScope: prevContext.globalScope,
       currentScope: prevContext.currentScope,
-      frozenOverrides: prevContext.frozenOverrides,
       requestScope: {},
-      materializedObjects: {},
+
+      materializedObjects: {}, //TODO: this looks like kind of cache that does not to have belong to context?
     };
   },
 
-  childScope(options: ContainerScopeOptions, prevContext: ContainerContext): ContainerContext {
+  childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>, prevContext: ContainerContext): ContainerContext {
     const { scopeOverrides = [], eager = [] } = options;
     const loadTarget = [...scopeOverrides, ...eager];
     const ownOverrides = getPatchedResolversIds(loadTarget);
@@ -38,14 +39,15 @@ export const ContextScopes = {
     const context: ContainerContext = {
       id: createContainerId(),
       resolversById: prevContext.resolversById,
-      invariantResolversById: prevContext.invariantResolversById,
+      globalOverrideResolversById: prevContext.globalOverrideResolversById,
       patchedResolversById: { ...prevContext.patchedResolversById },
       modulesByResolverId: prevContext.modulesByResolverId,
-      frozenOverrides: prevContext.frozenOverrides,
+      globalOverridesScope: prevContext.globalOverridesScope,
       globalScope: prevContext.globalScope.checkoutChild(ownOverrides),
+      currentScope: {}, // TODO: here we need to rw
       requestScope: {},
+
       materializedObjects: {},
-      currentScope: {}, // scope created by by checkoutChildScope -
     };
 
     ContextService.loadPatches(loadTarget, context);
