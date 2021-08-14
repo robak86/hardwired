@@ -10,7 +10,10 @@ export class DecoratorResolver<TReturn, TDeps> extends BuildStrategy<TReturn> {
     super();
   }
 
-  build(id: string, context: InstancesCache, materializedModule?): TReturn {
-    return this.decorateFn(unwrapThunk(this.decorated).build(id, context, materializedModule), materializedModule);
+  build(id: string, context: InstancesCache, resolvers, materializedModule?): TReturn {
+    return this.decorateFn(
+      unwrapThunk(this.decorated).build(id, context, resolvers, materializedModule),
+      materializedModule,
+    );
   }
 }

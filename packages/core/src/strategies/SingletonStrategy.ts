@@ -6,7 +6,7 @@ export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: InstancesCache, materializedModule?): TValue {
+  build(id: string, context: InstancesCache, resolvers, materializedModule?): TValue {
     if (context.hasInGlobalScope(id)) {
       return context.getFromGlobalScope(id);
     } else {

@@ -23,7 +23,7 @@ export class ModuleMaterialization {
     const module = this.resolversRegistry.getModuleForResolverByResolverId(instanceDefinition.id);
     const materializedModule = this.materialize(module, context);
     const resolver = unwrapThunk(instanceDefinition.resolverThunk);
-    return resolver.build(instanceDefinition.id, context, materializedModule);
+    return resolver.build(instanceDefinition.id, context, this.resolversRegistry, materializedModule);
   }
 
   private materializeWithAccessors<TModule extends Module<any>>(

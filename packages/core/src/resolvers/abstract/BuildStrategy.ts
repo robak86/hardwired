@@ -1,4 +1,5 @@
 import { InstancesCache } from '../../context/InstancesCache';
+import { ResolversRegistry } from '../../context/ResolversRegistry';
 
 export namespace BuildStrategy {
   export type Unbox<T> = T extends BuildStrategy<infer TInstance>
@@ -10,5 +11,5 @@ export abstract class BuildStrategy<TValue> {
   readonly __TValue!: TValue; // prevent generic type erasure
   readonly tags: symbol[] = [];
 
-  abstract build(id: string, context: InstancesCache, materializedModule?): TValue;
+  abstract build(id: string, context: InstancesCache, resolvers: ResolversRegistry, materializedModule?): TValue;
 }

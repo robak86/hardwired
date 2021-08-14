@@ -20,7 +20,6 @@ export class NewContainerContext {
     );
   }
 
-
   static create(
     eager: ModulePatch<any>[],
     overrides: ModulePatch<any>[],
@@ -53,13 +52,6 @@ export class NewContainerContext {
     return this.materialization.runInstanceDefinition(resolver, this.instancesCache);
   }
 
-  runInstanceDefinition(instanceDefinition: Module.InstanceDefinition) {
-    const module = this.resolversRegistry.getModuleForResolverByResolverId(instanceDefinition.id);
-    const materializedModule = this.materialization.materialize(module, this.instancesCache);
-    const resolver = unwrapThunk(instanceDefinition.resolverThunk);
-    return resolver.build(instanceDefinition.id, this.instancesCache, materializedModule);
-  }
-
   materialize<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     return this.materialization.materialize(module, this.instancesCache);
   }
@@ -84,9 +76,5 @@ export class NewContainerContext {
       this.instancesCache.childScope(scopeOverridesResolversIds),
       new ModuleMaterialization(this.resolversRegistry),
     );
-  }
-
-  filterLoadedDefinitions(predicate: (resolver: Module.InstanceDefinition) => boolean): Module.InstanceDefinition[] {
-    return this.resolversRegistry.filterLoadedDefinitions(predicate);
   }
 }

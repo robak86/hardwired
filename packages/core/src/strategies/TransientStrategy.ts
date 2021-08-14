@@ -7,7 +7,7 @@ export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: InstancesCache, materializedModule?): TValue {
+  build(id: string, context: InstancesCache, resolvers, materializedModule?): TValue {
     const result = this.buildFunction(materializedModule);
     if (result instanceof BuildStrategy) {
       return result.build(id, context, materializedModule);

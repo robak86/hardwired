@@ -157,10 +157,4 @@ export class ResolversRegistry {
     invariant(isInstanceDefinition(resolver), `Given path ${path} should return instance resolver`);
     return resolver;
   }
-
-  filterLoadedDefinitions(predicate: (resolver: Module.InstanceDefinition) => boolean): Module.InstanceDefinition[] {
-    return Object.values({ ...this.resolversById, ...this.patchedResolversById }).filter(definition => {
-      return predicate(definition);
-    });
-  }
 }

@@ -1,12 +1,5 @@
 import { Module } from '../module/Module';
 import { ModulePatch } from '../module/ModulePatch';
-import { BuildStrategyFactory, ExtractBuildStrategyFactoryType } from '../strategies/abstract/BuildStrategy';
-import invariant from 'tiny-invariant';
-
-import { ContextService } from '../context/ContextService';
-import { ContextLookup } from '../context/ContextLookup';
-import { ContextScopes } from '../context/ContextScopes';
-import { unwrapThunk } from '../utils/Thunk';
 import { NewContainerContext } from '../context/NewContainerContext';
 
 export type ChildScopeOptions = {

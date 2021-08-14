@@ -6,7 +6,7 @@ export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: InstancesCache, materializedModule?): TValue {
+  build(id: string, context: InstancesCache, resolvers, materializedModule?): TValue {
     if (context.hasInRequestScope(id)) {
       return context.getFromRequestScope(id);
     } else {
