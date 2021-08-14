@@ -1,7 +1,7 @@
 import { Module, ModuleRecord } from '../module/Module';
 import { InstancesCache } from '../context/InstancesCache';
 import { ResolversRegistry } from '../context/ResolversRegistry';
-import { NewContainerContext } from '../context/NewContainerContext';
+import { ContainerContext } from '../context/ContainerContext';
 import { createContainerId } from '../utils/fastId';
 import { ModuleMaterialization } from '../context/ModuleMaterialization';
 
@@ -13,10 +13,10 @@ type ServiceLocatorGet = {
 };
 
 export class ServiceLocator {
-  private container: NewContainerContext;
+  private container: ContainerContext;
 
   constructor(private instancesCache: InstancesCache, private resolversRegistry: ResolversRegistry) {
-    this.container = new NewContainerContext(
+    this.container = new ContainerContext(
       createContainerId(),
       resolversRegistry,
       instancesCache,

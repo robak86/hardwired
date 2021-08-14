@@ -1,5 +1,5 @@
 import { Module } from '../module/Module';
-import { NewContainerContext } from '../context/NewContainerContext';
+import { ContainerContext } from '../context/ContainerContext';
 
 export interface IServiceLocator {
   get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
@@ -12,5 +12,5 @@ export interface IServiceLocator {
     ...modules: TModules
   ): Module.MaterializedArray<TModules>;
 
-  getSlice<TReturn>(inject: (ctx: NewContainerContext) => TReturn): TReturn;
+  getSlice<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn;
 }

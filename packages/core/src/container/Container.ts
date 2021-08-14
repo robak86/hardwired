@@ -1,13 +1,13 @@
 import { Module } from '../module/Module';
 import { ModulePatch } from '../module/ModulePatch';
-import { NewContainerContext } from '../context/NewContainerContext';
+import { ContainerContext } from '../context/ContainerContext';
 
 export type ChildScopeOptions = {
   scopeOverrides?: ModulePatch<any>[];
 };
 
 export class Container {
-  constructor(protected readonly containerContext: NewContainerContext) {}
+  constructor(protected readonly containerContext: ContainerContext) {}
 
   get id(): string {
     return this.containerContext.id;
@@ -22,7 +22,7 @@ export class Container {
   }
 
   // TODO: rename to select
-  getSlice<TReturn>(inject: (ctx: NewContainerContext) => TReturn): TReturn {
+  getSlice<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
     return inject(this.containerContext.checkoutRequestScope());
   }
 
@@ -52,7 +52,7 @@ export class Container {
 }
 
 export type ContainerOptions = {
-  context?: NewContainerContext;
+  context?: ContainerContext;
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
@@ -67,6 +67,6 @@ export function container({
   eager = [], // TODO: consider renaming to load|discoverable|preload - since eager may implicate that some instances are created
   globalOverrides = [],
 }: ContainerOptions = {}): Container {
-  const container = new Container(context || NewContainerContext.create(eager, scopeOverrides, globalOverrides));
+  const container = new Container(context || ContainerContext.create(eager, scopeOverrides, globalOverrides));
   return container as any;
 }

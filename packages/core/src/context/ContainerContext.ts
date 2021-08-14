@@ -5,14 +5,13 @@ import { Module } from '../module/Module';
 import { createContainerId } from '../utils/fastId';
 import { ContainerScopeOptions } from '../container/Container';
 import { ModulePatch } from '../module/ModulePatch';
-import { unwrapThunk } from '../utils/Thunk';
 import { getPatchedResolversIds } from "./getPatchedResolversIds";
 
-export class NewContainerContext {
+export class ContainerContext {
   static empty() {
     const resolversRegistry = ResolversRegistry.empty();
 
-    return new NewContainerContext(
+    return new ContainerContext(
       createContainerId(),
       resolversRegistry,
       InstancesCache.create([]),
@@ -24,12 +23,12 @@ export class NewContainerContext {
     eager: ModulePatch<any>[],
     overrides: ModulePatch<any>[],
     invariants: ModulePatch<any>[],
-  ): NewContainerContext {
+  ): ContainerContext {
     const ownKeys = getPatchedResolversIds(invariants);
 
     const resolversRegistry = ResolversRegistry.create(overrides, invariants);
 
-    return new NewContainerContext(
+    return new ContainerContext(
       createContainerId(),
       resolversRegistry,
       InstancesCache.create(ownKeys),
@@ -56,8 +55,8 @@ export class NewContainerContext {
     return this.materialization.materialize(module, this.instancesCache);
   }
 
-  checkoutRequestScope(): NewContainerContext {
-    return new NewContainerContext(
+  checkoutRequestScope(): ContainerContext {
+    return new ContainerContext(
       createContainerId(),
       this.resolversRegistry.checkoutForRequestScope(),
       this.instancesCache.checkoutForRequestScope(),
@@ -65,12 +64,12 @@ export class NewContainerContext {
     );
   }
 
-  childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): NewContainerContext {
+  childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): ContainerContext {
     const { scopeOverrides = [], eager = [] } = options;
     const loadTarget = [...scopeOverrides, ...eager];
     const scopeOverridesResolversIds = getPatchedResolversIds(loadTarget);
 
-    return new NewContainerContext(
+    return new ContainerContext(
       createContainerId(),
       this.resolversRegistry.checkoutForScope(scopeOverrides),
       this.instancesCache.childScope(scopeOverridesResolversIds),

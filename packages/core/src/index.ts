@@ -9,6 +9,6 @@ export * from './strategies/ScopeStrategy';
 export { BuildStrategy } from './resolvers/abstract/BuildStrategy';
 export type { Module, AnyResolver, ModuleRecord } from './module/Module';
 export { inject } from './container/inject';
-export { NewContainerContext } from './context/NewContainerContext';
+export { ContainerContext } from './context/ContainerContext';
 export { ServiceLocator } from './container/ServiceLocator';
 export { serviceLocator } from './resolvers/ServiceLocatorResolver';
