@@ -2,6 +2,7 @@ import { Container } from './Container';
 import { Module, ModuleRecord } from '../module/Module';
 import { ContextScopes } from '../context/ContextScopes';
 import { ContextService } from '../context/ContextService';
+import { InstancesCache } from '../context/InstancesCache';
 
 type ServiceLocatorGet = {
   <TRegistryRecord extends ModuleRecord, K extends keyof ModuleRecord.Materialized<TRegistryRecord> & string>(
@@ -11,12 +12,12 @@ type ServiceLocatorGet = {
 };
 
 export class ServiceLocator extends Container {
-  // constructor(containerContext: ContainerContext) {
-  //   super(containerContext);
-  // }
+  constructor(private instancesCache: InstancesCache, private ) {
+    super(containerContext);
+  }
 
   withScope<T>(factory: (obj: { get: ServiceLocatorGet }) => T): T {
-    throw new Error("Implement me!")
+    throw new Error('Implement me!');
     // const requestContext = ContextScopes.checkoutRequestScope(this.containerContext);
     //
     // return factory({
