@@ -19,10 +19,9 @@ export class ContainerContext {
     );
   }
 
-  static create(overrides: ModulePatch<any>[], invariants: ModulePatch<any>[]): ContainerContext {
-    const ownKeys = getPatchedResolversIds(invariants);
-
-    const resolversRegistry = ResolversRegistry.create(overrides, invariants);
+  static create(scopeOverrides: ModulePatch<any>[], globalOverrides: ModulePatch<any>[]): ContainerContext {
+    const ownKeys = getPatchedResolversIds(scopeOverrides);
+    const resolversRegistry = ResolversRegistry.create(scopeOverrides, globalOverrides);
 
     return new ContainerContext(
       createContainerId(),
@@ -62,8 +61,7 @@ export class ContainerContext {
 
   childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): ContainerContext {
     const { scopeOverrides = [] } = options;
-    const loadTarget = [...scopeOverrides];
-    const scopeOverridesResolversIds = getPatchedResolversIds(loadTarget);
+    const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
     return new ContainerContext(
       createContainerId(),
