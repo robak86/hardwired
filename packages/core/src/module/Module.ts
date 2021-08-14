@@ -63,28 +63,9 @@ export namespace Module {
 }
 
 export class Module<TRecord extends Record<string, AnyResolver>> extends ModulePatch<TRecord> {
-  static fromPatchedModule<TRecord extends Record<string, AnyResolver>>(
-    patchedModule: ModulePatch<TRecord>,
-  ): Module<TRecord> {
-    return new Module<TRecord>(patchedModule.moduleId, patchedModule.registry.merge(patchedModule.patchedResolvers));
-  }
-
-  static fromPatchedModules<TRecord extends Record<string, AnyResolver>>(
-    patchedModules: ModulePatch<TRecord>[],
-  ): Module<TRecord> {
-    const patched = patchedModules.reduce((composedPatchedModule, currentPatchedModule) => {
-      return composedPatchedModule.merge(currentPatchedModule);
-    });
-    return Module.fromPatchedModule(patched);
-  }
-
   __definitions!: TRecord; // prevent erasing the type
 
   constructor(moduleId: ModuleId, registry: ImmutableMap<Record<string, Module.Definition>>) {
     super(moduleId, registry, ImmutableMap.empty());
   }
-
-  // select(ctx: NewContainerContext): ModuleRecord.Materialized<TRecord> {
-  //   return ContextService.materializeWithAccessors(this, ctx) as any;
-  // }
 }
