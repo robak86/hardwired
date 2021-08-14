@@ -31,6 +31,8 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     return this.moduleId.revision === otherModule.moduleId.revision;
   }
 
+  // TODO: allowing to replace strategy may be confusing because all replacements passed into globalOverrides become singletons
+  //       while scopeOverrides does not change strategy
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
     name: TKey,
     instance: BuildStrategy<TValue> | ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => BuildStrategy<TValue>),
@@ -56,7 +58,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
 
     invariant(this.registry.hasKey(name), `Cannot replace definition: ${name} does not exist.`);
     const prev = this.registry.get(name);
-    invariant(prev?.type === 'resolver', `Cannot replace import`);
+    invariant(isInstanceDefinition(prev), `Cannot replace import`);
 
     if (typeof buildFnOrInstance === 'function') {
       return new ModulePatch(
@@ -79,13 +81,6 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
         resolverThunk: buildFnOrInstance,
       }) as any,
     );
-  }
-
-  bindValue<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
-    name: TKey,
-    value: TValue,
-  ): ModulePatch<TRecord> {
-    return this.replace(name, () => value, singleton);
   }
 
   decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
