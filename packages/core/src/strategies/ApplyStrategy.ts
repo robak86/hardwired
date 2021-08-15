@@ -1,8 +1,8 @@
-import { BuildStrategy } from './abstract/BuildStrategy';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
 import { InstancesCache } from '../context/InstancesCache';
+import { BuildStrategy } from './abstract/BuildStrategy';
 
-export class ApplyResolver<TReturn, TDeps> extends BuildStrategy<TReturn> {
+export class ApplyStrategy<TReturn, TDeps> extends BuildStrategy<TReturn> {
   constructor(protected decorated: Thunk<BuildStrategy<TReturn>>, protected applyFn: (original: TReturn) => any) {
     super();
   }

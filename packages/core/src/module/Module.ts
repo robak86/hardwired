@@ -2,8 +2,8 @@ import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import { Thunk } from '../utils/Thunk';
 
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { ModulePatch } from './ModulePatch';
+import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 
 // prettier-ignore
 export type AnyResolver = BuildStrategy<any> | Module<any> ;

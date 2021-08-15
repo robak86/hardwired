@@ -1,5 +1,5 @@
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
+import { BuildStrategy } from './abstract/BuildStrategy';
 
 export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
   constructor(protected buildFunction: (ctx) => TValue) {

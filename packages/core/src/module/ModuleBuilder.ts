@@ -3,11 +3,11 @@ import { ImmutableMap } from '../collections/ImmutableMap';
 import invariant from 'tiny-invariant';
 import { Thunk } from '../utils/Thunk';
 import { AnyResolver, Module, ModuleRecord } from './Module';
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import dot from 'dot-prop';
 import { ObjectPaths } from '../utils/ObjectPaths';
 import { PropType } from '../utils/PropType';
 import { ClassType } from '../utils/ClassType';
+import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
@@ -185,7 +185,4 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   }
 
   freeze = this.build;
-}
-function buildStrategyWrapper(buildFn: (ctx: any) => any): any {
-  throw new Error('Function not implemented.');
 }

@@ -1,7 +1,7 @@
 import { ModuleBuilder } from '../../module/ModuleBuilder';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { container } from '../Container';
-import { serviceLocator } from '../../resolvers/ServiceLocatorResolver';
+import { serviceLocator } from '../../strategies/ServiceLocatorStrategy';
 import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ServiceLocator`, () => {

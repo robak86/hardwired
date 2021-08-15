@@ -1,8 +1,8 @@
 import { module } from '../../module/ModuleBuilder';
-import { singleton } from '../../strategies/SingletonStrategy';
+import { singleton } from '../SingletonStrategy';
 import { container } from '../../container/Container';
-import { transient } from '../../strategies/TransientStrategy';
-import { request } from '../../strategies/RequestStrategy';
+import { transient } from '../TransientStrategy';
+import { request } from '../RequestStrategy';
 
 describe(`ApplyResolver`, () => {
   class Boxed {

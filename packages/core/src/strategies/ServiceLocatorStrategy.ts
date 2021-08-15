@@ -1,8 +1,8 @@
 import { ServiceLocator } from '../container/ServiceLocator';
-import { BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
+import { BuildStrategy } from './abstract/BuildStrategy';
 
-export class ServiceLocatorResolver extends BuildStrategy<ServiceLocator> {
+export class ServiceLocatorStrategy extends BuildStrategy<ServiceLocator> {
   constructor() {
     super();
   }
@@ -18,4 +18,4 @@ export class ServiceLocatorResolver extends BuildStrategy<ServiceLocator> {
   }
 }
 
-export const serviceLocator = (): BuildStrategy<ServiceLocator> => new ServiceLocatorResolver();
+export const serviceLocator = (): BuildStrategy<ServiceLocator> => new ServiceLocatorStrategy();

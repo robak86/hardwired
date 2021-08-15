@@ -1,11 +1,11 @@
 import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { singleton } from '../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
-import { DecoratorResolver } from '../resolvers/DecoratorResolver';
+import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
 import { AnyResolver, isInstanceDefinition, Module, ModuleRecord } from './Module';
-import { ApplyResolver } from '../resolvers/ApplyResolver';
+import { ApplyStrategy } from '../strategies/ApplyStrategy';
+import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 
 export namespace ModulePatch {
   export type Materialized<TModule extends ModulePatch<any>> = TModule extends ModulePatch<infer TRecord>
@@ -97,7 +97,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     const decorated = {
       id,
       type: 'resolver',
-      resolverThunk: new ApplyResolver(resolverThunk as any, applyFn),
+      resolverThunk: new ApplyStrategy(resolverThunk as any, applyFn),
     };
 
     const replaced = this.patchedResolvers.extendOrSet(name, decorated);
@@ -117,7 +117,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     const decorated = {
       id,
       type: 'resolver',
-      resolverThunk: new DecoratorResolver(resolverThunk as any, decorateFn),
+      resolverThunk: new DecoratorStrategy(resolverThunk as any, decorateFn),
     };
 
     const replaced = this.patchedResolvers.extendOrSet(name, decorated);

@@ -1,9 +1,9 @@
 import { ObjectPaths } from '../utils/ObjectPaths';
 import { AnyResolver, ModuleRecord } from './Module';
 import { PropType } from '../utils/PropType';
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { ClassType } from '../utils/ClassType';
 import { ModuleBuilder } from './ModuleBuilder';
+import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 
 // TODO: reversing args and klass parameters makes ts print more precise error message in case of invalid paramaters
 export interface IBindMethod<TRecord extends Record<string, AnyResolver>> {
