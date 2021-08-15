@@ -16,7 +16,7 @@ describe(`SingletonStrategy`, () => {
   }
 
   describe(`types`, () => {
-    it(`return correctly type`, async () => {
+    it(`return correct type`, async () => {
       const s = singleton(() => new TestClass(''));
       expectType<TypeEqual<typeof s, SingletonStrategy<TestClass>>>(true);
     });
