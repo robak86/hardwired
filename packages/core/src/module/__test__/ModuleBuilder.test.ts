@@ -1,47 +1,18 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { module, ModuleBuilder } from '../ModuleBuilder';
-
 import { container } from '../../container/Container';
 import { Module } from '../Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
-import { transient } from '../../strategies/TransientStrategy';
-import { request } from '../../strategies/RequestStrategy';
 import { ModulePatch } from '../ModulePatch';
 import { singleton } from '../../strategies/SingletonStrategy';
-import { ClassType } from '../../utils/ClassType';
 import { BoxedValue } from '../../__test__/BoxedValue';
 
 describe(`ModuleBuilder`, () => {
   describe('bind', () => {
     describe(`class has constructor params`, () => {
       it(`registers correct entry in module`, async () => {
-        // class SomeClass {
-        //   constructor(public a: number, public b: string) {}
-        // }
-        //
-        // const extra = ModuleBuilder.empty()
-        //   .define('b', singleton, () => 'valueFromImportedModule')
-        //   .freeze();
-        //
-        // const m = ModuleBuilder.empty()
-        //   .import('imported', extra)
-        //   .define('a', singleton, () => 1)
-        //   .define('z', singleton, () => 'sdf')
-        //   .bind3('kls', SomeClass, ['a', 'imported.b'])
-        //   .freeze();
-        //
-        // const c = container().get(m, 'kls');
-        //
-        // expectType<SomeClass>(c);
-        // expect(c.a).toEqual(1);
-        // expect(c.b).toEqual('valueFromImportedModule');
-      });
-    });
-
-    describe(`class does not have any constructor params`, () => {
-      it(`registers correct entry in module`, async () => {
         class SomeClass {
-          constructor() {}
+          constructor(public a: number, public b: string) {}
         }
 
         const extra = ModuleBuilder.empty()
@@ -52,12 +23,14 @@ describe(`ModuleBuilder`, () => {
           .import('imported', extra)
           .define('a', singleton, () => 1)
           .define('z', singleton, () => 'sdf')
-          .bind('kls', singleton, SomeClass, ['z'])
+          .bind('kls', singleton, SomeClass, ['a', 'imported.b'])
           .freeze();
 
         const c = container().get(m, 'kls');
 
         expectType<SomeClass>(c);
+        expect(c.a).toEqual(1);
+        expect(c.b).toEqual('valueFromImportedModule');
       });
     });
   });
