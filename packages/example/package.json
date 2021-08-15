@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^1.6.1",
-    "@types/node": "^16.6.1",
     "@types/styled-components": "^5.1.12",
     "hardwired": "*",
     "hardwired-react": "*",
