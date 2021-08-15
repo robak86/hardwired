@@ -98,19 +98,19 @@ const logger = obj.logger; // instance of Logger was created
     containing all previous definitions available as properties
 
 
-  ```typescript
-  import { module, value, singleton } from 'hardwired';
+```typescript
+import { module, value, singleton } from 'hardwired';
 
-  class DummyClass {
-    constructor(private a: number, private b: string) {}
-  }
+class DummyClass {
+  constructor(private a: number, private b: string) {}
+}
 
-  const m1 = module()
-    .define('a', singleton, () => 123)
-    .define('b', singleton, () => 'someString')
-    .define('c', singleton, ({ a, b }) => new DummyClass(a, b), singleton)
-    .build();
-  ```
+const m1 = module()
+  .define('a', singleton, () => 123)
+  .define('b', singleton, () => 'someString')
+  .define('c', singleton, ({ a, b }) => new DummyClass(a, b), singleton)
+  .build();
+```
 
 - `.bind(name, strategy, class, dependencies)` - designed to be used with classes. Returns a new
   instance of the module and appends a new definition
@@ -121,19 +121,19 @@ const logger = obj.logger; // instance of Logger was created
   - `dependencies` - array of paths pointing to class dependencies
 
 
-  ```typescript
-  import { module, value, singleton } from 'hardwired';
+```typescript
+import { module, value, singleton } from 'hardwired';
 
-  class DummyClass {
-    constructor(private a: number, private b: string) {}
-  }
+class DummyClass {
+  constructor(private a: number, private b: string) {}
+}
 
-  const m1 = module()
-    .define('a', singleton, () => 123)
-    .define('b', singleton, () => 'someString')
-    .bind('c', singleton, DummyClass, ['a', 'b'])
-    .build();
-  ```
+const m1 = module()
+  .define('a', singleton, () => 123)
+  .define('b', singleton, () => 'someString')
+  .bind('c', singleton, DummyClass, ['a', 'b'])
+  .build();
+```
 
 ### Available strategies (lifetimes, scopes)
 
@@ -231,7 +231,7 @@ const logger = obj.logger; // instance of Logger was created
   rootScope.get(childScope, 'someInstance') === childScope.get(someModule, 'someInstance'); // true
   ```
 
-#### Modules composition
+### Modules composition
 
 ```typescript
 import { module, value, singleton } from 'hardwired';
