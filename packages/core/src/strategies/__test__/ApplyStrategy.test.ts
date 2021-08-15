@@ -1,17 +1,16 @@
 import { module } from '../../module/ModuleBuilder';
-import { singleton } from '../SingletonStrategy';
+import { singleton, SingletonStrategy } from '../SingletonStrategy';
 import { container } from '../../container/Container';
 import { transient } from '../TransientStrategy';
 import { request } from '../RequestStrategy';
+import { BoxedValue } from '../../__test__/BoxedValue';
+import { scoped } from '../ScopeStrategy';
+import { BuildStrategy } from '../abstract/BuildStrategy';
 
 describe(`ApplyResolver`, () => {
-  class Boxed {
-    constructor(public value) {}
-  }
-
   it(`applies function to original value`, async () => {
     const m = module()
-      .define('someValue', singleton, () => new Boxed(1))
+      .define('someValue', singleton, () => new BoxedValue(1))
       .build();
 
     const mPatch = m.apply('someValue', val => (val.value += 1));
@@ -22,7 +21,7 @@ describe(`ApplyResolver`, () => {
 
   it(`does not affect original module`, async () => {
     const m = module()
-      .define('someValue', singleton, () => new Boxed(1))
+      .define('someValue', singleton, () => new BoxedValue(1))
       .build();
 
     const mPatch = m.apply('someValue', val => (val.value += 1));
@@ -33,7 +32,7 @@ describe(`ApplyResolver`, () => {
 
   it(`allows for multiple apply functions calls`, async () => {
     const m = module()
-      .define('someValue', singleton, () => new Boxed(1))
+      .define('someValue', singleton, () => new BoxedValue(1))
       .build();
 
     const mPatch = m.apply('someValue', val => (val.value += 1)).apply('someValue', val => (val.value *= 3));
@@ -42,7 +41,7 @@ describe(`ApplyResolver`, () => {
     expect(c.get(m, 'someValue').value).toEqual(6);
   });
 
-  describe(`scopes`, () => {
+  describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
       const m = module()
         .define('a', singleton, () => Math.random())
@@ -65,7 +64,7 @@ describe(`ApplyResolver`, () => {
       expect(c.get(m, 'a')).not.toEqual(c.get(m, 'a'));
     });
 
-    it(`uses different request scope for each subsequent asObject call`, async () => {
+    it(`preserves request scope of the original resolver`, async () => {
       const m = module()
         .define('source', request, () => Math.random())
         .define('a', request, ({ source }) => source)
@@ -97,15 +96,63 @@ describe(`ApplyResolver`, () => {
     });
   });
 
-  describe(`overrides`, () => {
-    it(`acts like replace in terms of module identity`, async () => {
+  describe(`globalOverrides`, () => {
+    function setup(strategy: (buildFunction: (ctx) => MyService) => BuildStrategy<MyService>) {
       const m = module()
-        .define('a', singleton, () => new Boxed(1))
+        .define('a', strategy, () => new MyService())
         .build();
 
-      const patchedMWithApply = m.apply('a', a => (a.value += 1));
+      const mPatch = m.apply('a', a => jest.spyOn(a, 'callMe'));
 
-      expect(m.isEqual(patchedMWithApply));
+      const scope1 = container({ globalOverrides: [mPatch] });
+      const scope2 = scope1.checkoutScope({ scopeOverrides: [m.replace('a', () => ({ callMe: () => {} }))] });
+      const instance1 = scope1.get(m, 'a');
+      const instance2 = scope2.get(m, 'a');
+      return { instance1, instance2 };
+    }
+
+    class MyService {
+      callMe(...args: any[]) {}
+    }
+
+    describe(`apply on singleton definition`, () => {
+      it(`guarantees that only single instance will be available in all scopes`, async () => {
+        const { instance1, instance2 } = setup(singleton);
+        instance1.callMe(1, 2);
+
+        expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
+        expect(instance1).toBe(instance2);
+      });
+    });
+
+    describe(`apply on scoped definition`, () => {
+      it(`guarantees that only single instance will be available in all scopes`, async () => {
+        const { instance1, instance2 } = setup(scoped);
+        instance1.callMe(1, 2);
+
+        expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
+        expect(instance1).toBe(instance2);
+      });
+    });
+
+    describe(`apply on transients definition`, () => {
+      it(`guarantees that only single instance will be available in all scopes`, async () => {
+        const { instance1, instance2 } = setup(transient);
+        instance1.callMe(1, 2);
+
+        expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
+        expect(instance1).toBe(instance2);
+      });
+    });
+
+    describe(`apply on request definition`, () => {
+      it(`guarantees that only single instance will be available in all scopes`, async () => {
+        const { instance1, instance2 } = setup(request);
+        instance1.callMe(1, 2);
+
+        expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
+        expect(instance1).toBe(instance2);
+      });
     });
   });
 });

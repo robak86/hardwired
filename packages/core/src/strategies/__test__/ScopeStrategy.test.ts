@@ -1,8 +1,23 @@
-import { module } from '../../module/ModuleBuilder';
+import { module, unit } from '../../module/ModuleBuilder';
 import { scoped } from '../ScopeStrategy';
 import { container } from '../../container/Container';
 
 describe(`ScopeStrategy`, () => {
+  describe(`resolution`, () => {
+    it(`acts like singleton limited to given scope`, async () => {
+      const m = unit()
+        .define('a', scoped, () => Math.random())
+        .build();
+
+      const c = container();
+      expect(c.get(m, 'a')).toEqual(c.get(m, 'a'));
+
+      const childScope = c.checkoutScope();
+      expect(childScope.get(m, 'a')).toEqual(childScope.get(m, 'a'));
+      expect(c.get(m, 'a')).not.toEqual(childScope.get(m, 'a'));
+    });
+  });
+
   describe(`global overrides`, () => {
     it(`cannot be replaced by scope overrides`, async () => {
       class Boxed {
@@ -25,7 +40,7 @@ describe(`ScopeStrategy`, () => {
       expect(c.asObject(m).k1).toBe(childScope.asObject(m).k1);
     });
 
-    it(`allows for overrides for other keys than ones changes invariants array`, async () => {
+    it(`allows for overrides other than specified in globalOverrides`, async () => {
       const m = module()
         .define('k1', scoped, () => Math.random())
         .define('k2', scoped, () => Math.random())

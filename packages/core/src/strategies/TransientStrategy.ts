@@ -6,10 +6,20 @@ export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
     super();
   }
 
-  build(id: string, context: InstancesCache, resolvers, materializedModule?): TValue {
+  build(id: string, instancesCache: InstancesCache, resolvers, materializedModule?): TValue {
+    if (resolvers.hasGlobalOverrideResolver(id)) {
+      if (instancesCache.hasInGlobalOverride(id)) {
+        return instancesCache.getFromGlobalOverride(id);
+      } else {
+        const instance = this.buildFunction(materializedModule);
+        instancesCache.setForGlobalOverrideScope(id, instance);
+        return instance;
+      }
+    }
+
     const result = this.buildFunction(materializedModule);
     if (result instanceof BuildStrategy) {
-      return result.build(id, context, materializedModule);
+      return result.build(id, instancesCache, materializedModule);
     }
     return result;
   }

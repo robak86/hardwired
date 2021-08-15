@@ -1,10 +1,10 @@
 import { container } from '../../container/Container';
 import { createModuleId } from '../../utils/fastId';
-import { unit } from '../../module/ModuleBuilder';
+import { module, unit } from '../../module/ModuleBuilder';
 import { singleton, SingletonStrategy } from '../SingletonStrategy';
 import { expectType, TypeEqual } from 'ts-expect';
 
-describe(`ClassSingletonResolver`, () => {
+describe(`SingletonStrategy`, () => {
   class TestClass {
     public id = createModuleId();
 
@@ -118,6 +118,40 @@ describe(`ClassSingletonResolver`, () => {
       const c2 = container();
       const instanceFromC2 = c2.get(m, 'a');
       expect(instanceFromC1.id).not.toEqual(instanceFromC2.id);
+    });
+  });
+
+  describe('global overrides', function () {
+    it(`cannot be replaced by overrides`, async () => {
+      const m = module()
+        .define('k1', singleton, () => Math.random())
+        .build();
+
+      const invariantPatch = m.replace('k1', () => 1, singleton);
+      const childScopePatch = m.replace('k1', () => 2, singleton);
+
+      const c = container({ globalOverrides: [invariantPatch] });
+      expect(c.asObject(m).k1).toEqual(1);
+
+      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
+      expect(childScope.asObject(m).k1).toEqual(1);
+    });
+
+    it(`allows for overrides for other keys than ones changes invariants array`, async () => {
+      const m = module()
+        .define('k1', singleton, () => Math.random())
+        .define('k2', singleton, () => Math.random())
+        .build();
+
+      const invariantPatch = m.replace('k1', () => 1, singleton);
+      const childScopePatch = m.replace('k2', () => 2, singleton);
+
+      const c = container({ globalOverrides: [invariantPatch] });
+      expect(c.asObject(m).k1).toEqual(1);
+
+      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
+      expect(childScope.asObject(m).k1).toEqual(1);
+      expect(childScope.asObject(m).k2).toEqual(2);
     });
   });
 });
