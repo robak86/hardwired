@@ -90,7 +90,7 @@ const logger = obj.logger; // instance of Logger was created
 ### Registering definitions
 
 **`.define(name, strategy, buildFn)`** - returns a new instance of the module and appends new
-  definition
+definition
 
 - `name` - name of the definition
 - `strategy` - orchestrates `buildFn` calls and returned value caching.
@@ -111,124 +111,123 @@ const m1 = module()
   .build();
 ```
 
-- `.bind(name, strategy, class, dependencies)` - designed to be used with classes. Returns a new
-  instance of the module and appends a new definition
+**`.bind(name, strategy, class, dependencies)`** - designed to be used with classes. Returns a new
+instance of the module and appends a new definition
 
-  - `name` - name of the definition
-  - `strategy` - orchestrates `buildFn` calls and returned value caching.
-  - `class` - class reference.
-  - `dependencies` - array of paths pointing to class dependencies
+- `name` - name of the definition
+- `strategy` - orchestrates `buildFn` calls and returned value caching.
+- `class` - class reference.
+- `dependencies` - array of paths pointing to class dependencies
 
+```typescript
+import { module, value, singleton } from 'hardwired';
 
-  ```typescript
-  import { module, value, singleton } from 'hardwired';
+class DummyClass {
+  constructor(private a: number, private b: string) {}
+}
 
-  class DummyClass {
-    constructor(private a: number, private b: string) {}
-  }
-
-  const m1 = module()
-    .define('a', singleton, () => 123)
-    .define('b', singleton, () => 'someString')
-    .bind('c', singleton, DummyClass, ['a', 'b'])
-    .build();
-  ```
+const m1 = module()
+  .define('a', singleton, () => 123)
+  .define('b', singleton, () => 'someString')
+  .bind('c', singleton, DummyClass, ['a', 'b'])
+  .build();
+```
 
 ### Available strategies (lifetimes, scopes)
 
-- `transient` - always provides a new instance
+**`transient`** - always provides a new instance
 
-  ```typescript
-  import { module, transient } from 'hardwired';
+```typescript
+import { module, transient } from 'hardwired';
 
-  class SomeClass {}
+class SomeClass {}
 
-  const someModule = module()
-    .define('transientDependency', transient, () => new SomeClass())
-    .build();
+const someModule = module()
+  .define('transientDependency', transient, () => new SomeClass())
+  .build();
 
-  const ct = container();
+const ct = container();
 
-  ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
-  ```
+ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
+```
 
-- `singleton` - creates single instance, which is cached in the container for all subsequent `.get`
-  requests
+**`singleton`** - creates single instance, which is cached in the container for all subsequent `.get`
+requests
 
-  ```typescript
-  import { module, singleton } from 'hardwired';
+```typescript
+import { module, singleton } from 'hardwired';
 
-  class SomeClass {}
+class SomeClass {}
 
-  const someModule = module()
-    .define('someSingleton', singleton, () => new SomeClass())
-    .build();
+const someModule = module()
+  .define('someSingleton', singleton, () => new SomeClass())
+  .build();
 
-  const ct = container();
+const ct = container();
 
-  ct.get(someModule, 'someSingleton') === ct.get(someModule, 'someSingleton'); // true
+ct.get(someModule, 'someSingleton') === ct.get(someModule, 'someSingleton'); // true
 
-  const otherContainer = container();
-  ct.get(someModule, 'someSingleton') === otherContainer.get(someModule, 'someSingleton'); // false
-  ```
+const otherContainer = container();
+ct.get(someModule, 'someSingleton') === otherContainer.get(someModule, 'someSingleton'); // false
+```
 
-  _Notice that loggerModule is stateless in terms of holding any reference to created singleton
-  instances. All instances live in the containers_
+**_Notice that loggerModule is stateless in terms of holding any reference to created singleton
+instances. All instances live in the containers_**
 
-- `request` - creates new singleton instance for each new request. New request scope is created on
-  every `.get` and `.asObject` call
+**`request`** - creates new singleton instance for each new request. New request scope is created on
+every `.get` and `.asObject` call
 
-  ```typescript
-  import { module, request, singleton } from 'hardwired';
+```typescript
+import { module, request, singleton } from 'hardwired';
 
-  class SomeClass {
-    args: any[];
-    constructor(...args: []) {
-      this.args = args;
-    }
+class SomeClass {
+  args: any[];
+  constructor(...args: []) {
+    this.args = args;
   }
+}
 
-  const someModule = module()
-    .define('leaf', singleton, m => new SomeClass())
-    .define('child', request, m => new SomeClass(m.leaf))
-    .define('parent', request, m => new SomeClass(m.child, m.leaf))
-    .build();
+const someModule = module()
+  .define('leaf', singleton, m => new SomeClass())
+  .define('child', request, m => new SomeClass(m.leaf))
+  .define('parent', request, m => new SomeClass(m.child, m.leaf))
+  .build();
 
-  const ct = container();
+const ct = container();
 
-  const r1 = ct.get(someModule, 'parent');
-  r1.args[0].args[0] === r1.args[1]; // true
+const r1 = ct.get(someModule, 'parent');
+r1.args[0].args[0] === r1.args[1]; // true
 
-  const r2 = ct.get(someModule, 'parent');
-  r1.args[0].args[0] === r2.args[1]; // false
-  ```
+const r2 = ct.get(someModule, 'parent');
+r1.args[0].args[0] === r2.args[1]; // false
+```
 
-- `scoped` - creates a new singleton instance for container scope. New container scope can be
-  created using `container.checkoutScope`. New container scope inherits only definitions overrides,
-  but no instances for definitions marked with `scoped` are shared across scopes.
+**`scoped`** - creates a new singleton instance for container scope. New container scope can be
+created using `container.checkoutScope`. New container scope inherits only definitions overrides,
+but no instances for definitions marked with `scoped` are shared across scopes.
 
-  ```typescript
-  import { module, scoped, singleton } from 'hardwired';
+```typescript
+import { module, scoped, singleton } from 'hardwired';
 
-  class SomeClass {
-    args: any[];
-    constructor(...args: []) {
-      this.args = args;
-    }
+class SomeClass {
+  args: any[];
+  constructor(...args: []) {
+    this.args = args;
   }
+}
 
-  const someModule = module()
-    .define('someInstance', scoped, m => new SomeClass())
-    .build();
+const someModule = module()
+  .define('someInstance', scoped, m => new SomeClass())
+  .build();
 
-  const rootScope = container();
-  const childScope = rootScope.checkoutScope();
+const rootScope = container();
+const childScope = rootScope.checkoutScope();
 
-  rootScope.get(someModule, 'someInstance') === childScope.get(someModule, 'someInstance'); // false
+rootScope.get(someModule, 'someInstance') === childScope.get(someModule, 'someInstance'); // false
 
-  rootScope.get(someModule, 'someInstance') === rootScope.get(someModule, 'someInstance'); // true
-  rootScope.get(childScope, 'someInstance') === childScope.get(someModule, 'someInstance'); // true
-  ```
+rootScope.get(someModule, 'someInstance') === rootScope.get(someModule, 'someInstance'); // true
+rootScope.get(childScope, 'someInstance') === childScope.get(someModule, 'someInstance'); // true
+```
 
 ### Modules composition
 
@@ -319,9 +318,7 @@ rootScope.get(appModule, 'handler'); // handler instantiated with {} params
 
 const httpHandler = (req, res) => {
   const req1Scope = rootScope.checkoutScope({
-    scopeOverrides: [
-      appModule.replace('request', () => req)
-    ],
+    scopeOverrides: [appModule.replace('request', () => req)],
   });
 
   req1Scope.get(appModule, 'handler'); // handler instantiated with req object
@@ -354,7 +351,7 @@ const updatedDbModule = dbModule.replace('config', () => ({ url: 'updated' }));
 const containerWithUpdatedConfig = container({ globalOverrides: [updatedDbModule] }); //
 
 // uses databaseConfig with url equal to 'updated'
-containerWithUpdatedConfig.get(dbModule, 'config'); 
+containerWithUpdatedConfig.get(dbModule, 'config');
 ```
 
 ### Definition decorator
