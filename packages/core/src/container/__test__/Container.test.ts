@@ -295,52 +295,6 @@ describe(`Container`, () => {
           expect(childScope.asObject(m).k2).toEqual(2);
         });
       });
-
-      describe(`scoped scope`, () => {
-        it(`cannot be replaced by overrides`, async () => {
-          const m = module()
-            .define('k1', scoped, () => Math.random())
-            .build();
-
-          const buildCounter = (start: number) => {
-            let val = start - 1;
-
-            return () => {
-              return (val += 1);
-            };
-          };
-
-          const k1Counter = buildCounter(1);
-          const k2Counter = buildCounter(2);
-
-          const invariantPatch = m.replace('k1', k1Counter, scoped);
-          const childScopePatch = m.replace('k1', k2Counter, scoped);
-
-          const c = container({ globalOverrides: [invariantPatch] });
-
-          expect(c.asObject(m).k1).toEqual(1);
-
-          const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-          expect(childScope.asObject(m).k1).toEqual(1);
-        });
-
-        it(`allows for overrides for other keys than ones changes invariants array`, async () => {
-          const m = module()
-            .define('k1', scoped, () => Math.random())
-            .define('k2', scoped, () => Math.random())
-            .build();
-
-          const invariantPatch = m.replace('k1', () => 1, scoped);
-          const childScopePatch = m.replace('k2', () => 2, scoped);
-
-          const c = container({ globalOverrides: [invariantPatch] });
-          expect(c.asObject(m).k1).toEqual(1);
-
-          const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-          expect(childScope.asObject(m).k1).toEqual(1);
-          expect(childScope.asObject(m).k2).toEqual(2);
-        });
-      });
     });
   });
 

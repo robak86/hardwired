@@ -5,6 +5,7 @@ import { singleton } from '../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
 import { DecoratorResolver } from '../resolvers/DecoratorResolver';
 import { AnyResolver, isInstanceDefinition, Module, ModuleRecord } from './Module';
+import { ApplyResolver } from '../resolvers/ApplyResolver';
 
 export namespace ModulePatch {
   export type Materialized<TModule extends ModulePatch<any>> = TModule extends ModulePatch<infer TRecord>
@@ -19,7 +20,7 @@ export namespace ModulePatch {
 }
 
 export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
-  __definitions!: TRecord; // prevent erasing the type
+  __definitions!: TRecord; // prevent type erasure
 
   constructor(
     public moduleId: ModuleId,
@@ -81,6 +82,26 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
         resolverThunk: buildFnOrInstance,
       }) as any,
     );
+  }
+
+  apply<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
+    name: TKey,
+    applyFn: (instance: TValue) => any,
+  ): ModulePatch<TRecord & Record<TKey, BuildStrategy<TValue>>> {
+    const definition = this.patchedResolvers.get(name) || this.registry.get(name);
+
+    invariant(isInstanceDefinition(definition), `Cannot decorate module import`);
+
+    const { id, resolverThunk } = definition;
+
+    const decorated = {
+      id,
+      type: 'resolver',
+      resolverThunk: new ApplyResolver(resolverThunk as any, applyFn),
+    };
+
+    const replaced = this.patchedResolvers.extendOrSet(name, decorated);
+    return new ModulePatch(this.moduleId, this.registry, replaced as any);
   }
 
   decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(

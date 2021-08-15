@@ -49,7 +49,7 @@ describe(`ServiceLocatorResolver`, () => {
     const c = container();
     const locator = c.get(root, 'locator');
 
-    const fromLocator = locator.withScope(({ get }) => {
+    locator.withScope(({ get }) => {
       const call1 = get(singletonModule, 'singleton');
       const call2 = get(singletonModule, 'singleton');
 
