@@ -3,16 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@reduxjs/toolkit": "^1.6.1",
-    "@types/styled-components": "^5.1.12",
     "hardwired": "*",
     "hardwired-react": "*",
+    "@types/node": "^12.0.0",
+    "@types/styled-components": "^5.1.5",
     "parcel-bundler": "^1.12.4",
     "react-draggable": "^4.4.3",
-    "react-redux": "^7.2.2",
-    "redux": "^4.1.1",
     "redux-devtools-extension": "^2.13.8",
-    "styled-components": "^5.2.1"
+    "redux": "^4.0.5",
+    "react-redux": "^7.2.2",
+    "styled-components": "^5.2.1",
+    "@reduxjs/toolkit": "^1.5.0"
   },
   "browserslist": {
     "production": [
@@ -38,8 +39,8 @@
     "README.md"
   ],
   "devDependencies": {
-    "@types/react-redux": "^7.1.18",
-    "imitation": "^3.0.0"
+    "imitation": "^3.0.0",
+    "@types/react-redux": "^7.1.16"
   },
   "scripts": {
     "start": "parcel public/index.html"
