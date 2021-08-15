@@ -89,14 +89,13 @@ const logger = obj.logger; // instance of Logger was created
 
 ### Registering definitions
 
-- `.define(name, strategy, buildFn)` - returns a new instance of the module and appends new
+**`.define(name, strategy, buildFn)`** - returns a new instance of the module and appends new
   definition
 
-  - `name` - name of the definition
-  - `strategy` - orchestrates `buildFn` calls and returned value caching.
-  - `buildFn` - factory function producing value for given definition. It's called with object
-    containing all previous definitions available as properties
-
+- `name` - name of the definition
+- `strategy` - orchestrates `buildFn` calls and returned value caching.
+- `buildFn` - factory function producing value for given definition. It's called with object
+  containing all previous definitions available as properties
 
 ```typescript
 import { module, value, singleton } from 'hardwired';
@@ -121,19 +120,19 @@ const m1 = module()
   - `dependencies` - array of paths pointing to class dependencies
 
 
-```typescript
-import { module, value, singleton } from 'hardwired';
+  ```typescript
+  import { module, value, singleton } from 'hardwired';
 
-class DummyClass {
-  constructor(private a: number, private b: string) {}
-}
+  class DummyClass {
+    constructor(private a: number, private b: string) {}
+  }
 
-const m1 = module()
-  .define('a', singleton, () => 123)
-  .define('b', singleton, () => 'someString')
-  .bind('c', singleton, DummyClass, ['a', 'b'])
-  .build();
-```
+  const m1 = module()
+    .define('a', singleton, () => 123)
+    .define('b', singleton, () => 'someString')
+    .bind('c', singleton, DummyClass, ['a', 'b'])
+    .build();
+  ```
 
 ### Available strategies (lifetimes, scopes)
 
