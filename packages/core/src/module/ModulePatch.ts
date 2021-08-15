@@ -1,11 +1,11 @@
 import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { singleton } from '../strategies/SingletonStrategy';
 import invariant from 'tiny-invariant';
-import { DecoratorResolver } from '../resolvers/DecoratorResolver';
+import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
 import { AnyResolver, isInstanceDefinition, Module, ModuleRecord } from './Module';
-import { getStrategyTag, isStrategyTagged } from '../strategies/utils/strategyTagging';
+import { ApplyStrategy } from '../strategies/ApplyStrategy';
+import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 
 export namespace ModulePatch {
   export type Materialized<TModule extends ModulePatch<any>> = TModule extends ModulePatch<infer TRecord>
@@ -20,7 +20,7 @@ export namespace ModulePatch {
 }
 
 export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
-  __definitions!: TRecord; // prevent erasing the type
+  __definitions!: TRecord; // prevent type erasure
 
   constructor(
     public moduleId: ModuleId,
@@ -32,6 +32,8 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     return this.moduleId.revision === otherModule.moduleId.revision;
   }
 
+  // TODO: allowing to replace strategy may be confusing because all replacements passed into globalOverrides become singletons
+  //       while scopeOverrides does not change strategy
   replace<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
     name: TKey,
     instance: BuildStrategy<TValue> | ((ctx: Omit<ModuleRecord.Materialized<TRecord>, TKey>) => BuildStrategy<TValue>),
@@ -57,7 +59,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
 
     invariant(this.registry.hasKey(name), `Cannot replace definition: ${name} does not exist.`);
     const prev = this.registry.get(name);
-    invariant(prev?.type === 'resolver', `Cannot replace import`);
+    invariant(isInstanceDefinition(prev), `Cannot replace import`);
 
     if (typeof buildFnOrInstance === 'function') {
       return new ModulePatch(
@@ -66,7 +68,6 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
         this.patchedResolvers.extend(name, {
           id: prev.id,
           type: 'resolver',
-          strategyTag: isStrategyTagged(buildStrategy) ? getStrategyTag(buildStrategy) : undefined,
           resolverThunk: buildStrategy(buildFnOrInstance),
         }) as any,
       );
@@ -78,17 +79,29 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
       this.patchedResolvers.extend(name, {
         id: prev.id,
         type: 'resolver',
-        strategyTag: buildFnOrInstance.strategyTag,
         resolverThunk: buildFnOrInstance,
       }) as any,
     );
   }
 
-  bindValue<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
+  apply<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
     name: TKey,
-    value: TValue,
-  ): ModulePatch<TRecord> {
-    return this.replace(name, () => value, singleton);
+    applyFn: (instance: TValue) => any,
+  ): ModulePatch<TRecord & Record<TKey, BuildStrategy<TValue>>> {
+    const definition = this.patchedResolvers.get(name) || this.registry.get(name);
+
+    invariant(isInstanceDefinition(definition), `Cannot decorate module import`);
+
+    const { id, resolverThunk } = definition;
+
+    const decorated = {
+      id,
+      type: 'resolver',
+      resolverThunk: new ApplyStrategy(resolverThunk as any, applyFn),
+    };
+
+    const replaced = this.patchedResolvers.extendOrSet(name, decorated);
+    return new ModulePatch(this.moduleId, this.registry, replaced as any);
   }
 
   decorate<TKey extends ModuleRecord.InstancesKeys<TRecord>, TValue extends BuildStrategy.Unbox<TRecord[TKey]>>(
@@ -104,7 +117,7 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     const decorated = {
       id,
       type: 'resolver',
-      resolverThunk: new DecoratorResolver(resolverThunk as any, decorateFn),
+      resolverThunk: new DecoratorStrategy(resolverThunk as any, decorateFn),
     };
 
     const replaced = this.patchedResolvers.extendOrSet(name, decorated);

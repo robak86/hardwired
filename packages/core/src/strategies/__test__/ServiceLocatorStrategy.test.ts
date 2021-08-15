@@ -1,12 +1,12 @@
 import { createModuleId } from '../../utils/fastId';
-import { serviceLocator } from '../ServiceLocatorResolver';
+import { serviceLocator } from '../ServiceLocatorStrategy';
 import { container } from '../../container/Container';
 import { unit } from '../../module/ModuleBuilder';
 import { expectType, TypeEqual } from 'ts-expect';
 import { ServiceLocator } from '../../container/ServiceLocator';
+import { request } from '../RequestStrategy';
+import { singleton } from '../SingletonStrategy';
 import { BuildStrategy } from '../abstract/BuildStrategy';
-import { request } from '../../strategies/RequestStrategy';
-import { singleton } from '../../strategies/SingletonStrategy';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -49,7 +49,7 @@ describe(`ServiceLocatorResolver`, () => {
     const c = container();
     const locator = c.get(root, 'locator');
 
-    const fromLocator = locator.withScope(({ get }) => {
+    locator.withScope(({ get }) => {
       const call1 = get(singletonModule, 'singleton');
       const call2 = get(singletonModule, 'singleton');
 

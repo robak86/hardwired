@@ -2,20 +2,22 @@ import now from 'performance-now';
 import { Container, container } from '../container/Container';
 import { unit } from '../module/ModuleBuilder';
 import { Module } from '../module/Module';
+import { singleton } from '../strategies/SingletonStrategy';
 
 function registerN(times: number) {
-  const result = {
+  const result: any = {
     container: container(),
     register: -1,
-    module: unit() as any,
+    module: unit(),
   };
 
   for (let i = 0; i < times; i++) {
     const start = now();
-    result.module = result.module.define(`SOME_ID_${i}`, () => ({ test: 1 }));
+    result.module = result.module.define(`SOME_ID_${i}`, singleton, () => ({ test: 1 }));
     const end = now();
     result.register = end - start;
   }
+
   result.module = result.module.build();
 
   return result;

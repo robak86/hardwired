@@ -1,50 +1,70 @@
+import { ResolversRegistry } from './ResolversRegistry';
+import { InstancesCache } from './InstancesCache';
+import { ModuleMaterialization } from './ModuleMaterialization';
 import { Module } from '../module/Module';
-import { ModulePatch } from '../module/ModulePatch';
-import { SingletonScope } from '../container/SingletonScope';
-import { ContextService } from './ContextService';
-import { getPatchedResolversIds } from './ContextScopes';
 import { createContainerId } from '../utils/fastId';
+import { ContainerScopeOptions } from '../container/Container';
+import { ModulePatch } from '../module/ModulePatch';
 
-export type ContainerContext = {
-  id: string;
-  patchedResolversById: Record<string, Module.InstanceDefinition>;
-  resolversById: Record<string, Module.InstanceDefinition>;
-  invariantResolversById: Record<string, Module.InstanceDefinition>;
-  modulesByResolverId: Record<string, Module<any>>;
-  materializedObjects: Record<string, any>;
-  frozenOverrides: Record<string, Module.InstanceDefinition>;
+export class ContainerContext {
+  static empty() {
+    const resolversRegistry = ResolversRegistry.empty();
 
-  globalScope: SingletonScope; // TODO: probably we shouldn't allow for such complex scopes rules (this feature may by slow and introduces unnecessary complexity)
-  currentScope: Record<string, any>;
-  requestScope: Record<string, any>;
-};
+    return new ContainerContext(
+      createContainerId(),
+      resolversRegistry,
+      InstancesCache.create([]),
+      new ModuleMaterialization(resolversRegistry),
+    );
+  }
 
-// TODO: do not deep copy - implement copy on write strategy
-export const ContainerContext = {
-  empty() {
-    return ContainerContext.create([], [], []);
-  },
+  static create(scopeOverrides: ModulePatch<any>[], globalOverrides: ModulePatch<any>[]): ContainerContext {
+    const resolversRegistry = ResolversRegistry.create(scopeOverrides, globalOverrides);
 
-  create(eager: ModulePatch<any>[], overrides: ModulePatch<any>[], invariants: ModulePatch<any>[]): ContainerContext {
-    const ownKeys = getPatchedResolversIds(invariants);
+    return new ContainerContext(
+      createContainerId(),
+      resolversRegistry,
+      InstancesCache.create(scopeOverrides),
+      new ModuleMaterialization(resolversRegistry),
+    );
+  }
 
-    const context: ContainerContext = {
-      id: createContainerId(),
-      resolversById: {},
-      invariantResolversById: {},
-      patchedResolversById: {},
-      requestScope: {},
-      modulesByResolverId: {},
-      materializedObjects: {},
-      currentScope: {},
-      frozenOverrides: {},
-      globalScope: new SingletonScope(ownKeys),
-    };
+  constructor(
+    public id: string,
+    private resolversRegistry: ResolversRegistry,
+    private instancesCache: InstancesCache,
+    private materialization: ModuleMaterialization,
+  ) {}
 
-    ContextService.loadModules(eager.map(Module.fromPatchedModule), context);
-    ContextService.loadPatches(overrides, context);
-    ContextService.loadInvariants(invariants, context);
+  get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
+    moduleInstance: TLazyModule,
+    name: K,
+  ): Module.Materialized<TLazyModule>[K] {
+    const resolver = this.resolversRegistry.getModuleInstanceResolver(moduleInstance, name);
+    return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
+  }
 
-    return context;
-  },
-};
+  materialize<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
+    return this.materialization.materialize(module, this.instancesCache);
+  }
+
+  checkoutRequestScope(): ContainerContext {
+    return new ContainerContext(
+      createContainerId(),
+      this.resolversRegistry.checkoutForRequestScope(),
+      this.instancesCache.checkoutForRequestScope(),
+      new ModuleMaterialization(this.resolversRegistry),
+    );
+  }
+
+  childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): ContainerContext {
+    const { scopeOverrides = [] } = options;
+
+    return new ContainerContext(
+      createContainerId(),
+      this.resolversRegistry.checkoutForScope(scopeOverrides),
+      this.instancesCache.childScope(scopeOverrides),
+      new ModuleMaterialization(this.resolversRegistry),
+    );
+  }
+}

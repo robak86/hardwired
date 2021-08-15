@@ -2,10 +2,8 @@ import { ModuleId } from './ModuleId';
 import { ImmutableMap } from '../collections/ImmutableMap';
 import { Thunk } from '../utils/Thunk';
 
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
 import { ModulePatch } from './ModulePatch';
-import { ContainerContext } from '../context/ContainerContext';
-import { ContextService } from '../context/ContextService';
+import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 
 // prettier-ignore
 export type AnyResolver = BuildStrategy<any> | Module<any> ;
@@ -30,7 +28,7 @@ export function isInstanceDefinition(definition: Module.Definition): definition 
   return definition.type === 'resolver';
 }
 
-export function isModuleDefinition(definition: Module.Definition): definition is Module.ImportDefinition {
+export function isImportDefinition(definition: Module.Definition): definition is Module.ImportDefinition {
   return definition.type === 'module';
 }
 
@@ -55,7 +53,6 @@ export namespace Module {
   export type InstanceDefinition = {
     id: string;
     type: 'resolver';
-    strategyTag: symbol;
     resolverThunk: Thunk<BuildStrategy<any>>;
   };
 
@@ -66,28 +63,9 @@ export namespace Module {
 }
 
 export class Module<TRecord extends Record<string, AnyResolver>> extends ModulePatch<TRecord> {
-  static fromPatchedModule<TRecord extends Record<string, AnyResolver>>(
-    patchedModule: ModulePatch<TRecord>,
-  ): Module<TRecord> {
-    return new Module<TRecord>(patchedModule.moduleId, patchedModule.registry.merge(patchedModule.patchedResolvers));
-  }
-
-  static fromPatchedModules<TRecord extends Record<string, AnyResolver>>(
-    patchedModules: ModulePatch<TRecord>[],
-  ): Module<TRecord> {
-    const patched = patchedModules.reduce((composedPatchedModule, currentPatchedModule) => {
-      return composedPatchedModule.merge(currentPatchedModule);
-    });
-    return Module.fromPatchedModule(patched);
-  }
-
   __definitions!: TRecord; // prevent erasing the type
 
   constructor(moduleId: ModuleId, registry: ImmutableMap<Record<string, Module.Definition>>) {
     super(moduleId, registry, ImmutableMap.empty());
-  }
-
-  select(ctx: ContainerContext): ModuleRecord.Materialized<TRecord> {
-    return ContextService.materializeWithAccessors(this, ctx) as any;
   }
 }

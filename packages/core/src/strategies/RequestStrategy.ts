@@ -1,29 +1,30 @@
-import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContainerContext } from '../context/ContainerContext';
-import { ContextLookup } from '../context/ContextLookup';
-import { ContextMutations } from '../context/ContextMutations';
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
+import { InstancesCache } from '../context/InstancesCache';
+import { BuildStrategy } from './abstract/BuildStrategy';
 
 export class RequestStrategy<TValue> extends BuildStrategy<TValue> {
-  readonly strategyTag = requestStrategyTag;
   constructor(protected buildFunction: (ctx) => TValue) {
     super();
   }
 
-  build(id: string, context: ContainerContext, materializedModule): TValue {
-    if (ContextLookup.hasInRequestScope(id, context)) {
-      return ContextLookup.getFromRequestScope(id, context);
+  build(id: string, instancesCache: InstancesCache, resolvers, materializedModule?): TValue {
+    if (resolvers.hasGlobalOverrideResolver(id)) {
+      if (instancesCache.hasInGlobalOverride(id)) {
+        return instancesCache.getFromGlobalOverride(id);
+      } else {
+        const instance = this.buildFunction(materializedModule);
+        instancesCache.setForGlobalOverrideScope(id, instance);
+        return instance;
+      }
+    }
+
+    if (instancesCache.hasInRequestScope(id)) {
+      return instancesCache.getFromRequestScope(id);
     } else {
       const instance = this.buildFunction(materializedModule);
-      ContextMutations.setForRequestScope(id, instance, context);
+      instancesCache.setForRequestScope(id, instance);
       return instance;
     }
   }
 }
 
-export const requestStrategyTag = Symbol();
-
-export const request = buildTaggedStrategy(
-  <TReturn>(buildFunction: (ctx) => TReturn) => new RequestStrategy(buildFunction),
-  requestStrategyTag,
-);
+export const request = <TReturn>(buildFunction: (ctx) => TReturn) => new RequestStrategy(buildFunction);

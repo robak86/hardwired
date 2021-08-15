@@ -1,6 +1,5 @@
 import { Module } from '../module/Module';
 import { ContainerContext } from '../context/ContainerContext';
-import { ContextService } from '../context/ContextService';
 
 type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: ContainerContext) => any>]> = {
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
@@ -22,7 +21,7 @@ const select = <TModule extends Module<any>, TKey extends Module.InstancesKeys<T
   name: TKey,
 ) => {
   return (context: ContainerContext): Module.Materialized<TModule>[TKey] => {
-    return ContextService.get(module, name, context);
+    return context.get(module, name);
   };
 };
 

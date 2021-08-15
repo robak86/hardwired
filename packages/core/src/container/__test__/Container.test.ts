@@ -1,11 +1,7 @@
 import { container } from '../Container';
-
-import { ArgsDebug } from '../../__test__/ArgsDebug';
 import { module, unit } from '../../module/ModuleBuilder';
 import { singleton } from '../../strategies/SingletonStrategy';
 import { request } from '../../strategies/RequestStrategy';
-import { scoped } from '../../strategies/ScopeStrategy';
-import { transient } from '../../strategies/TransientStrategy';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -28,52 +24,6 @@ describe(`Container`, () => {
       const c = container();
 
       expect(c.get(notRegistered, 'a')).toEqual(1);
-    });
-  });
-
-  describe(`.getByStrategy`, () => {
-    it(`returns all instances by given strategy`, async () => {
-      const m = unit()
-        .define('a', singleton, () => 1)
-        .define('b', singleton, () => 2)
-        .define('c', transient, () => 3)
-        .build();
-
-      const c = container({ eager: [m] });
-      const allSingletons = c.__getByStrategy(singleton);
-      expect(allSingletons).toEqual([1, 2]);
-    });
-
-    it(`replaces eagerly loaded modules with overrides`, async () => {
-      const m = unit()
-        .define('a', singleton, () => 1)
-        .define('b', singleton, () => 2)
-        .define('c', transient, () => 3)
-        .build();
-
-      const c = container({
-        eager: [m],
-        scopeOverrides: [m.replace('b', () => 20, singleton)],
-      });
-
-      const allSingletons = c.__getByStrategy(singleton);
-      expect(allSingletons).toEqual([1, 20]);
-    });
-
-    it(`uses replaces strategy for filtering`, async () => {
-      const m = unit()
-        .define('a', singleton, () => 1)
-        .define('b', singleton, () => 2)
-        .define('c', transient, () => 3)
-        .build();
-
-      const c = container({
-        eager: [m],
-        scopeOverrides: [m.replace('b', () => 20, transient)],
-      });
-
-      const allSingletons = c.__getByStrategy(singleton);
-      expect(allSingletons).toEqual([1]);
     });
   });
 
@@ -127,25 +77,11 @@ describe(`Container`, () => {
         const mPatch = m.replace('a', () => 2);
         expect(container({ scopeOverrides: [mPatch] }).get(m, 'b')).toEqual('b');
       });
-
-      it.skip(`can use all previously registered definitions`, async () => {
-        const m = module()
-          .define('a', singleton, () => 'a')
-          .define('aa', singleton, () => 'replaced')
-          .define('b', singleton, ({ a }) => new ArgsDebug(a))
-          .define('c', singleton, ({ b }) => new ArgsDebug(b))
-          .build();
-
-        // @ts-expect-error - one can replace definition only with the same type - string is not compatible with ArgsDebug Class
-        const updated = m.replaceAdvanced('b', value('bReplaced'));
-
-        expect(container().get(m, 'b').args).toEqual(['a']);
-      });
     });
   });
 
   describe(`overrides`, () => {
-    it(`merges modules with the same id`, async () => {
+    it(`merges multiple modules patches originated from the same module`, async () => {
       const m = module()
         .define('a', singleton, () => 1)
         .define('b', singleton, () => 2)
@@ -163,185 +99,6 @@ describe(`Container`, () => {
       const { a_plus_b } = c.asObject(m);
       expect(a_plus_b).toEqual(30);
     });
-
-    describe(`overrides for child scope`, () => {
-      it(`replaces definitions for request scope`, async () => {
-        const m = unit()
-          .define('a', request, () => 1)
-          .build();
-        const c = container();
-
-        const mPatch = m.replace('a', () => 2, request);
-        const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
-
-        expect(c.get(m, 'a')).toEqual(1);
-        expect(childC.get(m, 'a')).toEqual(2);
-      });
-
-      it(`replaces definitions for scoped scope`, async () => {
-        const m = unit()
-          .define('a', scoped, () => 1)
-          .build();
-        const c = container();
-        expect(c.get(m, 'a')).toEqual(1);
-
-        const mPatch = m.replace('a', () => 2, scoped);
-        const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
-        expect(childC.get(m, 'a')).toEqual(2);
-      });
-
-      it(`replaces definitions for singleton scope`, async () => {
-        const m = unit()
-          .define('a', singleton, () => 1)
-          .build();
-        const c = container();
-
-        const mPatch = m.replace('a', () => 2, singleton);
-        const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
-
-        expect(childC.get(m, 'a')).toEqual(2);
-        expect(c.get(m, 'a')).toEqual(1);
-      });
-
-      it(`inherits singletons from parent scope for singleton`, async () => {
-        const m = unit()
-          .define('a', singleton, () => 1)
-          .build();
-        const root = container();
-
-        const patch = m.replace('a', () => 2, singleton);
-        const level1 = root.checkoutScope({ scopeOverrides: [patch] });
-        const level2 = level1.checkoutScope();
-
-        expect(level2.get(m, 'a')).toEqual(2);
-        expect(root.get(m, 'a')).toEqual(1);
-      });
-
-      it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
-        const m = unit()
-          .define('a', singleton, () => Math.random())
-          .build();
-        const parentC = container();
-        const childC = parentC.checkoutScope();
-
-        const req1 = childC.get(m, 'a'); // important that childC is called as first
-        const req2 = parentC.get(m, 'a');
-        expect(req1).toEqual(req2);
-      });
-
-      it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
-        const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
-
-        const m = unit().define('a', singleton, randomFactorySpy).build();
-
-        const root = container();
-        const level1 = root.checkoutScope();
-        const level2 = level1.checkoutScope({ scopeOverrides: [m.replace('a', () => 1)] });
-        const level3 = level2.checkoutScope();
-
-        const level3Call = level3.get(m, 'a'); // important that level1 is called as first
-        const level2Call = level2.get(m, 'a');
-        const level1Call = level1.get(m, 'a');
-        const rootCall = root.get(m, 'a');
-
-        expect(level1Call).toEqual(rootCall);
-        expect(level2Call).toEqual(1);
-        expect(level3Call).toEqual(1);
-        expect(randomFactorySpy).toHaveBeenCalledTimes(1);
-      });
-
-      it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
-        const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
-
-        const m = unit().define('a', singleton, randomFactorySpy).build();
-
-        const root = container();
-        const level1 = root.checkoutScope({ scopeOverrides: [m.replace('a', () => 1)] });
-        const level2 = level1.checkoutScope({ scopeOverrides: [m.replace('a', () => 2)] });
-        const level3 = level2.checkoutScope();
-
-        const level3Call = level3.get(m, 'a'); // important that level1 is called as first
-        const level2Call = level2.get(m, 'a');
-        const level1Call = level1.get(m, 'a');
-        const rootCall = root.get(m, 'a');
-
-        expect(level3Call).toEqual(level2Call);
-        expect(level2Call).toEqual(2);
-        expect(level1Call).toEqual(1);
-        expect(rootCall).not.toEqual(level3);
-        expect(randomFactorySpy).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    describe('invariant resolvers', function () {
-      describe(`request scope`, () => {
-        it(`cannot be replaced by overrides`, async () => {
-          const m = module()
-            .define('k1', request, () => Math.random())
-            .build();
-
-          const invariantPatch = m.replace('k1', () => 1, request);
-          const childScopePatch = m.replace('k1', () => 2, request);
-
-          const c = container({ globalOverrides: [invariantPatch] });
-          expect(c.asObject(m).k1).toEqual(1);
-
-          const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-          expect(childScope.asObject(m).k1).toEqual(1);
-        });
-
-        it(`allows for overrides for other keys than ones changes invariants array`, async () => {
-          const m = module()
-            .define('k1', request, () => Math.random())
-            .define('k2', request, () => Math.random())
-            .build();
-
-          const invariantPatch = m.replace('k1', () => 1, request);
-          const childScopePatch = m.replace('k2', () => 2, request);
-
-          const c = container({ globalOverrides: [invariantPatch] });
-          expect(c.asObject(m).k1).toEqual(1);
-
-          const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-          expect(childScope.asObject(m).k1).toEqual(1);
-          expect(childScope.asObject(m).k2).toEqual(2);
-        });
-      });
-
-      describe(`singleton scope`, () => {
-        it(`cannot be replaced by overrides`, async () => {
-          const m = module()
-            .define('k1', singleton, () => Math.random())
-            .build();
-
-          const invariantPatch = m.replace('k1', () => 1, singleton);
-          const childScopePatch = m.replace('k1', () => 2, singleton);
-
-          const c = container({ globalOverrides: [invariantPatch] });
-          expect(c.asObject(m).k1).toEqual(1);
-
-          const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-          expect(childScope.asObject(m).k1).toEqual(1);
-        });
-
-        it(`allows for overrides for other keys than ones changes invariants array`, async () => {
-          const m = module()
-            .define('k1', singleton, () => Math.random())
-            .define('k2', singleton, () => Math.random())
-            .build();
-
-          const invariantPatch = m.replace('k1', () => 1, singleton);
-          const childScopePatch = m.replace('k2', () => 2, singleton);
-
-          const c = container({ globalOverrides: [invariantPatch] });
-          expect(c.asObject(m).k1).toEqual(1);
-
-          const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-          expect(childScope.asObject(m).k1).toEqual(1);
-          expect(childScope.asObject(m).k2).toEqual(2);
-        });
-      });
-    });
   });
 
   describe(`asObjectMany`, () => {
@@ -358,69 +115,6 @@ describe(`Container`, () => {
       const [{ a }, { b }] = c.asObjectMany(m1, m2);
       expect(a).toEqual(1);
       expect(b).toEqual(2);
-    });
-  });
-
-  describe(`scopes`, () => {
-    describe(`request`, () => {
-      describe(`get`, () => {
-        it(`uses new request scope for each call`, async () => {
-          const m = unit()
-            .define('a', request, () => Math.random())
-            .build();
-
-          const c = container();
-          const req1 = c.get(m, 'a');
-          const req2 = c.get(m, 'a');
-
-          expect(req1).not.toEqual(req2);
-        });
-      });
-
-      describe(`asObject`, () => {
-        it(`runs asObject each time with new request scope `, async () => {
-          const m = unit()
-            .define('a', request, () => Math.random())
-            .build();
-
-          const c = container();
-          const req1 = c.asObject(m);
-          const req2 = c.asObject(m);
-
-          expect(req1.a).not.toEqual(req2.a);
-        });
-      });
-
-      describe(`childScope`, () => {
-        it(`does not inherit any values from parent scope`, async () => {
-          const m = unit()
-            .define('a', request, () => Math.random())
-            .build();
-
-          const c = container();
-          const req1 = c.asObject(m);
-
-          const childC = c.checkoutScope();
-          const req2 = childC.asObject(m);
-
-          expect(req1.a).not.toEqual(req2.a);
-        });
-      });
-    });
-  });
-
-  describe(`scoped`, () => {
-    it(`acts like singleton limited to given scope`, async () => {
-      const m = unit()
-        .define('a', scoped, () => Math.random())
-        .build();
-
-      const c = container();
-      expect(c.get(m, 'a')).toEqual(c.get(m, 'a'));
-
-      const childScope = c.checkoutScope();
-      expect(childScope.get(m, 'a')).toEqual(childScope.get(m, 'a'));
-      expect(c.get(m, 'a')).not.toEqual(childScope.get(m, 'a'));
     });
   });
 

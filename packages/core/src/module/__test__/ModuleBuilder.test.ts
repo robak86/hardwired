@@ -1,15 +1,40 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { module, ModuleBuilder } from '../ModuleBuilder';
-
 import { container } from '../../container/Container';
 import { Module } from '../Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
-import { transient } from '../../strategies/TransientStrategy';
-import { request } from '../../strategies/RequestStrategy';
 import { ModulePatch } from '../ModulePatch';
 import { singleton } from '../../strategies/SingletonStrategy';
+import { BoxedValue } from '../../__test__/BoxedValue';
 
 describe(`ModuleBuilder`, () => {
+  describe('bind', () => {
+    describe(`class has constructor params`, () => {
+      it(`registers correct entry in module`, async () => {
+        class SomeClass {
+          constructor(public a: number, public b: string) {}
+        }
+
+        const extra = ModuleBuilder.empty()
+          .define('b', singleton, () => 'valueFromImportedModule')
+          .freeze();
+
+        const m = ModuleBuilder.empty()
+          .import('imported', extra)
+          .define('a', singleton, () => 1)
+          .define('z', singleton, () => 'sdf')
+          .bind('kls', singleton, SomeClass, ['a', 'imported.b'])
+          .freeze();
+
+        const c = container().get(m, 'kls');
+
+        expectType<SomeClass>(c);
+        expect(c.a).toEqual(1);
+        expect(c.b).toEqual('valueFromImportedModule');
+      });
+    });
+  });
+
   describe(`define`, () => {
     it(`creates correct type`, async () => {
       const m = ModuleBuilder.empty()
@@ -210,130 +235,27 @@ describe(`ModuleBuilder`, () => {
     });
   });
 
-  describe(`decorate`, () => {
-    it(`decorates original value`, async () => {
-      const m = module()
-        .define('someValue', singleton, () => 1)
-        .build();
-
-      const mPatch = m.decorate('someValue', val => val + 1);
-
-      const c = container({ scopeOverrides: [mPatch] });
-      expect(c.get(m, 'someValue')).toEqual(2);
-    });
-
-    it(`does not affect original module`, async () => {
-      const m = module()
-        .define('someValue', singleton, () => 1)
-        .build();
-      const mPatch = m.decorate('someValue', val => val + 1);
-
-      expect(container().get(m, 'someValue')).toEqual(1);
-      expect(container({ scopeOverrides: [mPatch] }).get(m, 'someValue')).toEqual(2);
-    });
-
-    it(`allows for multiple decorations`, async () => {
-      const m = module()
-        .define('someValue', singleton, () => 1)
-        .build();
-
-      const mPatch = m.decorate('someValue', val => val + 1).decorate('someValue', val => val * 3);
-
-      const c = container({ scopeOverrides: [mPatch] });
-      expect(c.get(m, 'someValue')).toEqual(6);
-    });
-
-    it(`works allows to using other dependencies`, async () => {
+  describe(`.decorate`, () => {
+    it(`preserves module identity`, async () => {
       const m = module()
         .define('a', singleton, () => 1)
-        .define('b', singleton, () => 2)
-        .define('someValue', singleton, () => 10)
         .build();
 
-      const mPatch = m.decorate('someValue', (val, { a, b }) => val + a + b);
+      const mWithDecorator = m.decorate('a', a => a + 1);
 
-      const c = container({ scopeOverrides: [mPatch] });
-      expect(c.get(m, 'someValue')).toEqual(13);
+      expect(m.isEqual(mWithDecorator));
     });
+  });
 
-    it(`works allows to using other dependencies`, async () => {
+  describe(`.apply`, () => {
+    it(`acts like replace in terms of module identity`, async () => {
       const m = module()
-        .define('a', singleton, () => 1)
-        .define('b', singleton, () => 2)
-        .define('someValue', singleton, ({ a, b }) => a + b)
+        .define('a', singleton, () => new BoxedValue(1))
         .build();
 
-      const mPatch = m.decorate('someValue', (val, { b }) => val * b);
+      const patchedMWithApply = m.apply('a', a => (a.value += 1));
 
-      const c = container({ scopeOverrides: [mPatch] });
-      expect(c.get(m, 'someValue')).toEqual(6);
-    });
-
-    describe(`scopes`, () => {
-      it(`preserves singleton scope of the original resolver`, async () => {
-        const m = module()
-          .define('a', singleton, () => Math.random())
-          .build();
-
-        const mPatch = m.decorate('a', a => a);
-
-        const c = container({ scopeOverrides: [mPatch] });
-        expect(c.get(m, 'a')).toEqual(c.get(m, 'a'));
-      });
-
-      it(`preserves transient scope of the original resolver`, async () => {
-        const m = module()
-          .define('a', transient, () => Math.random())
-          .build();
-
-        const mPatch = m.decorate('a', a => a);
-
-        const c = container({ scopeOverrides: [mPatch] });
-        expect(c.get(m, 'a')).not.toEqual(c.get(m, 'a'));
-      });
-
-      it(`uses different request scope for each subsequent asObject call`, async () => {
-        const m = module()
-          .define('source', request, () => Math.random())
-          .define('a', request, ({ source }) => source)
-          .build();
-
-        const mPatch = m.decorate('a', a => a);
-
-        const c = container({ scopeOverrides: [mPatch] });
-        const req1 = c.asObject(m);
-        const req2 = c.asObject(m);
-
-        expect(req1.source).toEqual(req1.a);
-        expect(req2.source).toEqual(req2.a);
-        expect(req1.source).not.toEqual(req2.source);
-        expect(req1.a).not.toEqual(req2.a);
-      });
-
-      it(`does not cache produced object`, async () => {
-        const m = module()
-          .define('a', request, () => Math.random())
-          .define('b', request, () => Math.random())
-          .build();
-
-        const c = container();
-        const obj1 = c.asObject(m);
-        const obj2 = c.asObject(m);
-
-        expect(obj1).not.toBe(obj2);
-      });
-    });
-
-    describe(`overrides`, () => {
-      it(`acts like replace in terms of module identity`, async () => {
-        const m = module()
-          .define('a', singleton, () => 1)
-          .build();
-
-        const c = container({ scopeOverrides: [m.decorate('a', a => a + 1)] });
-
-        expect(c.get(m, 'a')).toEqual(2);
-      });
+      expect(m.isEqual(patchedMWithApply));
     });
   });
 

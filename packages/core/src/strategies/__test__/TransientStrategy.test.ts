@@ -11,13 +11,6 @@ describe(`ClassTransientResolver`, () => {
     constructor(public value: string) {}
   }
 
-  describe(`transient`, () => {
-    // it(`return Instance type`, async () => {
-    //   const s = transient(TestClass);
-    //   expectType<TypeEqual<typeof s, Instance<TestClass, [string]>>>(true);
-    // });
-  });
-
   const m = unit()
     .define('someValue', singleton, () => 'someString')
     .define('a', transient, c => new TestClass(c.someValue))

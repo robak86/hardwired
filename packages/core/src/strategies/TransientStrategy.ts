@@ -1,26 +1,28 @@
-import { BuildStrategy } from '../resolvers/abstract/BuildStrategy';
-import { buildTaggedStrategy } from './utils/strategyTagging';
-import { ContainerContext } from '../context/ContainerContext';
+import { InstancesCache } from '../context/InstancesCache';
+import { BuildStrategy } from './abstract/BuildStrategy';
 
 export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
-  readonly strategyTag = transientStrategyTag;
-
   constructor(protected buildFunction: (ctx) => TValue) {
     super();
   }
 
-  build(id: string, context: ContainerContext, materializedModule): TValue {
+  build(id: string, instancesCache: InstancesCache, resolvers, materializedModule?): TValue {
+    if (resolvers.hasGlobalOverrideResolver(id)) {
+      if (instancesCache.hasInGlobalOverride(id)) {
+        return instancesCache.getFromGlobalOverride(id);
+      } else {
+        const instance = this.buildFunction(materializedModule);
+        instancesCache.setForGlobalOverrideScope(id, instance);
+        return instance;
+      }
+    }
+
     const result = this.buildFunction(materializedModule);
     if (result instanceof BuildStrategy) {
-      return result.build(id, context, materializedModule);
+      return result.build(id, instancesCache, materializedModule);
     }
     return result;
   }
 }
 
-export const transientStrategyTag = Symbol();
-
-export const transient = buildTaggedStrategy(
-  <TReturn>(buildFunction: (ctx) => TReturn) => new TransientStrategy(buildFunction),
-  transientStrategyTag,
-);
+export const transient = <TReturn>(buildFunction: (ctx) => TReturn) => new TransientStrategy(buildFunction);
