@@ -2,7 +2,7 @@
 
 ![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/robak86/hardwired/branch/master/graph/badge.svg?token=50RAYIVVTT)](https://codecov.io/gh/robak86/hardwired)
 
-**!!! WARNING - The library is still in early development stage !!!**
+**!!! WARNING - The library is still in alpha stage !!!**
 
 Minimalistic, type-safe DI/IoC solution for TypeScript.
 
@@ -35,10 +35,10 @@ npm install hardwired
 
 The library uses three main concepts:
 
-- **Module** - immutable object containing resolvers registered by names
+- **Module** - immutable object containing strategies registered by names
 - **Strategy** - encapsulates details of objects instantiation, (e.g. `singleton`, `transient`
   , `request`)
-- **Container** - returns and optionally caches object instances created by the strategies
+- **Container** - creates and optionally caches object instances using strategies
 
 #### Example
 
@@ -97,6 +97,7 @@ const logger = obj.logger; // instance of Logger was created
   - `buildFn` - factory function producing value for given definition. It's called with object
     containing all previous definitions available as properties
 
+
   ```typescript
   import { module, value, singleton } from 'hardwired';
 
@@ -118,6 +119,7 @@ const logger = obj.logger; // instance of Logger was created
   - `strategy` - orchestrates `buildFn` calls and returned value caching.
   - `class` - class reference.
   - `dependencies` - array of paths pointing to class dependencies
+
 
   ```typescript
   import { module, value, singleton } from 'hardwired';
