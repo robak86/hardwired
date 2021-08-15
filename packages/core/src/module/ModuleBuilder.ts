@@ -59,10 +59,10 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     name: TKey,
     buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
     klass: ClassType<TValue, TDeps>,
-    args: TDependenciesPaths,
+    dependencies: TDependenciesPaths,
   ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>> {
     const buildFn = ctx => {
-      const deps: any = args.map(argPath => dot.get(ctx, argPath));
+      const deps: any = dependencies.map(argPath => dot.get(ctx, argPath));
       return new klass(...deps);
     };
 
