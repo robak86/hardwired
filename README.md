@@ -15,7 +15,7 @@ Minimalistic, type-safe DI/IoC solution for TypeScript.
   - does not pollute user code with DI specific code (usually decorators or static properties)
 - [x] Designed for structural typing
 
-### Installation
+## Installation
 
 This library requires typescript >= 4.1
 
@@ -31,7 +31,7 @@ npm
 npm install hardwired
 ```
 
-### Overview
+## Overview
 
 The library uses three main concepts:
 
@@ -40,7 +40,7 @@ The library uses three main concepts:
   , `request`)
 - **Container** - creates and optionally caches object instances using strategies
 
-#### Example
+### Example
 
 1. Create a module
 
@@ -87,7 +87,7 @@ const configuration = obj.configuration; // instance of LoggerConfiguration was 
 const logger = obj.logger; // instance of Logger was created
 ```
 
-### Registering definitions
+## Registering definitions
 
 **`.define(name, strategy, buildFn)`** - returns a new instance of the module and appends new
 definition
@@ -133,7 +133,7 @@ const m1 = module()
   .build();
 ```
 
-### Available strategies (lifetimes, scopes)
+## Available strategies (lifetimes, scopes)
 
 **`transient`** - always provides a new instance
 
@@ -229,7 +229,7 @@ rootScope.get(someModule, 'someInstance') === rootScope.get(someModule, 'someIns
 rootScope.get(childScope, 'someInstance') === childScope.get(someModule, 'someInstance'); // true
 ```
 
-### Modules composition
+## Modules composition
 
 ```typescript
 import { module, value, singleton } from 'hardwired';
@@ -257,7 +257,7 @@ const usersModule = module()
   .build();
 ```
 
-#### Module identity / replacing definitions
+### Module identity / replacing definitions
 
 Each module at the instantiation receives unique identity. This property is used for checking if
 modules are interchangeable and also allows for using modules as a key while creating
