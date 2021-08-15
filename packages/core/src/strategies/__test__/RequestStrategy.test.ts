@@ -49,7 +49,22 @@ describe(`RequestStrategy`, () => {
     });
   });
 
-  describe(`overrides`, () => {
+  describe(`scope overrides`, () => {
+    it(`replaces definitions for request scope`, async () => {
+      const m = unit()
+        .define('a', request, () => 1)
+        .build();
+      const c = container();
+
+      const mPatch = m.replace('a', () => 2, request);
+      const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
+
+      expect(c.get(m, 'a')).toEqual(1);
+      expect(childC.get(m, 'a')).toEqual(2);
+    });
+  });
+
+  describe(`global overrides`, () => {
     it(`cannot be replaced by scope overrides`, async () => {
       const m = module()
         .define('k1', request, () => Math.random())
