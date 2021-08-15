@@ -78,8 +78,8 @@ const exampleContainer = container();
 const loggerInstance = exampleContainer.get(loggerModule, 'logger'); // returns instance of Logger
 ```
 
-or alternatively use `.asObject` method. All properties of returned object leverage lazy evaluation
-therefore no instance is created until one access directly a property.
+4. Alternatively use `.asObject` method. All properties of returned object leverage lazy evaluation
+   therefore no instance is created until one accesses directly a property.
 
 ```typescript
 const obj = exampleContainer.asObject(loggerModule); // no instances were created yet
@@ -151,8 +151,8 @@ const ct = container();
 ct.get('transientDependency') === ct.get(someModule, 'transientDependency'); // false
 ```
 
-**`singleton`** - creates single instance, which is cached in the container for all subsequent `.get`
-requests
+**`singleton`** - creates single instance, which is cached in the container for all subsequent
+`.get` requests
 
 ```typescript
 import { module, singleton } from 'hardwired';
@@ -182,6 +182,7 @@ import { module, request, singleton } from 'hardwired';
 
 class SomeClass {
   args: any[];
+
   constructor(...args: []) {
     this.args = args;
   }
@@ -211,6 +212,7 @@ import { module, scoped, singleton } from 'hardwired';
 
 class SomeClass {
   args: any[];
+
   constructor(...args: []) {
     this.args = args;
   }
@@ -294,8 +296,8 @@ m1.isEqual(m1WithReplacedValue); // true - modules still have the same identitie
 // they are interchangeable
 ```
 
-This kind of equality checking is used for overriding modules' definitions in existing
-dependencies graphs. in. (e.g. for testing). Two kinds of overrides are possible:
+This kind of equality checking is used for overriding modules' definitions in existing dependencies
+graphs. in. (e.g. for testing). Two kinds of overrides are possible:
 
 1. Scope override - replaces definitions for a scope. Each replaced definition for scope is
    inherited to child scopes.
@@ -305,6 +307,7 @@ import { module, value, singleton } from 'hardwired';
 
 class RequestHandler {
   constructor(public params) {}
+
   onRequest() {}
 }
 
@@ -325,8 +328,8 @@ const httpHandler = (req, res) => {
 };
 ```
 
-2. Global override - each definition replaced using global overrides act like singleton across
-   all scopes. It also replaces all scopes overrides
+2. Global override - each definition replaced using global overrides act like singleton across all
+   scopes. It also replaces all scopes overrides
 
 ```typescript
 import { module, value, singleton } from 'hardwired';
