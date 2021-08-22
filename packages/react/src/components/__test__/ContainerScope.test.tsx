@@ -101,4 +101,51 @@ describe(`ContainerScope`, () => {
       expect(result.getByTestId('scope2').textContent).toEqual('4');
     });
   });
+
+  describe(`with overrides`, () => {
+    function setup() {
+      let counter = 0;
+
+      const m = module()
+        .define('base', scoped, () => 0)
+        .define('value', scoped, ({ base }) => (counter += 1 + base))
+        .build();
+
+      const ValueRenderer = ({ testId }) => {
+        const value = useDefinition(m, 'value');
+
+        return <div data-testid={testId}>{value}</div>;
+      };
+
+      const TestSubject = () => (
+        <ContainerProvider>
+          <ContainerScope scopeOverrides={[m.replace('base', () => 10)]}>
+            <ValueRenderer testId={'scope1'} />
+          </ContainerScope>
+          <ContainerScope scopeOverrides={[m.replace('base', () => 100)]}>
+            <ValueRenderer testId={'scope2'} />
+          </ContainerScope>
+        </ContainerProvider>
+      );
+
+      return { TestSubject };
+    }
+
+    it(`renders descendent components using new request scope`, async () => {
+      const { TestSubject } = setup();
+      const result = render(<TestSubject />);
+      expect(result.getByTestId('scope1').textContent).toEqual('11');
+      expect(result.getByTestId('scope2').textContent).toEqual('112');
+      result.rerender(<TestSubject />);
+
+      expect(result.getByTestId('scope1').textContent).toEqual('11');
+      expect(result.getByTestId('scope2').textContent).toEqual('112');
+
+      result.unmount();
+      result.rerender(<TestSubject />);
+
+      expect(result.getByTestId('scope1').textContent).toEqual('123');
+      expect(result.getByTestId('scope2').textContent).toEqual('224');
+    });
+  });
 });
