@@ -4,11 +4,11 @@
   "license": "MIT",
   "homepage": "https://github.com/robak86/hardwired",
   "description": "Hardwired integration for React",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "peerDependencies": {
-    "hardwired": "0.5.1"
+    "hardwired": "0.5.2"
   },
   "devDependencies": {
     "hardwired": "*"
