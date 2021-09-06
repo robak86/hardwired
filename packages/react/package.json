@@ -8,7 +8,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "peerDependencies": {
-    "hardwired": "0.5.0"
+    "hardwired": "0.5.1"
   },
   "devDependencies": {
     "hardwired": "*"
