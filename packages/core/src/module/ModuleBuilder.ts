@@ -49,7 +49,7 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
 
   bind<
     TKey extends string,
-    TDependencyPath extends ObjectPaths<ModuleRecord.Materialized<TRecord>>,
+    TDependencyPath extends ObjectPaths<TRecord>,
     TDependenciesPaths extends [...TDependencyPath[]],
     TValue,
     TDeps extends {
