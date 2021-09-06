@@ -32,6 +32,33 @@ describe(`ModuleBuilder`, () => {
         expect(c.a).toEqual(1);
         expect(c.b).toEqual('valueFromImportedModule');
       });
+
+      it(`supports non class dependencies`, async () => {
+        class SomeClass {
+          constructor(public a: number, public b: SomeType) {}
+        }
+
+        type SomeType = {
+          value: string;
+        };
+
+        const extra = ModuleBuilder.empty()
+          .define('b', singleton, () => ({ value: 'valueFromImportedModule' }))
+          .freeze();
+
+        const m = ModuleBuilder.empty()
+          .import('imported', extra)
+          .define('a', singleton, () => 1)
+          .define('z', singleton, () => 'sdf')
+          .bind('kls', singleton, SomeClass, ['a', 'imported.b'])
+          .freeze();
+
+        const c = container().get(m, 'kls');
+
+        expectType<SomeClass>(c);
+        expect(c.a).toEqual(1);
+        expect(c.b.value).toEqual('valueFromImportedModule');
+      });
     });
   });
 
