@@ -15,15 +15,21 @@ export type WithDependenciesOptions<TExternalProps, TDependencies extends Record
       };
 };
 
+export type WithDependenciesConfigured<TDependencies extends object, TExternalProps = {}> = {
+  <TProps extends TDependencies>(WrappedComponent: ComponentType<TProps>): ComponentType<
+    Diff<TProps, TDependencies> & TExternalProps
+  >;
+};
+
 export function withDependencies<TDependencies extends Record<string, any>>(
   selector: DependencySelector<TDependencies>,
-);
+): WithDependenciesConfigured<TDependencies>;
 export function withDependencies<TDependencies extends Record<string, any>, TExternalProps = {}>(
   config: WithDependenciesOptions<TExternalProps, TDependencies>,
-);
+): WithDependenciesConfigured<TDependencies, TExternalProps>;
 export function withDependencies<TDependencies extends Record<string, any>, TExternalProps = {}>(
   configOrSelector: WithDependenciesOptions<TExternalProps, TDependencies> | DependencySelector<TDependencies>,
-) {
+): WithDependenciesConfigured<TDependencies, TExternalProps> {
   return <TProps extends TDependencies>(
     WrappedComponent: ComponentType<TProps>,
   ): ComponentType<Diff<TProps, TDependencies> & TExternalProps> => {
