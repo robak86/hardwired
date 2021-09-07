@@ -16,6 +16,8 @@ type MaterializeDependenciesRecordAsync<TDependencies extends Record<string, any
     : unknown;
 };
 
+export type DependencySelector<TReturn> = (context: ContainerContext) => TReturn;
+
 const select = <TModule extends Module<any>, TKey extends Module.InstancesKeys<TModule>>(
   module: TModule,
   name: TKey,

@@ -1,3 +1,3 @@
-export class BoxedValue {
-  constructor(public value) {}
+export class BoxedValue<TValue = any> {
+  constructor(public value: TValue) {}
 }

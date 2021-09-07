@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 const shallowCompareArrays = (arr1: ReadonlyArray<any>, arr2: ReadonlyArray<any>) => {
   return arr1.length === arr2.length && arr1.every((val, idx) => val === arr2[idx]);
