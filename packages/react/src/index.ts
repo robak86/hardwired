@@ -15,5 +15,5 @@ export { useSelectScoped } from './hooks/useSelectScoped';
 
 // HOC
 export { withDependencies } from './hoc/withDependencies';
-export type { WithDependenciesOptions } from './hoc/withDependencies';
+export type { WithDependenciesOptions, WithDependenciesConfigured } from './hoc/withDependencies';
 export { withScope } from './hoc/withScope';
