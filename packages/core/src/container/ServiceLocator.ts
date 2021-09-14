@@ -18,7 +18,7 @@ export class ServiceLocator implements IServiceLocator {
     );
   }
 
-  withScope<T>(factory: (obj: IServiceLocator) => T): T {
+  withRequestScope<T>(factory: (obj: IServiceLocator) => T): T {
     const serviceLocator = new ServiceLocator(
       this.instancesCache.checkoutForRequestScope(),
       this.resolversRegistry.checkoutForRequestScope(),

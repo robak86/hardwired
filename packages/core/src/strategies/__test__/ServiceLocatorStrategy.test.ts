@@ -49,7 +49,7 @@ describe(`ServiceLocatorResolver`, () => {
     const c = container();
     const locator = c.get(root, 'locator');
 
-    locator.withScope(({ get }) => {
+    locator.withRequestScope(({ get }) => {
       const call1 = get(singletonModule, 'singleton');
       const call2 = get(singletonModule, 'singleton');
 
@@ -67,7 +67,7 @@ describe(`ServiceLocatorResolver`, () => {
     const locator = c.get(root, 'locator');
 
     const fromContainer = c.get(singletonModule, 'singleton');
-    const fromLocator = locator.withScope(({ get }) => {
+    const fromLocator = locator.withRequestScope(({ get }) => {
       return get(singletonModule, 'singleton');
     });
 
@@ -79,7 +79,7 @@ describe(`ServiceLocatorResolver`, () => {
     const locator = c.get(root, 'locator');
 
     const fromContainer = c.get(root, 'producedByFactory');
-    const fromLocator = locator.withScope(({ get }) => {
+    const fromLocator = locator.withRequestScope(({ get }) => {
       return get(root, 'producedByFactory');
     });
     const fromContainer2 = c.get(root, 'producedByFactory');
