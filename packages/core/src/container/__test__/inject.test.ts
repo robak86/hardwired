@@ -44,7 +44,7 @@ describe(`inject`, () => {
       });
 
       const c = container();
-      const result = c.getWithSelector(slice);
+      const result = c.select(slice);
       expect(result).toEqual({ a: 1, b: 20 });
     });
   });
@@ -82,7 +82,7 @@ describe(`inject`, () => {
       const slice = inject.tuple(inject.select(m1, 'a'), inject.select(m2, 'b'));
 
       const c = container();
-      const result = c.getWithSelector(slice);
+      const result = c.select(slice);
       expect(result).toEqual([1, 20]);
     });
   });
@@ -105,7 +105,7 @@ describe(`inject`, () => {
       });
 
       const c = container();
-      const selected = await c.getWithSelector(selector);
+      const selected = await c.select(selector);
       const expected: typeof selected = { a: 1, b: 2, c: 10 };
 
       expect(selected).toEqual(expected);

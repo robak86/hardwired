@@ -14,7 +14,7 @@ export const useSelectScoped: UseDefinitionHook = (invalidateKeys, scopeOverride
   const container = useContainer();
   const getInstance = useMemoized(() => {
     const scoped = container.checkoutScope({ scopeOverrides: scopeOverrides });
-    return scoped.getWithSelector(selector);
+    return scoped.select(selector);
   });
 
   return getInstance(invalidateKeys);
