@@ -48,7 +48,7 @@ export function withDependencies<TDependencies extends Record<string, any>, TExt
         return <WrappedComponent {...(props as any)} {...deps} />;
       } else {
         const containerContext = useContainerContext();
-        const deps = containerContext.container?.getWithSelector(config.dependencies);
+        const deps = containerContext.container?.select(config.dependencies);
 
         return <WrappedComponent {...(props as any)} {...deps} />;
       }

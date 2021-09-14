@@ -21,7 +21,7 @@ describe(`ServiceLocator`, () => {
       const c = container({ scopeOverrides: [child.replace('someNumber', () => 456)] });
 
       const locator = c.get(m, 'locator');
-      const cls = locator.withScope(({ get }) => get(m, 'cls'));
+      const cls = locator.withRequestScope(({ get }) => get(m, 'cls'));
 
       expect(cls.someNumber).toEqual(456);
       expect(cls.someString).toEqual('some content');

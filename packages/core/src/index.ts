@@ -14,3 +14,4 @@ export { ServiceLocator } from './container/ServiceLocator';
 export { serviceLocator } from './strategies/ServiceLocatorStrategy';
 export { BuildStrategy } from './strategies/abstract/BuildStrategy';
 export { ModulePatch } from './module/ModulePatch';
+export type { IServiceLocator } from './container/IServiceLocator';
