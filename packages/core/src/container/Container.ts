@@ -1,12 +1,13 @@
 import { Module } from '../module/Module';
 import { ModulePatch } from '../module/ModulePatch';
 import { ContainerContext } from '../context/ContainerContext';
+import { IServiceLocator } from './IServiceLocator';
 
 export type ChildScopeOptions = {
   scopeOverrides?: ModulePatch<any>[];
 };
 
-export class Container {
+export class Container implements IServiceLocator {
   constructor(protected readonly containerContext: ContainerContext) {}
 
   get id(): string {
@@ -21,7 +22,7 @@ export class Container {
     return requestContext.get(moduleInstance, name);
   }
 
-  getWithSelector<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
+  select<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
     return inject(this.containerContext.checkoutRequestScope());
   }
 
@@ -50,16 +51,21 @@ export class Container {
   }
 }
 
-export type ContainerOptions = {
-  context?: ContainerContext;
-} & ContainerScopeOptions;
+export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
   scopeOverrides?: ModulePatch<any>[]; // used only in descendent scopes (can be overridden)
   globalOverrides?: ModulePatch<any>[]; // propagated to whole dependencies graph
 };
 
-export function container({ context, scopeOverrides = [], globalOverrides = [] }: ContainerOptions = {}): Container {
-  const container = new Container(context || ContainerContext.create(scopeOverrides, globalOverrides));
-  return container as any;
+export function container(globalOverrides?: ModulePatch<any>[]): Container;
+export function container(options?: ContainerOptions): Container;
+export function container(overridesOrOptions?: ContainerOptions | Array<ModulePatch<any>>): Container {
+  if (Array.isArray(overridesOrOptions)) {
+    return new Container(ContainerContext.create([], overridesOrOptions));
+  } else {
+    return new Container(
+      ContainerContext.create(overridesOrOptions?.scopeOverrides ?? [], overridesOrOptions?.globalOverrides ?? []),
+    );
+  }
 }
