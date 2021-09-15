@@ -125,4 +125,5 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   }
 
   freeze = this.build;
+  def = this.define
 }
