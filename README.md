@@ -60,7 +60,7 @@ class Logger {
 const loggerModule = module()
   .define('configuration', singleton, () => new LoggerConfiguration())
   .define('logger', singleton, m => new Logger(m.configuration))
-  .build();
+  .compile();
 // this method just builds the module. Configuration and logger instances are not created yet
 ```
 
@@ -108,7 +108,7 @@ const m1 = module()
   .define('a', singleton, () => 123)
   .define('b', singleton, () => 'someString')
   .define('c', singleton, ({ a, b }) => new DummyClass(a, b), singleton)
-  .build();
+  .compile();
 ```
 
 **`.bind(name, strategy, class, dependencies)`** - designed to be used with classes. Returns a new
@@ -130,7 +130,7 @@ const m1 = module()
   .define('a', singleton, () => 123)
   .define('b', singleton, () => 'someString')
   .bind('c', singleton, DummyClass, ['a', 'b'])
-  .build();
+  .compile();
 ```
 
 ## Available strategies (lifetimes, scopes)
@@ -144,7 +144,7 @@ class SomeClass {}
 
 const someModule = module()
   .define('transientDependency', transient, () => new SomeClass())
-  .build();
+  .compile();
 
 const ct = container();
 
@@ -161,7 +161,7 @@ class SomeClass {}
 
 const someModule = module()
   .define('someSingleton', singleton, () => new SomeClass())
-  .build();
+  .compile();
 
 const ct = container();
 
@@ -192,7 +192,7 @@ const someModule = module()
   .define('leaf', singleton, m => new SomeClass())
   .define('child', request, m => new SomeClass(m.leaf))
   .define('parent', request, m => new SomeClass(m.child, m.leaf))
-  .build();
+  .compile();
 
 const ct = container();
 
@@ -220,7 +220,7 @@ class SomeClass {
 
 const someModule = module()
   .define('someInstance', scoped, m => new SomeClass())
-  .build();
+  .compile();
 
 const rootScope = container();
 const childScope = rootScope.checkoutScope();
@@ -247,7 +247,7 @@ class DbConnection {
 const dbModule = module()
   .define('config', singleton, () => databaseConfig)
   .define('connection', singleton, ({ config }) => new DbConnection(config))
-  .build();
+  .compile();
 
 class UsersListQuery {
   constructor(private dbConnection: DbConnection) {}
@@ -256,7 +256,7 @@ class UsersListQuery {
 const usersModule = module()
   .import('db', dbModule)
   .define('usersQuery', singleton, ({ db }) => new UsersListQuery(db.connection))
-  .build();
+  .compile();
 ```
 
 ### Module identity / replacing definitions
@@ -276,7 +276,7 @@ Adding new definitions to module creates a new instance of the module with a dif
 
 ```typescript
 const m1 = module();
-const m1Extended = m1.define('someVal', singleton, () => true).build();
+const m1Extended = m1.define('someVal', singleton, () => true).compile();
 
 m1.isEqual(m1Extended); // false - .define created m1Extended and assigned a new id
 ```
@@ -287,7 +287,7 @@ with the original, because `.replace` accepts only a type which is compatible wi
 ```typescript
 const m1 = module()
   .define('someVal', () => false)
-  .build();
+  .compile();
 
 const m1WithReplacedValue = m1.replace('someVal', () => true);
 // m1.replace('someVal', () => "cannot replace boolean with string"); // compile-time error
@@ -314,7 +314,7 @@ class RequestHandler {
 const appModule = module()
   .define('request', scoped, ctx => ({}))
   .define('handler', scoped, c => new RequestHandler(c.config))
-  .build();
+  .compile();
 
 const rootScope = container();
 rootScope.get(appModule, 'handler'); // handler instantiated with {} params
@@ -345,7 +345,7 @@ class DbConnection {
 const dbModule = module()
   .define('config', singleton, () => databaseConfig)
   .define('connection', singleton, c => new DbConnection(c.config))
-  .build();
+  .compile();
 
 const containerWithOriginalConfig = container();
 containerWithOriginalConfig.get(dbModule, 'config'); // uses databaseConfig with url equal to ''
@@ -382,7 +382,7 @@ class Document {
 const someModule = module() // breakme
   .define('writer', singleton, c => new Writer())
   .define('document', singleton, c => new Document(c.writer))
-  .build();
+  .compile();
 
 // tests
 it('calls write on save', () => {
