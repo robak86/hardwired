@@ -1,5 +1,7 @@
 import { Module } from '../module/Module';
 import { ContainerContext } from '../context/ContainerContext';
+import invariant from 'tiny-invariant';
+import { Thunk, unwrapThunk } from '../utils/Thunk';
 
 type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: ContainerContext) => any>]> = {
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
@@ -19,11 +21,15 @@ type MaterializeDependenciesRecordAsync<TDependencies extends Record<string, any
 export type DependencySelector<TReturn> = (context: ContainerContext) => TReturn;
 
 const select = <TModule extends Module<any>, TKey extends Module.InstancesKeys<TModule>>(
-  module: TModule,
+  module: Thunk<TModule>,
   name: TKey,
 ) => {
+  invariant(
+    module !== undefined,
+    `Provided module is undefined. It's probably because of circular modules references. Use thunk instead`,
+  );
   return (context: ContainerContext): Module.Materialized<TModule>[TKey] => {
-    return context.get(module, name);
+    return context.get(unwrapThunk(module), name);
   };
 };
 
