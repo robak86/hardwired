@@ -17,14 +17,14 @@ describe(`ModuleBuilder`, () => {
 
         const extra = ModuleBuilder.empty()
           .define('b', singleton, () => 'valueFromImportedModule')
-          .freeze();
+          .compile();
 
         const m = ModuleBuilder.empty()
           .import('imported', extra)
           .define('a', singleton, () => 1)
           .define('z', singleton, () => 'sdf')
           .bind('kls', singleton, SomeClass, ['a', 'imported.b'])
-          .freeze();
+          .compile();
 
         const c = container().get(m, 'kls');
 
@@ -44,14 +44,14 @@ describe(`ModuleBuilder`, () => {
 
         const extra = ModuleBuilder.empty()
           .define('b', singleton, () => ({ value: 'valueFromImportedModule' }))
-          .freeze();
+          .compile();
 
         const m = ModuleBuilder.empty()
           .import('imported', extra)
           .define('a', singleton, () => 1)
           .define('z', singleton, () => 'sdf')
           .bind('kls', singleton, SomeClass, ['a', 'imported.b'])
-          .freeze();
+          .compile();
 
         const c = container().get(m, 'kls');
 

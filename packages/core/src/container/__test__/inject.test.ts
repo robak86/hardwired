@@ -20,7 +20,7 @@ describe(`inject`, () => {
 
         const slice = inject.record({
           a: inject.select(m1, 'a'),
-          b: inject.select(m2, 'b'),
+          b: inject.select(() => m2, 'b'),
         });
 
         expectType<TypeEqual<ReturnType<typeof slice>, { a: number; b: number }>>(true);
@@ -41,6 +41,27 @@ describe(`inject`, () => {
       const slice = inject.record({
         a: inject.select(m1, 'a'),
         b: inject.select(m2, 'b'),
+      });
+
+      const c = container();
+      const result = c.select(slice);
+      expect(result).toEqual({ a: 1, b: 20 });
+    });
+
+    it(`works with thunks`, async () => {
+      const m1 = unit()
+        .define('a', singleton, () => 1)
+        .define('b', singleton, () => 2)
+        .build();
+
+      const m2 = unit()
+        .define('a', singleton, () => 10)
+        .define('b', singleton, () => 20)
+        .build();
+
+      const slice = inject.record({
+        a: inject.select(() => m1, 'a'),
+        b: inject.select(() => m2, 'b'),
       });
 
       const c = container();
@@ -109,6 +130,14 @@ describe(`inject`, () => {
       const expected: typeof selected = { a: 1, b: 2, c: 10 };
 
       expect(selected).toEqual(expected);
+    });
+  });
+
+  describe(`select`, () => {
+    it(`returns error if modules is not defined`, async () => {
+      expect(() => inject.select(undefined as any, 'someKey')).toThrowError(
+        `Provided module is undefined. It's probably because of circular modules references. Use thunk instead`,
+      );
     });
   });
 });

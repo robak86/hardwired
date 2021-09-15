@@ -118,11 +118,17 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     throw new Error('Wrong params');
   }
 
+  /**
+   * @deprecated use compile instead
+   */
   build(): Module<TRecord> {
     invariant(!this.isFrozenRef.isFrozen, `Cannot freeze the module. Module is already frozen.`);
     this.isFrozenRef.isFrozen = true;
     return new Module(ModuleId.next(this.moduleId), this.registry) as Module<TRecord>;
   }
 
-  freeze = this.build;
+
+  compile = this.build;
+
+  def = this.define;
 }
