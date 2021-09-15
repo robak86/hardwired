@@ -123,17 +123,4 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
     const replaced = this.patchedResolvers.extendOrSet(name, decorated);
     return new ModulePatch(this.moduleId, this.registry, replaced as any);
   }
-
-  merge<TRecord extends Record<string, AnyResolver>>(otherModule: ModulePatch<TRecord>): ModulePatch<TRecord> {
-    invariant(
-      this.moduleId.revision === otherModule.moduleId.revision,
-      `Cannot apply patch from module with different id`,
-    );
-
-    return new ModulePatch<TRecord>(
-      this.moduleId,
-      this.registry,
-      this.patchedResolvers.merge(otherModule.patchedResolvers),
-    );
-  }
 }
