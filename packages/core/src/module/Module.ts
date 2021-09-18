@@ -4,6 +4,7 @@ import { Thunk } from '../utils/Thunk';
 
 import { ModulePatch } from './ModulePatch';
 import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
+import { DependencySelector, inject } from '../container/inject';
 
 // prettier-ignore
 export type AnyResolver = BuildStrategy<any> | Module<any> ;
@@ -67,5 +68,11 @@ export class Module<TRecord extends Record<string, AnyResolver>> extends ModuleP
 
   constructor(moduleId: ModuleId, registry: ImmutableMap<Record<string, Module.Definition>>) {
     super(moduleId, registry, ImmutableMap.empty());
+  }
+
+  pick<TKey extends ModuleRecord.InstancesKeys<TRecord>>(
+    key: TKey,
+  ): DependencySelector<ModuleRecord.Materialized<TRecord>[TKey]> {
+    return inject.select(this, key as any);
   }
 }

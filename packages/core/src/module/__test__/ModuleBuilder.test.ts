@@ -1,5 +1,5 @@
 import { expectType, TypeEqual } from 'ts-expect';
-import { module, ModuleBuilder } from '../ModuleBuilder';
+import { module, ModuleBuilder, unit } from '../ModuleBuilder';
 import { container } from '../../container/Container';
 import { Module } from '../Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
@@ -8,6 +8,23 @@ import { singleton } from '../../strategies/SingletonStrategy';
 import { BoxedValue } from '../../__test__/BoxedValue';
 
 describe(`ModuleBuilder`, () => {
+  describe(`import`, () => {
+    it(`throws if module is undefined`, async () => {
+      expect(() => unit().import('someName', undefined as any)).toThrowError(
+        `Provided module is undefined. It may be caused by some circular references. Use module thunk instead`,
+      );
+    });
+
+    it(`throws in case of import names collision`, async () => {
+      const importMe = unit().compile();
+      const importing = unit().import('existingKey', importMe);
+
+      expect(() => importing.import('existingKey', importMe)).toThrowError(
+        `Dependency with name: existingKey already exists`,
+      );
+    });
+  });
+
   describe('bind', () => {
     describe(`class has constructor params`, () => {
       it(`registers correct entry in module`, async () => {

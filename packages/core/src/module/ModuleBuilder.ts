@@ -36,6 +36,10 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   ): ModuleBuilder<TRecord & Record<TKey, TValue>> {
     invariant(!this.registry.hasKey(name), `Dependency with name: ${name} already exists`);
     invariant(!this.isFrozenRef.isFrozen, `Module is frozen. Cannot import additional modules.`);
+    invariant(
+      moduleThunk !== undefined,
+      `Provided module is undefined. It may be caused by some circular references. Use module thunk instead`,
+    );
 
     return new ModuleBuilder(
       ModuleId.next(this.moduleId),
@@ -126,7 +130,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     this.isFrozenRef.isFrozen = true;
     return new Module(ModuleId.next(this.moduleId), this.registry) as Module<TRecord>;
   }
-
 
   compile = this.build;
 
