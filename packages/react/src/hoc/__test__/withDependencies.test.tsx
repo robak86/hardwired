@@ -4,6 +4,7 @@ import { container, inject, scoped, singleton, unit } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies';
+import { useDefinition } from '../../hooks/useDefinition';
 
 describe(`withDependencies`, () => {
   function setupDefinitions({
@@ -31,7 +32,19 @@ describe(`withDependencies`, () => {
         <div data-testid={testId}>
           <ValueRenderer testId={'age'} value={age.value} />
           <ValueRenderer testId={'firstName'} value={firstName.value} />
+          <ChildComponent />
         </div>
+      );
+    };
+
+    const ChildComponent = () => {
+      const age = useDefinition(someModule, 'age');
+      const firstName = useDefinition(someModule, 'firstName');
+      return (
+        <>
+          <ValueRenderer testId={'ageFromChildComponent'} value={age.value} />
+          <ValueRenderer testId={'firstNameFromChildComponent'} value={firstName.value} />
+        </>
       );
     };
 
@@ -53,6 +66,11 @@ describe(`withDependencies`, () => {
       },
       getRenderedAge: (testId: string) => within(result.getByTestId(testId)).getByTestId('age').textContent,
       getRenderedFirstName: (testId: string) => within(result.getByTestId(testId)).getByTestId('firstName').textContent,
+
+      getRenderedChildAge: (testId: string) =>
+        within(result.getByTestId(testId)).getByTestId('ageFromChildComponent').textContent,
+      getRenderedChildFirstName: (testId: string) =>
+        within(result.getByTestId(testId)).getByTestId('firstNameFromChildComponent').textContent,
     };
   }
 
@@ -123,6 +141,27 @@ describe(`withDependencies`, () => {
         );
         expect(getRenderedAge('instance1')).toEqual('99');
         expect(getRenderedFirstName('instance1')).toEqual('John');
+      });
+
+      it(`uses the same scope for all descendent components`, async () => {
+        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
+
+        const bindDependencies = withDependencies({
+          dependencies: dependenciesSelector,
+          withScope: {
+            initializeOverrides: (props: { age: number }) => {
+              return [someModule.replace('age', () => new BoxedValue(props.age))];
+            },
+          },
+        });
+
+        const BoundComponent = bindDependencies(WrappedComponent);
+
+        const { getRenderedChildAge, getRenderedChildFirstName } = renderWithContainer(
+          <BoundComponent testId={'instance1'} age={99} />,
+        );
+        expect(getRenderedChildAge('instance1')).toEqual('99');
+        expect(getRenderedChildFirstName('instance1')).toEqual('John');
       });
     });
 
@@ -218,6 +257,52 @@ describe(`withDependencies`, () => {
 
         expect(ageFromInstance1AfterRerender).not.toEqual(ageFromInstance1AfterIdChange);
       });
+
+      it(`preserves scope in descendant components`, async () => {
+        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
+
+        const bindDependencies = withDependencies({
+          dependencies: dependenciesSelector,
+          withScope: {
+            initializeOverrides: props => [someModule.replace('age', () => new BoxedValue(Math.random()))],
+            invalidateKeys: (props: { userId: string }) => [props.userId],
+          },
+        });
+
+        const BoundComponent = bindDependencies(WrappedComponent);
+        const { getRenderedChildAge, rerender } = renderWithContainer(
+            <>
+              <BoundComponent testId={'instance1'} userId={'someUserId'} />
+              <BoundComponent testId={'instance2'} userId={'someUserId'} />
+            </>,
+        );
+        const ageFromInstance1 = getRenderedChildAge('instance1');
+        const ageFromInstance2 = getRenderedChildAge('instance2');
+        expect(ageFromInstance1).not.toEqual(ageFromInstance2);
+
+        rerender(
+            <>
+              <BoundComponent testId={'instance1'} userId={'someUserId'} />
+              <BoundComponent testId={'instance2'} userId={'someUserId'} />
+            </>,
+        );
+
+        const ageFromInstance1AfterRerender = getRenderedChildAge('instance1');
+        const ageFromInstance2AfterRerender = getRenderedChildAge('instance2');
+        expect(ageFromInstance1).toEqual(ageFromInstance1AfterRerender);
+        expect(ageFromInstance2).toEqual(ageFromInstance2AfterRerender);
+
+        rerender(
+            <>
+              <BoundComponent testId={'instance1'} userId={'CHANGED_ID'} />
+              <BoundComponent testId={'instance2'} userId={'someUserId'} />
+            </>,
+        );
+
+        const ageFromInstance1AfterIdChange = getRenderedChildAge('instance1');
+
+        expect(ageFromInstance1AfterRerender).not.toEqual(ageFromInstance1AfterIdChange);
+      });
     });
 
     describe(`using scope without overrides and invalidation keys`, () => {
@@ -303,6 +388,54 @@ describe(`withDependencies`, () => {
         expect(ageFromInstance1).not.toEqual(ageFromInstance1AfterRemount);
         expect(ageFromInstance2).not.toEqual(ageFromInstance2AfterRemount);
       });
+
+      it(`preserves scope for each instance descendant elements`, async () => {
+        const { WrappedComponent, dependenciesSelector } = setupDefinitions({ initialAge: () => Math.random() });
+
+        const bindDependencies = withDependencies({
+          dependencies: dependenciesSelector,
+          withScope: true,
+        });
+
+        const BoundComponent = bindDependencies(WrappedComponent);
+        const { getRenderedChildAge, rerender, unmount, result } = renderWithContainer(
+            <>
+              <BoundComponent testId={'instance1'} />
+              <BoundComponent testId={'instance2'} />
+            </>,
+        );
+        const ageFromInstance1 = getRenderedChildAge('instance1');
+        const ageFromInstance2 = getRenderedChildAge('instance2');
+
+        rerender(
+            <>
+              <BoundComponent testId={'instance1'} />
+              <BoundComponent testId={'instance2'} />
+            </>,
+        );
+
+        const ageFromInstance1AfterRerender = getRenderedChildAge('instance1');
+        const ageFromInstance2AfterRerender = getRenderedChildAge('instance2');
+
+        expect(ageFromInstance1).toEqual(ageFromInstance1AfterRerender);
+        expect(ageFromInstance2).toEqual(ageFromInstance2AfterRerender);
+
+        result.unmount();
+
+        rerender(
+            <>
+              <BoundComponent testId={'instance1'} />
+              <BoundComponent testId={'instance2'} />
+            </>,
+        );
+
+        const ageFromInstance1AfterRemount = getRenderedChildAge('instance1');
+        const ageFromInstance2AfterRemount = getRenderedChildAge('instance2');
+
+        expect(ageFromInstance1).not.toEqual(ageFromInstance1AfterRemount);
+        expect(ageFromInstance2).not.toEqual(ageFromInstance2AfterRemount);
+      });
+
     });
   });
 });

@@ -1,8 +1,10 @@
 import { DependencySelector, ModulePatch } from 'hardwired';
 import React, { ComponentType, FC } from 'react';
-import { useContainerContext } from '../context/ContainerContext';
+import { ContainerContext, useContainer, useContainerContext } from '../context/ContainerContext';
 import { useSelectScoped } from '../hooks/useSelectScoped';
 import { Diff } from 'utility-types';
+import { ContainerProvider } from '../components/ContainerProvider';
+import { useMemoized } from '../utils/useMemoized';
 
 // TODO: add simplified version: withDependencies(inject.record({}))
 export type WithDependenciesOptions<TExternalProps, TDependencies extends Record<string, any>> = {
@@ -43,9 +45,19 @@ export function withDependencies<TDependencies extends Record<string, any>, TExt
         const invalidateKeys =
           typeof config.withScope === 'boolean' ? [] : config.withScope.invalidateKeys?.(props) ?? [];
 
-        const deps = useSelectScoped(invalidateKeys, scopeOverrides, config.dependencies);
+        const container = useContainer();
+        const getScope = useMemoized(() => container.checkoutScope({ scopeOverrides: scopeOverrides }));
 
-        return <WrappedComponent {...(props as any)} {...deps} />;
+        const scopedContainer = getScope(invalidateKeys);
+        const deps = scopedContainer.select(config.dependencies);
+
+        return (
+          <>
+            <ContainerContext.Provider value={{ container: scopedContainer }}>
+              <WrappedComponent {...(props as any)} {...deps} />
+            </ContainerContext.Provider>
+          </>
+        );
       } else {
         const containerContext = useContainerContext();
         const deps = containerContext.container?.select(config.dependencies);
