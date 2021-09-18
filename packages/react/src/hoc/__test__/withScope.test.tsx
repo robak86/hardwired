@@ -20,8 +20,8 @@ describe(`withScope`, () => {
         return <div data-testid={testId}>{value}</div>;
       };
 
-      const Scoped1 = withScope(props => <ValueRenderer testId={'scope1'} />);
-      const Scoped2 = withScope(props => <ValueRenderer testId={'scope2'} />);
+      const Scoped1 = withScope()(props => <ValueRenderer testId={'scope1'} />);
+      const Scoped2 = withScope()(props => <ValueRenderer testId={'scope2'} />);
 
       const TestSubject = () => (
         <ContainerProvider>
@@ -64,16 +64,20 @@ describe(`withScope`, () => {
         return <div data-testid={testId}>{value}</div>;
       };
 
-      const Scoped1 = withScope(props => <ValueRenderer testId={'scope1'} />);
-      const Scoped2 = withScope(props => <ValueRenderer testId={'scope2'} />);
+      const Scoped1 = withScope({ invalidateKeys: (props: { keys: ReadonlyArray<any> }) => props.keys })(props => (
+        <ValueRenderer testId={'scope1'} />
+      ));
+      const Scoped2 = withScope({ invalidateKeys: (props: { keys: ReadonlyArray<any> }) => props.keys })(props => (
+        <ValueRenderer testId={'scope2'} />
+      ));
 
       const TestSubject: FC<{ scope1Keys: ReadonlyArray<any>; scope2Keys: ReadonlyArray<any> }> = ({
         scope1Keys,
         scope2Keys,
       }) => (
         <ContainerProvider>
-          <Scoped1 invalidateKeys={scope1Keys} />
-          <Scoped2 invalidateKeys={scope2Keys} />
+          <Scoped1 keys={scope1Keys} />
+          <Scoped2 keys={scope2Keys} />
         </ContainerProvider>
       );
 
@@ -115,13 +119,17 @@ describe(`withScope`, () => {
         return <div data-testid={testId}>{value}</div>;
       };
 
-      const Scoped1 = withScope(props => <ValueRenderer testId={'scope1'} />);
-      const Scoped2 = withScope(props => <ValueRenderer testId={'scope2'} />);
+      const Scoped1 = withScope({ scopeOverrides: [m.replace('base', () => 10)] })(props => (
+        <ValueRenderer testId={'scope1'} />
+      ));
+      const Scoped2 = withScope({ scopeOverrides: [m.replace('base', () => 100)] })(props => (
+        <ValueRenderer testId={'scope2'} />
+      ));
 
       const TestSubject = () => (
         <ContainerProvider>
-          <Scoped1 scopeOverrides={[m.replace('base', () => 10)]} />
-          <Scoped2 scopeOverrides={[m.replace('base', () => 100)]} />
+          <Scoped1 />
+          <Scoped2 />
         </ContainerProvider>
       );
 

@@ -271,20 +271,20 @@ describe(`withDependencies`, () => {
 
         const BoundComponent = bindDependencies(WrappedComponent);
         const { getRenderedChildAge, rerender } = renderWithContainer(
-            <>
-              <BoundComponent testId={'instance1'} userId={'someUserId'} />
-              <BoundComponent testId={'instance2'} userId={'someUserId'} />
-            </>,
+          <>
+            <BoundComponent testId={'instance1'} userId={'someUserId'} />
+            <BoundComponent testId={'instance2'} userId={'someUserId'} />
+          </>,
         );
         const ageFromInstance1 = getRenderedChildAge('instance1');
         const ageFromInstance2 = getRenderedChildAge('instance2');
         expect(ageFromInstance1).not.toEqual(ageFromInstance2);
 
         rerender(
-            <>
-              <BoundComponent testId={'instance1'} userId={'someUserId'} />
-              <BoundComponent testId={'instance2'} userId={'someUserId'} />
-            </>,
+          <>
+            <BoundComponent testId={'instance1'} userId={'someUserId'} />
+            <BoundComponent testId={'instance2'} userId={'someUserId'} />
+          </>,
         );
 
         const ageFromInstance1AfterRerender = getRenderedChildAge('instance1');
@@ -293,10 +293,10 @@ describe(`withDependencies`, () => {
         expect(ageFromInstance2).toEqual(ageFromInstance2AfterRerender);
 
         rerender(
-            <>
-              <BoundComponent testId={'instance1'} userId={'CHANGED_ID'} />
-              <BoundComponent testId={'instance2'} userId={'someUserId'} />
-            </>,
+          <>
+            <BoundComponent testId={'instance1'} userId={'CHANGED_ID'} />
+            <BoundComponent testId={'instance2'} userId={'someUserId'} />
+          </>,
         );
 
         const ageFromInstance1AfterIdChange = getRenderedChildAge('instance1');
@@ -399,19 +399,19 @@ describe(`withDependencies`, () => {
 
         const BoundComponent = bindDependencies(WrappedComponent);
         const { getRenderedChildAge, rerender, unmount, result } = renderWithContainer(
-            <>
-              <BoundComponent testId={'instance1'} />
-              <BoundComponent testId={'instance2'} />
-            </>,
+          <>
+            <BoundComponent testId={'instance1'} />
+            <BoundComponent testId={'instance2'} />
+          </>,
         );
         const ageFromInstance1 = getRenderedChildAge('instance1');
         const ageFromInstance2 = getRenderedChildAge('instance2');
 
         rerender(
-            <>
-              <BoundComponent testId={'instance1'} />
-              <BoundComponent testId={'instance2'} />
-            </>,
+          <>
+            <BoundComponent testId={'instance1'} />
+            <BoundComponent testId={'instance2'} />
+          </>,
         );
 
         const ageFromInstance1AfterRerender = getRenderedChildAge('instance1');
@@ -423,10 +423,10 @@ describe(`withDependencies`, () => {
         result.unmount();
 
         rerender(
-            <>
-              <BoundComponent testId={'instance1'} />
-              <BoundComponent testId={'instance2'} />
-            </>,
+          <>
+            <BoundComponent testId={'instance1'} />
+            <BoundComponent testId={'instance2'} />
+          </>,
         );
 
         const ageFromInstance1AfterRemount = getRenderedChildAge('instance1');
@@ -435,7 +435,6 @@ describe(`withDependencies`, () => {
         expect(ageFromInstance1).not.toEqual(ageFromInstance1AfterRemount);
         expect(ageFromInstance2).not.toEqual(ageFromInstance2AfterRemount);
       });
-
     });
   });
 });
