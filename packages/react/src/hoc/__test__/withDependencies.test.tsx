@@ -5,6 +5,7 @@ import { ContainerProvider } from '../../components/ContainerProvider';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies';
 import { useDefinition } from '../../hooks/useDefinition';
+import { withScope } from '../withScope';
 
 describe(`withDependencies`, () => {
   function setupDefinitions({
@@ -78,9 +79,7 @@ describe(`withDependencies`, () => {
     it(`injects dependencies as props`, async () => {
       const { WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
-      const bindDependencies = withDependencies({
-        dependencies: dependenciesSelector,
-      });
+      const bindDependencies = withDependencies(dependenciesSelector);
 
       const BoundComponent = bindDependencies(WrappedComponent);
 
@@ -92,9 +91,7 @@ describe(`withDependencies`, () => {
     it(`uses current scope for all instances`, async () => {
       const { WrappedComponent, dependenciesSelector } = setupDefinitions({ initialAge: () => Math.random() });
 
-      const bindDependencies = withDependencies({
-        dependencies: dependenciesSelector,
-      });
+      const bindDependencies = withDependencies(dependenciesSelector);
 
       const BoundComponent = bindDependencies(WrappedComponent);
 
@@ -125,16 +122,15 @@ describe(`withDependencies`, () => {
       it(`injects dependencies as props`, async () => {
         const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: {
-            initializeOverrides: (props: { age: number }) => {
-              return [someModule.replace('age', () => new BoxedValue(props.age))];
-            },
+        const bindDependencies = withDependencies(dependenciesSelector);
+
+        const bindScope = withScope({
+          scopeOverrides: (props: { age: number }) => {
+            return [someModule.replace('age', () => new BoxedValue(props.age))];
           },
         });
 
-        const BoundComponent = bindDependencies(WrappedComponent);
+        const BoundComponent = bindScope(bindDependencies(WrappedComponent));
 
         const { getRenderedAge, getRenderedFirstName } = renderWithContainer(
           <BoundComponent testId={'instance1'} age={99} />,
@@ -146,16 +142,15 @@ describe(`withDependencies`, () => {
       it(`uses the same scope for all descendent components`, async () => {
         const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: {
-            initializeOverrides: (props: { age: number }) => {
-              return [someModule.replace('age', () => new BoxedValue(props.age))];
-            },
+        const bindDependencies = withDependencies(dependenciesSelector);
+
+        const bindScope = withScope({
+          scopeOverrides: (props: { age: number }) => {
+            return [someModule.replace('age', () => new BoxedValue(props.age))];
           },
         });
 
-        const BoundComponent = bindDependencies(WrappedComponent);
+        const BoundComponent = bindScope(bindDependencies(WrappedComponent));
 
         const { getRenderedChildAge, getRenderedChildFirstName } = renderWithContainer(
           <BoundComponent testId={'instance1'} age={99} />,
@@ -169,15 +164,25 @@ describe(`withDependencies`, () => {
       it(`invalidate scope on key change`, async () => {
         const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: {
-            initializeOverrides: props => [someModule.replace('age', () => new BoxedValue(Math.random()))],
-            invalidateKeys: (props: { userId: string }) => [props.userId],
+        // const bindDependencies = withDependencies({
+        //   dependencies: dependenciesSelector,
+        //   withScope: {
+        //     initializeOverrides: props => [someModule.replace('age', () => new BoxedValue(Math.random()))],
+        //     invalidateKeys: (props: { userId: string }) => [props.userId],
+        //   },
+        // });
+
+        const bindDependencies = withDependencies(dependenciesSelector);
+
+        const bindScope = withScope({
+          scopeOverrides: props => {
+            return [someModule.replace('age', () => new BoxedValue(Math.random()))];
           },
+          invalidateKeys: (props: { userId: string }) => [props.userId],
         });
 
-        const BoundComponent = bindDependencies(WrappedComponent);
+        const BoundComponent = bindScope(bindDependencies(WrappedComponent));
+
         const { getRenderedAge, rerender } = renderWithContainer(
           <BoundComponent testId={'instance1'} userId={'someUserId'} />,
         );
@@ -192,15 +197,17 @@ describe(`withDependencies`, () => {
       it(`does not invalidate scope if key does not change`, async () => {
         const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: {
-            initializeOverrides: props => [someModule.replace('age', () => new BoxedValue(Math.random()))],
-            invalidateKeys: (props: { userId: string }) => [props.userId],
+        const bindDependencies = withDependencies(dependenciesSelector);
+
+        const bindScope = withScope({
+          scopeOverrides: props => {
+            return [someModule.replace('age', () => new BoxedValue(Math.random()))];
           },
+          invalidateKeys: (props: { userId: string }) => [props.userId],
         });
 
-        const BoundComponent = bindDependencies(WrappedComponent);
+        const BoundComponent = bindScope(bindDependencies(WrappedComponent));
+
         const { getRenderedAge, rerender } = renderWithContainer(
           <BoundComponent testId={'instance1'} userId={'someUserId'} />,
         );
@@ -215,15 +222,15 @@ describe(`withDependencies`, () => {
       it(`creates separate scope for each instance`, async () => {
         const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: {
-            initializeOverrides: props => [someModule.replace('age', () => new BoxedValue(Math.random()))],
-            invalidateKeys: (props: { userId: string }) => [props.userId],
-          },
+        const bindDependencies = withDependencies(dependenciesSelector);
+
+        const bindScope = withScope({
+          scopeOverrides: [someModule.replace('age', () => new BoxedValue(Math.random()))],
+          invalidateKeys: (props: { userId: string }) => [props.userId],
         });
 
-        const BoundComponent = bindDependencies(WrappedComponent);
+        const BoundComponent = bindScope(bindDependencies(WrappedComponent));
+
         const { getRenderedAge, rerender } = renderWithContainer(
           <>
             <BoundComponent testId={'instance1'} userId={'someUserId'} />
@@ -261,15 +268,15 @@ describe(`withDependencies`, () => {
       it(`preserves scope in descendant components`, async () => {
         const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: {
-            initializeOverrides: props => [someModule.replace('age', () => new BoxedValue(Math.random()))],
-            invalidateKeys: (props: { userId: string }) => [props.userId],
-          },
+        const bindDependencies = withDependencies(dependenciesSelector);
+
+        const bindScope = withScope({
+          scopeOverrides: [someModule.replace('age', () => new BoxedValue(Math.random()))],
+          invalidateKeys: (props: { userId: string }) => [props.userId],
         });
 
-        const BoundComponent = bindDependencies(WrappedComponent);
+        const BoundComponent = bindScope(bindDependencies(WrappedComponent));
+
         const { getRenderedChildAge, rerender } = renderWithContainer(
           <>
             <BoundComponent testId={'instance1'} userId={'someUserId'} />
@@ -311,12 +318,9 @@ describe(`withDependencies`, () => {
           initialAge: () => Math.random(),
         });
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: true,
-        });
+        const bindDependencies = withDependencies(dependenciesSelector);
 
-        const BoundComponent = bindDependencies(WrappedComponent);
+        const BoundComponent = withScope()(bindDependencies(WrappedComponent));
         const { getRenderedAge, rerender, unmount, result } = renderWithContainer(
           <>
             <BoundComponent testId={'instance1'} />
@@ -345,12 +349,9 @@ describe(`withDependencies`, () => {
       it(`creates separate scope for each instance`, async () => {
         const { WrappedComponent, dependenciesSelector } = setupDefinitions({ initialAge: () => Math.random() });
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: true,
-        });
+        const bindDependencies = withDependencies(dependenciesSelector);
+        const BoundComponent = withScope()(bindDependencies(WrappedComponent));
 
-        const BoundComponent = bindDependencies(WrappedComponent);
         const { getRenderedAge, rerender, unmount, result } = renderWithContainer(
           <>
             <BoundComponent testId={'instance1'} />
@@ -392,12 +393,9 @@ describe(`withDependencies`, () => {
       it(`preserves scope for each instance descendant elements`, async () => {
         const { WrappedComponent, dependenciesSelector } = setupDefinitions({ initialAge: () => Math.random() });
 
-        const bindDependencies = withDependencies({
-          dependencies: dependenciesSelector,
-          withScope: true,
-        });
+        const bindDependencies = withDependencies(dependenciesSelector);
+        const BoundComponent = withScope()(bindDependencies(WrappedComponent));
 
-        const BoundComponent = bindDependencies(WrappedComponent);
         const { getRenderedChildAge, rerender, unmount, result } = renderWithContainer(
           <>
             <BoundComponent testId={'instance1'} />
