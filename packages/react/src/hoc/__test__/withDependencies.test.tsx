@@ -164,14 +164,6 @@ describe(`withDependencies`, () => {
       it(`invalidate scope on key change`, async () => {
         const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
-        // const bindDependencies = withDependencies({
-        //   dependencies: dependenciesSelector,
-        //   withScope: {
-        //     initializeOverrides: props => [someModule.replace('age', () => new BoxedValue(Math.random()))],
-        //     invalidateKeys: (props: { userId: string }) => [props.userId],
-        //   },
-        // });
-
         const bindDependencies = withDependencies(dependenciesSelector);
 
         const bindScope = withScope({
