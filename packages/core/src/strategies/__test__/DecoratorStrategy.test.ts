@@ -10,7 +10,7 @@ import { scoped } from '../ScopeStrategy';
 describe(`DecoratorStrategy`, () => {
   it(`decorates original value`, async () => {
     const m = module()
-      .define('someValue', singleton, () => 1)
+      .__define('someValue', singleton, () => 1)
       .build();
 
     const mPatch = m.decorate('someValue', val => val + 1);

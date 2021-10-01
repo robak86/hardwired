@@ -75,6 +75,17 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     return this.define(name, buildStrategyWrapper, buildFn);
   }
 
+  __define<TKey extends string, TValue>(
+    name: TKey,
+    instanceDefinition: InstanceEntry<TValue>,
+  ): ModuleBuilder<TRecord & Record<TKey, BuildStrategy<TValue>>> {
+    return new ModuleBuilder(
+      ModuleId.next(this.moduleId),
+      this.registry.extend(name, instanceDefinition) as any,
+      this.isFrozenRef,
+    );
+  }
+
   define<TKey extends string, TValue>(
     name: TKey,
     buildStrategyWrapper: (resolver: (ctx: ModuleRecord.Materialized<TRecord>) => TValue) => BuildStrategy<TValue>,
@@ -127,10 +138,17 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
   /**
    * @deprecated use compile instead
    */
-  build(): Module<TRecord> {
+  build(): Module<TRecord> &
+    { [K in keyof TRecord]: TRecord[K] extends BuildStrategy<infer TInstance> ? InstanceEntry<TInstance> : unknown } {
     invariant(!this.isFrozenRef.isFrozen, `Cannot freeze the module. Module is already frozen.`);
     this.isFrozenRef.isFrozen = true;
-    return new Module(ModuleId.next(this.moduleId), this.registry) as Module<TRecord>;
+
+    const m = new Module(ModuleId.next(this.moduleId), this.registry) as Module<TRecord>;
+    this.registry.forEach((val, key) => {
+      m[key] = val;
+    });
+
+    return m as any;
   }
 
   compile = this.build;
