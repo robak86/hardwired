@@ -29,7 +29,8 @@ export class ModulePatch<TRecord extends Record<string, AnyResolver>> {
   ) {}
 
   isEqual(otherModule: ModulePatch<any>): boolean {
-    return this.moduleId.revision === otherModule.moduleId.revision;
+    throw new Error("Implement me!")
+    // return this.moduleId.revision === otherModule.moduleId.revision;
   }
 
   // TODO: allowing to replace strategy may be confusing because all replacements passed into globalOverrides become singletons

@@ -26,10 +26,6 @@ export class ModuleBuilder<TRecord extends Record<string, AnyResolver>> {
     private isFrozenRef: { isFrozen: boolean },
   ) {}
 
-  isEqual(otherModule: Module<any>): boolean {
-    return this.moduleId.revision === otherModule.moduleId.revision;
-  }
-
   import<TKey extends string, TValue extends Module<any>>(
     name: TKey,
     moduleThunk: Thunk<TValue>,

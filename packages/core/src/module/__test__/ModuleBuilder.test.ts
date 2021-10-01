@@ -232,28 +232,6 @@ describe(`ModuleBuilder`, () => {
     });
   });
 
-  describe(`isEqual`, () => {
-    it(`returns false for two newly created empty modules`, async () => {
-      const m1 = module().build();
-      const m2 = module().build();
-      expect(m1.isEqual(m2)).toEqual(false);
-    });
-
-    it(`returns false for module extended with a new definition`, async () => {
-      const m1 = module().define('a', singleton, () => 'string');
-      const m2 = m1.define('b', singleton, () => 'someOtherString').build();
-      expect(m1.isEqual(m2)).toEqual(false);
-    });
-
-    it(`returns true for module with replaced value`, async () => {
-      const m1 = module()
-        .define('a', singleton, () => 'string')
-        .build();
-
-      const m2 = m1.replace('a', () => 'someOtherString');
-      expect(m1.isEqual(m2)).toEqual(true);
-    });
-  });
 
   describe(`replace`, () => {
     describe(`types`, () => {
@@ -280,7 +258,8 @@ describe(`ModuleBuilder`, () => {
   });
 
   describe(`.decorate`, () => {
-    it(`preserves module identity`, async () => {
+    // TODO: probably candidate for removal
+    it.skip(`preserves module identity`, async () => {
       const m = module()
         .define('a', singleton, () => 1)
         .build();
@@ -292,7 +271,8 @@ describe(`ModuleBuilder`, () => {
   });
 
   describe(`.apply`, () => {
-    it(`acts like replace in terms of module identity`, async () => {
+    // TODO: probably candidate for removal
+    it.skip(`acts like replace in terms of module identity`, async () => {
       const m = module()
         .define('a', singleton, () => new BoxedValue(1))
         .build();

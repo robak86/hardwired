@@ -1,4 +1,5 @@
 import { createModuleId } from '../utils/fastId';
+import { v4 } from 'uuid';
 
 export type ModuleId = {
   readonly id: string;
