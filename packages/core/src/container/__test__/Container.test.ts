@@ -1,7 +1,7 @@
 import { container } from '../Container';
 import { module, unit } from '../../module/ModuleBuilder';
-import { singleton } from '../../strategies/SingletonStrategy';
-import { request } from '../../strategies/RequestStrategy';
+import { singleton } from '../../strategies/SingletonStrategyLegacy';
+import { request } from '../../strategies/RequestStrategyLegacy';
 
 describe(`Container`, () => {
   describe(`.get`, () => {

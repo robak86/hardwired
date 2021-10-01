@@ -1,5 +1,5 @@
 import { unit } from '../../module/ModuleBuilder';
-import { singleton } from '../../strategies/SingletonStrategy';
+import { singleton } from '../../strategies/SingletonStrategyLegacy';
 import { ContainerContext } from '../../context/ContainerContext';
 
 describe(`ContainerRecord`, () => {

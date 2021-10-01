@@ -1,7 +1,7 @@
 import { container } from '../../container/Container';
 import { createModuleId } from '../../utils/fastId';
 import { moduleNew } from '../../module/ModuleBuilder';
-import { singleton, SingletonStrategy } from '../SingletonStrategy';
+import { singleton, SingletonStrategyLegacy } from '../SingletonStrategyLegacy';
 import { expectType, TypeEqual } from 'ts-expect';
 import { classSingleton, factoryFn, value } from '../../new/classStrategies';
 import { set } from '../../new/instancePatching';
@@ -20,7 +20,7 @@ describe(`SingletonStrategy`, () => {
   describe(`types`, () => {
     it(`return correct type`, async () => {
       const s = singleton(() => new TestClass(''));
-      expectType<TypeEqual<typeof s, SingletonStrategy<TestClass>>>(true);
+      expectType<TypeEqual<typeof s, SingletonStrategyLegacy<TestClass>>>(true);
     });
   });
 

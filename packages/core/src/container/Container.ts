@@ -4,10 +4,12 @@ import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
 import { InstanceEntry } from '../new/InstanceEntry';
 import { StrategiesRegistry } from '../strategies/abstract/_BuildStrategy';
-import { ClassSingletonStrategy } from '../strategies/ClassSingletonStrategy';
+import { SingletonStrategy } from '../strategies/SingletonStrategy';
 import { ConstStrategy } from '../strategies/ConstStrategy';
 import { FactoryFunctionSingletonStrategy } from '../strategies/FactoryFunctionSingletonStrategy';
-import { ClassTransientStrategy } from "../strategies/ClassTransientStrategy";
+import { TransientStrategy } from '../strategies/TransientStrategy';
+import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
+import { RequestStrategy } from "../strategies/RequestStrategy";
 
 export type ChildScopeOptions = {
   scopeOverrides?: ModulePatch<any>[];
@@ -15,10 +17,12 @@ export type ChildScopeOptions = {
 };
 
 export const defaultStrategiesRegistry = new StrategiesRegistry({
-  [ClassSingletonStrategy.type]: new ClassSingletonStrategy(),
-  [ClassTransientStrategy.type]: new ClassTransientStrategy(),
+  [SingletonStrategy.type]: new SingletonStrategy(),
+  [TransientStrategy.type]: new TransientStrategy(),
   [ConstStrategy.type]: new ConstStrategy(),
   [FactoryFunctionSingletonStrategy.type]: new FactoryFunctionSingletonStrategy(),
+  [DecoratorStrategy.type]: new DecoratorStrategy(),
+  [RequestStrategy.type]: new RequestStrategy(),
 });
 
 export class Container implements IServiceLocator {

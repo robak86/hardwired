@@ -1,4 +1,4 @@
-import { singleton } from '../../strategies/SingletonStrategy';
+import { singleton } from '../../strategies/SingletonStrategyLegacy';
 import { unit } from '../ModuleBuilder';
 import { container } from '../../container/Container';
 

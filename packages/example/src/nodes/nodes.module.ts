@@ -4,7 +4,7 @@ import { selectNodePosition, selectNodesIds } from './selectors/nodesSelectors';
 
 import { setNodePositionAction } from './actions/nodeActions';
 import { AnyAction, Store } from 'redux';
-import { singleton } from '../../../core/src/strategies/SingletonStrategy';
+import { singleton } from '../../../core/src/strategies/SingletonStrategyLegacy';
 
 // const dispatchAction = <TPayload, TAction extends AnyAction>(
 //   store: Store<any>,

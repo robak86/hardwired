@@ -1,7 +1,7 @@
 import { ModuleBuilder } from '../ModuleBuilder';
 import { Module } from '../Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
-import { singleton } from '../../strategies/SingletonStrategy';
+import { singleton } from '../../strategies/SingletonStrategyLegacy';
 
 export class TestClassUsing {
   constructor(private a: TestClassArgs2) {}

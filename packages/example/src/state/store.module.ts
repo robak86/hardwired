@@ -3,7 +3,7 @@ import { appReducer } from './appReducer';
 import { AppState } from './AppState';
 import { createAppStore } from './store';
 import { AnyAction, Store } from 'redux';
-import { singleton } from '../../../core/src/strategies/SingletonStrategy';
+import { singleton } from '../../../core/src/strategies/SingletonStrategyLegacy';
 
 const dispatchAction =
   (store: Store<any>) =>

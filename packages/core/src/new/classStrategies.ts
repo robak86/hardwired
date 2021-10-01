@@ -1,45 +1,55 @@
 import { ClassType } from '../utils/ClassType';
 
 import { v4 } from 'uuid';
-import { ClassSingletonStrategy } from '../strategies/ClassSingletonStrategy';
-import { ClassRequestStrategy } from '../strategies/ClassRequestStrategy';
-import { ClassTransientStrategy } from '../strategies/ClassTransientStrategy';
+import { SingletonStrategy } from '../strategies/SingletonStrategy';
+import { RequestStrategy } from '../strategies/RequestStrategy';
+import { TransientStrategy } from '../strategies/TransientStrategy';
 import { ConstStrategy } from '../strategies/ConstStrategy';
-import { InstanceEntry } from './InstanceEntry';
-import { FactoryFunctionSingletonStrategy } from "../strategies/FactoryFunctionSingletonStrategy";
+import { ClassInstanceDefinition, ConstDefinition, FunctionFactoryDefinition, InstanceEntry } from './InstanceEntry';
+import { FactoryFunctionSingletonStrategy } from '../strategies/FactoryFunctionSingletonStrategy';
 
 const classInstanceEntry = (strategy: symbol) => {
   return <TValue, TDeps extends any[]>(
     cls: ClassType<TValue, TDeps>,
     dependencies: { [K in keyof TDeps]: InstanceEntry<TDeps[K]> },
-  ): InstanceEntry<TValue> => {
+  ): ClassInstanceDefinition<TValue> => {
     return {
       id: v4(),
+      kind: 'class',
       strategy,
-      target: cls,
+      class: cls,
       dependencies,
     };
   };
 };
 
-export const classSingleton = classInstanceEntry(ClassSingletonStrategy.type);
-export const classRequest = classInstanceEntry(ClassRequestStrategy.type);
-export const classTransient = classInstanceEntry(ClassTransientStrategy.type);
+export const classSingleton = classInstanceEntry(SingletonStrategy.type);
+export const classRequest = classInstanceEntry(RequestStrategy.type);
+export const classTransient = classInstanceEntry(TransientStrategy.type);
 
-export const value = <TValue, TDeps extends any[]>(cls: TValue): InstanceEntry<TValue> => {
+export const value = <TValue, TDeps extends any[]>(value: TValue): ConstDefinition<TValue> => {
   return {
     id: v4(),
+    kind: 'const',
     strategy: ConstStrategy.type,
-    target: cls,
-    dependencies: [],
+    value,
   };
 };
 
-export const factoryFn = <TValue, TDeps extends any[]>(factory: () => TValue): InstanceEntry<TValue> => {
+export function factoryFn<TValue, TDeps extends any[]>(factory: () => TValue): FunctionFactoryDefinition<TValue>;
+export function factoryFn<TValue, TDeps extends any[], TFunctionArgs extends any[]>(
+  factory: (...args: TFunctionArgs) => TValue,
+  args: { [K in keyof TFunctionArgs]: InstanceEntry<TFunctionArgs[K]> },
+): FunctionFactoryDefinition<TValue>;
+export function factoryFn<TValue, TDeps extends any[], TFunctionArgs extends any[]>(
+  factory: (...args: TFunctionArgs) => TValue,
+  args?: { [K in keyof TFunctionArgs]: InstanceEntry<TFunctionArgs[K]> },
+): FunctionFactoryDefinition<TValue> {
   return {
     id: v4(),
+    kind: 'functionFactory',
     strategy: FactoryFunctionSingletonStrategy.type,
-    target: factory,
+    factory: factory as any,
     dependencies: [],
   };
-};
+}

@@ -1,12 +1,12 @@
 import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { InstanceEntry } from '../new/InstanceEntry';
+import { FunctionFactoryDefinition, InstanceEntry } from '../new/InstanceEntry';
 
 export class FactoryFunctionSingletonStrategy extends BuildStrategyNew {
   static type = Symbol.for('functionFactory');
 
   build(
-    definition: InstanceEntry<any>,
+    definition: FunctionFactoryDefinition<any>,
     instancesCache: InstancesCache,
     resolvers,
     strategiesRegistry: StrategiesRegistry,
@@ -14,7 +14,7 @@ export class FactoryFunctionSingletonStrategy extends BuildStrategyNew {
     const id = definition.id;
     const dependencies = this.buildDependencies(definition, instancesCache, resolvers, strategiesRegistry);
 
-    const buildFunction = () => definition.target(...dependencies);
+    const buildFunction = () => definition.factory(...dependencies);
 
     if (resolvers.hasGlobalOverrideResolver(id)) {
       if (instancesCache.hasInGlobalOverride(id)) {

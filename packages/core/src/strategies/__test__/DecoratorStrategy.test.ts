@@ -1,9 +1,9 @@
-import { DecoratorStrategy } from '../DecoratorStrategy';
+import { DecoratorStrategyLegacy } from '../DecoratorStrategyLegacy';
 import { module } from '../../module/ModuleBuilder';
-import { singleton } from '../SingletonStrategy';
+import { singleton } from '../SingletonStrategyLegacy';
 import { container } from '../../container/Container';
-import { transient } from '../TransientStrategy';
-import { request } from '../RequestStrategy';
+import { transient } from '../TransientStrategyLegacy';
+import { request } from '../RequestStrategyLegacy';
 import { BuildStrategy } from '../abstract/BuildStrategy';
 import { scoped } from '../ScopeStrategy';
 

@@ -1,6 +1,6 @@
 import { ClassType } from './utils/ClassType';
-import { SingletonStrategy } from './strategies/SingletonStrategy';
-import { TransientStrategy } from './strategies/TransientStrategy';
+import { SingletonStrategyLegacy } from './strategies/SingletonStrategyLegacy';
+import { TransientStrategyLegacy } from './strategies/TransientStrategyLegacy';
 import { BuildStrategy } from './strategies/abstract/BuildStrategy';
 import { InstancesCache } from './context/InstancesCache';
 import { ResolversRegistry } from './context/ResolversRegistry';
@@ -99,8 +99,8 @@ class CustomBuild implements BuildStrategy<any> {
 // this will enable using different strategies implementation depending on environment of framework (node|browser|react)
 // e.g. some strategy could store it's instance in react's useState ? :D
 const ctn = container({
-  singleton: SingletonStrategy,
-  transient: TransientStrategy,
+  singleton: SingletonStrategyLegacy,
+  transient: TransientStrategyLegacy,
   custom: CustomBuild,
 });
 

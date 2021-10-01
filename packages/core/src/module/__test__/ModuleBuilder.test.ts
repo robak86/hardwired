@@ -4,7 +4,7 @@ import { container } from '../../container/Container';
 import { Module } from '../Module';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { ModulePatch } from '../ModulePatch';
-import { singleton } from '../../strategies/SingletonStrategy';
+import { singleton } from '../../strategies/SingletonStrategyLegacy';
 import { BoxedValue } from '../../__test__/BoxedValue';
 
 describe(`ModuleBuilder`, () => {

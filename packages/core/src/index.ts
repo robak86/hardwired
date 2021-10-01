@@ -1,9 +1,9 @@
 export { container, Container } from './container/Container';
 export { unit, module, ModuleBuilder } from './module/ModuleBuilder';
 
-export * from './strategies/RequestStrategy';
-export * from './strategies/SingletonStrategy';
-export * from './strategies/TransientStrategy';
+export * from './strategies/RequestStrategyLegacy';
+export * from './strategies/SingletonStrategyLegacy';
+export * from './strategies/TransientStrategyLegacy';
 export * from './strategies/ScopeStrategy';
 
 export type { Module, AnyResolver, ModuleRecord } from './module/Module';

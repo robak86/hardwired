@@ -1,17 +1,25 @@
+import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { BuildStrategy } from './abstract/BuildStrategy';
+import { createInstance, InstanceEntry } from '../new/InstanceEntry';
 
-export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
-  constructor(protected buildFunction: (ctx) => TValue) {
-    super();
-  }
+export class SingletonStrategy extends BuildStrategyNew {
+  static type = Symbol.for('classSingleton');
 
-  build(id: string, instancesCache: InstancesCache, resolvers, materializedModule?): TValue {
+  build(
+    definition: InstanceEntry<any>,
+    instancesCache: InstancesCache,
+    resolvers,
+    strategiesRegistry: StrategiesRegistry,
+  ) {
+    const id = definition.id;
+
     if (resolvers.hasGlobalOverrideResolver(id)) {
       if (instancesCache.hasInGlobalOverride(id)) {
         return instancesCache.getFromGlobalOverride(id);
       } else {
-        const instance = this.buildFunction(materializedModule);
+        const dependencies = this.buildDependencies(definition, instancesCache, resolvers, strategiesRegistry);
+        const instance = createInstance(definition, dependencies);
+
         instancesCache.setForGlobalOverrideScope(id, instance);
         return instance;
       }
@@ -20,11 +28,10 @@ export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
     if (instancesCache.hasInGlobalScope(id)) {
       return instancesCache.getFromGlobalScope(id);
     } else {
-      const instance = this.buildFunction(materializedModule);
+      const dependencies = this.buildDependencies(definition, instancesCache, resolvers, strategiesRegistry);
+      const instance = createInstance(definition, dependencies);
       instancesCache.setForGlobalScope(id, instance);
       return instance;
     }
   }
 }
-
-export const singleton = <TReturn>(buildFunction: (ctx) => TReturn) => new SingletonStrategy(buildFunction);

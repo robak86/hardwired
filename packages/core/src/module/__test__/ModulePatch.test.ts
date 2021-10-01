@@ -1,5 +1,5 @@
 import { ImmutableMap } from '../../collections/ImmutableMap';
-import { singleton, SingletonStrategy } from '../../strategies/SingletonStrategy';
+import { singleton, SingletonStrategyLegacy } from '../../strategies/SingletonStrategyLegacy';
 import { Module } from '../Module';
 
 describe(`ModulePatch`, () => {
@@ -8,7 +8,7 @@ describe(`ModulePatch`, () => {
       const originalAResolver = singleton(() => 1);
       const dummyStrategyTag = Symbol();
 
-      const m = new Module<{ a: SingletonStrategy<number> }>(
+      const m = new Module<{ a: SingletonStrategyLegacy<number> }>(
         { id: 'id' },
         ImmutableMap.empty().extend('a', {
           id: 'a',
@@ -26,7 +26,7 @@ describe(`ModulePatch`, () => {
     it(`preserves module original id`, async () => {
       const dummyStrategyTag = Symbol();
 
-      const m = new Module<{ a: SingletonStrategy<number> }>(
+      const m = new Module<{ a: SingletonStrategyLegacy<number> }>(
         { id: 'id' },
         ImmutableMap.empty().extend('a', {
           id: 'a',
@@ -47,7 +47,7 @@ describe(`ModulePatch`, () => {
       const originalAResolver = singleton(() => 1);
       const dummyStrategyTag = Symbol();
 
-      const m = new Module<{ a: SingletonStrategy<number> }>(
+      const m = new Module<{ a: SingletonStrategyLegacy<number> }>(
         { id: 'id' },
         ImmutableMap.empty().extend('a', {
           id: 'a',

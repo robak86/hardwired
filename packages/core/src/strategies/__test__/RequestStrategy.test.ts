@@ -1,5 +1,5 @@
 import { module, unit } from '../../module/ModuleBuilder';
-import { request } from '../RequestStrategy';
+import { request } from '../RequestStrategyLegacy';
 import { container } from '../../container/Container';
 
 describe(`RequestStrategy`, () => {

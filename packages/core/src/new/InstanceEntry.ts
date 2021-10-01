@@ -1,15 +1,51 @@
 import { ClassType } from '../utils/ClassType';
 
-// Class | const | factory | decorator
-export type InstanceEntryTarget<T> = ClassType<T, any> | T | (() => T) | ((prev: T) => T);
+export type InstanceEntry<T, TExternal = never> =
+  | ClassInstanceDefinition<T>
+  | FunctionFactoryDefinition<T>
+  | DecoratorDefinition<T>
+  | ConstDefinition<T>;
 
+export const createInstance = <T>(instanceEntry: InstanceEntry<T>, dependencies: any[]): T => {
+  switch (instanceEntry.kind) {
+    case 'class':
+      return new instanceEntry.class(...dependencies);
+    case 'functionFactory':
+      return instanceEntry.factory(...dependencies);
+    case 'const':
+      return instanceEntry.value;
+    case 'decorator':
+      return instanceEntry.decorator(createInstance(instanceEntry.decorated, dependencies));
+  }
+};
 
-// this should be a discriminated union instead to avoid InstanceEntryTarget union
-export type InstanceEntry<T, TExternal = never> = {
-  id: string; // should be unique and prefixed with function name, class name (something which will make debugging easier)
-  strategy: symbol; // this enables basic reflection :D just recursively iterate over dependencies array :D
-  target: InstanceEntryTarget<T>; // thunk returning class reference, function, or const value.
-  // Decision how the target should be interpreted and how it should be instantiated (if necessary) will be delegated to strategy implementation
+export type ClassInstanceDefinition<T> = {
+  kind: 'class';
+  id: string;
+  strategy: symbol;
+  class: ClassType<T, any>;
   dependencies: Array<InstanceEntry<any>>;
-  prev?: InstanceEntry<T>
+};
+
+export type FunctionFactoryDefinition<T> = {
+  kind: 'functionFactory';
+  id: string;
+  strategy: symbol;
+  factory: (...args: any[]) => T;
+  dependencies: Array<InstanceEntry<any>>;
+};
+
+export type DecoratorDefinition<T> = {
+  kind: 'decorator';
+  id: string;
+  strategy: symbol;
+  decorator: (prev: T) => T;
+  decorated: InstanceEntry<T>;
+};
+
+export type ConstDefinition<T> = {
+  kind: 'const';
+  id: string;
+  strategy: symbol;
+  value: T;
 };

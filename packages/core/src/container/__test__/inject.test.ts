@@ -2,7 +2,7 @@ import { module, unit } from '../../module/ModuleBuilder';
 import { inject } from '../inject';
 import { container } from '../Container';
 import { expectType, TypeEqual } from 'ts-expect';
-import { singleton } from '../../strategies/SingletonStrategy';
+import { singleton } from '../../strategies/SingletonStrategyLegacy';
 
 describe(`inject`, () => {
   describe(`record`, () => {

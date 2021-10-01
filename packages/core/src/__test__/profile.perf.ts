@@ -2,7 +2,7 @@ import now from 'performance-now';
 import { Container, container } from '../container/Container';
 import { unit } from '../module/ModuleBuilder';
 import { Module } from '../module/Module';
-import { singleton } from '../strategies/SingletonStrategy';
+import { singleton } from '../strategies/SingletonStrategyLegacy';
 
 function registerN(times: number) {
   const result: any = {

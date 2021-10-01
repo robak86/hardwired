@@ -1,8 +1,7 @@
 import { InstancesCache } from '../../context/InstancesCache';
-import { ResolversRegistry } from '../../context/ResolversRegistry';
 import { InstanceEntry } from '../../new/InstanceEntry';
 import invariant from 'tiny-invariant';
-import { InstancesDefinitionsRegistry } from "../../context/InstancesDefinitionsRegistry";
+import { InstancesDefinitionsRegistry } from '../../context/InstancesDefinitionsRegistry';
 
 export class StrategiesRegistry {
   constructor(private strategies: Record<symbol, BuildStrategyNew>) {}
@@ -25,12 +24,16 @@ export abstract class BuildStrategyNew {
   ): any;
 
   protected buildDependencies(
-    definition: InstanceEntry<any>,
+    definition: InstanceEntry<any>, // TODO: use correct type
     instancesCache: InstancesCache,
     resolvers: InstancesDefinitionsRegistry,
     strategiesRegistry: StrategiesRegistry,
   ) {
-    return definition.dependencies.map(dep => {
+    if (definition.kind === 'const' || definition.kind === 'decorator') {
+      return [];
+    }
+
+    return (definition.dependencies ?? []).map(dep => {
       const strategy = strategiesRegistry.get(dep.strategy);
       return strategy.build(dep, instancesCache, resolvers, strategiesRegistry);
     });

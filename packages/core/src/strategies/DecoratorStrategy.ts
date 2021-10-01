@@ -1,19 +1,19 @@
-import { Thunk, unwrapThunk } from '../utils/Thunk';
+import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { BuildStrategy } from './abstract/BuildStrategy';
+import { DecoratorDefinition } from '../new/InstanceEntry';
 
-export class DecoratorStrategy<TReturn, TDeps> extends BuildStrategy<TReturn> {
-  constructor(
-    protected decorated: Thunk<BuildStrategy<TReturn>>,
-    protected decorateFn: <TNew extends TReturn>(original: TReturn, materialized) => TNew,
+export class DecoratorStrategy extends BuildStrategyNew {
+  static type = Symbol.for('decorator');
+
+  build(
+    definition: DecoratorDefinition<any>,
+    instancesCache: InstancesCache,
+    resolvers,
+    strategiesRegistry: StrategiesRegistry,
   ) {
-    super();
-  }
+    const strategy = strategiesRegistry.get(definition.decorated.strategy);
+    const decorateTarget = strategy.build(definition.decorated, instancesCache, resolvers, strategiesRegistry);
 
-  build(id: string, context: InstancesCache, resolvers, materializedModule?): TReturn {
-    return this.decorateFn(
-      unwrapThunk(this.decorated).build(id, context, resolvers, materializedModule),
-      materializedModule,
-    );
+    return definition.decorator(decorateTarget); // TODO: this is still not correct -  new instance of decorated definition is always created
   }
 }

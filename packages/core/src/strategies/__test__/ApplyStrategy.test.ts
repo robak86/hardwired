@@ -1,8 +1,8 @@
 import { module } from '../../module/ModuleBuilder';
-import { singleton, SingletonStrategy } from '../SingletonStrategy';
+import { singleton, SingletonStrategyLegacy } from '../SingletonStrategyLegacy';
 import { container } from '../../container/Container';
-import { transient } from '../TransientStrategy';
-import { request } from '../RequestStrategy';
+import { transient } from '../TransientStrategyLegacy';
+import { request } from '../RequestStrategyLegacy';
 import { BoxedValue } from '../../__test__/BoxedValue';
 import { scoped } from '../ScopeStrategy';
 import { BuildStrategy } from '../abstract/BuildStrategy';

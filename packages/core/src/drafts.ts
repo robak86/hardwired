@@ -1,6 +1,6 @@
 import { ClassType } from './utils/ClassType';
-import { SingletonStrategy } from './strategies/SingletonStrategy';
-import { TransientStrategy } from './strategies/TransientStrategy';
+import { SingletonStrategyLegacy } from './strategies/SingletonStrategyLegacy';
+import { TransientStrategyLegacy } from './strategies/TransientStrategyLegacy';
 import { BuildStrategy } from './strategies/abstract/BuildStrategy';
 import { InstancesCache } from './context/InstancesCache';
 import { ResolversRegistry } from './context/ResolversRegistry';
@@ -80,8 +80,8 @@ class CustomBuild implements BuildStrategy<any> {
 }
 
 const ctn = container({
-  singleton: SingletonStrategy,
-  transient: TransientStrategy,
+  singleton: SingletonStrategyLegacy,
+  transient: TransientStrategyLegacy,
   custom: CustomBuild,
 });
 

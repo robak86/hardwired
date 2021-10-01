@@ -3,9 +3,9 @@ import { ModuleBuilder, unit } from '../../module/ModuleBuilder';
 import { container } from '../../container/Container';
 import { Module } from '../../module/Module';
 import { expectType, TypeEqual } from 'ts-expect';
-import { transient } from '../TransientStrategy';
-import { request } from '../RequestStrategy';
-import { singleton } from '../SingletonStrategy';
+import { transient } from '../TransientStrategyLegacy';
+import { request } from '../RequestStrategyLegacy';
+import { singleton } from '../SingletonStrategyLegacy';
 
 describe(`LiteralResolver`, () => {
   describe(`types`, () => {

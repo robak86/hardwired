@@ -2,7 +2,7 @@ import { ModuleBuilder } from '../../module/ModuleBuilder';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { container } from '../Container';
 import { serviceLocator } from '../../strategies/ServiceLocatorStrategy';
-import { singleton } from '../../strategies/SingletonStrategy';
+import { singleton } from '../../strategies/SingletonStrategyLegacy';
 
 describe(`ServiceLocator`, () => {
   describe(`overrides`, () => {
