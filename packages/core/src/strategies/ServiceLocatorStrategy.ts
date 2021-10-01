@@ -8,13 +8,14 @@ export class ServiceLocatorStrategy extends BuildStrategy<ServiceLocator> {
   }
 
   build(id: string, context: InstancesCache, resolvers): ServiceLocator {
-    if (context.hasInGlobalScope(id)) {
-      return context.getFromGlobalScope(id);
-    } else {
-      const instance = new ServiceLocator(context, resolvers);
-      context.setForGlobalScope(id, instance);
-      return instance;
-    }
+    throw new Error("Implement me!")
+    // if (context.hasInGlobalScope(id)) {
+    //   return context.getFromGlobalScope(id);
+    // } else {
+    //   const instance = new ServiceLocator(context, resolvers);
+    //   context.setForGlobalScope(id, instance);
+    //   return instance;
+    // }
   }
 }
 

@@ -5,14 +5,20 @@ import { ContainerContext } from '../context/ContainerContext';
 import { createContainerId } from '../utils/fastId';
 import { ModuleMaterialization } from '../context/ModuleMaterialization';
 import { IServiceLocator } from './IServiceLocator';
+import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
 
 export class ServiceLocator implements IServiceLocator {
   private containerContext: ContainerContext;
 
-  constructor(private instancesCache: InstancesCache, private resolversRegistry: ResolversRegistry) {
+  constructor(
+    private instancesCache: InstancesCache,
+    private resolversRegistry: ResolversRegistry,
+    private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
+  ) {
     this.containerContext = new ContainerContext(
       createContainerId(),
       resolversRegistry,
+      this.instancesDefinitionsRegistry,
       instancesCache,
       new ModuleMaterialization(resolversRegistry),
     );
@@ -22,6 +28,7 @@ export class ServiceLocator implements IServiceLocator {
     const serviceLocator = new ServiceLocator(
       this.instancesCache.checkoutForRequestScope(),
       this.resolversRegistry.checkoutForRequestScope(),
+      this.instancesDefinitionsRegistry.checkoutForRequestScope(),
     );
 
     return factory(serviceLocator);

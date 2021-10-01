@@ -2,10 +2,24 @@ import { Module } from '../module/Module';
 import { ModulePatch } from '../module/ModulePatch';
 import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
+import { InstanceEntry } from '../new/InstanceEntry';
+import { StrategiesRegistry } from '../strategies/abstract/_BuildStrategy';
+import { ClassSingletonStrategy } from '../strategies/ClassSingletonStrategy';
+import { ConstStrategy } from '../strategies/ConstStrategy';
+import { FactoryFunctionSingletonStrategy } from '../strategies/FactoryFunctionSingletonStrategy';
+import { ClassTransientStrategy } from "../strategies/ClassTransientStrategy";
 
 export type ChildScopeOptions = {
   scopeOverrides?: ModulePatch<any>[];
+  scopeOverridesNew?: InstanceEntry<any>[];
 };
+
+export const defaultStrategiesRegistry = new StrategiesRegistry({
+  [ClassSingletonStrategy.type]: new ClassSingletonStrategy(),
+  [ClassTransientStrategy.type]: new ClassTransientStrategy(),
+  [ConstStrategy.type]: new ConstStrategy(),
+  [FactoryFunctionSingletonStrategy.type]: new FactoryFunctionSingletonStrategy(),
+});
 
 export class Container implements IServiceLocator {
   constructor(protected readonly containerContext: ContainerContext) {}
@@ -22,6 +36,19 @@ export class Container implements IServiceLocator {
     return requestContext.get(moduleInstance, name);
   }
 
+  __get<TValue>(instanceDefinition: InstanceEntry<TValue>): TValue {
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.__get(instanceDefinition);
+  }
+
+  __getAll<TLazyModule extends Record<string, InstanceEntry<any>> | Array<InstanceEntry<any>>>(
+    moduleInstance: TLazyModule,
+  ): { [K in keyof TLazyModule]: TLazyModule[K] extends InstanceEntry<infer TInstance> ? TInstance : unknown } {
+    const requestContext = this.containerContext.checkoutRequestScope();
+    // return requestContext.get(moduleInstance, name);
+    throw new Error('Implement me!');
+  }
+
   select<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
     return inject(this.containerContext.checkoutRequestScope());
   }
@@ -29,6 +56,13 @@ export class Container implements IServiceLocator {
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     const requestContext = this.containerContext.checkoutRequestScope();
     return requestContext.materialize(module);
+  }
+
+  __asObject<TModule extends Record<string, InstanceEntry<any>>>(
+    module: TModule,
+  ): { [K in keyof TModule]: TModule[K] extends InstanceEntry<infer TValue> ? TValue : unknown } {
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.__materialize(module);
   }
 
   asObjectMany<TModule extends Module<any>, TModules extends [TModule, ...TModule[]]>(
@@ -55,17 +89,26 @@ export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
   scopeOverrides?: ModulePatch<any>[]; // used only in descendent scopes (can be overridden)
+  scopeOverridesNew?: InstanceEntry<any>[];
   globalOverrides?: ModulePatch<any>[]; // propagated to whole dependencies graph
+  globalOverridesNew?: InstanceEntry<any>[]; // propagated to whole dependencies graph
 };
 
 export function container(globalOverrides?: ModulePatch<any>[]): Container;
 export function container(options?: ContainerOptions): Container;
 export function container(overridesOrOptions?: ContainerOptions | Array<ModulePatch<any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
-    return new Container(ContainerContext.create([], overridesOrOptions));
+    throw new Error('Implement me!');
+    // return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {
     return new Container(
-      ContainerContext.create(overridesOrOptions?.scopeOverrides ?? [], overridesOrOptions?.globalOverrides ?? []),
+      ContainerContext.create(
+        overridesOrOptions?.scopeOverrides ?? [],
+        overridesOrOptions?.globalOverrides ?? [],
+        overridesOrOptions?.scopeOverridesNew ?? [],
+        overridesOrOptions?.globalOverridesNew ?? [],
+        defaultStrategiesRegistry,
+      ),
     );
   }
 }

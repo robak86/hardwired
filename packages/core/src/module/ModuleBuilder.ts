@@ -8,9 +8,15 @@ import { ObjectPaths } from '../utils/ObjectPaths';
 import { PropType } from '../utils/PropType';
 import { ClassType } from '../utils/ClassType';
 import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
+import { InstanceEntry } from '../new/InstanceEntry';
 
 export const module = () => ModuleBuilder.empty();
 export const unit = module;
+
+export const moduleNew = <T extends Record<string, InstanceEntry<any>>>(wireFn: () => T) => {
+  // TODO: moduleNew wrapper is used only to make sure that all instanceEntries are created within module body and are private
+  return wireFn();
+};
 
 export type IdentifiableModule = { moduleId: ModuleId };
 export const buildResolverId = (module: IdentifiableModule, name: string) => `${module.moduleId.id}:${name}`;

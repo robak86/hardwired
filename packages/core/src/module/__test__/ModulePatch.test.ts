@@ -9,7 +9,7 @@ describe(`ModulePatch`, () => {
       const dummyStrategyTag = Symbol();
 
       const m = new Module<{ a: SingletonStrategy<number> }>(
-        { id: 'id', revision: 'someId' },
+        { id: 'id' },
         ImmutableMap.empty().extend('a', {
           id: 'a',
           type: 'resolver' as const,
@@ -27,7 +27,7 @@ describe(`ModulePatch`, () => {
       const dummyStrategyTag = Symbol();
 
       const m = new Module<{ a: SingletonStrategy<number> }>(
-        { id: 'id', revision: 'someId' },
+        { id: 'id' },
         ImmutableMap.empty().extend('a', {
           id: 'a',
           type: 'resolver' as const,
@@ -48,7 +48,7 @@ describe(`ModulePatch`, () => {
       const dummyStrategyTag = Symbol();
 
       const m = new Module<{ a: SingletonStrategy<number> }>(
-        { id: 'id', revision: 'someId' },
+        { id: 'id' },
         ImmutableMap.empty().extend('a', {
           id: 'a',
           type: 'resolver' as const,

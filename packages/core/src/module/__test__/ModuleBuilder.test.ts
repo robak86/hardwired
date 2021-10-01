@@ -295,12 +295,6 @@ describe(`ModuleBuilder`, () => {
       const nextModule = prefModule.define('a', singleton, () => 1).build();
       expect(() => prefModule.build()).toThrow();
     });
-
-    it(`produces module with next unique id`, async () => {
-      const prevModule = module();
-      const frozen = prevModule.build();
-      expect(prevModule.moduleId.revision).not.toEqual(frozen.moduleId.revision);
-    });
   });
 
   describe(`materializing context`, () => {
