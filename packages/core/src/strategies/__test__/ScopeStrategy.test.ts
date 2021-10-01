@@ -1,5 +1,5 @@
 import { module, unit } from '../../module/ModuleBuilder';
-import { scoped } from '../ScopeStrategy';
+import { scoped } from '../ScopeStrategyLegacy';
 import { container } from '../../container/Container';
 import { BoxedValue } from '../../__test__/BoxedValue';
 

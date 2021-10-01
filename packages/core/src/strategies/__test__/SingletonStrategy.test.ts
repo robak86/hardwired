@@ -3,7 +3,7 @@ import { createModuleId } from '../../utils/fastId';
 import { moduleNew } from '../../module/ModuleBuilder';
 import { singleton, SingletonStrategyLegacy } from '../SingletonStrategyLegacy';
 import { expectType, TypeEqual } from 'ts-expect';
-import { classSingleton, factoryFn, value } from '../../new/classStrategies';
+import { classSingleton, singletonFn, value } from '../../new/classStrategies';
 import { set } from '../../new/instancePatching';
 
 describe(`SingletonStrategy`, () => {
@@ -177,7 +177,7 @@ describe(`SingletonStrategy`, () => {
     it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
       const m = moduleNew(() => {
         return {
-          a: factoryFn(() => Math.random()),
+          a: singletonFn(() => Math.random()),
         };
       });
 
@@ -194,7 +194,7 @@ describe(`SingletonStrategy`, () => {
 
       const m = moduleNew(() => {
         return {
-          a: factoryFn(randomFactorySpy),
+          a: singletonFn(randomFactorySpy),
         };
       });
 
@@ -219,7 +219,7 @@ describe(`SingletonStrategy`, () => {
 
       const m = moduleNew(() => {
         return {
-          a: factoryFn(randomFactorySpy),
+          a: singletonFn(randomFactorySpy),
         };
       });
 
@@ -245,7 +245,7 @@ describe(`SingletonStrategy`, () => {
     it(`cannot be replaced by overrides`, async () => {
       const m = moduleNew(() => {
         return {
-          k1: factoryFn(() => Math.random()),
+          k1: singletonFn(() => Math.random()),
         };
       });
 
@@ -262,8 +262,8 @@ describe(`SingletonStrategy`, () => {
     it(`allows for overrides for other keys than ones changes invariants array`, async () => {
       const m = moduleNew(() => {
         return {
-          k1: factoryFn(() => Math.random()),
-          k2: factoryFn(() => Math.random()),
+          k1: singletonFn(() => Math.random()),
+          k2: singletonFn(() => Math.random()),
         };
       });
 

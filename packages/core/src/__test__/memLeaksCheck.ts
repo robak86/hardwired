@@ -1,6 +1,6 @@
 import { unit } from '../module/ModuleBuilder';
 import { singleton } from '../strategies/SingletonStrategyLegacy';
-import { scoped } from '../strategies/ScopeStrategy';
+import { scoped } from '../strategies/ScopeStrategyLegacy';
 import { container } from '../container/Container';
 import u from 'util';
 

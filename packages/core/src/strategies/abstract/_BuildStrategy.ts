@@ -29,7 +29,7 @@ export abstract class BuildStrategyNew {
     resolvers: InstancesDefinitionsRegistry,
     strategiesRegistry: StrategiesRegistry,
   ) {
-    if (definition.kind === 'const' || definition.kind === 'decorator') {
+    if (definition.type === 'const') {
       return [];
     }
 

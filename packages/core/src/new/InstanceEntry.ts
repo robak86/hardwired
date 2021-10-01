@@ -7,20 +7,21 @@ export type InstanceEntry<T, TExternal = never> =
   | ConstDefinition<T>;
 
 export const createInstance = <T>(instanceEntry: InstanceEntry<T>, dependencies: any[]): T => {
-  switch (instanceEntry.kind) {
+  switch (instanceEntry.type) {
     case 'class':
       return new instanceEntry.class(...dependencies);
-    case 'functionFactory':
+    case 'function':
       return instanceEntry.factory(...dependencies);
     case 'const':
       return instanceEntry.value;
     case 'decorator':
-      return instanceEntry.decorator(createInstance(instanceEntry.decorated, dependencies));
+      throw new Error("TODO: Not applicable")
+      // return instanceEntry.decorator(createInstance(instanceEntry.decorated, dependencies));
   }
 };
 
 export type ClassInstanceDefinition<T> = {
-  kind: 'class';
+  type: 'class';
   id: string;
   strategy: symbol;
   class: ClassType<T, any>;
@@ -28,7 +29,7 @@ export type ClassInstanceDefinition<T> = {
 };
 
 export type FunctionFactoryDefinition<T> = {
-  kind: 'functionFactory';
+  type: 'function';
   id: string;
   strategy: symbol;
   factory: (...args: any[]) => T;
@@ -36,15 +37,16 @@ export type FunctionFactoryDefinition<T> = {
 };
 
 export type DecoratorDefinition<T> = {
-  kind: 'decorator';
+  type: 'decorator';
   id: string;
   strategy: symbol;
-  decorator: (prev: T) => T;
+  dependencies: any[],
+  decorator: (prev: T, ...args:any[]) => T;
   decorated: InstanceEntry<T>;
 };
 
 export type ConstDefinition<T> = {
-  kind: 'const';
+  type: 'const';
   id: string;
   strategy: symbol;
   value: T;

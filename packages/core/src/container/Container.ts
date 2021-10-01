@@ -10,6 +10,7 @@ import { FactoryFunctionSingletonStrategy } from '../strategies/FactoryFunctionS
 import { TransientStrategy } from '../strategies/TransientStrategy';
 import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
 import { RequestStrategy } from "../strategies/RequestStrategy";
+import { ScopeStrategy } from "../strategies/ScopeStrategy";
 
 export type ChildScopeOptions = {
   scopeOverrides?: ModulePatch<any>[];
@@ -23,6 +24,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
   [FactoryFunctionSingletonStrategy.type]: new FactoryFunctionSingletonStrategy(),
   [DecoratorStrategy.type]: new DecoratorStrategy(),
   [RequestStrategy.type]: new RequestStrategy(),
+  [ScopeStrategy.type]: new ScopeStrategy()
 });
 
 export class Container implements IServiceLocator {

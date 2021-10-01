@@ -1,6 +1,6 @@
 import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { DecoratorDefinition } from '../new/InstanceEntry';
+import { createInstance, DecoratorDefinition } from '../new/InstanceEntry';
 
 export class DecoratorStrategy extends BuildStrategyNew {
   static type = Symbol.for('decorator');
@@ -13,7 +13,9 @@ export class DecoratorStrategy extends BuildStrategyNew {
   ) {
     const strategy = strategiesRegistry.get(definition.decorated.strategy);
     const decorateTarget = strategy.build(definition.decorated, instancesCache, resolvers, strategiesRegistry);
+    const dependencies = this.buildDependencies(definition, instancesCache, resolvers, strategiesRegistry) as any;
 
-    return definition.decorator(decorateTarget); // TODO: this is still not correct -  new instance of decorated definition is always created
+
+    return definition.decorator(decorateTarget, ...dependencies); // TODO: this is still not correct -  new instance of decorated definition is always created
   }
 }

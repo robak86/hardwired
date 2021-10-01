@@ -4,7 +4,7 @@ export { unit, module, ModuleBuilder } from './module/ModuleBuilder';
 export * from './strategies/RequestStrategyLegacy';
 export * from './strategies/SingletonStrategyLegacy';
 export * from './strategies/TransientStrategyLegacy';
-export * from './strategies/ScopeStrategy';
+export * from './strategies/ScopeStrategyLegacy';
 
 export type { Module, AnyResolver, ModuleRecord } from './module/Module';
 export { inject } from './container/inject';
