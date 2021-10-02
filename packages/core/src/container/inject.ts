@@ -1,7 +1,7 @@
-import { Module } from '../module/Module';
 import { ContainerContext } from '../context/ContainerContext';
 import invariant from 'tiny-invariant';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
+import { InstanceEntry } from '../new/InstanceEntry';
 
 type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: ContainerContext) => any>]> = {
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
@@ -20,22 +20,30 @@ type MaterializeDependenciesRecordAsync<TDependencies extends Record<string, any
 
 export type DependencySelector<TReturn> = (context: ContainerContext) => TReturn;
 
-const select = <TModule extends Module<any>, TKey extends Module.InstancesKeys<TModule>>(
-  module: Thunk<TModule>,
-  name: TKey,
-) => {
+const select = <T>(module: Thunk<InstanceEntry<T>>) => {
   invariant(
     module !== undefined,
     `Provided module is undefined. It's probably because of circular modules references. Use thunk instead`,
   );
-  return (context: ContainerContext): Module.Materialized<TModule>[TKey] => {
-    return context.get(unwrapThunk(module), name);
+  return (context: ContainerContext): T => {
+    return context.__get(unwrapThunk(module));
   };
 };
 
-const record = <TDependencies extends Record<string, (ctx: ContainerContext) => any>>(
+type MaterializedInstancesRecord<TDependencies extends Record<string, Thunk<InstanceEntry<any>>>> = {
+  [K in keyof TDependencies]: TDependencies[K] extends Thunk<InstanceEntry<infer TInstance>> ? TInstance : unknown;
+};
+
+// prettier-ignore
+type MaterializedInstancesRecordAsync<TDependencies extends Record<string, any>> = {
+  [K in keyof TDependencies]: TDependencies[K] extends InstanceEntry<infer TInstance> ?
+      (TInstance extends Promise<infer TAwaited> ? TAwaited : TInstance) :
+      unknown
+};
+
+const record = <TDependencies extends Record<string, Thunk<InstanceEntry<any>>>>(
   deps: TDependencies,
-): ((ctx: ContainerContext) => MaterializeDependenciesRecord<TDependencies>) => {
+): ((ctx: ContainerContext) => MaterializedInstancesRecord<TDependencies>) => {
   return ctx => {
     const instances = {} as any;
     Object.keys(deps).forEach(key => {
@@ -43,7 +51,7 @@ const record = <TDependencies extends Record<string, (ctx: ContainerContext) => 
         configurable: false,
         enumerable: true,
         get: () => {
-          return deps[key](ctx);
+          return select(deps[key])(ctx);
         },
       });
     });
@@ -51,7 +59,7 @@ const record = <TDependencies extends Record<string, (ctx: ContainerContext) => 
   };
 };
 
-const asyncRecord = <TDependencies extends Record<string, (ctx: ContainerContext) => any>>(
+const asyncRecord = <TDependencies extends Record<string, InstanceEntry<any>>>(
   deps: TDependencies,
 ): ((ctx: ContainerContext) => Promise<MaterializeDependenciesRecordAsync<TDependencies>>) => {
   return async ctx => {
@@ -59,7 +67,7 @@ const asyncRecord = <TDependencies extends Record<string, (ctx: ContainerContext
 
     const unwrapped = await Promise.all(
       Object.values(deps).map(dep => {
-        return dep(ctx);
+        return select(dep)(ctx);
       }),
     );
 
@@ -71,20 +79,8 @@ const asyncRecord = <TDependencies extends Record<string, (ctx: ContainerContext
   };
 };
 
-const tuple = <
-  TDependencyEntry extends (ctx: ContainerContext) => any,
-  TDependencies extends [TDependencyEntry, ...TDependencyEntry[]],
->(
-  ...deps: TDependencies
-) => {
-  return (ctx: ContainerContext): MaterializeDependenciesTuple<TDependencies> => {
-    return deps.map(d => d(ctx)) as any;
-  };
-};
-
 export const inject = {
   select,
   record,
-  tuple,
   asyncRecord,
 };

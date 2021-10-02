@@ -10,8 +10,8 @@ import { ClassType } from '../utils/ClassType';
 import { BuildStrategy } from '../strategies/abstract/BuildStrategy';
 import { InstanceEntry } from '../new/InstanceEntry';
 
-export const module = () => ModuleBuilder.empty();
-export const unit = module;
+// export const module = () => ModuleBuilder.empty();
+// export const unit = module;
 
 export type IdentifiableModule = { moduleId: ModuleId };
 export const buildResolverId = (module: IdentifiableModule, name: string) => `${module.moduleId.id}:${name}`;
