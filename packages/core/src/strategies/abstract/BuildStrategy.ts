@@ -1,11 +1,11 @@
 import { InstancesCache } from '../../context/InstancesCache';
 import { InstanceDefinition } from '../../new/InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../../context/InstancesDefinitionsRegistry';
-import { StrategiesRegistry } from "../collection/StrategiesRegistry";
+import { StrategiesRegistry } from '../collection/StrategiesRegistry';
 
+
+// TODO: Ideally build strategy should be just static object with type and build property (to decrease chances that one will make it stateful)
 export abstract class BuildStrategy {
-  readonly tags: symbol[] = [];
-
   abstract build(
     definition: InstanceDefinition<any>,
     context: InstancesCache,
@@ -24,8 +24,8 @@ export abstract class BuildStrategy {
     }
 
     const dependencies = definition.dependencies.map(instanceDef => {
-      return resolvers.getInstanceDefinition(instanceDef)
-    })
+      return resolvers.getInstanceDefinition(instanceDef);
+    });
 
     return dependencies.map(dep => {
       const strategy = strategiesRegistry.get(dep.strategy);

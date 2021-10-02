@@ -1,4 +1,4 @@
-import { SingletonScope } from '../container/SingletonScope';
+import { SingletonScope } from './SingletonScope';
 import invariant from 'tiny-invariant';
 import { InstanceDefinition } from '../new/InstanceDefinition';
 

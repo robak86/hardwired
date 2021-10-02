@@ -7,8 +7,8 @@ export * from './strategies/SingletonStrategy';
 export * from './strategies/TransientStrategy';
 export * from './strategies/ScopeStrategy';
 
-export { inject } from './container/inject';
-export type { DependencySelector } from './container/inject';
+export { inject } from './helpers/inject';
+export type { DependencySelector } from './helpers/inject';
 export { ContainerContext } from './context/ContainerContext';
 export { ServiceLocator } from './container/ServiceLocator';
 

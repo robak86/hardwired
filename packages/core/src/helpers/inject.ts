@@ -3,14 +3,6 @@ import invariant from 'tiny-invariant';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
 import { InstanceDefinition } from '../new/InstanceDefinition';
 
-type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: ContainerContext) => any>]> = {
-  [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
-};
-
-type MaterializeDependenciesRecord<TDependencies extends Record<string, any>> = {
-  [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
-};
-
 // prettier-ignore
 type MaterializeDependenciesRecordAsync<TDependencies extends Record<string, any>> = {
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn
@@ -32,13 +24,6 @@ const select = <T>(module: Thunk<InstanceDefinition<T>>) => {
 
 type MaterializedInstancesRecord<TDependencies extends Record<string, Thunk<InstanceDefinition<any>>>> = {
   [K in keyof TDependencies]: TDependencies[K] extends Thunk<InstanceDefinition<infer TInstance>> ? TInstance : unknown;
-};
-
-// prettier-ignore
-type MaterializedInstancesRecordAsync<TDependencies extends Record<string, any>> = {
-  [K in keyof TDependencies]: TDependencies[K] extends InstanceDefinition<infer TInstance> ?
-      (TInstance extends Promise<infer TAwaited> ? TAwaited : TInstance) :
-      unknown
 };
 
 const record = <TDependencies extends Record<string, Thunk<InstanceDefinition<any>>>>(
