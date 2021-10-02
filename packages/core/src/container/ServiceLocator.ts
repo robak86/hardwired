@@ -12,7 +12,6 @@ export class ServiceLocator implements IServiceLocator {
 
   constructor(
     private instancesCache: InstancesCache,
-    private resolversRegistry: ResolversRegistry,
     private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
   ) {
     this.containerContext = new ContainerContext(

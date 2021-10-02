@@ -34,13 +34,7 @@ export class Container implements IServiceLocator {
     return this.containerContext.id;
   }
 
-  get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
-    moduleInstance: TLazyModule,
-    name: K,
-  ): Module.Materialized<TLazyModule>[K] {
-    const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.get(moduleInstance, name);
-  }
+
 
   __get<TValue>(instanceDefinition: InstanceEntry<TValue>): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();

@@ -3,10 +3,15 @@ import {
   classScoped,
   classSingleton,
   classTransient,
-  requestFn, scopedFn,
+  requestFn,
+  scopedFn,
   singletonFn,
-  transientFn
+  transientFn,
 } from './classStrategies';
+import { SingletonStrategy } from '../strategies/SingletonStrategy';
+import { classDefinition } from './InstanceEntry';
+import { ServiceLocator } from '../container/ServiceLocator';
+import { ServiceLocatorStrategy } from "../strategies/ServiceLocatorStrategy";
 
 export const singleton = {
   fn: singletonFn,
@@ -27,3 +32,5 @@ export const scoped = {
   fn: scopedFn,
   class: classScoped,
 };
+
+export const serviceLocator = classDefinition(ServiceLocator, ServiceLocatorStrategy.type, [] as any);
