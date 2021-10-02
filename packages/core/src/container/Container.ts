@@ -11,6 +11,8 @@ import { TransientStrategy } from '../strategies/TransientStrategy';
 import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
 import { RequestStrategy } from '../strategies/RequestStrategy';
 import { ScopeStrategy } from '../strategies/ScopeStrategy';
+import { ServiceLocator } from "./ServiceLocator";
+import { ServiceLocatorStrategy } from "../strategies/ServiceLocatorStrategy";
 
 export type ChildScopeOptions = {
   scopeOverrides?: ModulePatch<any>[];
@@ -25,6 +27,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
   [DecoratorStrategy.type]: new DecoratorStrategy(),
   [RequestStrategy.type]: new RequestStrategy(),
   [ScopeStrategy.type]: new ScopeStrategy(),
+  [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy()
 });
 
 export class Container implements IServiceLocator {

@@ -1,9 +1,8 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { InstancesCache } from '../context/InstancesCache';
-import { BuildStrategy } from './abstract/BuildStrategy';
 import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
-import { InstanceEntry } from "../new/InstanceEntry";
-import { InstancesDefinitionsRegistry } from "../context/InstancesDefinitionsRegistry";
+import { InstanceEntry } from '../new/InstanceEntry';
+import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
 
 export class ServiceLocatorStrategy extends BuildStrategyNew {
   static type = Symbol.for('serviceLocatorStrategy');
@@ -13,13 +12,12 @@ export class ServiceLocatorStrategy extends BuildStrategyNew {
   }
 
   build(
-      definition: InstanceEntry<any>,
-      context: InstancesCache,
-      resolvers: InstancesDefinitionsRegistry,
-      strategiesRegistry: StrategiesRegistry,
+    definition: InstanceEntry<any>,
+    context: InstancesCache,
+    resolvers: InstancesDefinitionsRegistry,
+    strategiesRegistry: StrategiesRegistry,
   ) {
-
-    const id = definition.id
+    const id = definition.id;
 
     if (context.hasInGlobalScope(id)) {
       return context.getFromGlobalScope(id);
@@ -29,7 +27,4 @@ export class ServiceLocatorStrategy extends BuildStrategyNew {
       return instance;
     }
   }
-
 }
-
-// export const serviceLocator = (): BuildStrategy<ServiceLocator> => new ServiceLocatorStrategy();

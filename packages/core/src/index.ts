@@ -1,3 +1,5 @@
+export { serviceLocator } from "./new/singletonStrategies";
+
 export { container, Container } from './container/Container';
 
 
@@ -11,7 +13,7 @@ export { inject } from './container/inject';
 export type { DependencySelector } from './container/inject';
 export { ContainerContext } from './context/ContainerContext';
 export { ServiceLocator } from './container/ServiceLocator';
-export { serviceLocator } from './strategies/ServiceLocatorStrategy';
+
 export { BuildStrategy } from './strategies/abstract/BuildStrategy';
 export { ModulePatch } from './module/ModulePatch';
 export type { IServiceLocator } from './container/IServiceLocator';

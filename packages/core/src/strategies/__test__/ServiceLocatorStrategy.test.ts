@@ -1,10 +1,7 @@
 import { createModuleId } from '../../utils/fastId';
 import { container } from '../../container/Container';
-import { expectType, TypeEqual } from 'ts-expect';
-import { ServiceLocator } from '../../container/ServiceLocator';
-import { request } from '../RequestStrategyLegacy';
-import { singleton } from '../SingletonStrategyLegacy';
-import { BuildStrategy } from '../abstract/BuildStrategy';
+import { request, serviceLocator, singleton } from '../../new/singletonStrategies';
+import { value } from '../../new/classStrategies';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
@@ -23,36 +20,23 @@ describe(`ServiceLocatorResolver`, () => {
     }
   }
 
-  const root = unit()
-    .define('locator', serviceLocator())
-    .import('singletonModule', () => singletonModule)
-    .define('producedByFactory', singleton, () => new DummyFactory())
-    .define('singletonConsumer', request, ({ singletonModule }) => new TestClassConsumer(singletonModule.reqScoped))
-    .build();
+  const someValue = value('someValue');
+  const reqScoped = request.class(TestClass, [someValue]);
+  const singletonScoped = singleton.class(TestClass, [someValue]);
 
-  const singletonModule = unit()
-    .define('value', singleton, () => 'someValue')
-    .define('reqScoped', request, c => new TestClass(c.value))
-    .define('singleton', singleton, c => new TestClass(c.value))
-    .build();
-
-  describe(`serviceLocator`, () => {
-    it(`return Instance type`, async () => {
-      const s = serviceLocator();
-      expectType<TypeEqual<typeof s, BuildStrategy<ServiceLocator>>>(true);
-    });
-  });
+  const producedByFactory = singleton.fn(() => new DummyFactory());
+  const singletonConsumer = singleton.class(TestClassConsumer, [reqScoped]);
 
   it(`returns request scoped instances`, async () => {
     const c = container();
-    const locator = c.get(root, 'locator');
+    const locator = c.__get(serviceLocator);
 
     locator.withRequestScope(({ get }) => {
-      const call1 = get(singletonModule, 'singleton');
-      const call2 = get(singletonModule, 'singleton');
+      const call1 = get(singletonScoped);
+      const call2 = get(singletonScoped);
 
-      const req1 = get(root, 'singletonConsumer');
-      const req3 = get(root, 'singletonConsumer');
+      const req1 = get(singletonConsumer);
+      const req3 = get(singletonConsumer);
 
       expect(call1).toBe(call2);
       expect(req1).toBe(req3);
@@ -62,11 +46,11 @@ describe(`ServiceLocatorResolver`, () => {
   it(`reuses singleton instances from container`, async () => {
     const c = container();
 
-    const locator = c.get(root, 'locator');
+    const locator = c.__get(serviceLocator);
 
-    const fromContainer = c.get(singletonModule, 'singleton');
+    const fromContainer = c.__get(singletonScoped);
     const fromLocator = locator.withRequestScope(({ get }) => {
-      return get(singletonModule, 'singleton');
+      return get(singletonScoped);
     });
 
     expect(fromContainer).toBe(fromLocator);
@@ -74,13 +58,13 @@ describe(`ServiceLocatorResolver`, () => {
 
   it(`reuses values built by factories from container`, async () => {
     const c = container();
-    const locator = c.get(root, 'locator');
+    const locator = c.__get(serviceLocator);
 
-    const fromContainer = c.get(root, 'producedByFactory');
+    const fromContainer = c.__get(producedByFactory);
     const fromLocator = locator.withRequestScope(({ get }) => {
-      return get(root, 'producedByFactory');
+      return get(producedByFactory);
     });
-    const fromContainer2 = c.get(root, 'producedByFactory');
+    const fromContainer2 = c.__get(producedByFactory);
 
     expect(fromContainer).toBe(fromLocator);
     expect(fromContainer2).toBe(fromLocator);

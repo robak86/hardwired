@@ -1,14 +1,14 @@
-import { isInstanceDefinition, isImportDefinition, Module } from '../module/Module';
+import { isImportDefinition, isInstanceDefinition, Module } from '../module/Module';
 import { unwrapThunk } from '../utils/Thunk';
-import { ResolversRegistry } from './ResolversRegistry';
 import { InstancesCache } from './InstancesCache';
+import { InstancesDefinitionsRegistry } from "./InstancesDefinitionsRegistry";
 
 export const useProxy = typeof Proxy !== 'undefined';
 
 export class ModuleMaterialization {
   private materializedObjects: Record<string, any> = {};
 
-  constructor(private resolversRegistry: ResolversRegistry) {}
+  constructor(private definitionsRegistry: InstancesDefinitionsRegistry) {}
 
   materialize<TModule extends Module<any>>(
     module: TModule,
@@ -26,10 +26,10 @@ export class ModuleMaterialization {
     instanceDefinition: Module.InstanceDefinition,
     instancesCache: InstancesCache,
   ) {
-    // const module = this.resolversRegistry.getModuleForResolverByResolverId(instanceDefinition.id);
+    // const module = this.definitionsRegistry.getModuleForResolverByResolverId(instanceDefinition.id);
     const materializedModule = this.materialize(module, instancesCache);
     const resolver = unwrapThunk(instanceDefinition.resolverThunk);
-    return resolver.build(instanceDefinition.id, instancesCache, this.resolversRegistry, materializedModule);
+    return resolver.build(instanceDefinition.id, instancesCache, this.definitionsRegistry, materializedModule);
   }
 
   private materializeWithAccessors<TModule extends Module<any>>(
@@ -50,7 +50,7 @@ export class ModuleMaterialization {
           enumerable: true,
           get: () => {
             //TODO: move into closure so above this is called only once for all get calls
-            const initializedResolver = this.resolversRegistry.getModuleInstanceResolver(module, key);
+            const initializedResolver = this.definitionsRegistry.getModuleInstanceResolver(module, key);
             return this.runInstanceDefinition(module, initializedResolver, instancesCache);
           },
         });
@@ -80,7 +80,7 @@ export class ModuleMaterialization {
     // TODO: since all materialization is synchronous we can somehow reuse the instance of Proxy??
     const handler: ProxyHandler<InstancesCache> = {
       get: (target: InstancesCache, property: any, receiver: any) => {
-        const definition = this.resolversRegistry.getModuleDefinition(module, property);
+        const definition = this.definitionsRegistry.getModuleDefinition(module, property);
 
         if (isInstanceDefinition(definition)) {
           return this.runInstanceDefinition(module, definition, instancesCache);
