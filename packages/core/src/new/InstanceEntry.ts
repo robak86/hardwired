@@ -1,4 +1,5 @@
 import { ClassType } from '../utils/ClassType';
+import { v4 } from 'uuid';
 
 export type InstanceEntry<T, TExternal = never> =
   | ClassInstanceDefinition<T>
@@ -15,8 +16,8 @@ export const createInstance = <T>(instanceEntry: InstanceEntry<T>, dependencies:
     case 'const':
       return instanceEntry.value;
     case 'decorator':
-      throw new Error("TODO: Not applicable")
-      // return instanceEntry.decorator(createInstance(instanceEntry.decorated, dependencies));
+      throw new Error('TODO: Not applicable');
+    // return instanceEntry.decorator(createInstance(instanceEntry.decorated, dependencies));
   }
 };
 
@@ -26,6 +27,21 @@ export type ClassInstanceDefinition<T> = {
   strategy: symbol;
   class: ClassType<T, any>;
   dependencies: Array<InstanceEntry<any>>;
+};
+
+// TODO: should be exported as it allows creating custom strategies
+export const classDefinition = <T, TDeps extends any[]>(
+  klass: ClassType<T, TDeps>,
+  strategy: symbol,
+  dependencies: { [K in keyof TDeps]: InstanceEntry<TDeps[K]> },
+): ClassInstanceDefinition<T> => {
+  return {
+    type: 'class',
+    id: v4(),
+    strategy,
+    class: klass,
+    dependencies,
+  };
 };
 
 export type FunctionFactoryDefinition<T> = {
@@ -40,8 +56,8 @@ export type DecoratorDefinition<T> = {
   type: 'decorator';
   id: string;
   strategy: symbol;
-  dependencies: any[],
-  decorator: (prev: T, ...args:any[]) => T;
+  dependencies: any[];
+  decorator: (prev: T, ...args: any[]) => T;
   decorated: InstanceEntry<T>;
 };
 

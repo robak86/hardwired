@@ -5,7 +5,13 @@ import { SingletonStrategy } from '../strategies/SingletonStrategy';
 import { RequestStrategy } from '../strategies/RequestStrategy';
 import { TransientStrategy } from '../strategies/TransientStrategy';
 import { ConstStrategy } from '../strategies/ConstStrategy';
-import { ClassInstanceDefinition, ConstDefinition, FunctionFactoryDefinition, InstanceEntry } from './InstanceEntry';
+import {
+  classDefinition,
+  ClassInstanceDefinition,
+  ConstDefinition,
+  FunctionFactoryDefinition,
+  InstanceEntry,
+} from './InstanceEntry';
 import { ScopeStrategy } from '../strategies/ScopeStrategy';
 
 const classInstanceEntry = (strategy: symbol) => {
@@ -20,13 +26,7 @@ const classInstanceEntry = (strategy: symbol) => {
     cls: ClassType<TValue, TDeps>,
     dependencies?: { [K in keyof TDeps]: InstanceEntry<TDeps[K]> },
   ): ClassInstanceDefinition<TValue> {
-    return {
-      id: v4(),
-      type: 'class',
-      strategy,
-      class: cls,
-      dependencies: dependencies ?? [],
-    };
+    return classDefinition(cls, strategy, dependencies ?? [] as any);
   }
 };
 
