@@ -1,6 +1,6 @@
 import { SingletonScope } from './SingletonScope';
 import invariant from 'tiny-invariant';
-import { InstanceDefinition } from '../new/InstanceDefinition';
+import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 
 function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any>[]): string[] {
   return patchedDefinitions.map(def => def.id);

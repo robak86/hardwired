@@ -1,4 +1,4 @@
-import { ClassType } from '../utils/ClassType';
+import { ClassType } from '../../utils/ClassType';
 import { v4 } from 'uuid';
 
 export type InstanceDefinition<T, TExternal = never> =

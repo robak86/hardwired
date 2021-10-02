@@ -1,7 +1,7 @@
 import { ContainerContext } from '../context/ContainerContext';
 import invariant from 'tiny-invariant';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
-import { InstanceDefinition } from '../new/InstanceDefinition';
+import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 
 // prettier-ignore
 type MaterializeDependenciesRecordAsync<TDependencies extends Record<string, any>> = {

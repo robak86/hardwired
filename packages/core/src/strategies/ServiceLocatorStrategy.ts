@@ -1,7 +1,7 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { InstancesCache } from '../context/InstancesCache';
 import { BuildStrategy} from './abstract/BuildStrategy';
-import { InstanceDefinition } from '../new/InstanceDefinition';
+import { InstanceDefinition } from './abstract/InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
 import { StrategiesRegistry } from "./collection/StrategiesRegistry";
 

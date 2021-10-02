@@ -1,6 +1,6 @@
 import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
-import { InstanceDefinition } from '../new/InstanceDefinition';
+import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 import { SingletonStrategy } from '../strategies/SingletonStrategy';
 import { ConstStrategy } from '../strategies/ConstStrategy';
 import { TransientStrategy } from '../strategies/TransientStrategy';

@@ -8,7 +8,7 @@ import {
   singletonFn,
   transientFn,
 } from './classStrategies';
-import { classDefinition } from '../../new/InstanceDefinition';
+import { classDefinition } from '../abstract/InstanceDefinition';
 import { ServiceLocator } from '../../container/ServiceLocator';
 import { ServiceLocatorStrategy } from '../ServiceLocatorStrategy';
 

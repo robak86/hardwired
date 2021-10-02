@@ -1,8 +1,10 @@
 import { container } from '../../container/Container';
 import { BoxedValue } from '../../__test__/BoxedValue';
 import { request, scoped, singleton, transient } from '../factory/strategies';
-import { apply, decorate, set } from '../../new/instancePatching';
-import { InstanceDefinition } from '../../new/InstanceDefinition';
+import { set } from '../../patching/set';
+import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { decorate } from "../../patching/decorate";
+import { apply } from "../../patching/apply";
 
 describe(`ApplyResolver`, () => {
   it(`applies function to original value`, async () => {

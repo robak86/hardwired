@@ -1,6 +1,6 @@
-import { replace } from '../../new/instancePatching';
 import { request, singleton } from '../../strategies/factory/strategies';
 import { container } from '../Container';
+import { replace } from "../../patching/replace";
 
 describe(`Container`, () => {
   describe(`.get`, () => {

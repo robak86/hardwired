@@ -1,7 +1,7 @@
 import { container } from '../../container/Container';
 import { scoped } from '../factory/strategies';
 import { BoxedValue } from '../../__test__/BoxedValue';
-import { replace } from '../../new/instancePatching';
+import { replace } from "../../patching/replace";
 
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {

@@ -1,6 +1,6 @@
 import { BuildStrategy} from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, DecoratorDefinition } from '../new/InstanceDefinition';
+import { createInstance, DecoratorDefinition } from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from "./collection/StrategiesRegistry";
 
 export class DecoratorStrategy extends BuildStrategy {

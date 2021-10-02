@@ -12,7 +12,7 @@ import {
   functionDefinition,
   FunctionFactoryDefinition,
   InstanceDefinition,
-} from '../../new/InstanceDefinition';
+} from '../abstract/InstanceDefinition';
 import { ScopeStrategy } from '../ScopeStrategy';
 
 const classDefinitionBuilder = (strategy: symbol) => {

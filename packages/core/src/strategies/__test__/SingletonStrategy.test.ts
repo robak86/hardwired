@@ -1,6 +1,6 @@
 import { container } from '../../container/Container';
 import { classSingleton, singletonFn, value } from '../factory/classStrategies';
-import { set } from '../../new/instancePatching';
+import { set } from '../../patching/set';
 import { v4 } from 'uuid';
 
 

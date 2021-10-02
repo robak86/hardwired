@@ -2,7 +2,7 @@ import { InstancesCache } from './InstancesCache';
 import { ModuleMaterialization } from './ModuleMaterialization';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { InstanceDefinition } from '../new/InstanceDefinition';
+import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 import { StrategiesRegistry } from "../strategies/collection/StrategiesRegistry";
 
 export class ContainerContext {

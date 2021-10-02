@@ -1,5 +1,5 @@
 import { InstancesCache } from '../../context/InstancesCache';
-import { InstanceDefinition } from '../../new/InstanceDefinition';
+import { InstanceDefinition } from './InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../../context/InstancesDefinitionsRegistry';
 import { StrategiesRegistry } from '../collection/StrategiesRegistry';
 

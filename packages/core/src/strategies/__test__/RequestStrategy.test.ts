@@ -1,6 +1,6 @@
 import { container } from '../../container/Container';
-import { replace } from '../../new/instancePatching';
 import { request } from '../factory/strategies';
+import { replace } from "../../patching/replace";
 
 describe(`RequestStrategy`, () => {
   describe(`resolution`, () => {

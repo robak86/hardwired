@@ -1,6 +1,6 @@
 import { BuildStrategy} from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, InstanceDefinition } from '../new/InstanceDefinition';
+import { createInstance, InstanceDefinition } from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from "./collection/StrategiesRegistry";
 
 export class ScopeStrategy extends BuildStrategy {

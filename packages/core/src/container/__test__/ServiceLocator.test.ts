@@ -2,7 +2,7 @@
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { container } from '../Container';
 import { serviceLocator, singleton } from "../../strategies/factory/strategies";
-import { replace } from '../../new/instancePatching';
+import { replace } from "../../patching/replace";
 
 
 describe(`ServiceLocator`, () => {
