@@ -9,8 +9,8 @@ import { ConstStrategy } from '../strategies/ConstStrategy';
 import { FactoryFunctionSingletonStrategy } from '../strategies/FactoryFunctionSingletonStrategy';
 import { TransientStrategy } from '../strategies/TransientStrategy';
 import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
-import { RequestStrategy } from "../strategies/RequestStrategy";
-import { ScopeStrategy } from "../strategies/ScopeStrategy";
+import { RequestStrategy } from '../strategies/RequestStrategy';
+import { ScopeStrategy } from '../strategies/ScopeStrategy';
 
 export type ChildScopeOptions = {
   scopeOverrides?: ModulePatch<any>[];
@@ -24,7 +24,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
   [FactoryFunctionSingletonStrategy.type]: new FactoryFunctionSingletonStrategy(),
   [DecoratorStrategy.type]: new DecoratorStrategy(),
   [RequestStrategy.type]: new RequestStrategy(),
-  [ScopeStrategy.type]: new ScopeStrategy()
+  [ScopeStrategy.type]: new ScopeStrategy(),
 });
 
 export class Container implements IServiceLocator {
@@ -47,23 +47,26 @@ export class Container implements IServiceLocator {
     return requestContext.__get(instanceDefinition);
   }
 
-  __getAll<TLazyModule extends Record<string, InstanceEntry<any>> | Array<InstanceEntry<any>>>(
-    moduleInstance: TLazyModule,
+  __getAll<TLazyModule extends Array<InstanceEntry<any>>>(
+    ...definitions: TLazyModule
   ): { [K in keyof TLazyModule]: TLazyModule[K] extends InstanceEntry<infer TInstance> ? TInstance : unknown } {
     const requestContext = this.containerContext.checkoutRequestScope();
-    // return requestContext.get(moduleInstance, name);
-    throw new Error('Implement me!');
+
+    return definitions.map(def => requestContext.__get(def)) as any;
   }
 
   select<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
     return inject(this.containerContext.checkoutRequestScope());
   }
 
+
+
   asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
     const requestContext = this.containerContext.checkoutRequestScope();
     return requestContext.materialize(module);
   }
 
+  // TODO: we still should create object with lazy properties
   __asObject<TModule extends Record<string, InstanceEntry<any>>>(
     module: TModule,
   ): { [K in keyof TModule]: TModule[K] extends InstanceEntry<infer TValue> ? TValue : unknown } {

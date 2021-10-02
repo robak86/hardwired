@@ -1,10 +1,8 @@
-import { unit } from '../module/ModuleBuilder';
-import { singleton } from '../strategies/SingletonStrategyLegacy';
-import { scoped } from '../strategies/ScopeStrategyLegacy';
 import { container } from '../container/Container';
 import u from 'util';
 
 import memwatch from '@airbnb/node-memwatch';
+import { scoped, singleton } from '../new/singletonStrategies';
 
 export const inspect = obj => {
   return console.log(u.inspect(obj, false, null, true));
@@ -17,10 +15,8 @@ class ConfigConsumer {
   constructor(private config: ConfigProvider) {}
 }
 
-const m = unit()
-  .define('d1', singleton, ctx => new ConfigProvider())
-  .define('d2', scoped, ctx => new ConfigConsumer(ctx.d1))
-  .build();
+const d1 = singleton.class(ConfigProvider);
+const d2 = scoped.class(ConfigConsumer, [d1]);
 
 const c = container();
 
@@ -28,7 +24,7 @@ const hd = new memwatch.HeapDiff();
 
 for (let i = 0; i < 1000000; i++) {
   const scope = c.checkoutScope();
-  const d = scope.get(m, 'd2');
+  const d = scope.__get(d2);
 
   if (i % 100 === 0) {
     console.log(i);

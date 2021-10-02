@@ -70,12 +70,4 @@ describe(`inject`, () => {
       expect(selected).toEqual(expected);
     });
   });
-
-  describe(`select`, () => {
-    it(`returns error if modules is not defined`, async () => {
-      expect(() => inject.select(undefined as any, 'someKey')).toThrowError(
-        `Provided module is undefined. It's probably because of circular modules references. Use thunk instead`,
-      );
-    });
-  });
 });

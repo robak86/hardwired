@@ -9,6 +9,7 @@ import {
   classDefinition,
   ClassInstanceDefinition,
   ConstDefinition,
+  functionDefinition,
   FunctionFactoryDefinition,
   InstanceEntry,
 } from './InstanceEntry';
@@ -26,7 +27,7 @@ const classInstanceEntry = (strategy: symbol) => {
     cls: ClassType<TValue, TDeps>,
     dependencies?: { [K in keyof TDeps]: InstanceEntry<TDeps[K]> },
   ): ClassInstanceDefinition<TValue> {
-    return classDefinition(cls, strategy, dependencies ?? [] as any);
+    return classDefinition(cls, strategy, dependencies ?? ([] as any));
   }
 };
 
@@ -53,13 +54,7 @@ export function singletonFn<TValue, TDeps extends any[], TFunctionArgs extends a
   factory: (...args: TFunctionArgs) => TValue,
   args?: { [K in keyof TFunctionArgs]: InstanceEntry<TFunctionArgs[K]> },
 ): FunctionFactoryDefinition<TValue> {
-  return {
-    id: v4(),
-    type: 'function',
-    strategy: SingletonStrategy.type, // TODO: multiple strategies available for factory function - group builders by lifetime ?   singleton.class|fn|curry transient.class|fn, singleton: - fn seems to be
-    factory: factory as any,
-    dependencies: args as any,
-  };
+  return functionDefinition(factory, SingletonStrategy.type, args ?? ([] as any));
 }
 
 export function transientFn<TValue, TDeps extends any[]>(factory: () => TValue): FunctionFactoryDefinition<TValue>;
@@ -71,13 +66,7 @@ export function transientFn<TValue, TDeps extends any[], TFunctionArgs extends a
   factory: (...args: TFunctionArgs) => TValue,
   args?: { [K in keyof TFunctionArgs]: InstanceEntry<TFunctionArgs[K]> },
 ): FunctionFactoryDefinition<TValue> {
-  return {
-    id: v4(),
-    type: 'function',
-    strategy: TransientStrategy.type, // TODO: multiple strategies available for factory function - group builders by lifetime ?   singleton.class|fn|curry transient.class|fn, singleton: - fn seems to be
-    factory: factory as any,
-    dependencies: args as any,
-  };
+  return functionDefinition(factory, TransientStrategy.type, args ?? ([] as any));
 }
 
 export function requestFn<TValue, TDeps extends any[]>(factory: () => TValue): FunctionFactoryDefinition<TValue>;
@@ -89,13 +78,7 @@ export function requestFn<TValue, TDeps extends any[], TFunctionArgs extends any
   factory: (...args: TFunctionArgs) => TValue,
   args?: { [K in keyof TFunctionArgs]: InstanceEntry<TFunctionArgs[K]> },
 ): FunctionFactoryDefinition<TValue> {
-  return {
-    id: v4(),
-    type: 'function',
-    strategy: RequestStrategy.type, // TODO: multiple strategies available for factory function - group builders by lifetime ?   singleton.class|fn|curry transient.class|fn, singleton: - fn seems to be
-    factory: factory as any,
-    dependencies: args as any,
-  };
+  return functionDefinition(factory, RequestStrategy.type, args ?? ([] as any));
 }
 
 export function scopedFn<TValue, TDeps extends any[]>(factory: () => TValue): FunctionFactoryDefinition<TValue>;
@@ -107,11 +90,5 @@ export function scopedFn<TValue, TDeps extends any[], TFunctionArgs extends any[
   factory: (...args: TFunctionArgs) => TValue,
   args?: { [K in keyof TFunctionArgs]: InstanceEntry<TFunctionArgs[K]> },
 ): FunctionFactoryDefinition<TValue> {
-  return {
-    id: v4(),
-    type: 'function',
-    strategy: ScopeStrategy.type, // TODO: multiple strategies available for factory function - group builders by lifetime ?   singleton.class|fn|curry transient.class|fn, singleton: - fn seems to be
-    factory: factory as any,
-    dependencies: args as any,
-  };
+  return functionDefinition(factory, ScopeStrategy.type, args ?? ([] as any));
 }

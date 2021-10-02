@@ -52,6 +52,20 @@ export type FunctionFactoryDefinition<T> = {
   dependencies: Array<InstanceEntry<any>>;
 };
 
+export const functionDefinition = <T, TDeps extends any[]>(
+  factory: (...args: TDeps) => T,
+  strategy: symbol,
+  dependencies: { [K in keyof TDeps]: InstanceEntry<TDeps[K]> },
+): FunctionFactoryDefinition<T> => {
+  return {
+    type: 'function',
+    id: `${factory.name}:${v4()}`,
+    strategy,
+    factory: factory as any,
+    dependencies,
+  };
+};
+
 export type DecoratorDefinition<T> = {
   type: 'decorator';
   id: string;

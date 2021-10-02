@@ -33,7 +33,11 @@ export abstract class BuildStrategyNew {
       return [];
     }
 
-    return (definition.dependencies ?? []).map(dep => {
+    const dependencies = definition.dependencies.map(instanceDef => {
+      return resolvers.getInstanceEntry(instanceDef)
+    })
+
+    return dependencies.map(dep => {
       const strategy = strategiesRegistry.get(dep.strategy);
       return strategy.build(dep, instancesCache, resolvers, strategiesRegistry);
     });

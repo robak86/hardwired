@@ -1,5 +1,5 @@
 export { container, Container } from './container/Container';
-export { unit, module, ModuleBuilder } from './module/ModuleBuilder';
+
 
 export * from './strategies/RequestStrategyLegacy';
 export * from './strategies/SingletonStrategyLegacy';
