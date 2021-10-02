@@ -1,8 +1,9 @@
-import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
+import { BuildStrategy} from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { ConstDefinition } from '../new/InstanceEntry';
+import { ConstDefinition } from '../new/InstanceDefinition';
+import { StrategiesRegistry } from "./collection/StrategiesRegistry";
 
-export class ConstStrategy extends BuildStrategyNew {
+export class ConstStrategy extends BuildStrategy {
   static type = Symbol.for('constStrategy');
 
   build(

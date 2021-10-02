@@ -8,10 +8,9 @@ import {
   singletonFn,
   transientFn,
 } from './classStrategies';
-import { SingletonStrategy } from '../strategies/SingletonStrategy';
-import { classDefinition } from './InstanceEntry';
-import { ServiceLocator } from '../container/ServiceLocator';
-import { ServiceLocatorStrategy } from "../strategies/ServiceLocatorStrategy";
+import { classDefinition } from '../../new/InstanceDefinition';
+import { ServiceLocator } from '../../container/ServiceLocator';
+import { ServiceLocatorStrategy } from '../ServiceLocatorStrategy';
 
 export const singleton = {
   fn: singletonFn,

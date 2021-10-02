@@ -2,7 +2,7 @@ import { container } from '../container/Container';
 import u from 'util';
 
 import memwatch from '@airbnb/node-memwatch';
-import { scoped, singleton } from '../new/singletonStrategies';
+import { scoped, singleton } from '../strategies/factory/strategies';
 
 export const inspect = obj => {
   return console.log(u.inspect(obj, false, null, true));
@@ -24,7 +24,7 @@ const hd = new memwatch.HeapDiff();
 
 for (let i = 0; i < 1000000; i++) {
   const scope = c.checkoutScope();
-  const d = scope.__get(d2);
+  const d = scope.get(d2);
 
   if (i % 100 === 0) {
     console.log(i);

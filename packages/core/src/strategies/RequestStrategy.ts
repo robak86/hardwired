@@ -1,12 +1,13 @@
-import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
+import { BuildStrategy} from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, InstanceEntry } from '../new/InstanceEntry';
+import { createInstance, InstanceDefinition } from '../new/InstanceDefinition';
+import { StrategiesRegistry } from "./collection/StrategiesRegistry";
 
-export class RequestStrategy extends BuildStrategyNew {
+export class RequestStrategy extends BuildStrategy {
   static type = Symbol.for('classRequest');
 
   build(
-    definition: InstanceEntry<any>,
+    definition: InstanceDefinition<any>,
     instancesCache: InstancesCache,
     resolvers,
     strategiesRegistry: StrategiesRegistry,

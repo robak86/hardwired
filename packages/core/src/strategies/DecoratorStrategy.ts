@@ -1,8 +1,9 @@
-import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
+import { BuildStrategy} from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, DecoratorDefinition } from '../new/InstanceEntry';
+import { createInstance, DecoratorDefinition } from '../new/InstanceDefinition';
+import { StrategiesRegistry } from "./collection/StrategiesRegistry";
 
-export class DecoratorStrategy extends BuildStrategyNew {
+export class DecoratorStrategy extends BuildStrategy {
   static type = Symbol.for('decorator');
 
   build(

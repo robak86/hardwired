@@ -1,6 +1,6 @@
 import { container } from '../../container/Container';
 import { replace } from '../../new/instancePatching';
-import { request } from '../../new/singletonStrategies';
+import { request } from '../factory/strategies';
 
 describe(`RequestStrategy`, () => {
   describe(`resolution`, () => {
@@ -9,8 +9,8 @@ describe(`RequestStrategy`, () => {
         const a = request.fn(() => Math.random());
 
         const c = container();
-        const req1 = c.__get(a);
-        const req2 = c.__get(a);
+        const req1 = c.get(a);
+        const req2 = c.get(a);
 
         expect(req1).not.toEqual(req2);
       });
@@ -21,8 +21,8 @@ describe(`RequestStrategy`, () => {
         const a = request.fn(() => Math.random());
 
         const c = container();
-        const req1 = c.__asObject({ a });
-        const req2 = c.__asObject({ a });
+        const req1 = c.asObject({ a });
+        const req2 = c.asObject({ a });
 
         expect(req1.a).not.toEqual(req2.a);
       });
@@ -33,10 +33,10 @@ describe(`RequestStrategy`, () => {
         const a = request.fn(() => Math.random());
 
         const c = container();
-        const req1 = c.__get(a);
+        const req1 = c.get(a);
 
         const childC = c.checkoutScope();
-        const req2 = childC.__get(a);
+        const req2 = childC.get(a);
 
         expect(req1).not.toEqual(req2);
       });
@@ -56,8 +56,8 @@ describe(`RequestStrategy`, () => {
 
       const childC = c.checkoutScope({ scopeOverridesNew: [mPatch] });
 
-      expect(c.__get(a)).toEqual(1);
-      expect(childC.__get(a)).toEqual(2);
+      expect(c.get(a)).toEqual(1);
+      expect(childC.get(a)).toEqual(2);
     });
   });
 
@@ -75,10 +75,10 @@ describe(`RequestStrategy`, () => {
       );
 
       const c = container({ globalOverridesNew: [invariantPatch] });
-      expect(c.__get(k1)).toEqual(1);
+      expect(c.get(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverridesNew: [childScopePatch] });
-      expect(childScope.__get(k1)).toEqual(1);
+      expect(childScope.get(k1)).toEqual(1);
     });
 
     it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
@@ -95,11 +95,11 @@ describe(`RequestStrategy`, () => {
       );
 
       const c = container({ globalOverridesNew: [invariantPatch] });
-      expect(c.__get(k1)).toEqual(1);
+      expect(c.get(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverridesNew: [childScopePatch] });
-      expect(childScope.__get(k1)).toEqual(1);
-      expect(childScope.__get(k2)).toEqual(2);
+      expect(childScope.get(k1)).toEqual(1);
+      expect(childScope.get(k2)).toEqual(2);
     });
   });
 });

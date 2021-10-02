@@ -1,7 +1,7 @@
 
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { container } from '../Container';
-import { serviceLocator, singleton } from "../../new/singletonStrategies";
+import { serviceLocator, singleton } from "../../strategies/factory/strategies";
 import { replace } from '../../new/instancePatching';
 
 
@@ -16,7 +16,7 @@ describe(`ServiceLocator`, () => {
 
       const c = container({ scopeOverridesNew: [replace(someNumber, singleton.fn(() => 456))] });
 
-      const locator = c.__get(serviceLocator);
+      const locator = c.get(serviceLocator);
       const cls = locator.withRequestScope(({ get }) => get(clsDef));
 
       expect(cls.someNumber).toEqual(456);

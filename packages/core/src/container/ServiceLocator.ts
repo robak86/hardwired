@@ -1,20 +1,15 @@
 import { InstancesCache } from '../context/InstancesCache';
 import { ContainerContext } from '../context/ContainerContext';
-import { createContainerId } from '../utils/fastId';
 import { ModuleMaterialization } from '../context/ModuleMaterialization';
 import { IServiceLocator } from './IServiceLocator';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
-import { InstanceEntry } from "../new/InstanceEntry";
+import { InstanceDefinition } from '../new/InstanceDefinition';
 
 export class ServiceLocator implements IServiceLocator {
   private containerContext: ContainerContext;
 
-  constructor(
-    private instancesCache: InstancesCache,
-    private definitionsRegistry: InstancesDefinitionsRegistry,
-  ) {
+  constructor(private instancesCache: InstancesCache, private definitionsRegistry: InstancesDefinitionsRegistry) {
     this.containerContext = new ContainerContext(
-      createContainerId(),
       this.definitionsRegistry,
       instancesCache,
       new ModuleMaterialization(this.definitionsRegistry),
@@ -30,19 +25,17 @@ export class ServiceLocator implements IServiceLocator {
     return factory(serviceLocator);
   }
 
-  get = <TValue>(instanceDefinition: InstanceEntry<TValue>): TValue  => {
-    return this.containerContext.__get(instanceDefinition);
+  get = <TValue>(instanceDefinition: InstanceDefinition<TValue>): TValue => {
+    return this.containerContext.get(instanceDefinition);
   };
 
   select = <TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn =>
     inject(this.containerContext.checkoutRequestScope());
 
-  asObject = <TModule extends Record<string, InstanceEntry<any>>>(
-      module: TModule,
-  ): { [K in keyof TModule]: TModule[K] extends InstanceEntry<infer TValue> ? TValue : unknown } => {
+  asObject = <TModule extends Record<string, InstanceDefinition<any>>>(
+    module: TModule,
+  ): { [K in keyof TModule]: TModule[K] extends InstanceDefinition<infer TValue> ? TValue : unknown } => {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.__materialize(module);
-  }
-
-
+    return requestContext.materialize(module);
+  };
 }

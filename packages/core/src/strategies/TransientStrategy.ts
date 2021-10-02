@@ -1,14 +1,11 @@
-import { BuildStrategyNew } from './abstract/_BuildStrategy';
+import { BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, InstanceEntry } from '../new/InstanceEntry';
+import { createInstance, InstanceDefinition } from '../new/InstanceDefinition';
 
-export class TransientStrategy extends BuildStrategyNew {
+export class TransientStrategy extends BuildStrategy {
   static type = Symbol.for('classTransient');
 
-  // build(definition: InstanceEntry<any>, context: InstancesCache, resolvers: ResolversRegistry, strategiesRegistry: StrategiesRegistry): any {
-  // }
-
-  build(definition: InstanceEntry<any>, instancesCache: InstancesCache, resolvers, strategiesRegistry) {
+  build(definition: InstanceDefinition<any>, instancesCache: InstancesCache, resolvers, strategiesRegistry) {
     const id = definition.id;
 
     if (resolvers.hasGlobalOverrideResolver(id)) {

@@ -1,11 +1,11 @@
-import { createModuleId } from '../../utils/fastId';
 import { container } from '../../container/Container';
-import { request, serviceLocator, singleton } from '../../new/singletonStrategies';
-import { value } from '../../new/classStrategies';
+import { request, serviceLocator, singleton } from '../factory/strategies';
+import { value } from '../factory/classStrategies';
+import { v4 } from 'uuid';
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {
-    public id = createModuleId();
+    public id = v4();
 
     constructor(public value: string) {}
   }
@@ -29,7 +29,7 @@ describe(`ServiceLocatorResolver`, () => {
 
   it(`returns request scoped instances`, async () => {
     const c = container();
-    const locator = c.__get(serviceLocator);
+    const locator = c.get(serviceLocator);
 
     locator.withRequestScope(({ get }) => {
       const call1 = get(singletonScoped);
@@ -46,9 +46,9 @@ describe(`ServiceLocatorResolver`, () => {
   it(`reuses singleton instances from container`, async () => {
     const c = container();
 
-    const locator = c.__get(serviceLocator);
+    const locator = c.get(serviceLocator);
 
-    const fromContainer = c.__get(singletonScoped);
+    const fromContainer = c.get(singletonScoped);
     const fromLocator = locator.withRequestScope(({ get }) => {
       return get(singletonScoped);
     });
@@ -58,13 +58,13 @@ describe(`ServiceLocatorResolver`, () => {
 
   it(`reuses values built by factories from container`, async () => {
     const c = container();
-    const locator = c.__get(serviceLocator);
+    const locator = c.get(serviceLocator);
 
-    const fromContainer = c.__get(producedByFactory);
+    const fromContainer = c.get(producedByFactory);
     const fromLocator = locator.withRequestScope(({ get }) => {
       return get(producedByFactory);
     });
-    const fromContainer2 = c.__get(producedByFactory);
+    const fromContainer2 = c.get(producedByFactory);
 
     expect(fromContainer).toBe(fromLocator);
     expect(fromContainer2).toBe(fromLocator);

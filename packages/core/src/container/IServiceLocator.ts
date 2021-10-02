@@ -1,12 +1,12 @@
 import { ContainerContext } from '../context/ContainerContext';
-import { InstanceEntry } from '../new/InstanceEntry';
+import { InstanceDefinition } from '../new/InstanceDefinition';
 
 export interface IServiceLocator {
-  get<TValue>(instanceDefinition: InstanceEntry<TValue>): TValue;
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue>): TValue;
 
-  asObject<TModule extends Record<string, InstanceEntry<any>>>(
+  asObject<TModule extends Record<string, InstanceDefinition<any>>>(
     module: TModule,
-  ): { [K in keyof TModule]: TModule[K] extends InstanceEntry<infer TValue> ? TValue : unknown }; // TODO: add alias to this mapped type
+  ): { [K in keyof TModule]: TModule[K] extends InstanceDefinition<infer TValue> ? TValue : unknown }; // TODO: add alias to this mapped type
 
   select<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn;
 }

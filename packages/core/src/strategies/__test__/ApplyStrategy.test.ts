@@ -1,8 +1,8 @@
 import { container } from '../../container/Container';
 import { BoxedValue } from '../../__test__/BoxedValue';
-import { request, scoped, singleton, transient } from '../../new/singletonStrategies';
+import { request, scoped, singleton, transient } from '../factory/strategies';
 import { apply, decorate, set } from '../../new/instancePatching';
-import { InstanceEntry } from '../../new/InstanceEntry';
+import { InstanceDefinition } from '../../new/InstanceDefinition';
 
 describe(`ApplyResolver`, () => {
   it(`applies function to original value`, async () => {
@@ -11,7 +11,7 @@ describe(`ApplyResolver`, () => {
     const mPatch = apply(someValue, val => (val.value += 1));
 
     const c = container({ scopeOverridesNew: [mPatch] });
-    expect(c.__get(someValue).value).toEqual(2);
+    expect(c.get(someValue).value).toEqual(2);
   });
 
   it(`does not affect original module`, async () => {
@@ -19,8 +19,8 @@ describe(`ApplyResolver`, () => {
 
     const mPatch = apply(someValue, val => (val.value += 1));
 
-    expect(container().__get(someValue).value).toEqual(1);
-    expect(container({ scopeOverridesNew: [mPatch] }).__get(someValue).value).toEqual(2);
+    expect(container().get(someValue).value).toEqual(1);
+    expect(container({ scopeOverridesNew: [mPatch] }).get(someValue).value).toEqual(2);
   });
 
   it(`allows for multiple apply functions calls`, async () => {
@@ -32,7 +32,7 @@ describe(`ApplyResolver`, () => {
     );
 
     const c = container({ scopeOverridesNew: [mPatch] });
-    expect(c.__get(someValue).value).toEqual(6);
+    expect(c.get(someValue).value).toEqual(6);
   });
 
   describe(`scopeOverrides`, () => {
@@ -41,7 +41,7 @@ describe(`ApplyResolver`, () => {
       const mPatch = apply(someValue, a => a);
 
       const c = container({ scopeOverridesNew: [mPatch] });
-      expect(c.__get(someValue)).toEqual(c.__get(someValue));
+      expect(c.get(someValue)).toEqual(c.get(someValue));
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
@@ -50,7 +50,7 @@ describe(`ApplyResolver`, () => {
       const mPatch = apply(someValue, a => a);
 
       const c = container({ scopeOverridesNew: [mPatch] });
-      expect(c.__get(someValue)).not.toEqual(c.__get(someValue));
+      expect(c.get(someValue)).not.toEqual(c.get(someValue));
     });
 
     it(`preserves request scope of the original resolver`, async () => {
@@ -60,8 +60,8 @@ describe(`ApplyResolver`, () => {
       const mPatch = apply(a, a => a);
 
       const c = container({ scopeOverridesNew: [mPatch] });
-      const req1 = c.__asObject({ a, source });
-      const req2 = c.__asObject({ a, source });
+      const req1 = c.asObject({ a, source });
+      const req2 = c.asObject({ a, source });
 
       expect(req1.source).toEqual(req1.a);
       expect(req2.source).toEqual(req2.a);
@@ -91,7 +91,7 @@ describe(`ApplyResolver`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceEntry<MyService>) {
+    function setup(instanceDef: InstanceDefinition<MyService>) {
       const mPatch = decorate(instanceDef, a => {
         jest.spyOn(a, 'callMe');
         return a;
@@ -101,8 +101,8 @@ describe(`ApplyResolver`, () => {
 
       const scope1 = container({ globalOverridesNew: [mPatch] });
       const scope2 = scope1.checkoutScope({ scopeOverridesNew: [replaced] });
-      const instance1 = scope1.__get(instanceDef);
-      const instance2 = scope2.__get(instanceDef);
+      const instance1 = scope1.get(instanceDef);
+      const instance2 = scope2.get(instanceDef);
       return { instance1, instance2 };
     }
 

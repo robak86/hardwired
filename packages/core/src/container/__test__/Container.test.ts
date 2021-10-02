@@ -1,5 +1,5 @@
 import { replace } from '../../new/instancePatching';
-import { request, singleton } from '../../new/singletonStrategies';
+import { request, singleton } from '../../strategies/factory/strategies';
 import { container } from '../Container';
 
 describe(`Container`, () => {
@@ -8,7 +8,7 @@ describe(`Container`, () => {
       const cDef = singleton.fn(() => 'cValue');
       const c = container();
 
-      const cValue = c.__get(cDef);
+      const cValue = c.get(cDef);
       expect(cValue).toEqual('cValue');
     });
   });
@@ -23,23 +23,7 @@ describe(`Container`, () => {
           singleton.fn(() => 2),
         );
 
-        expect(container({ scopeOverridesNew: [mPatch] }).__get(a)).toEqual(2);
-      });
-
-      it(`calls provided function with materialized module`, async () => {
-        const a = singleton.fn(() => 1);
-        const b = singleton.fn(() => 2);
-
-        const factoryFunctionSpy = jest.fn().mockImplementation(ctx => {
-          return () => 3;
-        });
-
-        const mPatch = replace(a, singleton.fn(factoryFunctionSpy));
-
-        const testContainer = container({ scopeOverridesNew: [mPatch] });
-        testContainer.__get(a);
-
-        expect({ ...factoryFunctionSpy.mock.calls[0][0] }).toEqual({ ...testContainer.__asObject({ a, b }) });
+        expect(container({ scopeOverridesNew: [mPatch] }).get(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
@@ -50,7 +34,7 @@ describe(`Container`, () => {
           a,
           singleton.fn(() => 2),
         );
-        expect(container({ scopeOverridesNew: [mPatch] }).__get(b)).toEqual('b');
+        expect(container({ scopeOverridesNew: [mPatch] }).get(b)).toEqual('b');
       });
     });
   });
@@ -94,7 +78,7 @@ describe(`Container`, () => {
         ],
       });
 
-      const actual = c.__get(aPlusB);
+      const actual = c.get(aPlusB);
       expect(actual).toEqual(30);
     });
   });
@@ -105,7 +89,7 @@ describe(`Container`, () => {
       const b = request.fn(() => 2);
 
       const c = container();
-      const [aInstance, bInstance] = c.__getAll(a, b);
+      const [aInstance, bInstance] = c.getAll(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -120,7 +104,7 @@ describe(`Container`, () => {
       const k3 = singleton.fn(async (k1, k2) => (await k1) + (await k2), [k1, k2]);
 
       const c = container();
-      const k3Instance = c.__get(k3);
+      const k3Instance = c.get(k3);
       expect(await k3Instance).toEqual(3);
     });
 

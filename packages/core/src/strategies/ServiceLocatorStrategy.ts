@@ -1,10 +1,11 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { InstancesCache } from '../context/InstancesCache';
-import { BuildStrategyNew, StrategiesRegistry } from './abstract/_BuildStrategy';
-import { InstanceEntry } from '../new/InstanceEntry';
+import { BuildStrategy} from './abstract/BuildStrategy';
+import { InstanceDefinition } from '../new/InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
+import { StrategiesRegistry } from "./collection/StrategiesRegistry";
 
-export class ServiceLocatorStrategy extends BuildStrategyNew {
+export class ServiceLocatorStrategy extends BuildStrategy {
   static type = Symbol.for('serviceLocatorStrategy');
 
   constructor() {
@@ -12,7 +13,7 @@ export class ServiceLocatorStrategy extends BuildStrategyNew {
   }
 
   build(
-    definition: InstanceEntry<any>,
+    definition: InstanceDefinition<any>,
     context: InstancesCache,
     resolvers: InstancesDefinitionsRegistry,
     strategiesRegistry: StrategiesRegistry,

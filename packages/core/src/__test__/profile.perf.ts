@@ -1,8 +1,8 @@
 import now from 'performance-now';
 import { Container, container } from '../container/Container';
 
-import { singleton } from '../new/singletonStrategies';
-import { InstanceEntry } from '../new/InstanceEntry';
+import { singleton } from '../strategies/factory/strategies';
+import { InstanceDefinition } from '../new/InstanceDefinition';
 
 function registerN(times: number) {
   const result: any = {
@@ -23,7 +23,7 @@ function registerN(times: number) {
   return result;
 }
 
-function resolveByObject(container: Container, module: Record<string, InstanceEntry<any>>, times: number) {
+function resolveByObject(container: Container, module: Record<string, InstanceDefinition<any>>, times: number) {
   const result = {
     avg: -1,
     max: -1,
@@ -35,7 +35,7 @@ function resolveByObject(container: Container, module: Record<string, InstanceEn
 
   for (i = 0; i < times; i++) {
     const start = now();
-    const obj = container.__asObject(module);
+    const obj = container.asObject(module);
     const instance = obj[`SOME_ID_${times}`];
 
     const end = now();

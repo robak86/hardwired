@@ -1,23 +1,23 @@
-import { singletonFn, value } from '../../new/classStrategies';
+import { singletonFn, value } from '../factory/classStrategies';
 import { decorate, set } from '../../new/instancePatching';
 import { container } from '../../container/Container';
-import { request, scoped, singleton, transient } from '../../new/singletonStrategies';
-import { InstanceEntry } from '../../new/InstanceEntry';
+import { request, scoped, singleton, transient } from '../factory/strategies';
+import { InstanceDefinition } from '../../new/InstanceDefinition';
 
 describe(`DecoratorStrategy`, () => {
   it(`decorates original value`, async () => {
     const someValue = value(1);
 
     const c = container({ scopeOverridesNew: [decorate(someValue, val => val + 1)] });
-    expect(c.__get(someValue)).toEqual(2);
+    expect(c.get(someValue)).toEqual(2);
   });
 
   it(`does not affect original module`, async () => {
     const someValue = value(1);
     const mPatch = decorate(someValue, val => val + 1);
 
-    expect(container().__get(someValue)).toEqual(1);
-    expect(container({ scopeOverridesNew: [mPatch] }).__get(someValue)).toEqual(2);
+    expect(container().get(someValue)).toEqual(1);
+    expect(container({ scopeOverridesNew: [mPatch] }).get(someValue)).toEqual(2);
   });
 
   it(`allows for multiple decorations`, async () => {
@@ -28,7 +28,7 @@ describe(`DecoratorStrategy`, () => {
     );
 
     const c = container({ scopeOverridesNew: [mPatch] });
-    expect(c.__get(someValue)).toEqual(6);
+    expect(c.get(someValue)).toEqual(6);
   });
 
   it(`allows using other dependencies from the same module, ex1`, async () => {
@@ -39,7 +39,7 @@ describe(`DecoratorStrategy`, () => {
     const mPatch = decorate(someValue, (val, a: number, b: number) => val + a + b, [a, b]);
 
     const c = container({ scopeOverridesNew: [mPatch] });
-    expect(c.__get(someValue)).toEqual(13);
+    expect(c.get(someValue)).toEqual(13);
   });
 
   it(`allows using other dependencies from the same module, ex2`, async () => {
@@ -50,7 +50,7 @@ describe(`DecoratorStrategy`, () => {
     const mPatch = decorate(someValue, (val, b) => val * b, [b]);
 
     const c = container({ scopeOverridesNew: [mPatch] });
-    expect(c.__get(someValue)).toEqual(6);
+    expect(c.get(someValue)).toEqual(6);
   });
 
   describe(`scopeOverrides`, () => {
@@ -59,7 +59,7 @@ describe(`DecoratorStrategy`, () => {
       const mPatch = decorate(a, a => a);
 
       const c = container({ scopeOverridesNew: [mPatch] });
-      expect(c.__get(a)).toEqual(c.__get(a));
+      expect(c.get(a)).toEqual(c.get(a));
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
@@ -68,7 +68,7 @@ describe(`DecoratorStrategy`, () => {
       const mPatch = decorate(a, a => a);
 
       const c = container({ scopeOverridesNew: [mPatch] });
-      expect(c.__get(a)).not.toEqual(c.__get(a));
+      expect(c.get(a)).not.toEqual(c.get(a));
     });
 
     it(`uses different request scope for each subsequent asObject call`, async () => {
@@ -78,8 +78,8 @@ describe(`DecoratorStrategy`, () => {
       const mPatch = decorate(a, a => a);
 
       const c = container({ scopeOverridesNew: [mPatch] });
-      const req1 = c.__asObject({ source, a });
-      const req2 = c.__asObject({ source, a });
+      const req1 = c.asObject({ source, a });
+      const req2 = c.asObject({ source, a });
 
       expect(req1.source).toEqual(req1.a);
       expect(req2.source).toEqual(req2.a);
@@ -92,15 +92,15 @@ describe(`DecoratorStrategy`, () => {
       const b = request.fn(() => Math.random());
 
       const c = container();
-      const obj1 = c.__asObject({ a, b });
-      const obj2 = c.__asObject({ a, b });
+      const obj1 = c.asObject({ a, b });
+      const obj2 = c.asObject({ a, b });
 
       expect(obj1).not.toBe(obj2);
     });
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceEntry<MyService>) {
+    function setup(instanceDef: InstanceDefinition<MyService>) {
       const mPatch = decorate(instanceDef, a => {
         jest.spyOn(a, 'callMe');
         return a;
@@ -110,8 +110,8 @@ describe(`DecoratorStrategy`, () => {
 
       const scope1 = container({ globalOverridesNew: [mPatch] });
       const scope2 = scope1.checkoutScope({ scopeOverridesNew: [replaced] });
-      const instance1 = scope1.__get(instanceDef);
-      const instance2 = scope2.__get(instanceDef);
+      const instance1 = scope1.get(instanceDef);
+      const instance2 = scope2.get(instanceDef);
       return { instance1, instance2 };
     }
 

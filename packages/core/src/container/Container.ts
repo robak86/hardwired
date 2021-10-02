@@ -1,25 +1,23 @@
 import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
-import { InstanceEntry } from '../new/InstanceEntry';
-import { StrategiesRegistry } from '../strategies/abstract/_BuildStrategy';
+import { InstanceDefinition } from '../new/InstanceDefinition';
 import { SingletonStrategy } from '../strategies/SingletonStrategy';
 import { ConstStrategy } from '../strategies/ConstStrategy';
-import { FactoryFunctionSingletonStrategy } from '../strategies/FactoryFunctionSingletonStrategy';
 import { TransientStrategy } from '../strategies/TransientStrategy';
 import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
 import { RequestStrategy } from '../strategies/RequestStrategy';
 import { ScopeStrategy } from '../strategies/ScopeStrategy';
 import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
+import { StrategiesRegistry } from "../strategies/collection/StrategiesRegistry";
 
 export type ChildScopeOptions = {
-  scopeOverridesNew?: InstanceEntry<any>[];
+  scopeOverridesNew?: InstanceDefinition<any>[];
 };
 
 export const defaultStrategiesRegistry = new StrategiesRegistry({
   [SingletonStrategy.type]: new SingletonStrategy(),
   [TransientStrategy.type]: new TransientStrategy(),
   [ConstStrategy.type]: new ConstStrategy(),
-  [FactoryFunctionSingletonStrategy.type]: new FactoryFunctionSingletonStrategy(),
   [DecoratorStrategy.type]: new DecoratorStrategy(),
   [RequestStrategy.type]: new RequestStrategy(),
   [ScopeStrategy.type]: new ScopeStrategy(),
@@ -29,21 +27,17 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
 export class Container implements IServiceLocator {
   constructor(protected readonly containerContext: ContainerContext) {}
 
-  get id(): string {
-    return this.containerContext.id;
-  }
-
-  __get<TValue>(instanceDefinition: InstanceEntry<TValue>): TValue {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue>): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.__get(instanceDefinition);
+    return requestContext.get(instanceDefinition);
   }
 
-  __getAll<TLazyModule extends Array<InstanceEntry<any>>>(
+  getAll<TLazyModule extends Array<InstanceDefinition<any>>>(
     ...definitions: TLazyModule
-  ): { [K in keyof TLazyModule]: TLazyModule[K] extends InstanceEntry<infer TInstance> ? TInstance : unknown } {
+  ): { [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance> ? TInstance : unknown } {
     const requestContext = this.containerContext.checkoutRequestScope();
 
-    return definitions.map(def => requestContext.__get(def)) as any;
+    return definitions.map(def => requestContext.get(def)) as any;
   }
 
   select<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
@@ -51,11 +45,11 @@ export class Container implements IServiceLocator {
   }
 
   // TODO: we still should create object with lazy properties
-  __asObject<TModule extends Record<string, InstanceEntry<any>>>(
+  asObject<TModule extends Record<string, InstanceDefinition<any>>>(
     module: TModule,
-  ): { [K in keyof TModule]: TModule[K] extends InstanceEntry<infer TValue> ? TValue : unknown } {
+  ): { [K in keyof TModule]: TModule[K] extends InstanceDefinition<infer TValue> ? TValue : unknown } {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.__materialize(module);
+    return requestContext.materialize(module);
   }
 
   /***
@@ -72,13 +66,13 @@ export class Container implements IServiceLocator {
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  scopeOverridesNew?: InstanceEntry<any>[];
-  globalOverridesNew?: InstanceEntry<any>[]; // propagated to whole dependencies graph
+  scopeOverridesNew?: InstanceDefinition<any>[];
+  globalOverridesNew?: InstanceDefinition<any>[]; // propagated to whole dependencies graph
 };
 
-export function container(globalOverrides?: InstanceEntry<any>[]): Container;
+export function container(globalOverrides?: InstanceDefinition<any>[]): Container;
 export function container(options?: ContainerOptions): Container;
-export function container(overridesOrOptions?: ContainerOptions | Array<InstanceEntry<any>>): Container {
+export function container(overridesOrOptions?: ContainerOptions | Array<InstanceDefinition<any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {

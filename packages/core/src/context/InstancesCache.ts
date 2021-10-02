@@ -1,36 +1,28 @@
 import { SingletonScope } from '../container/SingletonScope';
-import { createContainerId } from '../utils/fastId';
 import invariant from 'tiny-invariant';
-import { InstanceEntry } from "../new/InstanceEntry";
+import { InstanceDefinition } from '../new/InstanceDefinition';
 
-function getPatchedResolversIds(loadTarget: InstanceEntry<any>[]):string[] {
-  throw new Error("Implement me!")
-  // return loadTarget.flatMap(m => {
-  //   return m.patchedResolvers.values.map(patchedResolver => {
-  //     return patchedResolver.id;
-  //   });
-  // });
+function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any>[]): string[] {
+  return patchedDefinitions.map(def => def.id);
 }
 
 export class InstancesCache {
-  static create(scopeOverrides: InstanceEntry<any>[]): InstancesCache {
+  static create(scopeOverrides: InstanceDefinition<any>[]): InstancesCache {
     const ownKeys = getPatchedResolversIds(scopeOverrides);
-    return new InstancesCache(createContainerId(), new SingletonScope(ownKeys), {}, {}, {});
+    return new InstancesCache(new SingletonScope(ownKeys), {}, {}, {});
   }
 
   constructor(
-    private id: string,
     private globalScope: SingletonScope,
     private currentScope: Record<string, any>,
     private requestScope: Record<string, any>,
     private globalOverridesScope: Record<string, any>,
   ) {}
 
-  childScope(scopeOverrides: InstanceEntry<any>[]): InstancesCache {
+  childScope(scopeOverrides: InstanceDefinition<any>[]): InstancesCache {
     const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
     return new InstancesCache(
-      createContainerId(),
       this.globalScope.checkoutChild(scopeOverridesResolversIds),
       {},
       {},
@@ -39,7 +31,7 @@ export class InstancesCache {
   }
 
   checkoutForRequestScope(): InstancesCache {
-    return new InstancesCache(createContainerId(), this.globalScope, this.currentScope, {}, this.globalOverridesScope);
+    return new InstancesCache(this.globalScope, this.currentScope, {}, this.globalOverridesScope);
   }
 
   hasInCurrentScope(id: string) {

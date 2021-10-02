@@ -1,7 +1,7 @@
 import { ContainerContext } from '../context/ContainerContext';
 import invariant from 'tiny-invariant';
 import { Thunk, unwrapThunk } from '../utils/Thunk';
-import { InstanceEntry } from '../new/InstanceEntry';
+import { InstanceDefinition } from '../new/InstanceDefinition';
 
 type MaterializeDependenciesTuple<TDependencies extends [...Array<(ctx: ContainerContext) => any>]> = {
   [K in keyof TDependencies]: TDependencies[K] extends (ctx: ContainerContext) => infer TReturn ? TReturn : unknown;
@@ -20,28 +20,28 @@ type MaterializeDependenciesRecordAsync<TDependencies extends Record<string, any
 
 export type DependencySelector<TReturn> = (context: ContainerContext) => TReturn;
 
-const select = <T>(module: Thunk<InstanceEntry<T>>) => {
+const select = <T>(module: Thunk<InstanceDefinition<T>>) => {
   invariant(
     module !== undefined,
     `Provided module is undefined. It's probably because of circular modules references. Use thunk instead`,
   );
   return (context: ContainerContext): T => {
-    return context.__get(unwrapThunk(module));
+    return context.get(unwrapThunk(module));
   };
 };
 
-type MaterializedInstancesRecord<TDependencies extends Record<string, Thunk<InstanceEntry<any>>>> = {
-  [K in keyof TDependencies]: TDependencies[K] extends Thunk<InstanceEntry<infer TInstance>> ? TInstance : unknown;
+type MaterializedInstancesRecord<TDependencies extends Record<string, Thunk<InstanceDefinition<any>>>> = {
+  [K in keyof TDependencies]: TDependencies[K] extends Thunk<InstanceDefinition<infer TInstance>> ? TInstance : unknown;
 };
 
 // prettier-ignore
 type MaterializedInstancesRecordAsync<TDependencies extends Record<string, any>> = {
-  [K in keyof TDependencies]: TDependencies[K] extends InstanceEntry<infer TInstance> ?
+  [K in keyof TDependencies]: TDependencies[K] extends InstanceDefinition<infer TInstance> ?
       (TInstance extends Promise<infer TAwaited> ? TAwaited : TInstance) :
       unknown
 };
 
-const record = <TDependencies extends Record<string, Thunk<InstanceEntry<any>>>>(
+const record = <TDependencies extends Record<string, Thunk<InstanceDefinition<any>>>>(
   deps: TDependencies,
 ): ((ctx: ContainerContext) => MaterializedInstancesRecord<TDependencies>) => {
   return ctx => {
@@ -59,7 +59,7 @@ const record = <TDependencies extends Record<string, Thunk<InstanceEntry<any>>>>
   };
 };
 
-const asyncRecord = <TDependencies extends Record<string, InstanceEntry<any>>>(
+const asyncRecord = <TDependencies extends Record<string, InstanceDefinition<any>>>(
   deps: TDependencies,
 ): ((ctx: ContainerContext) => Promise<MaterializeDependenciesRecordAsync<TDependencies>>) => {
   return async ctx => {

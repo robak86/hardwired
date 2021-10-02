@@ -1,8 +1,8 @@
 import { inject } from '../inject';
 import { container } from '../Container';
 import { expectType, TypeEqual } from 'ts-expect';
-import { singleton } from '../../new/singletonStrategies';
-import { value } from '../../new/classStrategies';
+import { singleton } from '../../strategies/factory/strategies';
+import { value } from '../../strategies/factory/classStrategies';
 
 describe(`inject`, () => {
   describe(`record`, () => {
@@ -54,8 +54,8 @@ describe(`inject`, () => {
   describe(`asyncRecord`, () => {
     it(`batches all async properties`, async () => {
       const p1 = singleton.fn(async () => 1);
-      const p2 = singleton.fn(async () => 1);
-      const val1 = singleton.fn(() => 1);
+      const p2 = singleton.fn(async () => 2);
+      const val1 = singleton.fn(() => 10);
 
       const selector = inject.asyncRecord({
         a: p1,

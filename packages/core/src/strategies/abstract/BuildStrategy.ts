@@ -1,30 +1,20 @@
 import { InstancesCache } from '../../context/InstancesCache';
-import { InstanceEntry } from '../../new/InstanceEntry';
-import invariant from 'tiny-invariant';
+import { InstanceDefinition } from '../../new/InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../../context/InstancesDefinitionsRegistry';
+import { StrategiesRegistry } from "../collection/StrategiesRegistry";
 
-export class StrategiesRegistry {
-  constructor(private strategies: Record<symbol, BuildStrategyNew>) {}
-
-  get(key: symbol): BuildStrategyNew {
-    const strategy = this.strategies[key];
-    invariant(strategy, `Strategy implementation for ${key.toString()} is missing`);
-    return strategy;
-  }
-}
-
-export abstract class BuildStrategyNew {
+export abstract class BuildStrategy {
   readonly tags: symbol[] = [];
 
   abstract build(
-    definition: InstanceEntry<any>,
+    definition: InstanceDefinition<any>,
     context: InstancesCache,
     resolvers: InstancesDefinitionsRegistry,
     strategiesRegistry: StrategiesRegistry,
   ): any;
 
   protected buildDependencies(
-    definition: InstanceEntry<any>, // TODO: use correct type
+    definition: InstanceDefinition<any>, // TODO: use correct type
     instancesCache: InstancesCache,
     resolvers: InstancesDefinitionsRegistry,
     strategiesRegistry: StrategiesRegistry,
@@ -34,7 +24,7 @@ export abstract class BuildStrategyNew {
     }
 
     const dependencies = definition.dependencies.map(instanceDef => {
-      return resolvers.getInstanceEntry(instanceDef)
+      return resolvers.getInstanceDefinition(instanceDef)
     })
 
     return dependencies.map(dep => {
