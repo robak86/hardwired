@@ -1,9 +1,9 @@
 import { InstancesCache } from './InstancesCache';
 import { ModuleMaterialization } from './ModuleMaterialization';
-import { Module } from '../module/Module';
+
 import { createContainerId } from '../utils/fastId';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
-import { ModulePatch } from '../module/ModulePatch';
+
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { InstanceEntry } from '../new/InstanceEntry';
 import { StrategiesRegistry } from '../strategies/abstract/_BuildStrategy';
@@ -22,8 +22,6 @@ export class ContainerContext {
   }
 
   static create(
-    scopeOverrides: ModulePatch<any>[],
-    globalOverrides: ModulePatch<any>[],
     scopeOverridesNew: InstanceEntry<any>[],
     globalOverridesNew: InstanceEntry<any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
@@ -33,7 +31,7 @@ export class ContainerContext {
     return new ContainerContext(
       createContainerId(),
       definitionsRegistry,
-      InstancesCache.create(scopeOverrides),
+      InstancesCache.create(scopeOverridesNew),
       new ModuleMaterialization(definitionsRegistry),
       strategiesRegistry,
     );
@@ -57,10 +55,6 @@ export class ContainerContext {
       this.strategiesRegistry,
     );
     // return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
-  }
-
-  materialize<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    return this.materialization.materialize(module, this.instancesCache);
   }
 
   __materialize<TModule extends Record<string, InstanceEntry<any>>>(
@@ -89,12 +83,12 @@ export class ContainerContext {
   }
 
   childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): ContainerContext {
-    const { scopeOverrides = [], scopeOverridesNew = [] } = options;
+    const { scopeOverridesNew = [] } = options;
 
     return new ContainerContext(
       createContainerId(),
       this.instancesDefinitionsRegistry.checkoutForScope(scopeOverridesNew),
-      this.instancesCache.childScope(scopeOverrides),
+      this.instancesCache.childScope(scopeOverridesNew),
       new ModuleMaterialization(this.instancesDefinitionsRegistry),
       this.strategiesRegistry,
     );

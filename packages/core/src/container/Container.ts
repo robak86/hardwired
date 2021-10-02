@@ -1,5 +1,3 @@
-import { Module } from '../module/Module';
-import { ModulePatch } from '../module/ModulePatch';
 import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
 import { InstanceEntry } from '../new/InstanceEntry';
@@ -11,11 +9,9 @@ import { TransientStrategy } from '../strategies/TransientStrategy';
 import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
 import { RequestStrategy } from '../strategies/RequestStrategy';
 import { ScopeStrategy } from '../strategies/ScopeStrategy';
-import { ServiceLocator } from "./ServiceLocator";
-import { ServiceLocatorStrategy } from "../strategies/ServiceLocatorStrategy";
+import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
 
 export type ChildScopeOptions = {
-  scopeOverrides?: ModulePatch<any>[];
   scopeOverridesNew?: InstanceEntry<any>[];
 };
 
@@ -27,7 +23,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
   [DecoratorStrategy.type]: new DecoratorStrategy(),
   [RequestStrategy.type]: new RequestStrategy(),
   [ScopeStrategy.type]: new ScopeStrategy(),
-  [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy()
+  [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
 });
 
 export class Container implements IServiceLocator {
@@ -36,8 +32,6 @@ export class Container implements IServiceLocator {
   get id(): string {
     return this.containerContext.id;
   }
-
-
 
   __get<TValue>(instanceDefinition: InstanceEntry<TValue>): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
@@ -56,28 +50,12 @@ export class Container implements IServiceLocator {
     return inject(this.containerContext.checkoutRequestScope());
   }
 
-
-
-  asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
-    const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.materialize(module);
-  }
-
   // TODO: we still should create object with lazy properties
   __asObject<TModule extends Record<string, InstanceEntry<any>>>(
     module: TModule,
   ): { [K in keyof TModule]: TModule[K] extends InstanceEntry<infer TValue> ? TValue : unknown } {
     const requestContext = this.containerContext.checkoutRequestScope();
     return requestContext.__materialize(module);
-  }
-
-  asObjectMany<TModule extends Module<any>, TModules extends [TModule, ...TModule[]]>(
-    ...modules: TModules
-  ): Module.MaterializedArray<TModules> {
-    const requestContext = this.containerContext.checkoutRequestScope();
-    return modules.map(module => {
-      return requestContext.materialize(module);
-    }) as any;
   }
 
   /***
@@ -94,23 +72,18 @@ export class Container implements IServiceLocator {
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  scopeOverrides?: ModulePatch<any>[]; // used only in descendent scopes (can be overridden)
   scopeOverridesNew?: InstanceEntry<any>[];
-  globalOverrides?: ModulePatch<any>[]; // propagated to whole dependencies graph
   globalOverridesNew?: InstanceEntry<any>[]; // propagated to whole dependencies graph
 };
 
-export function container(globalOverrides?: ModulePatch<any>[]): Container;
+export function container(globalOverrides?: InstanceEntry<any>[]): Container;
 export function container(options?: ContainerOptions): Container;
-export function container(overridesOrOptions?: ContainerOptions | Array<ModulePatch<any>>): Container {
+export function container(overridesOrOptions?: ContainerOptions | Array<InstanceEntry<any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
-    throw new Error('Implement me!');
-    // return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
+    return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {
     return new Container(
       ContainerContext.create(
-        overridesOrOptions?.scopeOverrides ?? [],
-        overridesOrOptions?.globalOverrides ?? [],
         overridesOrOptions?.scopeOverridesNew ?? [],
         overridesOrOptions?.globalOverridesNew ?? [],
         defaultStrategiesRegistry,

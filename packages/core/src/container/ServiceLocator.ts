@@ -1,4 +1,3 @@
-import { Module } from '../module/Module';
 import { InstancesCache } from '../context/InstancesCache';
 import { ContainerContext } from '../context/ContainerContext';
 import { createContainerId } from '../utils/fastId';
@@ -38,8 +37,12 @@ export class ServiceLocator implements IServiceLocator {
   select = <TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn =>
     inject(this.containerContext.checkoutRequestScope());
 
-  asObject = <TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> => {
+  asObject = <TModule extends Record<string, InstanceEntry<any>>>(
+      module: TModule,
+  ): { [K in keyof TModule]: TModule[K] extends InstanceEntry<infer TValue> ? TValue : unknown } => {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.materialize(module);
-  };
+    return requestContext.__materialize(module);
+  }
+
+
 }

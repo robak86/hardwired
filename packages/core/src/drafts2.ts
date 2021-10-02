@@ -1,9 +1,6 @@
 import { ClassType } from './utils/ClassType';
-import { SingletonStrategyLegacy } from './strategies/SingletonStrategyLegacy';
-import { TransientStrategyLegacy } from './strategies/TransientStrategyLegacy';
-import { BuildStrategy } from './strategies/abstract/BuildStrategy';
+
 import { InstancesCache } from './context/InstancesCache';
-import { ResolversRegistry } from './context/ResolversRegistry';
 
 type ContainerContext = {
   ctx: 1;
@@ -87,30 +84,30 @@ export const someModule = module(function wire() {
 });
 
 
-class CustomBuild implements BuildStrategy<any> {
-  readonly __TValue: any;
-  readonly tags: symbol[] = null as any;
-
-  build(id: string, context: InstancesCache, resolvers: ResolversRegistry, materializedModule): any {
-    throw new Error('Implement me!');
-  }
-}
+// class CustomBuild implements BuildStrategy<any> {
+//   readonly __TValue: any;
+//   readonly tags: symbol[] = null as any;
+//
+//   build(id: string, context: InstancesCache, resolvers, materializedModule): any {
+//     throw new Error('Implement me!');
+//   }
+// }
 
 // this will enable using different strategies implementation depending on environment of framework (node|browser|react)
 // e.g. some strategy could store it's instance in react's useState ? :D
-const ctn = container({
-  singleton: SingletonStrategyLegacy,
-  transient: TransientStrategyLegacy,
-  custom: CustomBuild,
-});
-
-// ctn.get(someModule.someDefinitionUsingCustomStrategy) - in theory we can make it type-safe and throw compile error
-// when customStrategy is not registered in container... but it would introduce complexity to types, which is not worth it
-
-const scoped = ctn.scope([
-  replace(otherModule.someSingleton, singleton(Cls0, [])),
-  () => {
-    // use other modules?
-    return replace(otherModule.someSingleton, singleton(Cls0, []));
-  },
-]);
+// const ctn = container({
+//   singleton: SingletonStrategyLegacy,
+//   transient: TransientStrategyLegacy,
+//   custom: CustomBuild,
+// });
+//
+// // ctn.get(someModule.someDefinitionUsingCustomStrategy) - in theory we can make it type-safe and throw compile error
+// // when customStrategy is not registered in container... but it would introduce complexity to types, which is not worth it
+//
+// const scoped = ctn.scope([
+//   replace(otherModule.someSingleton, singleton(Cls0, [])),
+//   () => {
+//     // use other modules?
+//     return replace(otherModule.someSingleton, singleton(Cls0, []));
+//   },
+// ]);

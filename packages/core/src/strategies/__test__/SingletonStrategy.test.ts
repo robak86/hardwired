@@ -1,7 +1,5 @@
 import { container } from '../../container/Container';
 import { createModuleId } from '../../utils/fastId';
-import { singleton, SingletonStrategyLegacy } from '../SingletonStrategyLegacy';
-import { expectType, TypeEqual } from 'ts-expect';
 import { classSingleton, singletonFn, value } from '../../new/classStrategies';
 import { set } from '../../new/instancePatching';
 
@@ -15,13 +13,6 @@ describe(`SingletonStrategy`, () => {
   class TestClassConsumer {
     constructor(public testClassInstance: TestClass) {}
   }
-
-  describe(`types`, () => {
-    it(`return correct type`, async () => {
-      const s = singleton(() => new TestClass(''));
-      expectType<TypeEqual<typeof s, SingletonStrategyLegacy<TestClass>>>(true);
-    });
-  });
 
   describe(`resolution`, () => {
     describe(`single module`, () => {

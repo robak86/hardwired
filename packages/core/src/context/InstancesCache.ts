@@ -1,18 +1,19 @@
 import { SingletonScope } from '../container/SingletonScope';
 import { createContainerId } from '../utils/fastId';
 import invariant from 'tiny-invariant';
-import { ModulePatch } from '../module/ModulePatch';
+import { InstanceEntry } from "../new/InstanceEntry";
 
-function getPatchedResolversIds(loadTarget: ModulePatch<any>[]) {
-  return loadTarget.flatMap(m => {
-    return m.patchedResolvers.values.map(patchedResolver => {
-      return patchedResolver.id;
-    });
-  });
+function getPatchedResolversIds(loadTarget: InstanceEntry<any>[]):string[] {
+  throw new Error("Implement me!")
+  // return loadTarget.flatMap(m => {
+  //   return m.patchedResolvers.values.map(patchedResolver => {
+  //     return patchedResolver.id;
+  //   });
+  // });
 }
 
 export class InstancesCache {
-  static create(scopeOverrides: ModulePatch<any>[]): InstancesCache {
+  static create(scopeOverrides: InstanceEntry<any>[]): InstancesCache {
     const ownKeys = getPatchedResolversIds(scopeOverrides);
     return new InstancesCache(createContainerId(), new SingletonScope(ownKeys), {}, {}, {});
   }
@@ -25,7 +26,7 @@ export class InstancesCache {
     private globalOverridesScope: Record<string, any>,
   ) {}
 
-  childScope(scopeOverrides: ModulePatch<any>[]): InstancesCache {
+  childScope(scopeOverrides: InstanceEntry<any>[]): InstancesCache {
     const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
     return new InstancesCache(
