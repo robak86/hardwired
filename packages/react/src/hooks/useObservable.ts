@@ -1,37 +1,33 @@
-import { Module } from 'hardwired';
 import { useContainer } from '../context/ContainerContext';
 import { useEffect, useRef } from 'react';
 import { IObservable, isObservable, Unsubscribe } from '../abstract/IObservable';
 import { useForceRender } from './helpers/useForceRender';
 import { identity } from '../utils/fp';
 import invariant from 'tiny-invariant';
+import { InstanceDefinition } from 'hardwired';
 
 export type UseObservableHook = {
-  <TModule extends Module<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
-    module: TModule,
-    name: TDefinitionName & string,
-  ): Module.Materialized<TModule>[TDefinitionName] extends IObservable<infer TState> ? TState : unknown;
+  <TInstance>(definition: InstanceDefinition<TInstance>): TInstance extends IObservable<infer TState>
+    ? TState
+    : unknown;
 
-  <TModule extends Module<any>, TDefinitionName extends Module.InstancesKeys<TModule>, TReturn>(
-    module: TModule,
-    name: TDefinitionName & string,
-    select: (
-      obj: Module.Materialized<TModule>[TDefinitionName] extends IObservable<infer TState> ? TState : unknown,
-    ) => TReturn,
+  <TInstance, TReturn>(
+    definition: InstanceDefinition<TInstance>,
+    select: (obj: TInstance extends IObservable<infer TState> ? TState : unknown) => TReturn,
   ): TReturn;
 };
 
-export const useObservable: UseObservableHook = (module, key, select = identity) => {
+export const useObservable: UseObservableHook = (definition, select = identity) => {
   const container = useContainer();
   const forceUpdate = useForceRender();
-  const instanceRef = useRef(container.get(module, key));
+  const instanceRef = useRef(container.get(definition));
   const subscriptionRef = useRef<null | Unsubscribe>(null);
   const selectedValueRef = useRef<any>(null);
   const hasBeenDispatchedRef = useRef(false);
 
   invariant(
     isObservable(instanceRef.current),
-    `Cannot use useObservable on ${module.moduleId}:${key}. Given object does not implement subscribe method`,
+    `Cannot use useObservable on ${definition.id}. Given object does not implement subscribe method`,
   );
 
   if (!subscriptionRef.current) {
@@ -46,10 +42,7 @@ export const useObservable: UseObservableHook = (module, key, select = identity)
   }
 
   // Cannot allow async initial subscribe dispatch because this hook would have to return undefined|null for the first render
-  invariant(
-    hasBeenDispatchedRef.current,
-    `Module ${module.moduleId}.${key} didn't dispatch synchronously subscribe callback`,
-  );
+  invariant(hasBeenDispatchedRef.current, `Module ${definition.id} didn't dispatch synchronously subscribe callback`);
 
   useEffect(() => () => subscriptionRef.current?.(), []);
 

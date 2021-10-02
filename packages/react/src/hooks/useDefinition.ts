@@ -1,14 +1,11 @@
-import { Module } from 'hardwired';
+import { InstanceDefinition } from 'hardwired';
 import { useContainer } from '../context/ContainerContext';
 
 export type UseDefinitionHook = {
-  <TModule extends Module<any>, TDefinitionName extends Module.InstancesKeys<TModule>>(
-    module: TModule,
-    name: TDefinitionName & string,
-  ): Module.Materialized<TModule>[TDefinitionName];
+  <TInstance>(definition: InstanceDefinition<TInstance>): TInstance;
 };
 
-export const useDefinition: UseDefinitionHook = (module, key) => {
+export const useDefinition: UseDefinitionHook = definition => {
   const container = useContainer();
-  return container.get(module, key);
+  return container.get(definition);
 };

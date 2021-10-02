@@ -6,6 +6,8 @@ export * from './strategies/RequestStrategy';
 export * from './strategies/SingletonStrategy';
 export * from './strategies/TransientStrategy';
 export * from './strategies/ScopeStrategy';
+export * from './strategies/factory/strategies';
+export * from './strategies/abstract/InstanceDefinition';
 
 export { inject } from './helpers/inject';
 export type { DependencySelector } from './helpers/inject';

@@ -1,4 +1,4 @@
-import { module, scoped } from 'hardwired';
+import { scoped } from 'hardwired';
 import React, { FC } from 'react';
 
 import { render } from '@testing-library/react';
@@ -9,13 +9,10 @@ describe(`useScopedDefinition`, () => {
   describe(`without invalidation keys`, () => {
     function setup() {
       let counter = 0;
-
-      const m = module()
-        .define('value', scoped, () => (counter += 1))
-        .build();
+      const valueDef = scoped.fn(() => (counter += 1));
 
       const ValueRenderer = ({ testId, deps }) => {
-        const value = useScopedDefinition(deps, m, 'value');
+        const value = useScopedDefinition(deps, valueDef);
 
         return <div data-testid={testId}>{value}</div>;
       };
@@ -51,13 +48,10 @@ describe(`useScopedDefinition`, () => {
   describe(`with invalidation keys`, () => {
     function setup() {
       let counter = 0;
-
-      const m = module()
-        .define('value', scoped, () => (counter += 1))
-        .build();
+      const valueDef = scoped.fn(() => (counter += 1));
 
       const ValueRenderer = ({ testId, deps }) => {
-        const value = useScopedDefinition(deps, m, 'value');
+        const value = useScopedDefinition(deps, valueDef);
 
         return <div data-testid={testId}>{value}</div>;
       };

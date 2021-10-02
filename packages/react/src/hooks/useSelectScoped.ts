@@ -1,11 +1,11 @@
-import { DependencySelector, ModulePatch } from 'hardwired';
+import { DependencySelector, InstanceDefinition } from 'hardwired';
 import { useContainer } from '../context/ContainerContext';
 import { useMemoized } from '../utils/useMemoized';
 
 export type UseDefinitionHook = {
   <TReturn>(
     invalidateKeys: ReadonlyArray<any>,
-    scopeOverrides: ModulePatch<any>[],
+    scopeOverrides: InstanceDefinition<any>[],
     selector: DependencySelector<TReturn>,
   ): TReturn;
 };
@@ -13,7 +13,7 @@ export type UseDefinitionHook = {
 export const useSelectScoped: UseDefinitionHook = (invalidateKeys, scopeOverrides, selector) => {
   const container = useContainer();
   const getInstance = useMemoized(() => {
-    const scoped = container.checkoutScope({ scopeOverrides: scopeOverrides });
+    const scoped = container.checkoutScope({ scopeOverridesNew: scopeOverrides });
     return scoped.select(selector);
   });
 
