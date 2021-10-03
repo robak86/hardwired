@@ -1,6 +1,5 @@
-import { BuildStrategy} from './abstract/BuildStrategy';
+import { BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance} from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from "./collection/StrategiesRegistry";
 import { DecoratorDefinition } from "./abstract/InstanceDefinition/DecoratorDefinition";
 

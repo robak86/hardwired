@@ -2,7 +2,7 @@ import { ClassType } from '../../../utils/ClassType';
 import { InstanceDefinition } from '../InstanceDefinition';
 import { v4 } from 'uuid';
 
-export type ClassInstanceDefinition<T> = {
+export type ClassInstanceDefinition<T, TMeta = never, TExternal = never> = {
   type: 'class';
   id: string;
   strategy: symbol;

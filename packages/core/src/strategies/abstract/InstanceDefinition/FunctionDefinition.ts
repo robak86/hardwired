@@ -1,7 +1,7 @@
 import { InstanceDefinition } from '../InstanceDefinition';
 import { v4 } from 'uuid';
 
-export type FunctionFactoryDefinition<T> = {
+export type FunctionFactoryDefinition<T, TMeta = never, TExternal = never> = {
   type: 'function';
   id: string;
   strategy: symbol;
