@@ -1,9 +1,9 @@
-import { singletonFn, value } from '../factory/classStrategies';
 import { set } from '../../patching/set';
 import { container } from '../../container/Container';
-import { request, scoped, singleton, transient } from '../factory/strategies';
+import { request, scoped, singleton, transient, value } from '../factory/strategies';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { decorate } from "../../patching/decorate";
+import { singletonFn } from "../factory/fnStrategies";
 
 describe(`DecoratorStrategy`, () => {
   it(`decorates original value`, async () => {

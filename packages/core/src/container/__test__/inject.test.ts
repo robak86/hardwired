@@ -1,8 +1,7 @@
 import { inject } from '../../helpers/inject';
 import { container } from '../Container';
 import { expectType, TypeEqual } from 'ts-expect';
-import { singleton } from '../../strategies/factory/strategies';
-import { value } from '../../strategies/factory/classStrategies';
+import { singleton, value } from '../../strategies/factory/strategies';
 
 describe(`inject`, () => {
   describe(`record`, () => {

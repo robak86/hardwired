@@ -1,7 +1,9 @@
 import { container } from '../../container/Container';
-import { classSingleton, singletonFn, value } from '../factory/classStrategies';
+import { classSingleton} from '../factory/classStrategies';
 import { set } from '../../patching/set';
 import { v4 } from 'uuid';
+import { singletonFn } from "../factory/fnStrategies";
+import { value } from "../factory/strategies";
 
 
 describe(`SingletonStrategy`, () => {

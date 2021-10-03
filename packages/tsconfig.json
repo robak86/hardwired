@@ -8,8 +8,8 @@
     {
       "path": "./react/tsconfig.json"
     },
-//    {
-//      "path": "./example/tsconfig.json"
-//    }
+    {
+      "path": "./example/tsconfig.json"
+    }
   ]
 }

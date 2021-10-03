@@ -1,5 +1,6 @@
-import { DecoratorDefinition, InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
+import { DecoratorDefinition } from "../strategies/abstract/InstanceDefinition/DecoratorDefinition";
 
 export function decorate<TInstance, TNextValue extends TInstance>(
   instance: InstanceDefinition<TInstance>,

@@ -21,3 +21,9 @@ export { ServiceLocator } from './container/ServiceLocator';
 
 export { BuildStrategy } from './strategies/abstract/BuildStrategy';
 export type { IServiceLocator } from './container/IServiceLocator';
+
+export * from './strategies/abstract/InstanceDefinition/ClassInstanceDefinition';
+export * from './strategies/abstract/InstanceDefinition/ClassInstanceDefinition';
+export * from './strategies/abstract/InstanceDefinition/FunctionDefinition';
+export * from './strategies/abstract/InstanceDefinition/DecoratorDefinition';
+export * from './strategies/abstract/InstanceDefinition/ConstDefinition';

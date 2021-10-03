@@ -1,6 +1,5 @@
 import { container } from '../../container/Container';
-import { request, serviceLocator, singleton } from '../factory/strategies';
-import { value } from '../factory/classStrategies';
+import { request, serviceLocator, singleton, value } from '../factory/strategies';
 import { v4 } from 'uuid';
 
 describe(`ServiceLocatorResolver`, () => {

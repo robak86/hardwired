@@ -1,10 +1,9 @@
-import { unit } from 'hardwired';
+import { singleton, value } from 'hardwired';
 import { storeModule } from '../state/store.module';
 import { selectNodePosition, selectNodesIds } from './selectors/nodesSelectors';
 
 import { setNodePositionAction } from './actions/nodeActions';
 import { AnyAction, Store } from 'redux';
-import { singleton } from '../../../core/src/strategies/SingletonStrategyLegacy';
 
 // const dispatchAction = <TPayload, TAction extends AnyAction>(
 //   store: Store<any>,
@@ -20,9 +19,8 @@ const dispatchAction = <TPayload, TAction extends AnyAction>(
   return (payload: TPayload) => store.dispatch(actionCreator(payload));
 };
 
-export const nodesModule = unit()
-  .import('storeModule', storeModule)
-  .define('selectNodesIds', singleton, () => selectNodesIds)
-  .define('selectNodePosition', singleton, () => selectNodePosition)
-  .define('setNodePosition', singleton, ({ storeModule }) => storeModule.boundAction(setNodePositionAction))
-  .build();
+export const nodesModule = {
+  selectNodesIds: value(selectNodesIds),
+  selectNodePosition: value(selectNodePosition),
+  setNodePosition: singleton.fn(boundAction => boundAction(setNodePositionAction), [storeModule.boundAction]),
+};

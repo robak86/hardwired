@@ -18,13 +18,13 @@ describe(`InstancesConsumer`, () => {
         <ContainerProvider>
           <InstancesConsumer
             definitions={[valDef]}
-            render={([value]) => {
+            render={value => {
               return (
                 <>
                   <ValueRenderer testId={'topModuleRender'} value={value} />
                   <InstancesConsumer
                     definitions={[val2Def]}
-                    render={([valueFromM1]) => {
+                    render={valueFromM1 => {
                       return <ValueRenderer testId={'childModuleRender'} value={valueFromM1} />;
                     }}
                   />
@@ -56,7 +56,7 @@ describe(`InstancesConsumer`, () => {
         return <div data-testid={testId}>{value}</div>;
       };
 
-      const renderFn = ([val1, val2]: [number, number]) => {
+      const renderFn = (val1: number, val2: number) => {
         return (
           <>
             <ValueRenderer testId={'topModuleRender'} value={val1} />

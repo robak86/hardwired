@@ -2,8 +2,9 @@ import React from 'react';
 import styled from 'styled-components';
 import { nodesModule } from '../nodes.module';
 import { DNode } from './DNode';
-import { useModule } from 'hardwired-react';
+
 import { useSelector } from 'react-redux';
+import { useDefinition } from 'hardwired-react';
 
 const NodesPlaneBox = styled('div')({
   width: 1000,
@@ -12,7 +13,7 @@ const NodesPlaneBox = styled('div')({
 });
 
 export const NodesPlane = () => {
-  const { selectNodesIds } = useModule(nodesModule);
+  const selectNodesIds = useDefinition(nodesModule.selectNodesIds);
   const nodesIds = useSelector(selectNodesIds);
 
   return (

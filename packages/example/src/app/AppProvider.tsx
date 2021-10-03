@@ -2,8 +2,9 @@ import { ContainerProvider } from 'hardwired-react';
 import { Container } from 'hardwired';
 import React, { FunctionComponent } from 'react';
 import { InstancesConsumer } from '../../../react/src/components/InstancesConsumer';
-import { storeModule } from '../state/store.module';
+
 import { Provider as StoreProvider } from 'react-redux';
+import { storeModule } from '../state/store.module';
 
 export type AppProviderProps = {
   container?: Container;
@@ -13,10 +14,8 @@ export const AppProvider: FunctionComponent<AppProviderProps> = ({ container, ch
   return (
     <ContainerProvider container={container}>
       <InstancesConsumer
-        definitions={[storeModule]}
-        render={([storeModuleObject]) => {
-          return <StoreProvider store={storeModuleObject.store}>{children}</StoreProvider>;
-        }}
+        definitions={[storeModule.store]}
+        render={store => <StoreProvider store={store}>{children}</StoreProvider>}
       />
     </ContainerProvider>
   );

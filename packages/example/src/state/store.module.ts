@@ -18,7 +18,7 @@ const appReducer = singleton.fn(() => appReducerImpl);
 const store = singleton.fn((reducer, state) => createAppStore(reducer, state), [appReducer, initialState]);
 const boundAction = singleton.fn(store => dispatchAction(store), [store]);
 
-const storeModule = {
+export const storeModule = {
   initialState,
   appReducer,
   store,

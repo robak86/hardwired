@@ -1,5 +1,6 @@
-import { ConstDefinition, InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 import { ConstStrategy } from '../strategies/ConstStrategy';
+import { ConstDefinition } from "../strategies/abstract/InstanceDefinition/ConstDefinition";
 
 export const set = <TInstance>(instance: InstanceDefinition<TInstance>, newValue: TInstance): ConstDefinition<TInstance> => {
   return {
