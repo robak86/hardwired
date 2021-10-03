@@ -1,9 +1,9 @@
-import { module } from 'hardwired';
-import { appReducer } from './appReducer';
 import { AppState } from './AppState';
 import { createAppStore } from './store';
 import { AnyAction, Store } from 'redux';
-import { singleton } from '../../../core/src/strategies/SingletonStrategyLegacy';
+import { singleton } from 'hardwired';
+import { appReducer as appReducerImpl } from './appReducer';
+
 
 const dispatchAction =
   (store: Store<any>) =>
@@ -13,9 +13,14 @@ const dispatchAction =
     return (payload: TPayload) => store.dispatch(actionCreator(payload));
   };
 
-export const storeModule = module()
-  .define('initialState', singleton, () => AppState.build())
-  .define('appReducer', singleton, () => appReducer)
-  .define('store', singleton, m => createAppStore(m.appReducer, m.initialState))
-  .define('boundAction', singleton, ({ store }) => dispatchAction(store))
-  .build();
+const initialState = singleton.fn(() => AppState.build());
+const appReducer = singleton.fn(() => appReducerImpl);
+const store = singleton.fn((reducer, state) => createAppStore(reducer, state), [appReducer, initialState]);
+const boundAction = singleton.fn(store => dispatchAction(store), [store]);
+
+const storeModule = {
+  initialState,
+  appReducer,
+  store,
+  boundAction,
+};

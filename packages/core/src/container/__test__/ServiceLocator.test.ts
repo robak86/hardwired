@@ -14,7 +14,7 @@ describe(`ServiceLocator`, () => {
       const clsDef = singleton.class(TestClassArgs2, [someNumber, someString])
 
 
-      const c = container({ scopeOverridesNew: [replace(someNumber, singleton.fn(() => 456))] });
+      const c = container({ scopeOverrides: [replace(someNumber, singleton.fn(() => 456))] });
 
       const locator = c.get(serviceLocator);
       const cls = locator.withRequestScope(({ get }) => get(clsDef));

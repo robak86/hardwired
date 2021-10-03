@@ -3,13 +3,12 @@ export { ContainerProvider } from './components/ContainerProvider';
 export type { ContainerProviderProps } from './components/ContainerProvider';
 
 export { ContainerScope } from './components/ContainerScope';
-export { ModulesConsumer } from './components/ModulesConsumer';
-export type { ModulesConsumerProps } from './components/ModulesConsumer';
+export { InstancesConsumer } from './components/InstancesConsumer';
+export type { ModulesConsumerProps } from './components/InstancesConsumer';
 
 // hooks
 export { useDefinition } from './hooks/useDefinition';
-export { useModule } from './hooks/useModule';
-export { useModules } from './hooks/useModules';
+export { useDefinitions } from './hooks/useDefinitions';
 export { useScopedDefinition } from './hooks/useScopedDefinition';
 export { useSelectScoped } from './hooks/useSelectScoped';
 

@@ -1,20 +1,14 @@
-import { Module, module, singleton } from 'hardwired';
+import { singleton } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider';
 import React from 'react';
-import { ModulesConsumer } from '../ModulesConsumer';
+import { InstancesConsumer } from '../InstancesConsumer';
 import { render } from '@testing-library/react';
 
-describe(`ModulesConsumer`, () => {
+describe(`InstancesConsumer`, () => {
   describe(`nesting modules`, () => {
     function setup() {
-      const m1 = module()
-        .define('value', singleton, () => 1)
-        .build();
-
-      const m2 = module()
-        .import('m1', m1)
-        .define('valueFromM1', singleton, ({ m1 }) => m1.value + 10)
-        .build();
+      const valDef = singleton.fn(() => 1);
+      const val2Def = singleton.fn(val => val + 10, [valDef]);
 
       const ValueRenderer = ({ testId, value }) => {
         return <div data-testid={testId}>{value}</div>;
@@ -22,15 +16,15 @@ describe(`ModulesConsumer`, () => {
 
       const TestSubject = () => (
         <ContainerProvider>
-          <ModulesConsumer
-            modules={[m1]}
-            render={([{ value }]) => {
+          <InstancesConsumer
+            definitions={[valDef]}
+            render={([value]) => {
               return (
                 <>
                   <ValueRenderer testId={'topModuleRender'} value={value} />
-                  <ModulesConsumer
-                    modules={[m2]}
-                    render={([{ valueFromM1 }]) => {
+                  <InstancesConsumer
+                    definitions={[val2Def]}
+                    render={([valueFromM1]) => {
                       return <ValueRenderer testId={'childModuleRender'} value={valueFromM1} />;
                     }}
                   />
@@ -55,31 +49,25 @@ describe(`ModulesConsumer`, () => {
 
   describe(`using modules array`, () => {
     function setup() {
-      const m1 = module()
-        .define('value', singleton, () => 1)
-        .build();
-
-      const m2 = module()
-        .import('m1', m1)
-        .define('valueFromM1', singleton, ({ m1 }) => m1.value + 10)
-        .build();
+      const valDef = singleton.fn(() => 1);
+      const val2Def = singleton.fn(val => val + 10, [valDef]);
 
       const ValueRenderer = ({ testId, value }) => {
         return <div data-testid={testId}>{value}</div>;
       };
 
-      const renderFn = ([{ value }, { valueFromM1 }]: Module.MaterializedArray<[typeof m1, typeof m2]>) => {
+      const renderFn = ([val1, val2]: [number, number]) => {
         return (
           <>
-            <ValueRenderer testId={'topModuleRender'} value={value} />
-            <ValueRenderer testId={'childModuleRender'} value={valueFromM1} />;
+            <ValueRenderer testId={'topModuleRender'} value={val1} />
+            <ValueRenderer testId={'childModuleRender'} value={val2} />;
           </>
         );
       };
 
       const TestSubject = () => (
         <ContainerProvider>
-          <ModulesConsumer modules={[m1, m2]} render={renderFn} />
+          <InstancesConsumer definitions={[valDef, val2Def]} render={renderFn} />
         </ContainerProvider>
       );
 

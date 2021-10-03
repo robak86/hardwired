@@ -11,7 +11,7 @@ import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
 import { StrategiesRegistry } from "../strategies/collection/StrategiesRegistry";
 
 export type ChildScopeOptions = {
-  scopeOverridesNew?: InstanceDefinition<any>[];
+  scopeOverrides?: InstanceDefinition<any>[];
 };
 
 export const defaultStrategiesRegistry = new StrategiesRegistry({
@@ -66,8 +66,8 @@ export class Container implements IServiceLocator {
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  scopeOverridesNew?: InstanceDefinition<any>[];
-  globalOverridesNew?: InstanceDefinition<any>[]; // propagated to whole dependencies graph
+  scopeOverrides?: InstanceDefinition<any>[];
+  globalOverrides?: InstanceDefinition<any>[]; // propagated to whole dependencies graph
 };
 
 export function container(globalOverrides?: InstanceDefinition<any>[]): Container;
@@ -78,8 +78,8 @@ export function container(overridesOrOptions?: ContainerOptions | Array<Instance
   } else {
     return new Container(
       ContainerContext.create(
-        overridesOrOptions?.scopeOverridesNew ?? [],
-        overridesOrOptions?.globalOverridesNew ?? [],
+        overridesOrOptions?.scopeOverrides ?? [],
+        overridesOrOptions?.globalOverrides ?? [],
         defaultStrategiesRegistry,
       ),
     );

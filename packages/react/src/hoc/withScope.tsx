@@ -1,9 +1,10 @@
-import { ModulePatch } from 'hardwired';
+
 import React, { ComponentType, FC } from 'react';
 import { ContainerScope } from '../components/ContainerScope';
+import { InstanceDefinition } from "hardwired";
 
 export type WithScopeConfig<TOverridesProps, TInvalidateKeysProps> = {
-  scopeOverrides?: ModulePatch<any>[] | ((props: TOverridesProps) => ModulePatch<any>[]);
+  scopeOverrides?: InstanceDefinition<any>[] | ((props: TOverridesProps) => InstanceDefinition<any>[]);
   invalidateKeys?: (props: TInvalidateKeysProps) => ReadonlyArray<any>;
 };
 

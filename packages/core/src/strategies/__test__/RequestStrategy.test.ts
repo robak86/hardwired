@@ -54,7 +54,7 @@ describe(`RequestStrategy`, () => {
         request.fn(() => 2),
       );
 
-      const childC = c.checkoutScope({ scopeOverridesNew: [mPatch] });
+      const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
 
       expect(c.get(a)).toEqual(1);
       expect(childC.get(a)).toEqual(2);
@@ -74,10 +74,10 @@ describe(`RequestStrategy`, () => {
         request.fn(() => 2),
       );
 
-      const c = container({ globalOverridesNew: [invariantPatch] });
+      const c = container({ globalOverrides: [invariantPatch] });
       expect(c.get(k1)).toEqual(1);
 
-      const childScope = c.checkoutScope({ scopeOverridesNew: [childScopePatch] });
+      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
       expect(childScope.get(k1)).toEqual(1);
     });
 
@@ -94,10 +94,10 @@ describe(`RequestStrategy`, () => {
         request.fn(() => 2),
       );
 
-      const c = container({ globalOverridesNew: [invariantPatch] });
+      const c = container({ globalOverrides: [invariantPatch] });
       expect(c.get(k1)).toEqual(1);
 
-      const childScope = c.checkoutScope({ scopeOverridesNew: [childScopePatch] });
+      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
       expect(childScope.get(k1)).toEqual(1);
       expect(childScope.get(k2)).toEqual(2);
     });

@@ -105,7 +105,7 @@ describe(`SingletonStrategy`, () => {
       const c = container();
 
       const patchedA = set(a, 2);
-      const childC = c.checkoutScope({ scopeOverridesNew: [patchedA] });
+      const childC = c.checkoutScope({ scopeOverrides: [patchedA] });
 
       expect(childC.get(a)).toEqual(2);
       expect(c.get(a)).toEqual(1);
@@ -118,7 +118,7 @@ describe(`SingletonStrategy`, () => {
 
       const patchedA = set(a, 2);
 
-      const level1 = root.checkoutScope({ scopeOverridesNew: [patchedA] });
+      const level1 = root.checkoutScope({ scopeOverrides: [patchedA] });
       const level2 = level1.checkoutScope();
 
       expect(level2.get(a)).toEqual(2);
@@ -143,7 +143,7 @@ describe(`SingletonStrategy`, () => {
 
       const root = container();
       const level1 = root.checkoutScope();
-      const level2 = level1.checkoutScope({ scopeOverridesNew: [set(a, 1)] });
+      const level2 = level1.checkoutScope({ scopeOverrides: [set(a, 1)] });
       const level3 = level2.checkoutScope();
 
       const level3Call = level3.get(a); // important that level1 is called as first
@@ -163,8 +163,8 @@ describe(`SingletonStrategy`, () => {
       const a = singletonFn(randomFactorySpy);
 
       const root = container();
-      const level1 = root.checkoutScope({ scopeOverridesNew: [set(a, 1)] });
-      const level2 = level1.checkoutScope({ scopeOverridesNew: [set(a, 2)] });
+      const level1 = root.checkoutScope({ scopeOverrides: [set(a, 1)] });
+      const level2 = level1.checkoutScope({ scopeOverrides: [set(a, 2)] });
       const level3 = level2.checkoutScope();
 
       const level3Call = level3.get(a); // important that level1 is called as first
@@ -186,10 +186,10 @@ describe(`SingletonStrategy`, () => {
       const invariantPatch = set(k1, 1);
       const childScopePatch = set(k1, 2);
 
-      const c = container({ globalOverridesNew: [invariantPatch] });
+      const c = container({ globalOverrides: [invariantPatch] });
       expect(c.asObject({ k1 }).k1).toEqual(1);
 
-      const childScope = c.checkoutScope({ scopeOverridesNew: [childScopePatch] });
+      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
       expect(childScope.asObject({ k1 }).k1).toEqual(1);
     });
 
@@ -200,10 +200,10 @@ describe(`SingletonStrategy`, () => {
       const invariantPatch = set(k1, 1);
       const childScopePatch = set(k2, 2);
 
-      const c = container({ globalOverridesNew: [invariantPatch] });
+      const c = container({ globalOverrides: [invariantPatch] });
       expect(c.asObject({ k1, k2 }).k1).toEqual(1);
 
-      const childScope = c.checkoutScope({ scopeOverridesNew: [childScopePatch] });
+      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
       expect(childScope.asObject({ k1, k2 }).k1).toEqual(1);
       expect(childScope.asObject({ k1, k2 }).k2).toEqual(2);
     });

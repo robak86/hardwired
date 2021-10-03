@@ -12,7 +12,7 @@ describe(`ApplyResolver`, () => {
 
     const mPatch = apply(someValue, val => (val.value += 1));
 
-    const c = container({ scopeOverridesNew: [mPatch] });
+    const c = container({ scopeOverrides: [mPatch] });
     expect(c.get(someValue).value).toEqual(2);
   });
 
@@ -22,7 +22,7 @@ describe(`ApplyResolver`, () => {
     const mPatch = apply(someValue, val => (val.value += 1));
 
     expect(container().get(someValue).value).toEqual(1);
-    expect(container({ scopeOverridesNew: [mPatch] }).get(someValue).value).toEqual(2);
+    expect(container({ scopeOverrides: [mPatch] }).get(someValue).value).toEqual(2);
   });
 
   it(`allows for multiple apply functions calls`, async () => {
@@ -33,7 +33,7 @@ describe(`ApplyResolver`, () => {
       val => (val.value *= 3),
     );
 
-    const c = container({ scopeOverridesNew: [mPatch] });
+    const c = container({ scopeOverrides: [mPatch] });
     expect(c.get(someValue).value).toEqual(6);
   });
 
@@ -42,7 +42,7 @@ describe(`ApplyResolver`, () => {
       const someValue = singleton.fn(() => Math.random());
       const mPatch = apply(someValue, a => a);
 
-      const c = container({ scopeOverridesNew: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       expect(c.get(someValue)).toEqual(c.get(someValue));
     });
 
@@ -51,7 +51,7 @@ describe(`ApplyResolver`, () => {
 
       const mPatch = apply(someValue, a => a);
 
-      const c = container({ scopeOverridesNew: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       expect(c.get(someValue)).not.toEqual(c.get(someValue));
     });
 
@@ -61,7 +61,7 @@ describe(`ApplyResolver`, () => {
 
       const mPatch = apply(a, a => a);
 
-      const c = container({ scopeOverridesNew: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       const req1 = c.asObject({ a, source });
       const req2 = c.asObject({ a, source });
 
@@ -101,8 +101,8 @@ describe(`ApplyResolver`, () => {
 
       const replaced = set(instanceDef, { callMe: () => {} });
 
-      const scope1 = container({ globalOverridesNew: [mPatch] });
-      const scope2 = scope1.checkoutScope({ scopeOverridesNew: [replaced] });
+      const scope1 = container({ globalOverrides: [mPatch] });
+      const scope2 = scope1.checkoutScope({ scopeOverrides: [replaced] });
       const instance1 = scope1.get(instanceDef);
       const instance2 = scope2.get(instanceDef);
       return { instance1, instance2 };

@@ -23,7 +23,7 @@ describe(`Container`, () => {
           singleton.fn(() => 2),
         );
 
-        expect(container({ scopeOverridesNew: [mPatch] }).get(a)).toEqual(2);
+        expect(container({ scopeOverrides: [mPatch] }).get(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
@@ -34,7 +34,7 @@ describe(`Container`, () => {
           a,
           singleton.fn(() => 2),
         );
-        expect(container({ scopeOverridesNew: [mPatch] }).get(b)).toEqual('b');
+        expect(container({ scopeOverrides: [mPatch] }).get(b)).toEqual('b');
       });
     });
   });
@@ -71,7 +71,7 @@ describe(`Container`, () => {
       );
 
       const c = container({
-        globalOverridesNew: [
+        globalOverrides: [
           //breakme
           aPatch,
           bPatch,

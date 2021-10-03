@@ -18,15 +18,15 @@ export class ContainerContext {
   }
 
   static create(
-    scopeOverridesNew: InstanceDefinition<any>[],
-    globalOverridesNew: InstanceDefinition<any>[],
+    scopeOverrides: InstanceDefinition<any>[],
+    globalOverrides: InstanceDefinition<any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ): ContainerContext {
-    const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverridesNew, globalOverridesNew);
+    const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
     return new ContainerContext(
       definitionsRegistry,
-      InstancesCache.create(scopeOverridesNew),
+      InstancesCache.create(scopeOverrides),
       new ModuleMaterialization(definitionsRegistry),
       strategiesRegistry,
     );
@@ -75,11 +75,11 @@ export class ContainerContext {
   }
 
   childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): ContainerContext {
-    const { scopeOverridesNew = [] } = options;
+    const { scopeOverrides = [] } = options;
 
     return new ContainerContext(
-      this.instancesDefinitionsRegistry.checkoutForScope(scopeOverridesNew),
-      this.instancesCache.childScope(scopeOverridesNew),
+      this.instancesDefinitionsRegistry.checkoutForScope(scopeOverrides),
+      this.instancesCache.childScope(scopeOverrides),
       new ModuleMaterialization(this.instancesDefinitionsRegistry),
       this.strategiesRegistry,
     );

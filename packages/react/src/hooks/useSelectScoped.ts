@@ -13,7 +13,7 @@ export type UseDefinitionHook = {
 export const useSelectScoped: UseDefinitionHook = (invalidateKeys, scopeOverrides, selector) => {
   const container = useContainer();
   const getInstance = useMemoized(() => {
-    const scoped = container.checkoutScope({ scopeOverridesNew: scopeOverrides });
+    const scoped = container.checkoutScope({ scopeOverrides: scopeOverrides });
     return scoped.select(selector);
   });
 

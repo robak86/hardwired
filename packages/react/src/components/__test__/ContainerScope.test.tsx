@@ -1,4 +1,4 @@
-import { module, scoped } from 'hardwired';
+import { scoped, set } from 'hardwired';
 import React, { FC } from 'react';
 import { ContainerProvider } from '../ContainerProvider';
 import { ContainerScope } from '../ContainerScope';
@@ -9,13 +9,10 @@ describe(`ContainerScope`, () => {
   describe(`without invalidation keys`, () => {
     function setup() {
       let counter = 0;
-
-      const m = module()
-        .define('value', scoped, () => (counter += 1))
-        .build();
+      const valueDef = scoped.fn(() => (counter += 1));
 
       const ValueRenderer = ({ testId }) => {
-        const value = useDefinition(m, 'value');
+        const value = useDefinition(valueDef);
 
         return <div data-testid={testId}>{value}</div>;
       };
@@ -55,13 +52,10 @@ describe(`ContainerScope`, () => {
   describe(`with invalidation keys`, () => {
     function setup() {
       let counter = 0;
-
-      const m = module()
-        .define('value', scoped, () => (counter += 1))
-        .build();
+      const valueDef = scoped.fn(() => (counter += 1));
 
       const ValueRenderer = ({ testId }) => {
-        const value = useDefinition(m, 'value');
+        const value = useDefinition(valueDef);
         return <div data-testid={testId}>{value}</div>;
       };
 
@@ -106,23 +100,21 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const m = module()
-        .define('base', scoped, () => 0)
-        .define('value', scoped, ({ base }) => (counter += 1 + base))
-        .build();
+      const baseDef = scoped.fn(() => 0);
+      const valDef = scoped.fn(base => (counter += 1 + base), [baseDef]);
 
       const ValueRenderer = ({ testId }) => {
-        const value = useDefinition(m, 'value');
+        const value = useDefinition(valDef);
 
         return <div data-testid={testId}>{value}</div>;
       };
 
       const TestSubject = () => (
         <ContainerProvider>
-          <ContainerScope scopeOverrides={[m.replace('base', () => 10)]}>
+          <ContainerScope scopeOverrides={[set(baseDef, 10)]}>
             <ValueRenderer testId={'scope1'} />
           </ContainerScope>
-          <ContainerScope scopeOverrides={[m.replace('base', () => 100)]}>
+          <ContainerScope scopeOverrides={[set(baseDef, 100)]}>
             <ValueRenderer testId={'scope2'} />
           </ContainerScope>
         </ContainerProvider>

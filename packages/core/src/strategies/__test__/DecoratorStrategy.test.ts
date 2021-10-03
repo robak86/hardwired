@@ -9,7 +9,7 @@ describe(`DecoratorStrategy`, () => {
   it(`decorates original value`, async () => {
     const someValue = value(1);
 
-    const c = container({ scopeOverridesNew: [decorate(someValue, val => val + 1)] });
+    const c = container({ scopeOverrides: [decorate(someValue, val => val + 1)] });
     expect(c.get(someValue)).toEqual(2);
   });
 
@@ -18,7 +18,7 @@ describe(`DecoratorStrategy`, () => {
     const mPatch = decorate(someValue, val => val + 1);
 
     expect(container().get(someValue)).toEqual(1);
-    expect(container({ scopeOverridesNew: [mPatch] }).get(someValue)).toEqual(2);
+    expect(container({ scopeOverrides: [mPatch] }).get(someValue)).toEqual(2);
   });
 
   it(`allows for multiple decorations`, async () => {
@@ -28,7 +28,7 @@ describe(`DecoratorStrategy`, () => {
       val => val * 3,
     );
 
-    const c = container({ scopeOverridesNew: [mPatch] });
+    const c = container({ scopeOverrides: [mPatch] });
     expect(c.get(someValue)).toEqual(6);
   });
 
@@ -39,7 +39,7 @@ describe(`DecoratorStrategy`, () => {
 
     const mPatch = decorate(someValue, (val, a: number, b: number) => val + a + b, [a, b]);
 
-    const c = container({ scopeOverridesNew: [mPatch] });
+    const c = container({ scopeOverrides: [mPatch] });
     expect(c.get(someValue)).toEqual(13);
   });
 
@@ -50,7 +50,7 @@ describe(`DecoratorStrategy`, () => {
 
     const mPatch = decorate(someValue, (val, b) => val * b, [b]);
 
-    const c = container({ scopeOverridesNew: [mPatch] });
+    const c = container({ scopeOverrides: [mPatch] });
     expect(c.get(someValue)).toEqual(6);
   });
 
@@ -59,7 +59,7 @@ describe(`DecoratorStrategy`, () => {
       const a = singleton.fn(() => Math.random());
       const mPatch = decorate(a, a => a);
 
-      const c = container({ scopeOverridesNew: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       expect(c.get(a)).toEqual(c.get(a));
     });
 
@@ -68,7 +68,7 @@ describe(`DecoratorStrategy`, () => {
 
       const mPatch = decorate(a, a => a);
 
-      const c = container({ scopeOverridesNew: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       expect(c.get(a)).not.toEqual(c.get(a));
     });
 
@@ -78,7 +78,7 @@ describe(`DecoratorStrategy`, () => {
 
       const mPatch = decorate(a, a => a);
 
-      const c = container({ scopeOverridesNew: [mPatch] });
+      const c = container({ scopeOverrides: [mPatch] });
       const req1 = c.asObject({ source, a });
       const req2 = c.asObject({ source, a });
 
@@ -109,8 +109,8 @@ describe(`DecoratorStrategy`, () => {
 
       const replaced = set(instanceDef, { callMe: () => {} });
 
-      const scope1 = container({ globalOverridesNew: [mPatch] });
-      const scope2 = scope1.checkoutScope({ scopeOverridesNew: [replaced] });
+      const scope1 = container({ globalOverrides: [mPatch] });
+      const scope2 = scope1.checkoutScope({ scopeOverrides: [replaced] });
       const instance1 = scope1.get(instanceDef);
       const instance2 = scope2.get(instanceDef);
       return { instance1, instance2 };

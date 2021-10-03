@@ -34,10 +34,10 @@ describe(`ScopeStrategy`, () => {
         scoped.fn(() => new Boxed(1)),
       );
 
-      const c = container({ globalOverridesNew: [invariantPatch] });
+      const c = container({ globalOverrides: [invariantPatch] });
       expect(c.get(k1).value).toEqual(1);
 
-      const childScope = c.checkoutScope({ scopeOverridesNew: [childScopePatch] });
+      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
       expect(childScope.get(k1).value).toEqual(1);
 
       expect(c.get(k1)).toBe(childScope.get(k1));
@@ -56,10 +56,10 @@ describe(`ScopeStrategy`, () => {
         scoped.fn(() => 2),
       );
 
-      const c = container({ globalOverridesNew: [invariantPatch] });
+      const c = container({ globalOverrides: [invariantPatch] });
       expect(c.get(k1)).toEqual(1);
 
-      const childScope = c.checkoutScope({ scopeOverridesNew: [childScopePatch] });
+      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
       expect(childScope.get(k1)).toEqual(1);
       expect(childScope.get(k2)).toEqual(2);
     });
@@ -76,7 +76,7 @@ describe(`ScopeStrategy`, () => {
         a,
         scoped.fn(() => new BoxedValue(2)),
       );
-      const childC = c.checkoutScope({ scopeOverridesNew: [mPatch] });
+      const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
       expect(childC.get(a).value).toEqual(2);
     });
 
@@ -87,7 +87,7 @@ describe(`ScopeStrategy`, () => {
       expect(root.get(a).value).toEqual(1);
 
       const mPatch = replace(a, scoped.fn(() => new BoxedValue(2)));
-      const childC = root.checkoutScope({ scopeOverridesNew: [mPatch] });
+      const childC = root.checkoutScope({ scopeOverrides: [mPatch] });
       expect(childC.get(a).value).toEqual(2);
 
       const grandChildC = childC.checkoutScope();

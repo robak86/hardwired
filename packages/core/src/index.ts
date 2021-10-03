@@ -9,6 +9,11 @@ export * from './strategies/ScopeStrategy';
 export * from './strategies/factory/strategies';
 export * from './strategies/abstract/InstanceDefinition';
 
+export * from './patching/replace';
+export * from './patching/apply';
+export * from './patching/set';
+export * from './patching/decorate';
+
 export { inject } from './helpers/inject';
 export type { DependencySelector } from './helpers/inject';
 export { ContainerContext } from './context/ContainerContext';

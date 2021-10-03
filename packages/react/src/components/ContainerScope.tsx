@@ -2,11 +2,11 @@ import * as React from 'react';
 import { FC } from 'react';
 import { ContainerContext, useContainer } from '../context/ContainerContext';
 import { useMemoized } from '../utils/useMemoized';
-import { ModulePatch } from 'hardwired';
+import { InstanceDefinition } from 'hardwired';
 
 export type ContainerScopeProps = {
   invalidateKeys?: ReadonlyArray<any>;
-  scopeOverrides?: ModulePatch<any>[];
+  scopeOverrides?: InstanceDefinition<any>[];
 };
 
 export const ContainerScope: FC<ContainerScopeProps> = ({ children, invalidateKeys = [], scopeOverrides = [] }) => {

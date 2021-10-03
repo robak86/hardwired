@@ -1,6 +1,6 @@
 import React, { FC, ReactElement } from 'react';
 import { BoxedValue } from 'hardwired/lib/__test__/BoxedValue';
-import { container, inject, scoped, singleton, unit } from 'hardwired';
+import { container, inject, replace, scoped, set, singleton } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies';
@@ -23,10 +23,8 @@ describe(`withDependencies`, () => {
 
     const ValueRenderer = ({ testId, value }) => <div data-testid={testId}>{value}</div>;
 
-    const someModule = unit()
-      .define('age', scoped, () => new BoxedValue(initialAge()))
-      .define('firstName', scoped, () => new BoxedValue(initialName()))
-      .build();
+    const ageDef = scoped.fn(() => new BoxedValue(initialAge()));
+    const firstNameDef = scoped.fn(() => new BoxedValue(initialName()));
 
     const WrappedComponent: FC<DummyComponentProps> = ({ age, firstName, testId }) => {
       return (
@@ -39,8 +37,8 @@ describe(`withDependencies`, () => {
     };
 
     const ChildComponent = () => {
-      const age = useDefinition(someModule, 'age');
-      const firstName = useDefinition(someModule, 'firstName');
+      const age = useDefinition(ageDef);
+      const firstName = useDefinition(firstNameDef);
       return (
         <>
           <ValueRenderer testId={'ageFromChildComponent'} value={age.value} />
@@ -50,11 +48,11 @@ describe(`withDependencies`, () => {
     };
 
     const dependenciesSelector = inject.record({
-      age: inject.select(someModule, 'age'),
-      firstName: inject.select(someModule, 'firstName'),
+      age: ageDef,
+      firstName: firstNameDef,
     });
 
-    return { someModule, WrappedComponent, dependenciesSelector };
+    return { WrappedComponent, dependenciesSelector, ageDef, firstNameDef };
   }
 
   function renderWithContainer(element: ReactElement, cnt = container()) {
@@ -120,13 +118,18 @@ describe(`withDependencies`, () => {
   describe(`with new scope`, () => {
     describe(`overriding values`, () => {
       it(`injects dependencies as props`, async () => {
-        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
+        const { ageDef, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
         const bindDependencies = withDependencies(dependenciesSelector);
 
         const bindScope = withScope({
           scopeOverrides: (props: { age: number }) => {
-            return [someModule.replace('age', () => new BoxedValue(props.age))];
+            return [
+              replace(
+                ageDef,
+                singleton.fn(() => new BoxedValue(props.age)),
+              ),
+            ];
           },
         });
 
@@ -140,13 +143,13 @@ describe(`withDependencies`, () => {
       });
 
       it(`uses the same scope for all descendent components`, async () => {
-        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
+        const { ageDef, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
         const bindDependencies = withDependencies(dependenciesSelector);
 
         const bindScope = withScope({
           scopeOverrides: (props: { age: number }) => {
-            return [someModule.replace('age', () => new BoxedValue(props.age))];
+            return [set(ageDef, new BoxedValue(props.age))];
           },
         });
 
@@ -162,13 +165,13 @@ describe(`withDependencies`, () => {
 
     describe(`using invalidation keys`, () => {
       it(`invalidate scope on key change`, async () => {
-        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
+        const { ageDef, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
         const bindDependencies = withDependencies(dependenciesSelector);
 
         const bindScope = withScope({
           scopeOverrides: props => {
-            return [someModule.replace('age', () => new BoxedValue(Math.random()))];
+            return [set(ageDef, new BoxedValue(Math.random()))];
           },
           invalidateKeys: (props: { userId: string }) => [props.userId],
         });
@@ -187,13 +190,13 @@ describe(`withDependencies`, () => {
       });
 
       it(`does not invalidate scope if key does not change`, async () => {
-        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
+        const { ageDef, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
         const bindDependencies = withDependencies(dependenciesSelector);
 
         const bindScope = withScope({
           scopeOverrides: props => {
-            return [someModule.replace('age', () => new BoxedValue(Math.random()))];
+            return [set(ageDef, new BoxedValue(Math.random()))];
           },
           invalidateKeys: (props: { userId: string }) => [props.userId],
         });
@@ -212,12 +215,17 @@ describe(`withDependencies`, () => {
       });
 
       it(`creates separate scope for each instance`, async () => {
-        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
+        const { ageDef, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
         const bindDependencies = withDependencies(dependenciesSelector);
 
         const bindScope = withScope({
-          scopeOverrides: [someModule.replace('age', () => new BoxedValue(Math.random()))],
+          scopeOverrides: [
+            replace(
+              ageDef,
+              singleton.fn(() => new BoxedValue(Math.random())),
+            ),
+          ],
           invalidateKeys: (props: { userId: string }) => [props.userId],
         });
 
@@ -258,12 +266,17 @@ describe(`withDependencies`, () => {
       });
 
       it(`preserves scope in descendant components`, async () => {
-        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({});
+        const { ageDef, WrappedComponent, dependenciesSelector } = setupDefinitions({});
 
         const bindDependencies = withDependencies(dependenciesSelector);
 
         const bindScope = withScope({
-          scopeOverrides: [someModule.replace('age', () => new BoxedValue(Math.random()))],
+          scopeOverrides: [
+            replace(
+              ageDef,
+              singleton.fn(() => new BoxedValue(Math.random())),
+            ),
+          ],
           invalidateKeys: (props: { userId: string }) => [props.userId],
         });
 
@@ -306,7 +319,7 @@ describe(`withDependencies`, () => {
 
     describe(`using scope without overrides and invalidation keys`, () => {
       it(`invalidates scope after unmount`, async () => {
-        const { someModule, WrappedComponent, dependenciesSelector } = setupDefinitions({
+        const { WrappedComponent, dependenciesSelector } = setupDefinitions({
           initialAge: () => Math.random(),
         });
 
