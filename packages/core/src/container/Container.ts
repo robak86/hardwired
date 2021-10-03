@@ -8,7 +8,9 @@ import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
 import { RequestStrategy } from '../strategies/RequestStrategy';
 import { ScopeStrategy } from '../strategies/ScopeStrategy';
 import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
-import { StrategiesRegistry } from "../strategies/collection/StrategiesRegistry";
+import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
+import { AsyncSingletonStrategy } from '../strategies/AsyncSingletonStrategy';
+import { AnyInstanceDefinition } from '../strategies/abstract/AnyInstanceDefinition';
 
 export type ChildScopeOptions = {
   scopeOverrides?: InstanceDefinition<any>[];
@@ -22,6 +24,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
   [RequestStrategy.type]: new RequestStrategy(),
   [ScopeStrategy.type]: new ScopeStrategy(),
   [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
+  [AsyncSingletonStrategy.type]: new AsyncSingletonStrategy(),
 });
 
 export class Container implements IServiceLocator {
@@ -30,6 +33,11 @@ export class Container implements IServiceLocator {
   get<TValue>(instanceDefinition: InstanceDefinition<TValue>): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
     return requestContext.get(instanceDefinition);
+  }
+
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue>): Promise<TValue> {
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.get(instanceDefinition) as any;
   }
 
   getAll<TLazyModule extends Array<InstanceDefinition<any>>>(

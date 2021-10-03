@@ -4,18 +4,18 @@ import { RequestStrategy } from '../RequestStrategy';
 import { TransientStrategy } from '../TransientStrategy';
 import { InstanceDefinition, } from '../abstract/InstanceDefinition';
 import { ScopeStrategy } from '../ScopeStrategy';
-import { classDefinition, ClassInstanceDefinition } from "../abstract/InstanceDefinition/ClassInstanceDefinition";
+import { classDefinition, ClassDefinition } from "../abstract/InstanceDefinition/ClassDefinition";
 
 type ClassDefinitionBuildFn = {
-  <TInstance>(factory: ClassType<TInstance, []>): ClassInstanceDefinition<TInstance>;
+  <TInstance>(factory: ClassType<TInstance, []>): ClassDefinition<TInstance>;
   <TInstance, TDeps extends any[], TArg>(
     cls: ClassType<TInstance, [TArg]>,
     args: [InstanceDefinition<TArg>],
-  ): ClassInstanceDefinition<TInstance>;
+  ): ClassDefinition<TInstance>;
   <TInstance, TDeps extends any[], TArg, TArgs extends [TArg, ...TArg[]]>(
     cls: ClassType<TInstance, TArgs>,
     args: { [K in keyof TArgs]: InstanceDefinition<TArgs[K]> },
-  ): ClassInstanceDefinition<TInstance>;
+  ): ClassDefinition<TInstance>;
 };
 
 export const classSingleton: ClassDefinitionBuildFn = (cls, dependencies?) => {

@@ -1,13 +1,14 @@
-import { buildDependencies, BuildStrategy } from './abstract/BuildStrategy';
+import { AsyncBuildStrategy, buildAsyncDependencies } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, InstanceDefinition } from './abstract/InstanceDefinition';
+import { createInstance } from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from './collection/StrategiesRegistry';
+import { AnyInstanceDefinition } from './abstract/AnyInstanceDefinition';
 
-export class SingletonStrategy extends BuildStrategy {
-  static type = Symbol.for('classSingleton');
+export class AsyncSingletonStrategy extends AsyncBuildStrategy {
+  static type = Symbol.for('asyncClassSingleton');
 
-  build(
-    definition: InstanceDefinition<any>,
+  async build(
+    definition: AnyInstanceDefinition<any, any, any>,
     instancesCache: InstancesCache,
     resolvers,
     strategiesRegistry: StrategiesRegistry,
@@ -18,7 +19,7 @@ export class SingletonStrategy extends BuildStrategy {
       if (instancesCache.hasInGlobalOverride(id)) {
         return instancesCache.getFromGlobalOverride(id);
       } else {
-        const dependencies = buildDependencies(definition, instancesCache, resolvers, strategiesRegistry);
+        const dependencies = await buildAsyncDependencies(definition, instancesCache, resolvers, strategiesRegistry);
         const instance = createInstance(definition, dependencies);
 
         instancesCache.setForGlobalOverrideScope(id, instance);
@@ -29,7 +30,7 @@ export class SingletonStrategy extends BuildStrategy {
     if (instancesCache.hasInGlobalScope(id)) {
       return instancesCache.getFromGlobalScope(id);
     } else {
-      const dependencies = buildDependencies(definition, instancesCache, resolvers, strategiesRegistry);
+      const dependencies = await buildAsyncDependencies(definition, instancesCache, resolvers, strategiesRegistry);
       const instance = createInstance(definition, dependencies);
       instancesCache.setForGlobalScope(id, instance);
       return instance;

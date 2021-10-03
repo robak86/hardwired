@@ -1,8 +1,8 @@
 import { InstanceDefinition } from '../InstanceDefinition';
 import { v4 } from 'uuid';
 
-export type PartiallyAppliedFunctionDefinition<T, TMeta = never, TExternal = never> = {
-  type: 'partiallyApplied';
+export type AsyncPartiallyAppliedDefinition<T, TMeta = never, TExternal = never> = {
+  type: 'asyncPartiallyApplied';
   id: string;
   strategy: symbol;
   fn: T;
@@ -15,9 +15,9 @@ export const partiallyAppliedFnDefinition = <TMeta>(
   fn,
   dependencies,
   meta: TMeta,
-): PartiallyAppliedFunctionDefinition<any, TMeta, never> => {
+): AsyncPartiallyAppliedDefinition<any, TMeta, never> => {
   return {
-    type: 'partiallyApplied',
+    type: 'asyncPartiallyApplied',
     id: `${fn.name}:${v4()}`,
     strategy,
     fn,

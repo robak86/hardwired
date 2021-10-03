@@ -1,5 +1,6 @@
 import invariant from 'tiny-invariant';
 import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { AnyInstanceDefinition } from "../strategies/abstract/AnyInstanceDefinition";
 
 export class InstancesDefinitionsRegistry {
   static empty(): InstancesDefinitionsRegistry {
@@ -33,7 +34,7 @@ export class InstancesDefinitionsRegistry {
     return newRegistry;
   }
 
-  getInstanceDefinition(instanceDefinition: InstanceDefinition<any>): InstanceDefinition<any> {
+  getInstanceDefinition(instanceDefinition: AnyInstanceDefinition<any>): AnyInstanceDefinition<any> {
     const id = instanceDefinition.id;
 
     if (this.globalOverrideResolversById[id]) {

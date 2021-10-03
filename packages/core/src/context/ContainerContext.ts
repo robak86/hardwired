@@ -4,6 +4,7 @@ import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/C
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 import { StrategiesRegistry } from "../strategies/collection/StrategiesRegistry";
+import { AnyInstanceDefinition } from "../strategies/abstract/AnyInstanceDefinition";
 
 export class ContainerContext {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -39,7 +40,7 @@ export class ContainerContext {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue>): TValue {
+  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue>): TValue {
     const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
     const strategy = this.strategiesRegistry.get(instanceOrOverride.strategy);
     return strategy.build(

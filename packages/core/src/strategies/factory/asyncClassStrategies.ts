@@ -1,0 +1,32 @@
+import { ClassType } from '../../utils/ClassType';
+import { SingletonStrategy } from '../SingletonStrategy';
+import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
+import { AsyncClassDefinition, asyncClassDefinition } from '../abstract/AsyncInstanceDefinition/AsyncClassDefinition';
+
+type ClassDefinitionBuildFn = {
+  <TInstance>(factory: ClassType<TInstance, []>): AsyncClassDefinition<TInstance>;
+  <TInstance, TDeps extends any[], TArg>(
+    cls: ClassType<TInstance, [TArg]>,
+    args: [AnyInstanceDefinition<TArg>],
+  ): AsyncClassDefinition<TInstance>;
+  <TInstance, TDeps extends any[], TArg, TArgs extends [TArg, ...TArg[]]>(
+    cls: ClassType<TInstance, TArgs>,
+    args: { [K in keyof TArgs]: AnyInstanceDefinition<TArgs[K]> },
+  ): AsyncClassDefinition<TInstance>;
+};
+
+export const asyncClassSingleton: ClassDefinitionBuildFn = (cls, dependencies?) => {
+  return asyncClassDefinition(cls, SingletonStrategy.type, dependencies ?? []);
+};
+//
+// export const classRequest: ClassDefinitionBuildFn = (cls, dependencies?) => {
+//   return classDefinition(cls, RequestStrategy.type, dependencies ?? []);
+// };
+//
+// export const classTransient: ClassDefinitionBuildFn = (cls, dependencies?) => {
+//   return classDefinition(cls, TransientStrategy.type, dependencies ?? []);
+// };
+//
+// export const classScoped: ClassDefinitionBuildFn = (cls, dependencies?) => {
+//   return classDefinition(cls, ScopeStrategy.type, dependencies ?? []);
+// };

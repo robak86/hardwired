@@ -1,7 +1,7 @@
-import { BuildStrategy} from './abstract/BuildStrategy';
+import { buildDependencies, BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
 import { createInstance, InstanceDefinition } from './abstract/InstanceDefinition';
-import { StrategiesRegistry } from "./collection/StrategiesRegistry";
+import { StrategiesRegistry } from './collection/StrategiesRegistry';
 
 export class ScopeStrategy extends BuildStrategy {
   static type = Symbol.for('scope');
@@ -18,7 +18,7 @@ export class ScopeStrategy extends BuildStrategy {
       if (instancesCache.hasInGlobalOverride(id)) {
         return instancesCache.getFromGlobalOverride(id);
       } else {
-        const dependencies = this.buildDependencies(definition, instancesCache, resolvers, strategiesRegistry);
+        const dependencies = buildDependencies(definition, instancesCache, resolvers, strategiesRegistry); // TODO: these two lines almost always comes together - extract into common function. This will solve issue with decorator
         const instance = createInstance(definition, dependencies);
         instancesCache.setForGlobalOverrideScope(id, instance);
         return instance;
@@ -28,7 +28,7 @@ export class ScopeStrategy extends BuildStrategy {
     if (instancesCache.hasInCurrentScope(id)) {
       return instancesCache.getFromCurrentScope(id);
     } else {
-      const dependencies = this.buildDependencies(definition, instancesCache, resolvers, strategiesRegistry);
+      const dependencies = buildDependencies(definition, instancesCache, resolvers, strategiesRegistry);
       const instance = createInstance(definition, dependencies);
       instancesCache.setForHierarchicalScope(id, instance);
       return instance;

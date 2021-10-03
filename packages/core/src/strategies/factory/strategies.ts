@@ -11,14 +11,16 @@ import {
   singletonFn,
   transientFn,
 } from './fnStrategies';
-import { classDefinition } from '../abstract/InstanceDefinition/ClassInstanceDefinition';
+import { classDefinition } from '../abstract/InstanceDefinition/ClassDefinition';
 import { ConstDefinition } from '../abstract/InstanceDefinition/ConstDefinition';
 import { ConstStrategy } from '../ConstStrategy';
 import { v4 } from 'uuid';
+import { asyncClassSingleton } from './asyncClassStrategies';
 
 export const singleton = {
   fn: singletonFn,
   class: classSingleton,
+  asyncClass: asyncClassSingleton,
   partial: partiallyAppliedSingleton,
 };
 
