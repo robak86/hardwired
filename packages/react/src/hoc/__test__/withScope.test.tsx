@@ -103,7 +103,7 @@ describe(`withScope`, () => {
       let counter = 0;
 
       const baseDef = scoped.fn(() => 0);
-      const valDef = scoped.fn(base => (counter += 1 + base), [baseDef]);
+      const valDef = scoped.fn(base => (counter += 1 + base), baseDef);
 
       const ValueRenderer = ({ testId }) => {
         const value = useDefinition(valDef);

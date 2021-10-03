@@ -1,8 +1,8 @@
 import { container } from '../../container/Container';
 
-import { classTransient} from '../factory/classStrategies';
+import { classTransient } from '../factory/classStrategies';
 import { v4 } from 'uuid';
-import { value } from "../factory/strategies";
+import { value } from '../factory/strategies';
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {
@@ -12,7 +12,7 @@ describe(`ClassTransientResolver`, () => {
   }
 
   const someValue = value('someString');
-  const a = classTransient(TestClass, [someValue]);
+  const a = classTransient(TestClass, someValue);
 
   it(`returns class instance`, async () => {
     const c = container();

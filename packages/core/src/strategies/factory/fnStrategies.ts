@@ -11,31 +11,26 @@ import {
 } from '../abstract/InstanceDefinition/PartiallyAppliedFunctionDefinition';
 
 export type FunctionDefinitionBuildFn = {
-  <TValue>(factory: () => TValue): FunctionFactoryDefinition<TValue>;
-  <TValue, TDeps extends any[], TArg>(
-    factory: (...args: [TArg]) => TValue,
-    args: [InstanceDefinition<TArg>],
-  ): FunctionFactoryDefinition<TValue>;
-  <TValue, TDeps extends any[], TArg, TFunctionArgs extends [TArg, ...TArg[]]>(
+  <TValue, TDeps extends any[], TFunctionArgs extends any[]>(
     factory: (...args: TFunctionArgs) => TValue,
-    args: { [K in keyof TFunctionArgs]: InstanceDefinition<TFunctionArgs[K]> },
+    ...args: { [K in keyof TFunctionArgs]: InstanceDefinition<TFunctionArgs[K]> }
   ): FunctionFactoryDefinition<TValue>;
 };
 
-export const singletonFn: FunctionDefinitionBuildFn = (factory, args?) => {
-  return functionDefinition(factory, SingletonStrategy.type, args ?? []);
+export const singletonFn: FunctionDefinitionBuildFn = (factory, ...args) => {
+  return functionDefinition(factory, SingletonStrategy.type, args);
 };
 
-export const transientFn: FunctionDefinitionBuildFn = (factory, args?) => {
-  return functionDefinition(factory, TransientStrategy.type, args ?? []);
+export const transientFn: FunctionDefinitionBuildFn = (factory, ...args) => {
+  return functionDefinition(factory, TransientStrategy.type, args);
 };
 
-export const requestFn: FunctionDefinitionBuildFn = (factory, args?) => {
-  return functionDefinition(factory, RequestStrategy.type, args ?? []);
+export const requestFn: FunctionDefinitionBuildFn = (factory, ...args) => {
+  return functionDefinition(factory, RequestStrategy.type, args);
 };
 
-export const scopedFn: FunctionDefinitionBuildFn = (factory, args?) => {
-  return functionDefinition(factory, ScopeStrategy.type, args ?? []);
+export const scopedFn: FunctionDefinitionBuildFn = (factory, ...args) => {
+  return functionDefinition(factory, ScopeStrategy.type, args);
 };
 
 export type PartiallyAppliedFnBuild = {

@@ -1,20 +1,24 @@
-
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { container } from '../Container';
-import { serviceLocator, singleton } from "../../strategies/factory/strategies";
-import { replace } from "../../patching/replace";
-
+import { serviceLocator, singleton } from '../../strategies/factory/strategies';
+import { replace } from '../../patching/replace';
 
 describe(`ServiceLocator`, () => {
   describe(`overrides`, () => {
     it(`returns instances from overrides modules`, async () => {
-      const someNumber = singleton.fn(() => 123)
-      const someString = singleton.fn(() => 'some content')
+      const someNumber = singleton.fn(() => 123);
+      const someString = singleton.fn(() => 'some content');
 
-      const clsDef = singleton.class(TestClassArgs2, [someNumber, someString])
+      const clsDef = singleton.class(TestClassArgs2, someNumber, someString);
 
-
-      const c = container({ scopeOverrides: [replace(someNumber, singleton.fn(() => 456))] });
+      const c = container({
+        scopeOverrides: [
+          replace(
+            someNumber,
+            singleton.fn(() => 456),
+          ),
+        ],
+      });
 
       const locator = c.get(serviceLocator);
       const cls = locator.withRequestScope(({ get }) => get(clsDef));

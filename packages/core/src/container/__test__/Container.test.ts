@@ -1,6 +1,6 @@
 import { request, singleton } from '../../strategies/factory/strategies';
 import { container } from '../Container';
-import { replace } from "../../patching/replace";
+import { replace } from '../../patching/replace';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -53,7 +53,8 @@ describe(`Container`, () => {
         function sum(a, b) {
           return a + b;
         },
-        [a, b],
+        a,
+        b,
       );
 
       const aPatch = replace(
@@ -101,7 +102,7 @@ describe(`Container`, () => {
 
       const k1 = singleton.fn(async () => (counter += 1));
       const k2 = singleton.fn(async () => (counter += 1));
-      const k3 = singleton.fn(async (k1, k2) => (await k1) + (await k2), [k1, k2]);
+      const k3 = singleton.fn(async (k1, k2) => (await k1) + (await k2), k1, k2);
 
       const c = container();
       const k3Instance = c.get(k3);

@@ -46,7 +46,7 @@ describe(`DecoratorStrategy`, () => {
   it(`allows using other dependencies from the same module, ex2`, async () => {
     const a = value(1);
     const b = value(2);
-    const someValue = singletonFn((a, b) => a + b, [a, b]);
+    const someValue = singletonFn((a, b) => a + b, a, b);
 
     const mPatch = decorate(someValue, (val, b) => val * b, [b]);
 
@@ -74,7 +74,7 @@ describe(`DecoratorStrategy`, () => {
 
     it(`uses different request scope for each subsequent asObject call`, async () => {
       const source = request.fn(() => Math.random());
-      const a = request.fn(source => source, [source]);
+      const a = request.fn(source => source, source);
 
       const mPatch = decorate(a, a => a);
 

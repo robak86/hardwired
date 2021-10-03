@@ -4,7 +4,6 @@ import { AnyAction, Store } from 'redux';
 import { singleton } from 'hardwired';
 import { appReducer as appReducerImpl } from './appReducer';
 
-
 const dispatchAction =
   (store: Store<any>) =>
   <TPayload, TAction extends AnyAction>(
@@ -15,8 +14,8 @@ const dispatchAction =
 
 const initialState = singleton.fn(() => AppState.build());
 const appReducer = singleton.fn(() => appReducerImpl);
-const store = singleton.fn((reducer, state) => createAppStore(reducer, state), [appReducer, initialState]);
-const boundAction = singleton.fn(store => dispatchAction(store), [store]);
+const store = singleton.fn((reducer, state) => createAppStore(reducer, state), appReducer, initialState);
+const boundAction = singleton.fn(store => dispatchAction(store), store);
 
 export const storeModule = {
   initialState,

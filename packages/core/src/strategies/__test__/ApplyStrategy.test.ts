@@ -57,7 +57,7 @@ describe(`ApplyResolver`, () => {
 
     it(`preserves request scope of the original resolver`, async () => {
       const source = request.fn(() => Math.random());
-      const a = request.fn(source => source, [source]);
+      const a = request.fn(source => source, source);
 
       const mPatch = apply(a, a => a);
 

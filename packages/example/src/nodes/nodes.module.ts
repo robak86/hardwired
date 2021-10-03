@@ -22,5 +22,5 @@ const dispatchAction = <TPayload, TAction extends AnyAction>(
 export const nodesModule = {
   selectNodesIds: value(selectNodesIds),
   selectNodePosition: value(selectNodePosition),
-  setNodePosition: singleton.fn(boundAction => boundAction(setNodePositionAction), [storeModule.boundAction]),
+  setNodePosition: singleton.fn(boundAction => boundAction(setNodePositionAction), storeModule.boundAction),
 };

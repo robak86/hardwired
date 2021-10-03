@@ -20,11 +20,11 @@ describe(`ServiceLocatorResolver`, () => {
   }
 
   const someValue = value('someValue');
-  const reqScoped = request.class(TestClass, [someValue]);
-  const singletonScoped = singleton.class(TestClass, [someValue]);
+  const reqScoped = request.class(TestClass, someValue);
+  const singletonScoped = singleton.class(TestClass, someValue);
 
   const producedByFactory = singleton.fn(() => new DummyFactory());
-  const singletonConsumer = singleton.class(TestClassConsumer, [reqScoped]);
+  const singletonConsumer = singleton.class(TestClassConsumer, reqScoped);
 
   it(`returns request scoped instances`, async () => {
     const c = container();

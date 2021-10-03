@@ -8,7 +8,7 @@ describe(`InstancesConsumer`, () => {
   describe(`nesting modules`, () => {
     function setup() {
       const valDef = singleton.fn(() => 1);
-      const val2Def = singleton.fn(val => val + 10, [valDef]);
+      const val2Def = singleton.fn(val => val + 10, valDef);
 
       const ValueRenderer = ({ testId, value }) => {
         return <div data-testid={testId}>{value}</div>;
@@ -50,7 +50,7 @@ describe(`InstancesConsumer`, () => {
   describe(`using modules array`, () => {
     function setup() {
       const valDef = singleton.fn(() => 1);
-      const val2Def = singleton.fn(val => val + 10, [valDef]);
+      const val2Def = singleton.fn(val => val + 10, valDef);
 
       const ValueRenderer = ({ testId, value }) => {
         return <div data-testid={testId}>{value}</div>;

@@ -16,7 +16,7 @@ class ConfigConsumer {
 }
 
 const d1 = singleton.class(ConfigProvider);
-const d2 = scoped.class(ConfigConsumer, [d1]);
+const d2 = scoped.class(ConfigConsumer, d1);
 
 const c = container();
 

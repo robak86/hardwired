@@ -20,7 +20,7 @@ describe(`SingletonStrategy`, () => {
   describe(`resolution`, () => {
     describe(`single module`, () => {
       const someValue = value('someString');
-      const a = classSingleton(TestClass, [someValue]);
+      const a = classSingleton(TestClass, someValue);
 
       it(`returns class instance`, async () => {
         const c = container();
@@ -55,11 +55,11 @@ describe(`SingletonStrategy`, () => {
       //   .build();
 
       const someValue = value('someValue');
-      const theSingleton = classSingleton(TestClass, [someValue]);
+      const theSingleton = classSingleton(TestClass, someValue);
 
-      const rootSingletonConsumer = classSingleton(TestClassConsumer, [theSingleton]);
-      const child1SingletonConsumer = classSingleton(TestClassConsumer, [theSingleton]);
-      const child2SingletonConsumer = classSingleton(TestClassConsumer, [theSingleton]);
+      const rootSingletonConsumer = classSingleton(TestClassConsumer, theSingleton);
+      const child1SingletonConsumer = classSingleton(TestClassConsumer, theSingleton);
+      const child2SingletonConsumer = classSingleton(TestClassConsumer, theSingleton);
 
       it(`reuses the same instance`, async () => {
         const c = container();
@@ -86,7 +86,7 @@ describe(`SingletonStrategy`, () => {
     describe(`multiple containers`, () => {
       it(`does not shares instances across multiple containers`, async () => {
         const someValue = value('someString');
-        const a = classSingleton(TestClass, [someValue]);
+        const a = classSingleton(TestClass, someValue);
 
         const c1 = container();
         const instanceFromC1 = c1.get(a);
@@ -139,7 +139,7 @@ describe(`SingletonStrategy`, () => {
     });
 
     it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
-      const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
+      const randomFactorySpy: () => number = jest.fn().mockImplementation(() => Math.random());
 
       const a = singletonFn(randomFactorySpy);
 
@@ -160,7 +160,7 @@ describe(`SingletonStrategy`, () => {
     });
 
     it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
-      const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
+      const randomFactorySpy: () => number = jest.fn().mockImplementation(() => Math.random());
 
       const a = singletonFn(randomFactorySpy);
 
