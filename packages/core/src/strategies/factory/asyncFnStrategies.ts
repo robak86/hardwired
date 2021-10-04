@@ -1,9 +1,18 @@
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { AsyncSingletonStrategy } from '../AsyncSingletonStrategy';
 import {
-  asyncFunctionDefinition,
-  AsyncFunctionFactoryDefinition
+  AsyncFunctionFactoryDefinition,
+  buildAsyncFunctionDefinition,
 } from '../abstract/AsyncInstanceDefinition/AsyncFunctionDefinition';
+import {
+  PartialAnyInstancesDefinitionsArgs,
+  PartialInstancesDefinitionsArgs, PartiallyAppliedAsyncDefinition,
+  PartiallyAppliedDefinition
+} from '../../utils/PartiallyApplied';
+import {
+  AsyncPartiallyAppliedDefinition,
+  buildAsyncPartiallyAppliedFnDefinition
+} from '../abstract/AsyncInstanceDefinition/AsyncPartiallyAppliedDefinition';
 
 export type AsyncFunctionDefinitionBuildFn = {
   <TValue, TDeps extends any[], TFunctionArgs extends any[]>(
@@ -12,8 +21,23 @@ export type AsyncFunctionDefinitionBuildFn = {
   ): AsyncFunctionFactoryDefinition<TValue>;
 };
 
-export const asyncSingletonFn: AsyncFunctionDefinitionBuildFn = (factory, ...args) => {
-  return asyncFunctionDefinition(factory, AsyncSingletonStrategy.type, args);
+export const asyncFnDefinition = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
+  return (factory, ...args) => {
+    return buildAsyncFunctionDefinition(factory, AsyncSingletonStrategy.type, args);
+  };
+};
+
+export type AsyncPartiallyAppliedFnBuild = {
+  <TValue, TArgs extends any[], TProvidedArgs extends PartialAnyInstancesDefinitionsArgs<TArgs>>(
+    factory: (...args: TArgs) => Promise<TValue>,
+    ...args: TProvidedArgs
+  ): AsyncPartiallyAppliedDefinition<PartiallyAppliedAsyncDefinition<TArgs, TProvidedArgs, TValue>>;
+};
+
+export const asyncPartiallyAppliedDefinition = (strategy: symbol): AsyncPartiallyAppliedFnBuild => {
+  return (factory, ...args) => {
+    return buildAsyncPartiallyAppliedFnDefinition(strategy, factory, args, undefined) as any;
+  };
 };
 //
 // export const transientFn: FunctionDefinitionBuildFn = (factory, args?) => {

@@ -1,14 +1,14 @@
 import { SingletonScope } from './SingletonScope';
 import invariant from 'tiny-invariant';
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 import { ControlledPromise } from '../utils/ControlledPromise';
+import { AsyncInstanceDefinition } from "../strategies/abstract/AsyncInstanceDefinition";
 
-function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any>[]): string[] {
+function getPatchedResolversIds(patchedDefinitions: AsyncInstanceDefinition<any, any>[]): string[] {
   return patchedDefinitions.map(def => def.id);
 }
 
 export class AsyncInstancesCache {
-  static create(scopeOverrides: InstanceDefinition<any>[]): AsyncInstancesCache {
+  static create(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesCache {
     const ownKeys = getPatchedResolversIds(scopeOverrides);
     return new AsyncInstancesCache(new SingletonScope(ownKeys), {}, {}, {});
   }
@@ -20,7 +20,7 @@ export class AsyncInstancesCache {
     private globalOverridesScope: Record<string, Promise<any>>,
   ) {}
 
-  childScope(scopeOverrides: InstanceDefinition<any>[]): AsyncInstancesCache {
+  childScope(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesCache {
     const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
     return new AsyncInstancesCache(

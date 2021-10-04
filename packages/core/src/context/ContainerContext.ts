@@ -2,7 +2,7 @@ import { InstancesCache } from './InstancesCache';
 import { ModuleMaterialization } from './ModuleMaterialization';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { instanceDefinition, InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../strategies/abstract/AnyInstanceDefinition';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
@@ -21,16 +21,19 @@ export class ContainerContext {
   }
 
   static create(
-    scopeOverrides: AnyInstanceDefinition<any>[],
-    globalOverrides: AnyInstanceDefinition<any>[],
+    scopeOverrides: AnyInstanceDefinition<any, any>[],
+    globalOverrides: AnyInstanceDefinition<any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
+    const syncOverrides = scopeOverrides.filter(instanceDefinition.isSync);
+    const asyncOverrides = scopeOverrides.filter(instanceDefinition.isAsync);
+
     return new ContainerContext(
       definitionsRegistry,
-      InstancesCache.create(scopeOverrides), // TODO: this is unfortunate because instance cache will contains async
-      AsyncInstancesCache.create(scopeOverrides),
+      InstancesCache.create(syncOverrides),
+      AsyncInstancesCache.create(asyncOverrides),
       new ModuleMaterialization(definitionsRegistry),
       strategiesRegistry,
     );
@@ -44,7 +47,7 @@ export class ContainerContext {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): TValue {
+  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
     const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
     const strategy = this.strategiesRegistry.get(instanceOrOverride.strategy);
     return strategy.build(
@@ -57,7 +60,7 @@ export class ContainerContext {
     // return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
   }
 
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> {
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
     const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
     const strategy = this.strategiesRegistry.getAsync(instanceOrOverride.strategy);
     return strategy.build(
@@ -96,11 +99,13 @@ export class ContainerContext {
 
   childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): ContainerContext {
     const { scopeOverrides = [] } = options;
+    const syncOverrides = scopeOverrides.filter(instanceDefinition.isSync);
+    const asyncOverrides = scopeOverrides.filter(instanceDefinition.isAsync);
 
     return new ContainerContext(
       this.instancesDefinitionsRegistry.checkoutForScope(scopeOverrides),
-      this.instancesCache.childScope(scopeOverrides),
-      this.asyncInstancesCache.checkoutForRequestScope(),
+      this.instancesCache.childScope(syncOverrides),
+      this.asyncInstancesCache.childScope(asyncOverrides),
       new ModuleMaterialization(this.instancesDefinitionsRegistry),
       this.strategiesRegistry,
     );

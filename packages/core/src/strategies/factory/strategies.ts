@@ -1,26 +1,28 @@
 import { ServiceLocator } from '../../container/ServiceLocator';
 import { ServiceLocatorStrategy } from '../ServiceLocatorStrategy';
-import {
-  fnDefinition, partiallyAppliedDefinition,
-} from './fnStrategies';
+import { fnDefinition, partiallyAppliedDefinition } from './fnStrategies';
 import { buildClassDefinition } from '../abstract/InstanceDefinition/BuildClassDefinition';
 import { ConstDefinition } from '../abstract/InstanceDefinition/ConstDefinition';
 import { ConstStrategy } from '../ConstStrategy';
 import { v4 } from 'uuid';
-import { asyncClassSingleton } from './asyncClassStrategies';
-import { asyncSingletonFn } from './asyncFnStrategies';
+
+import { asyncFnDefinition, asyncPartiallyAppliedDefinition } from './asyncFnStrategies';
 import { classDefinition } from './classStrategies';
 import { SingletonStrategy } from '../SingletonStrategy';
 import { TransientStrategy } from '../TransientStrategy';
 import { RequestStrategy } from '../RequestStrategy';
 import { ScopeStrategy } from '../ScopeStrategy';
+import { asyncClassDefinition } from './asyncClassStrategies';
+import { AsyncSingletonStrategy } from '../AsyncSingletonStrategy';
 
 export const singleton = {
   fn: fnDefinition(SingletonStrategy.type),
-  asyncFn: asyncSingletonFn,
   class: classDefinition(SingletonStrategy.type),
-  asyncClass: asyncClassSingleton,
   partial: partiallyAppliedDefinition(SingletonStrategy.type),
+
+  asyncFn: asyncFnDefinition(AsyncSingletonStrategy.type),
+  asyncClass: asyncClassDefinition(AsyncSingletonStrategy.type),
+  asyncPartial: asyncPartiallyAppliedDefinition(AsyncSingletonStrategy.type),
 };
 
 export const transient = {

@@ -8,7 +8,7 @@ export class AsyncSingletonStrategy extends AsyncBuildStrategy {
   static type = Symbol.for('asyncClassSingleton');
 
   async build(
-    definition: AsyncInstanceDefinition<any, any, any>,
+    definition: AsyncInstanceDefinition<any, any>,
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache,
     definitions,

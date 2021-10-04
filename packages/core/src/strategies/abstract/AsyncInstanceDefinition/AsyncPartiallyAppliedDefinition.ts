@@ -1,21 +1,21 @@
 import { InstanceDefinition } from '../InstanceDefinition';
 import { v4 } from 'uuid';
 
-export type AsyncPartiallyAppliedDefinition<T, TMeta = never, TExternal = never> = {
+export type AsyncPartiallyAppliedDefinition<T, TExternal = never> = {
   type: 'asyncPartiallyApplied';
   id: string;
   strategy: symbol;
   fn: T;
   dependencies: Array<InstanceDefinition<any>>;
-  meta: TMeta;
+  meta: any;
 };
 
-export const partiallyAppliedFnDefinition = <TMeta>(
+export const buildAsyncPartiallyAppliedFnDefinition = <TMeta>(
   strategy: symbol,
   fn,
   dependencies,
   meta: TMeta,
-): AsyncPartiallyAppliedDefinition<any, TMeta, never> => {
+): AsyncPartiallyAppliedDefinition<any, never> => {
   return {
     type: 'asyncPartiallyApplied',
     id: `${fn.name}:${v4()}`,

@@ -7,8 +7,9 @@ import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
 
 // TODO: Ideally build strategy should be just static object with type and build property (to decrease chances that one will make it stateful)
 export abstract class BuildStrategy {
+  // TODO: we should inject also service for instantiating dependencies - this will make creation of custom strategies much easier
   abstract build(
-    definition: AnyInstanceDefinition<any, any, any>,
+    definition: AnyInstanceDefinition<any, any>,
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache, // only required by service locator because we would like to obtain service locator synchronously and then get some async definitions
     resolvers: InstancesDefinitionsRegistry,
@@ -18,7 +19,7 @@ export abstract class BuildStrategy {
 
 export abstract class AsyncBuildStrategy {
   abstract build(
-    definition: AnyInstanceDefinition<any, any, any>,
+    definition: AnyInstanceDefinition<any, any>,
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache,
     resolvers: InstancesDefinitionsRegistry,
@@ -48,7 +49,7 @@ export const buildDependencies = (
 };
 
 export const buildAsyncDependencies = async (
-  definition: AnyInstanceDefinition<any, any, any>,
+  definition: AnyInstanceDefinition<any, any>,
   instancesCache: InstancesCache,
   asyncInstancesCache: AsyncInstancesCache,
   resolvers: InstancesDefinitionsRegistry,
@@ -71,7 +72,7 @@ export const buildAsyncDependencies = async (
 };
 
 export const buildAsyncInstance = async (
-  definition: AnyInstanceDefinition<any, any, any>,
+  definition: AnyInstanceDefinition<any, any>,
   instancesCache: InstancesCache,
   asyncInstancesCache: AsyncInstancesCache,
   resolvers: InstancesDefinitionsRegistry,

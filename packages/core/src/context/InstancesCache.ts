@@ -2,12 +2,12 @@ import { SingletonScope } from './SingletonScope';
 import invariant from 'tiny-invariant';
 import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 
-function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any>[]): string[] {
+function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any, any>[]): string[] {
   return patchedDefinitions.map(def => def.id);
 }
 
 export class InstancesCache {
-  static create(scopeOverrides: InstanceDefinition<any>[]): InstancesCache {
+  static create(scopeOverrides: InstanceDefinition<any, any>[]): InstancesCache {
     const ownKeys = getPatchedResolversIds(scopeOverrides);
     return new InstancesCache(new SingletonScope(ownKeys), {}, {}, {});
   }
@@ -19,7 +19,7 @@ export class InstancesCache {
     private globalOverridesScope: Record<string, any>,
   ) {}
 
-  childScope(scopeOverrides: InstanceDefinition<any>[]): InstancesCache {
+  childScope(scopeOverrides: InstanceDefinition<any, any>[]): InstancesCache {
     const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
     return new InstancesCache(

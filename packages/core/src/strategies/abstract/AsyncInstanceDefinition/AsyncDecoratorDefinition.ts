@@ -1,6 +1,6 @@
 import { InstanceDefinition } from '../InstanceDefinition';
 
-export type AsyncDecoratorDefinition<T, TMeta = never, TExternal = never> = {
+export type AsyncDecoratorDefinition<T, TExternal = never> = {
   type: 'asyncDecorator';
   id: string;
   strategy: symbol;

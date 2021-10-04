@@ -1,4 +1,5 @@
 import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { AnyInstanceDefinition } from "../strategies/abstract/AnyInstanceDefinition";
 
 // prettier-ignore
 export type PartiallyApplied<A extends any[], D extends PartialArgs<A>, R> =
@@ -24,3 +25,17 @@ type SameLength<T extends any[]> = { [K in keyof T]: any };
 export type PartialInstancesDefinitionsArgs<TArgs extends any[]> =
     [] extends TArgs ? []:
     TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: InstanceDefinition<TArgs[K]>} ) | PartialInstancesDefinitionsArgs<TPRev> : never;
+
+
+// prettier-ignore
+export type PartialAnyInstancesDefinitionsArgs<TArgs extends any[]> =
+    [] extends TArgs ? []:
+        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AnyInstanceDefinition<TArgs[K]>} ) | PartialAnyInstancesDefinitionsArgs<TPRev> : never;
+
+
+// prettier-ignore
+export type PartiallyAppliedAsyncDefinition<A extends any[], D extends PartialAnyInstancesDefinitionsArgs<A>, R> =
+    [] extends A ? () => Promise<R> :
+    A extends D ? () => Promise<R> :
+    A extends [...SameLength<D>, ...infer TRest] ? (...args:TRest) => Promise<R> : // ...D may be replaced with SameLength<D>?
+    never;

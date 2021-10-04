@@ -5,15 +5,33 @@ import { ConstDefinition } from './InstanceDefinition/ConstDefinition';
 import { PartiallyAppliedFunctionDefinition } from './InstanceDefinition/PartiallyAppliedFunctionDefinition';
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import invariant from 'tiny-invariant';
+import { AsyncInstanceDefinition } from './AsyncInstanceDefinition';
 
-export type InstanceDefinition<T, TMeta = never, TExternal = never> =
-  | ClassDefinition<T, TMeta, TExternal>
-  | FunctionFactoryDefinition<T, TMeta, TExternal>
-  | DecoratorDefinition<T, TMeta, TExternal>
-  | ConstDefinition<T, TMeta, TExternal>
-  | PartiallyAppliedFunctionDefinition<T, TMeta, TExternal>;
+export type InstanceDefinition<T, TExternal = never> =
+  | ClassDefinition<T, TExternal>
+  | FunctionFactoryDefinition<T, TExternal>
+  | DecoratorDefinition<T, TExternal>
+  | ConstDefinition<T, TExternal>
+  | PartiallyAppliedFunctionDefinition<T, TExternal>;
 
-export const createInstance = <T>(instanceDefinition: AnyInstanceDefinition<T, any, any>, dependencies: any[]): T => {
+const syncTypes: InstanceDefinition<any>['type'][] = ['const', 'class', 'function', 'decorator', 'partiallyApplied'];
+const asyncTypes: AsyncInstanceDefinition<any, any>['type'][] = [
+  'asyncClass',
+  'asyncFunction',
+  'asyncDecorator',
+  'asyncPartiallyApplied',
+];
+
+export const instanceDefinition = {
+  isAsync(val: AnyInstanceDefinition<any, any>): val is AsyncInstanceDefinition<any, any> {
+    return asyncTypes.includes(val.type as any);
+  },
+  isSync(val: AnyInstanceDefinition<any, any>): val is InstanceDefinition<any, any> {
+    return syncTypes.includes(val.type as any);
+  },
+};
+
+export const createInstance = <T>(instanceDefinition: AnyInstanceDefinition<T, any>, dependencies: any[]): T => {
   switch (instanceDefinition.type) {
     case 'class':
     case 'asyncClass':
@@ -24,6 +42,17 @@ export const createInstance = <T>(instanceDefinition: AnyInstanceDefinition<T, a
     case 'const':
       return instanceDefinition.value;
     case 'asyncPartiallyApplied':
+      invariant(
+          typeof instanceDefinition.fn === 'function',
+          `Invalid param. Expected function got ${instanceDefinition}`,
+      );
+
+      if (instanceDefinition.fn.length === 0) {
+        return instanceDefinition.fn;
+      } else {
+        return instanceDefinition.fn.bind(null, ...dependencies);
+      }
+
     case 'partiallyApplied':
       invariant(
         typeof instanceDefinition.fn === 'function',
