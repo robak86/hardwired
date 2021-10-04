@@ -1,10 +1,20 @@
 import { singleton } from '../factory/strategies';
 import { container } from '../../container/Container';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
+import { BoxedValue } from '../../__test__/BoxedValue';
+import { replace } from "../../patching/replace";
 
 // TODO: async resolution has race condition.
 //  async strategies should immediately register dependency in instances cache (PushPromise) so it will be immediatelly available for other definitions
 //  when strategy resolves its async instance it should push the value to pushpromise, which already may be consumed by other definitions
+
+const resolveAfter = <T>(timeout: number, value: T): Promise<T> => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(value);
+    }, timeout);
+  });
+};
 
 describe(`AsyncSingletonStrategy`, () => {
   describe(`class`, () => {
@@ -91,6 +101,28 @@ describe(`AsyncSingletonStrategy`, () => {
           const result = await container().getAsync(asyncDef);
           expect(result).toEqual([123, 'str']);
         });
+      });
+    });
+
+    describe(`race condition`, () => {
+      it(`does not create singleton duplicates`, async () => {
+        const slowSingleton = singleton.asyncFn(() => resolveAfter(500, new BoxedValue(Math.random())));
+        const consumer1 = singleton.asyncFn(async s => s, slowSingleton);
+        const consumer2 = singleton.asyncFn(async s => s, slowSingleton);
+        const ctn = container();
+
+        const [result1, result2] = await Promise.all([ctn.getAsync(consumer1), ctn.getAsync(consumer2)]);
+
+        expect(result1).toBe(result2);
+      });
+    });
+
+    describe(`global overrides`, () => {
+      it(`returns correct instance`, async () => {
+        const slowSingleton = singleton.asyncFn(() => resolveAfter(500, new BoxedValue(Math.random())));
+        const consumer1 = singleton.asyncFn(async s => s, slowSingleton);
+        const consumer2 = singleton.asyncFn(async s => s, slowSingleton);
+        const ctn = container({globalOverrides: [replace(singleton.asyncFn(async () => new BoxedValue(123)))]});
       });
     });
   });

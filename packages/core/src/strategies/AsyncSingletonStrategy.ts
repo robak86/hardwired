@@ -1,39 +1,29 @@
-import { AsyncBuildStrategy, buildAsyncDependencies } from './abstract/BuildStrategy';
+import { AsyncBuildStrategy, buildAsyncInstance } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance } from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from './collection/StrategiesRegistry';
-import { AnyInstanceDefinition } from './abstract/AnyInstanceDefinition';
+import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
+import { AsyncInstanceDefinition } from './abstract/AsyncInstanceDefinition';
 
 export class AsyncSingletonStrategy extends AsyncBuildStrategy {
   static type = Symbol.for('asyncClassSingleton');
 
   async build(
-    definition: AnyInstanceDefinition<any, any, any>,
+    definition: AsyncInstanceDefinition<any, any, any>,
     instancesCache: InstancesCache,
-    resolvers,
+    asyncInstancesCache: AsyncInstancesCache,
+    definitions,
     strategiesRegistry: StrategiesRegistry,
   ) {
     const id = definition.id;
 
-    if (resolvers.hasGlobalOverrideResolver(id)) {
-      if (instancesCache.hasInGlobalOverride(id)) {
-        return instancesCache.getFromGlobalOverride(id);
-      } else {
-        const dependencies = await buildAsyncDependencies(definition, instancesCache, resolvers, strategiesRegistry);
-        const instance = await createInstance(definition, dependencies);
-
-        instancesCache.setForGlobalOverrideScope(id, instance);
-        return instance;
-      }
+    if (definitions.hasGlobalOverrideResolver(id)) {
+      return asyncInstancesCache.upsertGlobalOverrideScope(id, async () => {
+        return buildAsyncInstance(definition, instancesCache, asyncInstancesCache, definitions, strategiesRegistry);
+      });
     }
 
-    if (instancesCache.hasInGlobalScope(id)) {
-      return instancesCache.getFromGlobalScope(id);
-    } else {
-      const dependencies = await buildAsyncDependencies(definition, instancesCache, resolvers, strategiesRegistry);
-      const instance = await createInstance(definition, dependencies);
-      instancesCache.setForGlobalScope(id, instance);
-      return instance;
-    }
+    return asyncInstancesCache.upsertGlobalScope(id, async () => {
+      return buildAsyncInstance(definition, instancesCache, asyncInstancesCache, definitions, strategiesRegistry);
+    });
   }
 }

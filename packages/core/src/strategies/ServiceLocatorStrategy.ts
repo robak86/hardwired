@@ -1,9 +1,10 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { InstancesCache } from '../context/InstancesCache';
-import { BuildStrategy} from './abstract/BuildStrategy';
+import { BuildStrategy } from './abstract/BuildStrategy';
 import { InstanceDefinition } from './abstract/InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
-import { StrategiesRegistry } from "./collection/StrategiesRegistry";
+import { StrategiesRegistry } from './collection/StrategiesRegistry';
+import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 
 export class ServiceLocatorStrategy extends BuildStrategy {
   static type = Symbol.for('serviceLocatorStrategy');
@@ -14,17 +15,18 @@ export class ServiceLocatorStrategy extends BuildStrategy {
 
   build(
     definition: InstanceDefinition<any>,
-    context: InstancesCache,
+    instancesCache: InstancesCache,
+    asyncInstancesCache: AsyncInstancesCache,
     resolvers: InstancesDefinitionsRegistry,
     strategiesRegistry: StrategiesRegistry,
   ) {
     const id = definition.id;
 
-    if (context.hasInGlobalScope(id)) {
-      return context.getFromGlobalScope(id);
+    if (instancesCache.hasInGlobalScope(id)) {
+      return instancesCache.getFromGlobalScope(id);
     } else {
-      const instance = new ServiceLocator(context, resolvers);
-      context.setForGlobalScope(id, instance);
+      const instance = new ServiceLocator(instancesCache, asyncInstancesCache, resolvers);
+      instancesCache.setForGlobalScope(id, instance);
       return instance;
     }
   }

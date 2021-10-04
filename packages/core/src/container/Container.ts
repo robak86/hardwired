@@ -16,16 +16,20 @@ export type ChildScopeOptions = {
   scopeOverrides?: InstanceDefinition<any>[];
 };
 
-export const defaultStrategiesRegistry = new StrategiesRegistry({
-  [SingletonStrategy.type]: new SingletonStrategy(),
-  [TransientStrategy.type]: new TransientStrategy(),
-  [ConstStrategy.type]: new ConstStrategy(),
-  [DecoratorStrategy.type]: new DecoratorStrategy(),
-  [RequestStrategy.type]: new RequestStrategy(),
-  [ScopeStrategy.type]: new ScopeStrategy(),
-  [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
-  [AsyncSingletonStrategy.type]: new AsyncSingletonStrategy(),
-});
+export const defaultStrategiesRegistry = new StrategiesRegistry(
+  {
+    [SingletonStrategy.type]: new SingletonStrategy(),
+    [TransientStrategy.type]: new TransientStrategy(),
+    [ConstStrategy.type]: new ConstStrategy(),
+    [DecoratorStrategy.type]: new DecoratorStrategy(),
+    [RequestStrategy.type]: new RequestStrategy(),
+    [ScopeStrategy.type]: new ScopeStrategy(),
+    [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
+  },
+  {
+    [AsyncSingletonStrategy.type]: new AsyncSingletonStrategy(),
+  },
+);
 
 export class Container implements IServiceLocator {
   constructor(protected readonly containerContext: ContainerContext) {}
@@ -37,7 +41,7 @@ export class Container implements IServiceLocator {
 
   getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue>): Promise<TValue> {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.get(instanceDefinition) as any;
+    return requestContext.getAsync(instanceDefinition);
   }
 
   getAll<TLazyModule extends Array<InstanceDefinition<any>>>(

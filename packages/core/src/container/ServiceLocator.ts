@@ -4,14 +4,20 @@ import { ModuleMaterialization } from '../context/ModuleMaterialization';
 import { IServiceLocator } from './IServiceLocator';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
 import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 
 export class ServiceLocator implements IServiceLocator {
   private containerContext: ContainerContext;
 
-  constructor(private instancesCache: InstancesCache, private definitionsRegistry: InstancesDefinitionsRegistry) {
+  constructor(
+    private instancesCache: InstancesCache,
+    private asyncInstancesCache: AsyncInstancesCache,
+    private definitionsRegistry: InstancesDefinitionsRegistry,
+  ) {
     this.containerContext = new ContainerContext(
       this.definitionsRegistry,
       instancesCache,
+      asyncInstancesCache,
       new ModuleMaterialization(this.definitionsRegistry),
     );
   }
@@ -19,6 +25,7 @@ export class ServiceLocator implements IServiceLocator {
   withRequestScope<T>(factory: (obj: IServiceLocator) => T): T {
     const serviceLocator = new ServiceLocator(
       this.instancesCache.checkoutForRequestScope(),
+      this.asyncInstancesCache.checkoutForRequestScope(),
       this.definitionsRegistry.checkoutForRequestScope(),
     );
 
