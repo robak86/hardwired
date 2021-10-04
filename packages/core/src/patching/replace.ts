@@ -1,11 +1,11 @@
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { AnyInstanceDefinition } from "../strategies/abstract/AnyInstanceDefinition";
 
 export const replace = <
   TInstance,
   TNextInstance extends TInstance,
-  TNextInstanceDef extends InstanceDefinition<TInstance>,
+  TNextInstanceDef extends AnyInstanceDefinition<TInstance>,
 >(
-  instance: InstanceDefinition<TInstance>,
+  instance: AnyInstanceDefinition<TInstance>,
   newInstance: TNextInstanceDef,
 ): TNextInstanceDef => {
   return {

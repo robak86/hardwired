@@ -3,7 +3,7 @@ import { container } from '../../container/Container';
 import { request, scoped, singleton, transient, value } from '../factory/strategies';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { decorate } from "../../patching/decorate";
-import { singletonFn } from "../factory/fnStrategies";
+
 
 describe(`DecoratorStrategy`, () => {
   it(`decorates original value`, async () => {
@@ -46,7 +46,7 @@ describe(`DecoratorStrategy`, () => {
   it(`allows using other dependencies from the same module, ex2`, async () => {
     const a = value(1);
     const b = value(2);
-    const someValue = singletonFn((a, b) => a + b, a, b);
+    const someValue = singleton.fn((a, b) => a + b, a, b);
 
     const mPatch = decorate(someValue, (val, b) => val * b, [b]);
 

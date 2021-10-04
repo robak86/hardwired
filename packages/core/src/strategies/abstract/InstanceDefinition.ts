@@ -1,4 +1,4 @@
-import { ClassDefinition } from './InstanceDefinition/ClassDefinition';
+import { ClassDefinition } from './InstanceDefinition/BuildClassDefinition';
 import { FunctionFactoryDefinition } from './InstanceDefinition/FunctionDefinition';
 import { DecoratorDefinition } from './InstanceDefinition/DecoratorDefinition';
 import { ConstDefinition } from './InstanceDefinition/ConstDefinition';

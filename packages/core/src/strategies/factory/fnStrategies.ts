@@ -1,8 +1,4 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { TransientStrategy } from '../TransientStrategy';
-import { SingletonStrategy } from '../SingletonStrategy';
-import { RequestStrategy } from '../RequestStrategy';
-import { ScopeStrategy } from '../ScopeStrategy';
 import { functionDefinition, FunctionFactoryDefinition } from '../abstract/InstanceDefinition/FunctionDefinition';
 import { PartialInstancesDefinitionsArgs, PartiallyAppliedDefinition } from '../../utils/PartiallyApplied';
 import {
@@ -17,20 +13,10 @@ export type FunctionDefinitionBuildFn = {
   ): FunctionFactoryDefinition<TValue>;
 };
 
-export const singletonFn: FunctionDefinitionBuildFn = (factory, ...args) => {
-  return functionDefinition(factory, SingletonStrategy.type, args);
-};
-
-export const transientFn: FunctionDefinitionBuildFn = (factory, ...args) => {
-  return functionDefinition(factory, TransientStrategy.type, args);
-};
-
-export const requestFn: FunctionDefinitionBuildFn = (factory, ...args) => {
-  return functionDefinition(factory, RequestStrategy.type, args);
-};
-
-export const scopedFn: FunctionDefinitionBuildFn = (factory, ...args) => {
-  return functionDefinition(factory, ScopeStrategy.type, args);
+export const fnDefinition = (strategy: symbol): FunctionDefinitionBuildFn => {
+  return (factory, ...args) => {
+    return functionDefinition(factory, strategy, args);
+  };
 };
 
 export type PartiallyAppliedFnBuild = {
@@ -40,18 +26,8 @@ export type PartiallyAppliedFnBuild = {
   ): PartiallyAppliedFunctionDefinition<PartiallyAppliedDefinition<TArgs, TProvidedArgs, TValue>>;
 };
 
-export const partiallyAppliedSingleton: PartiallyAppliedFnBuild = (factory, ...args) => {
-  return partiallyAppliedFnDefinition(SingletonStrategy.type, factory, args, undefined) as any;
-};
-
-export const partiallyAppliedTransient: PartiallyAppliedFnBuild = (factory, ...args) => {
-  return partiallyAppliedFnDefinition(TransientStrategy.type, factory, args, undefined) as any;
-};
-
-export const partiallyAppliedRequest: PartiallyAppliedFnBuild = (factory, ...args) => {
-  return partiallyAppliedFnDefinition(RequestStrategy.type, factory, args, undefined) as any;
-};
-
-export const partiallyAppliedScoped: PartiallyAppliedFnBuild = (factory, ...args) => {
-  return partiallyAppliedFnDefinition(ScopeStrategy.type, factory, args, undefined) as any;
-};
+export const partiallyAppliedDefinition = (strategy: symbol):PartiallyAppliedFnBuild => {
+  return (factory, ...args) => {
+    return partiallyAppliedFnDefinition(strategy, factory, args, undefined) as any;
+  };
+}

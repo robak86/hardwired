@@ -21,8 +21,8 @@ export class ContainerContext {
   }
 
   static create(
-    scopeOverrides: InstanceDefinition<any>[],
-    globalOverrides: InstanceDefinition<any>[],
+    scopeOverrides: AnyInstanceDefinition<any>[],
+    globalOverrides: AnyInstanceDefinition<any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
@@ -44,7 +44,7 @@ export class ContainerContext {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue>): TValue {
+  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): TValue {
     const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
     const strategy = this.strategiesRegistry.get(instanceOrOverride.strategy);
     return strategy.build(
@@ -57,7 +57,7 @@ export class ContainerContext {
     // return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
   }
 
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue>): Promise<TValue> {
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> {
     const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
     const strategy = this.strategiesRegistry.getAsync(instanceOrOverride.strategy);
     return strategy.build(

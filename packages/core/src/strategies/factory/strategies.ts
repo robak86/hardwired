@@ -1,50 +1,47 @@
-import { classRequest, classScoped, classSingleton, classTransient } from './classStrategies';
 import { ServiceLocator } from '../../container/ServiceLocator';
 import { ServiceLocatorStrategy } from '../ServiceLocatorStrategy';
 import {
-  partiallyAppliedRequest,
-  partiallyAppliedScoped,
-  partiallyAppliedSingleton,
-  partiallyAppliedTransient,
-  requestFn,
-  scopedFn,
-  singletonFn,
-  transientFn,
+  fnDefinition, partiallyAppliedDefinition,
 } from './fnStrategies';
-import { classDefinition } from '../abstract/InstanceDefinition/ClassDefinition';
+import { buildClassDefinition } from '../abstract/InstanceDefinition/BuildClassDefinition';
 import { ConstDefinition } from '../abstract/InstanceDefinition/ConstDefinition';
 import { ConstStrategy } from '../ConstStrategy';
 import { v4 } from 'uuid';
 import { asyncClassSingleton } from './asyncClassStrategies';
-import { asyncSingletonFn } from "./asyncFnStrategies";
+import { asyncSingletonFn } from './asyncFnStrategies';
+import { classDefinition } from './classStrategies';
+import { SingletonStrategy } from '../SingletonStrategy';
+import { TransientStrategy } from '../TransientStrategy';
+import { RequestStrategy } from '../RequestStrategy';
+import { ScopeStrategy } from '../ScopeStrategy';
 
 export const singleton = {
-  fn: singletonFn,
+  fn: fnDefinition(SingletonStrategy.type),
   asyncFn: asyncSingletonFn,
-  class: classSingleton,
+  class: classDefinition(SingletonStrategy.type),
   asyncClass: asyncClassSingleton,
-  partial: partiallyAppliedSingleton,
+  partial: partiallyAppliedDefinition(SingletonStrategy.type),
 };
 
 export const transient = {
-  fn: transientFn,
-  class: classTransient,
-  partial: partiallyAppliedTransient,
+  fn: fnDefinition(TransientStrategy.type),
+  class: classDefinition(TransientStrategy.type),
+  partial: partiallyAppliedDefinition(TransientStrategy.type),
 };
 
 export const request = {
-  fn: requestFn,
-  class: classRequest,
-  partial: partiallyAppliedRequest,
+  fn: fnDefinition(RequestStrategy.type),
+  class: classDefinition(RequestStrategy.type),
+  partial: partiallyAppliedDefinition(RequestStrategy.type),
 };
 
 export const scoped = {
-  fn: scopedFn,
-  class: classScoped,
-  partial: partiallyAppliedScoped,
+  fn: fnDefinition(ScopeStrategy.type),
+  class: classDefinition(ScopeStrategy.type),
+  partial: partiallyAppliedDefinition(ScopeStrategy.type),
 };
 
-export const serviceLocator = classDefinition(ServiceLocator, ServiceLocatorStrategy.type, [] as any);
+export const serviceLocator = buildClassDefinition(ServiceLocator, ServiceLocatorStrategy.type, [] as any);
 
 export const value = <TValue, TDeps extends any[]>(value: TValue): ConstDefinition<TValue> => {
   return {

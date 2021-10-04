@@ -8,18 +8,21 @@ export type ClassDefinition<T, TMeta = never, TExternal = never> = {
   strategy: symbol;
   class: ClassType<T, any>;
   dependencies: Array<InstanceDefinition<any>>;
+  meta: TMeta;
 };
 
-export const classDefinition = <T, TDeps extends any[]>(
+export const buildClassDefinition = <T, TDeps extends any[], TMeta>(
   klass: ClassType<T, TDeps>,
   strategy: symbol,
   dependencies: { [K in keyof TDeps]: InstanceDefinition<TDeps[K]> },
-): ClassDefinition<T> => {
+  meta?: TMeta,
+): ClassDefinition<T, TMeta> => {
   return {
     type: 'class',
     id: v4(),
     strategy,
     class: klass,
     dependencies,
+    meta: meta as any,
   };
 };

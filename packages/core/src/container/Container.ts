@@ -34,7 +34,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry(
 export class Container implements IServiceLocator {
   constructor(protected readonly containerContext: ContainerContext) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue>): TValue {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
     return requestContext.get(instanceDefinition);
   }
@@ -78,8 +78,8 @@ export class Container implements IServiceLocator {
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  scopeOverrides?: InstanceDefinition<any>[];
-  globalOverrides?: InstanceDefinition<any>[]; // propagated to whole dependencies graph
+  scopeOverrides?: AnyInstanceDefinition<any, any, any>[];
+  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to whole dependencies graph
 };
 
 export function container(globalOverrides?: InstanceDefinition<any>[]): Container;

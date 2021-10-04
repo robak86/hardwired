@@ -7,7 +7,7 @@ export class InstancesDefinitionsRegistry {
     return new InstancesDefinitionsRegistry({}, {});
   }
 
-  static create(scopeOverrides: InstanceDefinition<any>[], globalOverrides: InstanceDefinition<any>[]): InstancesDefinitionsRegistry {
+  static create(scopeOverrides: AnyInstanceDefinition<any>[], globalOverrides: AnyInstanceDefinition<any>[]): InstancesDefinitionsRegistry {
     const registry = InstancesDefinitionsRegistry.empty();
 
     registry.addScopeOverrides(scopeOverrides);
@@ -17,15 +17,15 @@ export class InstancesDefinitionsRegistry {
   }
 
   constructor(
-    private scopeOverrideResolversById: Record<string, InstanceDefinition<any>>,
-    private globalOverrideResolversById: Record<string, InstanceDefinition<any>>,
+    private scopeOverrideResolversById: Record<string, AnyInstanceDefinition<any>>,
+    private globalOverrideResolversById: Record<string, AnyInstanceDefinition<any>>,
   ) {}
 
   checkoutForRequestScope() {
     return this;
   }
 
-  checkoutForScope(scopeResolversOverrides: InstanceDefinition<any>[]) {
+  checkoutForScope(scopeResolversOverrides: AnyInstanceDefinition<any>[]) {
     const newRegistry = new InstancesDefinitionsRegistry(
       { ...this.scopeOverrideResolversById },
       this.globalOverrideResolversById,
@@ -34,7 +34,7 @@ export class InstancesDefinitionsRegistry {
     return newRegistry;
   }
 
-  getInstanceDefinition(instanceDefinition: AnyInstanceDefinition<any>): AnyInstanceDefinition<any> {
+  getInstanceDefinition(instanceDefinition: AnyInstanceDefinition<any, any, any>): AnyInstanceDefinition<any, any, any> {
     const id = instanceDefinition.id;
 
     if (this.globalOverrideResolversById[id]) {
@@ -58,11 +58,11 @@ export class InstancesDefinitionsRegistry {
 
 
 
-  private addScopeOverrideResolver(resolver: InstanceDefinition<any>) {
+  private addScopeOverrideResolver(resolver: AnyInstanceDefinition<any>) {
     this.scopeOverrideResolversById[resolver.id] = resolver;
   }
 
-  private addGlobalOverrideResolver(resolver: InstanceDefinition<any>) {
+  private addGlobalOverrideResolver(resolver: AnyInstanceDefinition<any>) {
     invariant(
       !this.globalOverrideResolversById[resolver.id],
       `Invariant resolves cannot be updated after container creation`,
@@ -70,13 +70,13 @@ export class InstancesDefinitionsRegistry {
     this.globalOverrideResolversById[resolver.id] = resolver;
   }
 
-  private addGlobalOverrides(patches: InstanceDefinition<any>[]) {
+  private addGlobalOverrides(patches: AnyInstanceDefinition<any>[]) {
     patches.forEach(patchedResolver => {
       this.addGlobalOverrideResolver(patchedResolver);
     });
   }
 
-  private addScopeOverrides(patches: InstanceDefinition<any>[]) {
+  private addScopeOverrides(patches: AnyInstanceDefinition<any>[]) {
     patches.forEach(patchedResolver => {
       this.addScopeOverrideResolver(patchedResolver);
     });

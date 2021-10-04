@@ -1,10 +1,7 @@
 import { container } from '../../container/Container';
-import { classSingleton} from '../factory/classStrategies';
 import { set } from '../../patching/set';
 import { v4 } from 'uuid';
-import { singletonFn } from "../factory/fnStrategies";
-import { value } from "../factory/strategies";
-
+import { singleton, value } from '../factory/strategies';
 
 describe(`SingletonStrategy`, () => {
   class TestClass {
@@ -20,7 +17,7 @@ describe(`SingletonStrategy`, () => {
   describe(`resolution`, () => {
     describe(`single module`, () => {
       const someValue = value('someString');
-      const a = classSingleton(TestClass, someValue);
+      const a = singleton.class(TestClass, someValue);
 
       it(`returns class instance`, async () => {
         const c = container();
@@ -55,11 +52,11 @@ describe(`SingletonStrategy`, () => {
       //   .build();
 
       const someValue = value('someValue');
-      const theSingleton = classSingleton(TestClass, someValue);
+      const theSingleton = singleton.class(TestClass, someValue);
 
-      const rootSingletonConsumer = classSingleton(TestClassConsumer, theSingleton);
-      const child1SingletonConsumer = classSingleton(TestClassConsumer, theSingleton);
-      const child2SingletonConsumer = classSingleton(TestClassConsumer, theSingleton);
+      const rootSingletonConsumer = singleton.class(TestClassConsumer, theSingleton);
+      const child1SingletonConsumer = singleton.class(TestClassConsumer, theSingleton);
+      const child2SingletonConsumer = singleton.class(TestClassConsumer, theSingleton);
 
       it(`reuses the same instance`, async () => {
         const c = container();
@@ -86,7 +83,7 @@ describe(`SingletonStrategy`, () => {
     describe(`multiple containers`, () => {
       it(`does not shares instances across multiple containers`, async () => {
         const someValue = value('someString');
-        const a = classSingleton(TestClass, someValue);
+        const a = singleton.class(TestClass, someValue);
 
         const c1 = container();
         const instanceFromC1 = c1.get(a);
@@ -128,7 +125,7 @@ describe(`SingletonStrategy`, () => {
     });
 
     it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
-      const a = singletonFn(() => Math.random());
+      const a = singleton.fn(() => Math.random());
 
       const parentC = container();
       const childC = parentC.checkoutScope();
@@ -141,7 +138,7 @@ describe(`SingletonStrategy`, () => {
     it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
       const randomFactorySpy: () => number = jest.fn().mockImplementation(() => Math.random());
 
-      const a = singletonFn(randomFactorySpy);
+      const a = singleton.fn(randomFactorySpy);
 
       const root = container();
       const level1 = root.checkoutScope();
@@ -162,7 +159,7 @@ describe(`SingletonStrategy`, () => {
     it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
       const randomFactorySpy: () => number = jest.fn().mockImplementation(() => Math.random());
 
-      const a = singletonFn(randomFactorySpy);
+      const a = singleton.fn(randomFactorySpy);
 
       const root = container();
       const level1 = root.checkoutScope({ scopeOverrides: [set(a, 1)] });
@@ -184,7 +181,7 @@ describe(`SingletonStrategy`, () => {
 
   describe('global overrides', function () {
     it(`cannot be replaced by overrides`, async () => {
-      const k1 = singletonFn(() => Math.random());
+      const k1 = singleton.fn(() => Math.random());
       const invariantPatch = set(k1, 1);
       const childScopePatch = set(k1, 2);
 
@@ -196,8 +193,8 @@ describe(`SingletonStrategy`, () => {
     });
 
     it(`allows for overrides for other keys than ones changes invariants array`, async () => {
-      const k1 = singletonFn(() => Math.random());
-      const k2 = singletonFn(() => Math.random());
+      const k1 = singleton.fn(() => Math.random());
+      const k2 = singleton.fn(() => Math.random());
 
       const invariantPatch = set(k1, 1);
       const childScopePatch = set(k2, 2);
