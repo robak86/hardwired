@@ -48,6 +48,21 @@ export const buildDependencies = (
   });
 };
 
+export const buildInstance = (definition: InstanceDefinition<any>, // TODO: use correct type
+                              instancesCache: InstancesCache,
+                              asyncInstancesCache: AsyncInstancesCache,
+                              resolvers: InstancesDefinitionsRegistry,
+                              strategiesRegistry: StrategiesRegistry,) => {
+  const dependencies = buildDependencies(
+      definition,
+      instancesCache,
+      asyncInstancesCache,
+      resolvers,
+      strategiesRegistry,
+  );
+  return createInstance(definition, dependencies);
+}
+
 export const buildAsyncDependencies = async (
   definition: AnyInstanceDefinition<any, any>,
   instancesCache: InstancesCache,

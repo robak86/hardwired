@@ -80,7 +80,27 @@ export class InstancesCache {
     this.currentScope[id] = instanceOrStrategy;
   }
 
-  setForGlobalScope(uuid: string, instance: any) {
+  private setForGlobalScope(uuid: string, instance: any) {
     this.globalScope.set(uuid, instance);
+  }
+
+  upsertGlobalOverrideScope<T>(uuid: string, build: () => T) {
+    if (this.hasInGlobalOverride(uuid)) {
+      return this.getFromGlobalOverride(uuid);
+    } else {
+      const instance = build();
+      this.setForGlobalOverrideScope(uuid, instance);
+      return instance;
+    }
+  }
+
+  upsertGlobalScope<T>(uuid: string, build: () => T) {
+    if (this.hasInGlobalScope(uuid)) {
+      return this.getFromGlobalScope(uuid);
+    } else {
+      const instance = build();
+      this.setForGlobalScope(uuid, instance);
+      return instance;
+    }
   }
 }

@@ -1,6 +1,6 @@
-import { buildDependencies, BuildStrategy } from './abstract/BuildStrategy';
+import { buildInstance, BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, InstanceDefinition } from './abstract/InstanceDefinition';
+import { InstanceDefinition } from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from './collection/StrategiesRegistry';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 
@@ -17,36 +17,13 @@ export class SingletonStrategy extends BuildStrategy {
     const id = definition.id;
 
     if (resolvers.hasGlobalOverrideResolver(id)) {
-      if (instancesCache.hasInGlobalOverride(id)) {
-        return instancesCache.getFromGlobalOverride(id);
-      } else {
-        const dependencies = buildDependencies(
-          definition,
-          instancesCache,
-          asyncInstancesCache,
-          resolvers,
-          strategiesRegistry,
-        );
-        const instance = createInstance(definition, dependencies);
-
-        instancesCache.setForGlobalOverrideScope(id, instance);
-        return instance;
-      }
+      return instancesCache.upsertGlobalOverrideScope(id, () => {
+        return buildInstance(definition, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+      });
     }
 
-    if (instancesCache.hasInGlobalScope(id)) {
-      return instancesCache.getFromGlobalScope(id);
-    } else {
-      const dependencies = buildDependencies(
-        definition,
-        instancesCache,
-        asyncInstancesCache,
-        resolvers,
-        strategiesRegistry,
-      );
-      const instance = createInstance(definition, dependencies);
-      instancesCache.setForGlobalScope(id, instance);
-      return instance;
-    }
+    return instancesCache.upsertGlobalScope(id, () => {
+      return buildInstance(definition, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+    });
   }
 }

@@ -42,18 +42,7 @@ export const createInstance = <T>(instanceDefinition: AnyInstanceDefinition<T, a
     case 'const':
       return instanceDefinition.value;
     case 'asyncPartiallyApplied':
-      invariant(
-          typeof instanceDefinition.fn === 'function',
-          `Invalid param. Expected function got ${instanceDefinition}`,
-      );
-
-      if (instanceDefinition.fn.length === 0) {
-        return instanceDefinition.fn;
-      } else {
-        return instanceDefinition.fn.bind(null, ...dependencies);
-      }
-
-    case 'partiallyApplied':
+      case 'partiallyApplied':
       invariant(
         typeof instanceDefinition.fn === 'function',
         `Invalid param. Expected function got ${instanceDefinition}`,

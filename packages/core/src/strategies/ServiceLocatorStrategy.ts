@@ -22,12 +22,8 @@ export class ServiceLocatorStrategy extends BuildStrategy {
   ) {
     const id = definition.id;
 
-    if (instancesCache.hasInGlobalScope(id)) {
-      return instancesCache.getFromGlobalScope(id);
-    } else {
-      const instance = new ServiceLocator(instancesCache, asyncInstancesCache, resolvers);
-      instancesCache.setForGlobalScope(id, instance);
-      return instance;
-    }
+    return instancesCache.upsertGlobalScope(id, () => {
+      return new ServiceLocator(instancesCache, asyncInstancesCache, resolvers);
+    });
   }
 }
