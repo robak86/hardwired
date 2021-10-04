@@ -1,18 +1,18 @@
-import { InstanceDefinition } from '../InstanceDefinition';
 import { v4 } from 'uuid';
+import { AnyInstanceDefinition } from "../AnyInstanceDefinition";
 
 export type AsyncFunctionFactoryDefinition<T, TMeta = never, TExternal = never> = {
   type: 'asyncFunction';
   id: string;
   strategy: symbol;
   factory: (...args: any[]) => T;
-  dependencies: Array<InstanceDefinition<any>>;
+  dependencies: Array<AnyInstanceDefinition<any>>;
 };
 
-export const functionDefinition = <T, TDeps extends any[]>(
+export const asyncFunctionDefinition = <T, TDeps extends any[]>(
   factory: (...args: TDeps) => Promise<T>,
   strategy: symbol,
-  dependencies: { [K in keyof TDeps]: InstanceDefinition<TDeps[K]> },
+  dependencies: { [K in keyof TDeps]: AnyInstanceDefinition<TDeps[K]> },
 ): AsyncFunctionFactoryDefinition<T> => {
   return {
     type: 'asyncFunction',

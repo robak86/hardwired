@@ -20,7 +20,7 @@ export class AsyncSingletonStrategy extends AsyncBuildStrategy {
         return instancesCache.getFromGlobalOverride(id);
       } else {
         const dependencies = await buildAsyncDependencies(definition, instancesCache, resolvers, strategiesRegistry);
-        const instance = createInstance(definition, dependencies);
+        const instance = await createInstance(definition, dependencies);
 
         instancesCache.setForGlobalOverrideScope(id, instance);
         return instance;
@@ -31,7 +31,7 @@ export class AsyncSingletonStrategy extends AsyncBuildStrategy {
       return instancesCache.getFromGlobalScope(id);
     } else {
       const dependencies = await buildAsyncDependencies(definition, instancesCache, resolvers, strategiesRegistry);
-      const instance = createInstance(definition, dependencies);
+      const instance = await createInstance(definition, dependencies);
       instancesCache.setForGlobalScope(id, instance);
       return instance;
     }

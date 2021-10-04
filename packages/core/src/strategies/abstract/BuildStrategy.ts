@@ -57,8 +57,10 @@ export const buildAsyncDependencies = async (
     return resolvers.getInstanceDefinition(instanceDef);
   });
 
-  return dependencies.map(dep => {
-    const strategy = strategiesRegistry.get(dep.strategy);
-    return strategy.build(dep, instancesCache, resolvers, strategiesRegistry);
-  });
+  return Promise.all(
+    dependencies.map(dep => {
+      const strategy = strategiesRegistry.get(dep.strategy);
+      return strategy.build(dep, instancesCache, resolvers, strategiesRegistry);
+    }),
+  );
 };

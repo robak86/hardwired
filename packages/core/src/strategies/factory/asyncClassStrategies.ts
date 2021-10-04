@@ -1,7 +1,7 @@
 import { ClassType } from '../../utils/ClassType';
-import { SingletonStrategy } from '../SingletonStrategy';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { AsyncClassDefinition, asyncClassDefinition } from '../abstract/AsyncInstanceDefinition/AsyncClassDefinition';
+import { AsyncSingletonStrategy } from "../AsyncSingletonStrategy";
 
 type ClassDefinitionBuildFn = {
   <TInstance, TDeps extends any[], TArgs extends any[]>(
@@ -11,7 +11,7 @@ type ClassDefinitionBuildFn = {
 };
 
 export const asyncClassSingleton: ClassDefinitionBuildFn = (cls, ...dependencies) => {
-  return asyncClassDefinition(cls, SingletonStrategy.type, dependencies as any);
+  return asyncClassDefinition(cls, AsyncSingletonStrategy.type, dependencies as any);
 };
 //
 // export const classRequest: ClassDefinitionBuildFn = (cls, dependencies?) => {

@@ -16,9 +16,11 @@ import { ConstDefinition } from '../abstract/InstanceDefinition/ConstDefinition'
 import { ConstStrategy } from '../ConstStrategy';
 import { v4 } from 'uuid';
 import { asyncClassSingleton } from './asyncClassStrategies';
+import { asyncSingletonFn } from "./asyncFnStrategies";
 
 export const singleton = {
   fn: singletonFn,
+  asyncFn: asyncSingletonFn,
   class: classSingleton,
   asyncClass: asyncClassSingleton,
   partial: partiallyAppliedSingleton,

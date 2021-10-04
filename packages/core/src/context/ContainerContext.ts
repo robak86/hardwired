@@ -3,8 +3,8 @@ import { ModuleMaterialization } from './ModuleMaterialization';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
-import { StrategiesRegistry } from "../strategies/collection/StrategiesRegistry";
-import { AnyInstanceDefinition } from "../strategies/abstract/AnyInstanceDefinition";
+import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
+import { AnyInstanceDefinition } from '../strategies/abstract/AnyInstanceDefinition';
 
 export class ContainerContext {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {

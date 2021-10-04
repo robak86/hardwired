@@ -1,29 +1,19 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { TransientStrategy } from '../TransientStrategy';
-import { SingletonStrategy } from '../SingletonStrategy';
-import { RequestStrategy } from '../RequestStrategy';
-import { ScopeStrategy } from '../ScopeStrategy';
-import { functionDefinition, FunctionFactoryDefinition } from '../abstract/InstanceDefinition/FunctionDefinition';
-import { PartialInstancesDefinitionsArgs, PartiallyAppliedDefinition } from '../../utils/PartiallyApplied';
+import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
+import { AsyncSingletonStrategy } from '../AsyncSingletonStrategy';
 import {
-  partiallyAppliedFnDefinition,
-  PartiallyAppliedFunctionDefinition,
-} from '../abstract/InstanceDefinition/PartiallyAppliedFunctionDefinition';
+  asyncFunctionDefinition,
+  AsyncFunctionFactoryDefinition
+} from '../abstract/AsyncInstanceDefinition/AsyncFunctionDefinition';
 
-export type FunctionDefinitionBuildFn = {
-  <TValue>(factory: () => TValue): FunctionFactoryDefinition<TValue>;
-  <TValue, TDeps extends any[], TArg>(
-    factory: (...args: [TArg]) => TValue,
-    args: [InstanceDefinition<TArg>],
-  ): FunctionFactoryDefinition<TValue>;
-  <TValue, TDeps extends any[], TArg, TFunctionArgs extends [TArg, ...TArg[]]>(
-    factory: (...args: TFunctionArgs) => TValue,
-    args: { [K in keyof TFunctionArgs]: InstanceDefinition<TFunctionArgs[K]> },
-  ): FunctionFactoryDefinition<TValue>;
+export type AsyncFunctionDefinitionBuildFn = {
+  <TValue, TDeps extends any[], TFunctionArgs extends any[]>(
+    factory: (...args: TFunctionArgs) => Promise<TValue>,
+    ...args: { [K in keyof TFunctionArgs]: AnyInstanceDefinition<TFunctionArgs[K]> }
+  ): AsyncFunctionFactoryDefinition<TValue>;
 };
 
-export const singletonFn: FunctionDefinitionBuildFn = (factory, args?) => {
-  return functionDefinition(factory, SingletonStrategy.type, args ?? []);
+export const asyncSingletonFn: AsyncFunctionDefinitionBuildFn = (factory, ...args) => {
+  return asyncFunctionDefinition(factory, AsyncSingletonStrategy.type, args);
 };
 //
 // export const transientFn: FunctionDefinitionBuildFn = (factory, args?) => {
