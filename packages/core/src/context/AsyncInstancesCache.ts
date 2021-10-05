@@ -1,7 +1,6 @@
 import { SingletonScope } from './SingletonScope';
-import invariant from 'tiny-invariant';
 import { ControlledPromise } from '../utils/ControlledPromise';
-import { AsyncInstanceDefinition } from "../strategies/abstract/AsyncInstanceDefinition";
+import { AsyncInstanceDefinition } from '../strategies/abstract/AsyncInstanceDefinition';
 
 function getPatchedResolversIds(patchedDefinitions: AsyncInstanceDefinition<any, any>[]): string[] {
   return patchedDefinitions.map(def => def.id);
@@ -15,9 +14,9 @@ export class AsyncInstancesCache {
 
   constructor(
     private globalScope: SingletonScope,
-    private currentScope: Record<string, Promise<any>>,
-    private requestScope: Record<string, Promise<any>>,
-    private globalOverridesScope: Record<string, Promise<any>>,
+    private currentScope: Record<string, ControlledPromise<any>>,
+    private requestScope: Record<string, ControlledPromise<any>>,
+    private globalOverridesScope: Record<string, ControlledPromise<any>>,
   ) {}
 
   childScope(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesCache {
@@ -35,62 +34,36 @@ export class AsyncInstancesCache {
     return new AsyncInstancesCache(this.globalScope, this.currentScope, {}, this.globalOverridesScope);
   }
 
-  hasInCurrentScope(id: string) {
-    return !!this.currentScope[id];
+  async upsertCurrentScope<T>(uuid: string, build: () => Promise<T>) {
+    if (!!this.currentScope[uuid]) {
+      return this.currentScope[uuid];
+    } else {
+      const controlledPromise = new ControlledPromise<T>();
+      this.currentScope[uuid] = controlledPromise;
+      const instance = await build();
+      controlledPromise.resolve(instance);
+      return instance;
+    }
   }
 
-  getFromCurrentScope(id: string) {
-    return this.currentScope[id];
-  }
-
-  hasInGlobalOverride(id: string) {
-    return !!this.globalOverridesScope[id];
-  }
-
-  getFromGlobalOverride(id: string) {
-    return this.globalOverridesScope[id];
-  }
-
-  setForGlobalOverrideScope(uuid: string, instance: any): void {
-    this.globalOverridesScope[uuid] = instance;
-  }
-
-  hasInRequestScope(uuid: string): boolean {
-    return !!this.requestScope[uuid];
-  }
-
-  hasInGlobalScope(uuid: string): boolean {
-    return this.globalScope.has(uuid);
-  }
-
-  getFromRequestScope(uuid: string) {
-    invariant(!!this.requestScope[uuid], `Dependency with given uuid doesn't exists in request scope`);
-    return this.requestScope[uuid];
-  }
-
-  getFromGlobalScope(uuid: string) {
-    invariant(!!this.globalScope.has(uuid), `Dependency with given uuid doesn't exists in global scope`);
-    return this.globalScope.get(uuid);
-  }
-
-  setForRequestScope(uuid: string, instance: any): void {
-    this.requestScope[uuid] = instance;
-  }
-
-  setForHierarchicalScope(id: string, instanceOrStrategy: any) {
-    this.currentScope[id] = instanceOrStrategy;
-  }
-
-  setForGlobalScope(uuid: string, instance: any) {
-    this.globalScope.set(uuid, instance);
+  async upsertRequestScope<T>(uuid: string, build: () => Promise<T>) {
+    if (!!this.requestScope[uuid]) {
+      return this.requestScope[uuid];
+    } else {
+      const controlledPromise = new ControlledPromise<T>();
+      this.requestScope[uuid] = controlledPromise;
+      const instance = await build();
+      controlledPromise.resolve(instance);
+      return instance;
+    }
   }
 
   async upsertGlobalScope<T>(uuid: string, build: () => Promise<T>) {
-    if (this.hasInGlobalScope(uuid)) {
-      return this.getFromGlobalScope(uuid);
+    if (this.globalScope.has(uuid)) {
+      return this.globalScope.get(uuid);
     } else {
       const controlledPromise = new ControlledPromise<T>();
-      this.setForGlobalScope(uuid, controlledPromise);
+      this.globalScope.set(uuid, controlledPromise);
       const instance = await build();
       controlledPromise.resolve(instance);
       return instance;
@@ -98,11 +71,11 @@ export class AsyncInstancesCache {
   }
 
   async upsertGlobalOverrideScope<T>(uuid: string, build: () => Promise<T>) {
-    if (this.hasInGlobalOverride(uuid)) {
-      return this.getFromGlobalOverride(uuid);
+    if (!!this.globalOverridesScope[uuid]) {
+      return this.globalOverridesScope[uuid];
     } else {
       const controlledPromise = new ControlledPromise<T>();
-      this.setForGlobalOverrideScope(uuid, controlledPromise);
+      this.globalOverridesScope[uuid] = controlledPromise;
       const instance = await build();
       controlledPromise.resolve(instance);
       return instance;
