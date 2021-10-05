@@ -1,5 +1,5 @@
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
-import { ClassType } from '../../utils/ClassType';
+import { ClassType } from '../utils/ClassType';
 import { InstanceDefinition } from './InstanceDefinition';
 import { v4 } from 'uuid';
 

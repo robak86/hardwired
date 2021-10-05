@@ -1,8 +1,8 @@
 import { InstancesCache } from '../../context/InstancesCache';
-import { InstanceDefinition } from './InstanceDefinition';
+import { InstanceDefinition } from '../../definitions/InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../../context/InstancesDefinitionsRegistry';
 import { StrategiesRegistry } from '../collection/StrategiesRegistry';
-import { AnyInstanceDefinition } from './AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../../definitions/AnyInstanceDefinition';
 import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
 
 // TODO: Ideally build strategy should be just static object with type and build property (to decrease chances that one will make it stateful)

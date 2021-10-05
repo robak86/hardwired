@@ -1,7 +1,7 @@
 import { set } from '../../patching/set';
 import { container } from '../../container/Container';
-import { request, scoped, singleton, transient, value } from '../factory/strategies';
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { request, scoped, singleton, transient, value } from '../../definitions/factory/definitions';
+import { InstanceDefinition } from '../../definitions/InstanceDefinition';
 import { decorate } from '../../patching/decorate';
 
 describe(`DecoratorStrategy`, () => {

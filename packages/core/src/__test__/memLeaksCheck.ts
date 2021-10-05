@@ -2,7 +2,7 @@ import { container } from '../container/Container';
 import u from 'util';
 
 import memwatch from '@airbnb/node-memwatch';
-import { scoped, singleton } from '../strategies/factory/strategies';
+import { scoped, singleton } from '../definitions/factory/definitions';
 
 export const inspect = obj => {
   return console.log(u.inspect(obj, false, null, true));

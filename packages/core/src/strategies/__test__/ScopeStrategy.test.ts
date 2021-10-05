@@ -1,5 +1,5 @@
 import { container } from '../../container/Container';
-import { scoped } from '../factory/strategies';
+import { scoped } from '../../definitions/factory/definitions';
 import { BoxedValue } from '../../__test__/BoxedValue';
 import { replace } from "../../patching/replace";
 

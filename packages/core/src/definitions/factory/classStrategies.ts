@@ -1,5 +1,5 @@
 import { ClassType } from '../../utils/ClassType';
-import { buildClassDefinition, InstanceDefinition } from '../abstract/InstanceDefinition';
+import { buildClassDefinition, InstanceDefinition } from '../InstanceDefinition';
 
 type ClassDefinitionBuildFn = {
   <TInstance, TDeps extends any[], TArgs extends any[]>(
@@ -27,6 +27,6 @@ export const classDefinitionWithMeta = <TMeta>(
   defaults?: Partial<TMeta>,
 ): ClassDefinitionWithMetaBuildFn<TMeta> => {
   return (meta, cls, ...dependencies) => {
-    return buildClassDefinition(cls, strategy, dependencies);
+    return buildClassDefinition(cls, strategy, dependencies, meta);
   };
 };

@@ -1,4 +1,4 @@
-import { singleton } from '../factory/strategies';
+import { singleton } from '../../definitions/factory/definitions';
 import { container } from '../../container/Container';
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { BoxedValue } from '../../__test__/BoxedValue';

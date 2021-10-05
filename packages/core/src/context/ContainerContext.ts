@@ -2,9 +2,9 @@ import { InstancesCache } from './InstancesCache';
 import { ModuleMaterialization } from './ModuleMaterialization';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { instanceDefinition, InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { instanceDefinition, InstanceDefinition } from '../definitions/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
-import { AnyInstanceDefinition } from '../strategies/abstract/AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/AnyInstanceDefinition';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
 
 export class ContainerContext {

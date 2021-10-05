@@ -26,3 +26,9 @@ const mySingleton = fn<MyMeta>(myCustomStrategySymbol)
 
 const myDefinition = mySingleton(meta, Class, dep1, dep2)
 `
+
+
+- rewrite tests 
+  - strategy is currently only responsible for caching and uses the same behavior regardless the 
+    definition type
+- investigate idea of addon library providing implicit context using async hooks

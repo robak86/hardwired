@@ -2,7 +2,7 @@ import { AsyncBuildStrategy, buildAsyncInstance } from './abstract/BuildStrategy
 import { InstancesCache } from '../context/InstancesCache';
 import { StrategiesRegistry } from './collection/StrategiesRegistry';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
-import { AsyncInstanceDefinition } from './abstract/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../definitions/AsyncInstanceDefinition';
 
 export class AsyncSingletonStrategy extends AsyncBuildStrategy {
   static type = Symbol.for('asyncClassSingleton');

@@ -1,8 +1,8 @@
 import { container } from '../../container/Container';
 import { BoxedValue } from '../../__test__/BoxedValue';
-import { request, scoped, singleton, transient } from '../factory/strategies';
+import { request, scoped, singleton, transient } from '../../definitions/factory/definitions';
 import { set } from '../../patching/set';
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../../definitions/InstanceDefinition';
 import { decorate } from "../../patching/decorate";
 import { apply } from "../../patching/apply";
 

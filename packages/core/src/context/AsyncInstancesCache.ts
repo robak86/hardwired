@@ -1,6 +1,6 @@
 import { SingletonScope } from './SingletonScope';
 import { ControlledPromise } from '../utils/ControlledPromise';
-import { AsyncInstanceDefinition } from '../strategies/abstract/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../definitions/AsyncInstanceDefinition';
 
 function getPatchedResolversIds(patchedDefinitions: AsyncInstanceDefinition<any, any>[]): string[] {
   return patchedDefinitions.map(def => def.id);

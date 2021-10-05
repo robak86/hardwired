@@ -1,7 +1,7 @@
-import { singleton, value } from '../strategies';
+import { singleton, value } from '../definitions';
 
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../../InstanceDefinition';
 
 describe(`fnStrategies`, () => {
   describe(`partiallyAppliedSingleton`, () => {

@@ -1,4 +1,4 @@
-import { singleton, transient, value } from '../factory/strategies';
+import { singleton, transient, value } from '../../definitions/factory/definitions';
 import { container } from '../../container/Container';
 import { expectType, TypeEqual } from 'ts-expect';
 

@@ -1,4 +1,4 @@
-import { AnyInstanceDefinition } from "../strategies/abstract/AnyInstanceDefinition";
+import { AnyInstanceDefinition } from "../definitions/AnyInstanceDefinition";
 
 export const replace = <
   TInstance,

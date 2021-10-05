@@ -1,4 +1,4 @@
-export { serviceLocator } from './strategies/factory/strategies';
+export { serviceLocator } from './definitions/factory/definitions';
 
 export { container, Container } from './container/Container';
 
@@ -6,8 +6,8 @@ export * from './strategies/RequestStrategy';
 export * from './strategies/SingletonStrategy';
 export * from './strategies/TransientStrategy';
 export * from './strategies/ScopeStrategy';
-export * from './strategies/factory/strategies';
-export * from './strategies/abstract/InstanceDefinition';
+export * from './definitions/factory/definitions';
+export * from './definitions/InstanceDefinition';
 
 export * from './patching/replace';
 export * from './patching/apply';
@@ -22,4 +22,5 @@ export { ServiceLocator } from './container/ServiceLocator';
 export { BuildStrategy } from './strategies/abstract/BuildStrategy';
 export type { IServiceLocator } from './container/IServiceLocator';
 
-export { buildAsyncClassDefinition } from './strategies/abstract/AsyncInstanceDefinition';
+export { buildAsyncClassDefinition } from './definitions/AsyncInstanceDefinition';
+export * from './definitions/factory/customDefinitions';

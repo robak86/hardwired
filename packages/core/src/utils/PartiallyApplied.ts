@@ -1,5 +1,5 @@
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
-import { AnyInstanceDefinition } from "../strategies/abstract/AnyInstanceDefinition";
+import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import { AnyInstanceDefinition } from "../definitions/AnyInstanceDefinition";
 
 // prettier-ignore
 export type PartiallyApplied<A extends any[], D extends PartialArgs<A>, R> =

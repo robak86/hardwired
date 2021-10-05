@@ -1,6 +1,6 @@
 import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/InstanceDefinition';
 import { SingletonStrategy } from '../strategies/SingletonStrategy';
 import { TransientStrategy } from '../strategies/TransientStrategy';
 import { RequestStrategy } from '../strategies/RequestStrategy';
@@ -8,7 +8,7 @@ import { ScopeStrategy } from '../strategies/ScopeStrategy';
 import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AsyncSingletonStrategy } from '../strategies/AsyncSingletonStrategy';
-import { AnyInstanceDefinition } from '../strategies/abstract/AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/AnyInstanceDefinition';
 
 export type ChildScopeOptions = {
   scopeOverrides?: InstanceDefinition<any>[];

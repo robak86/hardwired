@@ -1,6 +1,5 @@
 import invariant from 'tiny-invariant';
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
-import { AnyInstanceDefinition } from '../strategies/abstract/AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/AnyInstanceDefinition';
 
 export class InstancesDefinitionsRegistry {
   static empty(): InstancesDefinitionsRegistry {

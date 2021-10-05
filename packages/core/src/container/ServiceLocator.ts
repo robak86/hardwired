@@ -3,7 +3,7 @@ import { ContainerContext } from '../context/ContainerContext';
 import { ModuleMaterialization } from '../context/ModuleMaterialization';
 import { IServiceLocator } from './IServiceLocator';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/InstanceDefinition';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 
 export class ServiceLocator implements IServiceLocator {

@@ -1,6 +1,6 @@
 import { buildDependencies, buildInstance, BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { InstanceDefinition } from './abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/InstanceDefinition';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 
 export class TransientStrategy extends BuildStrategy {

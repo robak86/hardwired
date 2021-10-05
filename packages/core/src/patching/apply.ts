@@ -1,5 +1,5 @@
 // TODO: add support for injecting deps into applyFn
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/InstanceDefinition';
 
 export const apply = <TInstance, TNextValue extends TInstance>(
   instance: InstanceDefinition<TInstance>,

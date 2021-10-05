@@ -1,4 +1,4 @@
-import { functionDefinition, InstanceDefinition, partiallyAppliedFnDefinition } from '../abstract/InstanceDefinition';
+import { functionDefinition, InstanceDefinition, partiallyAppliedFnDefinition } from '../InstanceDefinition';
 import { PartialInstancesDefinitionsArgs, PartiallyAppliedDefinition } from '../../utils/PartiallyApplied';
 
 export type FunctionDefinitionBuildFn = {
@@ -9,9 +9,7 @@ export type FunctionDefinitionBuildFn = {
 };
 
 export const fnDefinition = (strategy: symbol): FunctionDefinitionBuildFn => {
-  return (factory, ...args) => {
-    return functionDefinition(factory, strategy, args);
-  };
+  return (factory, ...args) => functionDefinition(factory, strategy, args);
 };
 
 export type PartiallyAppliedFnBuild = {
@@ -22,7 +20,5 @@ export type PartiallyAppliedFnBuild = {
 };
 
 export const partiallyAppliedDefinition = (strategy: symbol): PartiallyAppliedFnBuild => {
-  return (factory, ...args) => {
-    return partiallyAppliedFnDefinition(strategy, factory, args, undefined) as any;
-  };
+  return (factory, ...args) => partiallyAppliedFnDefinition(strategy, factory, args, undefined);
 };

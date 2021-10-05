@@ -1,5 +1,5 @@
 import { container } from '../../container/Container';
-import { request } from '../factory/strategies';
+import { request } from '../../definitions/factory/definitions';
 import { replace } from "../../patching/replace";
 
 describe(`RequestStrategy`, () => {

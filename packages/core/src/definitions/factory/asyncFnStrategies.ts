@@ -1,11 +1,11 @@
-import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
-import { AsyncSingletonStrategy } from '../AsyncSingletonStrategy';
+import { AnyInstanceDefinition } from '../AnyInstanceDefinition';
+import { AsyncSingletonStrategy } from '../../strategies/AsyncSingletonStrategy';
 import { PartialAnyInstancesDefinitionsArgs, PartiallyAppliedAsyncDefinition } from '../../utils/PartiallyApplied';
 import {
   AsyncInstanceDefinition,
   buildAsyncFunctionDefinition,
   buildAsyncPartiallyAppliedFnDefinition
-} from '../abstract/AsyncInstanceDefinition';
+} from '../AsyncInstanceDefinition';
 
 export type AsyncFunctionDefinitionBuildFn = {
   <TValue, TDeps extends any[], TFunctionArgs extends any[]>(

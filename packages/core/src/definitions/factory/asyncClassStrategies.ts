@@ -1,6 +1,6 @@
 import { ClassType } from '../../utils/ClassType';
-import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
-import { AsyncInstanceDefinition, buildAsyncClassDefinition } from '../abstract/AsyncInstanceDefinition';
+import { AnyInstanceDefinition } from '../AnyInstanceDefinition';
+import { AsyncInstanceDefinition, buildAsyncClassDefinition } from '../AsyncInstanceDefinition';
 
 type ClassDefinitionBuildFn = {
   <TInstance, TDeps extends any[], TArgs extends any[]>(

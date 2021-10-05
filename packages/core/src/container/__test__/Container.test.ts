@@ -1,4 +1,4 @@
-import { request, singleton } from '../../strategies/factory/strategies';
+import { request, singleton } from '../../definitions/factory/definitions';
 import { container } from '../Container';
 import { replace } from '../../patching/replace';
 

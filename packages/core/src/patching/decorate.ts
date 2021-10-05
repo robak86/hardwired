@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/InstanceDefinition';
 
 export function decorate<TInstance, TNextValue extends TInstance, TDecoratorDeps extends any[]>(
   instance: InstanceDefinition<TInstance>,

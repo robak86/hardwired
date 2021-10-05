@@ -1,5 +1,5 @@
 import { ContainerContext } from '../../context/ContainerContext';
-import { singleton } from '../../strategies/factory/strategies';
+import { singleton } from '../../definitions/factory/definitions';
 
 describe(`ContainerRecord`, () => {
   describe(`async scope`, () => {

@@ -1,8 +1,8 @@
 import now from 'performance-now';
 import { Container, container } from '../container/Container';
 
-import { singleton } from '../strategies/factory/strategies';
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { singleton } from '../definitions/factory/definitions';
+import { InstanceDefinition } from '../definitions/InstanceDefinition';
 
 function registerN(times: number) {
   const result: any = {

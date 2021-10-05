@@ -1,5 +1,5 @@
 import { ContainerContext } from '../context/ContainerContext';
-import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/InstanceDefinition';
 
 export interface IServiceLocator {
   get<TValue>(instanceDefinition: InstanceDefinition<TValue>): TValue;
