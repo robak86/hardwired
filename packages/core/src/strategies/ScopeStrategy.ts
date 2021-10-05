@@ -1,6 +1,6 @@
 import { buildDependencies, BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, InstanceDefinition } from './abstract/InstanceDefinition';
+import { InstanceDefinition } from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from './collection/StrategiesRegistry';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 
@@ -27,7 +27,7 @@ export class ScopeStrategy extends BuildStrategy {
           resolvers,
           strategiesRegistry,
         ); // TODO: these two lines almost always comes together - extract into common function. This will solve issue with decorator
-        const instance = createInstance(definition, dependencies);
+        const instance = definition.create(dependencies);
         instancesCache.setForGlobalOverrideScope(id, instance);
         return instance;
       }
@@ -43,7 +43,7 @@ export class ScopeStrategy extends BuildStrategy {
         resolvers,
         strategiesRegistry,
       );
-      const instance = createInstance(definition, dependencies);
+      const instance = definition.create(dependencies);
       instancesCache.setForHierarchicalScope(id, instance);
       return instance;
     }

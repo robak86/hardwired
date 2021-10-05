@@ -1,6 +1,6 @@
 import { buildDependencies, BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
-import { createInstance, InstanceDefinition } from './abstract/InstanceDefinition';
+import { InstanceDefinition } from './abstract/InstanceDefinition';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 
 export class TransientStrategy extends BuildStrategy {
@@ -19,15 +19,27 @@ export class TransientStrategy extends BuildStrategy {
       if (instancesCache.hasInGlobalOverride(id)) {
         return instancesCache.getFromGlobalOverride(id);
       } else {
-        const dependencies = buildDependencies(definition, instancesCache,asyncInstancesCache, resolvers, strategiesRegistry);
+        const dependencies = buildDependencies(
+          definition,
+          instancesCache,
+          asyncInstancesCache,
+          resolvers,
+          strategiesRegistry,
+        );
 
-        const instance = createInstance(definition, dependencies);
+        const instance = definition.create(dependencies);
         instancesCache.setForGlobalOverrideScope(id, instance);
         return instance;
       }
     }
 
-    const dependencies = buildDependencies(definition, instancesCache,asyncInstancesCache, resolvers, strategiesRegistry);
-    return createInstance(definition, dependencies);
+    const dependencies = buildDependencies(
+      definition,
+      instancesCache,
+      asyncInstancesCache,
+      resolvers,
+      strategiesRegistry,
+    );
+    return definition.create(dependencies);
   }
 }

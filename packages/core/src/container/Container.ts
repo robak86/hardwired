@@ -2,9 +2,7 @@ import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
 import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 import { SingletonStrategy } from '../strategies/SingletonStrategy';
-import { ConstStrategy } from '../strategies/ConstStrategy';
 import { TransientStrategy } from '../strategies/TransientStrategy';
-import { DecoratorStrategy } from '../strategies/DecoratorStrategy';
 import { RequestStrategy } from '../strategies/RequestStrategy';
 import { ScopeStrategy } from '../strategies/ScopeStrategy';
 import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
@@ -20,8 +18,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry(
   {
     [SingletonStrategy.type]: new SingletonStrategy(),
     [TransientStrategy.type]: new TransientStrategy(),
-    [ConstStrategy.type]: new ConstStrategy(),
-    [DecoratorStrategy.type]: new DecoratorStrategy(),
+    // [DecoratorStrategy.type]: new DecoratorStrategy(),
     [RequestStrategy.type]: new RequestStrategy(),
     [ScopeStrategy.type]: new ScopeStrategy(),
     [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),

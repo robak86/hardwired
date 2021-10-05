@@ -1,12 +1,11 @@
 import { ClassType } from '../../utils/ClassType';
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { buildClassDefinition, ClassDefinition } from '../abstract/InstanceDefinition/BuildClassDefinition';
+import { buildClassDefinition, InstanceDefinition } from '../abstract/InstanceDefinition';
 
 type ClassDefinitionBuildFn = {
   <TInstance, TDeps extends any[], TArgs extends any[]>(
     cls: ClassType<TInstance, TArgs>,
     ...args: { [K in keyof TArgs]: InstanceDefinition<TArgs[K]> }
-  ): ClassDefinition<TInstance>;
+  ): InstanceDefinition<TInstance>;
 };
 
 export const classDefinition = (strategy: symbol): ClassDefinitionBuildFn => {
@@ -20,7 +19,7 @@ type ClassDefinitionWithMetaBuildFn<TMeta> = {
     meta: TMeta,
     cls: ClassType<TInstance, TArgs>,
     ...args: { [K in keyof TArgs]: InstanceDefinition<TArgs[K]> }
-  ): ClassDefinition<TInstance>;
+  ): InstanceDefinition<TInstance>;
 };
 
 export const classDefinitionWithMeta = <TMeta>(

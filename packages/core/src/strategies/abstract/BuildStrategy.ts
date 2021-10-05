@@ -1,5 +1,5 @@
 import { InstancesCache } from '../../context/InstancesCache';
-import { createInstance, InstanceDefinition } from './InstanceDefinition';
+import { InstanceDefinition } from './InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../../context/InstancesDefinitionsRegistry';
 import { StrategiesRegistry } from '../collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
@@ -34,10 +34,6 @@ export const buildDependencies = (
   resolvers: InstancesDefinitionsRegistry,
   strategiesRegistry: StrategiesRegistry,
 ) => {
-  if (definition.type === 'const') {
-    return [];
-  }
-
   const dependencies = definition.dependencies.map(instanceDef => {
     return resolvers.getInstanceDefinition(instanceDef);
   });
@@ -48,20 +44,22 @@ export const buildDependencies = (
   });
 };
 
-export const buildInstance = (definition: InstanceDefinition<any>, // TODO: use correct type
-                              instancesCache: InstancesCache,
-                              asyncInstancesCache: AsyncInstancesCache,
-                              resolvers: InstancesDefinitionsRegistry,
-                              strategiesRegistry: StrategiesRegistry,) => {
+export const buildInstance = (
+  definition: InstanceDefinition<any>, // TODO: use correct type
+  instancesCache: InstancesCache,
+  asyncInstancesCache: AsyncInstancesCache,
+  resolvers: InstancesDefinitionsRegistry,
+  strategiesRegistry: StrategiesRegistry,
+) => {
   const dependencies = buildDependencies(
-      definition,
-      instancesCache,
-      asyncInstancesCache,
-      resolvers,
-      strategiesRegistry,
+    definition,
+    instancesCache,
+    asyncInstancesCache,
+    resolvers,
+    strategiesRegistry,
   );
-  return createInstance(definition, dependencies);
-}
+  return definition.create(dependencies);
+};
 
 export const buildAsyncDependencies = async (
   definition: AnyInstanceDefinition<any, any>,
@@ -70,10 +68,6 @@ export const buildAsyncDependencies = async (
   resolvers: InstancesDefinitionsRegistry,
   strategiesRegistry: StrategiesRegistry,
 ) => {
-  if (definition.type === 'const') {
-    return [];
-  }
-
   const dependencies = definition.dependencies.map(instanceDef => {
     return resolvers.getInstanceDefinition(instanceDef);
   });
@@ -87,7 +81,7 @@ export const buildAsyncDependencies = async (
 };
 
 export const buildAsyncInstance = async (
-  definition: AnyInstanceDefinition<any, any>,
+  definition: InstanceDefinition<any>,
   instancesCache: InstancesCache,
   asyncInstancesCache: AsyncInstancesCache,
   resolvers: InstancesDefinitionsRegistry,
@@ -100,5 +94,6 @@ export const buildAsyncInstance = async (
     resolvers,
     strategiesRegistry,
   );
-  return createInstance(definition, dependencies);
+
+  return definition.create(dependencies);
 };

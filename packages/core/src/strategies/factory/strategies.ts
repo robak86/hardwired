@@ -1,9 +1,6 @@
 import { ServiceLocator } from '../../container/ServiceLocator';
 import { ServiceLocatorStrategy } from '../ServiceLocatorStrategy';
 import { fnDefinition, partiallyAppliedDefinition } from './fnStrategies';
-import { buildClassDefinition } from '../abstract/InstanceDefinition/BuildClassDefinition';
-import { ConstDefinition } from '../abstract/InstanceDefinition/ConstDefinition';
-import { ConstStrategy } from '../ConstStrategy';
 import { v4 } from 'uuid';
 
 import { asyncFnDefinition, asyncPartiallyAppliedDefinition } from './asyncFnStrategies';
@@ -14,6 +11,7 @@ import { RequestStrategy } from '../RequestStrategy';
 import { ScopeStrategy } from '../ScopeStrategy';
 import { asyncClassDefinition } from './asyncClassStrategies';
 import { AsyncSingletonStrategy } from '../AsyncSingletonStrategy';
+import { buildClassDefinition, InstanceDefinition } from "../abstract/InstanceDefinition";
 
 export const singleton = {
   fn: fnDefinition(SingletonStrategy.type),
@@ -45,11 +43,12 @@ export const scoped = {
 
 export const serviceLocator = buildClassDefinition(ServiceLocator, ServiceLocatorStrategy.type, [] as any);
 
-export const value = <TValue, TDeps extends any[]>(value: TValue): ConstDefinition<TValue> => {
+export const value = <TValue, TDeps extends any[]>(value: TValue): InstanceDefinition<TValue> => {
   return {
     id: v4(),
-    type: 'const',
-    strategy: ConstStrategy.type,
-    value,
+    strategy: SingletonStrategy.type,
+    create: () => value,
+    dependencies: [],
+    meta: undefined
   };
 };

@@ -2,8 +2,7 @@ import { set } from '../../patching/set';
 import { container } from '../../container/Container';
 import { request, scoped, singleton, transient, value } from '../factory/strategies';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { decorate } from "../../patching/decorate";
-
+import { decorate } from '../../patching/decorate';
 
 describe(`DecoratorStrategy`, () => {
   it(`decorates original value`, async () => {
@@ -37,7 +36,7 @@ describe(`DecoratorStrategy`, () => {
     const b = value(2);
     const someValue = value(10);
 
-    const mPatch = decorate(someValue, (val, a: number, b: number) => val + a + b, [a, b]);
+    const mPatch = decorate(someValue, (val, a: number, b: number) => val + a + b, a, b);
 
     const c = container({ scopeOverrides: [mPatch] });
     expect(c.get(someValue)).toEqual(13);
@@ -48,7 +47,7 @@ describe(`DecoratorStrategy`, () => {
     const b = value(2);
     const someValue = singleton.fn((a, b) => a + b, a, b);
 
-    const mPatch = decorate(someValue, (val, b) => val * b, [b]);
+    const mPatch = decorate(someValue, (val, b) => val * b, b);
 
     const c = container({ scopeOverrides: [mPatch] });
     expect(c.get(someValue)).toEqual(6);
