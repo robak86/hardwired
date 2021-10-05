@@ -1,4 +1,4 @@
-import { buildDependencies, BuildStrategy } from './abstract/BuildStrategy';
+import { buildInstance, BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
 import { InstanceDefinition } from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from './collection/StrategiesRegistry';
@@ -17,36 +17,13 @@ export class RequestStrategy extends BuildStrategy {
     const id = definition.id;
 
     if (resolvers.hasGlobalOverrideResolver(id)) {
-      if (instancesCache.hasInGlobalOverride(id)) {
-        return instancesCache.getFromGlobalOverride(id);
-      } else {
-        const dependencies = buildDependencies(
-          definition,
-          instancesCache,
-          asyncInstancesCache,
-          resolvers,
-          strategiesRegistry,
-        );
-        const instance = definition.create(dependencies);
-
-        instancesCache.setForGlobalOverrideScope(id, instance);
-        return instance;
-      }
+      return instancesCache.upsertGlobalOverrideScope(id, () => {
+        return buildInstance(definition, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+      });
     }
 
-    if (instancesCache.hasInRequestScope(id)) {
-      return instancesCache.getFromRequestScope(id);
-    } else {
-      const dependencies = buildDependencies(
-        definition,
-        instancesCache,
-        asyncInstancesCache,
-        resolvers,
-        strategiesRegistry,
-      );
-      const instance = definition.create(dependencies);
-      instancesCache.setForRequestScope(id, instance);
-      return instance;
-    }
+    return instancesCache.upsertRequestScope(id, () => {
+      return buildInstance(definition, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+    });
   }
 }

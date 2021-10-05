@@ -1,4 +1,4 @@
-import { buildDependencies, BuildStrategy } from './abstract/BuildStrategy';
+import { buildDependencies, buildInstance, BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
 import { InstanceDefinition } from './abstract/InstanceDefinition';
 import { StrategiesRegistry } from './collection/StrategiesRegistry';
@@ -17,35 +17,13 @@ export class ScopeStrategy extends BuildStrategy {
     const id = definition.id;
 
     if (resolvers.hasGlobalOverrideResolver(id)) {
-      if (instancesCache.hasInGlobalOverride(id)) {
-        return instancesCache.getFromGlobalOverride(id);
-      } else {
-        const dependencies = buildDependencies(
-          definition,
-          instancesCache,
-          asyncInstancesCache,
-          resolvers,
-          strategiesRegistry,
-        ); // TODO: these two lines almost always comes together - extract into common function. This will solve issue with decorator
-        const instance = definition.create(dependencies);
-        instancesCache.setForGlobalOverrideScope(id, instance);
-        return instance;
-      }
+      return instancesCache.upsertGlobalOverrideScope(id, () => {
+        return buildInstance(definition, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+      });
     }
 
-    if (instancesCache.hasInCurrentScope(id)) {
-      return instancesCache.getFromCurrentScope(id);
-    } else {
-      const dependencies = buildDependencies(
-        definition,
-        instancesCache,
-        asyncInstancesCache,
-        resolvers,
-        strategiesRegistry,
-      );
-      const instance = definition.create(dependencies);
-      instancesCache.setForHierarchicalScope(id, instance);
-      return instance;
-    }
+    return instancesCache.upsertCurrentScope(id, () => {
+      return buildInstance(definition, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+    });
   }
 }
