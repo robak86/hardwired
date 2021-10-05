@@ -1,5 +1,4 @@
 import { SingletonScope } from './SingletonScope';
-import invariant from 'tiny-invariant';
 import { InstanceDefinition } from '../strategies/abstract/InstanceDefinition';
 
 function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any, any>[]): string[] {
@@ -34,92 +33,42 @@ export class InstancesCache {
     return new InstancesCache(this.globalScope, this.currentScope, {}, this.globalOverridesScope);
   }
 
-  private hasInCurrentScope(id: string) {
-    return !!this.currentScope[id];
-  }
-
-  private getFromCurrentScope(id: string) {
-    return this.currentScope[id];
-  }
-
-  private hasInGlobalOverride(id: string) {
-    return !!this.globalOverridesScope[id];
-  }
-
-  private getFromGlobalOverride(id: string) {
-    return this.globalOverridesScope[id];
-  }
-
-  private setForGlobalOverrideScope(uuid: string, instance: any): void {
-    this.globalOverridesScope[uuid] = instance;
-  }
-
-  private hasInRequestScope(uuid: string): boolean {
-    return !!this.requestScope[uuid];
-  }
-
-  private hasInGlobalScope(uuid: string): boolean {
-    return this.globalScope.has(uuid);
-  }
-
-  private getFromRequestScope(uuid: string) {
-    invariant(!!this.requestScope[uuid], `Dependency with given uuid doesn't exists in request scope`);
-    return this.requestScope[uuid];
-  }
-
-  private getFromGlobalScope(uuid: string) {
-    invariant(!!this.globalScope.has(uuid), `Dependency with given uuid doesn't exists in global scope`);
-    return this.globalScope.get(uuid);
-  }
-
-  private setForRequestScope(uuid: string, instance: any): void {
-    this.requestScope[uuid] = instance;
-  }
-
-  private setForHierarchicalScope(id: string, instanceOrStrategy: any) {
-    this.currentScope[id] = instanceOrStrategy;
-  }
-
-  private setForGlobalScope(uuid: string, instance: any) {
-    this.globalScope.set(uuid, instance);
-  }
-
   upsertRequestScope<T>(uuid: string, build: () => T) {
-    if (this.hasInRequestScope(uuid)) {
-      return this.getFromRequestScope(uuid);
+    if (!!this.requestScope[uuid]) {
+      return this.requestScope[uuid];
     } else {
       const instance = build();
-      this.setForRequestScope(uuid, instance);
+      this.requestScope[uuid] = instance;
       return instance;
     }
   }
 
   upsertGlobalOverrideScope<T>(uuid: string, build: () => T) {
-    if (this.hasInGlobalOverride(uuid)) {
-      return this.getFromGlobalOverride(uuid);
+    if (!!this.globalOverridesScope[uuid]) {
+      return this.globalOverridesScope[uuid];
     } else {
       const instance = build();
-      this.setForGlobalOverrideScope(uuid, instance);
+      this.globalOverridesScope[uuid] = instance;
       return instance;
     }
   }
 
   upsertCurrentScope<T>(uuid: string, build: () => T) {
-    if (this.hasInCurrentScope(uuid)) {
-      return this.getFromCurrentScope(uuid);
+    if (!!this.currentScope[uuid]) {
+      return this.currentScope[uuid];
     } else {
       const instance = build();
-      this.setForHierarchicalScope(uuid, instance);
+      this.currentScope[uuid] = instance;
       return instance;
     }
   }
 
   upsertGlobalScope<T>(uuid: string, build: () => T) {
-    if (this.hasInGlobalScope(uuid)) {
-      return this.getFromGlobalScope(uuid);
+    if (this.globalScope.has(uuid)) {
+      return this.globalScope.get(uuid);
     } else {
       const instance = build();
-      this.setForGlobalScope(uuid, instance);
+      this.globalScope.set(uuid, instance);
       return instance;
     }
   }
