@@ -5816,6 +5816,11 @@ mkdirp@^0.5.1, mkdirp@~0.5.1:
   dependencies:
     minimist "^1.2.5"
 
+mobx-utils@^6.0.4:
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/mobx-utils/-/mobx-utils-6.0.4.tgz#5283a466ece8de0ac36ae3cfa1b1c032ec302b37"
+  integrity sha512-CcTgFcCWN78eyRXU7OiKfhIVDEWFFoKdpfj49GIVcWykIQ4deXnaRnnKHElbVYFFgz1TOs8a3bDAq7qsSe864A==
+
 mobx@^6.3.3:
   version "6.3.3"
   resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.3.3.tgz#a3006c56243b1c7ea4ee671a66f963b9f43cf1af"

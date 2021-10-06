@@ -9,11 +9,13 @@
   "types": "./lib/index.d.ts",
   "peerDependencies": {
     "hardwired": "0.5.8",
-    "mobx": "^6.3.3"
+    "mobx": "^6.3.3",
+    "mobx-utils": "^6.0.4"
   },
   "devDependencies": {
     "hardwired": "*",
-    "mobx": "^6.3.3"
+    "mobx": "^6.3.3",
+    "mobx-utils": "^6.0.4"
   },
   "files": [
     "lib",
