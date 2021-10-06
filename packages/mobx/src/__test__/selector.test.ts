@@ -1,4 +1,4 @@
-import { container } from 'hardwired';
+import { container, value } from 'hardwired';
 import { selector } from '../selector';
 import { state } from '../state';
 import { autorun, isComputed, runInAction } from 'mobx';
@@ -20,6 +20,20 @@ describe(`selector`, () => {
     expect(selectorInstance.get()).toEqual('myValue');
   });
 
+  it(`acts like singleton`, async () => {
+    type SomeState = {
+      someValue: string;
+    };
+    const stateD = state({ someValue: 'myValue' });
+    const select = (state: SomeState) => state.someValue;
+
+    const selectorD = selector(select, stateD);
+    const cnt = container();
+
+    const [selectorInstance1, selectorInstance2] = cnt.getAll(selectorD, selectorD);
+    expect(selectorInstance1).toBe(selectorInstance2);
+  });
+
   it(`creates definition with correct type`, async () => {
     type SomeState = {
       someValue: string;
@@ -28,6 +42,22 @@ describe(`selector`, () => {
     const select = (state: SomeState) => state.someValue;
 
     expectType<TypeEqual<typeof select, (state: SomeState) => string>>(true);
+  });
+
+  it(`accepts non observable dependencies`, async () => {
+    type SomeState = {
+      someValue: string;
+    };
+    const dummyDep = value(123);
+    const stateD = state({ someValue: 'myValue' });
+    const select = (state: SomeState, nonObservableDep: number) => [state.someValue, nonObservableDep];
+
+    const selectorD = selector(select, stateD, dummyDep);
+    const cnt = container();
+
+    const [_, selectorInstance] = cnt.getAll(stateD, selectorD);
+
+    expect(selectorInstance.get()).toEqual(['myValue', 123]);
   });
 
   it(`correctly triggers autorun`, async () => {
@@ -102,5 +132,34 @@ describe(`selector`, () => {
       ['newValue', 'initValue'],
       ['newValue', 'newValue'],
     ]);
+  });
+
+  it(`correctly triggers autorun if whole parent object is replaced wtf`, async () => {
+    type SomeState = {
+      a: {
+        b: {
+          c: string;
+        };
+      };
+    };
+    const stateD = state({ a: { b: { c: 'myValue' } } });
+    const select = (state: SomeState) => state.a.b.c;
+
+    const selectorD = selector(select, stateD);
+    const cnt = container();
+
+    const [stateInstance, selectorInstance] = cnt.getAll(stateD, selectorD);
+    const autorunValues: string[] = [];
+
+    autorun(() => {
+      autorunValues.push(selectorInstance.get());
+    });
+
+    expect(autorunValues).toEqual(['myValue']);
+    runInAction(() => (stateInstance.get().a = { b: { c: 'newValue' } }));
+    expect(autorunValues).toEqual(['myValue', 'newValue']);
+
+    runInAction(() => (stateInstance.get().a = { b: { c: 'newValue' } }));
+    expect(autorunValues).toEqual(['myValue', 'newValue']);
   });
 });

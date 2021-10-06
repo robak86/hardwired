@@ -1,20 +1,28 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { action } from '../action';
 import { InstanceDefinition, value } from 'hardwired';
+import { state } from '../state';
+import { IObservableValue } from 'mobx';
 
 describe(`action test`, () => {
+  type DummyState = {
+    someValue: number;
+  };
+
+  const dummyState: InstanceDefinition<IObservableValue<DummyState>> = state({ someValue: 123 });
+
   describe(`action without params`, () => {
     describe(`action without dependencies`, () => {
       it(`creates correct type`, async () => {
-        const actionDef = action(() => {});
+        const actionDef = action((state: DummyState) => {}, dummyState);
         expectType<TypeEqual<typeof actionDef, InstanceDefinition<() => void>>>(true);
       });
     });
 
     describe(`action with dependencies`, () => {
       it(`creates correct type`, async () => {
-        const srv = value(123)
-        const actionDef = action((someService:number) => {}, srv);
+        const srv = value(123);
+        const actionDef = action((someService: number, state: DummyState) => {}, srv, dummyState);
         expectType<TypeEqual<typeof actionDef, InstanceDefinition<() => void>>>(true);
       });
     });
@@ -24,6 +32,18 @@ describe(`action test`, () => {
     it(`returns correct type`, async () => {
       const actionDef = action((a: number) => {});
       expectType<TypeEqual<typeof actionDef, InstanceDefinition<(a: number) => void>>>(true);
+    });
+
+    describe(`action with dependencies`, () => {
+      it(`returns correct type`, async () => {
+        const srv = value(123);
+        const actionDef = action(
+          (externalParam: string, someService: number, state: DummyState) => {},
+          srv,
+          dummyState,
+        );
+        expectType<TypeEqual<typeof actionDef, InstanceDefinition<(externalParam: string) => void>>>(true);
+      });
     });
   });
 });
