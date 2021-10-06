@@ -3,10 +3,10 @@ import { IObservableValue, observable as observableImpl } from 'mobx';
 import { v4 } from 'uuid';
 
 export type ComputedBuildFn = {
-  <TValue, TDeps extends any[]>(factory: TValue): InstanceDefinition<IObservableValue<TValue>>;
+  <TValue, TDeps extends any[]>(value: TValue): InstanceDefinition<IObservableValue<TValue>>;
 };
 
-export const observable: ComputedBuildFn = (value): InstanceDefinition<any> => {
+export const state: ComputedBuildFn = (value): InstanceDefinition<any> => {
   return {
     id: `observable:${v4()}`,
     strategy: SingletonStrategy.type,

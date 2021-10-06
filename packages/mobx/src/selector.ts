@@ -1,12 +1,11 @@
-import { container, InstanceDefinition, SingletonStrategy } from 'hardwired';
-import { autorun, computed, IObservableValue } from 'mobx';
+import { InstanceDefinition, SingletonStrategy } from 'hardwired';
+import { computed, IObservableValue } from 'mobx';
 import { v4 } from 'uuid';
 import 'source-map-support/register';
-import { observable } from './observable';
 
 export type ComputedBuildFn = {
   <TValue, TDeps extends any[], TFunctionArgs extends any[]>(
-    factory: (...args: TFunctionArgs) => TValue,
+    selectFn: (...args: TFunctionArgs) => TValue,
     ...args: [...{ [K in keyof TFunctionArgs]: InstanceDefinition<IObservableValue<TFunctionArgs[K]>> }]
   ): InstanceDefinition<IObservableValue<TValue>>;
 };
@@ -39,7 +38,7 @@ type User = {
   firstName: string;
   lastName: string;
 };
-//
+
 // const state = observable({
 //   user: { firstName: 'Tomasz', lastName: 'Ro' },
 //   address: { streetName: 'someStreetName' },
