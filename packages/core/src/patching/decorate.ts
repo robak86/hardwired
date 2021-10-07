@@ -5,17 +5,15 @@ export function decorate<TInstance, TNextValue extends TInstance, TDecoratorDeps
   decorator: (prevValue: TInstance, ...decoratorDeps: TDecoratorDeps) => TNextValue,
   ...args: { [K in keyof TDecoratorDeps]: InstanceDefinition<TDecoratorDeps[K]> }
 ): InstanceDefinition<TInstance> {
-  const decoratedArgsCount = instance.dependencies.length;
-
   return {
     id: instance.id,
     strategy: instance.strategy,
-    create: (dependencies: any[]) => {
-      const decoratedDeps = dependencies.slice(0, decoratedArgsCount);
-      const decoratorDeps = dependencies.slice(-args.length);
-      return decorator(instance.create(decoratedDeps), ...decoratorDeps as any);
+    create: build => {
+      const decorated = instance.create(build);
+      const decoratorDeps = args.map(build);
+
+      return decorator(decorated, ...decoratorDeps as any);
     },
-    dependencies: [...instance.dependencies, ...args], // TODO: concat with args and pass
     meta: instance.meta,
   };
 }

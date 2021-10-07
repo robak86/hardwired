@@ -1,4 +1,4 @@
-import { buildDependencies, buildInstance, BuildStrategy } from './abstract/BuildStrategy';
+import { BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesCache } from '../context/InstancesCache';
 import { InstanceDefinition } from '../definitions/InstanceDefinition';
 import { StrategiesRegistry } from './collection/StrategiesRegistry';
@@ -13,17 +13,18 @@ export class ScopeStrategy extends BuildStrategy {
     asyncInstancesCache: AsyncInstancesCache,
     resolvers,
     strategiesRegistry: StrategiesRegistry,
+    instancesBuilder,
   ) {
     const id = definition.id;
 
     if (resolvers.hasGlobalOverrideResolver(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
-        return buildInstance(definition, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+        return instancesBuilder.buildSelf(definition);
       });
     }
 
     return instancesCache.upsertCurrentScope(id, () => {
-      return buildInstance(definition, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+      return instancesBuilder.buildSelf(definition);
     });
   }
 }

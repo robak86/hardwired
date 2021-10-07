@@ -1,6 +1,6 @@
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import { ClassType } from '../utils/ClassType';
-import { InstanceDefinition } from './InstanceDefinition';
+import { InstanceBuildFn, InstanceDefinition } from './InstanceDefinition';
 import { v4 } from 'uuid';
 
 // Some of the async definitions are almost the same as they sync counterpart, but they are introduced mostly for type-safety
@@ -10,7 +10,7 @@ export type AsyncInstanceDefinition<T, TExternal> = {
   strategy: symbol;
   isAsync: true;
   dependencies: AnyInstanceDefinition<any>[];
-  create: (dependencies: any[]) => Promise<T> | T;
+  create: (build: InstanceBuildFn) => Promise<T> | T;
   meta: any;
 };
 

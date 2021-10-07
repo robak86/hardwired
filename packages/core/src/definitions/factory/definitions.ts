@@ -44,7 +44,6 @@ export const value = <TValue, TDeps extends any[]>(value: TValue): InstanceDefin
     id: v4(),
     strategy: SingletonStrategy.type,
     create: () => value,
-    dependencies: [],
     meta: undefined,
   };
 };

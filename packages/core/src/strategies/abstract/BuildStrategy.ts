@@ -4,6 +4,7 @@ import { InstancesDefinitionsRegistry } from '../../context/InstancesDefinitions
 import { StrategiesRegistry } from '../collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../../definitions/AnyInstanceDefinition';
 import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
+import { InstancesBuilder } from "../../context/InstancesBuilder";
 
 // TODO: Ideally build strategy should be just static object with type and build property (to decrease chances that one will make it stateful)
 export abstract class BuildStrategy {
@@ -14,6 +15,7 @@ export abstract class BuildStrategy {
     asyncInstancesCache: AsyncInstancesCache, // only required by service locator because we would like to obtain service locator synchronously and then get some async definitions
     resolvers: InstancesDefinitionsRegistry,
     strategiesRegistry: StrategiesRegistry,
+    instancesBuilder:InstancesBuilder
   ): any;
 }
 
@@ -26,40 +28,42 @@ export abstract class AsyncBuildStrategy {
     strategiesRegistry: StrategiesRegistry,
   ): Promise<any>;
 }
-
-export const buildDependencies = (
-  definition: InstanceDefinition<any>, // TODO: use correct type
-  instancesCache: InstancesCache,
-  asyncInstancesCache: AsyncInstancesCache,
-  resolvers: InstancesDefinitionsRegistry,
-  strategiesRegistry: StrategiesRegistry,
-) => {
-  const dependencies = definition.dependencies.map(instanceDef => {
-    return resolvers.getInstanceDefinition(instanceDef);
-  });
-
-  return dependencies.map(dep => {
-    const strategy = strategiesRegistry.get(dep.strategy);
-    return strategy.build(dep, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
-  });
-};
-
-export const buildInstance = (
-  definition: InstanceDefinition<any>, // TODO: use correct type
-  instancesCache: InstancesCache,
-  asyncInstancesCache: AsyncInstancesCache,
-  resolvers: InstancesDefinitionsRegistry,
-  strategiesRegistry: StrategiesRegistry,
-) => {
-  const dependencies = buildDependencies(
-    definition,
-    instancesCache,
-    asyncInstancesCache,
-    resolvers,
-    strategiesRegistry,
-  );
-  return definition.create(dependencies);
-};
+//
+// export const buildInstances = (
+//   instancesCache: InstancesCache, // TODO: use correct type
+//   asyncInstancesCache: AsyncInstancesCache,
+//   resolvers: InstancesDefinitionsRegistry,
+//   strategiesRegistry: StrategiesRegistry,
+//   definitions: InstanceDefinition<any>[],
+// ) => {
+//   const dependencies = definitions.map(instanceDef => {
+//     return resolvers.getInstanceDefinition(instanceDef);
+//   });
+//
+//   return dependencies.map(dep => {
+//     const strategy = strategiesRegistry.get(dep.strategy);
+//     return strategy.build(dep, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+//   });
+// };
+//
+// export const buildInstance = (
+//   instancesCache: InstancesCache, // TODO: use correct type
+//   asyncInstancesCache: AsyncInstancesCache,
+//   resolvers: InstancesDefinitionsRegistry, // TODO: group with object?  {sync, async}
+//   strategiesRegistry: StrategiesRegistry,
+//   definition: InstanceDefinition<any>,
+// ) => {
+//   const dependencies = buildInstances(
+//     instancesCache,
+//     asyncInstancesCache,
+//     resolvers,
+//     strategiesRegistry,
+//     definition.dependencies,
+//   );
+//
+//
+//   return definition.create(dependencies);
+// };
 
 export const buildAsyncDependencies = async (
   definition: AnyInstanceDefinition<any, any>,
@@ -68,16 +72,18 @@ export const buildAsyncDependencies = async (
   resolvers: InstancesDefinitionsRegistry,
   strategiesRegistry: StrategiesRegistry,
 ) => {
-  const dependencies = definition.dependencies.map(instanceDef => {
-    return resolvers.getInstanceDefinition(instanceDef);
-  });
+  // const dependencies = definition.dependencies.map(instanceDef => {
+  //   return resolvers.getInstanceDefinition(instanceDef);
+  // });
 
-  return Promise.all(
-    dependencies.map(dep => {
-      const strategy = strategiesRegistry.getAsync(dep.strategy);
-      return strategy.build(dep, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
-    }),
-  );
+  throw new Error("Implement me!")
+
+  // return Promise.all(
+  //   dependencies.map(dep => {
+  //     const strategy = strategiesRegistry.getAsync(dep.strategy);
+  //     return strategy.build(dep, instancesCache, asyncInstancesCache, resolvers, strategiesRegistry);
+  //   }),
+  // );
 };
 
 export const buildAsyncInstance = async (
@@ -95,5 +101,6 @@ export const buildAsyncInstance = async (
     strategiesRegistry,
   );
 
-  return definition.create(dependencies);
+  throw new Error("Implement me!")
+  // return definition.create(dependencies);
 };

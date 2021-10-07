@@ -8,13 +8,12 @@ export const apply = <TInstance, TNextValue extends TInstance>(
   return {
     id: instance.id,
     strategy: instance.strategy,
-    create: (dependencies: any[]) => {
-      // TODO: pass last elements as dependencies to decorator,
-      const createdInstance = instance.create(dependencies);
-      applyFn(createdInstance);
-      return createdInstance;
+    create: build => {
+      const decorated = instance.create(build);
+      applyFn(decorated);
+
+      return decorated;
     },
-    dependencies: instance.dependencies, // TODO: concat with args and pass
     meta: instance.meta,
   };
 };

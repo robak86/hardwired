@@ -6,6 +6,7 @@ import { instanceDefinition, InstanceDefinition } from '../definitions/InstanceD
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/AnyInstanceDefinition';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
+import { InstancesBuilder } from './InstancesBuilder';
 
 export class ContainerContext {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -48,27 +49,33 @@ export class ContainerContext {
   ) {}
 
   get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
-    const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
-    const strategy = this.strategiesRegistry.get(instanceOrOverride.strategy);
-    return strategy.build(
-      instanceOrOverride,
+    const instancesBuilder = new InstancesBuilder(
       this.instancesCache,
       this.asyncInstancesCache,
       this.instancesDefinitionsRegistry,
       this.strategiesRegistry,
     );
-    // return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
+
+    return instancesBuilder.buildWithStrategy(instanceDefinition);
   }
 
   getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
     const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
     const strategy = this.strategiesRegistry.getAsync(instanceOrOverride.strategy);
+    const instancesBuilder = new InstancesBuilder(
+      this.instancesCache,
+      this.asyncInstancesCache,
+      this.instancesDefinitionsRegistry,
+      this.strategiesRegistry,
+    );
+
     return strategy.build(
       instanceOrOverride,
       this.instancesCache,
       this.asyncInstancesCache,
       this.instancesDefinitionsRegistry,
       this.strategiesRegistry,
+      instancesBuilder,
     );
     // return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
   }
