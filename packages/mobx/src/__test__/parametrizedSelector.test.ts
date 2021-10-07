@@ -1,5 +1,5 @@
 import { state } from '../state';
-import { parametrizedSelector } from '../parametrizedSelector';
+import { parametrizedView } from '../parametrizedView';
 import { container } from 'hardwired';
 import { autorun, runInAction } from 'mobx';
 
@@ -32,7 +32,7 @@ describe(`parametrizedSelector`, () => {
       return `${state.users[userId].firstName}:${state.users[userId].lastName}`;
     };
 
-    const selectNameForUserD = parametrizedSelector(selectNameByUserId, stateD);
+    const selectNameForUserD = parametrizedView(selectNameByUserId, stateD);
 
     const ctn = container();
     const selectInstance = ctn.get(selectNameForUserD);
@@ -53,7 +53,7 @@ describe(`parametrizedSelector`, () => {
       return `${state.users[userId].firstName}:${state.users[userId].lastName}`;
     });
 
-    const selectNameForUserD = parametrizedSelector(selectNameByUserId, stateD);
+    const selectNameForUserD = parametrizedView(selectNameByUserId, stateD);
 
     const ctn = container();
     const [selectInstance, stateInstance] = ctn.getAll(selectNameForUserD, stateD);
@@ -93,8 +93,8 @@ describe(`parametrizedSelector`, () => {
 
     const selectUserId = (state: State, userId: number) => state.users[userId];
 
-    const selectUserByIdD = parametrizedSelector(selectUserId, stateD);
-    const selectAddressForUserIdD = parametrizedSelector(selectAddressByUserId, stateD, selectUserByIdD);
+    const selectUserByIdD = parametrizedView(selectUserId, stateD);
+    const selectAddressForUserIdD = parametrizedView(selectAddressByUserId, stateD, selectUserByIdD);
 
     const ctn = container();
     const [selectInstance, stateInstance] = ctn.getAll(selectAddressForUserIdD, stateD);

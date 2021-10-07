@@ -12,7 +12,7 @@ export type ComputedBuildFn = {
   ): InstanceDefinition<IObservableValue<TValue>>;
 };
 
-export const selector: ComputedBuildFn = (factory, ...dependencies): InstanceDefinition<any> => {
+export const view: ComputedBuildFn = (factory, ...dependencies): InstanceDefinition<any> => {
   return {
     id: `${factory.name}:${v4()}`,
     strategy: SingletonStrategy.type,

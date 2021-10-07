@@ -1,10 +1,10 @@
 import { container, value } from 'hardwired';
-import { selector } from '../selector';
+import { view } from '../view';
 import { state } from '../state';
 import { autorun, isComputed, runInAction } from 'mobx';
 import { expectType, TypeEqual } from 'ts-expect';
 
-describe(`selector`, () => {
+describe(`view`, () => {
   it(`binds select fn to observables and wraps with computed`, async () => {
     type SomeState = {
       someValue: string;
@@ -12,7 +12,7 @@ describe(`selector`, () => {
     const stateD = state({ someValue: 'myValue' });
     const select = (state: SomeState) => state.someValue;
 
-    const selectorD = selector(select, stateD);
+    const selectorD = view(select, stateD);
     const cnt = container();
 
     const [_, selectorInstance] = cnt.getAll(stateD, selectorD);
@@ -27,7 +27,7 @@ describe(`selector`, () => {
     const stateD = state({ someValue: 'myValue' });
     const select = (state: SomeState) => state.someValue;
 
-    const selectorD = selector(select, stateD);
+    const selectorD = view(select, stateD);
     const cnt = container();
 
     const [selectorInstance1, selectorInstance2] = cnt.getAll(selectorD, selectorD);
@@ -52,7 +52,7 @@ describe(`selector`, () => {
     const stateD = state({ someValue: 'myValue' });
     const select = (state: SomeState, nonObservableDep: number) => [state.someValue, nonObservableDep];
 
-    const selectorD = selector(select, stateD, dummyDep);
+    const selectorD = view(select, stateD, dummyDep);
     const cnt = container();
 
     const [_, selectorInstance] = cnt.getAll(stateD, selectorD);
@@ -67,7 +67,7 @@ describe(`selector`, () => {
     const stateD = state({ someValue: 'myValue' });
     const select = (state: SomeState) => state.someValue;
 
-    const selectorD = selector(select, stateD);
+    const selectorD = view(select, stateD);
     const cnt = container();
 
     const [stateInstance, selectorInstance] = cnt.getAll(stateD, selectorD);
@@ -98,7 +98,7 @@ describe(`selector`, () => {
 
     const select = (state1: SomeState, state2: OtherState) => [state1.someValue, state2.otherValue] as const;
 
-    const selectorD = selector(select, state1D, state2D);
+    const selectorD = view(select, state1D, state2D);
     const cnt = container();
 
     const [state1Instance, state2Instance, selectorInstance] = cnt.getAll(state1D, state2D, selectorD);
@@ -145,7 +145,7 @@ describe(`selector`, () => {
     const stateD = state({ a: { b: { c: 'myValue' } } });
     const select = (state: SomeState) => state.a.b.c;
 
-    const selectorD = selector(select, stateD);
+    const selectorD = view(select, stateD);
     const cnt = container();
 
     const [stateInstance, selectorInstance] = cnt.getAll(stateD, selectorD);
