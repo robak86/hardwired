@@ -18,7 +18,6 @@ export class ServiceLocatorStrategy extends BuildStrategy {
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache,
     resolvers: InstancesDefinitionsRegistry,
-    strategiesRegistry: StrategiesRegistry,
   ) {
     const id = definition.id;
 

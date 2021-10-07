@@ -12,7 +12,6 @@ export class TransientStrategy extends BuildStrategy {
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache,
     resolvers,
-    strategiesRegistry,
     instancesBuilder: InstancesBuilder,
   ) {
     const id = definition.id;

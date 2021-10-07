@@ -12,7 +12,6 @@ export class RequestStrategy extends BuildStrategy {
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache,
     resolvers,
-    strategiesRegistry: StrategiesRegistry,
     instancesBuilder
   ) {
     const id = definition.id;

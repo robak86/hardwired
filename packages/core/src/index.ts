@@ -24,3 +24,4 @@ export type { IServiceLocator } from './container/IServiceLocator';
 
 export { buildAsyncClassDefinition } from './definitions/AsyncInstanceDefinition';
 export * from './definitions/factory/customDefinitions';
+export * from './definitions/factory/object'

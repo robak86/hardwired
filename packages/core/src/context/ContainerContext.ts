@@ -61,7 +61,7 @@ export class ContainerContext {
 
   getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
     const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
-    const strategy = this.strategiesRegistry.getAsync(instanceOrOverride.strategy);
+    // const strategy = this.strategiesRegistry.getAsync(instanceOrOverride.strategy);
     const instancesBuilder = new InstancesBuilder(
       this.instancesCache,
       this.asyncInstancesCache,
@@ -69,14 +69,16 @@ export class ContainerContext {
       this.strategiesRegistry,
     );
 
-    return strategy.build(
-      instanceOrOverride,
-      this.instancesCache,
-      this.asyncInstancesCache,
-      this.instancesDefinitionsRegistry,
-      this.strategiesRegistry,
-      instancesBuilder,
-    );
+    return instancesBuilder.buildWithStrategy(instanceDefinition);
+
+
+    // return strategy.build(
+    //   instanceOrOverride,
+    //   this.instancesCache,
+    //   this.asyncInstancesCache,
+    //   this.instancesDefinitionsRegistry,
+    //   instancesBuilder,
+    // );
     // return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
   }
 

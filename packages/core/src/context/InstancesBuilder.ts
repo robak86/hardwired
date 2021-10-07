@@ -2,7 +2,7 @@ import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { InstancesCache } from './InstancesCache';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
-import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/AnyInstanceDefinition';
 
 export class InstancesBuilder {
   constructor(
@@ -12,24 +12,15 @@ export class InstancesBuilder {
     private strategiesRegistry: StrategiesRegistry,
   ) {}
 
-  buildSelf = (definition: InstanceDefinition<any>) => {
+  buildSelf = (definition: AnyInstanceDefinition<any>) => {
     const patchedInstanceDef = this.resolvers.getInstanceDefinition(definition);
-    // const strategy = this.strategiesRegistry.get(definition.strategy);
-
     return patchedInstanceDef.create(this.buildWithStrategy);
   };
 
-  buildWithStrategy = (definition: InstanceDefinition<any>) => {
+  buildWithStrategy = (definition: AnyInstanceDefinition<any, any>) => {
     const patchedInstanceDef = this.resolvers.getInstanceDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
-    return strategy.build(
-      patchedInstanceDef,
-      this.instancesCache,
-      this.asyncInstancesCache,
-      this.resolvers,
-      this.strategiesRegistry,
-      this,
-    );
+    return strategy.build(patchedInstanceDef, this.instancesCache, this.asyncInstancesCache, this.resolvers, this);
   };
 }

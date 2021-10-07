@@ -14,7 +14,6 @@ export abstract class BuildStrategy {
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache, // only required by service locator because we would like to obtain service locator synchronously and then get some async definitions
     resolvers: InstancesDefinitionsRegistry,
-    strategiesRegistry: StrategiesRegistry,
     instancesBuilder:InstancesBuilder
   ): any;
 }
@@ -25,7 +24,8 @@ export abstract class AsyncBuildStrategy {
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache,
     resolvers: InstancesDefinitionsRegistry,
-    strategiesRegistry: StrategiesRegistry,
+    instancesBuilder:InstancesBuilder
+
   ): Promise<any>;
 }
 //

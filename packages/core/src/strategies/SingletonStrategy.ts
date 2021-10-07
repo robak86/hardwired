@@ -13,7 +13,6 @@ export class SingletonStrategy extends BuildStrategy {
     instancesCache: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache,
     resolvers,
-    strategiesRegistry: StrategiesRegistry,
     instancesBuilder: InstancesBuilder,
   ) {
     const id = definition.id;

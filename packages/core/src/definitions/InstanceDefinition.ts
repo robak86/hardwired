@@ -2,44 +2,22 @@ import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from './AsyncInstanceDefinition';
 import { ClassType } from '../utils/ClassType';
 import { v4 } from 'uuid';
+import { TransientStrategy } from '../strategies/TransientStrategy';
 
 export type InstanceDefinition<TInstance, TExternal = any> = {
   id: string;
   strategy: symbol;
-  // dependencies: InstanceDefinition<any>[]; // TODO: having array of dependencies we can easily check for circular references
   create: (buildFn: InstanceBuildFn) => TInstance;
-  meta: any;
+  meta: any; // we don't need to implement meta here - just relax types on .get .getAll to accept subtypes of InstanceDefinition
 };
 
 export type InstanceBuildFn = {
   (definition: InstanceDefinition<any>): any;
 };
 
-type InstanceDef2 = () => {
-  id: string;
-  strategy: symbol;
-  create: (buildFn: (id: string, strategy: symbol) => any) => {};
+export type InstanceAsyncBuildFn = {
+  (definition: AnyInstanceDefinition<any>): Promise<any>;
 };
-
-const azz = {
-  id: 'sdf', // cannot be replaced by weakmap because set|replace would need somehow inherit identity of original definition
-  strategy: 'am',
-  create: (buildFn: (id: string, strategy: symbol) => any) => {
-    console.log(azz.id);
-  },
-};
-
-type Instantiable<T> = {
-  id: string;
-  strategy: symbol;
-  create: (buildFn: InstanceBuildFn) => T;
-};
-
-type EphemeralInstantiable<T> = (buildFn: InstanceBuildFn) => T; // has no id (no caching, no patching) and uses always transient stratety
-
-// export type InstancesComposition<TShape extends Record<keyof any, any>> = {
-//   instances: { [K in keyof TShape]: InstanceDefinition<TShape[K]> };
-// };
 
 export const instanceDefinition = {
   isAsync(val: AnyInstanceDefinition<any, any>): val is AsyncInstanceDefinition<any, any> {
@@ -60,7 +38,7 @@ export const buildClassDefinition = <T, TDeps extends any[], TMeta>(
     id: v4(),
     strategy,
     create: build => {
-      return new klass(...dependencies.map(build) as any);
+      return new klass(...(dependencies.map(build) as any));
     },
     meta: meta as any,
   };

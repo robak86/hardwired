@@ -17,9 +17,11 @@ export class StrategiesRegistry {
   }
 
   get(key: symbol): BuildStrategy {
-    const strategy = this.syncStrategies[key];
-    invariant(strategy, `Strategy implementation for ${key.toString()} is missing`);
-    return strategy;
+    // const strategy = this.syncStrategies[key];
+    // invariant(strategy, `Strategy implementation for ${key.toString()} is missing`);
+    // return strategy;
+
+    return this.getAsync(key)
   }
 
   getAsync(key: symbol): AsyncBuildStrategy | BuildStrategy {

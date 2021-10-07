@@ -4,7 +4,7 @@ import { PartialAnyInstancesDefinitionsArgs, PartiallyAppliedAsyncDefinition } f
 import {
   AsyncInstanceDefinition,
   buildAsyncFunctionDefinition,
-  buildAsyncPartiallyAppliedFnDefinition
+  buildAsyncPartiallyAppliedFnDefinition,
 } from '../AsyncInstanceDefinition';
 
 export type AsyncFunctionDefinitionBuildFn = {

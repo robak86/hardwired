@@ -47,7 +47,6 @@ function resolveByObject(container: Container, def: InstanceDefinition<any>, tim
     const start = now();
     const obj = container.get(def);
 
-
     const end = now();
     const total = end - start;
 
@@ -67,7 +66,7 @@ function resolveByObject(container: Container, def: InstanceDefinition<any>, tim
 }
 
 const singletonD = singleton.fn((...args) => args, ...buildSingletonsTree(4, 10));
-const transientD = transient.fn((...args) => args, ...buildTransient(4, 10));
+const transientD = transient.fn((...args) => args, ...buildTransient(3, 5));
 
 const cWithoutProxy = container();
 const result10KWithoutProxy = resolveByObject(cWithoutProxy, transientD, 10000);

@@ -16,15 +16,16 @@ export const view: ComputedBuildFn = (factory, ...dependencies): InstanceDefinit
   return {
     id: `${factory.name}:${v4()}`,
     strategy: SingletonStrategy.type,
-    create: (dependencies) => {
+    create: (build) => {
       // TODO: at this line we can check which dependencies are observable and call .get selectively in computed body
-      throw new Error('Implement me!');
-      // return computed(() => {
-      //   const deps = dependencies.map(d => {
-      //     return isObservable(d) ? d.get() : d;
-      //   }) as any;
-      //   return factory(...deps);
-      // });
+
+      return computed(() => {
+        const deps = dependencies.map(d => {
+          const instance = build(d)
+          return isObservable(instance) ? instance.get() : instance;
+        }) as any;
+        return factory(...deps);
+      });
     },
 
     meta: undefined,

@@ -1,33 +1,29 @@
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import { ClassType } from '../utils/ClassType';
-import { InstanceBuildFn, InstanceDefinition } from './InstanceDefinition';
+import { InstanceAsyncBuildFn } from './InstanceDefinition';
 import { v4 } from 'uuid';
 
-// Some of the async definitions are almost the same as they sync counterpart, but they are introduced mostly for type-safety
-// Sync definitions cannot have async dependencies
 export type AsyncInstanceDefinition<T, TExternal> = {
   id: string;
   strategy: symbol;
   isAsync: true;
-  dependencies: AnyInstanceDefinition<any>[];
-  create: (build: InstanceBuildFn) => Promise<T> | T;
+  create: (build: InstanceAsyncBuildFn) => Promise<T> | T;
   meta: any;
 };
 
 export const buildAsyncClassDefinition = <T, TDeps extends any[]>(
   klass: ClassType<T, TDeps>,
   strategy: symbol,
-  dependencies: { [K in keyof TDeps]: InstanceDefinition<TDeps[K]> },
+  dependencies: { [K in keyof TDeps]: AnyInstanceDefinition<TDeps[K]> },
 ): AsyncInstanceDefinition<T, any> => {
   return {
     id: v4(),
     strategy,
     isAsync: true,
-    create: (dependencies) => {
-      throw new Error("Implement me!")
-      return new klass(...(dependencies as any));
+    create: async build => {
+      const dependenciesInstance = await Promise.all(dependencies.map(build));
+      return new klass(...(dependenciesInstance as any));
     },
-    dependencies,
     meta: undefined,
   };
 };
@@ -41,11 +37,11 @@ export const buildAsyncFunctionDefinition = <T, TDeps extends any[]>(
     id: `${factory.name}:${v4()}`,
     strategy,
     isAsync: true,
-    create: (build) => {
-      throw new Error("Implement me!")
-      // return factory(...(dependencies as any));
+    create: async build => {
+      const dependenciesInstance = await Promise.all(dependencies.map(build));
+      return factory(...(dependenciesInstance as any));
     },
-    dependencies,
+
     meta: undefined,
   };
 };
@@ -60,15 +56,14 @@ export const buildAsyncPartiallyAppliedFnDefinition = <TMeta>(
     id: v4(),
     strategy,
     isAsync: true,
-    create: (build) => {
-      throw new Error("Implement me!")
-      // if (fn.length === 0) {
-      //   return fn;
-      // } else {
-      //   return fn.bind(null, ...dependencies);
-      // }
+    create: async build => {
+      if (fn.length === 0) {
+        return fn;
+      } else {
+        const dependenciesInstance = await Promise.all(dependencies.map(build));
+        return fn.bind(null, ...dependenciesInstance);
+      }
     },
-    dependencies,
     meta: meta as any,
   };
 };

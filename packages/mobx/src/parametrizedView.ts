@@ -15,13 +15,15 @@ export const parametrizedView: ParametrizedViewBuildFn = (factory, ...dependenci
   return {
     id: `${factory.name}:${v4()}`,
     strategy: SingletonStrategy.type,
-    create: (dependencies) => {
-      throw new Error("Implement me!")
-      // return createTransformer((params: any) => {
-      //   const deps = dependencies.map(d => (isObservable(d) ? d.get() : (d as any))) as any;
-      //   deps.push(params);
-      //   return factory(...deps);
-      // });
+    create: build => {
+      return createTransformer((params: any) => {
+        const deps = dependencies.map(d => {
+          const instance = build(d);
+          return isObservable(instance) ? instance.get() : (instance as any);
+        }) as any;
+        deps.push(params);
+        return factory(...deps);
+      });
     },
     meta: undefined,
   };
