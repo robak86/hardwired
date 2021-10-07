@@ -1,29 +1,39 @@
 import now from 'performance-now';
 import { Container, container } from '../container/Container';
 
-import { singleton } from '../definitions/factory/definitions';
+import { singleton, transient } from '../definitions/factory/definitions';
 import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import 'source-map-support/register';
 
-function registerN(times: number) {
-  const result: any = {
-    container: container(),
-    register: -1,
-    module: {},
-  };
-
-  for (let i = 0; i < times; i++) {
-    const start = now();
-    result.module[`SOME_ID_${i}`] = singleton.fn(() => ({ test: 1 }));
-    const end = now();
-    result.register = end - start;
+function buildSingletonsTree(times: number, depth: number, currentDepth = 0): InstanceDefinition<number>[] {
+  if (currentDepth > depth) {
+    return [];
   }
 
-  result.module = result.module.build();
+  const definitions: InstanceDefinition<any>[] = [];
 
-  return result;
+  for (let i = 0; i < times; i++) {
+    definitions.push(singleton.fn((...args: any[]) => args, ...buildSingletonsTree(times, depth, (currentDepth += 1))));
+  }
+
+  return definitions;
 }
 
-function resolveByObject(container: Container, module: Record<string, InstanceDefinition<any>>, times: number) {
+function buildTransient(times: number, depth: number, currentDepth = 0): InstanceDefinition<number>[] {
+  if (currentDepth > depth) {
+    return [];
+  }
+
+  const definitions: InstanceDefinition<any>[] = [];
+
+  for (let i = 0; i < times; i++) {
+    definitions.push(transient.fn((...args: any[]) => args, ...buildTransient(times, depth, (currentDepth += 1))));
+  }
+
+  return definitions;
+}
+
+function resolveByObject(container: Container, def: InstanceDefinition<any>, times: number) {
   const result = {
     avg: -1,
     max: -1,
@@ -35,8 +45,8 @@ function resolveByObject(container: Container, module: Record<string, InstanceDe
 
   for (i = 0; i < times; i++) {
     const start = now();
-    const obj = container.asObject(module);
-    const instance = obj[`SOME_ID_${times}`];
+    const obj = container.get(def);
+
 
     const end = now();
     const total = end - start;
@@ -56,14 +66,9 @@ function resolveByObject(container: Container, module: Record<string, InstanceDe
   return result;
 }
 
-const { module } = registerN(10000);
+const singletonD = singleton.fn((...args) => args, ...buildSingletonsTree(4, 10));
+const transientD = transient.fn((...args) => args, ...buildTransient(4, 10));
 
-console.log('no proxy');
 const cWithoutProxy = container();
-const result10KWithoutProxy = resolveByObject(cWithoutProxy, module, 100);
+const result10KWithoutProxy = resolveByObject(cWithoutProxy, transientD, 10000);
 console.log(result10KWithoutProxy);
-
-console.log('using proxy');
-const cWithProxy = container();
-const result10KWithProxy = resolveByObject(cWithProxy, module, 100);
-console.log(result10KWithProxy);

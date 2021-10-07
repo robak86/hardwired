@@ -23,7 +23,10 @@ export const buildAsyncClassDefinition = <T, TDeps extends any[]>(
     id: v4(),
     strategy,
     isAsync: true,
-    create: (dependencies: any[]) => new klass(...(dependencies as any)),
+    create: (dependencies) => {
+      throw new Error("Implement me!")
+      return new klass(...(dependencies as any));
+    },
     dependencies,
     meta: undefined,
   };
@@ -38,7 +41,10 @@ export const buildAsyncFunctionDefinition = <T, TDeps extends any[]>(
     id: `${factory.name}:${v4()}`,
     strategy,
     isAsync: true,
-    create: (dependencies: TDeps[]) => factory(...(dependencies as any)),
+    create: (build) => {
+      throw new Error("Implement me!")
+      // return factory(...(dependencies as any));
+    },
     dependencies,
     meta: undefined,
   };
@@ -54,12 +60,13 @@ export const buildAsyncPartiallyAppliedFnDefinition = <TMeta>(
     id: v4(),
     strategy,
     isAsync: true,
-    create: (dependencies: any[]) => {
-      if (fn.length === 0) {
-        return fn;
-      } else {
-        return fn.bind(null, ...dependencies);
-      }
+    create: (build) => {
+      throw new Error("Implement me!")
+      // if (fn.length === 0) {
+      //   return fn;
+      // } else {
+      //   return fn.bind(null, ...dependencies);
+      // }
     },
     dependencies,
     meta: meta as any,

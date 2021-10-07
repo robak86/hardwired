@@ -25,18 +25,18 @@ export const action: ComputedBuildFn = (factory, ...args): InstanceDefinition<an
     create: dependencies => {
       // TODO: at this line we can check which dependencies are observable and call .get selectively in computed body
 
-      return (...actionArgs) => {
-        runInAction(() => {
-          (factory as any)(
-            ...actionArgs,
-            ...dependencies.map(d => {
-              return isObservable(d) ? d.get() : d;
-            }),
-          );
-        });
-      };
+      throw new Error("Implement me!")
+      // return (...actionArgs) => {
+      //   runInAction(() => {
+      //     (factory as any)(
+      //       ...actionArgs,
+      //       ...dependencies.map(d => {
+      //         return isObservable(d) ? d.get() : d;
+      //       }),
+      //     );
+      //   });
+      // };
     },
-    dependencies: args,
     meta: undefined,
   };
 };

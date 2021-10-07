@@ -11,7 +11,7 @@ export const state: StateBuildFn = (value): InstanceDefinition<any> => {
     id: `observable:${v4()}`,
     strategy: SingletonStrategy.type,
     create: () => observableImpl.box(value),
-    dependencies: [],
+    // dependencies: [],
     meta: undefined,
   };
 };
