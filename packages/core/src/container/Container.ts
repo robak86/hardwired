@@ -28,7 +28,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry(
   },
 );
 
-export class Container implements IServiceLocator {
+export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}
 
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>): TValue {

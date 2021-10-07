@@ -3,8 +3,9 @@ import { ContainerContext } from '../context/ContainerContext';
 import { ModuleMaterialization } from '../context/ModuleMaterialization';
 import { IServiceLocator } from './IServiceLocator';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
-import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import { instanceDefinition, InstanceDefinition } from '../definitions/InstanceDefinition';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
+import { ChildScopeOptions } from './Container';
 
 export class ServiceLocator implements IServiceLocator {
   private containerContext: ContainerContext;
@@ -30,6 +31,18 @@ export class ServiceLocator implements IServiceLocator {
     );
 
     return factory(serviceLocator);
+  }
+
+  checkoutScope(options: ChildScopeOptions = {}): IServiceLocator {
+    const { scopeOverrides = [] } = options;
+    const syncOverrides = scopeOverrides.filter(instanceDefinition.isSync);
+    const asyncOverrides = scopeOverrides.filter(instanceDefinition.isAsync);
+
+    return new ServiceLocator(
+      this.instancesCache.childScope(syncOverrides),
+      this.asyncInstancesCache.childScope(asyncOverrides),
+      this.definitionsRegistry,
+    );
   }
 
   get = <TValue>(instanceDefinition: InstanceDefinition<TValue>): TValue => {
