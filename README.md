@@ -368,11 +368,13 @@ cnt.get(writerDef); // returns instance if LoggingWriter
 import { singleton, container, apply } from 'hardwired';
 
 class Writer {
-  write(data) {}
+  write(data) {
+  }
 }
 
 class WriteManager {
-  constructor(private writer: Writer) {}
+  constructor(private writer: Writer) {
+  }
 
   storeDocument(document) {
     this.writer.write(dataForDocument);
@@ -380,10 +382,11 @@ class WriteManager {
 }
 
 class WriteAction {
-  constructor(private writer: WriteManager) {}
+  constructor(private writer: WriteManager) {
+  }
 
   run() {
-    this.writer.write({ someData });
+    this.writer.write({someData});
   }
 }
 
@@ -391,7 +394,10 @@ const writerDef = singleton.class(Writer);
 const writeManagerDef = singleton.class(WriteManager, writerDef);
 const writeActionDef = singleton.class(WriteAction, writeManagerDef);
 
-const writerPatch = apply(writerDef, writerDef => jest.spyOn(writerDef, 'write'));
+const writerPatch = apply(writerDef, writerDef => {
+  jest.spyOn(writerDef, 'write');
+  // comparing to decorator, there is no need to return decorated value
+});
 const cnt = container([writerPatch]);
 
 const [spiedWriter, writeAction] = cnt.getAll(writerDef, writeActionDef);
