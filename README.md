@@ -11,8 +11,9 @@ Minimalistic, type-safe DI/IoC solution for TypeScript.
 - [x] Lazy instantiation of the dependencies
 - [x] Easy mocking and testing
 - [x] Extendable design
-- [x] Allows writing code which is not coupled to DI container
-  - does not pollute user code with DI specific code (usually decorators or static properties)
+- [x] Allows writing code that is not coupled to DI container
+  - does not pollute user code with DI specific code (usually decorators combined with 
+    reflection or static properties)
 - [x] Designed for structural typing
 
 ## Installation
@@ -35,7 +36,7 @@ npm install hardwired
 
 The library uses two main concepts:
 
-- **Instance definition** - object that describes details of an instance creation. It contains:
+- **Instance definition** - object that describes how instances should be created. It contains:
   - details about lifespan of an instance (`singleton`, `transient`, `request`, etc.)
   - references to other instance definitions that needs to be injected while creating a new instance
   - unique definition id
@@ -78,15 +79,14 @@ const loggerInstance: Logger = exampleContainer.get(loggerDef); // returns an in
 
 ## Available definitions builders
 
-Library provides four definitions categories: `singleton` |
-`transient` | `request` | `scoped` that describe lifespan of an instance.
+Library provides definitions builders grouped by lifespan:
 
 - `transient` always creates a new instance
 - `singleton` always uses single instance
 - `request` acts like singleton across a request (`container.get(...)` or `container.getAll(...) ` call )
 - `scoped` acts like singleton in [Isolated scope](#isolated-scope)
 
-Each category object provides definitions builders for specific type of instance
+Each group object provides definitions builders for specific type of instance
 
 - `fn` - takes as an argument a factory function, e.g.
 
@@ -96,7 +96,7 @@ import { singleton, container, transient } from 'hardwired';
 const aDef = transient.fn(() => 1);
 const bDef = transient.fn(() => 2);
 const cDef = singleton.fn((d1, d2) => d1 + d2, aDef, bDef);
-const result = container().get(cDef); // = 3
+const result = container().get(cDef); // result equals to 3
 ```
 
 - `class` - creates instance of a class, e.g.
@@ -117,21 +117,40 @@ const writerDef = singleton.class(Writer, loggerDef);
 const writerInstance = container().get(writerDef); // creates instance of Writer
 ```
 
-- `partial` - creates partially applied function
+- `partial` - creates partially applied function.
 
 ```typescript
 import { singleton, container } from 'hardwired';
 import { Db } from 'some-db-client';
 
-const findUserById = async (db: Db, userId: string) => {
+const findUserById = async (db: Db, userId: string): Promise<User|undefined> => {
   return db.users.findOne({ id: userId });
 };
 
 const dbDef = singleton.fn((): Db => createDbConnection());
 const findUserByIdDef = singleton.partial(findUserById, dbDef);
+
 const cnt = container();
 const findUserByIdBound = cnt.get(findUserByIdDef); // (userId: string) => Promise<User | undefined>
 const user = await findUserByIdBound('someUserId');
+```
+
+If all arguments are provided, then `partial` returns function that takes no arguments
+
+```typescript
+import { singleton, container } from 'hardwired';
+import { Db } from 'some-db-client';
+
+const truncateUsers = async (db: Db):Promise<any> => {
+  return db.users.destroy();
+};
+
+const dbDef = singleton.fn((): Db => createDbConnection());
+const fullyAppliedDef = singleton.partial(findUserById, dbDef);
+
+const cnt = container();
+const clearUsersTable = cnt.get(fullyAppliedDef); // () => Promise<any>
+const user = await clearUsersTable();
 ```
 
 - `asyncClass` - supports injection of async definitions. Async dependencies need to be
@@ -176,10 +195,13 @@ const config = cnt.get(configDef); // {port: 1234}
 cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
 ```
 
-**`object`** - aggregates multiple instance definition within new object
+**`object`** - aggregates multiple instance definitions within new object. The lifetime for 
+`object` is determined from used instance definitions. If all instance definitions have the same 
+lifetime, then it is also used for object. If definitions use multiple lifetimes then lifetime 
+for `object` is set to `transient`
 
 ```typescript
-import { value, container } from 'hardwired';
+import { value, container, object } from 'hardwired';
 
 const serverConfigDef = value({ port: 1234 });
 const clientConfigDef = value({ host: 'example.com' });
@@ -191,10 +213,10 @@ const config = container().get(configDef); //returns {server: {port: number}, cl
 
 **`serviceLocator`** - static definition for injecting service locator.
 
-*Using service locator is usually considered as an anti-pattern, because it breaks inversion of 
+_Using service locator is usually considered as an anti-pattern, because it breaks inversion of
 control and makes classes responsible for getting their own dependencies. It also couples your  
-implementation with service locator. That being said sometimes there are cases when using single 
-composition root is not possible - e.g. on integration with 3rd party libraries.*
+implementation with service locator. That being said sometimes there are cases when using single
+composition root is not possible - e.g. on integration with 3rd party libraries._
 
 ```typescript
 import { container, IServiceLocator, scoped, serviceLocator, value, InstanceDefinition } from 'hardwired';
@@ -257,12 +279,13 @@ app.listen();
 
 ### Overriding definitions
 
-Each instance definition which is already used within some definitions graph can be overridden 
+Each instance definition which is already used within some definitions graph can be overridden
 by the container. This e.g. allows replacing deeply nested definitions with mocked instances for
 integration tests (see `apply` override). Overriding is achieved by providing patched instance
-definition (having the same id as the original one) to container constructor. On each request (`.
-get`) containers checks if it has overridden definition for the original one which was requested.
-If overridden definition is found then it is used instead of the original one.
+definition (having the same id as the original one) to container constructor.
+On each request(`.get` | `.getAll`) containers checks if it has overridden definition for the 
+original one that was requested. If overridden definition is found then it is used instead of the 
+original one.
 
 ```typescript
 import { singleton, container, set } from 'hardwired';
@@ -272,9 +295,9 @@ class RandomGenerator {
 }
 
 const someRandomSeedD = singleton.fn(() => Math.random());
-const randomGeneratorDef = singleton.class(RandomGenerator);
+const randomGeneratorDef = singleton.class(RandomGenerator, someRandomSeedD);
 
-const cnt = container({ globalOverrides: [set(randomGeneratorDef, 1)] });
+const cnt = container({ globalOverrides: [set(someRandomSeedD, 1)] });
 const randomGenerator = cnt.get(randomGeneratorDef);
 randomGenerator.seed === 1; // true
 ```
@@ -286,22 +309,22 @@ randomGenerator.seed === 1; // true
   instance
 
 ```typescript
-import { singleton, container, replace } from 'hardwired';
+import { singleton, container, replace, transient } from 'hardwired';
 
 const mySingletonDef = singleton.fn(generateUniqueId);
 
-// change lifespan for mySingletonDef to transient
-const mySingletonDefPatch = replace(mySingletonDef, transient.fn(someFactoryFunction));
-const cnt = container([mySingletonDefPatch]);
+// change lifetime for mySingletonDef to transient
+const mySingletonOverrideDef = replace(mySingletonDef, transient.fn(generateUniqueId));
+const cnt = container([mySingletonOverrideDef]);
 
-cnt.get(mySingletonDef) === gnt.get(mySingletonDef); // false
-// cnt uses now transient lifespan for mySingletonDef and calls generateUniqueId on each .get call
+cnt.get(mySingletonDef) === cnt.get(mySingletonDef); // false
+// cnt uses now transient lifetime for mySingletonDef and calls generateUniqueId on each .get call
 ```
 
 - `decorate` - it takes decorator function and returns decorated object
 
 ```typescript
-import { singleton, container, replace } from 'hardwired';
+import { singleton, container, decorates } from 'hardwired';
 
 interface IWriter {
   write(data);
@@ -328,13 +351,13 @@ class LoggingWriter implements IWriter {
 const writerDef = singleton.class(Writer);
 const loggerDef = singleton.class(Logger);
 
-const writterPatch = decorate(
+const writerOverrideDef = decorate(
   writerDef,
   (originalWriter, logger) => new LoggingWriter(originalWriter, logger),
   loggerDef, // inject extra dependency required by LoggingWriter
 );
 
-const cnt = container([writterPatch]);
+const cnt = container([writerOverrideDef]);
 
 cnt.get(writerDef); // returns instance if LoggingWriter
 ```
@@ -364,7 +387,7 @@ class WriteAction {
   }
 }
 
-const writerDef = singleton.class(Writter);
+const writerDef = singleton.class(Writer);
 const writeManagerDef = singleton.class(WriteManager, writerDef);
 const writeActionDef = singleton.class(WriteAction, writeManagerDef);
 
