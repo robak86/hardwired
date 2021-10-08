@@ -1,8 +1,8 @@
-import { singleton } from '../../definitions/factory/definitions';
-import { container } from '../../container/Container';
-import { TestClassArgs2 } from '../../__test__/ArgsDebug';
-import { BoxedValue } from '../../__test__/BoxedValue';
-import { replace } from '../../patching/replace';
+import { singleton } from '../../../definitions/factory/definitions';
+import { container } from '../../../container/Container';
+import { TestClassArgs2 } from '../../../__test__/ArgsDebug';
+import { BoxedValue } from '../../../__test__/BoxedValue';
+import { replace } from '../../../patching/replace';
 
 const resolveAfter = <T>(timeout: number, value: T): Promise<T> => {
   return new Promise((resolve, reject) => {

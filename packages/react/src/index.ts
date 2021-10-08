@@ -10,7 +10,6 @@ export type { ModulesConsumerProps } from './components/InstancesConsumer';
 export { useDefinition } from './hooks/useDefinition';
 export { useDefinitions } from './hooks/useDefinitions';
 export { useScopedDefinition } from './hooks/useScopedDefinition';
-export { useSelectScoped } from './hooks/useSelectScoped';
 
 // HOC
 export { withDependencies } from './hoc/withDependencies';

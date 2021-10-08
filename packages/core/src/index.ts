@@ -14,8 +14,6 @@ export * from './patching/apply';
 export * from './patching/set';
 export * from './patching/decorate';
 
-export { inject } from './helpers/inject';
-export type { DependencySelector } from './helpers/inject';
 export { ContainerContext } from './context/ContainerContext';
 export { ServiceLocator } from './container/ServiceLocator';
 
@@ -24,4 +22,4 @@ export type { IServiceLocator } from './container/IServiceLocator';
 
 export { buildAsyncClassDefinition } from './definitions/AsyncInstanceDefinition';
 export * from './definitions/factory/customDefinitions';
-export * from './definitions/factory/object'
+export * from './definitions/factory/object';

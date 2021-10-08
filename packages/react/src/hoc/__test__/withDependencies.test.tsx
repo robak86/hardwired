@@ -1,6 +1,6 @@
 import React, { FC, ReactElement } from 'react';
 import { BoxedValue } from 'hardwired/lib/__test__/BoxedValue';
-import { container, inject, replace, scoped, set, singleton } from 'hardwired';
+import { container, object, replace, scoped, set, singleton } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies';
@@ -47,7 +47,7 @@ describe(`withDependencies`, () => {
       );
     };
 
-    const dependenciesSelector = inject.record({
+    const dependenciesSelector = object({
       age: ageDef,
       firstName: firstNameDef,
     });

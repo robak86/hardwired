@@ -1,7 +1,7 @@
-import { container } from '../../container/Container';
-import { set } from '../../patching/set';
+import { container } from '../../../container/Container';
+import { set } from '../../../patching/set';
 import { v4 } from 'uuid';
-import { singleton, value } from '../../definitions/factory/definitions';
+import { singleton, value } from '../../../definitions/factory/definitions';
 
 describe(`SingletonStrategy`, () => {
   class TestClass {
@@ -186,10 +186,10 @@ describe(`SingletonStrategy`, () => {
       const childScopePatch = set(k1, 2);
 
       const c = container({ globalOverrides: [invariantPatch] });
-      expect(c.asObject({ k1 }).k1).toEqual(1);
+      expect(c.get(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-      expect(childScope.asObject({ k1 }).k1).toEqual(1);
+      expect(childScope.get(k1)).toEqual(1);
     });
 
     it(`allows for overrides for other keys than ones changes invariants array`, async () => {
@@ -200,11 +200,11 @@ describe(`SingletonStrategy`, () => {
       const childScopePatch = set(k2, 2);
 
       const c = container({ globalOverrides: [invariantPatch] });
-      expect(c.asObject({ k1, k2 }).k1).toEqual(1);
+      expect(c.getAll(k1, k2)[0]).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-      expect(childScope.asObject({ k1, k2 }).k1).toEqual(1);
-      expect(childScope.asObject({ k1, k2 }).k2).toEqual(2);
+      expect(childScope.getAll(k1, k2)[0]).toEqual(1);
+      expect(childScope.getAll(k1, k2)[1]).toEqual(2);
     });
   });
 });

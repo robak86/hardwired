@@ -47,13 +47,4 @@ export class ServiceLocator implements IServiceLocator {
     return this.containerContext.get(instanceDefinition);
   };
 
-  select = <TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn =>
-    inject(this.containerContext.checkoutRequestScope());
-
-  asObject = <TModule extends Record<string, InstanceDefinition<any>>>(
-    module: TModule,
-  ): { [K in keyof TModule]: TModule[K] extends InstanceDefinition<infer TValue> ? TValue : unknown } => {
-    const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.materialize(module);
-  };
 }

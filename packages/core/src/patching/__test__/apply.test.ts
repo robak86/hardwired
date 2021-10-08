@@ -1,85 +1,70 @@
-import { set } from '../../patching/set';
 import { container } from '../../container/Container';
-import { request, scoped, singleton, transient, value } from '../../definitions/factory/definitions';
+import { BoxedValue } from '../../__test__/BoxedValue';
+import { request, scoped, singleton, transient } from '../../definitions/factory/definitions';
+import { set } from '../set';
 import { InstanceDefinition } from '../../definitions/InstanceDefinition';
-import { decorate } from '../../patching/decorate';
+import { decorate } from '../decorate';
+import { apply } from '../apply';
+import { object } from '../../definitions/factory/object';
 
-describe(`DecoratorStrategy`, () => {
-  it(`decorates original value`, async () => {
-    const someValue = value(1);
+describe(`apply`, () => {
+  it(`applies function to original value`, async () => {
+    const someValue = singleton.fn(() => new BoxedValue(1));
 
-    const c = container({ scopeOverrides: [decorate(someValue, val => val + 1)] });
-    expect(c.get(someValue)).toEqual(2);
+    const mPatch = apply(someValue, val => (val.value += 1));
+
+    const c = container({ scopeOverrides: [mPatch] });
+    expect(c.get(someValue).value).toEqual(2);
   });
 
   it(`does not affect original module`, async () => {
-    const someValue = value(1);
-    const mPatch = decorate(someValue, val => val + 1);
+    const someValue = singleton.fn(() => new BoxedValue(1));
 
-    expect(container().get(someValue)).toEqual(1);
-    expect(container({ scopeOverrides: [mPatch] }).get(someValue)).toEqual(2);
+    const mPatch = apply(someValue, val => (val.value += 1));
+
+    expect(container().get(someValue).value).toEqual(1);
+    expect(container({ scopeOverrides: [mPatch] }).get(someValue).value).toEqual(2);
   });
 
-  it(`allows for multiple decorations`, async () => {
-    const someValue = value(1);
-    const mPatch = decorate(
-      decorate(someValue, val => val + 1),
-      val => val * 3,
+  it(`allows for multiple apply functions calls`, async () => {
+    const someValue = singleton.fn(() => new BoxedValue(1));
+
+    const mPatch = apply(
+      apply(someValue, val => (val.value += 1)),
+      val => (val.value *= 3),
     );
 
     const c = container({ scopeOverrides: [mPatch] });
-    expect(c.get(someValue)).toEqual(6);
-  });
-
-  it(`allows using other dependencies from the same module, ex1`, async () => {
-    const a = value(1);
-    const b = value(2);
-    const someValue = value(10);
-
-    const mPatch = decorate(someValue, (val, a: number, b: number) => val + a + b, a, b);
-
-    const c = container({ scopeOverrides: [mPatch] });
-    expect(c.get(someValue)).toEqual(13);
-  });
-
-  it(`allows using other dependencies from the same module, ex2`, async () => {
-    const a = value(1);
-    const b = value(2);
-    const someValue = singleton.fn((a, b) => a + b, a, b);
-
-    const mPatch = decorate(someValue, (val, b) => val * b, b);
-
-    const c = container({ scopeOverrides: [mPatch] });
-    expect(c.get(someValue)).toEqual(6);
+    expect(c.get(someValue).value).toEqual(6);
   });
 
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
-      const a = singleton.fn(() => Math.random());
-      const mPatch = decorate(a, a => a);
+      const someValue = singleton.fn(() => Math.random());
+      const mPatch = apply(someValue, a => a);
 
       const c = container({ scopeOverrides: [mPatch] });
-      expect(c.get(a)).toEqual(c.get(a));
+      expect(c.get(someValue)).toEqual(c.get(someValue));
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
-      const a = transient.fn(() => Math.random());
+      const someValue = transient.fn(() => Math.random());
 
-      const mPatch = decorate(a, a => a);
+      const mPatch = apply(someValue, a => a);
 
       const c = container({ scopeOverrides: [mPatch] });
-      expect(c.get(a)).not.toEqual(c.get(a));
+      expect(c.get(someValue)).not.toEqual(c.get(someValue));
     });
 
-    it(`uses different request scope for each subsequent asObject call`, async () => {
+    it(`preserves request scope of the original resolver`, async () => {
       const source = request.fn(() => Math.random());
       const a = request.fn(source => source, source);
 
-      const mPatch = decorate(a, a => a);
+      const mPatch = apply(a, a => a);
 
       const c = container({ scopeOverrides: [mPatch] });
-      const req1 = c.asObject({ source, a });
-      const req2 = c.asObject({ source, a });
+      const req1 = c.get(object({ a, source }));
+      const req2 = c.get(object({ a, source }));
 
       expect(req1.source).toEqual(req1.a);
       expect(req2.source).toEqual(req2.a);
@@ -87,15 +72,24 @@ describe(`DecoratorStrategy`, () => {
       expect(req1.a).not.toEqual(req2.a);
     });
 
-    it(`does not cache produced object`, async () => {
-      const a = request.fn(() => Math.random());
-      const b = request.fn(() => Math.random());
-
-      const c = container();
-      const obj1 = c.asObject({ a, b });
-      const obj2 = c.asObject({ a, b });
-
-      expect(obj1).not.toBe(obj2);
+    // TODO: wrong test assertion
+    it.skip(`does not change original strategy`, async () => {
+      // const m = module()
+      //   .__define(
+      //     'a',
+      //     request.fn(() => Math.random()),
+      //   )
+      //   .__define(
+      //     'b',
+      //     request.fn(() => Math.random()),
+      //   )
+      //   .build();
+      //
+      // const c = container();
+      // const obj1 = c.__asObject(m);
+      // const obj2 = c.__asObject(m);
+      //
+      // expect(obj1).not.toBe(obj2);
     });
   });
 

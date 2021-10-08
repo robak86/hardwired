@@ -1,7 +1,7 @@
-import { container } from '../../container/Container';
-import { scoped } from '../../definitions/factory/definitions';
-import { BoxedValue } from '../../__test__/BoxedValue';
-import { replace } from "../../patching/replace";
+import { container } from '../../../container/Container';
+import { scoped } from '../../../definitions/factory/definitions';
+import { BoxedValue } from '../../../__test__/BoxedValue';
+import { replace } from "../../../patching/replace";
 
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {

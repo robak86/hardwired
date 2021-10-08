@@ -1,5 +1,4 @@
 import { ContainerContext } from '../context/ContainerContext';
-import { IServiceLocator } from './IServiceLocator';
 import { InstanceDefinition } from '../definitions/InstanceDefinition';
 import { SingletonStrategy } from '../strategies/sync/SingletonStrategy';
 import { TransientStrategy } from '../strategies/sync/TransientStrategy';
@@ -42,18 +41,6 @@ export class Container {
     const requestContext = this.containerContext.checkoutRequestScope();
 
     return definitions.map(def => requestContext.get(def)) as any;
-  }
-
-  select<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
-    return inject(this.containerContext.checkoutRequestScope());
-  }
-
-  // TODO: we still should create object with lazy properties
-  asObject<TModule extends Record<string, InstanceDefinition<any>>>(
-    module: TModule,
-  ): { [K in keyof TModule]: TModule[K] extends InstanceDefinition<infer TValue> ? TValue : unknown } {
-    const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.materialize(module);
   }
 
   /***

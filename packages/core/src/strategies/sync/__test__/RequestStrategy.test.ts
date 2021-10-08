@@ -1,6 +1,6 @@
-import { container } from '../../container/Container';
-import { request } from '../../definitions/factory/definitions';
-import { replace } from "../../patching/replace";
+import { container } from '../../../container/Container';
+import { request } from '../../../definitions/factory/definitions';
+import { replace } from "../../../patching/replace";
 
 describe(`RequestStrategy`, () => {
   describe(`resolution`, () => {
@@ -21,10 +21,10 @@ describe(`RequestStrategy`, () => {
         const a = request.fn(() => Math.random());
 
         const c = container();
-        const req1 = c.asObject({ a });
-        const req2 = c.asObject({ a });
+        const req1 = c.get(a);
+        const req2 = c.get(a);
 
-        expect(req1.a).not.toEqual(req2.a);
+        expect(req1).not.toEqual(req2);
       });
     });
 

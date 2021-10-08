@@ -37,47 +37,28 @@ export class ContainerContext {
     );
   }
 
+  private instancesBuilder;
+
   constructor(
     private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
     private instancesCache: InstancesCache,
     private asyncInstancesCache: AsyncInstancesCache,
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-  ) {}
-
-  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
-    const instancesBuilder = new InstancesBuilder(
+  ) {
+    this.instancesBuilder = new InstancesBuilder(
       this.instancesCache,
       this.asyncInstancesCache,
       this.instancesDefinitionsRegistry,
       this.strategiesRegistry,
     );
+  }
 
-    return instancesBuilder.buildWithStrategy(instanceDefinition);
+  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
+    return this.instancesBuilder.buildWithStrategy(instanceDefinition);
   }
 
   getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
-    const instancesBuilder = new InstancesBuilder(
-      this.instancesCache,
-      this.asyncInstancesCache,
-      this.instancesDefinitionsRegistry,
-      this.strategiesRegistry,
-    );
-
-    return instancesBuilder.buildWithStrategy(instanceDefinition);
-  }
-
-  materialize<TModule extends Record<string, InstanceDefinition<any>>>(
-    module: TModule,
-  ): { [K in keyof TModule]: TModule[K] extends InstanceDefinition<infer TValue> ? TValue : unknown } {
-    const materialized = {};
-
-    // TODO: we still should use lazy materialization
-    Object.keys(module).forEach(key => {
-      const instanceDefinition = module[key];
-      materialized[key] = this.get(instanceDefinition);
-    });
-
-    return materialized as any;
+    return this.instancesBuilder.buildWithStrategy(instanceDefinition);
   }
 
   checkoutRequestScope(): ContainerContext {
