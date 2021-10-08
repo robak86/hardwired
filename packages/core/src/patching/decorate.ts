@@ -8,6 +8,7 @@ export function decorate<TInstance, TNextValue extends TInstance, TDecoratorDeps
   return {
     id: instance.id,
     strategy: instance.strategy,
+    isAsync: false,
     create: build => {
       const decorated = instance.create(build);
       const decoratorDeps = args.map(build);

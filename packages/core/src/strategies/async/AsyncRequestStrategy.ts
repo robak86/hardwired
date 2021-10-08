@@ -2,10 +2,10 @@ import { InstancesCache } from '../../context/InstancesCache';
 import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/AsyncInstanceDefinition';
 import { InstancesBuilder } from '../../context/InstancesBuilder';
-import { AsyncBuildStrategy } from "../abstract/AsyncBuildStrategy";
+import { AsyncBuildStrategy } from '../abstract/AsyncBuildStrategy';
 
-export class AsyncSingletonStrategy extends AsyncBuildStrategy {
-  static type = Symbol.for('asyncClassSingleton');
+export class AsyncRequestStrategy extends AsyncBuildStrategy {
+  static type = Symbol.for('asyncRequestStrategy');
 
   async build(
     definition: AsyncInstanceDefinition<any, any>,
@@ -17,12 +17,12 @@ export class AsyncSingletonStrategy extends AsyncBuildStrategy {
     const id = definition.id;
 
     if (definitions.hasGlobalOverrideDefinition(id)) {
-      return asyncInstancesCache.upsertGlobalOverrideScope(id, async () => {
+      return asyncInstancesCache.upsertGlobalOverrideScope(id, () => {
         return instancesBuilder.buildExact(definition);
       });
     }
 
-    return asyncInstancesCache.upsertGlobalScope(id, async () => {
+    return asyncInstancesCache.upsertRequestScope(id, () => {
       return instancesBuilder.buildExact(definition);
     });
   }

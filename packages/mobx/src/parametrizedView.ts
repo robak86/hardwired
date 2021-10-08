@@ -15,6 +15,7 @@ export const parametrizedView: ParametrizedViewBuildFn = (factory, ...dependenci
   return {
     id: `${factory.name}:${v4()}`,
     strategy: SingletonStrategy.type,
+    isAsync: false,
     create: build => {
       return createTransformer((params: any) => {
         const deps = dependencies.map(d => {
@@ -24,6 +25,6 @@ export const parametrizedView: ParametrizedViewBuildFn = (factory, ...dependenci
         deps.push(params);
         return factory(...deps);
       });
-    }
+    },
   };
 };

@@ -14,6 +14,7 @@ export const klass = (strategy: symbol): ClassDefinitionBuildFn => {
     return {
       id: v4(),
       strategy,
+      isAsync: false,
       create: build => {
         return new cls(...(dependencies.map(build) as any));
       },

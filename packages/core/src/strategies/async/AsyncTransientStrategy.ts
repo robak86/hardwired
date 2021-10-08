@@ -1,23 +1,23 @@
-import { BuildStrategy } from '../abstract/BuildStrategy';
 import { InstancesCache } from '../../context/InstancesCache';
-import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
 import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
+import { AsyncInstanceDefinition } from '../../definitions/abstract/AsyncInstanceDefinition';
 import { InstancesBuilder } from '../../context/InstancesBuilder';
+import { AsyncBuildStrategy } from '../abstract/AsyncBuildStrategy';
 
-export class TransientStrategy extends BuildStrategy {
-  static type = Symbol.for('classTransient');
+export class AsyncTransientStrategy extends AsyncBuildStrategy {
+  static type = Symbol.for('asyncTransientStrategy');
 
-  build(
-    definition: InstanceDefinition<any>,
-    instancesCache: InstancesCache,
+  async build(
+    definition: AsyncInstanceDefinition<any, any>,
+    _: InstancesCache,
     asyncInstancesCache: AsyncInstancesCache,
     definitions,
     instancesBuilder: InstancesBuilder,
-  ) {
+  ): Promise<any> {
     const id = definition.id;
 
     if (definitions.hasGlobalOverrideDefinition(id)) {
-      return instancesCache.upsertGlobalOverrideScope(id, () => {
+      return asyncInstancesCache.upsertGlobalOverrideScope(id, () => {
         return instancesBuilder.buildExact(definition);
       });
     }

@@ -4,6 +4,7 @@ import { AsyncInstanceDefinition } from './AsyncInstanceDefinition';
 export type InstanceDefinition<TInstance, TExternal = any> = {
   id: string;
   strategy: symbol;
+  isAsync: false;
   create: (buildFn: InstanceBuildFn) => TInstance;
 };
 

@@ -14,7 +14,7 @@ export const asyncFn = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
   return (factory, ...args) => {
     return {
       id: `${factory.name}:${v4()}`,
-      strategy: AsyncSingletonStrategy.type,
+      strategy,
       isAsync: true,
       create: async build => {
         const dependenciesInstance = await Promise.all(args.map(build));

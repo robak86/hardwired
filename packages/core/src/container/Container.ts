@@ -8,18 +8,27 @@ import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AsyncSingletonStrategy } from '../strategies/async/AsyncSingletonStrategy';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
+import { AsyncTransientStrategy } from '../strategies/async/AsyncTransientStrategy';
+import { AsyncRequestStrategy } from '../strategies/async/AsyncRequestStrategy';
+import { AsyncScopedStrategy } from '../strategies/async/AsyncScopedStrategy';
+import { AsyncInstanceDefinition } from "../definitions/abstract/AsyncInstanceDefinition";
 
 export type ChildScopeOptions = {
-  scopeOverrides?: InstanceDefinition<any>[];
+  scopeOverrides?: AnyInstanceDefinition<any>[];
 };
 
 export const defaultStrategiesRegistry = new StrategiesRegistry({
+  [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
+
   [SingletonStrategy.type]: new SingletonStrategy(),
   [TransientStrategy.type]: new TransientStrategy(),
   [RequestStrategy.type]: new RequestStrategy(),
   [ScopeStrategy.type]: new ScopeStrategy(),
-  [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
+
   [AsyncSingletonStrategy.type]: new AsyncSingletonStrategy(),
+  [AsyncTransientStrategy.type]: new AsyncTransientStrategy(),
+  [AsyncRequestStrategy.type]: new AsyncRequestStrategy(),
+  [AsyncScopedStrategy.type]: new AsyncScopedStrategy(),
 });
 
 export class Container {
@@ -30,7 +39,7 @@ export class Container {
     return requestContext.get(instanceDefinition);
   }
 
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
+  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any>): Promise<TValue> {
     const requestContext = this.containerContext.checkoutRequestScope();
     return requestContext.getAsync(instanceDefinition);
   }

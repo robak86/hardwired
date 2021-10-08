@@ -8,11 +8,12 @@ export const apply = <TInstance, TNextValue extends TInstance>(
   return {
     id: instance.id,
     strategy: instance.strategy,
+    isAsync: false,
     create: build => {
       const decorated = instance.create(build);
       applyFn(decorated);
 
       return decorated;
-    }
+    },
   };
 };

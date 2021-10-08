@@ -11,6 +11,7 @@ export type FunctionDefinitionBuildFn = {
 export const fn = (strategy: symbol): FunctionDefinitionBuildFn => {
   return (factory, ...args) => ({
     id: `${factory.name}:${v4()}`,
+    isAsync: false,
     strategy,
     create: build => {
       return factory(...(args.map(build) as any));

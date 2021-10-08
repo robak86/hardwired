@@ -13,7 +13,7 @@ export const partial = (strategy: symbol): PartiallyAppliedFnBuild => {
   return (factory, ...args) => ({
     id: v4(),
     strategy,
-
+    isAsync: false,
     create: build => {
       if (factory.length === 0) {
         return factory;

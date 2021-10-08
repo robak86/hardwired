@@ -9,6 +9,7 @@ export type StateBuildFn = {
 export const state: StateBuildFn = (value): InstanceDefinition<any> => {
   return {
     id: `observable:${v4()}`,
+    isAsync: false,
     strategy: SingletonStrategy.type,
     create: () => observableImpl.box(value),
   };

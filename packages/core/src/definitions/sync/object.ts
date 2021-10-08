@@ -20,6 +20,7 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any>>, TMe
   return {
     id: v4(),
     strategy,
+    isAsync: false,
     create: build => {
       return Object.keys(record).reduce((result, property) => {
         result[property] = build(record[property]);

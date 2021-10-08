@@ -5,6 +5,7 @@ import { v4 } from 'uuid';
 export const value = <TValue, TDeps extends any[]>(value: TValue): InstanceDefinition<TValue> => {
   return {
     id: v4(),
+    isAsync: false,
     strategy: SingletonStrategy.type,
     create: () => value,
   };
