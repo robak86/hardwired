@@ -1,5 +1,4 @@
 import { InstancesCache } from './InstancesCache';
-import { ModuleMaterialization } from './ModuleMaterialization';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { instanceDefinition, InstanceDefinition } from '../definitions/InstanceDefinition';
@@ -16,7 +15,6 @@ export class ContainerContext {
       instancesEntries,
       InstancesCache.create([]),
       AsyncInstancesCache.create([]),
-      new ModuleMaterialization(instancesEntries),
       strategiesRegistry,
     );
   }
@@ -35,7 +33,6 @@ export class ContainerContext {
       definitionsRegistry,
       InstancesCache.create(syncOverrides),
       AsyncInstancesCache.create(asyncOverrides),
-      new ModuleMaterialization(definitionsRegistry),
       strategiesRegistry,
     );
   }
@@ -44,7 +41,6 @@ export class ContainerContext {
     private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
     private instancesCache: InstancesCache,
     private asyncInstancesCache: AsyncInstancesCache,
-    private materialization: ModuleMaterialization,
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
@@ -60,8 +56,6 @@ export class ContainerContext {
   }
 
   getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
-    const instanceOrOverride = this.instancesDefinitionsRegistry.getInstanceDefinition(instanceDefinition);
-    // const strategy = this.strategiesRegistry.getAsync(instanceOrOverride.strategy);
     const instancesBuilder = new InstancesBuilder(
       this.instancesCache,
       this.asyncInstancesCache,
@@ -70,16 +64,6 @@ export class ContainerContext {
     );
 
     return instancesBuilder.buildWithStrategy(instanceDefinition);
-
-
-    // return strategy.build(
-    //   instanceOrOverride,
-    //   this.instancesCache,
-    //   this.asyncInstancesCache,
-    //   this.instancesDefinitionsRegistry,
-    //   instancesBuilder,
-    // );
-    // return this.materialization.runInstanceDefinition(moduleInstance, resolver, this.instancesCache);
   }
 
   materialize<TModule extends Record<string, InstanceDefinition<any>>>(
@@ -101,7 +85,7 @@ export class ContainerContext {
       this.instancesDefinitionsRegistry.checkoutForRequestScope(),
       this.instancesCache.checkoutForRequestScope(),
       this.asyncInstancesCache.checkoutForRequestScope(),
-      new ModuleMaterialization(this.instancesDefinitionsRegistry),
+
       this.strategiesRegistry,
     );
   }
@@ -115,7 +99,6 @@ export class ContainerContext {
       this.instancesDefinitionsRegistry.checkoutForScope(scopeOverrides),
       this.instancesCache.childScope(syncOverrides),
       this.asyncInstancesCache.childScope(asyncOverrides),
-      new ModuleMaterialization(this.instancesDefinitionsRegistry),
       this.strategiesRegistry,
     );
   }

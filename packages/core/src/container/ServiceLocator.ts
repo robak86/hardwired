@@ -1,6 +1,5 @@
 import { InstancesCache } from '../context/InstancesCache';
 import { ContainerContext } from '../context/ContainerContext';
-import { ModuleMaterialization } from '../context/ModuleMaterialization';
 import { IServiceLocator } from './IServiceLocator';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
 import { instanceDefinition, InstanceDefinition } from '../definitions/InstanceDefinition';
@@ -19,7 +18,6 @@ export class ServiceLocator implements IServiceLocator {
       this.definitionsRegistry,
       instancesCache,
       asyncInstancesCache,
-      new ModuleMaterialization(this.definitionsRegistry),
     );
   }
 
