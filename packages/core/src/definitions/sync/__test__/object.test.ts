@@ -1,13 +1,14 @@
-import { request, scoped, singleton, value } from '../definitions';
+import { request, scoped, singleton} from '../../definitions';
 import { object } from '../object';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../InstanceDefinition';
+import { InstanceDefinition } from '../../abstract/InstanceDefinition';
 import { container } from '../../../container/Container';
 import { SingletonStrategy } from '../../../strategies/sync/SingletonStrategy';
 import { TransientStrategy } from '../../../strategies/sync/TransientStrategy';
 import { ScopeStrategy } from '../../../strategies/sync/ScopeStrategy';
 import { RequestStrategy } from '../../../strategies/sync/RequestStrategy';
 import { set } from '../../../patching/set';
+import { value } from "../value";
 
 describe(`object`, () => {
   it(`returns definition with correct type`, async () => {

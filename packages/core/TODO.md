@@ -1,3 +1,5 @@
+- add support for thunks ? add check if dependencies definitions are defined
+- remove meta
 - investigate concept of parametrized modules / externally parametrized dependencies and
   propagating them to composition root
 

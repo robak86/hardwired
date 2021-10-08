@@ -24,7 +24,6 @@ export const parametrizedView: ParametrizedViewBuildFn = (factory, ...dependenci
         deps.push(params);
         return factory(...deps);
       });
-    },
-    meta: undefined,
+    }
   };
 };

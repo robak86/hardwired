@@ -1,9 +1,10 @@
 import { set } from '../set';
 import { container } from '../../container/Container';
-import { request, scoped, singleton, transient, value } from '../../definitions/factory/definitions';
-import { InstanceDefinition } from '../../definitions/InstanceDefinition';
+import { request, scoped, singleton, transient} from '../../definitions/definitions';
+import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
 import { decorate } from '../decorate';
-import { object } from '../../definitions/factory/object';
+import { object } from '../../definitions/sync/object';
+import { value } from "../../definitions/sync/value";
 
 describe(`decorate`, () => {
   it(`decorates original value`, async () => {

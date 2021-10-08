@@ -1,6 +1,8 @@
-import { container } from '../../container/Container';
-import { request, serviceLocator, singleton, value } from '../../definitions/factory/definitions';
+import { container } from '../../../container/Container';
+import { request, singleton} from '../../definitions';
 import { v4 } from 'uuid';
+import { serviceLocator } from "../serviceLocator";
+import { value } from "../value";
 
 describe(`ServiceLocatorResolver`, () => {
   class TestClass {

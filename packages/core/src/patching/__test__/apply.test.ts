@@ -1,11 +1,11 @@
 import { container } from '../../container/Container';
 import { BoxedValue } from '../../__test__/BoxedValue';
-import { request, scoped, singleton, transient } from '../../definitions/factory/definitions';
+import { request, scoped, singleton, transient } from '../../definitions/definitions';
 import { set } from '../set';
-import { InstanceDefinition } from '../../definitions/InstanceDefinition';
+import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
 import { decorate } from '../decorate';
 import { apply } from '../apply';
-import { object } from '../../definitions/factory/object';
+import { object } from '../../definitions/sync/object';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {

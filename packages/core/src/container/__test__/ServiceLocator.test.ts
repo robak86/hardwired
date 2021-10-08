@@ -1,7 +1,8 @@
 import { TestClassArgs2 } from '../../__test__/ArgsDebug';
 import { container } from '../Container';
-import { serviceLocator, singleton } from '../../definitions/factory/definitions';
+import { singleton } from '../../definitions/definitions';
 import { replace } from '../../patching/replace';
+import { serviceLocator } from "../../definitions/sync/serviceLocator";
 
 describe(`ServiceLocator`, () => {
   describe(`overrides`, () => {

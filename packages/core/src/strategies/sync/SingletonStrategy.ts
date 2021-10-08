@@ -1,7 +1,6 @@
 import { BuildStrategy } from '../abstract/BuildStrategy';
 import { InstancesCache } from '../../context/InstancesCache';
-import { InstanceDefinition } from '../../definitions/InstanceDefinition';
-import { StrategiesRegistry } from '../collection/StrategiesRegistry';
+import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
 import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
 import { InstancesBuilder } from '../../context/InstancesBuilder';
 

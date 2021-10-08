@@ -1,6 +1,6 @@
 import { container } from '../../../container/Container';
-import { request } from '../../../definitions/factory/definitions';
-import { replace } from "../../../patching/replace";
+import { request } from '../../../definitions/definitions';
+import { replace } from '../../../patching/replace';
 
 describe(`RequestStrategy`, () => {
   describe(`resolution`, () => {

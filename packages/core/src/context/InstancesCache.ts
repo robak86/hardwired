@@ -1,5 +1,5 @@
 import { SingletonScope } from './SingletonScope';
-import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
 function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any, any>[]): string[] {
   return patchedDefinitions.map(def => def.id);

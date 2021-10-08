@@ -2,7 +2,7 @@ import { InstancesCache } from '../context/InstancesCache';
 import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
-import { instanceDefinition, InstanceDefinition } from '../definitions/InstanceDefinition';
+import { instanceDefinition, InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 import { ChildScopeOptions } from './Container';
 

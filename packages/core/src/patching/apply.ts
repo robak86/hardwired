@@ -1,5 +1,5 @@
 // TODO: add support for injecting deps into applyFn
-import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
 export const apply = <TInstance, TNextValue extends TInstance>(
   instance: InstanceDefinition<TInstance>,
@@ -13,7 +13,6 @@ export const apply = <TInstance, TNextValue extends TInstance>(
       applyFn(decorated);
 
       return decorated;
-    },
-    meta: instance.meta,
+    }
   };
 };

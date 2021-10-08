@@ -1,9 +1,9 @@
 import { InstancesCache } from './InstancesCache';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { instanceDefinition, InstanceDefinition } from '../definitions/InstanceDefinition';
+import { instanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
-import { AnyInstanceDefinition } from '../definitions/AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
 import { InstancesBuilder } from './InstancesBuilder';
 

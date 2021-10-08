@@ -1,6 +1,7 @@
 import { container } from '../../../container/Container';
 import { v4 } from 'uuid';
-import { transient, value } from '../../../definitions/factory/definitions';
+import { transient} from '../../../definitions/definitions';
+import { value } from "../../../definitions/sync/value";
 
 describe(`ClassTransientResolver`, () => {
   class TestClass {

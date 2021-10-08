@@ -18,25 +18,23 @@ export type ComputedBuildFn = {
   ): InstanceDefinition<() => void>;
 };
 
-export const action: ComputedBuildFn = (factory, ...args): InstanceDefinition<any> => {
+export const action: ComputedBuildFn = (factory, ...dependencies): InstanceDefinition<any> => {
   return {
     id: `action:${v4()}`,
     strategy: SingletonStrategy.type,
-    create: dependencies => {
+    create: build => {
       // TODO: at this line we can check which dependencies are observable and call .get selectively in computed body
 
-      throw new Error("Implement me!")
-      // return (...actionArgs) => {
-      //   runInAction(() => {
-      //     (factory as any)(
-      //       ...actionArgs,
-      //       ...dependencies.map(d => {
-      //         return isObservable(d) ? d.get() : d;
-      //       }),
-      //     );
-      //   });
-      // };
+      return (...actionArgs) => {
+        runInAction(() => {
+          (factory as any)(
+            ...actionArgs,
+            ...dependencies.map(build).map(d => {
+              return isObservable(d) ? d.get() : d;
+            }),
+          );
+        });
+      };
     },
-    meta: undefined,
   };
 };

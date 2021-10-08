@@ -26,8 +26,6 @@ export const view: ComputedBuildFn = (factory, ...dependencies): InstanceDefinit
         }) as any;
         return factory(...deps);
       });
-    },
-
-    meta: undefined,
+    }
   };
 };

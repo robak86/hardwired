@@ -1,10 +1,9 @@
 import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
-import { InstanceDefinition } from '../InstanceDefinition';
+import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 
 export const object = <T extends Record<keyof any, InstanceDefinition<any>>, TMeta>(
   record: T,
-  meta?: TMeta,
 ): InstanceDefinition<
   { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance> ? TInstance : unknown },
   TMeta
@@ -28,6 +27,5 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any>>, TMe
         return result;
       }, {} as any);
     },
-    meta: meta as any,
   };
 };

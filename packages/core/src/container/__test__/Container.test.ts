@@ -1,12 +1,15 @@
-import { request, singleton } from '../../definitions/factory/definitions';
+import { request, singleton } from '../../definitions/definitions';
 import { container } from '../Container';
 import { replace } from '../../patching/replace';
+import { InstanceDefinition } from "../../definitions/abstract/InstanceDefinition";
 
 describe(`Container`, () => {
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
-      const cDef = singleton.fn(() => 'cValue');
+      const cDef = singleton.fn(() => 'cValue') as InstanceDefinition<string>
       const c = container();
+
+
 
       const cValue = c.get(cDef);
       expect(cValue).toEqual('cValue');

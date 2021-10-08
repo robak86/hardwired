@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
 export function decorate<TInstance, TNextValue extends TInstance, TDecoratorDeps extends any[]>(
   instance: InstanceDefinition<TInstance>,
@@ -12,8 +12,7 @@ export function decorate<TInstance, TNextValue extends TInstance, TDecoratorDeps
       const decorated = instance.create(build);
       const decoratorDeps = args.map(build);
 
-      return decorator(decorated, ...decoratorDeps as any);
+      return decorator(decorated, ...(decoratorDeps as any));
     },
-    meta: instance.meta,
   };
 }

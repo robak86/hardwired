@@ -1,5 +1,6 @@
 import invariant from 'tiny-invariant';
-import { AsyncBuildStrategy, BuildStrategy } from '../abstract/BuildStrategy';
+import { BuildStrategy } from '../abstract/BuildStrategy';
+import { AsyncBuildStrategy } from "../abstract/AsyncBuildStrategy";
 
 export class StrategiesRegistry {
   constructor(private strategies: Record<symbol, BuildStrategy | AsyncBuildStrategy>) {}

@@ -2,7 +2,7 @@ import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { InstancesCache } from './InstancesCache';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
-import { AnyInstanceDefinition } from '../definitions/AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 
 export class InstancesBuilder {
   constructor(

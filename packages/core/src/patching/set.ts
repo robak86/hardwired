@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
 export const set = <TInstance>(
   instance: InstanceDefinition<TInstance>,

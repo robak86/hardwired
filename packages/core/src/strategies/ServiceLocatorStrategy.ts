@@ -1,9 +1,8 @@
 import { ServiceLocator } from '../container/ServiceLocator';
 import { InstancesCache } from '../context/InstancesCache';
 import { BuildStrategy } from './abstract/BuildStrategy';
-import { InstanceDefinition } from '../definitions/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
-import { StrategiesRegistry } from './collection/StrategiesRegistry';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 
 export class ServiceLocatorStrategy extends BuildStrategy {
