@@ -12,7 +12,7 @@ export class InstancesBuilder {
     private strategiesRegistry: StrategiesRegistry,
   ) {}
 
-  buildSelf = (definition: AnyInstanceDefinition<any>) => {
+  buildExact = (definition: AnyInstanceDefinition<any>) => {
     const patchedInstanceDef = this.resolvers.getInstanceDefinition(definition);
     return patchedInstanceDef.create(this.buildWithStrategy);
   };

@@ -2,7 +2,7 @@ import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from './AsyncInstanceDefinition';
 import { ClassType } from '../utils/ClassType';
 import { v4 } from 'uuid';
-import { TransientStrategy } from '../strategies/TransientStrategy';
+import { TransientStrategy } from '../strategies/sync/TransientStrategy';
 
 export type InstanceDefinition<TInstance, TExternal = any> = {
   id: string;

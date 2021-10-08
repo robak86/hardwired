@@ -2,10 +2,10 @@ export { serviceLocator } from './definitions/factory/definitions';
 
 export { container, Container } from './container/Container';
 
-export * from './strategies/RequestStrategy';
-export * from './strategies/SingletonStrategy';
-export * from './strategies/TransientStrategy';
-export * from './strategies/ScopeStrategy';
+export * from './strategies/sync/RequestStrategy';
+export * from './strategies/sync/SingletonStrategy';
+export * from './strategies/sync/TransientStrategy';
+export * from './strategies/sync/ScopeStrategy';
 export * from './definitions/factory/definitions';
 export * from './definitions/InstanceDefinition';
 

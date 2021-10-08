@@ -1,11 +1,11 @@
 import { ServiceLocator } from '../../container/ServiceLocator';
 import { ServiceLocatorStrategy } from '../../strategies/ServiceLocatorStrategy';
 import { v4 } from 'uuid';
-import { SingletonStrategy } from '../../strategies/SingletonStrategy';
-import { TransientStrategy } from '../../strategies/TransientStrategy';
-import { RequestStrategy } from '../../strategies/RequestStrategy';
-import { ScopeStrategy } from '../../strategies/ScopeStrategy';
-import { AsyncSingletonStrategy } from '../../strategies/AsyncSingletonStrategy';
+import { SingletonStrategy } from '../../strategies/sync/SingletonStrategy';
+import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
+import { RequestStrategy } from '../../strategies/sync/RequestStrategy';
+import { ScopeStrategy } from '../../strategies/sync/ScopeStrategy';
+import { AsyncSingletonStrategy } from '../../strategies/async/AsyncSingletonStrategy';
 import { buildClassDefinition, InstanceDefinition } from '../InstanceDefinition';
 import { definition } from './customDefinitions';
 

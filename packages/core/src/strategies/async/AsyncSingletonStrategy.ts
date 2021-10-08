@@ -1,8 +1,8 @@
-import { AsyncBuildStrategy } from './abstract/BuildStrategy';
-import { InstancesCache } from '../context/InstancesCache';
-import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
-import { AsyncInstanceDefinition } from '../definitions/AsyncInstanceDefinition';
-import { InstancesBuilder } from '../context/InstancesBuilder';
+import { AsyncBuildStrategy } from '../abstract/BuildStrategy';
+import { InstancesCache } from '../../context/InstancesCache';
+import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
+import { AsyncInstanceDefinition } from '../../definitions/AsyncInstanceDefinition';
+import { InstancesBuilder } from '../../context/InstancesBuilder';
 
 export class AsyncSingletonStrategy extends AsyncBuildStrategy {
   static type = Symbol.for('asyncClassSingleton');
@@ -16,14 +16,14 @@ export class AsyncSingletonStrategy extends AsyncBuildStrategy {
   ): Promise<any> {
     const id = definition.id;
 
-    if (definitions.hasGlobalOverrideResolver(id)) {
+    if (definitions.hasGlobalOverrideDefinition(id)) {
       return asyncInstancesCache.upsertGlobalOverrideScope(id, async () => {
-        return instancesBuilder.buildSelf(definition);
+        return instancesBuilder.buildExact(definition);
       });
     }
 
     return asyncInstancesCache.upsertGlobalScope(id, async () => {
-      return instancesBuilder.buildSelf(definition);
+      return instancesBuilder.buildExact(definition);
     });
   }
 }

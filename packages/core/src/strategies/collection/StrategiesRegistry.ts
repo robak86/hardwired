@@ -2,32 +2,11 @@ import invariant from 'tiny-invariant';
 import { AsyncBuildStrategy, BuildStrategy } from '../abstract/BuildStrategy';
 
 export class StrategiesRegistry {
-  constructor(
-    private syncStrategies: Record<symbol, BuildStrategy>,
-    private asyncStrategies: Record<symbol, AsyncBuildStrategy>,
-  ) {
-    const syncKeys = Object.keys(syncStrategies);
-    const asyncKeys = Object.keys(asyncStrategies);
+  constructor(private strategies: Record<symbol, BuildStrategy | AsyncBuildStrategy>) {}
 
-    syncKeys.some(syncKey => {
-      if (asyncKeys.includes(syncKey)) {
-        throw new Error(`Duplicate identifier for strategies: ${syncKey}`);
-      }
-    });
-  }
-
-  get(key: symbol): BuildStrategy {
-    // const strategy = this.syncStrategies[key];
-    // invariant(strategy, `Strategy implementation for ${key.toString()} is missing`);
-    // return strategy;
-
-    return this.getAsync(key)
-  }
-
-  getAsync(key: symbol): AsyncBuildStrategy | BuildStrategy {
-    const asyncStrategy = this.asyncStrategies[key];
-    const strategy = this.syncStrategies[key];
-    invariant(strategy || asyncStrategy, `Strategy implementation for ${key.toString()} is missing`);
-    return strategy || asyncStrategy;
+  get(key: symbol): AsyncBuildStrategy | BuildStrategy {
+    const strategy = this.strategies[key];
+    invariant(strategy, `Strategy implementation for ${key.toString()} is missing`);
+    return strategy;
   }
 }

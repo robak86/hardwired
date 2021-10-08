@@ -1,32 +1,27 @@
 import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
 import { InstanceDefinition } from '../definitions/InstanceDefinition';
-import { SingletonStrategy } from '../strategies/SingletonStrategy';
-import { TransientStrategy } from '../strategies/TransientStrategy';
-import { RequestStrategy } from '../strategies/RequestStrategy';
-import { ScopeStrategy } from '../strategies/ScopeStrategy';
+import { SingletonStrategy } from '../strategies/sync/SingletonStrategy';
+import { TransientStrategy } from '../strategies/sync/TransientStrategy';
+import { RequestStrategy } from '../strategies/sync/RequestStrategy';
+import { ScopeStrategy } from '../strategies/sync/ScopeStrategy';
 import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
-import { AsyncSingletonStrategy } from '../strategies/AsyncSingletonStrategy';
+import { AsyncSingletonStrategy } from '../strategies/async/AsyncSingletonStrategy';
 import { AnyInstanceDefinition } from '../definitions/AnyInstanceDefinition';
 
 export type ChildScopeOptions = {
   scopeOverrides?: InstanceDefinition<any>[];
 };
 
-export const defaultStrategiesRegistry = new StrategiesRegistry(
-  {
-    [SingletonStrategy.type]: new SingletonStrategy(),
-    [TransientStrategy.type]: new TransientStrategy(),
-    // [DecoratorStrategy.type]: new DecoratorStrategy(),
-    [RequestStrategy.type]: new RequestStrategy(),
-    [ScopeStrategy.type]: new ScopeStrategy(),
-    [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
-  },
-  {
-    [AsyncSingletonStrategy.type]: new AsyncSingletonStrategy(),
-  },
-);
+export const defaultStrategiesRegistry = new StrategiesRegistry({
+  [SingletonStrategy.type]: new SingletonStrategy(),
+  [TransientStrategy.type]: new TransientStrategy(),
+  [RequestStrategy.type]: new RequestStrategy(),
+  [ScopeStrategy.type]: new ScopeStrategy(),
+  [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
+  [AsyncSingletonStrategy.type]: new AsyncSingletonStrategy(),
+});
 
 export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}

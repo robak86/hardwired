@@ -1,5 +1,5 @@
 import { AnyInstanceDefinition } from '../AnyInstanceDefinition';
-import { AsyncSingletonStrategy } from '../../strategies/AsyncSingletonStrategy';
+import { AsyncSingletonStrategy } from '../../strategies/async/AsyncSingletonStrategy';
 import { PartialAnyInstancesDefinitionsArgs, PartiallyAppliedAsyncDefinition } from '../../utils/PartiallyApplied';
 import {
   AsyncInstanceDefinition,

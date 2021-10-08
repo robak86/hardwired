@@ -3,10 +3,10 @@ import { object } from '../object';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../InstanceDefinition';
 import { container } from '../../../container/Container';
-import { SingletonStrategy } from '../../../strategies/SingletonStrategy';
-import { TransientStrategy } from '../../../strategies/TransientStrategy';
-import { ScopeStrategy } from '../../../strategies/ScopeStrategy';
-import { RequestStrategy } from '../../../strategies/RequestStrategy';
+import { SingletonStrategy } from '../../../strategies/sync/SingletonStrategy';
+import { TransientStrategy } from '../../../strategies/sync/TransientStrategy';
+import { ScopeStrategy } from '../../../strategies/sync/ScopeStrategy';
+import { RequestStrategy } from '../../../strategies/sync/RequestStrategy';
 import { set } from '../../../patching/set';
 
 describe(`object`, () => {

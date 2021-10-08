@@ -1,4 +1,4 @@
-import { TransientStrategy } from '../../strategies/TransientStrategy';
+import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../InstanceDefinition';
 import { v4 } from 'uuid';
 
