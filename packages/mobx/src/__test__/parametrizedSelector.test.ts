@@ -28,7 +28,7 @@ describe(`parametrizedSelector`, () => {
       addresses: {},
     });
 
-    const selectNameByUserId = (state: State, userId: number) => {
+    const selectNameByUserId = (userId: number) => (state: State) => {
       return `${state.users[userId].firstName}:${state.users[userId].lastName}`;
     };
 
@@ -49,7 +49,7 @@ describe(`parametrizedSelector`, () => {
       addresses: {},
     });
 
-    const selectNameByUserId = jest.fn((state: State, userId: number) => {
+    const selectNameByUserId = jest.fn((userId: number) => (state: State) => {
       return `${state.users[userId].firstName}:${state.users[userId].lastName}`;
     });
 
@@ -85,13 +85,15 @@ describe(`parametrizedSelector`, () => {
     });
 
     let count = 0;
-    const selectAddressByUserId = (state: State, selectUser: (userId: number) => User, userId: number): Address => {
-      count += 1;
-      const user = selectUser(userId);
-      return state.addresses[user.addressId];
-    };
+    const selectAddressByUserId =
+      (userId: number) =>
+      (state: State, selectUser: (userId: number) => User): Address => {
+        count += 1;
+        const user = selectUser(userId);
+        return state.addresses[user.addressId];
+      };
 
-    const selectUserId = (state: State, userId: number) => state.users[userId];
+    const selectUserId = (userId: number) => (state: State) => state.users[userId];
 
     const selectUserByIdD = parametrizedView(selectUserId, stateD);
     const selectAddressForUserIdD = parametrizedView(selectAddressByUserId, stateD, selectUserByIdD);

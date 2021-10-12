@@ -1,7 +1,9 @@
 import { _isComputingDerivation, computed, IComputedValue, IComputedValueOptions, onBecomeUnobserved } from 'mobx';
 import invariant from 'tiny-invariant';
 
-export type ITransformer<A, B> = (object: A) => B;
+type MemoizationKey = string | number | boolean;
+
+export type ITransformer<A extends Array<MemoizationKey>, B> = (...params: A) => B;
 
 export type ITransformerParams<A, B> = {
   onCleanup?: (resultObject: B | undefined, sourceObject?: A) => void;
@@ -11,11 +13,11 @@ export type ITransformerParams<A, B> = {
 
 let memoizationId = 0;
 
-export function createTransformer<A, B>(
+export function createTransformer<A extends Array<MemoizationKey>, B>(
   transformer: ITransformer<A, B>,
   onCleanup?: (resultObject: B | undefined, sourceObject?: A) => void,
 ): ITransformer<A, B>;
-export function createTransformer<A, B>(
+export function createTransformer<A extends Array<MemoizationKey>, B>(
   transformer: ITransformer<A, B>,
   arg2?: ITransformerParams<A, B>,
 ): ITransformer<A, B>;
@@ -28,7 +30,11 @@ export function createTransformer<A, B>(
  * @param transformer
  * @param onCleanup
  */
-export function createTransformer<A, B>(transformer: ITransformer<A, B>, arg2?: any): ITransformer<A, B> {
+
+export function createTransformer<A extends Array<MemoizationKey>, B>(
+  transformer: ITransformer<A, B>,
+  arg2?: any,
+): ITransformer<A, B> {
   invariant(
     typeof transformer === 'function' && transformer.length < 2,
     'createTransformer expects a function that accepts one argument',
@@ -65,7 +71,7 @@ export function createTransformer<A, B>(transformer: ITransformer<A, B>, arg2?: 
       : `Transformer-${(<any>transformer).name}-${sourceIdentifier}`;
     const expr = computed(
       () => {
-        return (latestValue = transformer(sourceObject));
+        return (latestValue = transformer(...sourceObject));
       },
       {
         ...computedValueOptions,
@@ -83,8 +89,8 @@ export function createTransformer<A, B>(transformer: ITransformer<A, B>, arg2?: 
   }
 
   // let memoWarned = false;
-  return (object: A) => {
-    const identifier = getMemoizationId(object);
+  return (...params: A) => {
+    const identifier = getMemoizationId(params);
     let reactiveView = views[identifier];
     if (reactiveView) return reactiveView.get();
     if (!keepAlive && !_isComputingDerivation()) {
@@ -95,27 +101,25 @@ export function createTransformer<A, B>(transformer: ITransformer<A, B>, arg2?: 
       //   );
       //   memoWarned = true;
       // }
-      const value = transformer(object);
-      if (onCleanup) onCleanup(value, object);
+      const value = transformer(...params);
+      if (onCleanup) onCleanup(value, params);
       return value;
     }
     // Not in cache; create a reactive view
-    reactiveView = views[identifier] = createView(identifier, object);
+    reactiveView = views[identifier] = createView(identifier, params);
     return reactiveView.get();
   };
 }
 
-function getMemoizationId(object: any) {
-  const objectType = typeof object;
-  if (objectType === 'string') return `string:${object}`;
-  if (objectType === 'number') return `number:${object}`;
-  if (object === null || (objectType !== 'object' && objectType !== 'function'))
-    throw new Error(`[mobx-utils] transform expected an object, function, string or number, got: ${String(object)}`);
-  throw new Error('Cannot memoize by object param');
-  // let tid = object.$transformId
-  // if (tid === undefined) {
-  //     tid = `memoizationId:${++memoizationId}`
-  //     addHiddenProp(object, "$transformId", tid)
-  // }
-  // return tid
+function getMemoizationId(params: MemoizationKey[]) {
+  return params
+    .map(param => {
+      const objectType = typeof param;
+      if (objectType === 'string') return `string:${param}`;
+      if (objectType === 'number') return `number:${param}`;
+      if (param === null || (objectType !== 'object' && objectType !== 'function'))
+        throw new Error(`[mobx-utils] transform expected an object, function, string or number, got: ${String(param)}`);
+      throw new Error('Cannot memoize by object param');
+    })
+    .join('.');
 }

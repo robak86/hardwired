@@ -5,6 +5,7 @@ import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsReg
 import { instanceDefinition, InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
 import { ChildScopeOptions } from './Container';
+import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 
 export class ServiceLocator implements IServiceLocator {
   private containerContext: ContainerContext;
@@ -14,11 +15,7 @@ export class ServiceLocator implements IServiceLocator {
     private asyncInstancesCache: AsyncInstancesCache,
     private definitionsRegistry: InstancesDefinitionsRegistry,
   ) {
-    this.containerContext = new ContainerContext(
-      this.definitionsRegistry,
-      instancesCache,
-      asyncInstancesCache,
-    );
+    this.containerContext = new ContainerContext(this.definitionsRegistry, instancesCache, asyncInstancesCache);
   }
 
   withRequestScope<T>(factory: (obj: IServiceLocator) => T): T {
@@ -47,4 +44,16 @@ export class ServiceLocator implements IServiceLocator {
     return this.containerContext.get(instanceDefinition);
   };
 
+  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any>): Promise<TValue> {
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.getAsync(instanceDefinition);
+  }
+
+  getAll<TLazyModule extends Array<InstanceDefinition<any>>>(
+    ...definitions: TLazyModule
+  ): { [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance> ? TInstance : unknown } {
+    const requestContext = this.containerContext.checkoutRequestScope();
+
+    return definitions.map(def => requestContext.get(def)) as any;
+  }
 }

@@ -11,7 +11,8 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 import { AsyncTransientStrategy } from '../strategies/async/AsyncTransientStrategy';
 import { AsyncRequestStrategy } from '../strategies/async/AsyncRequestStrategy';
 import { AsyncScopedStrategy } from '../strategies/async/AsyncScopedStrategy';
-import { AsyncInstanceDefinition } from "../definitions/abstract/AsyncInstanceDefinition";
+import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
+import { IServiceLocator } from './IServiceLocator';
 
 export type ChildScopeOptions = {
   scopeOverrides?: AnyInstanceDefinition<any>[];
@@ -31,7 +32,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
   [AsyncScopedStrategy.type]: new AsyncScopedStrategy(),
 });
 
-export class Container {
+export class Container implements IServiceLocator {
   constructor(protected readonly containerContext: ContainerContext) {}
 
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>): TValue {
@@ -60,6 +61,11 @@ export class Container {
    */
   checkoutScope(options: ChildScopeOptions = {}): Container {
     return new Container(this.containerContext.childScope(options));
+  }
+
+  withRequestScope<T>(factory: (obj: IServiceLocator) => T): T {
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return factory(new Container(requestContext));
   }
 }
 
