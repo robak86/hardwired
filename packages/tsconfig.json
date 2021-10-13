@@ -5,14 +5,14 @@
     {
       "path": "./core/tsconfig.json"
     },
-//    {
-//      "path": "./react/tsconfig.json"
-//    },
-//    {
-//      "path": "./example/tsconfig.json"
-//    },
-//    {
-//      "path": "./mobx/tsconfig.json"
-//    }
+    {
+      "path": "./react/tsconfig.json"
+    },
+    {
+      "path": "./example/tsconfig.json"
+    },
+    {
+      "path": "./mobx/tsconfig.json"
+    }
   ]
 }

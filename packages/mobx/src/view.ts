@@ -18,12 +18,12 @@ export const view: ComputedBuildFn = (factory, ...dependencies): InstanceDefinit
     strategy: SingletonStrategy.type,
     isAsync: false,
     externalsIds: dependencies.flatMap(def => def.externalsIds),
-    create: (build) => {
+    create: (context) => {
       // TODO: at this line we can check which dependencies are observable and call .get selectively in computed body
 
       return computed(() => {
         const deps = dependencies.map(d => {
-          const instance = build(d)
+          const instance = context.buildWithStrategy(d)
           return isObservable(instance) ? instance.get() : instance;
         }) as any;
         return factory(...deps);

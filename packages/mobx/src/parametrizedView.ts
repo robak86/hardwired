@@ -17,10 +17,10 @@ export const parametrizedView: ParametrizedViewBuildFn = (factory, ...dependenci
     strategy: SingletonStrategy.type,
     isAsync: false,
     externalsIds: dependencies.flatMap(def => def.externalsIds),
-    create: build => {
+    create: context => {
       return createTransformer((...params: any) => {
         const deps = dependencies.map(d => {
-          const instance = build(d);
+          const instance = context.buildWithStrategy(d);
           return isObservable(instance) ? instance.get() : (instance as any);
         }) as any;
 

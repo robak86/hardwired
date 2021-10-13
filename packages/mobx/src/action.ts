@@ -24,14 +24,14 @@ export const action: ComputedBuildFn = (factory, ...dependencies): InstanceDefin
     strategy: SingletonStrategy.type,
     isAsync: false,
     externalsIds: dependencies.flatMap(def => def.externalsIds),
-    create: build => {
+    create: context => {
       // TODO: at this line we can check which dependencies are observable and call .get selectively in computed body
 
       return (...actionArgs) => {
         runInAction(() => {
           (factory as any)(
             ...actionArgs,
-            ...dependencies.map(build).map(d => {
+            ...dependencies.map(context.buildWithStrategy).map(d => {
               return isObservable(d) ? d.get() : d;
             }),
           );
