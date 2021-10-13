@@ -12,6 +12,9 @@
       "path": "./example/tsconfig.json"
     },
     {
+      "path": "./http-server-example/tsconfig.json"
+    },
+    {
       "path": "./mobx/tsconfig.json"
     }
   ]

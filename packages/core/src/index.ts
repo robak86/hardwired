@@ -23,3 +23,4 @@ export { value } from './definitions/sync/value';
 
 export * from './definitions/sync/factory';
 export * from './definitions/async/asyncFactory';
+export * from './definitions/sync/external'

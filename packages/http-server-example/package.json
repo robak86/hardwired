@@ -1,0 +1,25 @@
+{
+  "name": "http-server-example",
+  "author": "Tomasz Robaczewski <robak86@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/robak86/hardwired",
+  "description": "Hardwired integration for React",
+  "version": "0.5.8",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "dependencies": {
+    "hardwired": "*",
+    "find-my-way": "*"
+  },
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:robak86/hardwired.git"
+  }
+}

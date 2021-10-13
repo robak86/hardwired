@@ -3,10 +3,10 @@ import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { PickExternalsFromRecord } from '../../utils/PickExternals';
 
-export const object = <T extends Record<keyof any, InstanceDefinition<any>>>(
+export const object = <T extends Record<keyof any, InstanceDefinition<any, any>>>(
   record: T,
 ): InstanceDefinition<
-  { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance> ? TInstance : unknown },
+  { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown },
   PickExternalsFromRecord<T>
 > => {
   const definitions = Object.values(record);

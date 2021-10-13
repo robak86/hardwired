@@ -5,7 +5,7 @@
 - 
   - remove scoped strategy + replace service locator with IFactory
 
-- remove `withRequestScope` - this also implicates using container as service locator
+- ~~remove `withRequestScope` - this also implicates using container as service locator~~
 
 - caching of IFactory results should be implemented by the user
     - with valid dispose strategy
