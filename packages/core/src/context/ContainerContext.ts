@@ -6,7 +6,7 @@ import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry'
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
-import { TransientStrategy } from "../strategies/sync/TransientStrategy";
+import { TransientStrategy } from '../strategies/sync/TransientStrategy';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -50,11 +50,10 @@ export class ContainerContext implements InstancesBuilder {
   //   return this.buildWithStrategy(instanceDefinition);
   // }
 
-
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, void>): TValue;
   get<TValue, TExternalParams>(
-      instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
-      externals: TExternalParams,
+    instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
+    externals: TExternalParams,
   ): TValue;
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
     if (instanceDefinition.externalsIds.length > 0) {

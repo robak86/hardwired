@@ -1,3 +1,11 @@
+- allowed scopes
+  - singleton <- singleton, transient, ~~request~~
+  - request <- request, transient, singleton
+  - transient <- singleton, transient, request
+- 
+- remove completely scopeOverrides!! 
+  - this functionality should be achieved by using externals
+- 
 - Container and ServiceLocator are always the same
 - consider merging InstanceBuilder with ContainerContext ??
 - add support for thunks ? add check if dependencies definitions are defined
