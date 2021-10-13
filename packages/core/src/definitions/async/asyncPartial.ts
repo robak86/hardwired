@@ -1,12 +1,16 @@
 import { PartialAnyInstancesDefinitionsArgs, PartiallyAppliedAsyncDefinition } from '../../utils/PartiallyApplied';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 import { v4 } from 'uuid';
+import { PickExternals } from '../../utils/PickExternals';
 
 export type AsyncPartiallyAppliedFnBuild = {
   <TValue, TArgs extends any[], TProvidedArgs extends PartialAnyInstancesDefinitionsArgs<TArgs>>(
     factory: (...args: TArgs) => Promise<TValue>,
     ...args: TProvidedArgs
-  ): AsyncInstanceDefinition<PartiallyAppliedAsyncDefinition<TArgs, TProvidedArgs, TValue>, any>;
+  ): AsyncInstanceDefinition<
+    PartiallyAppliedAsyncDefinition<TArgs, TProvidedArgs, TValue>,
+    PickExternals<TProvidedArgs>
+  >;
 };
 
 export const asyncPartial = (strategy: symbol): AsyncPartiallyAppliedFnBuild => {
@@ -15,6 +19,7 @@ export const asyncPartial = (strategy: symbol): AsyncPartiallyAppliedFnBuild => 
       id: v4(),
       strategy,
       isAsync: true,
+      externalsIds: args.flatMap(def => def.externalsIds), // TODO: externalIds shouldn't have duplicates
       create: async context => {
         if (factory.length === 0) {
           return factory;
@@ -23,7 +28,6 @@ export const asyncPartial = (strategy: symbol): AsyncPartiallyAppliedFnBuild => 
           return (factory as any).bind(null, ...dependenciesInstance);
         }
       },
-      meta: undefined as any,
     } as any;
   };
 };

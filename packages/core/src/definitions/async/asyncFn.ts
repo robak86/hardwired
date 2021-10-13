@@ -2,22 +2,28 @@ import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { AsyncSingletonStrategy } from '../../strategies/async/AsyncSingletonStrategy';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 import { v4 } from 'uuid';
+import { PickExternals } from '../../utils/PickExternals';
 
 export type AsyncFunctionDefinitionBuildFn = {
-  <TValue, TDeps extends any[], TFunctionArgs extends any[]>(
+  <
+    TValue,
+    TFunctionArgs extends any[],
+    TDeps extends { [K in keyof TFunctionArgs]: AnyInstanceDefinition<TFunctionArgs[K]> },
+  >(
     factory: (...args: TFunctionArgs) => Promise<TValue>,
-    ...args: { [K in keyof TFunctionArgs]: AnyInstanceDefinition<TFunctionArgs[K]> }
-  ): AsyncInstanceDefinition<TValue, any>;
+    ...args: TDeps
+  ): AsyncInstanceDefinition<TValue, PickExternals<TDeps>>;
 };
 
 export const asyncFn = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
-  return (factory, ...args) => {
+  return (factory, ...dependencies) => {
     return {
       id: `${factory.name}:${v4()}`,
       strategy,
       isAsync: true,
+      externalsIds: dependencies.flatMap(def => def.externalsIds), // TODO: externalIds shouldn't have duplicates
       create: async context => {
-        const dependenciesInstance = await Promise.all(args.map(context.buildWithStrategy));
+        const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));
         return factory(...(dependenciesInstance as any));
       },
 
@@ -25,4 +31,3 @@ export const asyncFn = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
     };
   };
 };
-

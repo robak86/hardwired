@@ -1,12 +1,12 @@
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { AnyInstanceDefinition } from "../definitions/abstract/AnyInstanceDefinition";
 
-export const set = <TInstance>(
-  instance: InstanceDefinition<TInstance>,
+export const set = <T extends AnyInstanceDefinition<TInstance>, TInstance>(
+  instance: T,
   newValue: TInstance,
-): InstanceDefinition<TInstance> => {
+): T => {
   return {
     ...instance,
-    // strategy: SingletonStrategy.type,
     create: () => newValue,
   };
 };

@@ -80,9 +80,9 @@ export type ContainerScopeOptions = {
   globalOverrides?: AnyInstanceDefinition<any, any>[]; // propagated to whole dependencies graph
 };
 
-export function container(globalOverrides?: InstanceDefinition<any>[]): Container;
+export function container(globalOverrides?: AnyInstanceDefinition<any>[]): Container;
 export function container(options?: ContainerOptions): Container;
-export function container(overridesOrOptions?: ContainerOptions | Array<InstanceDefinition<any>>): Container {
+export function container(overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {

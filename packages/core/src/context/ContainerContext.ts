@@ -79,9 +79,33 @@ export class ContainerContext implements InstancesBuilder {
     }
   }
 
-  // TODO remove in favor of buildWithStrategy
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
-    return this.buildWithStrategy(instanceDefinition);
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, void>): Promise<TValue>;
+  getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams: TExternalParams): Promise<TValue>;
+  getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams?: TExternalParams): Promise<TValue> {
+
+    if (instanceDefinition.externalsIds.length > 0) {
+      const scopedContainer = this.childScope({
+        scopeOverrides: instanceDefinition.externalsIds.map(externalId => {
+          return {
+            id: externalId,
+            externalsIds: [],
+            strategy: TransientStrategy.type,
+            create: () => externalParams,
+            isAsync: false,
+          };
+        }),
+      });
+
+      return scopedContainer.getAsync({
+        ...instanceDefinition,
+        externalsIds: [],
+      });
+    } else {
+      const requestContext = this.checkoutRequestScope();
+      return requestContext.buildWithStrategy(instanceDefinition);
+    }
+
+    // return this.buildWithStrategy(instanceDefinition);
   }
 
   buildExact = (definition: AnyInstanceDefinition<any>) => {

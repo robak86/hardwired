@@ -22,4 +22,6 @@ export * from './definitions/sync/object';
 export * from './definitions/sync/tuple';
 export { serviceLocator } from './definitions/sync/serviceLocator';
 export { value } from './definitions/sync/value';
+
 export * from './definitions/sync/factory';
+export * from './definitions/async/asyncFactory';
