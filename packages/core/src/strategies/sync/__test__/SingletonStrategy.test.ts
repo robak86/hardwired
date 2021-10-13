@@ -1,8 +1,9 @@
 import { container } from '../../../container/Container';
 import { set } from '../../../patching/set';
 import { v4 } from 'uuid';
-import { singleton} from '../../../definitions/definitions';
-import { value } from "../../../definitions/sync/value";
+import { singleton } from '../../../definitions/definitions';
+import { value } from '../../../definitions/sync/value';
+import { ContainerContext } from '../../../context/ContainerContext';
 
 describe(`SingletonStrategy`, () => {
   class TestClass {
@@ -18,7 +19,7 @@ describe(`SingletonStrategy`, () => {
   describe(`resolution`, () => {
     describe(`single module`, () => {
       const someValue = value('someString');
-      const a = singleton.class(TestClass, someValue, );
+      const a = singleton.class(TestClass, someValue);
 
       it(`returns class instance`, async () => {
         const c = container();
@@ -102,7 +103,7 @@ describe(`SingletonStrategy`, () => {
     it(`replaces definitions for singleton scope`, async () => {
       const a = value(1);
 
-      const c = container();
+      const c = ContainerContext.empty();
 
       const patchedA = set(a, 2);
       const childC = c.checkoutScope({ scopeOverrides: [patchedA] });
@@ -114,12 +115,12 @@ describe(`SingletonStrategy`, () => {
     it(`inherits singleton instance from parent scope`, async () => {
       const a = value(1);
 
-      const root = container();
+      const root = ContainerContext.empty();
 
       const patchedA = set(a, 2);
 
       const level1 = root.checkoutScope({ scopeOverrides: [patchedA] });
-      const level2 = level1.checkoutScope();
+      const level2 = level1.checkoutScope({});
 
       expect(level2.get(a)).toEqual(2);
       expect(root.get(a)).toEqual(1);
@@ -128,8 +129,8 @@ describe(`SingletonStrategy`, () => {
     it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
       const a = singleton.fn(() => Math.random());
 
-      const parentC = container();
-      const childC = parentC.checkoutScope();
+      const parentC = ContainerContext.empty();
+      const childC = parentC.checkoutScope({});
 
       const req1 = childC.get(a); // important that childC is called as first
       const req2 = parentC.get(a);
@@ -141,7 +142,7 @@ describe(`SingletonStrategy`, () => {
 
       const a = singleton.fn(randomFactorySpy);
 
-      const root = container();
+      const root = ContainerContext.empty();
       const level1 = root.checkoutScope();
       const level2 = level1.checkoutScope({ scopeOverrides: [set(a, 1)] });
       const level3 = level2.checkoutScope();
@@ -162,7 +163,7 @@ describe(`SingletonStrategy`, () => {
 
       const a = singleton.fn(randomFactorySpy);
 
-      const root = container();
+      const root = ContainerContext.empty();
       const level1 = root.checkoutScope({ scopeOverrides: [set(a, 1)] });
       const level2 = level1.checkoutScope({ scopeOverrides: [set(a, 2)] });
       const level3 = level2.checkoutScope();
@@ -186,7 +187,7 @@ describe(`SingletonStrategy`, () => {
       const invariantPatch = set(k1, 1);
       const childScopePatch = set(k1, 2);
 
-      const c = container({ globalOverrides: [invariantPatch] });
+      const c = ContainerContext.create([], [invariantPatch]);
       expect(c.get(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
@@ -200,12 +201,13 @@ describe(`SingletonStrategy`, () => {
       const invariantPatch = set(k1, 1);
       const childScopePatch = set(k2, 2);
 
-      const c = container({ globalOverrides: [invariantPatch] });
-      expect(c.getAll(k1, k2)[0]).toEqual(1);
+      const c = ContainerContext.create([invariantPatch], []);
+
+      expect(c.get(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-      expect(childScope.getAll(k1, k2)[0]).toEqual(1);
-      expect(childScope.getAll(k1, k2)[1]).toEqual(2);
+      expect(childScope.get(k1)).toEqual(1);
+      expect(childScope.get(k2)).toEqual(2);
     });
   });
 });

@@ -53,15 +53,15 @@ export class Container {
     return definitions.map(def => requestContext.get(def)) as any;
   }
 
-  /***
-   * New container inherits current's container scopeOverrides, e.g. if current container has overrides for some singleton
-   * then new scope will inherit this singleton unless one provides new overrides in options for this singleton.
-   * Current containers' instances build by "scoped" strategy are not inherited
-   * @param options
-   */
-  checkoutScope(options: ChildScopeOptions = {}): Container {
-    return new Container(this.containerContext.childScope(options));
-  }
+  // /***
+  //  * New container inherits current's container scopeOverrides, e.g. if current container has overrides for some singleton
+  //  * then new scope will inherit this singleton unless one provides new overrides in options for this singleton.
+  //  * Current containers' instances build by "scoped" strategy are not inherited
+  //  * @param options
+  //  */
+  // checkoutScope(options: ChildScopeOptions = {}): Container {
+  //   return new Container(this.containerContext.childScope(options));
+  // }
 }
 
 export type ContainerOptions = ContainerScopeOptions;

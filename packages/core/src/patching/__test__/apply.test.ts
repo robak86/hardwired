@@ -6,6 +6,7 @@ import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinitio
 import { decorate } from '../decorate';
 import { apply } from '../apply';
 import { object } from '../../definitions/sync/object';
+import { ContainerContext } from '../../context/ContainerContext';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
@@ -102,7 +103,7 @@ describe(`apply`, () => {
 
       const replaced = set(instanceDef, { callMe: () => {} });
 
-      const scope1 = container({ globalOverrides: [mPatch] });
+      const scope1 = ContainerContext.create([], [mPatch]);
       const scope2 = scope1.checkoutScope({ scopeOverrides: [replaced] });
       const instance1 = scope1.get(instanceDef);
       const instance2 = scope2.get(instanceDef);

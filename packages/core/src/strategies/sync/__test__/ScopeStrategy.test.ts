@@ -1,14 +1,15 @@
-import { container } from '../../../container/Container';
+import { Container, container } from '../../../container/Container';
 import { scoped } from '../../../definitions/definitions';
 import { BoxedValue } from '../../../__test__/BoxedValue';
-import { replace } from "../../../patching/replace";
+import { replace } from '../../../patching/replace';
+import { ContainerContext } from '../../../context/ContainerContext';
 
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {
     it(`acts like singleton limited to given scope`, async () => {
       const a = scoped.fn(() => Math.random());
 
-      const c = container();
+      const c = ContainerContext.empty();
       expect(c.get(a)).toEqual(c.get(a));
 
       const childScope = c.checkoutScope();
@@ -34,7 +35,8 @@ describe(`ScopeStrategy`, () => {
         scoped.fn(() => new Boxed(1)),
       );
 
-      const c = container({ globalOverrides: [invariantPatch] });
+      const c = ContainerContext.create([], [invariantPatch]);
+
       expect(c.get(k1).value).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
@@ -56,7 +58,7 @@ describe(`ScopeStrategy`, () => {
         scoped.fn(() => 2),
       );
 
-      const c = container({ globalOverrides: [invariantPatch] });
+      const c = ContainerContext.create([], [invariantPatch]);
       expect(c.get(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
@@ -69,7 +71,7 @@ describe(`ScopeStrategy`, () => {
     it(`replaces definitions for scoped scope`, async () => {
       const a = scoped.fn(() => new BoxedValue(1));
 
-      const c = container();
+      const c = ContainerContext.empty()
       expect(c.get(a).value).toEqual(1);
 
       const mPatch = replace(
@@ -83,10 +85,13 @@ describe(`ScopeStrategy`, () => {
     it(`new scope inherits parent scope overrides`, async () => {
       const a = scoped.fn(() => new BoxedValue(1));
 
-      const root = container();
+      const root = ContainerContext.empty()
       expect(root.get(a).value).toEqual(1);
 
-      const mPatch = replace(a, scoped.fn(() => new BoxedValue(2)));
+      const mPatch = replace(
+        a,
+        scoped.fn(() => new BoxedValue(2)),
+      );
       const childC = root.checkoutScope({ scopeOverrides: [mPatch] });
       expect(childC.get(a).value).toEqual(2);
 

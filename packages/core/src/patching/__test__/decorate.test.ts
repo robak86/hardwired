@@ -1,10 +1,11 @@
 import { set } from '../set';
 import { container } from '../../container/Container';
-import { request, scoped, singleton, transient} from '../../definitions/definitions';
+import { request, scoped, singleton, transient } from '../../definitions/definitions';
 import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
 import { decorate } from '../decorate';
 import { object } from '../../definitions/sync/object';
-import { value } from "../../definitions/sync/value";
+import { value } from '../../definitions/sync/value';
+import { ContainerContext } from '../../context/ContainerContext';
 
 describe(`decorate`, () => {
   it(`decorates original value`, async () => {
@@ -109,7 +110,7 @@ describe(`decorate`, () => {
 
       const replaced = set(instanceDef, { callMe: () => {} });
 
-      const scope1 = container({ globalOverrides: [mPatch] });
+      const scope1 = ContainerContext.create([], [mPatch]);
       const scope2 = scope1.checkoutScope({ scopeOverrides: [replaced] });
       const instance1 = scope1.get(instanceDef);
       const instance2 = scope2.get(instanceDef);

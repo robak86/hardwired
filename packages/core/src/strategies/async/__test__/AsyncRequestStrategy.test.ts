@@ -1,6 +1,7 @@
 import { container } from '../../../container/Container';
 import { request } from '../../../definitions/definitions';
 import { replace } from '../../../patching/replace';
+import { ContainerContext } from '../../../context/ContainerContext';
 
 describe(`AsyncRequestStrategy`, () => {
   describe(`resolution`, () => {
@@ -32,7 +33,7 @@ describe(`AsyncRequestStrategy`, () => {
       it(`does not inherit any values from parent scope`, async () => {
         const a = request.asyncFn(async () => Math.random());
 
-        const c = container();
+        const c = ContainerContext.empty();
         const req1 = await c.getAsync(a);
 
         const childC = c.checkoutScope();
@@ -47,7 +48,7 @@ describe(`AsyncRequestStrategy`, () => {
     it(`replaces definitions for request scope`, async () => {
       const a = request.asyncFn(async () => 1);
 
-      const c = container();
+      const c = ContainerContext.empty();
 
       const mPatch = replace(
         a,
@@ -74,7 +75,8 @@ describe(`AsyncRequestStrategy`, () => {
         request.asyncFn(async () => 2),
       );
 
-      const c = container({ globalOverrides: [invariantPatch] });
+      const c = ContainerContext.create([], [invariantPatch]);
+
       expect(await c.getAsync(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
@@ -94,7 +96,7 @@ describe(`AsyncRequestStrategy`, () => {
         request.asyncFn(async () => 2),
       );
 
-      const c = container({ globalOverrides: [invariantPatch] });
+      const c = ContainerContext.create([], [invariantPatch]);
       expect(await c.getAsync(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });

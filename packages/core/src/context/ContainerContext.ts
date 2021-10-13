@@ -57,7 +57,7 @@ export class ContainerContext implements InstancesBuilder {
   ): TValue;
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
     if (instanceDefinition.externalsIds.length > 0) {
-      const scopedContainer = this.childScope({
+      const scopedContainer = this.checkoutScope({
         scopeOverrides: instanceDefinition.externalsIds.map(externalId => {
           return {
             id: externalId,
@@ -84,7 +84,7 @@ export class ContainerContext implements InstancesBuilder {
   getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams?: TExternalParams): Promise<TValue> {
 
     if (instanceDefinition.externalsIds.length > 0) {
-      const scopedContainer = this.childScope({
+      const scopedContainer = this.checkoutScope({
         scopeOverrides: instanceDefinition.externalsIds.map(externalId => {
           return {
             id: externalId,
@@ -136,7 +136,7 @@ export class ContainerContext implements InstancesBuilder {
     );
   }
 
-  childScope(options: Omit<ContainerScopeOptions, 'globalOverrides'>): ContainerContext {
+  checkoutScope(options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext {
     const { scopeOverrides = [] } = options;
     const syncOverrides = scopeOverrides.filter(instanceDefinition.isSync);
     const asyncOverrides = scopeOverrides.filter(instanceDefinition.isAsync);
