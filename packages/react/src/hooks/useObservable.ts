@@ -7,12 +7,12 @@ import invariant from 'tiny-invariant';
 import { InstanceDefinition } from 'hardwired';
 
 export type UseObservableHook = {
-  <TInstance>(definition: InstanceDefinition<TInstance>): TInstance extends IObservable<infer TState>
+  <TInstance>(definition: InstanceDefinition<TInstance, any>): TInstance extends IObservable<infer TState>
     ? TState
     : unknown;
 
   <TInstance, TReturn>(
-    definition: InstanceDefinition<TInstance>,
+    definition: InstanceDefinition<TInstance, any>,
     select: (obj: TInstance extends IObservable<infer TState> ? TState : unknown) => TReturn,
   ): TReturn;
 };

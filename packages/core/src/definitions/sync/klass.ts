@@ -1,12 +1,13 @@
 import { ClassType } from '../../utils/ClassType';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
+import { PickExternals } from '../../utils/PickExternals';
 
 type ClassDefinitionBuildFn = {
-  <TInstance, TDeps extends any[], TArgs extends any[]>(
+  <TInstance, TArgs extends any[], TDepsInstances extends { [K in keyof TArgs]: InstanceDefinition<TArgs[K], any> }>(
     cls: ClassType<TInstance, TArgs>,
-    ...args: { [K in keyof TArgs]: InstanceDefinition<TArgs[K]> }
-  ): InstanceDefinition<TInstance>;
+    ...args: TDepsInstances
+  ): InstanceDefinition<TInstance, PickExternals<TDepsInstances>>;
 };
 
 export const klass = (strategy: symbol): ClassDefinitionBuildFn => {
@@ -15,6 +16,7 @@ export const klass = (strategy: symbol): ClassDefinitionBuildFn => {
       id: v4(),
       strategy,
       isAsync: false,
+      externalsIds: dependencies.flatMap(def => def.externalsIds), // TODO: externalIds shouldn't have duplicates
       create: build => {
         return new cls(...(dependencies.map(build) as any));
       },

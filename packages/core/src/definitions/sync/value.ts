@@ -6,6 +6,7 @@ export const value = <TValue, TDeps extends any[]>(value: TValue): InstanceDefin
   return {
     id: v4(),
     isAsync: false,
+    externalsIds: [],
     strategy: SingletonStrategy.type,
     create: () => value,
   };

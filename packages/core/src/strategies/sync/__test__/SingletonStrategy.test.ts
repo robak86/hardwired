@@ -18,7 +18,7 @@ describe(`SingletonStrategy`, () => {
   describe(`resolution`, () => {
     describe(`single module`, () => {
       const someValue = value('someString');
-      const a = singleton.class(TestClass, someValue);
+      const a = singleton.class(TestClass, someValue, );
 
       it(`returns class instance`, async () => {
         const c = container();

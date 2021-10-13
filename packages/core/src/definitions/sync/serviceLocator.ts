@@ -7,6 +7,7 @@ export const serviceLocator: InstanceDefinition<IServiceLocator> = {
   id: v4(),
   strategy: ServiceLocatorStrategy.type,
   isAsync: false,
+  externalsIds: [],
   create: build => {
     throw new Error('Service locator instance is created by ServiceLocatorStrategy');
   },

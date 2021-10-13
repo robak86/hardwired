@@ -23,6 +23,7 @@ export const action: ComputedBuildFn = (factory, ...dependencies): InstanceDefin
     id: `action:${v4()}`,
     strategy: SingletonStrategy.type,
     isAsync: false,
+    externalsIds: dependencies.flatMap(def => def.externalsIds),
     create: build => {
       // TODO: at this line we can check which dependencies are observable and call .get selectively in computed body
 

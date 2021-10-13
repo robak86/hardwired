@@ -94,7 +94,7 @@ describe(`apply`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceDefinition<MyService>) {
+    function setup(instanceDef: InstanceDefinition<MyService, any>) {
       const mPatch = decorate(instanceDef, a => {
         jest.spyOn(a, 'callMe');
         return a;

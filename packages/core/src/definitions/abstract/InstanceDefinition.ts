@@ -1,11 +1,12 @@
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from './AsyncInstanceDefinition';
 
-export type InstanceDefinition<TInstance, TExternal = any> = {
+export type InstanceDefinition<TInstance, TExternal = void> = {
   id: string;
   strategy: symbol;
   isAsync: false;
-  create: (buildFn: InstanceBuildFn) => TInstance;
+  externalsIds: string[];
+  create: (buildFn: InstanceBuildFn, externals?: TExternal) => TInstance;
 };
 
 export type InstanceBuildFn = {
