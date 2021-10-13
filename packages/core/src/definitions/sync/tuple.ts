@@ -22,9 +22,9 @@ export const tuple = <T extends Array<InstanceDefinition<any>>, TMeta>(
     strategy,
     isAsync: false,
     externalsIds: definitions.flatMap(def => def.externalsIds),
-    create: build => {
+    create: context => {
       return definitions.map(def => {
-        return build(def);
+        return context.buildWithStrategy(def);
       }) as any;
     },
   };

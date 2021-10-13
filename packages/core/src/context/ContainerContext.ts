@@ -5,9 +5,9 @@ import { instanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
-import { InstancesBuilder } from './InstancesBuilder';
+import { InstancesBuilder } from './abstract/InstancesBuilder';
 
-export class ContainerContext {
+export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
     const instancesEntries = InstancesDefinitionsRegistry.empty();
 
@@ -37,29 +37,40 @@ export class ContainerContext {
     );
   }
 
-  private instancesBuilder;
-
   constructor(
     private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
     private instancesCache: InstancesCache,
     private asyncInstancesCache: AsyncInstancesCache,
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-  ) {
-    this.instancesBuilder = new InstancesBuilder(
+  ) {}
+
+  // TODO remove in favor of buildWithStrategy
+  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
+    return this.buildWithStrategy(instanceDefinition);
+  }
+
+  // TODO remove in favor of buildWithStrategy
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
+    return this.buildWithStrategy(instanceDefinition);
+  }
+
+  buildExact = (definition: AnyInstanceDefinition<any>) => {
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+    return patchedInstanceDef.create(this);
+  };
+
+  buildWithStrategy = (definition: AnyInstanceDefinition<any, any>) => {
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+    const strategy = this.strategiesRegistry.get(definition.strategy);
+
+    return strategy.build(
+      patchedInstanceDef,
       this.instancesCache,
       this.asyncInstancesCache,
       this.instancesDefinitionsRegistry,
-      this.strategiesRegistry,
+      this,
     );
-  }
-
-  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
-    return this.instancesBuilder.buildWithStrategy(instanceDefinition);
-  }
-
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
-    return this.instancesBuilder.buildWithStrategy(instanceDefinition);
-  }
+  };
 
   checkoutRequestScope(): ContainerContext {
     return new ContainerContext(

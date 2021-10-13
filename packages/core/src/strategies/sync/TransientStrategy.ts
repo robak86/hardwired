@@ -2,7 +2,7 @@ import { BuildStrategy } from '../abstract/BuildStrategy';
 import { InstancesCache } from '../../context/InstancesCache';
 import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
 import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
-import { InstancesBuilder } from '../../context/InstancesBuilder';
+import { InstancesBuilder } from '../../context/abstract/InstancesBuilder';
 
 export class TransientStrategy extends BuildStrategy {
   static type = Symbol.for('classTransient');

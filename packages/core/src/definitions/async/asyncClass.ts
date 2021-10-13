@@ -16,8 +16,8 @@ export const asyncClass = (strategy: symbol): ClassDefinitionBuildFn => {
       id: v4(),
       strategy,
       isAsync: true,
-      create: async build => {
-        const dependenciesInstance = await Promise.all((dependencies as any).map(build));
+      create: async context => {
+        const dependenciesInstance = await Promise.all((dependencies as any).map(context.buildWithStrategy));
         return new cls(...(dependenciesInstance as any));
       },
       meta: undefined,

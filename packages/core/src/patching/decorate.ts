@@ -10,9 +10,9 @@ export function decorate<TInstance, TNextValue extends TInstance, TDecoratorDeps
     strategy: instance.strategy,
     isAsync: false,
     externalsIds: [...instance.externalsIds, ...dependencies.flatMap(def => def.externalsIds)],
-    create: build => {
-      const decorated = instance.create(build);
-      const decoratorDeps = dependencies.map(build);
+    create: context => {
+      const decorated = instance.create(context);
+      const decoratorDeps = dependencies.map(d => context.buildWithStrategy(d));
 
       return decorator(decorated, ...(decoratorDeps as any));
     },

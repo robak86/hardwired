@@ -1,12 +1,16 @@
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from './AsyncInstanceDefinition';
+import { ContainerContext } from "../../context/ContainerContext";
+
+
+export type InstanceDefinitionContext = ContainerContext;
 
 export type InstanceDefinition<TInstance, TExternal = void> = {
   id: string;
   strategy: symbol;
   isAsync: false;
   externalsIds: string[];
-  create: (buildFn: InstanceBuildFn, _?:TExternal) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
+  create: (context: InstanceDefinitionContext, _?:TExternal) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
 };
 
 export type InstanceBuildFn = {

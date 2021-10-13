@@ -16,8 +16,8 @@ export const asyncFn = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
       id: `${factory.name}:${v4()}`,
       strategy,
       isAsync: true,
-      create: async build => {
-        const dependenciesInstance = await Promise.all(args.map(build));
+      create: async context => {
+        const dependenciesInstance = await Promise.all(args.map(context.buildWithStrategy));
         return factory(...(dependenciesInstance as any));
       },
 

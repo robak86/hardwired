@@ -15,11 +15,11 @@ export const asyncPartial = (strategy: symbol): AsyncPartiallyAppliedFnBuild => 
       id: v4(),
       strategy,
       isAsync: true,
-      create: async build => {
+      create: async context => {
         if (factory.length === 0) {
           return factory;
         } else {
-          const dependenciesInstance = await Promise.all(args.map(build));
+          const dependenciesInstance = await Promise.all(args.map(context.buildWithStrategy));
           return (factory as any).bind(null, ...dependenciesInstance);
         }
       },

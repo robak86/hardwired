@@ -1,7 +1,7 @@
 import { InstancesCache } from '../../context/InstancesCache';
 import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/AsyncInstanceDefinition';
-import { InstancesBuilder } from '../../context/InstancesBuilder';
+import { InstancesBuilder } from '../../context/abstract/InstancesBuilder';
 import { AsyncBuildStrategy } from '../abstract/AsyncBuildStrategy';
 
 export class AsyncTransientStrategy extends AsyncBuildStrategy {

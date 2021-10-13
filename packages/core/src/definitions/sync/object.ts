@@ -23,9 +23,9 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any>>>(
     strategy,
     isAsync: false,
     externalsIds: Object.values(record).flatMap(def => def.externalsIds),
-    create: build => {
+    create: context => {
       return Object.keys(record).reduce((result, property) => {
-        result[property] = build(record[property]);
+        result[property] = context.buildWithStrategy(record[property]);
 
         return result;
       }, {} as any);

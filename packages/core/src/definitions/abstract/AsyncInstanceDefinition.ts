@@ -1,8 +1,8 @@
-import { InstanceAsyncBuildFn } from './InstanceDefinition';
+import { InstanceDefinitionContext } from './InstanceDefinition';
 
 export type AsyncInstanceDefinition<T, TExternal> = {
   id: string;
   strategy: symbol;
   isAsync: true;
-  create: (build: InstanceAsyncBuildFn) => Promise<T>;
+  create: (context: InstanceDefinitionContext) => Promise<T>;
 };
