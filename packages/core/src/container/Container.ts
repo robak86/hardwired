@@ -4,7 +4,6 @@ import { SingletonStrategy } from '../strategies/sync/SingletonStrategy';
 import { TransientStrategy } from '../strategies/sync/TransientStrategy';
 import { RequestStrategy } from '../strategies/sync/RequestStrategy';
 import { ScopeStrategy } from '../strategies/sync/ScopeStrategy';
-import { ServiceLocatorStrategy } from '../strategies/ServiceLocatorStrategy';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AsyncSingletonStrategy } from '../strategies/async/AsyncSingletonStrategy';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
@@ -12,15 +11,12 @@ import { AsyncTransientStrategy } from '../strategies/async/AsyncTransientStrate
 import { AsyncRequestStrategy } from '../strategies/async/AsyncRequestStrategy';
 import { AsyncScopedStrategy } from '../strategies/async/AsyncScopedStrategy';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
-import { IServiceLocator } from './IServiceLocator';
 
 export type ChildScopeOptions = {
   scopeOverrides?: AnyInstanceDefinition<any>[];
 };
 
 export const defaultStrategiesRegistry = new StrategiesRegistry({
-  [ServiceLocatorStrategy.type]: new ServiceLocatorStrategy(),
-
   [SingletonStrategy.type]: new SingletonStrategy(),
   [TransientStrategy.type]: new TransientStrategy(),
   [RequestStrategy.type]: new RequestStrategy(),
@@ -32,7 +28,7 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
   [AsyncScopedStrategy.type]: new AsyncScopedStrategy(),
 });
 
-export class Container implements IServiceLocator {
+export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}
 
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, void>): TValue;
@@ -65,11 +61,6 @@ export class Container implements IServiceLocator {
    */
   checkoutScope(options: ChildScopeOptions = {}): Container {
     return new Container(this.containerContext.childScope(options));
-  }
-
-  withRequestScope<T>(factory: (obj: IServiceLocator) => T): T {
-    const requestContext = this.containerContext.checkoutRequestScope();
-    return factory(new Container(requestContext));
   }
 }
 

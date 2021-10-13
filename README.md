@@ -12,7 +12,7 @@ Minimalistic, type-safe DI/IoC solution for TypeScript.
 - [x] Easy mocking and testing
 - [x] Extendable design
 - [x] Allows writing code that is not coupled to DI container
-  - does not pollute user code with DI specific code (usually decorators combined with 
+  - does not pollute user code with DI specific code (usually decorators combined with
     reflection or static properties)
 - [x] Designed for structural typing
 
@@ -123,7 +123,7 @@ const writerInstance = container().get(writerDef); // creates instance of Writer
 import { singleton, container } from 'hardwired';
 import { Db } from 'some-db-client';
 
-const findUserById = async (db: Db, userId: string): Promise<User|undefined> => {
+const findUserById = async (db: Db, userId: string): Promise<User | undefined> => {
   return db.users.findOne({ id: userId });
 };
 
@@ -141,7 +141,7 @@ If all arguments are provided, then `partial` returns function that takes no arg
 import { singleton, container } from 'hardwired';
 import { Db } from 'some-db-client';
 
-const truncateUsers = async (db: Db):Promise<any> => {
+const truncateUsers = async (db: Db): Promise<any> => {
   return db.users.destroy();
 };
 
@@ -195,9 +195,9 @@ const config = cnt.get(configDef); // {port: 1234}
 cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
 ```
 
-**`object`** - aggregates multiple instance definitions within new object. The lifetime for 
-`object` is determined from used instance definitions. If all instance definitions have the same 
-lifetime, then it is also used for object. If definitions use multiple lifetimes then lifetime 
+**`object`** - aggregates multiple instance definitions within new object. The lifetime for
+`object` is determined from used instance definitions. If all instance definitions have the same
+lifetime, then it is also used for object. If definitions use multiple lifetimes then lifetime
 for `object` is set to `transient`
 
 ```typescript
@@ -283,8 +283,8 @@ Each instance definition which is already used within some definitions graph can
 by the container. This e.g. allows replacing deeply nested definitions with mocked instances for
 integration tests (see `apply` override). Overriding is achieved by providing patched instance
 definition (having the same id as the original one) to container constructor.
-On each request(`.get` | `.getAll`) containers checks if it has overridden definition for the 
-original one that was requested. If overridden definition is found then it is used instead of the 
+On each request(`.get` | `.getAll`) containers checks if it has overridden definition for the
+original one that was requested. If overridden definition is found then it is used instead of the
 original one.
 
 ```typescript
@@ -368,13 +368,11 @@ cnt.get(writerDef); // returns instance if LoggingWriter
 import { singleton, container, apply } from 'hardwired';
 
 class Writer {
-  write(data) {
-  }
+  write(data) {}
 }
 
 class WriteManager {
-  constructor(private writer: Writer) {
-  }
+  constructor(private writer: Writer) {}
 
   storeDocument(document) {
     this.writer.write(dataForDocument);
@@ -382,11 +380,10 @@ class WriteManager {
 }
 
 class WriteAction {
-  constructor(private writer: WriteManager) {
-  }
+  constructor(private writer: WriteManager) {}
 
   run() {
-    this.writer.write({someData});
+    this.writer.write({ someData });
   }
 }
 
