@@ -1,11 +1,12 @@
 import { InstancesCache } from './InstancesCache';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { instanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition, instanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { AsyncInstancesCache } from './AsyncInstancesCache';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
+import { TransientStrategy } from "../strategies/sync/TransientStrategy";
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -45,8 +46,38 @@ export class ContainerContext implements InstancesBuilder {
   ) {}
 
   // TODO remove in favor of buildWithStrategy
-  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
-    return this.buildWithStrategy(instanceDefinition);
+  // get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
+  //   return this.buildWithStrategy(instanceDefinition);
+  // }
+
+
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, void>): TValue;
+  get<TValue, TExternalParams>(
+      instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
+      externals: TExternalParams,
+  ): TValue;
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
+    if (instanceDefinition.externalsIds.length > 0) {
+      const scopedContainer = this.childScope({
+        scopeOverrides: instanceDefinition.externalsIds.map(externalId => {
+          return {
+            id: externalId,
+            externalsIds: [],
+            strategy: TransientStrategy.type,
+            create: () => externals,
+            isAsync: false,
+          };
+        }),
+      });
+
+      return scopedContainer.get({
+        ...instanceDefinition,
+        externalsIds: [],
+      });
+    } else {
+      const requestContext = this.checkoutRequestScope();
+      return requestContext.buildWithStrategy(instanceDefinition);
+    }
   }
 
   // TODO remove in favor of buildWithStrategy
