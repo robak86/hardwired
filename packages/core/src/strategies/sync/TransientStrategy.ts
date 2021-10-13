@@ -1,7 +1,7 @@
 import { BuildStrategy } from '../abstract/BuildStrategy';
-import { InstancesCache } from '../../context/InstancesCache';
+import { InstancesStore } from '../../context/InstancesStore';
 import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
-import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
+import { AsyncInstancesStore } from '../../context/AsyncInstancesStore';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder';
 
 export class TransientStrategy extends BuildStrategy {
@@ -9,8 +9,8 @@ export class TransientStrategy extends BuildStrategy {
 
   build(
     definition: InstanceDefinition<any>,
-    instancesCache: InstancesCache,
-    asyncInstancesCache: AsyncInstancesCache,
+    instancesCache: InstancesStore,
+    asyncInstancesCache: AsyncInstancesStore,
     definitions,
     instancesBuilder: InstancesBuilder,
   ) {

@@ -1,36 +1,36 @@
-import { SingletonScope } from './SingletonScope';
+import { HierarchicalStore } from './HierarchicalStore';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
 function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any, any>[]): string[] {
   return patchedDefinitions.map(def => def.id);
 }
 
-export class InstancesCache {
-  static create(scopeOverrides: InstanceDefinition<any, any>[]): InstancesCache {
+export class InstancesStore {
+  static create(scopeOverrides: InstanceDefinition<any, any>[]): InstancesStore {
     const ownKeys = getPatchedResolversIds(scopeOverrides);
-    return new InstancesCache(new SingletonScope(ownKeys), {}, {}, {});
+    return new InstancesStore(new HierarchicalStore(ownKeys), {}, {}, {});
   }
 
   constructor(
-    private globalScope: SingletonScope,
+    private hierarchicalScope: HierarchicalStore,
     private currentScope: Record<string, any>,
     private requestScope: Record<string, any>,
     private globalOverridesScope: Record<string, any>,
   ) {}
 
-  childScope(scopeOverrides: InstanceDefinition<any, any>[]): InstancesCache {
+  childScope(scopeOverrides: InstanceDefinition<any, any>[]): InstancesStore {
     const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
-    return new InstancesCache(
-      this.globalScope.checkoutChild(scopeOverridesResolversIds),
+    return new InstancesStore(
+      this.hierarchicalScope.checkoutChild(scopeOverridesResolversIds),
       {},
       {},
       this.globalOverridesScope,
     );
   }
 
-  checkoutForRequestScope(): InstancesCache {
-    return new InstancesCache(this.globalScope, this.currentScope, {}, this.globalOverridesScope);
+  checkoutForRequestScope(): InstancesStore {
+    return new InstancesStore(this.hierarchicalScope, this.currentScope, {}, this.globalOverridesScope);
   }
 
   upsertRequestScope<T>(uuid: string, build: () => T) {
@@ -64,11 +64,11 @@ export class InstancesCache {
   }
 
   upsertGlobalScope<T>(uuid: string, build: () => T) {
-    if (this.globalScope.has(uuid)) {
-      return this.globalScope.get(uuid);
+    if (this.hierarchicalScope.has(uuid)) {
+      return this.hierarchicalScope.get(uuid);
     } else {
       const instance = build();
-      this.globalScope.set(uuid, instance);
+      this.hierarchicalScope.set(uuid, instance);
       return instance;
     }
   }

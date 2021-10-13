@@ -1,9 +1,9 @@
 import { ServiceLocator } from '../container/ServiceLocator';
-import { InstancesCache } from '../context/InstancesCache';
+import { InstancesStore } from '../context/InstancesStore';
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
-import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
+import { AsyncInstancesStore } from '../context/AsyncInstancesStore';
 
 export class ServiceLocatorStrategy extends BuildStrategy {
   static type = Symbol.for('serviceLocatorStrategy');
@@ -14,8 +14,8 @@ export class ServiceLocatorStrategy extends BuildStrategy {
 
   build(
     definition: InstanceDefinition<any>,
-    instancesCache: InstancesCache,
-    asyncInstancesCache: AsyncInstancesCache,
+    instancesCache: InstancesStore,
+    asyncInstancesCache: AsyncInstancesStore,
     resolvers: InstancesDefinitionsRegistry,
   ) {
     const id = definition.id;

@@ -1,4 +1,4 @@
-import { SingletonScope } from './SingletonScope';
+import { HierarchicalStore } from './HierarchicalStore';
 import { ControlledPromise } from '../utils/ControlledPromise';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 
@@ -6,32 +6,32 @@ function getPatchedResolversIds(patchedDefinitions: AsyncInstanceDefinition<any,
   return patchedDefinitions.map(def => def.id);
 }
 
-export class AsyncInstancesCache {
-  static create(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesCache {
+export class AsyncInstancesStore {
+  static create(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesStore {
     const ownKeys = getPatchedResolversIds(scopeOverrides);
-    return new AsyncInstancesCache(new SingletonScope(ownKeys), {}, {}, {});
+    return new AsyncInstancesStore(new HierarchicalStore(ownKeys), {}, {}, {});
   }
 
   constructor(
-    private globalScope: SingletonScope,
+    private hierarchicalScope: HierarchicalStore,
     private currentScope: Record<string, ControlledPromise<any>>,
     private requestScope: Record<string, ControlledPromise<any>>,
     private globalOverridesScope: Record<string, ControlledPromise<any>>,
   ) {}
 
-  childScope(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesCache {
+  childScope(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesStore {
     const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
-    return new AsyncInstancesCache(
-      this.globalScope.checkoutChild(scopeOverridesResolversIds),
+    return new AsyncInstancesStore(
+      this.hierarchicalScope.checkoutChild(scopeOverridesResolversIds),
       {},
       {},
       this.globalOverridesScope,
     );
   }
 
-  checkoutForRequestScope(): AsyncInstancesCache {
-    return new AsyncInstancesCache(this.globalScope, this.currentScope, {}, this.globalOverridesScope);
+  checkoutForRequestScope(): AsyncInstancesStore {
+    return new AsyncInstancesStore(this.hierarchicalScope, this.currentScope, {}, this.globalOverridesScope);
   }
 
   async upsertCurrentScope<T>(uuid: string, build: () => Promise<T>) {
@@ -59,11 +59,11 @@ export class AsyncInstancesCache {
   }
 
   async upsertGlobalScope<T>(uuid: string, build: () => Promise<T>) {
-    if (this.globalScope.has(uuid)) {
-      return this.globalScope.get(uuid);
+    if (this.hierarchicalScope.has(uuid)) {
+      return this.hierarchicalScope.get(uuid);
     } else {
       const controlledPromise = new ControlledPromise<T>();
-      this.globalScope.set(uuid, controlledPromise);
+      this.hierarchicalScope.set(uuid, controlledPromise);
       const instance = await build();
       controlledPromise.resolve(instance);
       return instance;

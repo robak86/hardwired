@@ -36,9 +36,7 @@ describe(`factory`, () => {
     });
   });
 
-  describe(`usage with withRequestScope`, () => {
-
-  });
+  describe(`usage with withRequestScope`, () => {});
 
   describe(`no nested factories`, () => {
     type Request = { requestObj: 'req' };

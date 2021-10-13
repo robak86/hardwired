@@ -1,10 +1,10 @@
-import { InstancesCache } from './InstancesCache';
+import { InstancesStore } from './InstancesStore';
 import { ContainerScopeOptions, defaultStrategiesRegistry } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { InstanceDefinition, instanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { AsyncInstancesCache } from './AsyncInstancesCache';
+import { AsyncInstancesStore } from './AsyncInstancesStore';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
 import { TransientStrategy } from '../strategies/sync/TransientStrategy';
 
@@ -14,8 +14,8 @@ export class ContainerContext implements InstancesBuilder {
 
     return new ContainerContext(
       instancesEntries,
-      InstancesCache.create([]),
-      AsyncInstancesCache.create([]),
+      InstancesStore.create([]),
+      AsyncInstancesStore.create([]),
       strategiesRegistry,
     );
   }
@@ -32,16 +32,16 @@ export class ContainerContext implements InstancesBuilder {
 
     return new ContainerContext(
       definitionsRegistry,
-      InstancesCache.create(syncOverrides),
-      AsyncInstancesCache.create(asyncOverrides),
+      InstancesStore.create(syncOverrides),
+      AsyncInstancesStore.create(asyncOverrides),
       strategiesRegistry,
     );
   }
 
   constructor(
     private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
-    private instancesCache: InstancesCache,
-    private asyncInstancesCache: AsyncInstancesCache,
+    private instancesCache: InstancesStore,
+    private asyncInstancesCache: AsyncInstancesStore,
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 

@@ -1,9 +1,9 @@
-import { InstancesCache } from '../context/InstancesCache';
+import { InstancesStore } from '../context/InstancesStore';
 import { ContainerContext } from '../context/ContainerContext';
 import { IServiceLocator } from './IServiceLocator';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
 import { instanceDefinition, InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
-import { AsyncInstancesCache } from '../context/AsyncInstancesCache';
+import { AsyncInstancesStore } from '../context/AsyncInstancesStore';
 import { ChildScopeOptions } from './Container';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 
@@ -11,8 +11,8 @@ export class ServiceLocator implements IServiceLocator {
   private containerContext: ContainerContext;
 
   constructor(
-    private instancesCache: InstancesCache,
-    private asyncInstancesCache: AsyncInstancesCache,
+    private instancesCache: InstancesStore,
+    private asyncInstancesCache: AsyncInstancesStore,
     private definitionsRegistry: InstancesDefinitionsRegistry,
   ) {
     this.containerContext = new ContainerContext(this.definitionsRegistry, instancesCache, asyncInstancesCache);

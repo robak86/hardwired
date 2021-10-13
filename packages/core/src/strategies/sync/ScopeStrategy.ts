@@ -1,15 +1,15 @@
 import { BuildStrategy } from '../abstract/BuildStrategy';
-import { InstancesCache } from '../../context/InstancesCache';
+import { InstancesStore } from '../../context/InstancesStore';
 import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
-import { AsyncInstancesCache } from '../../context/AsyncInstancesCache';
+import { AsyncInstancesStore } from '../../context/AsyncInstancesStore';
 
 export class ScopeStrategy extends BuildStrategy {
   static type = Symbol.for('scope');
 
   build(
     definition: InstanceDefinition<any>,
-    instancesCache: InstancesCache,
-    asyncInstancesCache: AsyncInstancesCache,
+    instancesCache: InstancesStore,
+    asyncInstancesCache: AsyncInstancesStore,
     resolvers,
     instancesBuilder,
   ) {
