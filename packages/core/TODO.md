@@ -1,3 +1,6 @@
+- scoped strategy implicates usage of service locator
+  - remove scoped strategy + replace service locator with IFactory
+- 
 - allowed scopes
   - singleton <- singleton, transient, ~~request~~
   - request <- request, transient, singleton
