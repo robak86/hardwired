@@ -6,7 +6,7 @@ export type InstanceDefinition<TInstance, TExternal = void> = {
   strategy: symbol;
   isAsync: false;
   externalsIds: string[];
-  create: (buildFn: InstanceBuildFn, externals?: TExternal) => TInstance;
+  create: (buildFn: InstanceBuildFn, _?:TExternal) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
 };
 
 export type InstanceBuildFn = {

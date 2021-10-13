@@ -6,7 +6,7 @@ export type FunctionDefinitionBuildFn = {
   <
     TValue,
     TFunctionArgs extends any[],
-    TDeps extends { [K in keyof TFunctionArgs]: InstanceDefinition<TFunctionArgs[K]> },
+    TDeps extends { [K in keyof TFunctionArgs]: InstanceDefinition<TFunctionArgs[K], any> },
   >(
     factory: (...args: TFunctionArgs) => TValue,
     ...args: TDeps
@@ -21,6 +21,6 @@ export const fn = (strategy: symbol): FunctionDefinitionBuildFn => {
     externalsIds: dependencies.flatMap(def => def.externalsIds), // TODO: externalIds shouldn't have duplicates
     create: build => {
       return factory(...(dependencies.map(build) as any));
-    }
+    },
   });
 };

@@ -35,9 +35,33 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
 export class Container implements IServiceLocator {
   constructor(protected readonly containerContext: ContainerContext) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>): TValue {
-    const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.get(instanceDefinition);
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, void>): TValue;
+  get<TValue, TExternalParams>(
+    instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
+    externals: TExternalParams,
+  ): TValue;
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
+    if (instanceDefinition.externalsIds.length > 0) {
+      const scopedContainer = this.checkoutScope({
+        scopeOverrides: instanceDefinition.externalsIds.map(externalId => {
+          return {
+            id: externalId,
+            externalsIds: [],
+            strategy: TransientStrategy.type,
+            create: () => externals,
+            isAsync: false,
+          };
+        }),
+      });
+
+      return scopedContainer.get({
+        ...instanceDefinition,
+        externalsIds: [],
+      });
+    } else {
+      const requestContext = this.containerContext.checkoutRequestScope();
+      return requestContext.get(instanceDefinition);
+    }
   }
 
   getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any>): Promise<TValue> {

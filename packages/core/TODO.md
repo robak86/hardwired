@@ -70,3 +70,5 @@ const parametrizedToFactoryD: InstanceDefinition<IFactory<{ externalParams }, So
 - maybe scoped shouldn't be exposed ? and should be implementation detail?
 - knowing that
 - maybe scope and service locator shouldn't be exposed at all
+- All InstanceDefinitions should be frozen
+- external params should be only allowed in request | transient lifetimes
