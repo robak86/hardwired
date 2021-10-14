@@ -1,3 +1,39 @@
+### Externals TODO
+- make InstanceDefinition holding reference to external instance definitions
+```typescript
+
+export type InstanceDefinition<TInstance, TExternals extends InstanceDefinition<any, any>> = {
+  id: string;
+  strategy: symbol;
+  isAsync: false;
+  externals: TExternals
+  create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
+};
+```
+- while constructing new definition collect all externals from dependencies (make sure that they 
+  are unique)
+- by having all externals we don't need to pass them to `factory`
+- two approaches
+  - external with wrapping key = `external<MyType>()('wrappingKey')`
+    - .build({wrappingKey: MyType})
+  - use the same runtime algorithm for making externals unique as for conditional types and make 
+    factory accept array of externals - the order will be determined during construction of 
+    definitions graph - in order to make it work, we need to be sure that conditional type for 
+    unique externals is deterministic!!
+
+
+
+- in order to deconstruct externals (implemented using tuples as well as intersection) we need 
+  to pass externals object to factory definition
+
+- order of externals implemented using tuples is indeterminate because two definition may use 
+  the same multiple externals but with different order. Final tuple concatenating both externals 
+  cannot capture such case
+  - but collecting all unique externals may be much cleaner than applying intersection
+    - this would provide better visibility over how much externals we use
+
+-0
+
 How to aggregate external parameters without using intersection (and wrapping externals in extra
 keys to enable intersection)
 
