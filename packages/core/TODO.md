@@ -1,23 +1,33 @@
+How to aggregate external parameters without using intersection (and wrapping externals in extra
+keys to enable intersection)
+
+```typescript
+
+```
+
+
+
+
+
 - scoped strategy implicates usage of service locator
 - dispose
 
 - should request scopes be hierarchical ?
-- 
-  - remove scoped strategy + replace service locator with IFactory
+- - remove scoped strategy + replace service locator with IFactory
 
 - ~~remove `withRequestScope` - this also implicates using container as service locator~~
 
 - caching of IFactory results should be implemented by the user
-    - with valid dispose strategy
-- 
+  - with valid dispose strategy
+-
 - allowed scopes
   - singleton <- singleton, transient, ~~request~~
   - request <- request, transient, singleton
   - transient <- singleton, transient, request
-- 
+-
 - remove completely scopeOverrides!!
   - this functionality should be achieved by using externals
-- 
+-
 - Container and ServiceLocator are always the same
 - consider merging InstanceBuilder with ContainerContext ??
 - add support for thunks ? add check if dependencies definitions are defined

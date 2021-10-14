@@ -93,6 +93,22 @@ describe(`factory`, () => {
         expect(result.handlersFactory.build(externalsValue).requestId).toEqual('1');
       });
 
+      it(`allow overriding external params`, async () => {
+        const requestIdD = value('1');
+        const dbConnectionD = singleton.class(DbConnection);
+        const loggerD = transient.class(Logger, requestD, requestIdD);
+        const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
+        const routerD = transient.class(Router, factory(handlerD));
+
+        const cnt = container([set(requestIdD, '2')]);
+        const result = cnt.get(routerD);
+        const externalsValue: Request = { requestObj: 'req' };
+
+        expect(result.handlersFactory.build(externalsValue)).toBeInstanceOf(Handler);
+        expect(result.handlersFactory.build(externalsValue).request).toEqual(externalsValue);
+        expect(result.handlersFactory.build(externalsValue).requestId).toEqual('2');
+      });
+
       describe('request lifetime support', () => {
         it(`creates new request scope for each IFactory .build call, ex. 1`, async () => {
           const requestIdD = request.fn(() => v4());
@@ -144,6 +160,19 @@ describe(`factory`, () => {
 
           expect(handler).toBeInstanceOf(Handler);
           expect(handler.requestId).toEqual('overridden');
+        });
+
+        it(`supports global override for factory params`, async () => {
+          const requestIdD = request.fn(() => v4());
+          const dbConnectionD = singleton.class(DbConnection);
+          const loggerD = transient.class(Logger, requestD, requestIdD);
+          const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
+          const routerD = transient.class(Router, factory(handlerD));
+          const cnt = container([set(requestD, { requestObj: 'sss' })]);
+          const result = cnt.get(routerD);
+          const handler = result.handlersFactory.build({ requestObj: 'req' });
+
+          expect(handler.request).toEqual({requestObj: 'sss' });
         });
 
         it(`propagates singletons created by factory to parent scope to make them reusable in next .build calls`, async () => {

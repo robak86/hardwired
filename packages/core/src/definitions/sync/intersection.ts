@@ -2,11 +2,14 @@ import { v4 } from 'uuid';
 import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { PickExternals } from '../../utils/PickExternals';
+import { UnionToIntersection } from 'type-fest';
 
-export const tuple = <T extends Array<InstanceDefinition<any>>, TMeta>(
+export const intersection = <T extends Array<InstanceDefinition<object, any>>, TMeta>(
   ...definitions: T
 ): InstanceDefinition<
-  { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown },
+  UnionToIntersection<
+    { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown }[number]
+  >,
   PickExternals<T>
 > => {
   const firstStrategy = definitions[0]?.strategy;
@@ -23,9 +26,12 @@ export const tuple = <T extends Array<InstanceDefinition<any>>, TMeta>(
     isAsync: false,
     externalsIds: definitions.flatMap(def => def.externalsIds),
     create: context => {
-      return definitions.map(def => {
-        return context.buildWithStrategy(def);
-      }) as any;
+      return definitions.reduce((result, def) => {
+        return {
+          ...result,
+          ...context.buildWithStrategy(def),
+        };
+      }, {}) as any;
     },
   };
 };

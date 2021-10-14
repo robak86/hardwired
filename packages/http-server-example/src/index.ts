@@ -1,16 +1,18 @@
 import http, { IncomingMessage, ServerResponse } from 'http';
 import createRouter, { HTTPMethod } from 'find-my-way';
-import { asyncFactory, external, factory, IAsyncFactory, object, request, singleton, tuple } from 'hardwired';
+import { asyncFactory, external, factory, IAsyncFactory, intersection, object, request, singleton, tuple } from 'hardwired';
 
 const requestD = external<{ req: IncomingMessage }>();
 const responseD = external<{ res: ServerResponse }>();
 
-const requestExternals = external<RequestExternals>();
+const requestExternals = intersection(requestD, responseD)
 
 type RequestExternals = {
   req: IncomingMessage;
   res: ServerResponse;
 };
+
+
 
 type Handler<TContext> = (ctx: TContext) => Promise<void>;
 
@@ -34,8 +36,8 @@ type RouterHandlers<TContext = RequestExternals> = {
 const buildRouter = (handlers: RouterHandlers) => {
   const router = new Router();
 
-  router.append('GET', '/', handlers.root);
-  router.append('GET', '/health', handlers.health);
+  // router.append('GET', '/', handlers.root);
+  // router.append('GET', '/health', handlers.health);
 };
 
 const appHandlers2 = tuple(handler1D, handler2D);
