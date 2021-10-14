@@ -7,7 +7,7 @@ export class ScopeStrategy extends BuildStrategy {
   static type = Symbol.for('scope');
 
   build(
-    definition: InstanceDefinition<any>,
+    definition: InstanceDefinition<any, any>,
     instancesCache: InstancesStore,
     asyncInstancesCache: AsyncInstancesStore,
     resolvers,

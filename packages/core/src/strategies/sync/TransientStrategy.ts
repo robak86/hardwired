@@ -8,7 +8,7 @@ export class TransientStrategy extends BuildStrategy {
   static type = Symbol.for('classTransient');
 
   build(
-    definition: InstanceDefinition<any>,
+    definition: InstanceDefinition<any, any>,
     instancesCache: InstancesStore,
     asyncInstancesCache: AsyncInstancesStore,
     definitions,

@@ -17,7 +17,7 @@ export const asyncClass = (strategy: symbol): ClassDefinitionBuildFn => {
       id: v4(),
       strategy,
       isAsync: true,
-      externals: dependencies.flatMap(def => def.externals), // TODO: externalIds shouldn't have duplicates
+      externals: dependencies.flatMap(def => def.externals as any) as any, // TODO: externalIds shouldn't have duplicates
       create: async context => {
         const dependenciesInstance = await Promise.all((dependencies as any).map(context.buildWithStrategy));
         return new cls(...(dependenciesInstance as any));

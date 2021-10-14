@@ -8,7 +8,7 @@ export class SingletonStrategy extends BuildStrategy {
   static type = Symbol.for('classSingleton');
 
   build(
-    definition: InstanceDefinition<any>,
+    definition: InstanceDefinition<any, any>,
     instancesCache: InstancesStore,
     asyncInstancesCache: AsyncInstancesStore,
     resolvers,

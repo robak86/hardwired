@@ -16,7 +16,7 @@ describe(`object`, () => {
     const someStr = value('str');
     const composed = object({ num: someNumberD, str: someStr });
 
-    expectType<TypeEqual<typeof composed, InstanceDefinition<{ num: number; str: string }>>>(true);
+    expectType<TypeEqual<typeof composed, InstanceDefinition<{ num: number; str: string }, []>>>(true);
   });
 
   it(`produces instance with correct type`, async () => {

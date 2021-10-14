@@ -6,7 +6,7 @@ import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinitio
 describe(`Container`, () => {
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
-      const cDef = singleton.fn(() => 'cValue') as InstanceDefinition<string>;
+      const cDef = singleton.fn(() => 'cValue')
       const c = container();
       const cValue = c.get(cDef);
       expect(cValue).toEqual('cValue');

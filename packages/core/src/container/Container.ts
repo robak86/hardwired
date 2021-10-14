@@ -13,7 +13,7 @@ import { AsyncScopedStrategy } from '../strategies/async/AsyncScopedStrategy';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 
 export type ChildScopeOptions = {
-  scopeOverrides?: AnyInstanceDefinition<any>[];
+  scopeOverrides?: AnyInstanceDefinition<any, any>[];
 };
 
 export const defaultStrategiesRegistry = new StrategiesRegistry({
@@ -73,9 +73,9 @@ export type ContainerScopeOptions = {
   globalOverrides?: AnyInstanceDefinition<any, any>[]; // propagated to whole dependencies graph
 };
 
-export function container(globalOverrides?: AnyInstanceDefinition<any>[]): Container;
+export function container(globalOverrides?: AnyInstanceDefinition<any, any>[]): Container;
 export function container(options?: ContainerOptions): Container;
-export function container(overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any>>): Container {
+export function container(overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {

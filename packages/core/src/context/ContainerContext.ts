@@ -58,9 +58,9 @@ export class ContainerContext implements InstancesBuilder {
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
     if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externals.map(externalId => {
+        scopeOverrides: instanceDefinition.externals.map(externalDef => {
           return {
-            id: externalId,
+            id: externalDef.id,
             externals: [],
             strategy: TransientStrategy.type,
             create: () => externals,
@@ -85,9 +85,9 @@ export class ContainerContext implements InstancesBuilder {
 
     if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externals.map(externalId => {
+        scopeOverrides: instanceDefinition.externals.map(externalDef => {
           return {
-            id: externalId,
+            id: externalDef.id,
             externals: [],
             strategy: TransientStrategy.type,
             create: () => externalParams,
@@ -108,7 +108,7 @@ export class ContainerContext implements InstancesBuilder {
     // return this.buildWithStrategy(instanceDefinition);
   }
 
-  buildExact = (definition: AnyInstanceDefinition<any>) => {
+  buildExact = (definition: AnyInstanceDefinition<any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     return patchedInstanceDef.create(this);
   };

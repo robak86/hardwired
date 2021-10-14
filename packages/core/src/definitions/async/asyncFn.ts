@@ -8,7 +8,7 @@ export type AsyncFunctionDefinitionBuildFn = {
   <
     TValue,
     TFunctionArgs extends any[],
-    TDeps extends { [K in keyof TFunctionArgs]: AnyInstanceDefinition<TFunctionArgs[K]> },
+    TDeps extends { [K in keyof TFunctionArgs]: AnyInstanceDefinition<TFunctionArgs[K], any> },
   >(
     factory: (...args: TFunctionArgs) => Promise<TValue>,
     ...args: TDeps
@@ -21,7 +21,7 @@ export const asyncFn = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
       id: `${factory.name}:${v4()}`,
       strategy,
       isAsync: true,
-      externals: dependencies.flatMap(def => def.externals), // TODO: externalIds shouldn't have duplicates
+      externals: dependencies.flatMap(def => def.externals as any) as any, // TODO: externalIds shouldn't have duplicates
       create: async context => {
         const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));
         return factory(...(dependenciesInstance as any));

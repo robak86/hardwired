@@ -21,7 +21,7 @@ export const tuple = <T extends Array<InstanceDefinition<any, any>>, TMeta>(
     id: v4(),
     strategy,
     isAsync: false,
-    externals: definitions.flatMap(def => def.externals),
+    externals: definitions.flatMap(def => def.externals as any) as any, //TODO
     create: context => {
       return definitions.map(def => {
         return context.buildWithStrategy(def);

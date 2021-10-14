@@ -4,12 +4,12 @@ import { ContainerContext } from '../../context/ContainerContext';
 
 export type InstanceDefinitionContext = ContainerContext;
 
-export type InstanceDefinition<TInstance, TExternal = []> = {
+export type InstanceDefinition<TInstance, TExternals = []> = {
   id: string;
   strategy: symbol;
   isAsync: false;
-  externals: string[];
-  create: (context: InstanceDefinitionContext, _?: TExternal) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
+  externals: Array<InstanceDefinition<any, any>>;
+  create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
 };
 
 export const instanceDefinition = {

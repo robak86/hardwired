@@ -3,9 +3,9 @@ import { AnyInstanceDefinition } from "../definitions/abstract/AnyInstanceDefini
 export const replace = <
   TInstance,
   TNextInstance extends TInstance,
-  TNextInstanceDef extends AnyInstanceDefinition<TInstance>,
+  TNextInstanceDef extends AnyInstanceDefinition<TInstance, any>,
 >(
-  instance: AnyInstanceDefinition<TInstance>,
+  instance: AnyInstanceDefinition<TInstance, any>,
   newInstance: TNextInstanceDef,
 ): TNextInstanceDef => {
   return {

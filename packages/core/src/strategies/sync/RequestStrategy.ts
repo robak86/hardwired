@@ -7,7 +7,7 @@ export class RequestStrategy extends BuildStrategy {
   static type = Symbol.for('classRequest');
 
   build(
-    definition: InstanceDefinition<any>,
+    definition: InstanceDefinition<any, any>,
     instancesCache: InstancesStore,
     asyncInstancesCache: AsyncInstancesStore,
     resolvers,

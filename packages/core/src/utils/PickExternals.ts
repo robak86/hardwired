@@ -20,12 +20,32 @@ type AppendUnique<TItem, TCollection extends any[]> = Contains<TItem, TCollectio
     ? [...TCollection, TItem]
     : TCollection;
 
+const appendUnique = (item, collection: any[]) => {
+  if (!collection.includes(item)) {
+    return [...collection, item];
+  } else {
+    return collection;
+  }
+};
+
 type Merge<T1 extends any[], T2 extends any[]> = MergeUnique<T2, T1, MergeUnique<T1, T2, []>>;
 
 // prettier-ignore
 type MergeUnique<T1 extends any[], T2 extends any[], TResult extends any[]> =
     T1 extends [infer TCurrentItem, ...infer TRest] ? MergeUnique<TRest, T2, AppendUnique<TCurrentItem, TResult>> :
     TResult;
+
+const mergeUnique = (from: any[], to:any[]) => {
+  const result = [];
+
+  from.forEach(item => {
+    if (!result.includes(item)) {
+      return [...result, item];
+    } else {
+      return result;
+    }
+  })
+}
 
 // prettier-ignore
 type Concat<T> =
@@ -39,6 +59,10 @@ export type PickExternals<TDepsInstances extends AnyInstanceDefinition<any, any>
         Concat<{[K in keyof TDepsInstances]: TDepsInstances[K] extends AnyInstanceDefinition<any, infer TExternals> ? TExternals : never}>,
         []
     >
+
+export const concatExternals = (
+  ...externals: Array<AnyInstanceDefinition<any, any>[]>
+): AnyInstanceDefinition<any, any>[] => {};
 
 type ExternalsIntersectionRecord<TDepsInstances extends Record<keyof any, AnyInstanceDefinition<any, any>>> =
   UnionToIntersection<

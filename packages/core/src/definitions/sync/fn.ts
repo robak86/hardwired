@@ -18,7 +18,7 @@ export const fn = (strategy: symbol): FunctionDefinitionBuildFn => {
     id: `${factory.name}:${v4()}`,
     isAsync: false,
     strategy,
-    externals: dependencies.flatMap(def => def.externals), // TODO: externalIds shouldn't have duplicates
+    externals: dependencies.flatMap(def => def.externals as any) as any, // TODO: externalIds shouldn't have duplicates
     create: context => {
       return factory(...(dependencies.map(context.buildWithStrategy) as any));
     },
