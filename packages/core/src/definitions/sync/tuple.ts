@@ -3,7 +3,7 @@ import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { PickExternals } from '../../utils/PickExternals';
 
-export const tuple = <T extends Array<InstanceDefinition<any>>, TMeta>(
+export const tuple = <T extends Array<InstanceDefinition<any, any>>, TMeta>(
   ...definitions: T
 ): InstanceDefinition<
   { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown },

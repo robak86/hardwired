@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import { PickExternals } from "../../utils/PickExternals";
 
 type ClassDefinitionBuildFn = {
-  <TInstance, TArgs extends any[], TDeps extends { [K in keyof TArgs]: AnyInstanceDefinition<TArgs[K]> }>(
+  <TInstance, TArgs extends any[], TDeps extends { [K in keyof TArgs]: AnyInstanceDefinition<TArgs[K], any> }>(
     cls: ClassType<TInstance, TArgs>,
     ...args: TDeps
   ): AsyncInstanceDefinition<TInstance, PickExternals<TDeps>>;

@@ -4,7 +4,7 @@ import { ContainerContext } from '../../context/ContainerContext';
 
 export type InstanceDefinitionContext = ContainerContext;
 
-export type InstanceDefinition<TInstance, TExternal = void> = {
+export type InstanceDefinition<TInstance, TExternal = []> = {
   id: string;
   strategy: symbol;
   isAsync: false;
