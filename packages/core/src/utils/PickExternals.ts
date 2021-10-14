@@ -28,14 +28,16 @@ const appendUnique = (item, collection: any[]) => {
   }
 };
 
-type Merge<T1 extends any[], T2 extends any[]> = MergeUnique<T2, T1, MergeUnique<T1, T2, []>>;
+type Merge<T1 extends any[], T2 extends any[]> = RemoveDuplicates<T2, RemoveDuplicates<T1, []>>;
 
 // prettier-ignore
-type MergeUnique<T1 extends any[], T2 extends any[], TResult extends any[]> =
-    T1 extends [infer TCurrentItem, ...infer TRest] ? MergeUnique<TRest, T2, AppendUnique<TCurrentItem, TResult>> :
+type RemoveDuplicates<T1 extends any[], TResult extends any[] = []> =
+    T1 extends [infer TCurrentItem, ...infer TRest] ? RemoveDuplicates<TRest, AppendUnique<TCurrentItem, TResult>> :
     TResult;
 
-const mergeUnique = (from: any[], to:any[]) => {
+type M1 = RemoveDuplicates<[1, 2, 2, 2, 3, 4, 5, 5, 6]>;
+
+const mergeUnique = (from: any[], to: any[]) => {
   const result = [];
 
   from.forEach(item => {
@@ -44,11 +46,11 @@ const mergeUnique = (from: any[], to:any[]) => {
     } else {
       return result;
     }
-  })
-}
+  });
+};
 
 // prettier-ignore
-type Concat<T> =
+type Concat<T extends any[]> =
     T extends [infer A, ...infer Rest] ? A extends any[] ? Merge<A, Concat<Rest>> : A
         : T;
 
