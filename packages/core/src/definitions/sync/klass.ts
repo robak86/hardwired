@@ -16,7 +16,7 @@ export const klass = (strategy: symbol): ClassDefinitionBuildFn => {
       id: v4(),
       strategy,
       isAsync: false,
-      externalsIds: dependencies.flatMap(def => def.externalsIds), // TODO: externalIds shouldn't have duplicates
+      externals: dependencies.flatMap(def => def.externals), // TODO: externalIds shouldn't have duplicates
       create: context => {
         return new cls(...(dependencies.map(context.buildWithStrategy) as any));
       },

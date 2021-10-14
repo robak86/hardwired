@@ -56,12 +56,12 @@ export class ContainerContext implements InstancesBuilder {
     externals: TExternalParams,
   ): TValue;
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
-    if (instanceDefinition.externalsIds.length > 0) {
+    if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externalsIds.map(externalId => {
+        scopeOverrides: instanceDefinition.externals.map(externalId => {
           return {
             id: externalId,
-            externalsIds: [],
+            externals: [],
             strategy: TransientStrategy.type,
             create: () => externals,
             isAsync: false,
@@ -71,7 +71,7 @@ export class ContainerContext implements InstancesBuilder {
 
       return scopedContainer.get({
         ...instanceDefinition,
-        externalsIds: [],
+        externals: [],
       });
     } else {
       const requestContext = this.checkoutRequestScope();
@@ -83,12 +83,12 @@ export class ContainerContext implements InstancesBuilder {
   getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams: TExternalParams): Promise<TValue>;
   getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams?: TExternalParams): Promise<TValue> {
 
-    if (instanceDefinition.externalsIds.length > 0) {
+    if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externalsIds.map(externalId => {
+        scopeOverrides: instanceDefinition.externals.map(externalId => {
           return {
             id: externalId,
-            externalsIds: [],
+            externals: [],
             strategy: TransientStrategy.type,
             create: () => externalParams,
             isAsync: false,
@@ -98,7 +98,7 @@ export class ContainerContext implements InstancesBuilder {
 
       return scopedContainer.getAsync({
         ...instanceDefinition,
-        externalsIds: [],
+        externals: [],
       });
     } else {
       const requestContext = this.checkoutRequestScope();

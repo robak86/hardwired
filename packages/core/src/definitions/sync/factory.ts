@@ -18,7 +18,7 @@ export const factory: FactoryBuildFn = (definition: InstanceDefinition<any, any>
     id: v4(),
     strategy: TransientStrategy.type,
     isAsync: false,
-    externalsIds: [],
+    externals: [],
     create: (context): IFactory<any, any> => {
       return {
         build(params): any {

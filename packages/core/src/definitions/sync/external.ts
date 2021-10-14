@@ -11,7 +11,7 @@ export const external = <TExternal extends object = never>(
     id,
     isAsync: false,
     strategy: TransientStrategy.type,
-    externalsIds: [id],
+    externals: [id],
     create: (build): TExternal => {
       throw new Error('Implement me!');
     },

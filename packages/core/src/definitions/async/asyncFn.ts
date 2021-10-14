@@ -21,7 +21,7 @@ export const asyncFn = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
       id: `${factory.name}:${v4()}`,
       strategy,
       isAsync: true,
-      externalsIds: dependencies.flatMap(def => def.externalsIds), // TODO: externalIds shouldn't have duplicates
+      externals: dependencies.flatMap(def => def.externals), // TODO: externalIds shouldn't have duplicates
       create: async context => {
         const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));
         return factory(...(dependenciesInstance as any));

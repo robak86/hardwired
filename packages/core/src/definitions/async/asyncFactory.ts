@@ -19,7 +19,7 @@ export const asyncFactory: AsyncFactoryBuildFn = (definition: AnyInstanceDefinit
     id: v4(),
     strategy: TransientStrategy.type,
     isAsync: false,
-    externalsIds: [],
+    externals: [],
     create: (context): IAsyncFactory<any, any> => {
       return {
         build(params) {

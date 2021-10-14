@@ -19,7 +19,7 @@ export const asyncPartial = (strategy: symbol): AsyncPartiallyAppliedFnBuild => 
       id: v4(),
       strategy,
       isAsync: true,
-      externalsIds: args.flatMap(def => def.externalsIds), // TODO: externalIds shouldn't have duplicates
+      externals: args.flatMap(def => def.externals), // TODO: externalIds shouldn't have duplicates
       create: async context => {
         if (factory.length === 0) {
           return factory;

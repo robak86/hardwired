@@ -24,7 +24,7 @@ export const intersection = <T extends Array<InstanceDefinition<object, any>>, T
     id: v4(),
     strategy,
     isAsync: false,
-    externalsIds: definitions.flatMap(def => def.externalsIds),
+    externals: definitions.flatMap(def => def.externals),
     create: context => {
       return definitions.reduce((result, def) => {
         return {

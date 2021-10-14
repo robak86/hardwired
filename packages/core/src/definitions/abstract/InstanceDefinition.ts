@@ -8,7 +8,7 @@ export type InstanceDefinition<TInstance, TExternal = []> = {
   id: string;
   strategy: symbol;
   isAsync: false;
-  externalsIds: string[];
+  externals: string[];
   create: (context: InstanceDefinitionContext, _?: TExternal) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
 };
 

@@ -15,7 +15,7 @@ export const partial = (strategy: symbol): PartiallyAppliedFnBuild => {
     id: v4(),
     strategy,
     isAsync: false,
-    externalsIds: dependencies.flatMap(def => def.externalsIds), // TODO: externalIds shouldn't have duplicates
+    externals: dependencies.flatMap(def => def.externals), // TODO: externalIds shouldn't have duplicates
     create: context => {
       if (factory.length === 0) {
         return factory;
