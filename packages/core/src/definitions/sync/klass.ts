@@ -1,7 +1,7 @@
 import { ClassType } from '../../utils/ClassType';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
-import { PickExternals } from '../../utils/PickExternals';
+import { pickExternals, PickExternals } from '../../utils/PickExternals';
 
 type ClassDefinitionBuildFn = {
   <TInstance, TArgs extends any[], TDepsInstances extends { [K in keyof TArgs]: InstanceDefinition<TArgs[K], any> }>(
@@ -16,7 +16,7 @@ export const klass = (strategy: symbol): ClassDefinitionBuildFn => {
       id: v4(),
       strategy,
       isAsync: false,
-      externals: dependencies.flatMap(def => def.externals as any) as any, // TODO: externalIds shouldn't have duplicates
+      externals: pickExternals(dependencies),
       create: context => {
         return new cls(...(dependencies.map(context.buildWithStrategy) as any));
       },

@@ -2,7 +2,7 @@ import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { AsyncSingletonStrategy } from '../../strategies/async/AsyncSingletonStrategy';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 import { v4 } from 'uuid';
-import { PickExternals } from '../../utils/PickExternals';
+import { pickExternals, PickExternals } from '../../utils/PickExternals';
 
 export type AsyncFunctionDefinitionBuildFn = {
   <
@@ -21,7 +21,7 @@ export const asyncFn = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
       id: `${factory.name}:${v4()}`,
       strategy,
       isAsync: true,
-      externals: dependencies.flatMap(def => def.externals as any) as any, // TODO: externalIds shouldn't have duplicates
+      externals: pickExternals(dependencies),
       create: async context => {
         const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));
         return factory(...(dependenciesInstance as any));

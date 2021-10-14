@@ -2,7 +2,7 @@ import { ClassType } from '../../utils/ClassType';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 import { v4 } from 'uuid';
-import { PickExternals } from "../../utils/PickExternals";
+import { pickExternals, PickExternals } from '../../utils/PickExternals';
 
 type ClassDefinitionBuildFn = {
   <TInstance, TArgs extends any[], TDeps extends { [K in keyof TArgs]: AnyInstanceDefinition<TArgs[K], any> }>(
@@ -17,7 +17,7 @@ export const asyncClass = (strategy: symbol): ClassDefinitionBuildFn => {
       id: v4(),
       strategy,
       isAsync: true,
-      externals: dependencies.flatMap(def => def.externals as any) as any, // TODO: externalIds shouldn't have duplicates
+      externals: pickExternals(dependencies),
       create: async context => {
         const dependenciesInstance = await Promise.all((dependencies as any).map(context.buildWithStrategy));
         return new cls(...(dependenciesInstance as any));

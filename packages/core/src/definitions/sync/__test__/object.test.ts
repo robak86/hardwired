@@ -9,6 +9,7 @@ import { ScopeStrategy } from '../../../strategies/sync/ScopeStrategy';
 import { RequestStrategy } from '../../../strategies/sync/RequestStrategy';
 import { set } from '../../../patching/set';
 import { value } from "../value";
+import { external } from '../external';
 
 describe(`object`, () => {
   it(`returns definition with correct type`, async () => {
@@ -25,6 +26,19 @@ describe(`object`, () => {
     const composed = object({ num: someNumberD, str: someStr });
     const result = container().get(composed);
     expectType<TypeEqual<typeof result, { num: number; str: string }>>(true);
+  });
+
+  it(`correctly picks externals`, async () => {
+    const ext1 = external<{obj1: string}>();
+    const ext2 = external<{obj1: string}>();
+
+    const f1 = singleton.fn((p):string => p.obj1, ext1)
+    const f2 = singleton.fn((p):string => p, ext2)
+
+
+    const composed = object({ f1, f2 });
+
+    expectType<TypeEqual<typeof composed,InstanceDefinition< { f1: string; f2: string }, []>>>(true);
   });
 
   it(`can be replaced`, async () => {

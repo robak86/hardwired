@@ -1,7 +1,7 @@
 import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
-import { PickExternalsFromRecord } from '../../utils/PickExternals';
+import { pickExternals, PickExternalsFromRecord } from '../../utils/PickExternals';
 
 export const object = <T extends Record<keyof any, InstanceDefinition<any, any>>>(
   record: T,
@@ -23,7 +23,7 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any, any>>
     id: v4(),
     strategy,
     isAsync: false,
-    externals: Object.values(record).flatMap(def => def.externals as any) as any,
+    externals: pickExternals(Object.values(record)),
     create: context => {
       return Object.keys(record).reduce((result, property) => {
         result[property] = context.buildWithStrategy(record[property]);

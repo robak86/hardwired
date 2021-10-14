@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
+import { pickExternals, PickExternals } from '../../utils/PickExternals';
 
 export const tuple = <T extends Array<InstanceDefinition<any, any>>, TMeta>(
   ...definitions: T
@@ -21,7 +21,7 @@ export const tuple = <T extends Array<InstanceDefinition<any, any>>, TMeta>(
     id: v4(),
     strategy,
     isAsync: false,
-    externals: definitions.flatMap(def => def.externals as any) as any, //TODO
+    externals: pickExternals(definitions),
     create: context => {
       return definitions.map(def => {
         return context.buildWithStrategy(def);

@@ -36,7 +36,7 @@ export class Container {
     instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
     ...externals: TExternalParams
   ): TValue;
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, ...externals: any): TValue {
     return this.containerContext.get(instanceDefinition, externals);
   }
 

@@ -22,4 +22,16 @@ describe(`PickExternals`, () => {
     >;
     expectType<TypeEqual<Combined, [{ item: number }, { item: string }, { item2: string }]>>(true);
   });
+
+  it(`removes duplicates`, async () => {
+    type Combined = PickExternals<
+      [
+        InstanceDefinition<any, [{ item: number }]>,
+        InstanceDefinition<any, [{ item: number }]>,
+        InstanceDefinition<any, [{ item2: string }]>,
+        InstanceDefinition<any, []>,
+      ]
+      >;
+    expectType<TypeEqual<Combined, [{ item: number }, { item2: string }]>>(true);
+  });
 });

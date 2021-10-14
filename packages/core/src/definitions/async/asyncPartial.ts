@@ -1,7 +1,7 @@
 import { PartialAnyInstancesDefinitionsArgs, PartiallyAppliedAsyncDefinition } from '../../utils/PartiallyApplied';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 import { v4 } from 'uuid';
-import { PickExternals } from '../../utils/PickExternals';
+import { pickExternals, PickExternals } from '../../utils/PickExternals';
 
 export type AsyncPartiallyAppliedFnBuild = {
   <TValue, TArgs extends any[], TProvidedArgs extends PartialAnyInstancesDefinitionsArgs<TArgs>>(
@@ -19,7 +19,7 @@ export const asyncPartial = (strategy: symbol): AsyncPartiallyAppliedFnBuild => 
       id: v4(),
       strategy,
       isAsync: true,
-      externals: args.flatMap(def => def.externals), // TODO: externalIds shouldn't have duplicates
+      externals: pickExternals(args),
       create: async context => {
         if (factory.length === 0) {
           return factory;

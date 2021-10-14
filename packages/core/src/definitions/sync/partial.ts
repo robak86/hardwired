@@ -1,7 +1,7 @@
 import { PartialInstancesDefinitionsArgs, PartiallyAppliedDefinition } from '../../utils/PartiallyApplied';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
-import { PickExternals } from "../../utils/PickExternals";
+import { pickExternals, PickExternals } from '../../utils/PickExternals';
 
 export type PartiallyAppliedFnBuild = {
   <TValue, TArgs extends any[], TProvidedArgs extends PartialInstancesDefinitionsArgs<TArgs>>(
@@ -15,7 +15,7 @@ export const partial = (strategy: symbol): PartiallyAppliedFnBuild => {
     id: v4(),
     strategy,
     isAsync: false,
-    externals: dependencies.flatMap(def => def.externals as any) as any, // TODO: externalIds shouldn't have duplicates
+    externals: pickExternals(dependencies),
     create: context => {
       if (factory.length === 0) {
         return factory;

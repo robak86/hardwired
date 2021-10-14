@@ -55,15 +55,19 @@ export class ContainerContext implements InstancesBuilder {
     instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
     externals: TExternalParams,
   ): TValue;
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals: any = []): TValue {
+    if (externals.length !== instanceDefinition.externals.length) {
+      throw new Error('Invalid external params count');
+    }
+
     if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externals.map(externalDef => {
+        scopeOverrides: instanceDefinition.externals.map((externalDef, idx) => {
           return {
             id: externalDef.id,
             externals: [],
             strategy: TransientStrategy.type,
-            create: () => externals,
+            create: () => externals[idx],
             isAsync: false,
           };
         }),
@@ -80,9 +84,14 @@ export class ContainerContext implements InstancesBuilder {
   }
 
   getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, []>): Promise<TValue>;
-  getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams: TExternalParams): Promise<TValue>;
-  getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams?: TExternalParams): Promise<TValue> {
-
+  getAsync<TValue, TExternalParams>(
+    instanceDefinition: AnyInstanceDefinition<TValue, any>,
+    externalParams: TExternalParams,
+  ): Promise<TValue>;
+  getAsync<TValue, TExternalParams>(
+    instanceDefinition: AnyInstanceDefinition<TValue, any>,
+    externalParams?: TExternalParams,
+  ): Promise<TValue> {
     if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope({
         scopeOverrides: instanceDefinition.externals.map(externalDef => {

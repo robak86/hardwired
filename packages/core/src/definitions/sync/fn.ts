@@ -1,6 +1,6 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
-import { PickExternals } from '../../utils/PickExternals';
+import { pickExternals, PickExternals } from '../../utils/PickExternals';
 
 export type FunctionDefinitionBuildFn = {
   <
@@ -18,7 +18,7 @@ export const fn = (strategy: symbol): FunctionDefinitionBuildFn => {
     id: `${factory.name}:${v4()}`,
     isAsync: false,
     strategy,
-    externals: dependencies.flatMap(def => def.externals as any) as any, // TODO: externalIds shouldn't have duplicates
+    externals: pickExternals(dependencies),
     create: context => {
       return factory(...(dependencies.map(context.buildWithStrategy) as any));
     },

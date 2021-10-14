@@ -28,8 +28,13 @@ describe(`external`, () => {
         it(`requires external params if InstanceDefinition TExternal is different than void`, async () => {
           const cnt = container();
 
-          // @ts-expect-error defUsingExternals requires external params to be passed
-          cnt.get(defUsingExternals1);
+          try {
+            // @ts-expect-error defUsingExternals requires external params to be passed
+            cnt.get(defUsingExternals1);
+          } catch (err) {
+            // expected
+          }
+
           cnt.get(defUsingExternals1, { someExternalParam: 123 });
         });
       });
@@ -38,11 +43,15 @@ describe(`external`, () => {
         it(`requires intersection of all externals objects`, async () => {
           const cnt = container();
 
-          // @ts-expect-error defUsingExternals requires external params to be passed
-          cnt.get(defUsingBothExternals);
+          try {
+            // @ts-expect-error defUsingExternals requires external params to be passed
+            cnt.get(defUsingBothExternals);
 
-          // @ts-expect-error defUsingExternals requires intersection of Externals and OtherExternals
-          cnt.get(defUsingBothExternals, { someExternalParam: 123 });
+            // @ts-expect-error defUsingExternals requires intersection of Externals and OtherExternals
+            cnt.get(defUsingBothExternals, { someExternalParam: 123 });
+          } catch (err) {
+            // expected
+          }
 
           cnt.get(defUsingBothExternals, { someExternalParam: 123 }, { otherExternalParam: 456 });
         });
@@ -69,8 +78,8 @@ describe(`external`, () => {
     it(`merges external params`, async () => {
       const cnt = container();
       const result = cnt.get(defUsingBothExternals, { someExternalParam: 123 }, { otherExternalParam: 456 });
-      expect(result.externals).toEqual({ someExternalParam: 123, otherExternalParam: 456 }); // TODO: formally externals should only have properties from Externals (not both Externals and OtherExternals)
-      expect(result.externals2).toEqual({ someExternalParam: 123, otherExternalParam: 456 });
+      expect(result.externals).toEqual({ someExternalParam: 123 }); // TODO: formally externals should only have properties from Externals (not both Externals and OtherExternals)
+      expect(result.externals2).toEqual({ otherExternalParam: 456 });
     });
   });
 });

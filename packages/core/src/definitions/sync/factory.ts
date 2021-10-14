@@ -21,7 +21,7 @@ export const factory: FactoryBuildFn = (definition: InstanceDefinition<any, any>
     externals: [],
     create: (context): IFactory<any, any> => {
       return {
-        build(params): any {
+        build(...params): any {
           return context.get(definition, params);
         },
       };
