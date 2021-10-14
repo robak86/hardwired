@@ -18,7 +18,7 @@ type ConfigData = { data: string };
 
 class ConfigConsumer {
   public data = Array.from(Array(10000).keys());
-  constructor(public configFactory: IFactory<ConfigProvider, ConfigData>) {}
+  constructor(public configFactory: IFactory<ConfigProvider, [ConfigData]>) {}
 }
 
 const config = external<ConfigData>();

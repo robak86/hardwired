@@ -1,36 +1,28 @@
 import http, { IncomingMessage, ServerResponse } from 'http';
 import createRouter, { HTTPMethod } from 'find-my-way';
-import { asyncFactory, external, factory, IAsyncFactory, intersection, object, request, singleton, tuple } from 'hardwired';
+import { asyncFactory, external, IAsyncFactory, object, request, singleton, tuple, value } from 'hardwired';
 
-const requestD = external<{ req: IncomingMessage }>();
-const responseD = external<{ res: ServerResponse }>();
+const requestD = external<IncomingMessage>();
+const responseD = external<ServerResponse>();
 
-const requestExternals = intersection(requestD, responseD)
+const extraD = value({ db: '234' });
 
-type RequestExternals = {
-  req: IncomingMessage;
-  res: ServerResponse;
-};
+const handler = async (req: IncomingMessage, res: ServerResponse) => {};
+const handler2 = async (req: IncomingMessage, res: ServerResponse, extras) => {};
 
+type HandlerFactory = IAsyncFactory<() => Promise<void>, [IncomingMessage, ServerResponse]>;
 
-
-type Handler<TContext> = (ctx: TContext) => Promise<void>;
-
-const handler: Handler<RequestExternals> = async () => {};
-
-type HandlerFactory<TExternals> = IAsyncFactory<() => Promise<void>, TExternals>;
-
-const handler1D = asyncFactory(request.asyncPartial(handler, requestExternals));
-const handler2D = asyncFactory(request.asyncPartial(handler, requestExternals));
+const handler1D = asyncFactory(request.asyncPartial(handler, requestD, responseD));
+const handler2D = asyncFactory(request.asyncPartial(handler2, requestD, responseD, extraD));
 
 const appHandlers = object({
   root: handler1D,
   health: handler2D,
 });
 
-type RouterHandlers<TContext = RequestExternals> = {
-  root: IAsyncFactory<Handler<TContext>, TContext>;
-  health: IAsyncFactory<Handler<TContext>, TContext>;
+type RouterHandlers = {
+  root: HandlerFactory;
+  health: HandlerFactory;
 };
 
 const buildRouter = (handlers: RouterHandlers) => {
@@ -48,9 +40,9 @@ class Router {
 
   constructor() {}
 
-  append(method: HTTPMethod, path: string, handler: HandlerFactory<RequestExternals>) {
+  append(method: HTTPMethod, path: string, handler: HandlerFactory) {
     this.router.on(method, path, async (req, res) => {
-      const handlerInstance = await handler.build({ req, res });
+      const handlerInstance = await handler.build(req, res);
       await handlerInstance();
     });
   }

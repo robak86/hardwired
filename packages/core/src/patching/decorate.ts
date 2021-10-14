@@ -1,10 +1,10 @@
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
-export function decorate<TInstance, TNextValue extends TInstance, TDecoratorDeps extends any[]>(
-  instance: InstanceDefinition<TInstance, any>,
+export function decorate<TInstance, TDecoratedExternals, TNextValue extends TInstance, TDecoratorDeps extends any[]>(
+  instance: InstanceDefinition<TInstance, TDecoratedExternals>,
   decorator: (prevValue: TInstance, ...decoratorDeps: TDecoratorDeps) => TNextValue,
   ...dependencies: { [K in keyof TDecoratorDeps]: InstanceDefinition<TDecoratorDeps[K], any> }
-): InstanceDefinition<TInstance> {
+): InstanceDefinition<TInstance, []> { // TODO: handle externals
   return {
     id: instance.id,
     strategy: instance.strategy,

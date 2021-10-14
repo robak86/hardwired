@@ -50,7 +50,7 @@ export class ContainerContext implements InstancesBuilder {
   //   return this.buildWithStrategy(instanceDefinition);
   // }
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, void>): TValue;
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, []>): TValue;
   get<TValue, TExternalParams>(
     instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
     externals: TExternalParams,
@@ -79,7 +79,7 @@ export class ContainerContext implements InstancesBuilder {
     }
   }
 
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, void>): Promise<TValue>;
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, []>): Promise<TValue>;
   getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams: TExternalParams): Promise<TValue>;
   getAsync<TValue, TExternalParams>(instanceDefinition: AnyInstanceDefinition<TValue, any>, externalParams?: TExternalParams): Promise<TValue> {
 

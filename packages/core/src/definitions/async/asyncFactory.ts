@@ -3,14 +3,14 @@ import { v4 } from 'uuid';
 import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 
-export interface IAsyncFactory<TReturn, TParams> {
-  build(params: TParams): Promise<TReturn>;
+export interface IAsyncFactory<TReturn, TParams extends any[]> {
+  build(...params: TParams): Promise<TReturn>;
 }
 
 export type AsyncFactoryBuildFn = {
-  <TInstance, TParams>(definition: AnyInstanceDefinition<TInstance, TParams>): InstanceDefinition<
+  <TInstance, TParams extends any[]>(definition: AnyInstanceDefinition<TInstance, TParams>): InstanceDefinition<
     IAsyncFactory<TInstance, TParams>,
-    void
+    []
   >;
 };
 

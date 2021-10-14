@@ -17,7 +17,7 @@ describe(`klass`, () => {
         const numD = value(123);
         const cls = klass(SingletonStrategy.type)(TestClass, numD, ext);
 
-        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, { objectId: string }>>>(true);
+        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, [{ objectId: string }]>>>(true);
       });
 
       it(`correctly picks external params from instances definitions provided as dependencies`, async () => {
@@ -26,7 +26,7 @@ describe(`klass`, () => {
         const objD = value({ objectId: '123' });
         const cls = klass(SingletonStrategy.type)(TestClass, numD, objD);
 
-        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, void>>>(true);
+        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, []>>>(true);
       });
     });
   });

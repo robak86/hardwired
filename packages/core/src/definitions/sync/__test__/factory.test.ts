@@ -15,7 +15,7 @@ describe(`factory`, () => {
       const randomNumFactoryD = factory(randomNumD);
 
       const factoryInstance = container().get(randomNumFactoryD);
-      expectType<TypeEqual<typeof factoryInstance, IFactory<number, void>>>(true);
+      expectType<TypeEqual<typeof factoryInstance, IFactory<number, []>>>(true);
       expect(typeof factoryInstance.build()).toEqual('number');
     });
 
@@ -55,7 +55,7 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IFactory<Handler, Request>) {}
+      constructor(public handlersFactory: IFactory<Handler, [Request]>) {}
     }
 
     class DbConnection {
@@ -72,7 +72,7 @@ describe(`factory`, () => {
         const routerD = transient.class(Router, factory(handlerD));
 
         const factoryD = factory(handlerD);
-        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, Request>, void>>>(true);
+        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, []>>>(true);
       });
     });
 
@@ -213,7 +213,7 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IFactory<Handler, Request>) {}
+      constructor(public handlersFactory: IFactory<Handler, [Request]>) {}
     }
 
     class App {
@@ -224,7 +224,7 @@ describe(`factory`, () => {
       public app1: App;
       public app2: App;
 
-      constructor(modulesFactory: IFactory<App, EnvConfig>) {
+      constructor(modulesFactory: IFactory<App, [EnvConfig]>) {
         this.app1 = modulesFactory.build({ mountPoint: '/app1' });
         this.app2 = modulesFactory.build({ mountPoint: '/app2' });
       }
@@ -286,6 +286,7 @@ describe(`factory`, () => {
       const dbConnectionD = scoped.class(DbConnection);
       const loggerD = transient.class(Logger, requestD, requestIdD);
       const handlerD = request.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
+      const wtf = factory(handlerD);
       const routerD = request.class(Router, factory(handlerD));
       const appModuleD = request.class(App, routerD, envConfigD);
       const appsClusterD = singleton.class(AppsCluster, factory(appModuleD));

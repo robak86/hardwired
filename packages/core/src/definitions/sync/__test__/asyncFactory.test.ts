@@ -1,12 +1,12 @@
 import { external } from '../external';
 import { factory, IFactory } from '../factory';
-import { request, scoped, singleton, transient } from '../../definitions';
+import { request, singleton, transient } from '../../definitions';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/InstanceDefinition';
 import { container } from '../../../container/Container';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set';
-import { asyncFactory } from '../../async/asyncFactory';
+import { asyncFactory, IAsyncFactory } from '../../async/asyncFactory';
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {
@@ -15,7 +15,7 @@ describe(`factory`, () => {
       const randomNumFactoryD = asyncFactory(randomNumD);
 
       const factoryInstance = container().get(randomNumFactoryD);
-      expectType<TypeEqual<typeof factoryInstance, IFactory<Promise<number>, void>>>(true);
+      expectType<TypeEqual<typeof factoryInstance, IFactory<Promise<number>, []>>>(true);
       expect(typeof (await factoryInstance.build())).toEqual('number');
     });
 
@@ -55,7 +55,7 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IFactory<Promise<Handler>, Request>) {}
+      constructor(public handlersFactory: IAsyncFactory<Handler, [Request]>) {}
     }
 
     class DbConnection {
@@ -72,7 +72,7 @@ describe(`factory`, () => {
         const routerD = transient.asyncClass(Router, asyncFactory(handlerD));
 
         const factoryD = asyncFactory(handlerD);
-        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Promise<Handler>, Request>, void>>>(true);
+        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, []>>>(true);
       });
     });
 
@@ -187,7 +187,7 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IFactory<Promise<Handler>, Request>) {}
+      constructor(public handlersFactory: IAsyncFactory<Handler, [Request]>) {}
     }
 
     class App {
@@ -195,10 +195,10 @@ describe(`factory`, () => {
     }
 
     class AppsCluster {
-      public app1?: App
-      public app2?: App
+      public app1?: App;
+      public app2?: App;
 
-      constructor(private modulesFactory: IFactory<Promise<App>, EnvConfig>) {}
+      constructor(private modulesFactory: IAsyncFactory<App, [EnvConfig]>) {}
 
       async mountApps() {
         this.app1 = await this.modulesFactory.build({ mountPoint: '/app1' });

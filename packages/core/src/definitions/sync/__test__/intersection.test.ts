@@ -18,7 +18,7 @@ describe(`intersection`, () => {
       const obj2 = singleton.fn(() => ({ b: 1 }));
       const combined = intersection(obj1, obj2);
 
-      expectType<TypeEqual<typeof combined, InstanceDefinition<{ a: number } & { b: number }, void>>>(true);
+      expectType<TypeEqual<typeof combined, InstanceDefinition<{ a: number } & { b: number }, []>>>(true);
     });
   });
 

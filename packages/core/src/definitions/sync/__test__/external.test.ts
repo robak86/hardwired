@@ -44,7 +44,7 @@ describe(`external`, () => {
           // @ts-expect-error defUsingExternals requires intersection of Externals and OtherExternals
           cnt.get(defUsingBothExternals, { someExternalParam: 123 });
 
-          cnt.get(defUsingBothExternals, { someExternalParam: 123, otherExternalParam: 456 });
+          cnt.get(defUsingBothExternals, { someExternalParam: 123 }, { otherExternalParam: 456 });
         });
       });
     });
@@ -68,7 +68,7 @@ describe(`external`, () => {
 
     it(`merges external params`, async () => {
       const cnt = container();
-      const result = cnt.get(defUsingBothExternals, { someExternalParam: 123, otherExternalParam: 456 });
+      const result = cnt.get(defUsingBothExternals, { someExternalParam: 123 }, { otherExternalParam: 456 });
       expect(result.externals).toEqual({ someExternalParam: 123, otherExternalParam: 456 }); // TODO: formally externals should only have properties from Externals (not both Externals and OtherExternals)
       expect(result.externals2).toEqual({ someExternalParam: 123, otherExternalParam: 456 });
     });

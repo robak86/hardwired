@@ -31,10 +31,10 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
 export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, void>): TValue;
-  get<TValue, TExternalParams>(
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, []>): TValue;
+  get<TValue, TExternalParams extends [...any[]]>(
     instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
-    externals: TExternalParams,
+    ...externals: TExternalParams
   ): TValue;
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals?: any): TValue {
     return this.containerContext.get(instanceDefinition, externals);
@@ -45,9 +45,11 @@ export class Container {
     return requestContext.getAsync(instanceDefinition);
   }
 
-  getAll<TLazyModule extends Array<InstanceDefinition<any>>>(
+  getAll<TLazyModule extends Array<InstanceDefinition<any, any>>>(
     ...definitions: TLazyModule
-  ): { [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance> ? TInstance : unknown } {
+  ): {
+    [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown;
+  } {
     const requestContext = this.containerContext.checkoutRequestScope();
 
     return definitions.map(def => requestContext.get(def)) as any;
