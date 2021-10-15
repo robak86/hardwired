@@ -34,7 +34,7 @@ describe(`decorate`, () => {
     expect(c.get(someValue)).toEqual(6);
   });
 
-  it(`allows using other dependencies from the same module, ex1`, async () => {
+  it(`allows using additional dependencies, ex1`, async () => {
     const a = value(1);
     const b = value(2);
     const someValue = value(10);
@@ -45,7 +45,7 @@ describe(`decorate`, () => {
     expect(c.get(someValue)).toEqual(13);
   });
 
-  it(`allows using other dependencies from the same module, ex2`, async () => {
+  it(`allows using additional dependencies, ex2`, async () => {
     const a = value(1);
     const b = value(2);
     const someValue = singleton.fn((a, b) => a + b, a, b);

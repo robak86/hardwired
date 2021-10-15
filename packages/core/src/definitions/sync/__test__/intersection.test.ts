@@ -2,7 +2,6 @@ import { request, scoped, singleton } from '../../definitions';
 import { intersection } from '../intersection';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/InstanceDefinition';
-import { value } from '../value';
 import { object } from '../object';
 import { container } from '../../../container/Container';
 import { set } from '../../../patching/set';

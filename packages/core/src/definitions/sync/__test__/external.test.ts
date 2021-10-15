@@ -78,7 +78,7 @@ describe(`external`, () => {
     it(`merges external params`, async () => {
       const cnt = container();
       const result = cnt.get(defUsingBothExternals, { someExternalParam: 123 }, { otherExternalParam: 456 });
-      expect(result.externals).toEqual({ someExternalParam: 123 }); // TODO: formally externals should only have properties from Externals (not both Externals and OtherExternals)
+      expect(result.externals).toEqual({ someExternalParam: 123 });
       expect(result.externals2).toEqual({ otherExternalParam: 456 });
     });
   });

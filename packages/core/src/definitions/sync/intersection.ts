@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
+import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { UnionToIntersection } from 'type-fest';
 
 export const intersection = <T extends Array<InstanceDefinition<object, any>>, TMeta>(
@@ -24,7 +24,7 @@ export const intersection = <T extends Array<InstanceDefinition<object, any>>, T
     id: v4(),
     strategy,
     isAsync: false,
-    externals: definitions.flatMap(def => def.externals as any) as any, // TODO
+    externals: pickExternals(definitions),
     create: context => {
       return definitions.reduce((result, def) => {
         return {

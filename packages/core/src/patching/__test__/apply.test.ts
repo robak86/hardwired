@@ -7,6 +7,7 @@ import { decorate } from '../decorate';
 import { apply } from '../apply';
 import { object } from '../../definitions/sync/object';
 import { ContainerContext } from '../../context/ContainerContext';
+import { value } from '../../definitions/sync/value';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
@@ -37,6 +38,47 @@ describe(`apply`, () => {
 
     const c = container({ scopeOverrides: [mPatch] });
     expect(c.get(someValue).value).toEqual(6);
+  });
+
+  it(`allows using additional dependencies, ex1`, async () => {
+    const a = value(new BoxedValue(1));
+    const b = value(new BoxedValue(2));
+    const someValue = value(new BoxedValue(10));
+
+    const mPatch = apply(
+      someValue,
+      (val, a, b) => {
+        val.value = val.value + a.value + b.value;
+      },
+      a,
+      b,
+    );
+
+    const c = container({ scopeOverrides: [mPatch] });
+    expect(c.get(someValue)).toEqual(new BoxedValue(13));
+  });
+
+  it(`allows using additional dependencies, ex2`, async () => {
+    const a = value(new BoxedValue(1));
+    const b = value(new BoxedValue(2));
+    const someValue = singleton.fn(
+      (a: BoxedValue<number>, b: BoxedValue<number>) => {
+        return new BoxedValue(a.value + b.value);
+      },
+      a,
+      b,
+    );
+
+    const mPatch = apply(
+      someValue,
+      (val, b) => {
+        val.value = val.value * b.value;
+      },
+      b,
+    );
+
+    const c = container({ scopeOverrides: [mPatch] });
+    expect(c.get(someValue)).toEqual(new BoxedValue(6));
   });
 
   describe(`scopeOverrides`, () => {
@@ -71,26 +113,6 @@ describe(`apply`, () => {
       expect(req2.source).toEqual(req2.a);
       expect(req1.source).not.toEqual(req2.source);
       expect(req1.a).not.toEqual(req2.a);
-    });
-
-    // TODO: wrong test assertion
-    it.skip(`does not change original strategy`, async () => {
-      // const m = module()
-      //   .__define(
-      //     'a',
-      //     request.fn(() => Math.random()),
-      //   )
-      //   .__define(
-      //     'b',
-      //     request.fn(() => Math.random()),
-      //   )
-      //   .build();
-      //
-      // const c = container();
-      // const obj1 = c.__asObject(m);
-      // const obj2 = c.__asObject(m);
-      //
-      // expect(obj1).not.toBe(obj2);
     });
   });
 

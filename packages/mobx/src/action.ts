@@ -25,7 +25,7 @@ export const action: ComputedBuildFn = (factory, ...dependencies): InstanceDefin
     isAsync: false,
     externals: dependencies.flatMap(def => def.externals),
     create: context => {
-      // TODO: at this line we can check which dependencies are observable and call .get selectively in computed body
+      // TODO: optimize - at this line we can check which dependencies are observable and call .get selectively in computed body
 
       return (...actionArgs) => {
         runInAction(() => {

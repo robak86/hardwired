@@ -1,15 +1,26 @@
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import invariant from 'tiny-invariant';
 
-export const apply = <TInstance, TDecoratedExternals extends any[], TNextValue extends TInstance, TDecoratorDeps extends any[]>(
+export const apply = <
+  TInstance,
+  TDecoratedExternals extends any[],
+  TNextValue extends TInstance,
+  TDecoratorDeps extends any[],
+>(
   instance: InstanceDefinition<TInstance, TDecoratedExternals>,
   applyFn: (prevValue: TInstance, ...decoratorDeps: TDecoratorDeps) => void,
-  ...dependencies: { [K in keyof TDecoratorDeps]: InstanceDefinition<TDecoratorDeps[K], any> } // TODO: tests
-): InstanceDefinition<TInstance, []> => {
+  ...dependencies: { [K in keyof TDecoratorDeps]: InstanceDefinition<TDecoratorDeps[K], any> }
+): InstanceDefinition<TInstance, TDecoratedExternals> => {
+  invariant(
+    dependencies.every(d => d.externals.length === 0),
+    `apply does accept additional dependencies with external params`,
+  );
+
   return {
     id: instance.id,
     strategy: instance.strategy,
     isAsync: false,
-    externals: [...instance.externals as any, ...dependencies.flatMap(def => def.externals as any)] as any, //TODO
+    externals: instance.externals,
     create: context => {
       const decorated = instance.create(context);
       const applyDeps = dependencies.map(context.buildWithStrategy);
