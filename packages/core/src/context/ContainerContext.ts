@@ -45,17 +45,10 @@ export class ContainerContext implements InstancesBuilder {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  // TODO remove in favor of buildWithStrategy
-  // get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any>): TValue {
-  //   return this.buildWithStrategy(instanceDefinition);
-  // }
-
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, []>): TValue;
-  get<TValue, TExternalParams>(
+  get<TValue, TExternalParams extends any[]>(
     instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
-    externals: TExternalParams,
-  ): TValue;
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, externals: any = []): TValue {
+    ...externals: TExternalParams
+  ): TValue {
     if (externals.length !== instanceDefinition.externals.length) {
       throw new Error('Invalid external params count');
     }
@@ -76,30 +69,25 @@ export class ContainerContext implements InstancesBuilder {
       return scopedContainer.get({
         ...instanceDefinition,
         externals: [],
-      });
+      } as any);
     } else {
       const requestContext = this.checkoutRequestScope();
       return requestContext.buildWithStrategy(instanceDefinition);
     }
   }
 
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, []>): Promise<TValue>;
-  getAsync<TValue, TExternalParams>(
-    instanceDefinition: AnyInstanceDefinition<TValue, any>,
-    externalParams: TExternalParams,
-  ): Promise<TValue>;
-  getAsync<TValue, TExternalParams>(
-    instanceDefinition: AnyInstanceDefinition<TValue, any>,
-    externalParams?: TExternalParams,
+  getAsync<TValue, TExternalParams extends any[]>(
+    instanceDefinition: AnyInstanceDefinition<TValue, TExternalParams>,
+    ...externalParams: TExternalParams
   ): Promise<TValue> {
     if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externals.map(externalDef => {
+        scopeOverrides: instanceDefinition.externals.map((externalDef, idx) => {
           return {
             id: externalDef.id,
             externals: [],
             strategy: TransientStrategy.type,
-            create: () => externalParams,
+            create: () => externalParams[idx],
             isAsync: false,
           };
         }),
@@ -108,7 +96,7 @@ export class ContainerContext implements InstancesBuilder {
       return scopedContainer.getAsync({
         ...instanceDefinition,
         externals: [],
-      });
+      } as any);
     } else {
       const requestContext = this.checkoutRequestScope();
       return requestContext.buildWithStrategy(instanceDefinition);

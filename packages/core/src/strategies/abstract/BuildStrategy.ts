@@ -9,9 +9,8 @@ export abstract class BuildStrategy {
   abstract build(
     definition: AnyInstanceDefinition<any, any>,
     instancesCache: InstancesStore,
-    asyncInstancesCache: AsyncInstancesStore, // only required by service locator because we would like to obtain service locator synchronously and then get some async definitions
+    asyncInstancesCache: AsyncInstancesStore,
     resolvers: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,
   ): any;
 }
-

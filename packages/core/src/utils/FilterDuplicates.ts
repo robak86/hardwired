@@ -5,6 +5,10 @@ export type FilterDuplicates<T> = T extends [] ? [] :
   T extends [ ...infer TRest, infer TItem] ?
     Contains<TItem, TRest> extends true ? FilterDuplicates<TRest> : [...FilterDuplicates<TRest>, TItem] : T
 
+/**
+ * Runtime filtering for duplicates reflecting behaviour of FilterDuplicates<T>
+ * @param items
+ */
 export const filterDuplicates = (items: any[]): any[] => {
   if (items.length < 2) {
     return items;

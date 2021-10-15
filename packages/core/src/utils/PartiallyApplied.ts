@@ -1,5 +1,5 @@
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
-import { AnyInstanceDefinition } from "../definitions/abstract/AnyInstanceDefinition";
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 
 // prettier-ignore
 export type PartiallyApplied<A extends any[], D extends PartialArgs<A>, R> =
@@ -26,12 +26,10 @@ export type PartialInstancesDefinitionsArgs<TArgs extends any[]> =
     [] extends TArgs ? []:
     TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: InstanceDefinition<TArgs[K], any>} ) | PartialInstancesDefinitionsArgs<TPRev> : never;
 
-
 // prettier-ignore
 export type PartialAnyInstancesDefinitionsArgs<TArgs extends any[]> =
     [] extends TArgs ? []:
         TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AnyInstanceDefinition<TArgs[K], any>} ) | PartialAnyInstancesDefinitionsArgs<TPRev> : never;
-
 
 // prettier-ignore
 export type PartiallyAppliedAsyncDefinition<A extends any[], D extends PartialAnyInstancesDefinitionsArgs<A>, R> =

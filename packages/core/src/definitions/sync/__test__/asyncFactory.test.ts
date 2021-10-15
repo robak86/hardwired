@@ -36,7 +36,67 @@ describe(`factory`, () => {
     });
   });
 
-  describe(`usage with withRequestScope`, () => {});
+  describe(`using definitions with multiple externals provided in different orders`, () => {
+    it(`provides correct dependencies`, async () => {
+      type Ext1 = { ext1: string };
+      const ext1 = external<Ext1>();
+
+      type Ext2 = { ext2: string };
+      const ext2 = external<Ext2>();
+
+      const consumer1 = async (ext1: Ext1, ext2: Ext2): Promise<[Ext1, Ext2]> => [
+        { ext1: `consumer1${ext1.ext1}` },
+        { ext2: `consumer2${ext2.ext2}` },
+      ];
+
+      const consumer1Spy = jest.fn(consumer1);
+      const consumer1D = singleton.asyncPartial(consumer1Spy, ext1, ext2);
+
+      const consumer2 = async (ext2: Ext2, ext1: Ext1): Promise<[Ext2, Ext1]> => [
+        { ext2: `consumer2${ext2.ext2}` },
+        { ext1: `consumer1${ext1.ext1}` },
+      ];
+
+      const consumer2Spy = jest.fn(consumer2);
+      const consumer2D = singleton.asyncPartial(consumer2Spy, ext2, ext1);
+
+      const combined = async (
+        consumer1: () => Promise<[Ext1, Ext2]>,
+        consumer2: () => Promise<[Ext2, Ext1]>,
+      ): Promise<[Ext1, Ext2, Ext2, Ext1]> => {
+        return [...(await consumer1()), ...(await consumer2())];
+      };
+      const combinedD = singleton.asyncFn(combined, consumer1D, consumer2D);
+
+      const compositionRoot = async (
+        factory: IAsyncFactory<[Ext1, Ext2, Ext2, Ext1], [Ext1, Ext2]>,
+      ): Promise<[Ext1, Ext2, Ext2, Ext1]> => {
+        return factory.build({ ext1: 'ext1' }, { ext2: 'ext2' });
+      };
+
+      const compositionRootD = singleton.asyncFn(compositionRoot, asyncFactory(combinedD));
+
+      const cnt = container();
+      const result = await cnt.getAsync(compositionRootD);
+      expect(result).toEqual([
+        {
+          ext1: 'consumer1ext1',
+        },
+        {
+          ext2: 'consumer2ext2',
+        },
+        {
+          ext2: 'consumer2ext2',
+        },
+        {
+          ext1: 'consumer1ext1',
+        },
+      ]);
+
+      expect(consumer1Spy).toHaveBeenCalledWith({ ext1: 'ext1' }, { ext2: 'ext2' });
+      expect(consumer2Spy).toHaveBeenCalledWith({ ext2: 'ext2' }, { ext1: 'ext1' });
+    });
+  });
 
   describe(`no nested factories`, () => {
     type Request = { requestObj: 'req' };

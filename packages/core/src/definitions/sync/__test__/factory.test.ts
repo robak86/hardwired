@@ -36,8 +36,6 @@ describe(`factory`, () => {
     });
   });
 
-  describe(`usage with withRequestScope`, () => {});
-
   describe(`no nested factories`, () => {
     type Request = { requestObj: 'req' };
 
@@ -172,7 +170,7 @@ describe(`factory`, () => {
           const result = cnt.get(routerD);
           const handler = result.handlersFactory.build({ requestObj: 'req' });
 
-          expect(handler.request).toEqual({requestObj: 'sss' });
+          expect(handler.request).toEqual({ requestObj: 'sss' });
         });
 
         it(`propagates singletons created by factory to parent scope to make them reusable in next .build calls`, async () => {
@@ -192,6 +190,63 @@ describe(`factory`, () => {
           expect(handlerInstance1.dbConnection.connectionId).toEqual(handlerInstance2.dbConnection.connectionId);
         });
       });
+    });
+  });
+
+  describe(`using definitions with multiple externals provided in different orders`, () => {
+    it(`provides correct dependencies`, async () => {
+      type Ext1 = { ext1: string };
+      const ext1 = external<Ext1>();
+
+      type Ext2 = { ext2: string };
+      const ext2 = external<Ext2>();
+
+      const consumer1 = (ext1: Ext1, ext2: Ext2): [Ext1, Ext2] => [
+        { ext1: `consumer1${ext1.ext1}` },
+        { ext2: `consumer2${ext2.ext2}` },
+      ];
+
+      const consumer1Spy = jest.fn(consumer1);
+      const consumer1D = singleton.partial(consumer1Spy, ext1, ext2);
+
+      const consumer2 = (ext2: Ext2, ext1: Ext1): [Ext2, Ext1] => [
+        { ext2: `consumer2${ext2.ext2}` },
+        { ext1: `consumer1${ext1.ext1}` },
+      ];
+
+      const consumer2Spy = jest.fn(consumer2);
+      const consumer2D = singleton.partial(consumer2Spy, ext2, ext1);
+
+      const combined = (consumer1: () => [Ext1, Ext2], consumer2: () => [Ext2, Ext1]): [Ext1, Ext2, Ext2, Ext1] => {
+        return [...consumer1(), ...consumer2()];
+      };
+      const combinedD = singleton.fn(combined, consumer1D, consumer2D);
+
+      const compositionRoot = (factory: IFactory<[Ext1, Ext2, Ext2, Ext1], [Ext1, Ext2]>): [Ext1, Ext2, Ext2, Ext1] => {
+        return factory.build({ ext1: 'ext1' }, { ext2: 'ext2' });
+      };
+
+      const compositionRootD = singleton.fn(compositionRoot, factory(combinedD));
+
+      const cnt = container();
+      const result = cnt.get(compositionRootD);
+      expect(result).toEqual([
+        {
+          ext1: 'consumer1ext1',
+        },
+        {
+          ext2: 'consumer2ext2',
+        },
+        {
+          ext2: 'consumer2ext2',
+        },
+        {
+          ext1: 'consumer1ext1',
+        },
+      ]);
+
+      expect(consumer1Spy).toHaveBeenCalledWith({ ext1: 'ext1' }, { ext2: 'ext2' });
+      expect(consumer2Spy).toHaveBeenCalledWith({ ext2: 'ext2' }, { ext1: 'ext1' });
     });
   });
 

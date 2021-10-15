@@ -31,18 +31,20 @@ export const defaultStrategiesRegistry = new StrategiesRegistry({
 export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, []>): TValue;
-  get<TValue, TExternalParams extends [...any[]]>(
+  // get<TValue>(instanceDefinition: InstanceDefinition<TValue, []>): TValue;
+  get<TValue, TExternalParams extends any[]>(
     instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
     ...externals: TExternalParams
-  ): TValue;
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any>, ...externals: any): TValue {
-    return this.containerContext.get(instanceDefinition, externals);
+  ): TValue {
+    return this.containerContext.get(instanceDefinition, ...externals);
   }
 
-  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any>): Promise<TValue> {
+  getAsync<TValue, TExternalParams extends any[]>(
+    instanceDefinition: AnyInstanceDefinition<TValue, TExternalParams>,
+    ...externalParams: TExternalParams
+  ): Promise<TValue> {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.getAsync(instanceDefinition);
+    return requestContext.getAsync(instanceDefinition, ...externalParams);
   }
 
   getAll<TLazyModule extends Array<InstanceDefinition<any, any>>>(
@@ -54,16 +56,6 @@ export class Container {
 
     return definitions.map(def => requestContext.get(def)) as any;
   }
-
-  // /***
-  //  * New container inherits current's container scopeOverrides, e.g. if current container has overrides for some singleton
-  //  * then new scope will inherit this singleton unless one provides new overrides in options for this singleton.
-  //  * Current containers' instances build by "scoped" strategy are not inherited
-  //  * @param options
-  //  */
-  // checkoutScope(options: ChildScopeOptions = {}): Container {
-  //   return new Container(this.containerContext.childScope(options));
-  // }
 }
 
 export type ContainerOptions = ContainerScopeOptions;
