@@ -10,7 +10,6 @@ Minimalistic, type-safe DI/IoC solution for TypeScript.
 - [x] No decorators, no reflection
 - [x] Lazy instantiation of the dependencies
 - [x] Easy mocking and testing
-- [x] Extendable design
 - [x] Allows writing code that is not coupled to DI container
   - does not pollute user code with DI specific code (usually decorators combined with
     reflection or static properties)
@@ -84,7 +83,6 @@ Library provides definitions builders grouped by lifespan:
 - `transient` always creates a new instance
 - `singleton` always uses single instance
 - `request` acts like singleton across a request (`container.get(...)` or `container.getAll(...) ` call )
-- `scoped` acts like singleton in [Isolated scope](#isolated-scope)
 
 Each group object provides definitions builders for specific type of instance
 
@@ -209,72 +207,6 @@ const clientConfigDef = value({ host: 'example.com' });
 const configDef = object({ server: serverConfigDef, client: clientConfigDef });
 
 const config = container().get(configDef); //returns {server: {port: number}, client: {host: 'example.com'}}
-```
-
-**`serviceLocator`** - static definition for injecting service locator.
-
-_Using service locator is usually considered as an anti-pattern, because it breaks inversion of
-control and makes classes responsible for getting their own dependencies. It also couples your  
-implementation with service locator. That being said sometimes there are cases when using single
-composition root is not possible - e.g. on integration with 3rd party libraries._
-
-```typescript
-import { container, IServiceLocator, scoped, serviceLocator, value, InstanceDefinition } from 'hardwired';
-
-// Beware that this is just a simple pseudo code demonstrating potential use case for service
-// locator. In real world application one would like probably leverage express middleware using
-// more functional style. (which also should be possible with hardwired by using
-// instance definitions like fn, partial, object)
-
-interface IRequestHandler {
-  onRequest();
-}
-
-class UserDetailsHandler implements IRequestHandler {
-  constructor(private db: Db, private req: Request, private res: Response) {}
-
-  onRequest() {
-    this.res.send({ user: { email: 'john@example.com' } });
-  }
-}
-
-class App {
-  private app;
-
-  constructor(serviceLocator: IServiceLocator, config: { port: number }) {
-    this.app = express();
-    this.app.get('/users/:id', (req, res) => this.handleUsingDefinition(req, res, userDetailsRouteHandler));
-  }
-
-  listen() {
-    this.app.listen(this.config.port);
-  }
-
-  private handleUsingDefinition<T extends IRequestHandler>(req, res, handlerDefinition: InstanceDefinition<T>) {
-    this.serviceLocator
-      .checkoutScope([
-        // replace req, and resobject with actuall instances
-        set(requestDef, req),
-        set(responseDef, res),
-      ])
-      .get(handlerDefinition)
-      .onRequest();
-  }
-}
-
-// request and response object will be replaced with actual instances while handling actuall request
-const requestDef = scoped.fn(() => ({} as Request));
-const responseDef = scoped.fn(() => ({} as Request));
-
-const dbDef = singleton.fn(() => createDbConnection());
-const userDetailsRouteHandler = scoped.class(UserDetailsHandler, userDetailsRouteHandler);
-
-const appConfig = value({ port: 1234 });
-const appDef = singleton.class(App, serviceLocator, appConfig);
-
-const cnt = container();
-const app = cnt.get(appDef);
-app.listen();
 ```
 
 ### Overriding definitions
@@ -402,6 +334,5 @@ writeAction.run();
 expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
 ```
 
-### Isolated scope
-
-[TODO]
+### Factories
+TODO
