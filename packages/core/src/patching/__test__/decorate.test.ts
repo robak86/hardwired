@@ -76,7 +76,7 @@ describe(`decorate`, () => {
 
     it(`uses different request scope for each subsequent asObject call`, async () => {
       const source = request.fn(() => Math.random());
-      const a = request.fn(source => source, source);
+      const a = request.fn((source:number) => source, source);
 
       const mPatch = decorate(a, a => a);
 

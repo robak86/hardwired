@@ -1,9 +1,10 @@
 import http, { IncomingMessage, ServerResponse } from 'http';
 import createRouter, { HTTPMethod } from 'find-my-way';
-import { asyncFactory, external, IAsyncFactory, object, request, singleton, tuple, value } from 'hardwired';
+import { asyncFactory, external, IAsyncFactory, object, request, singleton, transient, tuple, value } from 'hardwired';
 
-const requestD = external<IncomingMessage>();
-const responseD = external<ServerResponse>();
+export const requestD = external<IncomingMessage>();
+export const responseD = external<ServerResponse>();
+export const nextD = external<() => Promise<void>>();
 
 const extraD = value({ db: '123' });
 

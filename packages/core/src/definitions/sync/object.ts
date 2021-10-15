@@ -10,7 +10,8 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any, []>>>
   []
   // due to typescript limitations there is no way to correctly infer externals from record.
   // Order of the record properties is not guaranteed therefore the order of externals in tuple cannot be guaranteed
-  // e.g. (Object.values(...) may return values in different order than mapped type
+  // (Object.values(...) may return values in different order than mapped type
+  // TODO: alternatively object may accept record of InstanceDefinition which the same externals tuple
 > => {
   const definitions = Object.values(record);
   const firstStrategy = definitions[0]?.strategy;
