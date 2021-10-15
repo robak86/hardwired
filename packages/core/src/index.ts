@@ -3,7 +3,6 @@ export { container, Container } from './container/Container';
 export * from './strategies/sync/RequestStrategy';
 export * from './strategies/sync/SingletonStrategy';
 export * from './strategies/sync/TransientStrategy';
-export * from './strategies/sync/ScopeStrategy';
 export * from './definitions/definitions';
 export * from './definitions/abstract/InstanceDefinition';
 
