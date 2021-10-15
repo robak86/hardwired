@@ -29,11 +29,11 @@ export type PartialInstancesDefinitionsArgs<TArgs> =
 // prettier-ignore
 export type PartialAnyInstancesDefinitionsArgs<TArgs extends any[]> =
     [] extends TArgs ? []:
-        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AnyInstanceDefinition<TArgs[K], any>} ) | PartialAnyInstancesDefinitionsArgs<TPRev> : never;
+        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AnyInstanceDefinition<TArgs[K], any>} ) | PartialAnyInstancesDefinitionsArgs<TPRev> : [];
 
 // prettier-ignore
 export type PartiallyAppliedAsyncDefinition<A extends any[], D extends PartialAnyInstancesDefinitionsArgs<A>, R> =
-    [] extends A ? () => Promise<R> :
-    A extends D ? () => Promise<R> :
-    A extends [...SameLength<D>, ...infer TRest] ? (...args:TRest) => Promise<R> : // ...D may be replaced with SameLength<D>?
+    [] extends A ? () => R :
+    A extends D ? () => R :
+    A extends [...SameLength<D>, ...infer TRest] ? (...args:TRest) => R : // ...D may be replaced with SameLength<D>?
     never;
