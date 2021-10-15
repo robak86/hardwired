@@ -22,9 +22,9 @@ export type PartiallyAppliedDefinition<A extends any[], D extends PartialInstanc
 type SameLength<T extends any[]> = { [K in keyof T]: any };
 
 // prettier-ignore
-export type PartialInstancesDefinitionsArgs<TArgs extends any[]> =
+export type PartialInstancesDefinitionsArgs<TArgs> =
     [] extends TArgs ? []:
-    TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: InstanceDefinition<TArgs[K], any>} ) | PartialInstancesDefinitionsArgs<TPRev> : never;
+    TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: InstanceDefinition<TArgs[K], any>} ) | PartialInstancesDefinitionsArgs<TPRev> : [];
 
 // prettier-ignore
 export type PartialAnyInstancesDefinitionsArgs<TArgs extends any[]> =

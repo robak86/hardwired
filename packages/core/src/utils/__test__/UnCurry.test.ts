@@ -11,10 +11,10 @@ describe(`uncurry`, () => {
   });
 
   describe(`fn with rest args`, () => {
-    it(`returns non callable type wit error message`, async () => {
+    it(`returns never`, async () => {
       const fn = (...args: any[]) => args;
       const unCurried = uncurry(fn);
-      expectType<TypeEqual<typeof unCurried, '...rest arguments are not supported'>>(true);
+      expectType<TypeEqual<typeof unCurried, never>>(true);
     });
   });
 

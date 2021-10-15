@@ -6,7 +6,7 @@ export type UnCurry<T, TArgsAggregate extends any[] = []> =
     IsFinite<
       TArgs,
       TReturn extends (...args: any[]) => any ? UnCurry<TReturn, [...TArgsAggregate, ...TArgs]> : (...args: [...TArgsAggregate, ...TArgs]) => TReturn,
-      `...rest arguments are not supported`>
+      never>
      :
     never;
 

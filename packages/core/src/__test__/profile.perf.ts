@@ -10,7 +10,7 @@ function buildSingletonsTree(times: number, depth: number, currentDepth = 0): In
     return [];
   }
 
-  const definitions: any[]= [];
+  const definitions: any[] = [];
 
   for (let i = 0; i < times; i++) {
     definitions.push(singleton.fn((...args: any[]) => args, ...buildSingletonsTree(times, depth, (currentDepth += 1))));
@@ -65,7 +65,7 @@ function resolveByObject(container: Container, def: InstanceDefinition<any, any>
   return result;
 }
 
-const singletonD:any = singleton.fn((...args) => args, ...buildSingletonsTree(4, 10));
+const singletonD: any = singleton.fn((...args) => args, ...buildSingletonsTree(4, 10));
 const transientD: any = transient.fn((...args) => args, ...buildTransient(3, 5));
 
 const cWithoutProxy = container();

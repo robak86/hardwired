@@ -7,64 +7,110 @@ import { container } from '../../../container/Container';
 
 describe(`partial`, () => {
   describe(`types`, () => {
-    it(`returns correct type for fully applied function`, async () => {
-      const a = value(1);
-      const b = value('str');
-      const ap = singleton.partial((a: number, b: string) => true, a, b);
-      expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, []>>>(true);
+    describe(`single function`, () => {
+      it(`returns correct type for fully applied function`, async () => {
+        const a = value(1);
+        const b = value('str');
+        const ap = singleton.partial((a: number, b: string) => true, a, b);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, []>>>(true);
+      });
+
+      it(`returns correct type for partially applied function`, async () => {
+        const a = value(1);
+        const b = value('str');
+        const ap = singleton.partial((a: number, b: string) => true, a);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, []>>>(true);
+      });
+
+      it(`returns correct type for no args passed`, async () => {
+        const ap = singleton.partial((a: number, b: string) => true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, []>>>(true);
+      });
     });
 
-    it(`returns correct type for partially applied function`, async () => {
-      const a = value(1);
-      const b = value('str');
-      const ap = singleton.partial((a: number, b: string) => true, a);
-      expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, []>>>(true);
-    });
+    describe(`curried functions`, () => {
+      it(`returns correct type for fully applied function`, async () => {
+        const a = value(1);
+        const b = value('str');
+        const ap = singleton.partial((a: number) => (b: string) => true, a, b);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, []>>>(true);
+      });
 
-    it(`returns correct type for no args passed`, async () => {
-      const ap = singleton.partial((a: number, b: string) => true);
-      expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, []>>>(true);
+      it(`returns correct type for partially applied function`, async () => {
+        const a = value(1);
+        const b = value('str');
+        const ap = singleton.partial((a: number) => (b: string) => true, a);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, []>>>(true);
+      });
+
+      it(`returns correct type for no args passed`, async () => {
+        const ap = singleton.partial((a: number) => (b: string) => true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, []>>>(true);
+      });
     });
   });
 
   describe(`singleton`, () => {
     describe(`no args`, () => {
-      it(`returns correct function`, async () => {
-        const noArgsFn = singleton.partial(() => 123);
-        const result = container().get(noArgsFn);
-        expect(result()).toEqual(123);
-        expectType<TypeEqual<typeof result, () => number>>(true);
+      describe(`no currying`, () => {
+        it(`returns correct function`, async () => {
+          const noArgsFn = singleton.partial(() => 123);
+          const result = container().get(noArgsFn);
+          expect(result()).toEqual(123);
+          expectType<TypeEqual<typeof result, () => number>>(true);
+        });
+
+        it(`returns the same instance of function`, async () => {
+          const noArgsFn = singleton.partial(() => 123);
+          const cnt = container();
+          const result1 = cnt.get(noArgsFn);
+          const result2 = cnt.get(noArgsFn);
+          expect(result1).toBe(result2);
+        });
       });
 
-      it(`returns the same instance of function`, async () => {
-        const noArgsFn = singleton.partial(() => 123);
-        const cnt = container();
-        const result1 = cnt.get(noArgsFn);
-        const result2 = cnt.get(noArgsFn);
-        expect(result1).toBe(result2);
+      describe(`with currying`, () => {
+        it(`returns correct function`, async () => {
+          const noArgsFn = singleton.partial(() => () => 123);
+          const result = container().get(noArgsFn);
+          expect(result()).toEqual(123);
+          expectType<TypeEqual<typeof result, () => number>>(true);
+        });
+
+        it(`returns the same instance of function`, async () => {
+          const noArgsFn = singleton.partial(() => () => 123);
+          const cnt = container();
+          const result1 = cnt.get(noArgsFn);
+          const result2 = cnt.get(noArgsFn);
+          expect(result1).toBe(result2);
+        });
       });
     });
 
     describe(`fully applied`, () => {
-      it(`returns correct function`, async () => {
-        const someNumber = value(123);
-        const someString = value('str');
-        const fullyApplied = singleton.partial((a: number, b: string) => [a, b] as const, someNumber, someString);
-        const result = container().get(fullyApplied);
-        expect(result()).toEqual([123, 'str']);
-        expectType<TypeEqual<typeof result, () => readonly [number, string]>>(true);
+      describe(`without uncurrying`, () => {
+        it(`returns correct function`, async () => {
+          const someNumber = value(123);
+          const someString = value('str');
+          const fullyApplied = singleton.partial((a: number, b: string) => [a, b] as const, someNumber, someString);
+          const result = container().get(fullyApplied);
+          expect(result()).toEqual([123, 'str']);
+          expectType<TypeEqual<typeof result, () => readonly [number, string]>>(true);
+        });
+
+        it(`returns the same instance of function`, async () => {
+          const someNumber = value(123);
+          const someString = value('str');
+          const fullyApplied = singleton.partial((a: number, b: string) => [a, b] as const, someNumber, someString);
+          const cnt = container();
+
+          const result1 = cnt.get(fullyApplied);
+          const result2 = cnt.get(fullyApplied);
+          expect(result1).toBe(result2);
+        });
       });
 
-      it(`returns the same instance of function`, async () => {
-        const someNumber = value(123);
-        const someString = value('str');
-        const fullyApplied = singleton.partial((a: number, b: string) => [a, b] as const, someNumber, someString);
-        const cnt = container();
 
-        const result1 = cnt.get(fullyApplied);
-        const result2 = cnt.get(fullyApplied);
-        expect(result1).toBe(result2);
-      });
     });
 
     describe(`partially applied`, () => {
@@ -97,12 +143,12 @@ describe(`partial`, () => {
         expectType<TypeEqual<typeof result, () => number>>(true);
       });
 
-      it(`returns the same instance of function`, async () => {
+      it(`returns a new instance of function`, async () => {
         const noArgsFn = transient.partial(() => 123);
         const cnt = container();
         const result1 = cnt.get(noArgsFn);
         const result2 = cnt.get(noArgsFn);
-        expect(result1).toBe(result2);
+        expect(result1).not.toBe(result2);
       });
     });
 

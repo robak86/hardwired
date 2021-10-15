@@ -5,15 +5,17 @@ import { asyncFactory, external, IAsyncFactory, object, request, singleton, tupl
 const requestD = external<IncomingMessage>();
 const responseD = external<ServerResponse>();
 
-const extraD = value({ db: '234' });
+const extraD = value({ db: '123' });
 
 const handler = async (req: IncomingMessage, res: ServerResponse) => {};
 const handler2 = async (req: IncomingMessage, res: ServerResponse, extras) => {};
+const handler3 = async (extras: {db: string}) => (req: IncomingMessage, res: ServerResponse) => {};
 
 type HandlerFactory = IAsyncFactory<() => Promise<void>, [IncomingMessage, ServerResponse]>;
 
 const handler1D = asyncFactory(request.asyncPartial(handler, requestD, responseD));
 const handler2D = asyncFactory(request.asyncPartial(handler2, requestD, responseD, extraD));
+const handler3D = asyncFactory(request.asyncPartial(handler3, extraD, requestD, responseD));
 
 const appHandlers = object({
   root: handler1D,

@@ -2,28 +2,38 @@ import { PartialInstancesDefinitionsArgs, PartiallyAppliedDefinition } from '../
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
+import { uncurry, UnCurry } from '../../utils/UnCurry';
 
 export type PartiallyAppliedFnBuild = {
-  <TValue, TArgs extends any[], TProvidedArgs extends PartialInstancesDefinitionsArgs<TArgs>>(
-    factory: (...args: TArgs) => TValue,
+  <Fn extends (...args: any[]) => any, TProvidedArgs extends PartialInstancesDefinitionsArgs<Parameters<UnCurry<Fn>>>>(
+    factory: Fn,
     ...dependencies: TProvidedArgs
-  ): InstanceDefinition<PartiallyAppliedDefinition<TArgs, TProvidedArgs, TValue>, PickExternals<TProvidedArgs>>;
+  ): InstanceDefinition<
+    PartiallyAppliedDefinition<Parameters<UnCurry<Fn>>, TProvidedArgs, ReturnType<UnCurry<Fn>>>,
+    PickExternals<TProvidedArgs>
+  >;
 };
 
 export const partial = (strategy: symbol): PartiallyAppliedFnBuild => {
-  return (factory, ...dependencies) => ({
-    id: v4(),
-    strategy,
-    isAsync: false,
-    externals: pickExternals(dependencies),
-    create: context => {
-      if (factory.length === 0) {
-        return factory;
-      } else {
-        return (factory as any).bind(null, ...dependencies.map(context.buildWithStrategy));
-      }
-    },
+  return (fn, ...dependencies) => {
+    const uncurried: any = uncurry(fn);
 
-    meta: undefined as any,
-  });
+    return {
+      id: v4(),
+      strategy,
+      isAsync: false,
+      externals: pickExternals(dependencies),
+      create: context => {
+        return uncurried.bind(null, ...dependencies.map(context.buildWithStrategy));
+        //
+        // if (fn.length === 0) {
+        //   return fn;
+        // } else {
+        //   return (fn as any).bind(null, ...dependencies.map(context.buildWithStrategy));
+        // }
+      },
+
+      meta: undefined as any,
+    };
+  };
 };
