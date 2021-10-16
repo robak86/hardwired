@@ -13,7 +13,7 @@ describe(`object`, () => {
     const someNumberD = value(1);
     const someStr = value('str');
     const composed = tuple(someNumberD, someStr);
-    expectType<TypeEqual<typeof composed, InstanceDefinition<[number, string], LifeTime.transient, []>>>(true);
+    expectType<TypeEqual<typeof composed, InstanceDefinition<[number, string], LifeTime.singleton, []>>>(true);
   });
 
   it(`produces instance with correct type`, async () => {
@@ -59,11 +59,11 @@ describe(`object`, () => {
     });
 
     describe(`instances use different strategies`, () => {
-      it(`uses transient strategy`, async () => {
+      it(`uses singleton if any dependency is singleton`, async () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const composed = tuple(someNumberD, someStr);
-        expect(composed.strategy).toEqual(LifeTime.transient);
+        expect(composed.strategy).toEqual(LifeTime.singleton);
       });
     });
 

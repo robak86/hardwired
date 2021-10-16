@@ -7,7 +7,7 @@ import { InstanceDefinition } from '../../abstract/InstanceDefinition';
 import { container } from '../../../container/Container';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set';
-import { LifeTime } from "../../abstract/LifeTime";
+import { LifeTime } from '../../abstract/LifeTime';
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {
@@ -37,33 +37,43 @@ describe(`factory`, () => {
     });
   });
 
-  describe(`base for factory`, () => {
+  describe(`mixin extension`, () => {
     it(`extends IFactory with provided base definition`, async () => {
       type Ext = { ext: number };
-      type Base = { someNum: number; someStr: string };
+      type Mixin = { someNum: number; someStr: string };
 
-      const base = value({ someNum: 123, someStr: 'str' });
-      const ext = external<Ext>();
+      const mixinD = value({ someNum: 123, someStr: 'str' });
+      const extD = external<Ext>();
 
       class ExtConsumer {
         constructor(public external: Ext) {}
       }
 
-      type Factory = IFactory<ExtConsumer, [Ext], Base>;
+      type Factory = IFactory<ExtConsumer, [Ext], Mixin>;
 
-      const consumerD = singleton.class(ExtConsumer, ext);
+      const consumerD = transient.class(ExtConsumer, extD);
 
-      const factoryD = factory(consumerD, base);
+      const factoryD = factory(consumerD, mixinD);
 
       const factoryConsumer = (f: Factory) => {};
-      const factoryConsumerSpy = jest.fn(factoryConsumer)
+      const factoryConsumerSpy = jest.fn(factoryConsumer);
 
       const factoryConsumerD = singleton.fn(factoryConsumerSpy, factoryD);
 
       container().get(factoryConsumerD);
 
-      expect(factoryConsumerSpy.mock.calls[0][0].someNum).toEqual(123)
-      expect(factoryConsumerSpy.mock.calls[0][0].someStr).toEqual('str')
+      expect(factoryConsumerSpy.mock.calls[0][0].someNum).toEqual(123);
+      expect(factoryConsumerSpy.mock.calls[0][0].someStr).toEqual('str');
+    });
+  });
+
+  describe(`allowed instance definitions`, () => {
+    it(`does not accepts singleton with externals`, async () => {
+      const ext = external<number>();
+      const def = singleton.fn((val: number) => val, ext);
+
+      // @ts-expect-error factory does not accept singleton with externals
+      const factoryD = factory(def);
     });
   });
 
@@ -101,7 +111,9 @@ describe(`factory`, () => {
         const routerD = transient.class(Router, factory(handlerD));
 
         const factoryD = factory(handlerD);
-        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.singleton, []>>>(true);
+        expectType<
+          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.singleton, []>>
+        >(true);
       });
     });
 
@@ -238,7 +250,7 @@ describe(`factory`, () => {
       ];
 
       const consumer1Spy = jest.fn(consumer1);
-      const consumer1D = singleton.partial(consumer1Spy, ext1, ext2);
+      const consumer1D = transient.partial(consumer1Spy, ext1, ext2);
 
       const consumer2 = (ext2: Ext2, ext1: Ext1): [Ext2, Ext1] => [
         { ext2: `consumer2${ext2.ext2}` },
@@ -246,12 +258,12 @@ describe(`factory`, () => {
       ];
 
       const consumer2Spy = jest.fn(consumer2);
-      const consumer2D = singleton.partial(consumer2Spy, ext2, ext1);
+      const consumer2D = transient.partial(consumer2Spy, ext2, ext1);
 
       const combined = (consumer1: () => [Ext1, Ext2], consumer2: () => [Ext2, Ext1]): [Ext1, Ext2, Ext2, Ext1] => {
         return [...consumer1(), ...consumer2()];
       };
-      const combinedD = singleton.fn(combined, consumer1D, consumer2D);
+      const combinedD = transient.fn(combined, consumer1D, consumer2D);
 
       const compositionRoot = (factory: IFactory<[Ext1, Ext2, Ext2, Ext1], [Ext1, Ext2]>): [Ext1, Ext2, Ext2, Ext1] => {
         return factory.build({ ext1: 'ext1' }, { ext2: 'ext2' });

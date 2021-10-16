@@ -9,14 +9,14 @@ import { Resolution } from "../abstract/Resolution";
 export type PartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <
     Fn extends (...args: any[]) => any,
-    TProvidedArgs extends PartialInstancesDefinitionsArgs<Parameters<UnCurry<Fn>>, TLifeTime>,
+    TArgs extends PartialInstancesDefinitionsArgs<Parameters<UnCurry<Fn>>, TLifeTime>,
   >(
     factory: Fn,
-    ...dependencies: TProvidedArgs
+    ...dependencies: TArgs
   ): InstanceDefinition<
-    PartiallyAppliedDefinition<Parameters<UnCurry<Fn>>, TProvidedArgs, ReturnType<UnCurry<Fn>>>,
+    PartiallyAppliedDefinition<Parameters<UnCurry<Fn>>, TArgs, ReturnType<UnCurry<Fn>>>,
     TLifeTime,
-    PickExternals<TProvidedArgs>
+    PickExternals<TArgs>
   >;
 };
 

@@ -4,6 +4,7 @@ import { klass } from '../klass';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/InstanceDefinition';
 import { LifeTime } from '../../abstract/LifeTime';
+import { request, singleton, transient } from '../../definitions';
 
 describe(`klass`, () => {
   describe(`external params`, () => {
@@ -29,6 +30,69 @@ describe(`klass`, () => {
         const cls = klass(LifeTime.singleton)(TestClass, numD, objD);
 
         expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, LifeTime.singleton, []>>>(true);
+      });
+
+      describe(`allowed dependencies life times`, () => {
+        class NumberConsumer {
+          constructor(private value: number) {}
+        }
+
+        const ext = external<number>();
+
+        describe(`transient`, () => {
+          it(`does not accept singletons with externals`, async () => {
+            const dep = singleton.fn(val => val, ext);
+
+            // @ts-expect-error transient does not accept singleton dependencies with externals
+            klass(LifeTime.transient)(NumberConsumer, dep);
+          });
+
+          it(`accepts request def with externals`, async () => {
+            const dep = request.fn(val => val, ext);
+            klass(LifeTime.transient)(NumberConsumer, dep);
+          });
+
+          it(`accepts transient with externals`, async () => {
+            const dep = transient.fn(val => val, ext);
+            klass(LifeTime.transient)(NumberConsumer, dep);
+          });
+        });
+
+        describe(`request`, () => {
+          it(`does not accept singletons with externals`, async () => {
+            const dep = singleton.fn(val => val, ext);
+
+            // @ts-expect-error transient does not accept singleton dependencies with externals
+            klass(LifeTime.request)(NumberConsumer, dep);
+          });
+
+          it(`accepts request def with externals`, async () => {
+            const dep = request.fn(val => val, ext);
+            klass(LifeTime.request)(NumberConsumer, dep);
+          });
+
+          it(`accepts transient with externals`, async () => {
+            const dep = transient.fn(val => val, ext);
+            klass(LifeTime.request)(NumberConsumer, dep);
+          });
+        });
+
+        describe(`singleton`, () => {
+          it(`does not accept singletons with externals`, async () => {
+            const dep = singleton.fn(val => val, ext);
+            klass(LifeTime.singleton)(NumberConsumer, dep);
+          });
+
+          it(`accepts request def with externals`, async () => {
+            const dep = request.fn(val => val, ext);
+            klass(LifeTime.singleton)(NumberConsumer, dep);
+          });
+
+          it(`accepts transient with externals`, async () => {
+            const dep = transient.fn(val => val, ext);
+            klass(LifeTime.singleton)(NumberConsumer, dep);
+          });
+        });
       });
     });
 

@@ -3,22 +3,21 @@ import { v4 } from 'uuid';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { Resolution } from '../abstract/Resolution';
+import { AsyncFactoryDefinition } from '../abstract/AsyncFactoryDefinition';
 
 export type IAsyncFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
   build(...params: TParams): Promise<TReturn>;
 } & TFactoryMixin;
 
 export type AsyncFactoryBuildFn = {
-  <TInstance, TParams extends any[]>(definition: AnyInstanceDefinition<TInstance, any, TParams>): InstanceDefinition<
-    IAsyncFactory<TInstance, TParams>,
-    LifeTime.transient,
-    []
-  >;
+  <TInstance, TExternalParams extends any[]>(
+    definition: AsyncFactoryDefinition<TInstance, any, TExternalParams>,
+  ): InstanceDefinition<IAsyncFactory<TInstance, TExternalParams>, LifeTime.transient, []>;
 
-  <TInstance, TParams extends any[], TFactoryMixin extends object, TLifeTime extends LifeTime>(
-    definition: AnyInstanceDefinition<TInstance, any, TParams>,
+  <TInstance, TExternalParams extends any[], TFactoryMixin extends object, TLifeTime extends LifeTime>(
+    definition: AsyncFactoryDefinition<TInstance, any, TExternalParams>,
     factoryMixinDef: InstanceDefinition<TFactoryMixin, TLifeTime, []>,
-  ): InstanceDefinition<IAsyncFactory<TInstance, TParams, TFactoryMixin>, TLifeTime, []>;
+  ): InstanceDefinition<IAsyncFactory<TInstance, TExternalParams, TFactoryMixin>, TLifeTime, []>;
 };
 
 export const asyncFactory: AsyncFactoryBuildFn = (

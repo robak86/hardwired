@@ -1,16 +1,20 @@
 import { ClassType } from '../../utils/ClassType';
-import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
-import { LifeTime} from '../abstract/LifeTime';
-import { Resolution } from "../abstract/Resolution";
+import { LifeTime } from '../abstract/LifeTime';
+import { Resolution } from '../abstract/Resolution';
+import { InstanceDefinitionDependency } from '../abstract/InstanceDefinitionDependency';
 
 type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
-  <TInstance, TArgs extends any[], TDeps extends { [K in keyof TArgs]: AnyInstanceDefinition<TArgs[K], any, any> }>(
+  <
+    TInstance,
+    TArgs extends any[],
+    TDependencies extends { [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K], TLifeTime> },
+  >(
     cls: ClassType<TInstance, TArgs>,
-    ...args: TDeps
-  ): AsyncInstanceDefinition<TInstance, TLifeTime, PickExternals<TDeps>>;
+    ...args: TDependencies
+  ): AsyncInstanceDefinition<TInstance, TLifeTime, PickExternals<TDependencies>>;
 };
 
 export const asyncClass = <TLifeTime extends LifeTime>(strategy: TLifeTime): ClassDefinitionBuildFn<TLifeTime> => {

@@ -2,9 +2,9 @@ import { LifeTime } from './LifeTime';
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 
 // prettier-ignore
-export type AllowedAnyDependencies<TValue, TLifeTime extends LifeTime> =
+export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> =
     TLifeTime extends LifeTime.singleton ?
-        | AnyInstanceDefinition<TValue, LifeTime.singleton, []>
+        | AnyInstanceDefinition<TValue, LifeTime.singleton, any>
         | AnyInstanceDefinition<TValue, LifeTime.transient, any>
         | AnyInstanceDefinition<TValue, LifeTime.request, any> :
     TLifeTime extends LifeTime.transient ?

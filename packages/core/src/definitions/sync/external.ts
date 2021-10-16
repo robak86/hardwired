@@ -3,9 +3,9 @@ import { v4 } from 'uuid';
 import { LifeTime} from '../abstract/LifeTime';
 import { Resolution } from "../abstract/Resolution";
 
-export const external = <TExternal extends object = never>(
+export const external = <TExternalParams= never>(
   name?: string,
-): InstanceDefinition<TExternal, LifeTime.request, [TExternal]> => {
+): InstanceDefinition<TExternalParams, LifeTime.request, [TExternalParams]> => {
   const id = `${name ?? ''}:${v4()}`;
 
   return {
@@ -18,12 +18,12 @@ export const external = <TExternal extends object = never>(
         resolution: Resolution.sync,
         strategy: LifeTime.request,
         externals: [] as any,
-        create: (build): TExternal => {
+        create: (build): TExternalParams => {
           throw new Error('Not applicable. External values are managed by the container');
         },
       },
     ],
-    create: (build): TExternal => {
+    create: (build): TExternalParams => {
       throw new Error('Not applicable. External values are managed by the container');
     },
   };

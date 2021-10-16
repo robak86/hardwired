@@ -65,11 +65,11 @@ describe(`object`, () => {
     });
 
     describe(`instances use different strategies`, () => {
-      it(`uses transient strategy`, async () => {
+      it(`uses singleton strategy if any dependency definition is a singleton`, async () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
-        expect(composed.strategy).toEqual(LifeTime.transient);
+        expect(composed.strategy).toEqual(LifeTime.singleton);
       });
     });
 

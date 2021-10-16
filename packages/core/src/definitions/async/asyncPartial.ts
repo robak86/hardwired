@@ -9,14 +9,14 @@ import { Resolution } from "../abstract/Resolution";
 export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <
     Fn extends (...args: any[]) => Promise<any>,
-    TProvidedArgs extends PartialAnyInstancesDefinitionsArgs<Parameters<UnCurryAsync<Fn>>, TLifeTime>,
+    TArgs extends PartialAnyInstancesDefinitionsArgs<Parameters<UnCurryAsync<Fn>>, TLifeTime>,
   >(
     factory: Fn,
-    ...dependencies: TProvidedArgs
+    ...dependencies: TArgs
   ): AsyncInstanceDefinition<
-    PartiallyAppliedAsyncDefinition<Parameters<UnCurryAsync<Fn>>, TProvidedArgs, ReturnType<UnCurryAsync<Fn>>>,
+    PartiallyAppliedAsyncDefinition<Parameters<UnCurryAsync<Fn>>, TArgs, ReturnType<UnCurryAsync<Fn>>>,
     TLifeTime,
-    PickExternals<TProvidedArgs>
+    PickExternals<TArgs>
   >;
 };
 

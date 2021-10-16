@@ -65,11 +65,11 @@ describe(`intersection`, () => {
     });
 
     describe(`instances use different strategies`, () => {
-      it(`uses transient strategy`, async () => {
+      it(`uses singleton strategy if any dependency instance is singleton`, async () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
-        expect(combined.strategy).toEqual(LifeTime.transient);
+        expect(combined.strategy).toEqual(LifeTime.singleton);
       });
     });
 

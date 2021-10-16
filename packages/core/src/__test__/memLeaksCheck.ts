@@ -2,7 +2,7 @@ import { container } from '../container/Container';
 import u from 'util';
 
 import memwatch from '@airbnb/node-memwatch';
-import { scoped, singleton } from '../definitions/definitions';
+import { scoped, singleton, transient } from '../definitions/definitions';
 import { external } from '../definitions/sync/external';
 import { factory, IFactory } from '../definitions/sync/factory';
 
@@ -22,7 +22,7 @@ class ConfigConsumer {
 }
 
 const config = external<ConfigData>();
-const d1 = singleton.class(ConfigProvider, config);
+const d1 = transient.class(ConfigProvider, config);
 const d2 = scoped.class(ConfigConsumer, factory(d1));
 
 const c = container();

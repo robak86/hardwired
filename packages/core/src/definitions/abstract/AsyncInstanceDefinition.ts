@@ -7,5 +7,5 @@ export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime, TExternals> =
   strategy: TLifeTime;
   resolution: Resolution.async;
   externals: Array<InstanceDefinition<any, any>>;
-  create: (context: InstanceDefinitionContext) => Promise<T>;
+  create: (context: InstanceDefinitionContext, _?:TExternals) => Promise<T>;
 };

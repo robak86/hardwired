@@ -1,18 +1,19 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
-import { LifeTime} from '../abstract/LifeTime';
-import { Resolution } from "../abstract/Resolution";
+import { LifeTime } from '../abstract/LifeTime';
+import { Resolution } from '../abstract/Resolution';
+import { AsyncInstanceDefinitionDependency } from '../abstract/AsyncInstanceDefinitionDependency';
 
 export type FunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <
     TValue,
-    TFunctionArgs extends any[],
-    TDeps extends { [K in keyof TFunctionArgs]: InstanceDefinition<TFunctionArgs[K], any, any> },
+    TArgs extends any[],
+    TDependencies extends { [K in keyof TArgs]: AsyncInstanceDefinitionDependency<TArgs[K], TLifeTime> },
   >(
-    factory: (...args: TFunctionArgs) => TValue,
-    ...args: TDeps
-  ): InstanceDefinition<TValue, TLifeTime, PickExternals<TDeps>>;
+    factory: (...args: TArgs) => TValue,
+    ...args: TDependencies
+  ): InstanceDefinition<TValue, TLifeTime, PickExternals<TDependencies>>;
 };
 
 export const fn = <TLifeTime extends LifeTime>(strategy: TLifeTime): FunctionDefinitionBuildFn<TLifeTime> => {

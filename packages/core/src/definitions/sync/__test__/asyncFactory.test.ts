@@ -38,23 +38,23 @@ describe(`factory`, () => {
     });
   });
 
-  describe(`base for factory`, () => {
+  describe(`mixin extension`, () => {
     it(`extends IFactory with provided base definition`, async () => {
       type Ext = { ext: number };
-      type Base = { someNum: number; someStr: string };
+      type Mixin = { someNum: number; someStr: string };
 
-      const base = value({ someNum: 123, someStr: 'str' });
-      const ext = external<Ext>();
+      const mixinD = value({ someNum: 123, someStr: 'str' });
+      const extD = external<Ext>();
 
       class ExtConsumer {
         constructor(public external: Ext) {}
       }
 
-      type Factory = IAsyncFactory<ExtConsumer, [Ext], Base>;
+      type Factory = IAsyncFactory<ExtConsumer, [Ext], Mixin>;
 
-      const consumerD = singleton.asyncClass(ExtConsumer, ext);
+      const consumerD = request.asyncClass(ExtConsumer, extD);
 
-      const factoryD = asyncFactory(consumerD, base);
+      const factoryD = asyncFactory(consumerD, mixinD);
 
       const factoryConsumer = async (f: Factory) => {};
       const factoryConsumerSpy = jest.fn(factoryConsumer);
@@ -65,6 +65,16 @@ describe(`factory`, () => {
 
       expect(factoryConsumerSpy.mock.calls[0][0].someNum).toEqual(123);
       expect(factoryConsumerSpy.mock.calls[0][0].someStr).toEqual('str');
+    });
+  });
+
+  describe(`allowed instance definitions`, () => {
+    it(`does not accepts singleton with externals`, async () => {
+      const ext = external<number>();
+      const def = singleton.asyncFn(async (val: number) => val, ext);
+
+      // @ts-expect-error factory does not accept singleton with externals
+      const factoryD = asyncFactory(def);
     });
   });
 
@@ -82,7 +92,7 @@ describe(`factory`, () => {
       ];
 
       const consumer1Spy = jest.fn(consumer1);
-      const consumer1D = singleton.asyncPartial(consumer1Spy, ext1, ext2);
+      const consumer1D = request.asyncPartial(consumer1Spy, ext1, ext2);
 
       const consumer2 = async (ext2: Ext2, ext1: Ext1): Promise<[Ext2, Ext1]> => [
         { ext2: `consumer2${ext2.ext2}` },
@@ -90,7 +100,7 @@ describe(`factory`, () => {
       ];
 
       const consumer2Spy = jest.fn(consumer2);
-      const consumer2D = singleton.asyncPartial(consumer2Spy, ext2, ext1);
+      const consumer2D = request.asyncPartial(consumer2Spy, ext2, ext1);
 
       const combined = async (
         consumer1: () => Promise<[Ext1, Ext2]>,
@@ -98,7 +108,7 @@ describe(`factory`, () => {
       ): Promise<[Ext1, Ext2, Ext2, Ext1]> => {
         return [...(await consumer1()), ...(await consumer2())];
       };
-      const combinedD = singleton.asyncFn(combined, consumer1D, consumer2D);
+      const combinedD = request.asyncFn(combined, consumer1D, consumer2D);
 
       const compositionRoot = async (
         factory: IAsyncFactory<[Ext1, Ext2, Ext2, Ext1], [Ext1, Ext2]>,
