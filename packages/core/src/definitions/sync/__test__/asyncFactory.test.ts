@@ -8,6 +8,7 @@ import { v4 } from 'uuid';
 import { set } from '../../../patching/set';
 import { asyncFactory, IAsyncFactory } from '../../async/asyncFactory';
 import { LifeTime } from '../../abstract/LifeTime';
+import { value } from '../value';
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {
@@ -34,6 +35,36 @@ describe(`factory`, () => {
 
       const factoryInstance = container().get(randomNumFactoryD);
       expect(await factoryInstance.build()).not.toEqual(await factoryInstance.build());
+    });
+  });
+
+  describe(`base for factory`, () => {
+    it(`extends IFactory with provided base definition`, async () => {
+      type Ext = { ext: number };
+      type Base = { someNum: number; someStr: string };
+
+      const base = value({ someNum: 123, someStr: 'str' });
+      const ext = external<Ext>();
+
+      class ExtConsumer {
+        constructor(public external: Ext) {}
+      }
+
+      type Factory = IAsyncFactory<ExtConsumer, [Ext], Base>;
+
+      const consumerD = singleton.asyncClass(ExtConsumer, ext);
+
+      const factoryD = asyncFactory(consumerD, base);
+
+      const factoryConsumer = async (f: Factory) => {};
+      const factoryConsumerSpy = jest.fn(factoryConsumer);
+
+      const factoryConsumerD = transient.asyncFn(factoryConsumerSpy, factoryD);
+
+      await container().getAsync(factoryConsumerD);
+
+      expect(factoryConsumerSpy.mock.calls[0][0].someNum).toEqual(123);
+      expect(factoryConsumerSpy.mock.calls[0][0].someStr).toEqual('str');
     });
   });
 

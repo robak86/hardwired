@@ -37,6 +37,36 @@ describe(`factory`, () => {
     });
   });
 
+  describe(`base for factory`, () => {
+    it(`extends IFactory with provided base definition`, async () => {
+      type Ext = { ext: number };
+      type Base = { someNum: number; someStr: string };
+
+      const base = value({ someNum: 123, someStr: 'str' });
+      const ext = external<Ext>();
+
+      class ExtConsumer {
+        constructor(public external: Ext) {}
+      }
+
+      type Factory = IFactory<ExtConsumer, [Ext], Base>;
+
+      const consumerD = singleton.class(ExtConsumer, ext);
+
+      const factoryD = factory(consumerD, base);
+
+      const factoryConsumer = (f: Factory) => {};
+      const factoryConsumerSpy = jest.fn(factoryConsumer)
+
+      const factoryConsumerD = singleton.fn(factoryConsumerSpy, factoryD);
+
+      container().get(factoryConsumerD);
+
+      expect(factoryConsumerSpy.mock.calls[0][0].someNum).toEqual(123)
+      expect(factoryConsumerSpy.mock.calls[0][0].someStr).toEqual('str')
+    });
+  });
+
   describe(`no nested factories`, () => {
     type Request = { requestObj: 'req' };
 
