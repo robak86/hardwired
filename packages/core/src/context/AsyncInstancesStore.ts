@@ -2,12 +2,12 @@ import { HierarchicalStore } from './HierarchicalStore';
 import { ControlledPromise } from '../utils/ControlledPromise';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 
-function getPatchedResolversIds(patchedDefinitions: AsyncInstanceDefinition<any, any>[]): string[] {
+function getPatchedResolversIds(patchedDefinitions: AsyncInstanceDefinition<any, any, any>[]): string[] {
   return patchedDefinitions.map(def => def.id);
 }
 
 export class AsyncInstancesStore {
-  static create(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesStore {
+  static create(scopeOverrides: AsyncInstanceDefinition<any, any, any>[]): AsyncInstancesStore {
     const ownKeys = getPatchedResolversIds(scopeOverrides);
     return new AsyncInstancesStore(new HierarchicalStore(ownKeys), {}, {}, {});
   }
@@ -19,7 +19,7 @@ export class AsyncInstancesStore {
     private globalOverridesScope: Record<string, ControlledPromise<any>>,
   ) {}
 
-  childScope(scopeOverrides: AsyncInstanceDefinition<any, any>[]): AsyncInstancesStore {
+  childScope(scopeOverrides: AsyncInstanceDefinition<any, any, any>[]): AsyncInstancesStore {
     const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
 
     return new AsyncInstancesStore(

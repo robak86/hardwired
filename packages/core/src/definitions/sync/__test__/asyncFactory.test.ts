@@ -7,6 +7,7 @@ import { container } from '../../../container/Container';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set';
 import { asyncFactory, IAsyncFactory } from '../../async/asyncFactory';
+import { LifeTime } from '../../abstract/LifeTime';
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {
@@ -132,7 +133,9 @@ describe(`factory`, () => {
         const routerD = transient.asyncClass(Router, asyncFactory(handlerD));
 
         const factoryD = asyncFactory(handlerD);
-        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, []>>>(true);
+        expectType<
+          TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, LifeTime.transient, []>>
+        >(true);
       });
     });
 

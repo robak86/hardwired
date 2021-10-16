@@ -1,6 +1,6 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { action } from '../action';
-import { InstanceDefinition, value } from 'hardwired';
+import { InstanceDefinition, LifeTime, value } from 'hardwired';
 import { state } from '../state';
 import { IObservableValue } from 'mobx';
 
@@ -9,13 +9,13 @@ describe(`action test`, () => {
     someValue: number;
   };
 
-  const dummyState: InstanceDefinition<IObservableValue<DummyState>> = state({ someValue: 123 });
+  const dummyState: InstanceDefinition<IObservableValue<DummyState>, any> = state({ someValue: 123 });
 
   describe(`action without params`, () => {
     describe(`action without dependencies`, () => {
       it(`creates correct type`, async () => {
         const actionDef = action((state: DummyState) => {}, dummyState);
-        expectType<TypeEqual<typeof actionDef, InstanceDefinition<() => void>>>(true);
+        expectType<TypeEqual<typeof actionDef, InstanceDefinition<() => void, LifeTime.singleton>>>(true);
       });
     });
 
@@ -23,7 +23,7 @@ describe(`action test`, () => {
       it(`creates correct type`, async () => {
         const srv = value(123);
         const actionDef = action((someService: number, state: DummyState) => {}, srv, dummyState);
-        expectType<TypeEqual<typeof actionDef, InstanceDefinition<() => void>>>(true);
+        expectType<TypeEqual<typeof actionDef, InstanceDefinition<() => void, LifeTime.singleton>>>(true);
       });
     });
   });
@@ -31,7 +31,7 @@ describe(`action test`, () => {
   describe(`action with params`, () => {
     it(`returns correct type`, async () => {
       const actionDef = action((a: number) => {});
-      expectType<TypeEqual<typeof actionDef, InstanceDefinition<(a: number) => void>>>(true);
+      expectType<TypeEqual<typeof actionDef, InstanceDefinition<(a: number) => void, LifeTime.singleton>>>(true);
     });
 
     describe(`action with dependencies`, () => {
@@ -42,7 +42,9 @@ describe(`action test`, () => {
           srv,
           dummyState,
         );
-        expectType<TypeEqual<typeof actionDef, InstanceDefinition<(externalParam: string) => void>>>(true);
+        expectType<
+          TypeEqual<typeof actionDef, InstanceDefinition<(externalParam: string) => void, LifeTime.singleton>>
+        >(true);
       });
     });
   });

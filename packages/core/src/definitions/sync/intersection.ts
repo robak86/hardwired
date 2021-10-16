@@ -3,12 +3,16 @@ import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { UnionToIntersection } from 'type-fest';
+import { DerivedLifeTime, LifeTime, Resolution } from '../abstract/LifeTime';
 
-export const intersection = <T extends Array<InstanceDefinition<object, any>>, TMeta>(
+export const intersection = <T extends Array<InstanceDefinition<object, any, any>>, TMeta>(
   ...definitions: T
 ): InstanceDefinition<
   UnionToIntersection<
-    { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown }[number]
+    { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown }[number]
+  >,
+  DerivedLifeTime<
+    { [K in keyof T]: T[K] extends InstanceDefinition<any, infer TLifeTime, any> ? TLifeTime : never }[number]
   >,
   PickExternals<T>
 > => {
@@ -17,13 +21,13 @@ export const intersection = <T extends Array<InstanceDefinition<object, any>>, T
   const strategy = firstStrategy
     ? definitions.every(def => def.strategy === firstStrategy)
       ? firstStrategy
-      : TransientStrategy.type
-    : TransientStrategy.type; // empty record
+      : LifeTime.transient
+    : LifeTime.transient; // empty record
 
   return {
     id: v4(),
     strategy,
-    isAsync: false,
+    resolution: Resolution.sync,
     externals: pickExternals(definitions),
     create: context => {
       return definitions.reduce((result, def) => {

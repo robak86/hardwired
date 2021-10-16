@@ -6,7 +6,7 @@ import { InstancesBuilder } from "../../context/abstract/InstancesBuilder";
 
 export abstract class AsyncBuildStrategy {
     abstract build(
-        definition: AnyInstanceDefinition<any, any>,
+        definition: AnyInstanceDefinition<any, any, any>,
         instancesCache: InstancesStore,
         asyncInstancesCache: AsyncInstancesStore,
         resolvers: InstancesDefinitionsRegistry,

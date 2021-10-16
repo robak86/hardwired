@@ -7,6 +7,7 @@ import { InstanceDefinition } from '../../abstract/InstanceDefinition';
 import { container } from '../../../container/Container';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set';
+import { LifeTime } from "../../abstract/LifeTime";
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {
@@ -70,7 +71,7 @@ describe(`factory`, () => {
         const routerD = transient.class(Router, factory(handlerD));
 
         const factoryD = factory(handlerD);
-        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, []>>>(true);
+        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.singleton, []>>>(true);
       });
     });
 

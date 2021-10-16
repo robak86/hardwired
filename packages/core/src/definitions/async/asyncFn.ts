@@ -3,24 +3,25 @@ import { AsyncSingletonStrategy } from '../../strategies/async/AsyncSingletonStr
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
+import { LifeTime, Resolution } from '../abstract/LifeTime';
 
-export type AsyncFunctionDefinitionBuildFn = {
+export type AsyncFunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <
     TValue,
     TFunctionArgs extends any[],
-    TDeps extends { [K in keyof TFunctionArgs]: AnyInstanceDefinition<TFunctionArgs[K], any> },
+    TDeps extends { [K in keyof TFunctionArgs]: AnyInstanceDefinition<TFunctionArgs[K], any, any> },
   >(
     factory: (...args: TFunctionArgs) => Promise<TValue>,
     ...args: TDeps
-  ): AsyncInstanceDefinition<TValue, PickExternals<TDeps>>;
+  ): AsyncInstanceDefinition<TValue, TLifeTime, PickExternals<TDeps>>;
 };
 
-export const asyncFn = (strategy: symbol): AsyncFunctionDefinitionBuildFn => {
+export const asyncFn = <TLifeTime extends LifeTime>(strategy: TLifeTime): AsyncFunctionDefinitionBuildFn<TLifeTime> => {
   return (factory, ...dependencies) => {
     return {
       id: `${factory.name}:${v4()}`,
       strategy,
-      isAsync: true,
+      resolution: Resolution.async,
       externals: pickExternals(dependencies),
       create: async context => {
         const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));

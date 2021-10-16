@@ -4,8 +4,9 @@ import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinitio
 import { AsyncInstancesStore } from '../../context/AsyncInstancesStore';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder';
 
+
+
 export class SingletonStrategy extends BuildStrategy {
-  static type = Symbol.for('classSingleton');
 
   build(
     definition: InstanceDefinition<any, any>,

@@ -1,24 +1,25 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
-import { SingletonStrategy } from '../../strategies/sync/SingletonStrategy';
+import { LifeTime, Resolution } from '../abstract/LifeTime';
 
 export interface IAsyncFactory<TReturn, TParams extends any[]> {
   build(...params: TParams): Promise<TReturn>;
 }
 
 export type AsyncFactoryBuildFn = {
-  <TInstance, TParams extends any[]>(definition: AnyInstanceDefinition<TInstance, TParams>): InstanceDefinition<
+  <TInstance, TParams extends any[]>(definition: AnyInstanceDefinition<TInstance, any, TParams>): InstanceDefinition<
     IAsyncFactory<TInstance, TParams>,
+    LifeTime.transient,
     []
   >;
 };
 
-export const asyncFactory: AsyncFactoryBuildFn = (definition: AnyInstanceDefinition<any, any>) => {
+export const asyncFactory: AsyncFactoryBuildFn = (definition: AnyInstanceDefinition<any, any, any>) => {
   return {
     id: v4(),
-    strategy: SingletonStrategy.type,
-    isAsync: false,
+    strategy: LifeTime.transient,
+    resolution: Resolution.sync,
     externals: [],
     create: (context): IAsyncFactory<any, any> => {
       return {

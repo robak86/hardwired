@@ -1,23 +1,24 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
-import { SingletonStrategy } from '../../strategies/sync/SingletonStrategy';
+import { LifeTime, Resolution } from '../abstract/LifeTime';
 
 export interface IFactory<TReturn, TParams extends any[]> {
   build(...params: TParams): TReturn;
 }
 
 export type FactoryBuildFn = {
-  <TInstance, TParams extends any[]>(definition: InstanceDefinition<TInstance, TParams>): InstanceDefinition<
+  <TInstance, TParams extends any[]>(definition: InstanceDefinition<TInstance, any, TParams>): InstanceDefinition<
     IFactory<TInstance, TParams>,
+    LifeTime.singleton,
     []
   >;
 };
 
-export const factory: FactoryBuildFn = (definition: InstanceDefinition<any, any>) => {
+export const factory: FactoryBuildFn = definition => {
   return {
     id: v4(),
-    strategy: SingletonStrategy.type,
-    isAsync: false,
+    strategy: LifeTime.singleton,
+    resolution: Resolution.sync,
     externals: [],
     create: (context): IFactory<any, any> => {
       return {

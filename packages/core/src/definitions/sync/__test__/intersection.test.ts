@@ -5,10 +5,7 @@ import { InstanceDefinition } from '../../abstract/InstanceDefinition';
 import { object } from '../object';
 import { container } from '../../../container/Container';
 import { set } from '../../../patching/set';
-import { SingletonStrategy } from '../../../strategies/sync/SingletonStrategy';
-import { ScopeStrategy } from '../../../strategies/sync/ScopeStrategy';
-import { RequestStrategy } from '../../../strategies/sync/RequestStrategy';
-import { TransientStrategy } from '../../../strategies/sync/TransientStrategy';
+import { LifeTime } from '../../abstract/LifeTime';
 
 describe(`intersection`, () => {
   describe(`types`, () => {
@@ -17,7 +14,9 @@ describe(`intersection`, () => {
       const obj2 = singleton.fn(() => ({ b: 1 }));
       const combined = intersection(obj1, obj2);
 
-      expectType<TypeEqual<typeof combined, InstanceDefinition<{ a: number } & { b: number }, []>>>(true);
+      expectType<TypeEqual<typeof combined, InstanceDefinition<{ a: number } & { b: number }, LifeTime.singleton, []>>>(
+        true,
+      );
     });
   });
 
@@ -47,21 +46,21 @@ describe(`intersection`, () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = singleton.fn(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
-        expect(combined.strategy).toEqual(SingletonStrategy.type);
+        expect(combined.strategy).toEqual(LifeTime.singleton);
       });
 
       it(`uses strategy from record instance definitions, ex.2`, async () => {
         const someNumberD = scoped.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
-        expect(combined.strategy).toEqual(ScopeStrategy.type);
+        expect(combined.strategy).toEqual(LifeTime.scoped);
       });
 
       it(`uses strategy from record instance definitions, ex.3`, async () => {
         const someNumberD = request.fn(() => 1);
         const someStr = request.fn(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
-        expect(combined.strategy).toEqual(RequestStrategy.type);
+        expect(combined.strategy).toEqual(LifeTime.request);
       });
     });
 
@@ -70,14 +69,14 @@ describe(`intersection`, () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
-        expect(combined.strategy).toEqual(TransientStrategy.type);
+        expect(combined.strategy).toEqual(LifeTime.transient);
       });
     });
 
     describe(`empty record`, () => {
       it(`uses transient strategy`, async () => {
         const combined = object({});
-        expect(combined.strategy).toEqual(TransientStrategy.type);
+        expect(combined.strategy).toEqual(LifeTime.transient);
       });
     });
   });

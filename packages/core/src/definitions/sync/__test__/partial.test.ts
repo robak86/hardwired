@@ -4,6 +4,7 @@ import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/InstanceDefinition';
 import { value } from '../value';
 import { container } from '../../../container/Container';
+import { LifeTime } from '../../abstract/LifeTime';
 
 describe(`partial`, () => {
   describe(`types`, () => {
@@ -12,19 +13,21 @@ describe(`partial`, () => {
         const a = value(1);
         const b = value('str');
         const ap = singleton.partial((a: number, b: string) => true, a, b);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, []>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, LifeTime.singleton, []>>>(true);
       });
 
       it(`returns correct type for partially applied function`, async () => {
         const a = value(1);
         const b = value('str');
         const ap = singleton.partial((a: number, b: string) => true, a);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, []>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, LifeTime.singleton, []>>>(true);
       });
 
       it(`returns correct type for no args passed`, async () => {
         const ap = singleton.partial((a: number, b: string) => true);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, []>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton, []>>>(
+          true,
+        );
       });
     });
 
@@ -33,19 +36,21 @@ describe(`partial`, () => {
         const a = value(1);
         const b = value('str');
         const ap = singleton.partial((a: number) => (b: string) => true, a, b);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, []>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, LifeTime.singleton, []>>>(true);
       });
 
       it(`returns correct type for partially applied function`, async () => {
         const a = value(1);
         const b = value('str');
         const ap = singleton.partial((a: number) => (b: string) => true, a);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, []>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, LifeTime.singleton, []>>>(true);
       });
 
       it(`returns correct type for no args passed`, async () => {
         const ap = singleton.partial((a: number) => (b: string) => true);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, []>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton, []>>>(
+          true,
+        );
       });
     });
   });
@@ -109,8 +114,6 @@ describe(`partial`, () => {
           expect(result1).toBe(result2);
         });
       });
-
-
     });
 
     describe(`partially applied`, () => {

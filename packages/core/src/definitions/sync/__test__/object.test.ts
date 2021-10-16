@@ -9,6 +9,7 @@ import { ScopeStrategy } from '../../../strategies/sync/ScopeStrategy';
 import { RequestStrategy } from '../../../strategies/sync/RequestStrategy';
 import { set } from '../../../patching/set';
 import { value } from '../value';
+import { LifeTime } from '../../abstract/LifeTime';
 
 describe(`object`, () => {
   it(`returns definition with correct type`, async () => {
@@ -16,7 +17,9 @@ describe(`object`, () => {
     const someStr = value('str');
     const composed = object({ num: someNumberD, str: someStr });
 
-    expectType<TypeEqual<typeof composed, InstanceDefinition<{ num: number; str: string }, []>>>(true);
+    expectType<TypeEqual<typeof composed, InstanceDefinition<{ num: number; str: string }, LifeTime.singleton, []>>>(
+      true,
+    );
   });
 
   it(`produces instance with correct type`, async () => {
@@ -43,21 +46,21 @@ describe(`object`, () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = singleton.fn(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
-        expect(composed.strategy).toEqual(SingletonStrategy.type);
+        expect(composed.strategy).toEqual(LifeTime.singleton);
       });
 
       it(`uses strategy from record instance definitions, ex.2`, async () => {
         const someNumberD = scoped.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
-        expect(composed.strategy).toEqual(ScopeStrategy.type);
+        expect(composed.strategy).toEqual(LifeTime.scoped);
       });
 
       it(`uses strategy from record instance definitions, ex.3`, async () => {
         const someNumberD = request.fn(() => 1);
         const someStr = request.fn(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
-        expect(composed.strategy).toEqual(RequestStrategy.type);
+        expect(composed.strategy).toEqual(LifeTime.request);
       });
     });
 
@@ -66,14 +69,14 @@ describe(`object`, () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
-        expect(composed.strategy).toEqual(TransientStrategy.type);
+        expect(composed.strategy).toEqual(LifeTime.transient);
       });
     });
 
     describe(`empty record`, () => {
       it(`uses transient strategy`, async () => {
         const composed = object({});
-        expect(composed.strategy).toEqual(TransientStrategy.type);
+        expect(composed.strategy).toEqual(LifeTime.transient);
       });
     });
   });

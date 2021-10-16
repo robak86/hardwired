@@ -5,8 +5,6 @@ import { AsyncInstancesStore } from '../../context/AsyncInstancesStore';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder';
 
 export class TransientStrategy extends BuildStrategy {
-  static type = Symbol.for('classTransient');
-
   build(
     definition: InstanceDefinition<any, any>,
     instancesCache: InstancesStore,

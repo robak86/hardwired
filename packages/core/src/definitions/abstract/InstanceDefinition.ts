@@ -1,22 +1,23 @@
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from './AsyncInstanceDefinition';
 import { ContainerContext } from '../../context/ContainerContext';
+import { LifeTime, Resolution } from './LifeTime';
 
 export type InstanceDefinitionContext = ContainerContext;
 
-export type InstanceDefinition<TInstance, TExternals = []> = {
+export type InstanceDefinition<TInstance, TLifeTime extends LifeTime, TExternals = []> = {
   id: string;
-  strategy: symbol;
-  isAsync: false;
+  strategy: TLifeTime; // TODO: rename to lifeTime
+  resolution: Resolution.sync;
   externals: Array<InstanceDefinition<any, any>>;
   create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
 };
 
 export const instanceDefinition = {
-  isAsync(val: AnyInstanceDefinition<any, any>): val is AsyncInstanceDefinition<any, any> {
+  isAsync(val: AnyInstanceDefinition<any, any, any>): val is AsyncInstanceDefinition<any,any, any> {
     return (val as any).isAsync;
   },
-  isSync(val: AnyInstanceDefinition<any, any>): val is InstanceDefinition<any, any> {
+  isSync(val: AnyInstanceDefinition<any, any, any>): val is InstanceDefinition<any, any> {
     return !(val as any).isAsync;
   },
 };

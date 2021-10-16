@@ -1,21 +1,21 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
-import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
+import { LifeTime, Resolution } from '../abstract/LifeTime';
 
 export const external = <TExternal extends object = never>(
   name?: string,
-): InstanceDefinition<TExternal, [TExternal]> => {
+): InstanceDefinition<TExternal, LifeTime.request, [TExternal]> => {
   const id = `${name ?? ''}:${v4()}`;
 
   return {
     id,
-    isAsync: false,
-    strategy: TransientStrategy.type,
+    resolution: Resolution.sync,
+    strategy: LifeTime.request,
     externals: [
       {
         id,
-        isAsync: false,
-        strategy: TransientStrategy.type,
+        resolution: Resolution.sync,
+        strategy: LifeTime.request,
         externals: [] as any,
         create: (build): TExternal => {
           throw new Error('Not applicable. External values are managed by the container');

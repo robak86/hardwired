@@ -1,12 +1,15 @@
-import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals } from '../../utils/PickExternals';
+import { DerivedLifeTime, LifeTime, Resolution } from '../abstract/LifeTime';
 
-export const object = <T extends Record<keyof any, InstanceDefinition<any, []>>>(
+export const object = <T extends Record<keyof any, InstanceDefinition<any, any, []>>>(
   record: T,
 ): InstanceDefinition<
-  { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown },
+  { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown },
+  DerivedLifeTime<
+    { [K in keyof T]: T[K] extends InstanceDefinition<any, infer TLifeTime, any> ? TLifeTime : never }[keyof T]
+  >,
   []
   // due to typescript limitations there is no way to correctly infer externals from record.
   // Order of the record properties is not guaranteed therefore the order of externals in tuple cannot be guaranteed
@@ -19,13 +22,13 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any, []>>>
   const strategy = firstStrategy
     ? definitions.every(def => def.strategy === firstStrategy)
       ? firstStrategy
-      : TransientStrategy.type
-    : TransientStrategy.type; // empty record
+      : LifeTime.transient
+    : LifeTime.transient; // empty record
 
   return {
     id: v4(),
     strategy,
-    isAsync: false,
+    resolution: Resolution.sync,
     externals: pickExternals(Object.values(record)),
     create: context => {
       return Object.keys(record).reduce((result, property) => {

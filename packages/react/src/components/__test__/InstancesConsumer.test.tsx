@@ -1,7 +1,7 @@
 import { singleton } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider';
 import React from 'react';
-import { InstancesConsumer } from '../InstancesConsumer';
+import { DefinitionsConsumer } from '../DefinitionsConsumer';
 import { render } from '@testing-library/react';
 
 describe(`InstancesConsumer`, () => {
@@ -16,13 +16,13 @@ describe(`InstancesConsumer`, () => {
 
       const TestSubject = () => (
         <ContainerProvider>
-          <InstancesConsumer
+          <DefinitionsConsumer
             definitions={[valDef]}
             render={value => {
               return (
                 <>
                   <ValueRenderer testId={'topModuleRender'} value={value} />
-                  <InstancesConsumer
+                  <DefinitionsConsumer
                     definitions={[val2Def]}
                     render={valueFromM1 => {
                       return <ValueRenderer testId={'childModuleRender'} value={valueFromM1} />;
@@ -67,7 +67,7 @@ describe(`InstancesConsumer`, () => {
 
       const TestSubject = () => (
         <ContainerProvider>
-          <InstancesConsumer definitions={[valDef, val2Def]} render={renderFn} />
+          <DefinitionsConsumer definitions={[valDef, val2Def]} render={renderFn} />
         </ContainerProvider>
       );
 

@@ -4,7 +4,6 @@ import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinitio
 import { AsyncInstancesStore } from '../../context/AsyncInstancesStore';
 
 export class RequestStrategy extends BuildStrategy {
-  static type = Symbol.for('classRequest');
 
   build(
     definition: InstanceDefinition<any, any>,

@@ -2,21 +2,21 @@ import { ReactElement } from 'react';
 import { InstanceDefinition } from 'hardwired';
 import { useDefinitions } from '../hooks/useDefinitions';
 
-export type ModulesConsumerProps<TInstanceDefinitions extends InstanceDefinition<any>[]> = {
+export type DefinitionsConsumerProps<TInstanceDefinitions extends InstanceDefinition<any, any>[]> = {
   definitions: TInstanceDefinitions;
   render: (
     ...moduleAsObject: {
-      [K in keyof TInstanceDefinitions]: TInstanceDefinitions[K] extends InstanceDefinition<infer TIntance>
+      [K in keyof TInstanceDefinitions]: TInstanceDefinitions[K] extends InstanceDefinition<infer TIntance, any>
         ? TIntance
         : unknown;
     }
   ) => ReactElement;
 };
 
-export function InstancesConsumer<
-  TInstance extends InstanceDefinition<any>,
+export function DefinitionsConsumer<
+  TInstance extends InstanceDefinition<any, any>,
   TInstances extends [TInstance, ...TInstance[]],
->({ definitions, render }: ModulesConsumerProps<TInstances>) {
+>({ definitions, render }: DefinitionsConsumerProps<TInstances>) {
   const moduleAsObject = useDefinitions(definitions);
 
   return render(...(moduleAsObject as any));

@@ -5,10 +5,9 @@ import { InstancesBuilder } from '../../context/abstract/InstancesBuilder';
 import { AsyncBuildStrategy } from '../abstract/AsyncBuildStrategy';
 
 export class AsyncRequestStrategy extends AsyncBuildStrategy {
-  static type = Symbol.for('asyncRequestStrategy');
 
   async build(
-    definition: AsyncInstanceDefinition<any, any>,
+    definition: AsyncInstanceDefinition<any, any, any>,
     _: InstancesStore,
     asyncInstancesCache: AsyncInstancesStore,
     definitions,

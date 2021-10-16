@@ -1,12 +1,13 @@
 import { v4 } from 'uuid';
-import { TransientStrategy } from '../../strategies/sync/TransientStrategy';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
+import { LifeTime, Resolution } from '../abstract/LifeTime';
 
-export const tuple = <T extends Array<InstanceDefinition<any, any>>, TMeta>(
+export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>(
   ...definitions: T
 ): InstanceDefinition<
   { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown },
+  LifeTime.transient,
   PickExternals<T>
 > => {
   const firstStrategy = definitions[0]?.strategy;
@@ -14,13 +15,13 @@ export const tuple = <T extends Array<InstanceDefinition<any, any>>, TMeta>(
   const strategy = firstStrategy
     ? definitions.every(def => def.strategy === firstStrategy)
       ? firstStrategy
-      : TransientStrategy.type
-    : TransientStrategy.type; // empty record
+      : LifeTime.transient
+    : LifeTime.transient; // empty record
 
   return {
     id: v4(),
     strategy,
-    isAsync: false,
+    resolution: Resolution.sync,
     externals: pickExternals(definitions),
     create: context => {
       return definitions.map(def => {

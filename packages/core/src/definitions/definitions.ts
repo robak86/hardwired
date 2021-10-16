@@ -1,54 +1,47 @@
-import { SingletonStrategy } from '../strategies/sync/SingletonStrategy';
-import { TransientStrategy } from '../strategies/sync/TransientStrategy';
-import { RequestStrategy } from '../strategies/sync/RequestStrategy';
-import { ScopeStrategy } from '../strategies/sync/ScopeStrategy';
-import { AsyncSingletonStrategy } from '../strategies/async/AsyncSingletonStrategy';
 import { fn } from './sync/fn';
 import { partial } from './sync/partial';
 import { klass } from './sync/klass';
 import { asyncFn } from './async/asyncFn';
 import { asyncClass } from './async/asyncClass';
 import { asyncPartial } from './async/asyncPartial';
-import { AsyncTransientStrategy } from '../strategies/async/AsyncTransientStrategy';
-import { AsyncRequestStrategy } from '../strategies/async/AsyncRequestStrategy';
-import { AsyncScopedStrategy } from '../strategies/async/AsyncScopedStrategy';
+import { LifeTime } from './abstract/LifeTime';
 
 export const singleton = {
-  fn: fn(SingletonStrategy.type),
-  class: klass(SingletonStrategy.type),
-  partial: partial(SingletonStrategy.type),
+  fn: fn(LifeTime.singleton),
+  class: klass(LifeTime.singleton),
+  partial: partial(LifeTime.singleton),
 
-  asyncFn: asyncFn(AsyncSingletonStrategy.type),
-  asyncClass: asyncClass(AsyncSingletonStrategy.type),
-  asyncPartial: asyncPartial(AsyncSingletonStrategy.type),
+  asyncFn: asyncFn(LifeTime.singleton),
+  asyncClass: asyncClass(LifeTime.singleton),
+  asyncPartial: asyncPartial(LifeTime.singleton),
 };
 
 export const transient = {
-  fn: fn(TransientStrategy.type),
-  class: klass(TransientStrategy.type),
-  partial: partial(TransientStrategy.type),
+  fn: fn(LifeTime.transient),
+  class: klass(LifeTime.transient),
+  partial: partial(LifeTime.transient),
 
-  asyncFn: asyncFn(AsyncTransientStrategy.type),
-  asyncClass: asyncClass(AsyncTransientStrategy.type),
-  asyncPartial: asyncPartial(AsyncTransientStrategy.type),
+  asyncFn: asyncFn(LifeTime.transient),
+  asyncClass: asyncClass(LifeTime.transient),
+  asyncPartial: asyncPartial(LifeTime.transient),
 };
 
 export const request = {
-  fn: fn(RequestStrategy.type),
-  class: klass(RequestStrategy.type),
-  partial: partial(RequestStrategy.type),
+  fn: fn(LifeTime.request),
+  class: klass(LifeTime.request),
+  partial: partial(LifeTime.request),
 
-  asyncFn: asyncFn(AsyncRequestStrategy.type),
-  asyncClass: asyncClass(AsyncRequestStrategy.type),
-  asyncPartial: asyncPartial(AsyncRequestStrategy.type),
+  asyncFn: asyncFn(LifeTime.request),
+  asyncClass: asyncClass(LifeTime.request),
+  asyncPartial: asyncPartial(LifeTime.request),
 };
 
 export const scoped = {
-  fn: fn(ScopeStrategy.type),
-  class: klass(ScopeStrategy.type),
-  partial: partial(ScopeStrategy.type),
+  fn: fn(LifeTime.scoped),
+  class: klass(LifeTime.scoped),
+  partial: partial(LifeTime.scoped),
 
-  asyncFn: asyncFn(AsyncScopedStrategy.type),
-  asyncClass: asyncClass(AsyncScopedStrategy.type),
-  asyncPartial: asyncPartial(AsyncScopedStrategy.type),
+  asyncFn: asyncFn(LifeTime.scoped),
+  asyncClass: asyncClass(LifeTime.scoped),
+  asyncPartial: asyncPartial(LifeTime.scoped),
 };

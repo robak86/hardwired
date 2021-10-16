@@ -2,8 +2,8 @@
 export { ContainerProvider } from './components/ContainerProvider';
 export type { ContainerProviderProps } from './components/ContainerProvider';
 
-export { InstancesConsumer } from './components/InstancesConsumer';
-export type { ModulesConsumerProps } from './components/InstancesConsumer';
+export { DefinitionsConsumer } from './components/DefinitionsConsumer';
+export type { DefinitionsConsumerProps } from './components/DefinitionsConsumer';
 
 // hooks
 export { useDefinition } from './hooks/useDefinition';

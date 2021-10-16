@@ -24,12 +24,12 @@ type SameLength<T extends any[]> = { [K in keyof T]: any };
 // prettier-ignore
 export type PartialInstancesDefinitionsArgs<TArgs> =
     [] extends TArgs ? []:
-    TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: InstanceDefinition<TArgs[K], any>} ) | PartialInstancesDefinitionsArgs<TPRev> : [];
+    TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: InstanceDefinition<TArgs[K],any, any>} ) | PartialInstancesDefinitionsArgs<TPRev> : [];
 
 // prettier-ignore
 export type PartialAnyInstancesDefinitionsArgs<TArgs extends any[]> =
     [] extends TArgs ? []:
-        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AnyInstanceDefinition<TArgs[K], any>} ) | PartialAnyInstancesDefinitionsArgs<TPRev> : [];
+        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AnyInstanceDefinition<TArgs[K],any, any>} ) | PartialAnyInstancesDefinitionsArgs<TPRev> : [];
 
 // prettier-ignore
 export type PartiallyAppliedAsyncDefinition<A extends any[], D extends PartialAnyInstancesDefinitionsArgs<A>, R> =

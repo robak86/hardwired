@@ -5,7 +5,7 @@ import { singleton, transient } from '../definitions/definitions';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import 'source-map-support/register';
 
-function buildSingletonsTree(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, []>[] {
+function buildSingletonsTree(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any, []>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -19,7 +19,7 @@ function buildSingletonsTree(times: number, depth: number, currentDepth = 0): In
   return definitions;
 }
 
-function buildTransient(times: number, depth: number, currentDepth = 0): InstanceDefinition<number>[] {
+function buildTransient(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any>[] {
   if (currentDepth > depth) {
     return [];
   }

@@ -7,6 +7,7 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 import { AsyncInstancesStore } from './AsyncInstancesStore';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
 import { TransientStrategy } from '../strategies/sync/TransientStrategy';
+import { LifeTime, Resolution } from "../definitions/abstract/LifeTime";
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -21,8 +22,8 @@ export class ContainerContext implements InstancesBuilder {
   }
 
   static create(
-    scopeOverrides: AnyInstanceDefinition<any, any>[],
-    globalOverrides: AnyInstanceDefinition<any, any>[],
+    scopeOverrides: AnyInstanceDefinition<any, any, any>[],
+    globalOverrides: AnyInstanceDefinition<any, any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
@@ -46,7 +47,7 @@ export class ContainerContext implements InstancesBuilder {
   ) {}
 
   get<TValue, TExternalParams extends any[]>(
-    instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
+    instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
     ...externals: TExternalParams
   ): TValue {
     if (externals.length !== instanceDefinition.externals.length) {
@@ -59,9 +60,9 @@ export class ContainerContext implements InstancesBuilder {
           return {
             id: externalDef.id,
             externals: [],
-            strategy: TransientStrategy.type,
+            strategy: LifeTime.transient,
             create: () => externals[idx],
-            isAsync: false,
+            resolution: Resolution.sync,
           };
         }),
       });
@@ -77,7 +78,7 @@ export class ContainerContext implements InstancesBuilder {
   }
 
   getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AnyInstanceDefinition<TValue, TExternalParams>,
+    instanceDefinition: AnyInstanceDefinition<TValue, any, TExternalParams>,
     ...externalParams: TExternalParams
   ): Promise<TValue> {
     if (instanceDefinition.externals.length > 0) {
@@ -86,9 +87,9 @@ export class ContainerContext implements InstancesBuilder {
           return {
             id: externalDef.id,
             externals: [],
-            strategy: TransientStrategy.type,
+            strategy: LifeTime.transient,
             create: () => externalParams[idx],
-            isAsync: false,
+            resolution: Resolution.sync,
           };
         }),
       });
@@ -105,14 +106,14 @@ export class ContainerContext implements InstancesBuilder {
     // return this.buildWithStrategy(instanceDefinition);
   }
 
-  buildExact = (definition: AnyInstanceDefinition<any, any>) => {
+  buildExact = (definition: AnyInstanceDefinition<any, any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     return patchedInstanceDef.create(this);
   };
 
-  buildWithStrategy = (definition: AnyInstanceDefinition<any, any>) => {
+  buildWithStrategy = (definition: AnyInstanceDefinition<any, any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-    const strategy = this.strategiesRegistry.get(definition.strategy);
+    const strategy = this.strategiesRegistry.get(definition.strategy, definition.resolution);
 
     return strategy.build(
       patchedInstanceDef,

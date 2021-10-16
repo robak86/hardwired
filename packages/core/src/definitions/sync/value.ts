@@ -1,13 +1,15 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { SingletonStrategy } from '../../strategies/sync/SingletonStrategy';
 import { v4 } from 'uuid';
+import { LifeTime, Resolution } from '../abstract/LifeTime';
 
-export const value = <TValue, TDeps extends any[]>(value: TValue): InstanceDefinition<TValue, []> => {
+export const value = <TValue, TDeps extends any[]>(
+  value: TValue,
+): InstanceDefinition<TValue, LifeTime.singleton, []> => {
   return {
     id: v4(),
-    isAsync: false,
+    resolution: Resolution.sync,
     externals: [],
-    strategy: SingletonStrategy.type,
+    strategy: LifeTime.singleton,
     create: () => value,
   };
 };

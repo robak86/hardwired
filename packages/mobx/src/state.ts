@@ -1,17 +1,17 @@
-import { InstanceDefinition, SingletonStrategy } from 'hardwired';
+import { InstanceDefinition, LifeTime, Resolution } from 'hardwired';
 import { IObservableValue, observable as observableImpl } from 'mobx';
 import { v4 } from 'uuid';
 
 export type StateBuildFn = {
-  <TValue, TDeps extends any[]>(value: TValue): InstanceDefinition<IObservableValue<TValue>>;
+  <TValue, TDeps extends any[]>(value: TValue): InstanceDefinition<IObservableValue<TValue>, LifeTime.singleton>;
 };
 
-export const state: StateBuildFn = (value): InstanceDefinition<any> => {
+export const state: StateBuildFn = value => {
   return {
     id: `observable:${v4()}`,
-    isAsync: false,
+    resolution: Resolution.sync,
     externals: [],
-    strategy: SingletonStrategy.type,
+    strategy: LifeTime.singleton,
     create: () => observableImpl.box(value),
   };
 };

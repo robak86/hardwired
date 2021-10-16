@@ -7,7 +7,7 @@ import { InstancesBuilder } from '../../context/abstract/InstancesBuilder';
 // TODO: Ideally build strategy should be just static object with type and build property (to decrease chances that one will make it stateful)
 export abstract class BuildStrategy {
   abstract build(
-    definition: AnyInstanceDefinition<any, any>,
+    definition: AnyInstanceDefinition<any, any, any>,
     instancesCache: InstancesStore,
     asyncInstancesCache: AsyncInstancesStore,
     resolvers: InstancesDefinitionsRegistry,

@@ -4,6 +4,7 @@ import { value } from '../definitions/sync/value';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { container } from '../container/Container';
+import { LifeTime } from '../definitions/abstract/LifeTime';
 
 export type SomeObject = {
   value: number;
@@ -1029,4 +1030,6 @@ cnt.get(consumer1000, { value: 1 }, { otherValue: 2 });
 // @ts-expect-error should correctly infer external types
 cnt.get(consumer1000);
 
-expectType<TypeEqual<typeof consumer1000, InstanceDefinition<Consumer, [SomeObject, OtherObject]>>>(true);
+expectType<TypeEqual<typeof consumer1000, InstanceDefinition<Consumer, LifeTime.singleton, [SomeObject, OtherObject]>>>(
+  true,
+);

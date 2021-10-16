@@ -1,9 +1,9 @@
 import { external } from '../external';
 import { value } from '../value';
-import { SingletonStrategy } from '../../../strategies/sync/SingletonStrategy';
 import { klass } from '../klass';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/InstanceDefinition';
+import { LifeTime } from '../../abstract/LifeTime';
 
 describe(`klass`, () => {
   describe(`external params`, () => {
@@ -15,18 +15,20 @@ describe(`klass`, () => {
       it(`correctly picks external params from instances definitions provided as dependencies`, async () => {
         const ext = external<{ objectId: string }>();
         const numD = value(123);
-        const cls = klass(SingletonStrategy.type)(TestClass, numD, ext);
+        const cls = klass(LifeTime.singleton)(TestClass, numD, ext);
 
-        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, [{ objectId: string }]>>>(true);
+        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, LifeTime.singleton, [{ objectId: string }]>>>(
+          true,
+        );
       });
 
       it(`correctly picks external params from instances definitions provided as dependencies`, async () => {
         // const ext = external<{ objectId: string }>();
         const numD = value(123);
         const objD = value({ objectId: '123' });
-        const cls = klass(SingletonStrategy.type)(TestClass, numD, objD);
+        const cls = klass(LifeTime.singleton)(TestClass, numD, objD);
 
-        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, []>>>(true);
+        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, LifeTime.singleton, []>>>(true);
       });
     });
 
@@ -34,7 +36,7 @@ describe(`klass`, () => {
       it(`correctly picks external`, async () => {
         const ext = external<{ objectId: string }>();
         const numD = value(123);
-        const cls = klass(SingletonStrategy.type)(TestClass, numD, ext);
+        const cls = klass(LifeTime.singleton)(TestClass, numD, ext);
         expect(cls.externals).toEqual(ext.externals);
       });
 
@@ -45,7 +47,7 @@ describe(`klass`, () => {
 
         const ext1 = external<{ objectId1: string }>();
         const ext2 = external<{ objectId2: string }>();
-        const cls = klass(SingletonStrategy.type)(TestCls, ext1, ext2);
+        const cls = klass(LifeTime.singleton)(TestCls, ext1, ext2);
         expect(cls.externals).toEqual([...ext1.externals, ...ext2.externals]);
       });
 
@@ -69,9 +71,9 @@ describe(`klass`, () => {
 
         const ext1 = external<{ objectId1: string }>();
         const ext2 = external<{ objectId2: string }>();
-        const cls1 = klass(SingletonStrategy.type)(TestCls1, ext1);
-        const cls2 = klass(SingletonStrategy.type)(TestCls2, ext2);
-        const cls3 = klass(SingletonStrategy.type)(TestCls3, ext1, ext2, cls1, cls2);
+        const cls1 = klass(LifeTime.singleton)(TestCls1, ext1);
+        const cls2 = klass(LifeTime.singleton)(TestCls2, ext2);
+        const cls3 = klass(LifeTime.singleton)(TestCls3, ext1, ext2, cls1, cls2);
 
         expect(cls3.externals).toEqual([...ext1.externals, ...ext2.externals]);
       });

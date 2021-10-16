@@ -10,37 +10,40 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 import { AsyncTransientStrategy } from '../strategies/async/AsyncTransientStrategy';
 import { AsyncRequestStrategy } from '../strategies/async/AsyncRequestStrategy';
 import { AsyncScopedStrategy } from '../strategies/async/AsyncScopedStrategy';
-import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
+import { LifeTime } from '../definitions/abstract/LifeTime';
 
 export type ChildScopeOptions = {
-  scopeOverrides?: AnyInstanceDefinition<any, any>[];
+  scopeOverrides?: AnyInstanceDefinition<any, any, any>[];
 };
 
-export const defaultStrategiesRegistry = new StrategiesRegistry({
-  [SingletonStrategy.type]: new SingletonStrategy(),
-  [TransientStrategy.type]: new TransientStrategy(),
-  [RequestStrategy.type]: new RequestStrategy(),
-  [ScopeStrategy.type]: new ScopeStrategy(),
-
-  [AsyncSingletonStrategy.type]: new AsyncSingletonStrategy(),
-  [AsyncTransientStrategy.type]: new AsyncTransientStrategy(),
-  [AsyncRequestStrategy.type]: new AsyncRequestStrategy(),
-  [AsyncScopedStrategy.type]: new AsyncScopedStrategy(),
-});
+export const defaultStrategiesRegistry = new StrategiesRegistry(
+  {
+    [LifeTime.singleton]: new SingletonStrategy(),
+    [LifeTime.transient]: new TransientStrategy(),
+    [LifeTime.request]: new RequestStrategy(),
+    [LifeTime.scoped]: new ScopeStrategy(),
+  },
+  {
+    [LifeTime.singleton]: new AsyncSingletonStrategy(),
+    [LifeTime.transient]: new AsyncTransientStrategy(),
+    [LifeTime.request]: new AsyncRequestStrategy(),
+    [LifeTime.scoped]: new AsyncScopedStrategy(),
+  },
+);
 
 export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}
 
   // get<TValue>(instanceDefinition: InstanceDefinition<TValue, []>): TValue;
   get<TValue, TExternalParams extends any[]>(
-    instanceDefinition: InstanceDefinition<TValue, TExternalParams>,
+    instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
     ...externals: TExternalParams
   ): TValue {
     return this.containerContext.get(instanceDefinition, ...externals);
   }
 
   getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AnyInstanceDefinition<TValue, TExternalParams>,
+    instanceDefinition: AnyInstanceDefinition<TValue, any, TExternalParams>,
     ...externalParams: TExternalParams
   ): Promise<TValue> {
     const requestContext = this.containerContext.checkoutRequestScope();
@@ -61,11 +64,11 @@ export class Container {
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  scopeOverrides?: AnyInstanceDefinition<any, any>[];
-  globalOverrides?: AnyInstanceDefinition<any, any>[]; // propagated to whole dependencies graph
+  scopeOverrides?: AnyInstanceDefinition<any, any, any>[];
+  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to whole dependencies graph
 };
 
-export function container(globalOverrides?: AnyInstanceDefinition<any, any>[]): Container;
+export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[]): Container;
 export function container(options?: ContainerOptions): Container;
 export function container(overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
