@@ -6,7 +6,10 @@ import { uncurry, UnCurry } from '../../utils/UnCurry';
 import { LifeTime, Resolution } from '../abstract/LifeTime';
 
 export type PartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
-  <Fn extends (...args: any[]) => any, TProvidedArgs extends PartialInstancesDefinitionsArgs<Parameters<UnCurry<Fn>>>>(
+  <
+    Fn extends (...args: any[]) => any,
+    TProvidedArgs extends PartialInstancesDefinitionsArgs<Parameters<UnCurry<Fn>>, TLifeTime>,
+  >(
     factory: Fn,
     ...dependencies: TProvidedArgs
   ): InstanceDefinition<
@@ -25,17 +28,7 @@ export const partial = <TLifeTime extends LifeTime>(strategy: TLifeTime): Partia
       strategy,
       resolution: Resolution.sync,
       externals: pickExternals(dependencies),
-      create: context => {
-        return uncurried.bind(null, ...dependencies.map(context.buildWithStrategy));
-        //
-        // if (fn.length === 0) {
-        //   return fn;
-        // } else {
-        //   return (fn as any).bind(null, ...dependencies.map(context.buildWithStrategy));
-        // }
-      },
-
-      meta: undefined as any,
+      create: context => uncurried.bind(null, ...dependencies.map(context.buildWithStrategy)),
     };
   };
 };

@@ -71,9 +71,9 @@ describe(`klass`, () => {
 
         const ext1 = external<{ objectId1: string }>();
         const ext2 = external<{ objectId2: string }>();
-        const cls1 = klass(LifeTime.singleton)(TestCls1, ext1);
-        const cls2 = klass(LifeTime.singleton)(TestCls2, ext2);
-        const cls3 = klass(LifeTime.singleton)(TestCls3, ext1, ext2, cls1, cls2);
+        const cls1 = klass(LifeTime.transient)(TestCls1, ext1);
+        const cls2 = klass(LifeTime.transient)(TestCls2, ext2);
+        const cls3 = klass(LifeTime.transient)(TestCls3, ext1, ext2, cls1, cls2);
 
         expect(cls3.externals).toEqual([...ext1.externals, ...ext2.externals]);
       });

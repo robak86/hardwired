@@ -3,12 +3,13 @@ import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime, Resolution } from '../abstract/LifeTime';
+import { AllowedSyncDependencies } from '../abstract/AllowedSyncDependencies';
 
 type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <
     TInstance,
     TArgs extends any[],
-    TDepsInstances extends { [K in keyof TArgs]: InstanceDefinition<TArgs[K], any, any> },
+    TDepsInstances extends { [K in keyof TArgs]: AllowedSyncDependencies<TArgs[K], TLifeTime> },
   >(
     cls: ClassType<TInstance, TArgs>,
     ...args: TDepsInstances

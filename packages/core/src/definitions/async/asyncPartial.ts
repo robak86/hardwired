@@ -8,7 +8,7 @@ import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <
     Fn extends (...args: any[]) => Promise<any>,
-    TProvidedArgs extends PartialAnyInstancesDefinitionsArgs<Parameters<UnCurryAsync<Fn>>>,
+    TProvidedArgs extends PartialAnyInstancesDefinitionsArgs<Parameters<UnCurryAsync<Fn>>, TLifeTime>,
   >(
     factory: Fn,
     ...dependencies: TProvidedArgs

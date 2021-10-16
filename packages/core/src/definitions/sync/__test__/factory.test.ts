@@ -339,7 +339,7 @@ describe(`factory`, () => {
       //       we would need to create two kinds of scope - persistent scope for factory where all scoped(scoped should in
       //       theory always contain externals therefore it shouldn't be persisted?) instances will be persisted
       const requestIdD = request.fn(() => v4());
-      const dbConnectionD = scoped.class(DbConnection);
+      const dbConnectionD = request.class(DbConnection);
       const loggerD = transient.class(Logger, requestD, requestIdD);
       const handlerD = request.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
       const wtf = factory(handlerD);
