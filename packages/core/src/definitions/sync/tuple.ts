@@ -1,7 +1,8 @@
 import { v4 } from 'uuid';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
-import { LifeTime, Resolution } from '../abstract/LifeTime';
+import { LifeTime} from '../abstract/LifeTime';
+import { Resolution } from "../abstract/Resolution";
 
 export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>(
   ...definitions: T

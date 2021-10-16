@@ -1,6 +1,7 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
-import { LifeTime, Resolution } from '../abstract/LifeTime';
+import { LifeTime} from '../abstract/LifeTime';
+import { Resolution } from "../abstract/Resolution";
 
 export const external = <TExternal extends object = never>(
   name?: string,

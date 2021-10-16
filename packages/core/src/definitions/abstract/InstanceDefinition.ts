@@ -1,7 +1,8 @@
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from './AsyncInstanceDefinition';
 import { ContainerContext } from '../../context/ContainerContext';
-import { LifeTime, Resolution } from './LifeTime';
+import { LifeTime} from './LifeTime';
+import { Resolution } from "./Resolution";
 
 export type InstanceDefinitionContext = ContainerContext;
 

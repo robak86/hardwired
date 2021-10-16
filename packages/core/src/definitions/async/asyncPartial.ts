@@ -2,8 +2,9 @@ import { PartialAnyInstancesDefinitionsArgs, PartiallyAppliedAsyncDefinition } f
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { uncurryAsync, UnCurryAsync } from '../../utils/UnCurryAsync';
-import { LifeTime, Resolution } from '../abstract/LifeTime';
+import { LifeTime} from '../abstract/LifeTime';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
+import { Resolution } from "../abstract/Resolution";
 
 export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <

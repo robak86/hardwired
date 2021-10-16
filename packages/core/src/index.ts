@@ -25,3 +25,5 @@ export * from './definitions/async/asyncFactory';
 export * from './definitions/sync/external';
 export * from './definitions/sync/intersection';
 export * from './definitions/abstract/LifeTime';
+export type { DerivedLifeTime } from "./definitions/abstract/DerivedLifeTime";
+export { Resolution } from "./definitions/abstract/Resolution";

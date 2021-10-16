@@ -1,8 +1,8 @@
-import { LifeTime } from "./LifeTime";
+import { LifeTime } from './LifeTime';
 import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 
 // prettier-ignore
-export type AllowedAsyncDependencies<TValue, TLifeTime extends LifeTime> =
+export type AllowedAnyDependencies<TValue, TLifeTime extends LifeTime> =
     TLifeTime extends LifeTime.singleton ?
         | AnyInstanceDefinition<TValue, LifeTime.singleton, []>
         | AnyInstanceDefinition<TValue, LifeTime.transient, any>

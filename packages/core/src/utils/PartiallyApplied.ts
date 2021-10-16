@@ -2,7 +2,7 @@ import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 import { AllowedSyncDependencies } from '../definitions/abstract/AllowedSyncDependencies';
-import { AllowedAsyncDependencies } from '../definitions/abstract/AllowedAsyncDependencies';
+import { AllowedAnyDependencies } from '../definitions/abstract/AllowedAnyDependencies';
 
 // prettier-ignore
 export type PartiallyApplied<A extends any[], D extends PartialArgs<A>, R> =
@@ -32,7 +32,7 @@ export type PartialInstancesDefinitionsArgs<TArgs, TLifeTime extends LifeTime> =
 // prettier-ignore
 export type PartialAnyInstancesDefinitionsArgs<TArgs extends any[], TLifeTime extends LifeTime> =
     [] extends TArgs ? []:
-        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AllowedAsyncDependencies<TArgs[K],TLifeTime>} ) | PartialAnyInstancesDefinitionsArgs<TPRev, TLifeTime> : [];
+        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AllowedAnyDependencies<TArgs[K],TLifeTime>} ) | PartialAnyInstancesDefinitionsArgs<TPRev, TLifeTime> : [];
 
 // prettier-ignore
 export type PartiallyAppliedAsyncDefinition<A extends any[], D extends PartialAnyInstancesDefinitionsArgs<A, any>, R> =

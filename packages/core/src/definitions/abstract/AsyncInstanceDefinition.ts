@@ -1,5 +1,6 @@
 import { InstanceDefinition, InstanceDefinitionContext } from './InstanceDefinition';
-import { LifeTime, Resolution } from './LifeTime';
+import { LifeTime} from './LifeTime';
+import { Resolution } from "./Resolution";
 
 export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime, TExternals> = {
   id: string;

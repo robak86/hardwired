@@ -7,7 +7,8 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 import { AsyncInstancesStore } from './AsyncInstancesStore';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
 import { TransientStrategy } from '../strategies/sync/TransientStrategy';
-import { LifeTime, Resolution } from "../definitions/abstract/LifeTime";
+import { LifeTime} from "../definitions/abstract/LifeTime";
+import { Resolution } from "../definitions/abstract/Resolution";
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {

@@ -1,7 +1,8 @@
 import invariant from 'tiny-invariant';
 import { BuildStrategy } from '../abstract/BuildStrategy';
 import { AsyncBuildStrategy } from '../abstract/AsyncBuildStrategy';
-import { LifeTime, Resolution } from '../../definitions/abstract/LifeTime';
+import { LifeTime} from '../../definitions/abstract/LifeTime';
+import { Resolution } from "../../definitions/abstract/Resolution";
 
 export class StrategiesRegistry {
   private readonly strategies: Record<LifeTime, Record<Resolution, BuildStrategy | AsyncBuildStrategy>>;

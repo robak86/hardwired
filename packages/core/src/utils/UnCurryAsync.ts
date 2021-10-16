@@ -1,6 +1,6 @@
 import { IsFinite } from './IsFinite';
 
-type Awaited<T> = T extends Promise<infer TInner> ? TInner : T
+type Awaited<T> = T extends Promise<infer TInner> ? TInner : T;
 
 // prettier-ignore
 export type UnCurryAsync<T, TArgsAggregate extends any[] = []> =
@@ -11,15 +11,6 @@ export type UnCurryAsync<T, TArgsAggregate extends any[] = []> =
       never>
      :
     never;
-
-
-const fn1 = async (a: number) => (b:string) => 123
-const fn2 = async (a: number) => async (b:string) => 123
-const fn3 =  (a: number) => async (b:string) => 123
-
-type T1 = UnCurryAsync<typeof fn1>
-type T2 = UnCurryAsync<typeof fn2>
-type T3 = UnCurryAsync<typeof fn3>
 
 export function uncurryAsync<T extends (...args: any[]) => any>(fn: T): UnCurryAsync<T> {
   type AnyFn = (...args: any[]) => Promise<any>;
