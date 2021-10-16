@@ -1,4 +1,4 @@
-import { PartialAnyInstancesDefinitionsArgs, PartiallyAppliedAsyncDefinition } from '../../utils/PartiallyApplied';
+import { AsyncPartialFnDependencies, PartiallyAppliedAsyncFn } from '../../utils/PartiallyApplied';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { uncurryAsync, UnCurryAsync } from '../../utils/UnCurryAsync';
@@ -9,12 +9,12 @@ import { Resolution } from "../abstract/Resolution";
 export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <
     Fn extends (...args: any[]) => Promise<any>,
-    TArgs extends PartialAnyInstancesDefinitionsArgs<Parameters<UnCurryAsync<Fn>>, TLifeTime>,
+    TArgs extends AsyncPartialFnDependencies<Parameters<UnCurryAsync<Fn>>, TLifeTime>,
   >(
     factory: Fn,
     ...dependencies: TArgs
   ): AsyncInstanceDefinition<
-    PartiallyAppliedAsyncDefinition<Parameters<UnCurryAsync<Fn>>, TArgs, ReturnType<UnCurryAsync<Fn>>>,
+    PartiallyAppliedAsyncFn<Parameters<UnCurryAsync<Fn>>, TArgs, ReturnType<UnCurryAsync<Fn>>>,
     TLifeTime,
     PickExternals<TArgs>
   >;

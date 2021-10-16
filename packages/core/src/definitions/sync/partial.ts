@@ -1,4 +1,4 @@
-import { PartialInstancesDefinitionsArgs, PartiallyAppliedDefinition } from '../../utils/PartiallyApplied';
+import { PartialFnDependencies, PartiallyAppliedFn } from '../../utils/PartiallyApplied';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
@@ -9,12 +9,12 @@ import { Resolution } from "../abstract/Resolution";
 export type PartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <
     Fn extends (...args: any[]) => any,
-    TArgs extends PartialInstancesDefinitionsArgs<Parameters<UnCurry<Fn>>, TLifeTime>,
+    TArgs extends PartialFnDependencies<Parameters<UnCurry<Fn>>, TLifeTime>,
   >(
     factory: Fn,
     ...dependencies: TArgs
   ): InstanceDefinition<
-    PartiallyAppliedDefinition<Parameters<UnCurry<Fn>>, TArgs, ReturnType<UnCurry<Fn>>>,
+    PartiallyAppliedFn<Parameters<UnCurry<Fn>>, TArgs, ReturnType<UnCurry<Fn>>>,
     TLifeTime,
     PickExternals<TArgs>
   >;
