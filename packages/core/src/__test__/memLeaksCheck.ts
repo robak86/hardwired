@@ -1,34 +1,36 @@
-import { unit } from '../module/ModuleBuilder';
-import { singleton } from '../strategies/SingletonStrategy';
-import { scoped } from '../strategies/ScopeStrategy';
 import { container } from '../container/Container';
 import u from 'util';
 
 import memwatch from '@airbnb/node-memwatch';
+import { scoped, singleton, transient } from '../definitions/definitions';
+import { external } from '../definitions/sync/external';
+import { factory, IFactory } from '../definitions/sync/factory';
 
 export const inspect = obj => {
   return console.log(u.inspect(obj, false, null, true));
 };
 
-class ConfigProvider {}
+class ConfigProvider {
+  constructor(private config: ConfigData) {}
+}
+
+type ConfigData = { data: string };
 
 class ConfigConsumer {
   public data = Array.from(Array(10000).keys());
-  constructor(private config: ConfigProvider) {}
+  constructor(public configFactory: IFactory<ConfigProvider, [ConfigData]>) {}
 }
 
-const m = unit()
-  .define('d1', singleton, ctx => new ConfigProvider())
-  .define('d2', scoped, ctx => new ConfigConsumer(ctx.d1))
-  .build();
+const config = external<ConfigData>();
+const d1 = transient.class(ConfigProvider, config);
+const d2 = scoped.class(ConfigConsumer, factory(d1));
 
 const c = container();
 
 const hd = new memwatch.HeapDiff();
 
-for (let i = 0; i < 1000000; i++) {
-  const scope = c.checkoutScope();
-  const d = scope.get(m, 'd2');
+for (let i = 0; i < 10000000; i++) {
+  c.get(d2).configFactory.build({ data: 'someData' });
 
   if (i % 100 === 0) {
     console.log(i);

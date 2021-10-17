@@ -1,100 +1,211 @@
-import { module, unit } from '../../module/ModuleBuilder';
-import { request } from '../RequestStrategy';
 import { container } from '../../container/Container';
+import { request } from '../../definitions/definitions';
+import { replace } from '../../patching/replace';
+import { ContainerContext } from '../../context/ContainerContext';
 
 describe(`RequestStrategy`, () => {
-  describe(`resolution`, () => {
-    describe(`get`, () => {
-      it(`uses new request scope for each call`, async () => {
-        const m = unit()
-          .define('a', request, () => Math.random())
-          .build();
+  describe(`sync definitions`, () => {
+    describe(`resolution`, () => {
+      describe(`get`, () => {
+        it(`uses new request scope for each call`, async () => {
+          const a = request.fn(() => Math.random());
 
-        const c = container();
-        const req1 = c.get(m, 'a');
-        const req2 = c.get(m, 'a');
+          const c = container();
+          const req1 = c.get(a);
+          const req2 = c.get(a);
 
-        expect(req1).not.toEqual(req2);
+          expect(req1).not.toEqual(req2);
+        });
+      });
+
+      describe(`asObject`, () => {
+        it(`runs asObject each time with new request scope `, async () => {
+          const a = request.fn(() => Math.random());
+
+          const c = container();
+          const req1 = c.get(a);
+          const req2 = c.get(a);
+
+          expect(req1).not.toEqual(req2);
+        });
+      });
+
+      describe(`childScope`, () => {
+        it(`does not inherit any values from parent scope`, async () => {
+          const a = request.fn(() => Math.random());
+
+          const c = ContainerContext.empty()
+          const req1 = c.get(a);
+
+          const childC = c.checkoutScope();
+          const req2 = childC.get(a);
+
+          expect(req1).not.toEqual(req2);
+        });
       });
     });
 
-    describe(`asObject`, () => {
-      it(`runs asObject each time with new request scope `, async () => {
-        const m = unit()
-          .define('a', request, () => Math.random())
-          .build();
+    describe(`scope overrides`, () => {
+      it(`replaces definitions for request scope`, async () => {
+        const a = request.fn(() => 1);
 
-        const c = container();
-        const req1 = c.asObject(m);
-        const req2 = c.asObject(m);
+        const c = ContainerContext.empty()
 
-        expect(req1.a).not.toEqual(req2.a);
+        const mPatch = replace(
+            a,
+            request.fn(() => 2),
+        );
+
+        const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
+
+        expect(c.get(a)).toEqual(1);
+        expect(childC.get(a)).toEqual(2);
       });
     });
 
-    describe(`childScope`, () => {
-      it(`does not inherit any values from parent scope`, async () => {
-        const m = unit()
-          .define('a', request, () => Math.random())
-          .build();
+    describe(`global overrides`, () => {
+      it(`cannot be replaced by scope overrides`, async () => {
+        const k1 = request.fn(() => Math.random());
 
-        const c = container();
-        const req1 = c.asObject(m);
+        const invariantPatch = replace(
+            k1,
+            request.fn(() => 1),
+        );
+        const childScopePatch = replace(
+            k1,
+            request.fn(() => 2),
+        );
 
-        const childC = c.checkoutScope();
-        const req2 = childC.asObject(m);
+        const c = ContainerContext.create([], [invariantPatch]);
+        expect(c.get(k1)).toEqual(1);
 
-        expect(req1.a).not.toEqual(req2.a);
+        const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
+        expect(childScope.get(k1)).toEqual(1);
+      });
+
+      it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
+        const k1 = request.fn(() => Math.random());
+        const k2 = request.fn(() => Math.random());
+
+        const invariantPatch = replace(
+            k1,
+            request.fn(() => 1),
+        );
+        const childScopePatch = replace(
+            k2,
+            request.fn(() => 2),
+        );
+
+        const c = ContainerContext.create([], [invariantPatch]);
+        expect(c.get(k1)).toEqual(1);
+
+        const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
+        expect(childScope.get(k1)).toEqual(1);
+        expect(childScope.get(k2)).toEqual(2);
       });
     });
   });
 
-  describe(`scope overrides`, () => {
-    it(`replaces definitions for request scope`, async () => {
-      const m = unit()
-        .define('a', request, () => 1)
-        .build();
-      const c = container();
+  describe(`async definitions`, () => {
+    describe(`resolution`, () => {
+      describe(`get`, () => {
+        it(`uses new request scope for each call`, async () => {
+          const a = request.asyncFn(async () => Math.random());
 
-      const mPatch = m.replace('a', () => 2, request);
-      const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
+          const c = container();
+          const req1 = await c.getAsync(a);
+          const req2 = await c.getAsync(a);
 
-      expect(c.get(m, 'a')).toEqual(1);
-      expect(childC.get(m, 'a')).toEqual(2);
+          expect(req1).not.toEqual(req2);
+        });
+      });
+
+      describe(`asObject`, () => {
+        it(`runs asObject each time with new request scope `, async () => {
+          const a = request.asyncFn(async () => Math.random());
+
+          const c = container();
+          const req1 = await c.getAsync(a);
+          const req2 = await c.getAsync(a);
+
+          expect(req1).not.toEqual(req2);
+        });
+      });
+
+      describe(`childScope`, () => {
+        it(`does not inherit any values from parent scope`, async () => {
+          const a = request.asyncFn(async () => Math.random());
+
+          const c = ContainerContext.empty();
+          const req1 = await c.getAsync(a);
+
+          const childC = c.checkoutScope();
+          const req2 = childC.getAsync(a);
+
+          expect(req1).not.toEqual(req2);
+        });
+      });
     });
-  });
 
-  describe(`global overrides`, () => {
-    it(`cannot be replaced by scope overrides`, async () => {
-      const m = module()
-        .define('k1', request, () => Math.random())
-        .build();
+    describe(`scope overrides`, () => {
+      it(`replaces definitions for request scope`, async () => {
+        const a = request.asyncFn(async () => 1);
 
-      const invariantPatch = m.replace('k1', () => 1, request);
-      const childScopePatch = m.replace('k1', () => 2, request);
+        const c = ContainerContext.empty();
 
-      const c = container({ globalOverrides: [invariantPatch] });
-      expect(c.asObject(m).k1).toEqual(1);
+        const mPatch = replace(
+            a,
+            request.asyncFn(async () => 2),
+        );
 
-      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-      expect(childScope.asObject(m).k1).toEqual(1);
+        const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
+
+        expect(await c.getAsync(a)).toEqual(1);
+        expect(await childC.getAsync(a)).toEqual(2);
+      });
     });
 
-    it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
-      const m = module()
-        .define('k1', request, () => Math.random())
-        .define('k2', request, () => Math.random())
-        .build();
+    describe(`global overrides`, () => {
+      it(`cannot be replaced by scope overrides`, async () => {
+        const k1 = request.asyncFn(async () => Math.random());
 
-      const invariantPatch = m.replace('k1', () => 1, request);
-      const childScopePatch = m.replace('k2', () => 2, request);
+        const invariantPatch = replace(
+            k1,
+            request.asyncFn(async () => 1),
+        );
+        const childScopePatch = replace(
+            k1,
+            request.asyncFn(async () => 2),
+        );
 
-      const c = container({ globalOverrides: [invariantPatch] });
-      expect(c.asObject(m).k1).toEqual(1);
+        const c = ContainerContext.create([], [invariantPatch]);
 
-      const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-      expect(childScope.asObject(m).k1).toEqual(1);
-      expect(childScope.asObject(m).k2).toEqual(2);
+        expect(await c.getAsync(k1)).toEqual(1);
+
+        const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
+        expect(await childScope.getAsync(k1)).toEqual(1);
+      });
+
+      it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
+        const k1 = request.asyncFn(async () => Math.random());
+        const k2 = request.asyncFn(async () => Math.random());
+
+        const invariantPatch = replace(
+            k1,
+            request.asyncFn(async () => 1),
+        );
+        const childScopePatch = replace(
+            k2,
+            request.asyncFn(async () => 2),
+        );
+
+        const c = ContainerContext.create([], [invariantPatch]);
+        expect(await c.getAsync(k1)).toEqual(1);
+
+        const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
+        expect(await childScope.getAsync(k1)).toEqual(1);
+        expect(await childScope.getAsync(k2)).toEqual(2);
+      });
     });
   });
 });

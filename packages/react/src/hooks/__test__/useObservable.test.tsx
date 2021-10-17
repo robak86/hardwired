@@ -1,4 +1,4 @@
-import { container, module, singleton } from 'hardwired';
+import { container, singleton } from 'hardwired';
 import { act, render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
@@ -8,14 +8,11 @@ import { DummyObservable } from '../../__test__/DummyObservable';
 
 describe(`useObservable`, () => {
   describe(`instantiating dependencies`, () => {
-    const m1 = module() //breakme
-      .define('val1', singleton, () => new DummyObservable('val1'))
-      .define('val2', singleton, () => new DummyObservable('val2'))
-      .build();
+    const val1Def = singleton.fn(() => new DummyObservable('val1'));
 
     function setup() {
       const Consumer = () => {
-        const val1 = useObservable(m1, 'val1', v => v.someValue);
+        const val1 = useObservable(val1Def, v => v.someValue);
         return <DummyComponent value={val1} />;
       };
 
@@ -35,13 +32,11 @@ describe(`useObservable`, () => {
   });
 
   describe(`binding transient dependencies to component instance`, () => {
-    const m1 = module()
-      .define('cls', singleton, () => new DummyObservable(Math.random()))
-      .build();
+    const clsDef = singleton.fn(() => new DummyObservable(Math.random()));
 
     function setup() {
       const Consumer = () => {
-        const value = useObservable(m1, 'cls', v => v.someValue);
+        const value = useObservable(clsDef, v => v.someValue);
         return <DummyComponent value={value} />;
       };
 
@@ -88,12 +83,10 @@ describe(`useObservable`, () => {
       const observable = new DummyObservable(1);
       jest.spyOn(observable, 'subscribe');
 
-      const m = module()
-        .define('observable', singleton, () => observable)
-        .build();
+      const observableDef = singleton.fn(() => observable);
 
       const TestSubject = () => {
-        const state = useObservable(m, 'observable');
+        const state = useObservable(observableDef);
         return <>{state.someValue}</>;
       };
 
@@ -123,12 +116,10 @@ describe(`useObservable`, () => {
         return cancelFnSpy;
       }
 
-      const m = module()
-        .define('observable', singleton, () => observable)
-        .build();
+      const observableDef = singleton.fn(() => observable);
 
       const TestSubject = () => {
-        const { someValue } = useObservable(m, 'observable');
+        const { someValue } = useObservable(observableDef);
         return <>{someValue}</>;
       };
 
@@ -152,13 +143,10 @@ describe(`useObservable`, () => {
 
     it(`re-renders view`, async () => {
       const observable = new DummyObservable(1);
-
-      const m = module()
-        .define('observable', singleton, () => observable)
-        .build();
+      const observableDef = singleton.fn(() => observable);
 
       const TestSubject = () => {
-        const state = useObservable(m, 'observable', obj => obj.someValue);
+        const state = useObservable(observableDef, obj => obj.someValue);
         return <div data-testid={'value'}>{state}</div>;
       };
 

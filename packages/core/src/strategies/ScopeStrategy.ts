@@ -1,30 +1,19 @@
-import { InstancesCache } from '../context/InstancesCache';
 import { BuildStrategy } from './abstract/BuildStrategy';
+import { InstancesStore } from '../context/InstancesStore';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
-export class ScopeStrategy<TValue> extends BuildStrategy<TValue> {
-  constructor(protected buildFunction: (ctx) => TValue) {
-    super();
-  }
+export class ScopeStrategy extends BuildStrategy {
+  build(definition: InstanceDefinition<any, any>, instancesCache: InstancesStore, resolvers, instancesBuilder) {
+    const id = definition.id;
 
-  build(id: string, instancesCache: InstancesCache, resolvers, materializedModule?): TValue {
-    if (resolvers.hasGlobalOverrideResolver(id)) {
-      if (instancesCache.hasInGlobalOverride(id)) {
-        return instancesCache.getFromGlobalOverride(id);
-      } else {
-        const instance = this.buildFunction(materializedModule);
-        instancesCache.setForGlobalOverrideScope(id, instance);
-        return instance;
-      }
+    if (resolvers.hasGlobalOverrideDefinition(id)) {
+      return instancesCache.upsertGlobalOverrideScope(id, () => {
+        return instancesBuilder.buildExact(definition);
+      });
     }
 
-    if (instancesCache.hasInCurrentScope(id)) {
-      return instancesCache.getFromCurrentScope(id);
-    } else {
-      const instance = this.buildFunction(materializedModule);
-      instancesCache.setForHierarchicalScope(id, instance);
-      return instance;
-    }
+    return instancesCache.upsertCurrentScope(id, () => {
+      return instancesBuilder.buildExact(definition);
+    });
   }
 }
-
-export const scoped = <TReturn>(buildFunction: (ctx) => TReturn) => new ScopeStrategy(buildFunction);

@@ -1,71 +1,71 @@
-import { Module } from '../module/Module';
-import { ModulePatch } from '../module/ModulePatch';
 import { ContainerContext } from '../context/ContainerContext';
-import { IServiceLocator } from './IServiceLocator';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
+import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
+import { defaultStrategiesRegistry } from "../strategies/collection/defaultStrategiesRegistry";
 
-export type ChildScopeOptions = {
-  scopeOverrides?: ModulePatch<any>[];
-};
-
-export class Container implements IServiceLocator {
+export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}
 
-  get id(): string {
-    return this.containerContext.id;
+  get<TValue, TExternalParams extends any[]>(
+    instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
+    ...externals: TExternalParams
+  ): TValue {
+    return this.containerContext.get(instanceDefinition, ...externals);
   }
 
-  get<TLazyModule extends Module<any>, K extends Module.InstancesKeys<TLazyModule> & string>(
-    moduleInstance: TLazyModule,
-    name: K,
-  ): Module.Materialized<TLazyModule>[K] {
+  getAsync<TValue, TExternalParams extends any[]>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternalParams>,
+    ...externalParams: TExternalParams
+  ): Promise<TValue> {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.get(moduleInstance, name);
+    return requestContext.getAsync(instanceDefinition, ...externalParams);
   }
 
-  select<TReturn>(inject: (ctx: ContainerContext) => TReturn): TReturn {
-    return inject(this.containerContext.checkoutRequestScope());
-  }
-
-  asObject<TModule extends Module<any>>(module: TModule): Module.Materialized<TModule> {
+  getAll<TLazyModule extends Array<InstanceDefinition<any, any, []>>>(
+    ...definitions: TLazyModule
+  ): {
+    [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown;
+  } {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.materialize(module);
+
+    return definitions.map(def => requestContext.get(def)) as any;
   }
 
-  asObjectMany<TModule extends Module<any>, TModules extends [TModule, ...TModule[]]>(
-    ...modules: TModules
-  ): Module.MaterializedArray<TModules> {
+  getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(
+    ...definitions: TLazyModule
+  ): Promise<
+    {
+      [K in keyof TLazyModule]: TLazyModule[K] extends AsyncInstanceDefinition<infer TInstance, any, []>
+        ? TInstance
+        : unknown;
+    }
+  > {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return modules.map(module => {
-      return requestContext.materialize(module);
-    }) as any;
-  }
 
-  /***
-   * New container inherits current's container scopeOverrides, e.g. if current container has overrides for some singleton
-   * then new scope will inherit this singleton unless one provides new overrides in options for this singleton.
-   * Current containers' instances build by "scoped" strategy are not inherited
-   * @param options
-   */
-  checkoutScope(options: ChildScopeOptions = {}): Container {
-    return new Container(this.containerContext.childScope(options));
+    return Promise.all(definitions.map(def => requestContext.getAsync(def))) as any;
   }
 }
 
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  scopeOverrides?: ModulePatch<any>[]; // used only in descendent scopes (can be overridden)
-  globalOverrides?: ModulePatch<any>[]; // propagated to whole dependencies graph
+  scopeOverrides?: AnyInstanceDefinition<any, any, any>[];
+  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to whole dependencies graph
 };
 
-export function container(globalOverrides?: ModulePatch<any>[]): Container;
+export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[]): Container;
 export function container(options?: ContainerOptions): Container;
-export function container(overridesOrOptions?: ContainerOptions | Array<ModulePatch<any>>): Container {
+export function container(overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
-    return new Container(ContainerContext.create([], overridesOrOptions));
+    return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {
     return new Container(
-      ContainerContext.create(overridesOrOptions?.scopeOverrides ?? [], overridesOrOptions?.globalOverrides ?? []),
+      ContainerContext.create(
+        overridesOrOptions?.scopeOverrides ?? [],
+        overridesOrOptions?.globalOverrides ?? [],
+        defaultStrategiesRegistry,
+      ),
     );
   }
 }

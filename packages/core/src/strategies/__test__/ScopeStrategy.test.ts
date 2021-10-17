@@ -1,21 +1,19 @@
-import { module, unit } from '../../module/ModuleBuilder';
-import { scoped } from '../ScopeStrategy';
-import { container } from '../../container/Container';
+import { scoped } from '../../definitions/definitions';
 import { BoxedValue } from '../../__test__/BoxedValue';
+import { replace } from '../../patching/replace';
+import { ContainerContext } from '../../context/ContainerContext';
 
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {
     it(`acts like singleton limited to given scope`, async () => {
-      const m = unit()
-        .define('a', scoped, () => Math.random())
-        .build();
+      const a = scoped.fn(() => Math.random());
 
-      const c = container();
-      expect(c.get(m, 'a')).toEqual(c.get(m, 'a'));
+      const c = ContainerContext.empty();
+      expect(c.get(a)).toEqual(c.get(a));
 
       const childScope = c.checkoutScope();
-      expect(childScope.get(m, 'a')).toEqual(childScope.get(m, 'a'));
-      expect(c.get(m, 'a')).not.toEqual(childScope.get(m, 'a'));
+      expect(childScope.get(a)).toEqual(childScope.get(a));
+      expect(c.get(a)).not.toEqual(childScope.get(a));
     });
   });
 
@@ -25,70 +23,81 @@ describe(`ScopeStrategy`, () => {
         constructor(public value = Math.random()) {}
       }
 
-      const m = module()
-        .define('k1', scoped, () => new Boxed())
-        .build();
+      const k1 = scoped.fn(() => new Boxed());
 
-      const invariantPatch = m.replace('k1', () => new Boxed(1), scoped);
-      const childScopePatch = m.replace('k1', () => new Boxed(1), scoped);
+      const invariantPatch = replace(
+        k1,
+        scoped.fn(() => new Boxed(1)),
+      );
+      const childScopePatch = replace(
+        k1,
+        scoped.fn(() => new Boxed(1)),
+      );
 
-      const c = container({ globalOverrides: [invariantPatch] });
-      expect(c.asObject(m).k1.value).toEqual(1);
+      const c = ContainerContext.create([], [invariantPatch]);
+
+      expect(c.get(k1).value).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-      expect(childScope.asObject(m).k1.value).toEqual(1);
+      expect(childScope.get(k1).value).toEqual(1);
 
-      expect(c.asObject(m).k1).toBe(childScope.asObject(m).k1);
+      expect(c.get(k1)).toBe(childScope.get(k1));
     });
 
     it(`allows for overrides other than specified in globalOverrides`, async () => {
-      const m = module()
-        .define('k1', scoped, () => Math.random())
-        .define('k2', scoped, () => Math.random())
-        .build();
+      const k1 = scoped.fn(() => Math.random());
+      const k2 = scoped.fn(() => Math.random());
 
-      const invariantPatch = m.replace('k1', () => 1, scoped);
-      const childScopePatch = m.replace('k2', () => 2, scoped);
+      const invariantPatch = replace(
+        k1,
+        scoped.fn(() => 1),
+      );
+      const childScopePatch = replace(
+        k2,
+        scoped.fn(() => 2),
+      );
 
-      const c = container({ globalOverrides: [invariantPatch] });
-      expect(c.asObject(m).k1).toEqual(1);
+      const c = ContainerContext.create([], [invariantPatch]);
+      expect(c.get(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
-      expect(childScope.asObject(m).k1).toEqual(1);
-      expect(childScope.asObject(m).k2).toEqual(2);
+      expect(childScope.get(k1)).toEqual(1);
+      expect(childScope.get(k2)).toEqual(2);
     });
   });
 
   describe(`scope overrides`, () => {
     it(`replaces definitions for scoped scope`, async () => {
-      const m = unit()
-        .define('a', scoped, () => new BoxedValue(1))
-        .build();
+      const a = scoped.fn(() => new BoxedValue(1));
 
-      const c = container();
-      expect(c.get(m, 'a').value).toEqual(1);
+      const c = ContainerContext.empty()
+      expect(c.get(a).value).toEqual(1);
 
-      const mPatch = m.replace('a', () => new BoxedValue(2), scoped);
+      const mPatch = replace(
+        a,
+        scoped.fn(() => new BoxedValue(2)),
+      );
       const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
-      expect(childC.get(m, 'a').value).toEqual(2);
+      expect(childC.get(a).value).toEqual(2);
     });
 
     it(`new scope inherits parent scope overrides`, async () => {
-      const m = unit()
-        .define('a', scoped, () => new BoxedValue(1))
-        .build();
+      const a = scoped.fn(() => new BoxedValue(1));
 
-      const root = container();
-      expect(root.get(m, 'a').value).toEqual(1);
+      const root = ContainerContext.empty()
+      expect(root.get(a).value).toEqual(1);
 
-      const mPatch = m.replace('a', () => new BoxedValue(2), scoped);
+      const mPatch = replace(
+        a,
+        scoped.fn(() => new BoxedValue(2)),
+      );
       const childC = root.checkoutScope({ scopeOverrides: [mPatch] });
-      expect(childC.get(m, 'a').value).toEqual(2);
+      expect(childC.get(a).value).toEqual(2);
 
       const grandChildC = childC.checkoutScope();
-      expect(grandChildC.get(m, 'a').value).toEqual(2);
+      expect(grandChildC.get(a).value).toEqual(2);
 
-      expect(childC.get(m, 'a')).not.toBe(grandChildC.get(m, 'a'));
+      expect(childC.get(a)).not.toBe(grandChildC.get(a));
     });
   });
 });

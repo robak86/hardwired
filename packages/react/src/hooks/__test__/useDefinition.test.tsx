@@ -1,4 +1,4 @@
-import { container, module, request, singleton } from 'hardwired';
+import { container, request, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
@@ -7,14 +7,12 @@ import { useDefinition } from '../useDefinition';
 
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
-    const m1 = module()
-      .define('val1', singleton, () => 'val1')
-      .define('val2', singleton, () => 'val2')
-      .build();
+    const val1Def = singleton.fn(() => 'val1');
+    const val2Def = singleton.fn(() => 'val2');
 
     function setup() {
       const Consumer = () => {
-        const val1 = useDefinition(m1, 'val1');
+        const val1 = useDefinition(val1Def);
         return <DummyComponent value={val1} />;
       };
 
@@ -40,13 +38,11 @@ describe(`useDefinition`, () => {
       constructor() {}
     }
 
-    const m1 = module()
-      .define('cls', request, () => new TestClass())
-      .build();
+    const clsDef = request.class(TestClass);
 
     function setup() {
       const Consumer = () => {
-        const cls = useDefinition(m1, 'cls');
+        const cls = useDefinition(clsDef);
         return <DummyComponent value={cls.id.toString()} />;
       };
 

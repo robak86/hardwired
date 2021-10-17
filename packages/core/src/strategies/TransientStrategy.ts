@@ -1,28 +1,23 @@
-import { InstancesCache } from '../context/InstancesCache';
 import { BuildStrategy } from './abstract/BuildStrategy';
+import { InstancesStore } from '../context/InstancesStore';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstancesBuilder } from '../context/abstract/InstancesBuilder';
 
-export class TransientStrategy<TValue> extends BuildStrategy<TValue> {
-  constructor(protected buildFunction: (ctx) => TValue) {
-    super();
-  }
+export class TransientStrategy extends BuildStrategy {
+  build(
+    definition: InstanceDefinition<any, any>,
+    instancesCache: InstancesStore,
+    definitions,
+    instancesBuilder: InstancesBuilder,
+  ) {
+    const id = definition.id;
 
-  build(id: string, instancesCache: InstancesCache, resolvers, materializedModule?): TValue {
-    if (resolvers.hasGlobalOverrideResolver(id)) {
-      if (instancesCache.hasInGlobalOverride(id)) {
-        return instancesCache.getFromGlobalOverride(id);
-      } else {
-        const instance = this.buildFunction(materializedModule);
-        instancesCache.setForGlobalOverrideScope(id, instance);
-        return instance;
-      }
+    if (definitions.hasGlobalOverrideDefinition(id)) {
+      return instancesCache.upsertGlobalOverrideScope(id, () => {
+        return instancesBuilder.buildExact(definition);
+      });
     }
 
-    const result = this.buildFunction(materializedModule);
-    if (result instanceof BuildStrategy) {
-      return result.build(id, instancesCache, materializedModule);
-    }
-    return result;
+    return instancesBuilder.buildExact(definition);
   }
 }
-
-export const transient = <TReturn>(buildFunction: (ctx) => TReturn) => new TransientStrategy(buildFunction);

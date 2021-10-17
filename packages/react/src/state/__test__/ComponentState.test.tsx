@@ -1,4 +1,4 @@
-import { container, module, singleton } from 'hardwired';
+import { container, singleton } from 'hardwired';
 import { useObservable } from '../../hooks/useObservable';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import { act, render } from '@testing-library/react';
@@ -20,13 +20,11 @@ describe(`ComponentState`, () => {
   }
 
   describe(`instantiating dependencies`, () => {
-    const m1 = module() //breakme
-      .define('val1', singleton, () => new DummyComponentState())
-      .build();
+    const stateDef = singleton.class(DummyComponentState);
 
     function setup() {
       const Consumer = () => {
-        const val1 = useObservable(m1, 'val1', v => v.value);
+        const val1 = useObservable(stateDef, v => v.value);
         return <DummyComponent value={val1} />;
       };
 
@@ -47,12 +45,10 @@ describe(`ComponentState`, () => {
 
   describe(`observability`, () => {
     it(`re-renders view`, async () => {
-      const m = module()
-        .define('componentState', singleton, () => new DummyComponentState())
-        .build();
+      const stateDef = singleton.class(DummyComponentState);
 
       const TestSubject = () => {
-        const state = useObservable(m, 'componentState', obj => obj.value);
+        const state = useObservable(stateDef, obj => obj.value);
         return <div data-testid={'value'}>{state}</div>;
       };
 
@@ -66,7 +62,7 @@ describe(`ComponentState`, () => {
         );
       };
 
-      const { componentState } = c.asObject(m);
+      const componentState = c.get(stateDef);
       const result = render(<Container />);
       expect(result.getByTestId('value').textContent).toEqual('0');
 

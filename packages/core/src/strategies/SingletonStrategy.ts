@@ -1,30 +1,25 @@
-import { InstancesCache } from '../context/InstancesCache';
 import { BuildStrategy } from './abstract/BuildStrategy';
+import { InstancesStore } from '../context/InstancesStore';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstancesBuilder } from '../context/abstract/InstancesBuilder';
 
-export class SingletonStrategy<TValue> extends BuildStrategy<TValue> {
-  constructor(protected buildFunction: (ctx) => TValue) {
-    super();
-  }
+export class SingletonStrategy extends BuildStrategy {
+  build(
+    definition: InstanceDefinition<any, any>,
+    instancesCache: InstancesStore,
+    resolvers,
+    instancesBuilder: InstancesBuilder,
+  ) {
+    const id = definition.id;
 
-  build(id: string, instancesCache: InstancesCache, resolvers, materializedModule?): TValue {
-    if (resolvers.hasGlobalOverrideResolver(id)) {
-      if (instancesCache.hasInGlobalOverride(id)) {
-        return instancesCache.getFromGlobalOverride(id);
-      } else {
-        const instance = this.buildFunction(materializedModule);
-        instancesCache.setForGlobalOverrideScope(id, instance);
-        return instance;
-      }
+    if (resolvers.hasGlobalOverrideDefinition(id)) {
+      return instancesCache.upsertGlobalOverrideScope(id, () => {
+        return instancesBuilder.buildExact(definition);
+      });
     }
 
-    if (instancesCache.hasInGlobalScope(id)) {
-      return instancesCache.getFromGlobalScope(id);
-    } else {
-      const instance = this.buildFunction(materializedModule);
-      instancesCache.setForGlobalScope(id, instance);
-      return instance;
-    }
+    return instancesCache.upsertGlobalScope(id, () => {
+      return instancesBuilder.buildExact(definition);
+    });
   }
 }
-
-export const singleton = <TReturn>(buildFunction: (ctx) => TReturn) => new SingletonStrategy(buildFunction);

@@ -1,19 +1,14 @@
-import { InstancesCache } from '../../context/InstancesCache';
-import { ResolversRegistry } from '../../context/ResolversRegistry';
+import { InstancesStore } from '../../context/InstancesStore';
+import { InstancesDefinitionsRegistry } from '../../context/InstancesDefinitionsRegistry';
+import { AnyInstanceDefinition } from '../../definitions/abstract/AnyInstanceDefinition';
+import { InstancesBuilder } from '../../context/abstract/InstancesBuilder';
 
-export namespace BuildStrategy {
-  export type Unbox<T> = T extends BuildStrategy<infer TInstance>
-    ? TInstance
-    : 'Cannot unbox instance type from Instance';
+// TODO: Ideally build strategy should be just static object with type and build property (to decrease chances that one will make it stateful)
+export abstract class BuildStrategy {
+  abstract build(
+    definition: AnyInstanceDefinition<any, any, any>,
+    instancesCache: InstancesStore,
+    resolvers: InstancesDefinitionsRegistry,
+    instancesBuilder: InstancesBuilder,
+  ): any;
 }
-
-export abstract class BuildStrategy<TValue> {
-  readonly __TValue!: TValue; // prevent generic type erasure
-  readonly tags: symbol[] = [];
-
-  abstract build(id: string, context: InstancesCache, resolvers: ResolversRegistry, materializedModule?): TValue;
-}
-
-export type BuildStrategyFactory<TContext, TReturn> = {
-  (buildFunction: (ctx: TContext) => TReturn): BuildStrategy<TReturn>;
-};
