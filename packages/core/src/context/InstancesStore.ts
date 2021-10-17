@@ -1,13 +1,9 @@
 import { HierarchicalStore } from './HierarchicalStore';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
-function getPatchedResolversIds(patchedDefinitions: InstanceDefinition<any, any>[]): string[] {
-  return patchedDefinitions.map(def => def.id);
-}
-
 export class InstancesStore {
   static create(scopeOverrides: InstanceDefinition<any, any>[]): InstancesStore {
-    const ownKeys = getPatchedResolversIds(scopeOverrides);
+    const ownKeys = scopeOverrides.map(def => def.id);
     return new InstancesStore(new HierarchicalStore(ownKeys), {}, {}, {});
   }
 
@@ -19,7 +15,7 @@ export class InstancesStore {
   ) {}
 
   childScope(scopeOverrides: InstanceDefinition<any, any>[]): InstancesStore {
-    const scopeOverridesResolversIds = getPatchedResolversIds(scopeOverrides);
+    const scopeOverridesResolversIds = scopeOverrides.map(def => def.id);
 
     return new InstancesStore(
       this.hierarchicalScope.checkoutChild(scopeOverridesResolversIds),

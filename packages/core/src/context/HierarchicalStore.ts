@@ -2,7 +2,7 @@ export class HierarchicalStore {
   private ownEntries: Record<string, any> = {};
 
   constructor(
-    private ownDefinitionsIds: string[] = [], // ids of instance definitions that should not be inherited from parent, but stored in current SingletonScope
+    private ownDefinitionsIds: string[] = [], // ids of instance definitions that should not be inherited from parent, but stored in current HierarchicalStore
     private parent: HierarchicalStore | undefined = undefined,
   ) {}
 

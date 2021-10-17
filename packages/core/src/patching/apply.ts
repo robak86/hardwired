@@ -6,12 +6,12 @@ export const apply = <
   TInstance,
   TDecoratedExternals extends any[],
   TNextValue extends TInstance,
-  TDecoratorDeps extends any[],
+  TDecoratorDependencies extends any[],
   TLifeTime extends LifeTime,
 >(
   instance: InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals>,
-  applyFn: (prevValue: TInstance, ...decoratorDeps: TDecoratorDeps) => void,
-  ...dependencies: { [K in keyof TDecoratorDeps]: InstanceDefinition<TDecoratorDeps[K], any> }
+  applyFn: (prevValue: TInstance, ...decoratorDeps: TDecoratorDependencies) => void,
+  ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any> }
 ): InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals> => {
   invariant(
     dependencies.every(d => d.externals.length === 0),

@@ -1,6 +1,5 @@
 import { singleton } from '../../../definitions/definitions';
 import { container } from '../../../container/Container';
-import { TestClassArgs2 } from '../../../__test__/ArgsDebug';
 import { BoxedValue } from '../../../__test__/BoxedValue';
 import { replace } from '../../../patching/replace';
 
@@ -11,6 +10,10 @@ const resolveAfter = <T>(timeout: number, value: T): Promise<T> => {
     }, timeout);
   });
 };
+
+export class TestClassArgs2 {
+  constructor(public someNumber: number, public someString: string) {}
+}
 
 describe(`AsyncSingletonStrategy`, () => {
   describe(`class`, () => {

@@ -6,12 +6,12 @@ export function decorate<
   TInstance,
   TDecoratedExternals extends any[],
   TNextValue extends TInstance,
-  TDecoratorDeps extends any[],
+  TDecoratorDependencies extends any[],
   TLifeTime extends LifeTime,
 >(
   instance: InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals>,
-  decorator: (prevValue: TInstance, ...decoratorDeps: TDecoratorDeps) => TNextValue,
-  ...dependencies: { [K in keyof TDecoratorDeps]: InstanceDefinition<TDecoratorDeps[K], any> }
+  decorator: (prevValue: TInstance, ...decoratorDeps: TDecoratorDependencies) => TNextValue,
+  ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any> }
 ): InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals> {
   invariant(
     dependencies.every(d => d.externals.length === 0),

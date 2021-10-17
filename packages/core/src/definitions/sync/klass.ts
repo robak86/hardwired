@@ -3,14 +3,14 @@ import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime} from '../abstract/LifeTime';
-import { AsyncInstanceDefinitionDependency } from '../abstract/AsyncInstanceDefinitionDependency';
+import { InstanceDefinitionDependency } from '../abstract/InstanceDefinitionDependency';
 import { Resolution } from "../abstract/Resolution";
 
 export type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <
     TInstance,
     TArgs extends any[],
-    TDependencies extends { [K in keyof TArgs]: AsyncInstanceDefinitionDependency<TArgs[K], TLifeTime> },
+    TDependencies extends { [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K], TLifeTime> },
   >(
     cls: ClassType<TInstance, TArgs>,
     ...args: TDependencies

@@ -1,12 +1,11 @@
 import { request, singleton } from '../../definitions/definitions';
 import { container } from '../Container';
 import { replace } from '../../patching/replace';
-import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
-      const cDef = singleton.fn(() => 'cValue')
+      const cDef = singleton.fn(() => 'cValue');
       const c = container();
       const cValue = c.get(cDef);
       expect(cValue).toEqual('cValue');
@@ -71,21 +70,15 @@ describe(`Container`, () => {
         }),
       );
 
-      const c = container({
-        globalOverrides: [
-          //breakme
-          aPatch,
-          bPatch,
-        ],
-      });
+      const c = container([aPatch, bPatch]);
 
       const actual = c.get(aPlusB);
       expect(actual).toEqual(30);
     });
   });
 
-  describe(`asObjectMany`, () => {
-    it(`returns array of materialized modules`, async () => {
+  describe(`getAll`, () => {
+    it(`returns array of instances`, async () => {
       const a = request.fn(() => 1);
       const b = request.fn(() => 2);
 
@@ -96,7 +89,19 @@ describe(`Container`, () => {
     });
   });
 
-  describe(`async definition`, () => {
+  describe(`getAllAsync`, () => {
+    it(`returns array of instances`, async () => {
+      const a = request.asyncFn(async () => 1);
+      const b = request.asyncFn(async () => 2);
+
+      const c = container();
+      const [aInstance, bInstance] = await c.getAllAsync(a, b);
+      expect(aInstance).toEqual(1);
+      expect(bInstance).toEqual(2);
+    });
+  });
+
+  describe(`sync definition returning promise`, () => {
     it(`properly resolves async definitions`, async () => {
       let counter = 0;
 
@@ -107,25 +112,6 @@ describe(`Container`, () => {
       const c = container();
       const k3Instance = c.get(k3);
       expect(await k3Instance).toEqual(3);
-    });
-
-    it(`does not evaluated promise if key is not accessed`, async () => {
-      // let counter = 0;
-      // const k1Factory = jest.fn(async () => (counter += 1));
-      // const k2Factory = jest.fn(async () => (counter += 1));
-      // const k3Factory = jest.fn(async (k1, k2) => (await k1) + (await k2));
-      //
-      // const k1 = singleton.fn(k1Factory);
-      // const k2 = singleton.fn(k2Factory);
-      // const k3 = singleton.fn(k3Factory, [k1, k2]);
-      //
-      //
-      // const c = container();
-      // // const k1Instnace = c.asObject(u);
-      // // const { k1: k1NextRequest } = c.asObject(u);
-      // expect(k1Factory).toHaveBeenCalledTimes(1);
-      // expect(k2Factory).not.toHaveBeenCalled();
-      // expect(k3Factory).not.toHaveBeenCalled();
     });
   });
 });

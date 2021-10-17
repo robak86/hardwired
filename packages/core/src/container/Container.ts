@@ -1,40 +1,12 @@
 import { ContainerContext } from '../context/ContainerContext';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
-import { SingletonStrategy } from '../strategies/sync/SingletonStrategy';
-import { TransientStrategy } from '../strategies/sync/TransientStrategy';
-import { RequestStrategy } from '../strategies/sync/RequestStrategy';
-import { ScopeStrategy } from '../strategies/sync/ScopeStrategy';
-import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
-import { AsyncSingletonStrategy } from '../strategies/async/AsyncSingletonStrategy';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { AsyncTransientStrategy } from '../strategies/async/AsyncTransientStrategy';
-import { AsyncRequestStrategy } from '../strategies/async/AsyncRequestStrategy';
-import { AsyncScopedStrategy } from '../strategies/async/AsyncScopedStrategy';
-import { LifeTime } from '../definitions/abstract/LifeTime';
-
-export type ChildScopeOptions = {
-  scopeOverrides?: AnyInstanceDefinition<any, any, any>[];
-};
-
-export const defaultStrategiesRegistry = new StrategiesRegistry(
-  {
-    [LifeTime.singleton]: new SingletonStrategy(),
-    [LifeTime.transient]: new TransientStrategy(),
-    [LifeTime.request]: new RequestStrategy(),
-    [LifeTime.scoped]: new ScopeStrategy(),
-  },
-  {
-    [LifeTime.singleton]: new AsyncSingletonStrategy(),
-    [LifeTime.transient]: new AsyncTransientStrategy(),
-    [LifeTime.request]: new AsyncRequestStrategy(),
-    [LifeTime.scoped]: new AsyncScopedStrategy(),
-  },
-);
+import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
+import { defaultStrategiesRegistry } from "../strategies/defaultStrategiesRegistry";
 
 export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}
 
-  // get<TValue>(instanceDefinition: InstanceDefinition<TValue, []>): TValue;
   get<TValue, TExternalParams extends any[]>(
     instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
     ...externals: TExternalParams
@@ -50,7 +22,7 @@ export class Container {
     return requestContext.getAsync(instanceDefinition, ...externalParams);
   }
 
-  getAll<TLazyModule extends Array<InstanceDefinition<any, any>>>(
+  getAll<TLazyModule extends Array<InstanceDefinition<any, any, []>>>(
     ...definitions: TLazyModule
   ): {
     [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown;
@@ -58,6 +30,20 @@ export class Container {
     const requestContext = this.containerContext.checkoutRequestScope();
 
     return definitions.map(def => requestContext.get(def)) as any;
+  }
+
+  getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(
+    ...definitions: TLazyModule
+  ): Promise<
+    {
+      [K in keyof TLazyModule]: TLazyModule[K] extends AsyncInstanceDefinition<infer TInstance, any, []>
+        ? TInstance
+        : unknown;
+    }
+  > {
+    const requestContext = this.containerContext.checkoutRequestScope();
+
+    return Promise.all(definitions.map(def => requestContext.getAsync(def))) as any;
   }
 }
 

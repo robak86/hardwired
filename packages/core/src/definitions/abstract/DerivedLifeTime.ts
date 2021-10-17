@@ -3,7 +3,9 @@ import { LifeTime } from './LifeTime';
 
 // prettier-ignore
 export type DerivedLifeTime<T extends LifeTime> =
-    T extends LifeTime.singleton ? LifeTime.singleton: // if even single lifetime is singleton we need to propagate this
+    // if even single lifetime is singleton we need to propagate this up to the place when definition is used in factory,
+    // because factory cannot use singleton definition having external params - singletons are not revalidated on external params change
+    T extends LifeTime.singleton ? LifeTime.singleton:
     TypeEqual<T, LifeTime.request> extends true ? LifeTime.request :
     TypeEqual<T, LifeTime.scoped> extends true ? LifeTime.scoped :
     LifeTime.transient;

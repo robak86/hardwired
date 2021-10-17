@@ -36,30 +36,32 @@ npm install hardwired
 The library uses two main concepts:
 
 - **Instance definition** - object that describes how instances should be created. It contains:
-  - details about lifespan of an instance (`singleton`, `transient`, `request`, etc.)
-  - references to other instance definitions that needs to be injected while creating a new instance
+  - details about lifespan of an instance (`singleton` | `transient` | `request`)
+  - references to other definitions that need to be injected while creating a new instance
   - unique definition id
-- **Container** - creates and optionally caches object instances (e.g. for singleton lifespan)
+- **Container** - creates and optionally stores object instances (e.g. for singleton lifespan)
 
 ### Example
 
 1. Create definitions
 
 ```typescript
+// implementation.ts
 import { singleton } from 'hardwired';
 
-class LoggerConfiguration {
+export class LoggerConfiguration {
   logLevel = 0;
 }
 
-class Logger {
+export class Logger {
   constructor(private configuration: LoggerConfiguration) {}
 
   log(message: string) {}
 }
 
-const configurationDef = singleton.class(LoggerConfiguration);
-const loggerDef = singleton.class(Logger, configurationDef);
+// definitions.ts
+export const configurationDef = singleton.class(LoggerConfiguration);
+export const loggerDef = singleton.class(Logger, configurationDef);
 ```
 
 2. Create a container
@@ -78,7 +80,7 @@ const loggerInstance: Logger = exampleContainer.get(loggerDef); // returns an in
 
 ## Available definitions builders
 
-Library provides definitions builders grouped by lifespan:
+Library provides definitions builders grouped by lifetime:
 
 - `transient` always creates a new instance
 - `singleton` always uses single instance
