@@ -182,7 +182,7 @@ const url = getUrl('someUserId');
 ## Asynchronous resolution
 
 Definitions which can be instantiated using `.getAsync` | `.getAllAsync` container methods. They
-accept as both sync and async dependencies.
+accept both sync and async dependencies.
 
 - **`asyncClass`** - the same as `class` but accepts async dependencies
 
@@ -266,7 +266,7 @@ Each instance definition which is already used within some definitions graph can
 at the container level. This e.g. allows replacing deeply nested definitions with mocked instances for
 integration tests (see `apply` override). Overriding is achieved by providing patched instance
 definition (having the same id as the original one) to container constructor.
-On each request(`.get` | `.getAll` | `.getAsync` | `.getAsyncAll`) containers checks if it has
+On each request(`.get` | `.getAll` | `.getAsync` | `.getAsyncAll`) container checks if it has
 overridden definition for the original one that was requested. If overridden definition is found
 then it is used instead of the original one.
 
@@ -391,7 +391,7 @@ expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
 Sometimes there are cases where we don't know every parameter during the construction of
 definitions, e.g. application takes some input from the user. For such scenarios the library
 provides `external` definitions, which acts like a placeholder for a value that will be provided
-at the runtime. All external parameters are propagated through definitions graph:
+at the runtime. Dependency to external parameter is propagated through definitions graph:
 
 ```typescript
 import { external, singleton } from 'hardwired';
@@ -427,8 +427,7 @@ import { container } from 'hardwired';
 
 const cnt = container();
 cnt.get(httpServerD, { server: { port: 1234 } });
-// when instance definition with external param is provided to .get then additional param is
-// required
+// when instance definition with external param is provided to .get then additional param is required
 ```
 
 2. Using automatically generated factories - this approach solves the issue of using container
@@ -437,6 +436,9 @@ cnt.get(httpServerD, { server: { port: 1234 } });
    consumer code with generic `IFactory` | `IAsyncFactory` type instead of `Container`.
 
 ```typescript
+import { external, factory, IFactory, request, singleton } from 'hardwired';
+
+
 class LoggerConfig {
   transport: any;
 }
@@ -503,5 +505,5 @@ class RequestsFactory implements IFactory<Request> {
 
 In order to preserve singleton scope of the logger, the implementation would have to be much more
 complicated. `logger` would need to be provided as constructor argument to `RequestsFactory` and
-`RequestFactory` would need to be created by another factory. This chain of manual objects creation
-would have to be propagated to composition root.
+`RequestFactory` would have to be created by another factory. This chain of manual objects creation
+would have to be propagated all the way to the composition root.
