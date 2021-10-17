@@ -2,7 +2,7 @@ import { ContainerContext } from '../context/ContainerContext';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
-import { defaultStrategiesRegistry } from "../strategies/defaultStrategiesRegistry";
+import { defaultStrategiesRegistry } from "../strategies/collection/defaultStrategiesRegistry";
 
 export class Container {
   constructor(protected readonly containerContext: ContainerContext) {}

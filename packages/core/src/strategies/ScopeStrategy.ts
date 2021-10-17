@@ -1,6 +1,6 @@
-import { BuildStrategy } from '../abstract/BuildStrategy';
-import { InstancesStore } from '../../context/InstancesStore';
-import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition';
+import { BuildStrategy } from './abstract/BuildStrategy';
+import { InstancesStore } from '../context/InstancesStore';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 
 export class ScopeStrategy extends BuildStrategy {
   build(definition: InstanceDefinition<any, any>, instancesCache: InstancesStore, resolvers, instancesBuilder) {
