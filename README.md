@@ -2,8 +2,6 @@
 
 ![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/robak86/hardwired/branch/master/graph/badge.svg?token=50RAYIVVTT)](https://codecov.io/gh/robak86/hardwired)
 
-**!!! WARNING - The library is still in alpha stage !!!**
-
 Minimalistic, type-safe DI/IoC overlay for TypeScript.
 
 - [x] Type-safe, all dependencies checked at compile time
@@ -90,9 +88,14 @@ Library provides definitions builders grouped by lifetime:
 - `singleton` always uses single instance
 - `request` acts like singleton across a request (`container.get(...)` or `container.getAll(...) ` call )
 
-Each group object provides definitions builders for specific type of instance
+Each group object provides definitions builders for specific type of instance.
 
-- `fn` - takes as an argument a factory function, e.g.
+## Sync definitions
+Definitions which can be instantiated using `.get` | `.getAll` container methods. They
+accept as a dependencies only other sync definitions. In order to inject async dependency to 
+sync definition, it needs to be converted to async definition beforehand.
+
+- `fn` - takes as an argument a factory function.
 
 ```typescript
 import { singleton, container, transient } from 'hardwired';
@@ -103,7 +106,7 @@ const cDef = singleton.fn((d1, d2) => d1 + d2, aDef, bDef);
 const result = container().get(cDef); // result equals to 3
 ```
 
-- `class` - creates instance of a class, e.g.
+- `class` - creates instance of a class.
 
 ```typescript
 import { singleton, container } from 'hardwired';
@@ -174,6 +177,10 @@ const getUrl = cnt.get(getUserDetailsUrlDef); // (userId: string) => string
 const url = getUrl('someUserId');
 ```
 
+## Asynchronous resolution
+Definitions which can be instantiated using `.getAsync` | `.getAllAsync` container methods. They 
+accept as a dependencies both sync and async definition.
+
 - `asyncClass` - supports injection of async definitions. Async dependencies need to be
   instantiated using `container.getAsync(someAsyncDef)` method
 
@@ -181,7 +188,7 @@ const url = getUrl('someUserId');
 import { singleton, container } from 'hardwired';
 import { Db } from 'some-db-client';
 
-const buildDbConnection = async (): Promise<Db> => {
+const createDbConnection = async (): Promise<Db> => {
   // create db connection asynchonously
 };
 
@@ -193,7 +200,7 @@ class UserRepository {
   }
 }
 
-const dbDef = singleton.asyncFn(buildDbConnection);
+const dbDef = singleton.asyncFn(createDbConnection);
 const userRepositoryDef = singleton.asyncClass(UserRepository, dbDef);
 const cnt = container();
 const userRepository: UserRepository = await cnt.getAsync(userRepositoryDef);
