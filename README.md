@@ -84,9 +84,9 @@ const loggerInstance: Logger = exampleContainer.get(loggerDef); // returns an in
 
 Library provides definitions builders grouped by lifetime:
 
-- `transient` always creates a new instance
-- `singleton` always uses single instance
-- `request` acts like singleton across a request (`container.get(...)` or `container.getAll(...) ` call )
+- **`transient`** always creates a new instance
+- **`singleton`** always uses single instance
+- **`request`** acts like singleton across a request (`container.get(...)` or `container.getAll(...) ` call )
 
 Each group object provides definitions builders for specific type of instance and specific
 resolution model:
@@ -97,7 +97,7 @@ Definitions which can be instantiated using `.get` | `.getAll` container methods
 accept only sync dependencies. In order to inject async dependency to sync definition, it
 previously needs to be converted to async definition.
 
-- `fn` - takes as an argument a factory function.
+- **`fn`** - takes as an argument a factory function.
 
 ```typescript
 import { singleton, container, transient } from 'hardwired';
@@ -108,7 +108,7 @@ const cDef = singleton.fn((d1, d2) => d1 + d2, aDef, bDef);
 const result = container().get(cDef); // result equals to 3
 ```
 
-- `class` - creates instance of a class.
+- **`class`** - creates instance of a class.
 
 ```typescript
 import { singleton, container } from 'hardwired';
@@ -126,7 +126,7 @@ const writerDef = singleton.class(Writer, loggerDef);
 const writerInstance = container().get(writerDef); // creates instance of Writer
 ```
 
-- `partial` - creates partially applied function.
+- **`partial`** - creates partially applied function.
 
 ```typescript
 import { singleton, container, value } from 'hardwired';
@@ -184,7 +184,7 @@ const url = getUrl('someUserId');
 Definitions which can be instantiated using `.getAsync` | `.getAllAsync` container methods. They
 accept as both sync and async dependencies.
 
-- `asyncClass` - the same as `class` but accepts async dependencies
+- **`asyncClass`** - the same as `class` but accepts async dependencies
 
 ```typescript
 import { singleton, container } from 'hardwired';
@@ -208,8 +208,8 @@ const cnt = container();
 const userRepository: UserRepository = await cnt.getAsync(userRepositoryDef);
 ```
 
-- `asyncFn` - the same as `fn` but accepts async dependencies
-- `asyncPartial` - the same as `partial` but accepts async dependencies
+- **`asyncFn`** - the same as `fn` but accepts async dependencies
+- **`asyncPartial`** - the same as `partial` but accepts async dependencies
 
 ```typescript
 import { singleton, container } from 'hardwired';
@@ -244,10 +244,10 @@ cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
 ```
 
 - **`object`** - aggregates multiple definitions within a new object. The lifetime for
-`object` is determined from used definitions. If any singleton instance is used then
-objects lifetime is singleton. If all instance definitions have the same lifetime, then this
-same lifetime is also used for `object`. If definitions use multiple lifetimes then lifetime
-for `object` is set to `transient`
+`object` is determined from used dependencies. If any singleton dependency is used then
+objects lifetime is singleton. If all dependencies have the same lifetime, then this
+same lifetime is also used for `object` definition. If dependencies have multiple lifetimes then 
+  lifetime for `object` is set to `transient`
 
 ```typescript
 import { value, container, object } from 'hardwired';
@@ -287,8 +287,8 @@ randomGenerator.seed === 1; // true
 
 ### Available overrides
 
-- `set` - it replaces original definition with a static value
-- `replace` - it replaces original definition with new one. This enables switching lifetime of
+- **`set`** - it replaces original definition with a static value
+- **`replace`** - it replaces original definition with new one. This enables switching lifetime of
   definition
 
 ```typescript
@@ -304,7 +304,7 @@ cnt.get(mySingletonDef) === cnt.get(mySingletonDef); // false
 // cnt uses now transient lifetime for mySingletonDef and calls generateUniqueId on each .get call
 ```
 
-- `decorate` - it takes decorator function and returns decorated object
+- **`decorate`** - it takes decorator function and returns decorated object
 
 ```typescript
 import { singleton, container, decorate } from 'hardwired';
@@ -345,7 +345,7 @@ const cnt = container([writerOverrideDef]);
 cnt.get(writerDef); // returns instance of LoggingWriter
 ```
 
-- `apply` - allows triggering side effects on original instance
+- **`apply`** - allows triggering side effects on original instance
 
 ```typescript
 import { singleton, container, apply } from 'hardwired';
