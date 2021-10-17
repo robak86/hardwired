@@ -428,7 +428,8 @@ import { container } from 'hardwired';
 
 const cnt = container();
 cnt.get(httpServerD, { server: { port: 1234 } });
-// when instance definition with external param is provided to .get then additional param is required
+// when instance definition with external param is provided to .get 
+// then additional param is required
 ```
 
 2. Using automatically generated factories - this approach solves the issue of using container
