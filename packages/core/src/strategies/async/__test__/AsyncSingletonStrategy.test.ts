@@ -205,6 +205,24 @@ describe(`AsyncSingletonStrategy`, () => {
 
         expect(result1).toBe(result2);
       });
+
+      it(`does not create singleton duplicates, ex.2`, async () => {
+        const slowSingleton = singleton.asyncFn(() => resolveAfter(500, new BoxedValue(Math.random())));
+        const beforeConsumer1 = singleton.asyncFn(async s => resolveAfter(s, 10), slowSingleton);
+        const beforeConsumer2 = singleton.asyncFn(async s => resolveAfter(s, 10), slowSingleton);
+        const beforeConsumer3 = singleton.asyncFn(async s => resolveAfter(s, 10), slowSingleton);
+
+        const consumer1 = singleton.asyncFn(async s => s, beforeConsumer1);
+        const consumer2 = singleton.asyncFn(async s => s, beforeConsumer2);
+        const consumer3 = singleton.asyncFn(async s => s, beforeConsumer3);
+
+        const ctn = container();
+
+        const [result1, result2, result3] = await ctn.getAllAsync(consumer1, consumer2, consumer3)
+
+        expect(result1).toBe(result2);
+        expect(result2).toBe(result3);
+      });
     });
 
     describe(`global overrides`, () => {

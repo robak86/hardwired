@@ -4,22 +4,17 @@ import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { InstanceDefinition, instanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { AsyncInstancesStore } from './AsyncInstancesStore';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
-import { LifeTime } from "../definitions/abstract/LifeTime";
-import { Resolution } from "../definitions/abstract/Resolution";
-import { defaultStrategiesRegistry } from "../strategies/defaultStrategiesRegistry";
+import { LifeTime } from '../definitions/abstract/LifeTime';
+import { Resolution } from '../definitions/abstract/Resolution';
+import { defaultStrategiesRegistry } from '../strategies/defaultStrategiesRegistry';
+import { AsyncInstanceDefinition } from "../definitions/abstract/AsyncInstanceDefinition";
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
     const instancesEntries = InstancesDefinitionsRegistry.empty();
 
-    return new ContainerContext(
-      instancesEntries,
-      InstancesStore.create([]),
-      AsyncInstancesStore.create([]),
-      strategiesRegistry,
-    );
+    return new ContainerContext(instancesEntries, InstancesStore.create([]), strategiesRegistry);
   }
 
   static create(
@@ -29,21 +24,12 @@ export class ContainerContext implements InstancesBuilder {
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
-    const syncOverrides = scopeOverrides.filter(instanceDefinition.isSync);
-    const asyncOverrides = scopeOverrides.filter(instanceDefinition.isAsync);
-
-    return new ContainerContext(
-      definitionsRegistry,
-      InstancesStore.create(syncOverrides),
-      AsyncInstancesStore.create(asyncOverrides),
-      strategiesRegistry,
-    );
+    return new ContainerContext(definitionsRegistry, InstancesStore.create(scopeOverrides), strategiesRegistry);
   }
 
   constructor(
     private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
     private instancesCache: InstancesStore,
-    private asyncInstancesCache: AsyncInstancesStore,
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
@@ -79,7 +65,7 @@ export class ContainerContext implements InstancesBuilder {
   }
 
   getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AnyInstanceDefinition<TValue, any, TExternalParams>,
+    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternalParams>,
     ...externalParams: TExternalParams
   ): Promise<TValue> {
     if (instanceDefinition.externals.length > 0) {
@@ -103,8 +89,6 @@ export class ContainerContext implements InstancesBuilder {
       const requestContext = this.checkoutRequestScope();
       return requestContext.buildWithStrategy(instanceDefinition);
     }
-
-    // return this.buildWithStrategy(instanceDefinition);
   }
 
   buildExact = (definition: AnyInstanceDefinition<any, any, any>) => {
@@ -114,22 +98,15 @@ export class ContainerContext implements InstancesBuilder {
 
   buildWithStrategy = (definition: AnyInstanceDefinition<any, any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-    const strategy = this.strategiesRegistry.get(definition.strategy, definition.resolution);
+    const strategy = this.strategiesRegistry.get(definition.strategy);
 
-    return strategy.build(
-      patchedInstanceDef,
-      this.instancesCache,
-      this.asyncInstancesCache,
-      this.instancesDefinitionsRegistry,
-      this,
-    );
+    return strategy.build(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
   };
 
   checkoutRequestScope(): ContainerContext {
     return new ContainerContext(
       this.instancesDefinitionsRegistry.checkoutForRequestScope(),
       this.instancesCache.checkoutForRequestScope(),
-      this.asyncInstancesCache.checkoutForRequestScope(),
 
       this.strategiesRegistry,
     );
@@ -137,13 +114,10 @@ export class ContainerContext implements InstancesBuilder {
 
   checkoutScope(options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext {
     const { scopeOverrides = [] } = options;
-    const syncOverrides = scopeOverrides.filter(instanceDefinition.isSync);
-    const asyncOverrides = scopeOverrides.filter(instanceDefinition.isAsync);
 
     return new ContainerContext(
       this.instancesDefinitionsRegistry.checkoutForScope(scopeOverrides),
-      this.instancesCache.childScope(syncOverrides),
-      this.asyncInstancesCache.childScope(asyncOverrides),
+      this.instancesCache.childScope(scopeOverrides),
       this.strategiesRegistry,
     );
   }

@@ -15,7 +15,7 @@ export class Container {
   }
 
   getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AnyInstanceDefinition<TValue, any, TExternalParams>,
+    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternalParams>,
     ...externalParams: TExternalParams
   ): Promise<TValue> {
     const requestContext = this.containerContext.checkoutRequestScope();
