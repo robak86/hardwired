@@ -63,7 +63,7 @@ export const loggerDef = singleton.class(Logger, configurationDef);
 
 **All definitions should be defined in separate modules (`ts` files) making the implementation
 completely decoupled from `hardwired`. Container and definitions should be treated like an extra
-layer above implementation, which is responsible for wiring components together - creating
+layer above implementation, which is responsible for wiring components together by creating
 instances, injecting dependencies and managing lifetime.**
 
 2. Create a container
