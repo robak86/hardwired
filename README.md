@@ -2,7 +2,7 @@
 
 ![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/robak86/hardwired/branch/master/graph/badge.svg?token=50RAYIVVTT)](https://codecov.io/gh/robak86/hardwired)
 
-Minimalistic, type-safe DI/IoC overlay for TypeScript.
+Minimalistic, type-safe DI/IoC solution for TypeScript.
 
 - [x] Type-safe, all dependencies checked at compile time
 - [x] No decorators, no reflection
