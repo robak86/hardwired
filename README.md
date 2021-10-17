@@ -432,10 +432,11 @@ cnt.get(httpServerD, { server: { port: 1234 } });
 // then additional param is required
 ```
 
-2. Using automatically generated factories - this approach solves the issue of using container
-   as a service locator. Instead of using a reference to service locator, `hardwired` injects
-   factory created specifically for creating one particular type of instance coupling the
-   consumer code with generic `IFactory` | `IAsyncFactory` type instead of `Container`.
+2. By using `factory`|`asyncFactory` builders which create definitions of automatically 
+   generated factory. This approach solves the issue of using container as a service locator. 
+   Instead of using a reference to service locator, `hardwired` injects factory created 
+   specifically for creating one particular type of instance coupling the consumer code with 
+   generic `IFactory` | `IAsyncFactory` type instead of `Container`. 
 
 ```typescript
 import { external, factory, IFactory, request, singleton } from 'hardwired';
