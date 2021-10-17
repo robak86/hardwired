@@ -9,13 +9,13 @@
       "path": "./react/tsconfig.json"
     },
     {
-      "path": "./example/tsconfig.json"
+      "path": "./example-wip/tsconfig.json"
     },
     {
-      "path": "./http-server-example/tsconfig.json"
+      "path": "./http-server-example-wip/tsconfig.json"
     },
     {
-      "path": "./mobx/tsconfig.json"
+      "path": "./mobx-wip/tsconfig.json"
     }
   ]
 }

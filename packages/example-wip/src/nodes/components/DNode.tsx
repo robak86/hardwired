@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { nodesModule } from '../nodes.module';
 import Draggable from 'react-draggable';
 import { useSelector } from 'react-redux';
-import { useDefinition } from "hardwired-react";
+import { useDefinition } from 'hardwired-react';
 
 export type DNodeProps = {
   id: string;
@@ -17,7 +17,7 @@ const NodeContainer = styled('div')({
 
 export const DNode: FunctionComponent<DNodeProps> = ({ id }) => {
   const selectNodesIds = useDefinition(nodesModule.selectNodesIds);
-  const setNodePosition  = useDefinition(nodesModule.setNodePosition);
+  const setNodePosition = useDefinition(nodesModule.setNodePosition);
   const selectNodePosition = useDefinition(nodesModule.selectNodePosition);
   const getPosition = useSelector(selectNodePosition(id));
 
