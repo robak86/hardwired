@@ -8,6 +8,7 @@
     "build": "tsc -b packages/tsconfig.json --pretty",
     "prepublishOnly": "rimraf packages/**/lib/*/__test__",
     "test": "yarn run jest --config jest.config.js",
+    "test:coverage": "yarn run jest --config jest.config.js --selectProjects core react --coverage",
     "postinstall": "yarn run update:tsconfig.json && yarn run update:package.json",
     "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
     "update:package.json": "ts-node scripts/update-package-json.ts",
