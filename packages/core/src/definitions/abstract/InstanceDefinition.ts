@@ -4,7 +4,7 @@ import { Resolution } from './Resolution';
 
 export type InstanceDefinitionContext = ContainerContext;
 
-export type InstanceDefinition<TInstance, TLifeTime extends LifeTime, TExternals = []> = {
+export type InstanceDefinition<TInstance, TLifeTime extends LifeTime = any, TExternals = []> = {
   id: string;
   strategy: TLifeTime;
   resolution: Resolution.sync;
