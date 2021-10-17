@@ -11,6 +11,7 @@ Minimalistic, type-safe DI/IoC overlay for TypeScript.
 - [x] Allows writing code that is completely decoupled from DI/IoC specific api - does not
       pollute user code with decorators (combined with reflection) or static properties containing
       list of dependencies
+- [x] Works both on node.js and browser
 
 ## Installation
 
@@ -244,9 +245,9 @@ cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
 ```
 
 - **`object`** - aggregates multiple definitions within a new object. The lifetime for
-`object` is determined from used dependencies. If any singleton dependency is used then
-objects lifetime is singleton. If all dependencies have the same lifetime, then this
-same lifetime is also used for `object` definition. If dependencies have multiple lifetimes then 
+  `object` is determined from used dependencies. If any singleton dependency is used then
+  objects lifetime is singleton. If all dependencies have the same lifetime, then this
+  same lifetime is also used for `object` definition. If dependencies have multiple lifetimes then
   lifetime for `object` is set to `transient`
 
 ```typescript
@@ -437,7 +438,6 @@ cnt.get(httpServerD, { server: { port: 1234 } });
 
 ```typescript
 import { external, factory, IFactory, request, singleton } from 'hardwired';
-
 
 class LoggerConfig {
   transport: any;
