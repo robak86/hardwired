@@ -8,9 +8,9 @@ Minimalistic, type-safe DI/IoC overlay for TypeScript.
 - [x] No decorators, no reflection
 - [x] Designed for structural typing
 - [x] Enables easy mocking for integration tests
-- [x] Allows writing code that is completely decoupled from DI/IoC specific api - does not 
-  pollute user code with decorators (combined with reflection) or static properties containing 
-  list of dependencies
+- [x] Allows writing code that is completely decoupled from DI/IoC specific api - does not
+      pollute user code with decorators (combined with reflection) or static properties containing
+      list of dependencies
 
 ## Installation
 
@@ -60,11 +60,11 @@ export class Logger {
 export const configurationDef = singleton.class(LoggerConfiguration);
 export const loggerDef = singleton.class(Logger, configurationDef);
 ```
-**All definitions should be defined in separate modules (`ts` files) making the implementation 
-completely decoupled from `hardwired`. Container and definitions should be treated like an extra 
-layer above implementation, which is responsible for wiring components together - creating 
-instances, injecting dependencies and managing lifetime.**
 
+**All definitions should be defined in separate modules (`ts` files) making the implementation
+completely decoupled from `hardwired`. Container and definitions should be treated like an extra
+layer above implementation, which is responsible for wiring components together - creating
+instances, injecting dependencies and managing lifetime.**
 
 2. Create a container
 
@@ -80,7 +80,7 @@ const exampleContainer = container();
 const loggerInstance: Logger = exampleContainer.get(loggerDef); // returns an instance of Logger
 ```
 
-## Available definitions builders
+## Definitions lifetimes
 
 Library provides definitions builders grouped by lifetime:
 
@@ -88,12 +88,14 @@ Library provides definitions builders grouped by lifetime:
 - `singleton` always uses single instance
 - `request` acts like singleton across a request (`container.get(...)` or `container.getAll(...) ` call )
 
-Each group object provides definitions builders for specific type of instance.
+Each group object provides definitions builders for specific type of instance and specific
+resolution model:
 
 ## Sync definitions
+
 Definitions which can be instantiated using `.get` | `.getAll` container methods. They
-accept as a dependencies only other sync definitions. In order to inject async dependency to 
-sync definition, it needs to be converted to async definition beforehand.
+accept only sync dependencies. In order to inject async dependency to sync definition, it
+previously needs to be converted to async definition.
 
 - `fn` - takes as an argument a factory function.
 
@@ -178,11 +180,11 @@ const url = getUrl('someUserId');
 ```
 
 ## Asynchronous resolution
-Definitions which can be instantiated using `.getAsync` | `.getAllAsync` container methods. They 
-accept as a dependencies both sync and async definition.
 
-- `asyncClass` - supports injection of async definitions. Async dependencies need to be
-  instantiated using `container.getAsync(someAsyncDef)` method
+Definitions which can be instantiated using `.getAsync` | `.getAllAsync` container methods. They
+accept as both sync and async dependencies.
+
+- `asyncClass` - the same as `class` but accepts async dependencies
 
 ```typescript
 import { singleton, container } from 'hardwired';
@@ -227,9 +229,9 @@ const findUserByIdBoundToDb = cnt.getAsync(findUserByIdDef);
 const user = await findUserByIdBoundToDb('someUserId');
 ```
 
-### Misc definitions
+### Other definitions
 
-**`value`** - defines a static value
+- **`value`** - defines a static value
 
 ```typescript
 import { value, container } from 'hardwired';
@@ -241,7 +243,7 @@ const config = cnt.get(configDef); // { port: 1234 }
 cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
 ```
 
-**`object`** - aggregates multiple definitions within a new object. The lifetime for
+- **`object`** - aggregates multiple definitions within a new object. The lifetime for
 `object` is determined from used definitions. If any singleton instance is used then
 objects lifetime is singleton. If all instance definitions have the same lifetime, then this
 same lifetime is also used for `object`. If definitions use multiple lifetimes then lifetime
@@ -425,7 +427,7 @@ import { container } from 'hardwired';
 
 const cnt = container();
 cnt.get(httpServerD, { server: { port: 1234 } });
-// when instance definition with external param is provided to .get then additional param is 
+// when instance definition with external param is provided to .get then additional param is
 // required
 ```
 
@@ -484,7 +486,7 @@ const requestsExecutorD = singleton.class(RequestsExecutor, factory(requestD));
 export const appD = singleton.class(App, requestsExecutorD);
 ```
 
-`factory(requestD)` automatically produces factory which without IoC probably would have to be 
+`factory(requestD)` automatically produces factory which without IoC probably would have to be
 implemented like (assuming that we don't care that logger is not singleton):
 
 ```typescript
