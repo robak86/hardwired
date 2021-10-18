@@ -103,6 +103,8 @@ describe(`partial`, () => {
       describe(`singleton`, () => {
         it(`does not accept singletons with externals`, async () => {
           const dep = singleton.fn(val => val, ext);
+
+          // @ts-expect-error transient does not accept singleton dependencies with externals
           partial(LifeTime.singleton)(numberConsumer, dep);
         });
 
