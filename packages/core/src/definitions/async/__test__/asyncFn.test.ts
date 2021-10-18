@@ -51,6 +51,8 @@ describe(`asyncFn`, () => {
       describe(`singleton`, () => {
         it(`does not accept singletons with externals`, async () => {
           const dep = singleton.asyncFn(async val => val, ext);
+
+          // @ts-expect-error singleton does not accept singleton dependencies with externals
           asyncFn(LifeTime.singleton)(numberConsumer, dep);
         });
 

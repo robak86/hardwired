@@ -55,6 +55,8 @@ describe(`asyncClass`, () => {
       describe(`singleton`, () => {
         it(`does not accept singletons with externals`, async () => {
           const dep = singleton.asyncFn(async val => val, ext);
+
+          // @ts-expect-error transient does not accept singleton dependencies with externals
           asyncClass(LifeTime.singleton)(NumberConsumer, dep);
         });
 
