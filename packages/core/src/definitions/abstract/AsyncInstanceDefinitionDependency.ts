@@ -4,7 +4,7 @@ import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 // prettier-ignore
 export type AsyncInstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> =
     TLifeTime extends LifeTime.singleton ?
-        | AnyInstanceDefinition<TValue, LifeTime.singleton, any>
+        | AnyInstanceDefinition<TValue, LifeTime.singleton, []>
         | AnyInstanceDefinition<TValue, LifeTime.scoped, any>
         | AnyInstanceDefinition<TValue, LifeTime.transient, any>
         | AnyInstanceDefinition<TValue, LifeTime.request, any> :
