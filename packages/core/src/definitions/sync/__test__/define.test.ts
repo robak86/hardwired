@@ -111,4 +111,33 @@ describe(`define`, () => {
       expect(result[0]).toBe(result[1]);
     });
   });
+
+  describe(`withNewRequestScope`, () => {
+    it(`returns values using new request`, async () => {
+      const singletonD = singleton.fn(() => new BoxedValue(Math.random()));
+      const randomD = request.fn(() => new BoxedValue(Math.random()));
+
+      const exampleD = request.define(locator => {
+        const s1 = locator.get(singletonD);
+        const r1 = locator.get(randomD);
+        const r2 = locator.get(randomD);
+
+        const req2 = locator.withNewRequestScope(locator => {
+          const s1 = locator.get(singletonD);
+          const r1 = locator.get(randomD);
+          const r2 = locator.get(randomD);
+
+          return [s1, r1, r2];
+        });
+
+        return {
+          req1: [s1, r1, r2],
+          req2,
+        };
+      });
+
+      const result = container().get(exampleD);
+      expect(result.req1[0]).toEqual(result.req2[0])
+    });
+  });
 });
