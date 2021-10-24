@@ -111,4 +111,33 @@ describe(`asyncDefine`, () => {
       expect(result[0]).toBe(result[1]);
     });
   });
+
+  describe(`withNewRequestScope`, () => {
+    it(`returns values using new request`, async () => {
+      const singletonD = singleton.fn(() => new BoxedValue(Math.random()));
+      const randomD = request.asyncFn(async () => new BoxedValue(Math.random()));
+
+      const exampleD = request.asyncDefine(async locator => {
+        const s1 = await locator.get(singletonD);
+        const r1 = await locator.getAsync(randomD);
+        const r2 = await locator.getAsync(randomD);
+
+        const req2 = await locator.withNewRequestScope(async locator => {
+          const s1 = await locator.get(singletonD);
+          const r1 = await locator.getAsync(randomD);
+          const r2 = await locator.getAsync(randomD);
+
+          return [s1, r1, r2];
+        });
+
+        return {
+          req1: [s1, r1, r2],
+          req2,
+        };
+      });
+
+      const result = await container().getAsync(exampleD);
+      expect(result.req1[0]).toEqual(result.req2[0]);
+    });
+  });
 });
