@@ -5,6 +5,7 @@ export * from './strategies/SingletonStrategy';
 export * from './strategies/TransientStrategy';
 export * from './definitions/definitions';
 export * from './definitions/abstract/InstanceDefinition';
+export * from './definitions/abstract/AnyInstanceDefinition';
 
 export * from './patching/replace';
 export * from './patching/apply';

@@ -9,7 +9,15 @@
   "types": "./lib/index.d.ts",
   "dependencies": {
     "hardwired": "*",
-    "find-my-way": "*"
+    "find-my-way": "*",
+    "dotenv": "^10.0.0",
+    "winston": "^3.3.3",
+    "node-fetch": "^2.6.6",
+    "url-join": "*"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.12",
+    "@types/url-join": "^4.0.1"
   },
   "files": [
     "lib",

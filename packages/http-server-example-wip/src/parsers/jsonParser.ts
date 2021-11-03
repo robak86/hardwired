@@ -1,6 +1,6 @@
-import { IncomingMessage } from 'http';
+import { RequestContext } from '../helpers/server/requestContext';
 
-export const jsonParams = async (req: IncomingMessage): Promise<object | null> => {
+export const jsonParams = async ({ req }: RequestContext): Promise<object | null> => {
   const buffers: any[] = [];
 
   for await (const chunk of req) {

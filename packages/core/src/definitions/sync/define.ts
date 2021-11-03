@@ -4,11 +4,16 @@ import { LifeTime } from '../abstract/LifeTime';
 import { v4 } from 'uuid';
 import { Resolution } from '../abstract/Resolution';
 import { ContainerContext } from '../../context/ContainerContext';
+import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 
 export interface DefineServiceLocator<TExternalParams extends any[]> {
   get<TValue, Externals extends Array<TExternalParams[number]>>(
     instanceDefinition: InstanceDefinition<TValue, any, Externals>,
   ): TValue;
+
+  getAsync<TValue, Externals extends Array<TExternalParams[number]>>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, any, Externals>,
+  ): Promise<TValue>;
 
   withNewRequestScope<TValue>(fn: (locator: DefineServiceLocator<TExternalParams>) => TValue): TValue;
 }
@@ -47,6 +52,7 @@ export const define =
         const buildLocator = (context: ContainerContext): DefineServiceLocator<any> => {
           return {
             get: context.buildWithStrategy,
+            getAsync: context.buildWithStrategy,
             withNewRequestScope: fn => fn(buildLocator(context.checkoutRequestScope())),
           };
         };
