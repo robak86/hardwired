@@ -1,8 +1,8 @@
 import { defineRouter } from '../helpers/routing/defineRouter';
-import { helloWorldHandlerD } from './handlers.di';
+import { helloWorldHandlerD, postJsonHandlerD } from './handlers.di';
 
 export const appRouterD = defineRouter(
   ['GET', '/', helloWorldHandlerD],
-  ['GET', '/a', helloWorldHandlerD],
-  ['GET', '/b', helloWorldHandlerD],
+  ['GET', '/hello', helloWorldHandlerD],
+  ['GET', '/post-it', postJsonHandlerD],
 );

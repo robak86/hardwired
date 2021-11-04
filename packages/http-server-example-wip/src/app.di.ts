@@ -1,5 +1,5 @@
 import { singleton } from 'hardwired';
-import { createServer } from './app/createApp';
+import { createServer } from './app/createServer';
 import { envConfigD } from './config/config.di';
 import { buildServerFetch } from './server/createAppClient';
 import { loggerD } from './logger/createLogger';

@@ -14,7 +14,7 @@ export const startServer = (server: http.Server, port: number): ServerInstance =
     get port(): number {
       const serverInstanceAddress = instance.address();
       const port = (serverInstanceAddress as AddressInfo)?.port;
-      invariant(port, `Cannot get server port number`);
+      invariant(!!port, `Cannot get server port number`);
       return port;
     },
     close: () => {

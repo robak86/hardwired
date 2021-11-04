@@ -8,7 +8,7 @@ import { Resolution } from '../abstract/Resolution';
 
 export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <
-    Fn extends (...args: any[]) => Promise<any>,
+    Fn extends (...args: any[]) => Promise<any> | any,
     TArgs extends AsyncPartialFnDependencies<Parameters<UnCurryAsync<Fn>>, TLifeTime>,
   >(
     factory: Fn,

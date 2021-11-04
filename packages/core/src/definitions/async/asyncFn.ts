@@ -11,7 +11,7 @@ export type AsyncFunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {
     TArgs extends any[],
     TDependencies extends { [K in keyof TArgs]: AsyncInstanceDefinitionDependency<TArgs[K], TLifeTime> },
   >(
-    factory: (...args: TArgs) => Promise<TValue>,
+    factory: (...args: TArgs) => Promise<TValue> | TValue,
     ...args: TDependencies
   ): AsyncInstanceDefinition<TValue, TLifeTime, PickExternals<TDependencies>>;
 };
