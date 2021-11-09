@@ -61,26 +61,26 @@ describe(`useDefinition`, () => {
         );
       };
 
-      return { TestSubject };
+      return { TestSubject, c };
     }
 
-    it.skip(`reuses the same transient instance for component rerender`, async () => {
-      const { TestSubject } = setup();
+    it(`reuses the same transient instance for component rerender`, async () => {
+      const { TestSubject, c } = setup();
       const result = render(<TestSubject />);
 
       const render1Consumer1Value = result.getByTestId('consumer1').textContent;
       const render1Consumer2Value = result.getByTestId('consumer2').textContent;
-
-      expect(render1Consumer1Value).not.toEqual(render1Consumer2Value);
 
       result.rerender(<TestSubject />);
 
       const render2Consumer1Value = result.getByTestId('consumer1').textContent;
       const render2Consumer2Value = result.getByTestId('consumer2').textContent;
 
-      expect(render2Consumer1Value).not.toEqual(render2Consumer2Value);
+
       expect(render1Consumer1Value).toEqual(render2Consumer1Value);
       expect(render1Consumer2Value).toEqual(render2Consumer2Value);
+
+      expect(render1Consumer1Value).not.toEqual(render1Consumer2Value);
     });
   });
 });

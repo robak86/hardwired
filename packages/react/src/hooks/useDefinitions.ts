@@ -1,5 +1,5 @@
 import { InstanceDefinition } from 'hardwired';
-import { useContainer } from '../context/ContainerContext';
+import { useRequestContainer } from '../context/ContainerContext';
 
 export type UseDefinitionsHook = {
   <TInstance extends InstanceDefinition<any, any>, TInstances extends [TInstance, ...TInstance[]]>(
@@ -9,8 +9,7 @@ export type UseDefinitionsHook = {
   };
 };
 
-
 export const useDefinitions: UseDefinitionsHook = definitions => {
-  const container = useContainer();
+  const container = useRequestContainer();
   return container.getAll(...definitions) as any;
 };
