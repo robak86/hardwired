@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useContext } from 'react';
-import { Container } from 'hardwired';
+import { useContext, useRef } from 'react';
+import { Container, IContainer } from 'hardwired';
 import invariant from 'tiny-invariant';
 
 export type ContainerContextValue = {
@@ -19,4 +19,16 @@ export const useContainer = (): Container => {
   const { container } = useContainerContext();
   invariant(container, `Cannot find container. Make sure that component is wrapped with ContainerProvider`);
   return container;
+};
+
+export const useRequestContainer = (): IContainer => {
+  const { container } = useContainerContext();
+  invariant(container, `Cannot find container. Make sure that component is wrapped with ContainerProvider`);
+
+  const requestContainer = useRef<null | IContainer>();
+  if (!requestContainer.current) {
+    requestContainer.current = container.checkoutRequestScope();
+  }
+
+  return requestContainer.current;
 };
