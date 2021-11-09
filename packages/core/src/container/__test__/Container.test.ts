@@ -1,6 +1,7 @@
 import { request, singleton } from '../../definitions/definitions';
 import { container } from '../Container';
 import { replace } from '../../patching/replace';
+import { BoxedValue } from '../../__test__/BoxedValue';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -112,6 +113,22 @@ describe(`Container`, () => {
       const c = container();
       const k3Instance = c.get(k3);
       expect(await k3Instance).toEqual(3);
+    });
+  });
+
+  describe(`.checkoutRequestScope`, () => {
+    it(`returns clear request scope`, async () => {
+       const requestVal = request.fn(() => new BoxedValue(Math.random()))
+
+      const cnt = container();
+      const reqCnt1 = cnt.checkoutRequestScope();
+      const reqCnt2 = cnt.checkoutRequestScope();
+
+       const result1 = reqCnt1.get(requestVal)
+       const result2 = reqCnt2.get(requestVal)
+
+      expect(result1).not.toBe(result2)
+
     });
   });
 });

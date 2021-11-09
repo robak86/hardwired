@@ -2,16 +2,20 @@ import { ContainerContext } from '../context/ContainerContext';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
-import { defaultStrategiesRegistry } from "../strategies/collection/defaultStrategiesRegistry";
+import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
+import { IContainer } from './IContainer';
+import { RequestContainer } from './RequestContainer';
+import { v4 } from 'uuid';
 
-export class Container {
-  constructor(protected readonly containerContext: ContainerContext) {}
+export class Container implements IContainer {
+  constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
   get<TValue, TExternalParams extends any[]>(
     instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
     ...externals: TExternalParams
   ): TValue {
-    return this.containerContext.get(instanceDefinition, ...externals);
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.get(instanceDefinition, ...externals);
   }
 
   getAsync<TValue, TExternalParams extends any[]>(
@@ -44,6 +48,10 @@ export class Container {
     const requestContext = this.containerContext.checkoutRequestScope();
 
     return Promise.all(definitions.map(def => requestContext.getAsync(def))) as any;
+  }
+
+  checkoutRequestScope(): IContainer {
+    return new RequestContainer(this.containerContext.checkoutRequestScope());
   }
 }
 

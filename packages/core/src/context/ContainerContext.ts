@@ -59,8 +59,7 @@ export class ContainerContext implements InstancesBuilder {
         externals: [],
       } as any);
     } else {
-      const requestContext = this.checkoutRequestScope();
-      return requestContext.buildWithStrategy(instanceDefinition);
+      return this.buildWithStrategy(instanceDefinition);
     }
   }
 
@@ -86,8 +85,7 @@ export class ContainerContext implements InstancesBuilder {
         externals: [],
       } as any);
     } else {
-      const requestContext = this.checkoutRequestScope();
-      return requestContext.buildWithStrategy(instanceDefinition);
+      return this.buildWithStrategy(instanceDefinition);
     }
   }
 
