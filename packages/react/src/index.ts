@@ -8,6 +8,7 @@ export type { DefinitionsConsumerProps } from './components/DefinitionsConsumer'
 // hooks
 export { useDefinition } from './hooks/useDefinition';
 export { useDefinitions } from './hooks/useDefinitions';
+export { useFactory } from './hooks/useFactory';
 
 // HOC
 export { withDependencies } from './hoc/withDependencies';
