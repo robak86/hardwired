@@ -9,6 +9,7 @@ export type IAsyncFactory<TReturn, TParams extends any[], TFactoryMixin = unknow
   build(...params: TParams): Promise<TReturn>;
 } & TFactoryMixin;
 
+// factory is always transient in order to prevent memory leaks if factory definition is created dynamically - each dynamically created factory would create new entry for singleton in instances store
 export type AsyncFactoryBuildFn = {
   <TInstance, TExternalParams extends any[]>(
     definition: AsyncFactoryDefinition<TInstance, any, TExternalParams>,
@@ -17,18 +18,16 @@ export type AsyncFactoryBuildFn = {
   <TInstance, TExternalParams extends any[], TFactoryMixin extends object, TLifeTime extends LifeTime>(
     definition: AsyncFactoryDefinition<TInstance, any, TExternalParams>,
     factoryMixinDef: InstanceDefinition<TFactoryMixin, TLifeTime, []>,
-  ): InstanceDefinition<IAsyncFactory<TInstance, TExternalParams, TFactoryMixin>, TLifeTime, []>;
+  ): InstanceDefinition<IAsyncFactory<TInstance, TExternalParams, TFactoryMixin>, LifeTime.transient, []>;
 };
 
 export const asyncFactory: AsyncFactoryBuildFn = (
   definition: AnyInstanceDefinition<any, any, any>,
   factoryMixingDef?,
 ) => {
-  const strategy = factoryMixingDef ? factoryMixingDef.strategy : LifeTime.singleton;
-
   return {
     id: v4(),
-    strategy,
+    strategy: LifeTime.transient as const,
     resolution: Resolution.sync as const,
     externals: [],
     create: (context): IAsyncFactory<any, any> => {

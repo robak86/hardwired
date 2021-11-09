@@ -112,7 +112,7 @@ describe(`factory`, () => {
 
         const factoryD = factory(handlerD);
         expectType<
-          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.singleton, []>>
+          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient, []>>
         >(true);
       });
     });

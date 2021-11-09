@@ -1,3 +1,4 @@
+export type { IContainer } from './container/IContainer';
 export { container, Container } from './container/Container';
 
 export * from './strategies/RequestStrategy';
@@ -26,5 +27,5 @@ export * from './definitions/async/asyncFactory';
 export * from './definitions/sync/external';
 export * from './definitions/sync/intersection';
 export * from './definitions/abstract/LifeTime';
-export type { DerivedLifeTime } from "./definitions/abstract/DerivedLifeTime";
-export { Resolution } from "./definitions/abstract/Resolution";
+export type { DerivedLifeTime } from './definitions/abstract/DerivedLifeTime';
+export { Resolution } from './definitions/abstract/Resolution';
