@@ -64,7 +64,7 @@ export const loggerDef = singleton.class(Logger, configurationDef);
 
 All definitions should be defined **in separate modules** (`ts` files) making the implementation
 completely decoupled from `hardwired`. Container and definitions should be treated like an
-**additional layer** above implementation, which is responsible for wiring components together by 
+**additional layer** above implementation, which is responsible for wiring components together by
 creating instances, injecting dependencies and managing lifetime.
 
 2. Create a container
@@ -428,15 +428,15 @@ import { container } from 'hardwired';
 
 const cnt = container();
 cnt.get(httpServerD, { server: { port: 1234 } });
-// when instance definition with external param is provided to .get 
+// when instance definition with external param is provided to .get
 // then additional param is required
 ```
 
-2. By using `factory`|`asyncFactory` builders which create definitions of automatically 
-   generated factory. This approach solves the issue of using container as a service locator. 
-   Instead of using a reference to service locator, `hardwired` injects factory created 
-   specifically for creating one particular type of instance coupling the consumer code with 
-   generic `IFactory` | `IAsyncFactory` type instead of `Container`. 
+2. By using `factory`|`asyncFactory` builders which create definitions of automatically
+   generated factory. This approach solves the issue of using container as a service locator.
+   Instead of using a reference to service locator, `hardwired` injects factory created
+   specifically for creating one particular type of instance coupling the consumer code with
+   generic `IFactory` | `IAsyncFactory` type instead of `Container`.
 
 ```typescript
 import { external, factory, IFactory, request, singleton } from 'hardwired';
