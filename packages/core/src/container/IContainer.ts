@@ -12,10 +12,15 @@ export interface IContainer {
     ...externalParams: TExternalParams
   ): Promise<TValue>;
 
-  getAll<TLazyModule extends Array<InstanceDefinition<any, any, []>>>(
-    ...definitions: TLazyModule
+  getAll<
+      TDefinition extends InstanceDefinition<any, any, TExternalParams>,
+      TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
+      TExternalParams extends any[],
+      >(
+      definitions: TDefinitions,
+      ...externalParams: TExternalParams
   ): {
-    [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown;
+    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown;
   };
 
   getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(
@@ -27,4 +32,6 @@ export interface IContainer {
         : unknown;
     }
   >;
+
+  checkoutRequestScope(): IContainer
 }

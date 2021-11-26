@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition, InstanceDefinitionContext } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
@@ -12,11 +12,11 @@ export type IAsyncFactory<TReturn, TParams extends any[], TFactoryMixin = unknow
 // factory is always transient in order to prevent memory leaks if factory definition is created dynamically - each dynamically created factory would create new entry for singleton in instances store
 export type AsyncFactoryBuildFn = {
   <TInstance, TExternalParams extends any[]>(
-    definition: AsyncFactoryDefinition<TInstance, any, TExternalParams>,
+    definition: AsyncFactoryDefinition<TInstance, LifeTime.request, TExternalParams>,
   ): InstanceDefinition<IAsyncFactory<TInstance, TExternalParams>, LifeTime.transient, []>;
 
   <TInstance, TExternalParams extends any[], TFactoryMixin extends object, TLifeTime extends LifeTime>(
-    definition: AsyncFactoryDefinition<TInstance, any, TExternalParams>,
+    definition: AsyncFactoryDefinition<TInstance, LifeTime.request, TExternalParams>,
     factoryMixinDef: InstanceDefinition<TFactoryMixin, TLifeTime, []>,
   ): InstanceDefinition<IAsyncFactory<TInstance, TExternalParams, TFactoryMixin>, LifeTime.transient, []>;
 };
@@ -30,13 +30,14 @@ export const asyncFactory: AsyncFactoryBuildFn = (
     strategy: LifeTime.transient as const,
     resolution: Resolution.sync as const,
     externals: [],
-    create: (context): IAsyncFactory<any, any> => {
+    create: (context: InstanceDefinitionContext): IAsyncFactory<any, any> => {
       const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
 
       return {
         ...base,
         build(...params): any {
-          return context.getAsync(definition, ...params);
+          const reqContext = context.checkoutRequestScope(); // factory always uses new request context for building definitions
+          return reqContext.getAsync(definition, ...params);
         },
       };
     },

@@ -54,6 +54,7 @@ describe(`useDefinition`, () => {
             <div data-testid={'consumer1'}>
               <Consumer />
             </div>
+
             <div data-testid={'consumer2'}>
               <Consumer />
             </div>
@@ -75,7 +76,6 @@ describe(`useDefinition`, () => {
 
       const render2Consumer1Value = result.getByTestId('consumer1').textContent;
       const render2Consumer2Value = result.getByTestId('consumer2').textContent;
-
 
       expect(render1Consumer1Value).toEqual(render2Consumer1Value);
       expect(render1Consumer2Value).toEqual(render2Consumer2Value);

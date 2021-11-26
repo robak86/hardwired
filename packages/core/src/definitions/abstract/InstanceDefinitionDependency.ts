@@ -10,7 +10,7 @@ export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> =
         | InstanceDefinition<TValue, LifeTime.request, any> :
     TLifeTime extends LifeTime.transient ?
         | InstanceDefinition<TValue, LifeTime.singleton, []>
-        | InstanceDefinition<TValue, LifeTime.scoped, []>
+        | InstanceDefinition<TValue, LifeTime.scoped, []> // no externals allowed in order to prevent mem leaks
         | InstanceDefinition<TValue, LifeTime.transient, any>
         | InstanceDefinition<TValue, LifeTime.request, any>:
     TLifeTime extends LifeTime.request ?

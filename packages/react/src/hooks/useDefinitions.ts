@@ -9,7 +9,9 @@ export type UseDefinitionsHook = {
   };
 };
 
+// TODO: should accept multiple definition with the same externals and allows for passing externals as rest
+
 export const useDefinitions: UseDefinitionsHook = definitions => {
   const container = useRequestContainer();
-  return container.getAll(...definitions) as any;
+  return container.getAll(definitions) as any;
 };

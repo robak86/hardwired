@@ -4,7 +4,7 @@ import { Container, IContainer } from 'hardwired';
 import invariant from 'tiny-invariant';
 
 export type ContainerContextValue = {
-  container: Container | undefined;
+  container: IContainer | undefined;
 };
 
 export const ContainerContext = React.createContext<ContainerContextValue>({
@@ -15,7 +15,7 @@ export const useContainerContext = (): ContainerContextValue => {
   return useContext(ContainerContext);
 };
 
-export const useContainer = (): Container => {
+export const useContainer = (): IContainer => {
   const { container } = useContainerContext();
   invariant(container, `Cannot find container. Make sure that component is wrapped with ContainerProvider`);
   return container;

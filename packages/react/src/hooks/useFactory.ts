@@ -1,6 +1,6 @@
 import { IFactory, InstanceDefinition, Resolution } from 'hardwired';
 import invariant from 'tiny-invariant';
-import { useRequestContainer } from '../context/ContainerContext';
+import { useContainer } from '../context/ContainerContext';
 import { useMemoized } from '../utils/useMemoized';
 
 export type UseFactoryHook = {
@@ -12,7 +12,7 @@ export type UseFactoryHook = {
 
 export const useFactory: UseFactoryHook = (definition, ...params) => {
   invariant(definition.resolution === Resolution.sync, `Using async definitions in react components is not supported.`);
-  const container = useRequestContainer();
+  const container = useContainer();
 
   const getInstance = useMemoized(() => {
     return container.get(definition).build(...params);

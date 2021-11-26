@@ -1,12 +1,13 @@
 import { ContainerContext } from '../context/ContainerContext';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
+import { AnyInstanceDefinition, } from '../definitions/abstract/AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
 import { IContainer } from './IContainer';
 import { RequestContainer } from './RequestContainer';
 import { v4 } from 'uuid';
 
+// TODO: instead of using separate implementation for RequestContainer parametrize Container with reuseRequestContext = boolean
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
@@ -26,14 +27,18 @@ export class Container implements IContainer {
     return requestContext.getAsync(instanceDefinition, ...externalParams);
   }
 
-  getAll<TLazyModule extends Array<InstanceDefinition<any, any, []>>>(
-    ...definitions: TLazyModule
+  getAll<
+    TDefinition extends InstanceDefinition<any, any, TExternalParams>,
+    TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
+    TExternalParams extends any[],
+  >(
+    definitions: TDefinitions,
+    ...externalParams: TExternalParams
   ): {
-    [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown;
+    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown;
   } {
     const requestContext = this.containerContext.checkoutRequestScope();
-
-    return definitions.map(def => requestContext.get(def)) as any;
+    return definitions.map(def => requestContext.get(def, ...externalParams)) as any;
   }
 
   getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(
