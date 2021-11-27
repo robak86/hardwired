@@ -2,9 +2,9 @@ import { ClassType } from '../../utils/ClassType';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
-import { LifeTime} from '../abstract/LifeTime';
+import { LifeTime } from '../abstract/LifeTime';
 import { InstanceDefinitionDependency } from '../abstract/InstanceDefinitionDependency';
-import { Resolution } from "../abstract/Resolution";
+import { Resolution } from '../abstract/Resolution';
 
 export type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <

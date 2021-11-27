@@ -25,10 +25,17 @@ export const useRequestContainer = (): IContainer => {
   const { container } = useContainerContext();
   invariant(container, `Cannot find container. Make sure that component is wrapped with ContainerProvider`);
 
-  const requestContainer = useRef<null | IContainer>();
-  if (!requestContainer.current) {
-    requestContainer.current = container.checkoutRequestScope();
+  const requestContainerRef = useRef<null | IContainer>();
+  const parentContainerIdRef = useRef<null | string>();
+
+  // if container stored in react context has changed we need to also revalidate request scope
+  const containerHasChanged = parentContainerIdRef.current && parentContainerIdRef.current !== container.id;
+  const componentRequestScopeIsMissing = !requestContainerRef.current;
+
+  if (componentRequestScopeIsMissing || containerHasChanged) {
+    requestContainerRef.current = container.checkoutRequestScope();
+    parentContainerIdRef.current = container.id;
   }
 
-  return requestContainer.current;
+  return requestContainerRef.current!;
 };

@@ -3,6 +3,8 @@ import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDe
 import { ContainerScopeOptions } from './Container';
 
 export interface IContainer {
+  readonly id: string
+
   get<TValue, TExternalParams extends any[]>(
     instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
     ...externals: TExternalParams

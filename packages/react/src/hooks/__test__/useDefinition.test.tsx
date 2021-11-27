@@ -65,7 +65,7 @@ describe(`useDefinition`, () => {
       return { TestSubject, c };
     }
 
-    it(`reuses the same transient instance for component rerender`, async () => {
+    it(`reuses the same request instance for component rerender`, async () => {
       const { TestSubject, c } = setup();
       const result = render(<TestSubject />);
 

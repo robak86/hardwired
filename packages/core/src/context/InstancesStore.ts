@@ -1,5 +1,4 @@
 import { HierarchicalStore } from './HierarchicalStore';
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 
 export class InstancesStore {

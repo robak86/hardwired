@@ -107,7 +107,6 @@ export class ContainerContext implements InstancesBuilder {
     return new ContainerContext(
       this.instancesDefinitionsRegistry.checkoutForRequestScope(),
       this.instancesCache.checkoutForRequestScope(),
-
       this.strategiesRegistry,
     );
   }

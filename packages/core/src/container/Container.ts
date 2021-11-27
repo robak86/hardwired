@@ -1,6 +1,6 @@
 import { ContainerContext } from '../context/ContainerContext';
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
-import { AnyInstanceDefinition, } from '../definitions/abstract/AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
 import { IContainer } from './IContainer';
@@ -35,7 +35,9 @@ export class Container implements IContainer {
     definitions: TDefinitions,
     ...externalParams: TExternalParams
   ): {
-    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown;
+    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
+      ? TInstance
+      : unknown;
   } {
     const requestContext = this.containerContext.checkoutRequestScope();
     return definitions.map(def => requestContext.get(def, ...externalParams)) as any;
