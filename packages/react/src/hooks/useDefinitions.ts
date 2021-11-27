@@ -2,7 +2,7 @@ import { InstanceDefinition } from 'hardwired';
 import { useRequestContainer } from '../context/ContainerContext';
 
 export type UseDefinitionsHook = {
-  <TInstance extends InstanceDefinition<any, any>, TInstances extends [TInstance, ...TInstance[]]>(
+  <TInstance extends InstanceDefinition<any, any>, TInstances extends [TInstance] | [TInstance, ...TInstance[]]>(
     definitions: TInstances,
   ): {
     [K in keyof TInstances]: TInstances[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown;
