@@ -381,7 +381,7 @@ export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
 
 ### Definition life times in relation to React components rendering
 
-- each component uses its own request scope
+- each `useDefinition` call uses its own request scope
 
 ```typescript jsx
 import { request } from 'hardwired';
@@ -396,9 +396,7 @@ const SomeComponent = () => {
   const value1 = useDefinition(valD);
   const value2 = useDefinition(valD);
 
-  // value1 equals to value2 because useDefinition used the same request scope created for
-  // SomeComponent
-
+  // value1 is not equal to value2 because useDefinition uses different request scope for each call
   return (
     <span>
       {value1}, {value2}
@@ -407,7 +405,8 @@ const SomeComponent = () => {
 };
 ```
 
-- request scopes are not hierarchical
+- in order to get multiple instances using the same request scope one should use 
+  `useDefinitions` hook
 
 ```typescript jsx
 import { request } from 'hardwired';
@@ -418,26 +417,23 @@ const nextId = () => (id += 1);
 
 const valD = request.fn(() => nextId());
 
-const Parent = () => {
-  const value = useDefinition(valD);
+const SomeComponent = () => {
+  const [value1, value2] = useDefinitions(valD, valD);
+  
+
+  // value1 equals to value2 because useDefinitions used the same request scope for 
+  // creating/getting "valD" instance  
 
   return (
     <span>
-      <Child />
+      {value1}, {value2}
     </span>
   );
 };
-
-const Child = () => {
-  const value = useDefinition(valD);
-
-  // value won't equal value from parent component, because Child has used its own request scope
-
-  return <span>{value1}</span>;
-};
 ```
 
-- singletons don't use request scopes and are global for all components
+- singleton instances created by `useDefinition` become globally cached and are available for every 
+  component
 
 ```typescript jsx
 import { request } from 'hardwired';
@@ -446,7 +442,7 @@ import { useDefinition } from 'hardwired-react';
 let id = 0;
 const nextId = () => (id += 1);
 
-const valD = singleton.fn(() => nextId()); // please notice that valD is now singleton!
+const valD = singleton.fn(() => nextId()); // valD is now singleton
 
 const Parent = () => {
   const value = useDefinition(valD);
@@ -475,7 +471,7 @@ import { useDefinition } from 'hardwired-react';
 let renderCount = 0;
 const increaseRenderCount = () => (renderCount += 1);
 
-const valD = transient.fn(() => increaseRenderCount()); // please notice that valD is now transient!
+const valD = transient.fn(() => increaseRenderCount()); // valD is now transient!
 
 const Parent = () => {
   const value = useDefinition(valD);
