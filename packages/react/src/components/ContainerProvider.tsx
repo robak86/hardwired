@@ -11,7 +11,6 @@ export const ContainerProvider: FunctionComponent<ContainerProviderProps> = ({ c
   const containerInstance = useRef<ContainerContextValue | null>();
 
   if (!containerInstance.current) {
-    console.log('build container');
     containerInstance.current = {
       container: container || buildContainer(),
     };
