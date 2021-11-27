@@ -2,6 +2,8 @@
 export { ContainerProvider } from './components/ContainerProvider';
 export type { ContainerProviderProps } from './components/ContainerProvider';
 
+export * from './components/ContainerScope';
+
 export { DefinitionsConsumer } from './components/DefinitionsConsumer';
 export type { DefinitionsConsumerProps } from './components/DefinitionsConsumer';
 
@@ -13,3 +15,4 @@ export { useFactory } from './hooks/useFactory';
 // HOC
 export { withDependencies } from './hoc/withDependencies';
 export type { WithDependenciesConfigured } from './hoc/withDependencies';
+export * from './hoc/inject'
