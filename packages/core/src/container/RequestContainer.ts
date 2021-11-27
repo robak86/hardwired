@@ -3,6 +3,7 @@ import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDe
 import { ContainerContext } from '../context/ContainerContext';
 import { IContainer } from './IContainer';
 import { v4 } from 'uuid';
+import { ContainerScopeOptions } from "./Container";
 
 export class RequestContainer implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
@@ -48,5 +49,9 @@ export class RequestContainer implements IContainer {
 
   checkoutRequestScope(): IContainer {
     return new RequestContainer(this.containerContext.checkoutRequestScope());
+  }
+
+  checkoutScope(options: ContainerScopeOptions = {}): IContainer {
+    return new RequestContainer(this.containerContext.checkoutScope(options));
   }
 }

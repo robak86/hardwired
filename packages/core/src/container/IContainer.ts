@@ -1,5 +1,6 @@
 import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
+import { ContainerScopeOptions } from './Container';
 
 export interface IContainer {
   get<TValue, TExternalParams extends any[]>(
@@ -13,14 +14,16 @@ export interface IContainer {
   ): Promise<TValue>;
 
   getAll<
-      TDefinition extends InstanceDefinition<any, any, TExternalParams>,
-      TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
-      TExternalParams extends any[],
-      >(
-      definitions: TDefinitions,
-      ...externalParams: TExternalParams
+    TDefinition extends InstanceDefinition<any, any, TExternalParams>,
+    TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
+    TExternalParams extends any[],
+  >(
+    definitions: TDefinitions,
+    ...externalParams: TExternalParams
   ): {
-    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown;
+    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
+      ? TInstance
+      : unknown;
   };
 
   getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(
@@ -33,5 +36,6 @@ export interface IContainer {
     }
   >;
 
-  checkoutRequestScope(): IContainer
+  checkoutRequestScope(): IContainer;
+  checkoutScope(options?: ContainerScopeOptions): IContainer;
 }

@@ -16,6 +16,7 @@ export function useMemoized<T>(factory: () => T): (invalidateKeys: ReadonlyArray
       scopedContainer.current = { invalidationKeys: [...keys], value: factory() };
     }
 
+    console.log('Using container', (scopedContainer as any).current.value.id);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return scopedContainer.current.value!;
   }
