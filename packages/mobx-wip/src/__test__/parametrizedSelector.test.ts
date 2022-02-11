@@ -56,7 +56,7 @@ describe(`parametrizedSelector`, () => {
     const selectNameForUserD = parametrizedView(selectNameByUserId, stateD);
 
     const ctn = container();
-    const [selectInstance, stateInstance] = ctn.getAll(selectNameForUserD, stateD);
+    const [selectInstance, stateInstance] = ctn.getAll([selectNameForUserD, stateD]);
     autorun(() => {
       selectInstance(1);
     });
@@ -99,7 +99,7 @@ describe(`parametrizedSelector`, () => {
     const selectAddressForUserIdD = parametrizedView(selectAddressByUserId, stateD, selectUserByIdD);
 
     const ctn = container();
-    const [selectInstance, stateInstance] = ctn.getAll(selectAddressForUserIdD, stateD);
+    const [selectInstance, stateInstance] = ctn.getAll([selectAddressForUserIdD, stateD]);
     autorun(() => selectInstance(1));
 
     expect(count).toEqual(1);

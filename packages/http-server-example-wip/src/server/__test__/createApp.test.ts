@@ -1,7 +1,7 @@
 import { container } from 'hardwired';
 import { appClientD } from '../../app.di';
 
-describe(`createApp`, () => {
+describe.skip(`createApp`, () => {
   it(`hello world route`, async () => {
     const cnt = container();
     const fetch = cnt.get(appClientD);
