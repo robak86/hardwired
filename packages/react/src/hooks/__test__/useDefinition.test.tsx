@@ -33,14 +33,11 @@ describe(`useDefinition`, () => {
   });
 
   describe(`binding request dependencies to component instance`, () => {
-
-
     function setup() {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
       const clsDef = request.fn(checkoutRenderId);
-
 
       const Consumer = () => {
         const cls = useDefinition(clsDef);
@@ -73,8 +70,8 @@ describe(`useDefinition`, () => {
       const render1Consumer1Value = result.getByTestId('consumer1').textContent;
       const render1Consumer2Value = result.getByTestId('consumer2').textContent;
 
-      expect(render1Consumer1Value).toEqual('1')
-      expect(render1Consumer2Value).toEqual('2')
+      expect(render1Consumer1Value).toEqual('1');
+      expect(render1Consumer2Value).toEqual('2');
 
       result.rerender(<TestSubject />);
 
@@ -97,7 +94,7 @@ describe(`useDefinition`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const val1 = useDefinition(val1Def, externalValue);
+        const val1 = useDefinition(val1Def.bind(externalValue));
         return <DummyComponent value={val1} />;
       };
 

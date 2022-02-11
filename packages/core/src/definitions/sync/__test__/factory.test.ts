@@ -70,10 +70,14 @@ describe(`factory`, () => {
   describe(`allowed instance definitions`, () => {
     it(`does not accepts singleton with externals`, async () => {
       const ext = external<number>();
-      const def = singleton.fn((val: number) => val, ext);
+      const buildDef = () => {
+        const def = singleton.fn((val: number) => val, ext);
 
-      // @ts-expect-error factory does not accept singleton with externals
-      const factoryD = factory(def);
+        // @ts-expect-error factory does not accept singleton with externals
+        const factoryD = factory(def);
+      }
+
+      expect(buildDef).toThrow('Externals with singleton life time is not supported')
     });
   });
 

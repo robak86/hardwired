@@ -1,6 +1,5 @@
 import { InstanceDefinition, InstanceDefinitionContext } from '../abstract/InstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
 import { FactoryDefinition } from '../abstract/FactoryDefinition';
 
 export type IFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
@@ -30,7 +29,7 @@ export const factory: FactoryBuildFn = (definition, factoryMixingDef?) => {
         ...base,
         build(...params): any {
           const reqContext = context.checkoutRequestScope(); // factory always uses new request context for building definitions
-          return reqContext.get(definition, ...params);
+          return reqContext.get(definition.bind(...params));
         },
       };
     },

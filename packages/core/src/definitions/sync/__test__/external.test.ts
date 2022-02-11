@@ -35,7 +35,7 @@ describe(`external`, () => {
             // expected
           }
 
-          cnt.get(defUsingExternals1, { someExternalParam: 123 });
+          cnt.get(defUsingExternals1.bind({ someExternalParam: 123 }));
         });
       });
 
@@ -53,14 +53,14 @@ describe(`external`, () => {
             // expected
           }
 
-          cnt.get(defUsingBothExternals, { someExternalParam: 123 }, { otherExternalParam: 456 });
+          cnt.get(defUsingBothExternals.bind({ someExternalParam: 123 }, { otherExternalParam: 456 }));
         });
       });
     });
 
     it(`returns correct instance`, async () => {
       const cnt = container();
-      const result = cnt.get(defUsingExternals1, { someExternalParam: 111 });
+      const result = cnt.get(defUsingExternals1.bind({ someExternalParam: 111 }));
 
       expect(result.externals).toEqual({ someExternalParam: 111 });
       expect(result.otherNumDependency).toEqual('otherDependency');
@@ -69,15 +69,15 @@ describe(`external`, () => {
     it(`uses transient lifetime`, async () => {
       const cnt = container();
 
-      const result1 = cnt.get(defUsingExternals1, { someExternalParam: 111 });
-      const result2 = cnt.get(defUsingExternals1, { someExternalParam: 111 });
+      const result1 = cnt.get(defUsingExternals1.bind({ someExternalParam: 111 }));
+      const result2 = cnt.get(defUsingExternals1.bind({ someExternalParam: 111 }));
 
       expect(result1).not.toBe(result2);
     });
 
     it(`merges external params`, async () => {
       const cnt = container();
-      const result = cnt.get(defUsingBothExternals, { someExternalParam: 123 }, { otherExternalParam: 456 });
+      const result = cnt.get(defUsingBothExternals.bind({ someExternalParam: 123 }, { otherExternalParam: 456 }));
       expect(result.externals).toEqual({ someExternalParam: 123 });
       expect(result.externals2).toEqual({ otherExternalParam: 456 });
     });

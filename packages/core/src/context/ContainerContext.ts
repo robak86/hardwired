@@ -6,7 +6,6 @@ import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry'
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
 import { LifeTime } from '../definitions/abstract/LifeTime';
-import { Resolution } from '../definitions/abstract/Resolution';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
 import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 
@@ -33,37 +32,16 @@ export class ContainerContext implements InstancesBuilder {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  get<TValue, TExternalParams extends any[]>(
-    instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
-    ...externals: TExternalParams
-  ): TValue {
-    if (externals.length !== instanceDefinition.externals.length) {
-      throw new Error('Invalid external params count');
-    }
-
-    if (instanceDefinition.strategy === LifeTime.singleton && externals.length !== 0) {
-      throw new Error('Instantiation of singleton definition combined with external params is not supported.');
-    }
-
-    if (instanceDefinition.externals.length > 0) {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue {
+    if (instanceDefinition.hasScopeOverrides) {
       const scopedContainer = this.checkoutScope(
         {
-          scopeOverrides: instanceDefinition.externals.map((externalDef, idx) => {
-            return new InstanceDefinition({
-              id: externalDef.id,
-              externals: [],
-              strategy: LifeTime.transient,
-              create: () => externals[idx],
-            });
-          }),
+          scopeOverrides: instanceDefinition.scopeOverrides,
         },
         true,
       );
 
-      return scopedContainer.get({
-        ...instanceDefinition,
-        externals: [],
-      } as any);
+      return scopedContainer.get(instanceDefinition.withoutOverrides());
     } else {
       return this.buildWithStrategy(instanceDefinition);
     }

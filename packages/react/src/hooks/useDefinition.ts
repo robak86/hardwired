@@ -3,15 +3,12 @@ import { useRequestContainer } from '../context/ContainerContext';
 import invariant from 'tiny-invariant';
 
 export type UseDefinitionHook = {
-  <TInstance, TExternals extends any[], TExt>(
-    factoryDefinition: InstanceDefinition<TInstance, LifeTime, TExternals>,
-    ...params: TExternals
-  ): TInstance;
+  <TInstance, TExt>(factoryDefinition: InstanceDefinition<TInstance, LifeTime, []>, ...params: []): TInstance;
 };
 
-export const useDefinition: UseDefinitionHook = (definition, ...externals) => {
+export const useDefinition: UseDefinitionHook = definition => {
   invariant(definition.resolution === Resolution.sync, `Using async definitions in react components is not supported.`);
-  const container = useRequestContainer(externals);
+  const container = useRequestContainer(definition.externalsValues);
 
-  return container.get(definition, ...externals);
+  return container.get(definition);
 };

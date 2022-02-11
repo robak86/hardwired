@@ -27,8 +27,8 @@ describe(`asyncDefine`, () => {
 
     it(`.get is typesafe`, async () => {
       const ext3 = external<{ ext3: string }>();
-      const usingBothExternals = singleton.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
-      const usingBothExternalsWithNotAllowed = singleton.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
+      const usingBothExternals = request.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
+      const usingBothExternalsWithNotAllowed = request.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
 
       const definition = asyncDefine(LifeTime.transient)([ext1, ext2], async locator => {
         const instance1 = await locator.get(ext1);

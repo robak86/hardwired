@@ -3,16 +3,13 @@ import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDe
 import { ContainerContext } from '../context/ContainerContext';
 import { IContainer } from './IContainer';
 import { v4 } from 'uuid';
-import { ContainerScopeOptions } from "./Container";
+import { ContainerScopeOptions } from './Container';
 
 export class RequestContainer implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
-  get<TValue, TExternalParams extends any[]>(
-    instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
-    ...externals: TExternalParams
-  ): TValue {
-    return this.containerContext.get(instanceDefinition, ...externals);
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue {
+    return this.containerContext.get(instanceDefinition);
   }
 
   getAsync<TValue, TExternalParams extends any[]>(
@@ -30,9 +27,11 @@ export class RequestContainer implements IContainer {
     definitions: TDefinitions,
     ...externalParams: TExternalParams
   ): {
-    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown;
+    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
+      ? TInstance
+      : unknown;
   } {
-    return definitions.map(def => this.containerContext.get(def, ...externalParams)) as any;
+    return definitions.map(def => this.containerContext.get(def.bind(...externalParams))) as any;
   }
 
   getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(

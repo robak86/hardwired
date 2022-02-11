@@ -11,12 +11,11 @@ import { v4 } from 'uuid';
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
-  get<TValue, TExternalParams extends any[]>(
-    instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
-    ...externals: TExternalParams
+  get<TValue>(
+    instanceDefinition: InstanceDefinition<TValue, any, []>,
   ): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.get(instanceDefinition, ...externals);
+    return requestContext.get(instanceDefinition);
   }
 
   getAsync<TValue, TExternalParams extends any[]>(
@@ -40,7 +39,7 @@ export class Container implements IContainer {
       : unknown;
   } {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return definitions.map(def => requestContext.get(def, ...externalParams)) as any;
+    return definitions.map(def => requestContext.get(def.bind(...externalParams))) as any;
   }
 
   getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(

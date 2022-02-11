@@ -11,8 +11,8 @@ import { expectType, TypeEqual } from "ts-expect";
 describe(`useDefinitions`, () => {
   describe(`types`, () => {
     it(`returns correct types`, async () => {
-      const val1Def = singleton.fn(() => 'someString');
-      const val2Def = singleton.fn(() => 123);
+      const val1Def = request.fn(() => 'someString');
+      const val2Def = request.fn(() => 123);
 
       const Component = () => {
         const [val1, val2] = useDefinitions([val1Def, val2Def])
@@ -23,8 +23,8 @@ describe(`useDefinitions`, () => {
 
     it(`returns correct types using externals`, async () => {
       const ext = external<boolean>();
-      const val1Def = singleton.fn((b) => 'someString', ext);
-      const val2Def = singleton.fn((b) => 123, ext);
+      const val1Def = request.fn((b) => 'someString', ext);
+      const val2Def = request.fn((b) => 123, ext);
 
       const Component = () => {
         const [val1, val2] = useDefinitions([val1Def, val2Def], true)

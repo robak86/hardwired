@@ -16,8 +16,11 @@ describe(`define`, () => {
 
   describe(`types`, () => {
     it(`does not allow externals for singleton lifetime`, async () => {
-      // @ts-expect-error - accepts only single parameter (without externals)
-      const z = define(LifeTime.singleton)([ext1], locator => null);
+      const buildDef = () => {
+        // @ts-expect-error - accepts only single parameter (without externals)
+        const z = define(LifeTime.singleton)([ext1], locator => null);
+      }
+      expect(buildDef).toThrow('Externals with singleton life time is not supported');
     });
 
     it(`preserves externals type`, async () => {
@@ -27,8 +30,8 @@ describe(`define`, () => {
 
     it(`.get is typesafe`, async () => {
       const ext3 = external<{ ext3: string }>();
-      const usingBothExternals = singleton.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
-      const usingBothExternalsWithNotAllowed = singleton.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
+      const usingBothExternals = request.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
+      const usingBothExternalsWithNotAllowed = request.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
 
       const definition = define(LifeTime.transient)([ext1, ext2], locator => {
         const instance1 = locator.get(ext1);
@@ -51,7 +54,7 @@ describe(`define`, () => {
         return [locator.get(ext1), locator.get(ext2)];
       });
 
-      const result = container().get(definition, { ext1: 1 }, { ext2: 'str' });
+      const result = container().get(definition.bind({ ext1: 1 }, { ext2: 'str' }));
       expect(result).toEqual([{ ext1: 1 }, { ext2: 'str' }]);
     });
 
