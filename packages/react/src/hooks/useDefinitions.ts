@@ -10,7 +10,7 @@ export type UseDefinitionsHook = {
     definitions: TInstances,
     ...externals: TExternals
   ): {
-    [K in keyof TInstances]: TInstances[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown;
+    [K in keyof TInstances]: TInstances[K] extends InstanceDefinition<infer TInstance, any, TExternals> ? TInstance : unknown;
   };
 };
 

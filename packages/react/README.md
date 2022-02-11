@@ -159,7 +159,7 @@ describe('CounterAction', () => {
         // manually creating instances
         it('increments counter state by 1', () => {
             const counterStore = new CounterStore(0);
-            const counterStoreActions = new CounterStoreActions(counterStore);
+            const counterStoreActions = new CounterActions(counterStore);
             counterStoreActions.increment();
             expect(counterStore.value).toEqual(1);
         });
@@ -349,15 +349,15 @@ child components as props.
 import { useDefinition } from './useDefinition';
 import { observer } from 'mobx-react';
 
-export const Counter = observer(({store: CounterStore}) => {
+export const Counter:FC<{store: CounterStore}> = observer(({store}) => {
     return (
         <h2>
-            Current value: <span data-testid={'counter-value'}>{state.value}</span>
+            Current value: <span data-testid={'counter-value'}>{store.value}</span>
         </h2>
     );
 });
 
-export const CounterButtons = observer(({actions: CounterActions}) => {
+export const CounterButtons:FC<{actions: CounterActions}> = observer(({actions}) => {
     return (
         <>
             <button onClick={actions.increment}>Increment</button>

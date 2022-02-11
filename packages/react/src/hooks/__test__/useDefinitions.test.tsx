@@ -6,8 +6,34 @@ import { ContainerProvider } from '../../components/ContainerProvider';
 import { useDefinition } from '../useDefinition';
 import { FC } from 'react';
 import { useDefinitions } from '../useDefinitions';
+import { expectType, TypeEqual } from "ts-expect";
 
 describe(`useDefinitions`, () => {
+  describe(`types`, () => {
+    it(`returns correct types`, async () => {
+      const val1Def = singleton.fn(() => 'someString');
+      const val2Def = singleton.fn(() => 123);
+
+      const Component = () => {
+        const [val1, val2] = useDefinitions([val1Def, val2Def])
+        expectType<TypeEqual<typeof val1, string>>(true)
+        expectType<TypeEqual<typeof val2, number>>(true)
+      }
+    });
+
+    it(`returns correct types using externals`, async () => {
+      const ext = external<boolean>();
+      const val1Def = singleton.fn((b) => 'someString', ext);
+      const val2Def = singleton.fn((b) => 123, ext);
+
+      const Component = () => {
+        const [val1, val2] = useDefinitions([val1Def, val2Def], true)
+        expectType<TypeEqual<typeof val1, string>>(true)
+        expectType<TypeEqual<typeof val2, number>>(true)
+      }
+    });
+  });
+
   describe(`instantiating dependencies`, () => {
     const val1Def = singleton.fn(() => 'val1');
     const val2Def = singleton.fn(() => 'val2');
