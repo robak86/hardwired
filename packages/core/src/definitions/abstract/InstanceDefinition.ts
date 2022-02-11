@@ -9,33 +9,46 @@ interface InstanceDefinitionParams<TInstance, TLifeTime extends LifeTime = any, 
   strategy: TLifeTime;
   create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance;
   externals: Array<InstanceDefinition<any, any>>;
-  // boundExternals?: TExternals | null;
+  boundExternals?: Record<string, any> | null;
   id?: string;
 }
 
-export class InstanceDefinition<TInstance, TLifeTime extends LifeTime = any,  TExternals extends any[] = []> {
+export class InstanceDefinition<TInstance, TLifeTime extends LifeTime = any, TExternals extends any[] = []> {
   readonly id: string;
   readonly strategy: TLifeTime;
   readonly resolution: Resolution.sync = Resolution.sync;
   readonly create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance; // TODO: create should be abstract and implemented by concrete definitions
   readonly externals: Array<InstanceDefinition<any, any>>;
-  // readonly boundExternals: TExternals | null = null;
+  readonly boundExternals: Record<string, any> | null = null;
 
   constructor({
     strategy,
     create,
     externals,
     id = v4(),
-    // boundExternals = null,
+    boundExternals = null,
   }: InstanceDefinitionParams<TInstance, TLifeTime, TExternals>) {
     this.id = id;
-    // this.boundExternals = boundExternals;
+    this.boundExternals = boundExternals;
     this.externals = externals;
     this.create = create;
     this.strategy = strategy;
   }
 
   bind(...externals: TExternals): InstanceDefinition<TInstance, TLifeTime, []> {
-    throw new Error('Implement me!');
+    const boundExternals = {};
+
+    externals.forEach((extValue, idx) => {
+      const externalDef = this.externals[idx];
+      boundExternals[externalDef.id] = extValue;
+    });
+
+    return new InstanceDefinition<TInstance, TLifeTime, []>({
+      id: this.id,
+      create: this.create as any,
+      externals: [],
+      strategy: this.strategy,
+      boundExternals,
+    });
   }
 }
