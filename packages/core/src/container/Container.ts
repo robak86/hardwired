@@ -64,7 +64,7 @@ export class Container implements IContainer {
   /***
    * New container inherits current's container scopeOverrides, e.g. if current container has overrides for some singleton
    * then new scope will inherit this singleton unless one provides new overrides in options for this singleton.
-   * Current containers instances build by "scoped" strategy are not inherited
+   * Current containers instances built by "scoped" strategy are not inherited
    * @param options
    */
   checkoutScope(options: ContainerScopeOptions = {}): Container {
@@ -76,7 +76,7 @@ export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
   scopeOverrides?: AnyInstanceDefinition<any, any, any>[];
-  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to whole dependencies graph
+  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to descendant containers
 };
 
 export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[]): Container;
