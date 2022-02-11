@@ -40,6 +40,10 @@ export class ContainerContext implements InstancesBuilder {
       throw new Error('Invalid external params count');
     }
 
+    if (instanceDefinition.strategy === LifeTime.singleton && externals.length !== 0) {
+      throw new Error('Instantiation of singleton definition combined with external params is not supported.');
+    }
+
     if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope(
         {
