@@ -1,7 +1,6 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
-import { v4 } from 'uuid';
 import { Resolution } from '../abstract/Resolution';
 import { ContainerContext } from '../../context/ContainerContext';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
@@ -44,9 +43,7 @@ export const define =
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externals = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 
-    return {
-      id: v4(),
-      resolution: Resolution.sync,
+    return new InstanceDefinition({
       strategy: lifetime,
       create: (context: ContainerContext) => {
         const buildLocator = (context: ContainerContext): DefineServiceLocator<any> => {
@@ -60,5 +57,5 @@ export const define =
         return buildFn(buildLocator(context));
       },
       externals,
-    };
+    });
   };

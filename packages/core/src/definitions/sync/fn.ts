@@ -17,13 +17,13 @@ export type FunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {
 };
 
 export const fn = <TLifeTime extends LifeTime>(strategy: TLifeTime): FunctionDefinitionBuildFn<TLifeTime> => {
-  return (factory, ...dependencies) => ({
-    id: `${factory.name}:${v4()}`,
-    resolution: Resolution.sync,
-    strategy,
-    externals: pickExternals(dependencies),
-    create: context => {
-      return factory(...(dependencies.map(context.buildWithStrategy) as any));
-    },
-  });
+  return (factory, ...dependencies) =>
+    new InstanceDefinition({
+      id: `${factory.name}:${v4()}`,
+      strategy,
+      externals: pickExternals(dependencies),
+      create: context => {
+        return factory(...(dependencies.map(context.buildWithStrategy) as any));
+      },
+    });
 };

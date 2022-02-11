@@ -1,14 +1,41 @@
 import { ContainerContext } from '../../context/ContainerContext';
 import { LifeTime } from './LifeTime';
 import { Resolution } from './Resolution';
+import { v4 } from 'uuid';
 
 export type InstanceDefinitionContext = ContainerContext;
 
-export type InstanceDefinition<TInstance, TLifeTime extends LifeTime = any, TExternals extends any[] = []> = {
-  id: string;
+interface InstanceDefinitionParams<TInstance, TLifeTime extends LifeTime = any, TExternals = []> {
   strategy: TLifeTime;
-  resolution: Resolution.sync;
+  create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance;
   externals: Array<InstanceDefinition<any, any>>;
-  create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
-  // bind: (...externals: TExternals) => InstanceDefinition<TInstance, TLifeTime, []>;
-};
+  // boundExternals?: TExternals | null;
+  id?: string;
+}
+
+export class InstanceDefinition<TInstance, TLifeTime extends LifeTime = any, TExternals = []> {
+  readonly id: string;
+  readonly strategy: TLifeTime;
+  readonly resolution: Resolution.sync = Resolution.sync;
+  readonly create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance; // TODO: create should be abstract and implemented by concrete definitions
+  readonly externals: Array<InstanceDefinition<any, any>>;
+  // readonly boundExternals: TExternals | null = null;
+
+  constructor({
+    strategy,
+    create,
+    externals,
+    id = v4(),
+    // boundExternals = null,
+  }: InstanceDefinitionParams<TInstance, TLifeTime, TExternals>) {
+    this.id = id;
+    // this.boundExternals = boundExternals;
+    this.externals = externals;
+    this.create = create;
+    this.strategy = strategy;
+  }
+
+  // bind(...externals: TExternals): InstanceDefinition<TInstance, TLifeTime, []> {
+  //   throw new Error('Implement me!');
+  // }
+}

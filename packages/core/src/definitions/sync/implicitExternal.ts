@@ -8,13 +8,12 @@ export const implicitExternal = <TExternalParams = never>(
 ): InstanceDefinition<TExternalParams, LifeTime.scoped, []> => {
   const id = `${name ?? ''}:${v4()}`;
 
-  return {
+  return new InstanceDefinition({
     id,
-    resolution: Resolution.sync,
     strategy: LifeTime.scoped,
     externals: [],
     create: (build): TExternalParams => {
       throw new Error(`Current scope does not provide value for implicit external definition ${name}.`);
     },
-  };
+  });
 };

@@ -26,15 +26,14 @@ export const asyncPartial = <TLifeTime extends LifeTime>(
   return (fn, ...args) => {
     const uncurried: any = uncurryAsync(fn);
 
-    return {
+    return new AsyncInstanceDefinition({
       id: v4(),
       strategy,
-      resolution: Resolution.async,
       externals: pickExternals(args),
       create: async context => {
         const dependenciesInstance = await Promise.all(args.map(context.buildWithStrategy));
         return uncurried.bind(null, ...dependenciesInstance);
       },
-    };
+    });
   };
 };

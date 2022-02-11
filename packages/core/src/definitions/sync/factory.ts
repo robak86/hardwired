@@ -1,5 +1,4 @@
 import { InstanceDefinition, InstanceDefinitionContext } from '../abstract/InstanceDefinition';
-import { v4 } from 'uuid';
 import { LifeTime } from '../abstract/LifeTime';
 import { Resolution } from '../abstract/Resolution';
 import { FactoryDefinition } from '../abstract/FactoryDefinition';
@@ -21,10 +20,8 @@ export type FactoryBuildFn = {
 };
 
 export const factory: FactoryBuildFn = (definition, factoryMixingDef?) => {
-  return {
-    id: v4(),
+  return new InstanceDefinition({
     strategy: LifeTime.transient as const,
-    resolution: Resolution.sync as const,
     externals: [],
     create: (context: InstanceDefinitionContext): IFactory<any, any> => {
       const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
@@ -37,5 +34,5 @@ export const factory: FactoryBuildFn = (definition, factoryMixingDef?) => {
         },
       };
     },
-  };
+  });
 };

@@ -7,11 +7,10 @@ export type StateBuildFn = {
 };
 
 export const state: StateBuildFn = value => {
-  return {
+  return new InstanceDefinition({
     id: `observable:${v4()}`,
-    resolution: Resolution.sync,
     externals: [],
     strategy: LifeTime.singleton,
     create: () => observableImpl.box(value),
-  };
+  });
 };

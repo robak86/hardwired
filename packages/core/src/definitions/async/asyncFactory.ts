@@ -4,6 +4,7 @@ import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { Resolution } from '../abstract/Resolution';
 import { AsyncFactoryDefinition } from '../abstract/AsyncFactoryDefinition';
+import { AsyncInstanceDefinition } from "../abstract/AsyncInstanceDefinition";
 
 export type IAsyncFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
   build(...params: TParams): Promise<TReturn>;
@@ -25,10 +26,8 @@ export const asyncFactory: AsyncFactoryBuildFn = (
   definition: AnyInstanceDefinition<any, any, any>,
   factoryMixingDef?,
 ) => {
-  return {
-    id: v4(),
+  return new InstanceDefinition({
     strategy: LifeTime.transient as const,
-    resolution: Resolution.sync as const,
     externals: [],
     create: (context: InstanceDefinitionContext): IAsyncFactory<any, any> => {
       const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
@@ -41,5 +40,5 @@ export const asyncFactory: AsyncFactoryBuildFn = (
         },
       };
     },
-  };
+  });
 };

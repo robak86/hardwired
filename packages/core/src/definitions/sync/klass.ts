@@ -1,6 +1,5 @@
 import { ClassType } from '../../utils/ClassType';
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
 import { InstanceDefinitionDependency } from '../abstract/InstanceDefinitionDependency';
@@ -19,15 +18,12 @@ export type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
 
 export const klass = <TLifeTime extends LifeTime>(strategy: TLifeTime): ClassDefinitionBuildFn<TLifeTime> => {
   return (cls, ...dependencies) => {
-    return {
-      id: v4(),
-      resolution: Resolution.sync,
+    return new InstanceDefinition({
       externals: pickExternals(dependencies),
       strategy,
       create: context => {
         return new cls(...(dependencies.map(context.buildWithStrategy) as any));
-      },
-      meta: undefined as any,
-    };
+      }
+    });
   };
 };

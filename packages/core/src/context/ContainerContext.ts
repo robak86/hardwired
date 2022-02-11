@@ -8,6 +8,7 @@ import { InstancesBuilder } from './abstract/InstancesBuilder';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 import { Resolution } from '../definitions/abstract/Resolution';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
+import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -48,13 +49,12 @@ export class ContainerContext implements InstancesBuilder {
       const scopedContainer = this.checkoutScope(
         {
           scopeOverrides: instanceDefinition.externals.map((externalDef, idx) => {
-            return {
+            return new InstanceDefinition({
               id: externalDef.id,
               externals: [],
               strategy: LifeTime.transient,
               create: () => externals[idx],
-              resolution: Resolution.sync,
-            };
+            });
           }),
         },
         true,
@@ -76,13 +76,12 @@ export class ContainerContext implements InstancesBuilder {
     if (instanceDefinition.externals.length > 0) {
       const scopedContainer = this.checkoutScope({
         scopeOverrides: instanceDefinition.externals.map((externalDef, idx) => {
-          return {
+          return new AsyncInstanceDefinition({
             id: externalDef.id,
             externals: [],
             strategy: LifeTime.transient,
             create: () => externalParams[idx],
-            resolution: Resolution.sync,
-          };
+          });
         }),
       });
 

@@ -1,8 +1,6 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
-import { v4 } from 'uuid';
-import { Resolution } from '../abstract/Resolution';
 import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
 import { ContainerContext } from '../../context/ContainerContext';
 
@@ -15,7 +13,9 @@ export interface DefineAsyncServiceLocator<TExternalParams extends any[]> {
     instanceDefinition: AsyncInstanceDefinition<TValue, any, Externals>,
   ): Promise<TValue>;
 
-  withNewRequestScope<TValue>(fn:  (locator: DefineAsyncServiceLocator<TExternalParams>) => Promise<TValue>): Promise<TValue>;
+  withNewRequestScope<TValue>(
+    fn: (locator: DefineAsyncServiceLocator<TExternalParams>) => Promise<TValue>,
+  ): Promise<TValue>;
 }
 
 export type DefineAsyncBuildFn<TLifeTime extends LifeTime> = TLifeTime extends LifeTime.singleton
@@ -40,21 +40,19 @@ export const asyncDefine =
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externals = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 
-    return {
-      id: v4(),
-      resolution: Resolution.async,
+    return new AsyncInstanceDefinition({
       strategy: lifetime,
-      create: async (context:ContainerContext) => {
-        const buildLocator = (context:ContainerContext):DefineAsyncServiceLocator<any> => {
+      create: async (context: ContainerContext) => {
+        const buildLocator = (context: ContainerContext): DefineAsyncServiceLocator<any> => {
           return {
             get: context.buildWithStrategy,
             getAsync: context.buildWithStrategy,
-            withNewRequestScope: (fn) => fn(buildLocator(context.checkoutRequestScope())),
+            withNewRequestScope: fn => fn(buildLocator(context.checkoutRequestScope())),
           };
         };
 
         return buildFn(buildLocator(context));
       },
       externals,
-    };
+    });
   };

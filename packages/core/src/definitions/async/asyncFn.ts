@@ -18,17 +18,14 @@ export type AsyncFunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {
 
 export const asyncFn = <TLifeTime extends LifeTime>(strategy: TLifeTime): AsyncFunctionDefinitionBuildFn<TLifeTime> => {
   return (factory, ...dependencies) => {
-    return {
+    return new AsyncInstanceDefinition({
       id: `${factory.name}:${v4()}`,
       strategy,
-      resolution: Resolution.async,
       externals: pickExternals(dependencies),
       create: async context => {
         const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));
         return factory(...(dependenciesInstance as any));
       },
-
-      meta: undefined,
-    };
+    });
   };
 };

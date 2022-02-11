@@ -1,5 +1,4 @@
 import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { v4 } from 'uuid';
 import { pickExternals } from '../../utils/PickExternals';
 import { derivedLifeTime, DerivedLifeTime } from '../abstract/DerivedLifeTime';
 import { Resolution } from '../abstract/Resolution';
@@ -19,10 +18,8 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any, any, 
 > => {
   const strategy = derivedLifeTime(Object.values(record).map(r => r.strategy)) as any;
 
-  return {
-    id: v4(),
+  return new InstanceDefinition({
     strategy,
-    resolution: Resolution.sync,
     externals: pickExternals(Object.values(record)),
     create: context => {
       return Object.keys(record).reduce((result, property) => {
@@ -31,5 +28,5 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any, any, 
         return result;
       }, {} as any);
     },
-  };
+  });
 };
