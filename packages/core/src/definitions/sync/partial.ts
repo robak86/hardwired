@@ -3,7 +3,6 @@ import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { uncurry, UnCurry } from '../../utils/UnCurry';
 import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
 
 export type PartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <Fn extends (...args: any[]) => any, TArgs extends PartialFnDependencies<Parameters<UnCurry<Fn>>, TLifeTime>>(
@@ -12,7 +11,7 @@ export type PartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   ): InstanceDefinition<
     PartiallyAppliedFn<Parameters<UnCurry<Fn>>, TArgs, ReturnType<UnCurry<Fn>>>,
     TLifeTime,
-    PickExternals<TArgs>
+    PickExternals<TArgs> extends any[] ? PickExternals<TArgs> : []
   >;
 };
 

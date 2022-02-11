@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 
 export type InstanceDefinitionContext = ContainerContext;
 
-interface InstanceDefinitionParams<TInstance, TLifeTime extends LifeTime = any, TExternals = []> {
+interface InstanceDefinitionParams<TInstance, TLifeTime extends LifeTime = any, TExternals extends any[] = []> {
   strategy: TLifeTime;
   create: (context: InstanceDefinitionContext, _?: TExternals) => TInstance;
   externals: Array<InstanceDefinition<any, any>>;
@@ -13,7 +13,7 @@ interface InstanceDefinitionParams<TInstance, TLifeTime extends LifeTime = any, 
   id?: string;
 }
 
-export class InstanceDefinition<TInstance, TLifeTime extends LifeTime = any, TExternals = []> {
+export class InstanceDefinition<TInstance, TLifeTime extends LifeTime = any,  TExternals extends any[] = []> {
   readonly id: string;
   readonly strategy: TLifeTime;
   readonly resolution: Resolution.sync = Resolution.sync;
@@ -35,7 +35,7 @@ export class InstanceDefinition<TInstance, TLifeTime extends LifeTime = any, TEx
     this.strategy = strategy;
   }
 
-  // bind(...externals: TExternals): InstanceDefinition<TInstance, TLifeTime, []> {
-  //   throw new Error('Implement me!');
-  // }
+  bind(...externals: TExternals): InstanceDefinition<TInstance, TLifeTime, []> {
+    throw new Error('Implement me!');
+  }
 }

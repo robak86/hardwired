@@ -13,7 +13,11 @@ export type FunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {
   >(
     factory: (...args: TArgs) => TValue,
     ...args: TDependencies
-  ): InstanceDefinition<TValue, TLifeTime, PickExternals<TDependencies>>;
+  ): InstanceDefinition<
+    TValue,
+    TLifeTime,
+    PickExternals<TDependencies> extends any[] ? PickExternals<TDependencies> : []
+  >;
 };
 
 export const fn = <TLifeTime extends LifeTime>(strategy: TLifeTime): FunctionDefinitionBuildFn<TLifeTime> => {

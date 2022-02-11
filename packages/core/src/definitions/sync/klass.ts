@@ -3,7 +3,6 @@ import { InstanceDefinition } from '../abstract/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
 import { InstanceDefinitionDependency } from '../abstract/InstanceDefinitionDependency';
-import { Resolution } from '../abstract/Resolution';
 
 export type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <
@@ -13,7 +12,7 @@ export type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   >(
     cls: ClassType<TInstance, TArgs>,
     ...args: TDependencies
-  ): InstanceDefinition<TInstance, TLifeTime, PickExternals<TDependencies>>;
+  ): InstanceDefinition<TInstance, TLifeTime, PickExternals<TDependencies> extends any[] ? PickExternals<TDependencies> : []>;
 };
 
 export const klass = <TLifeTime extends LifeTime>(strategy: TLifeTime): ClassDefinitionBuildFn<TLifeTime> => {
