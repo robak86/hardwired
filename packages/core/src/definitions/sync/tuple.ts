@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { Resolution } from '../abstract/Resolution';
 import { derivedLifeTime, DerivedLifeTime } from '../abstract/DerivedLifeTime';

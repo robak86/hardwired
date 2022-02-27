@@ -5,7 +5,7 @@ import { container } from '../../../container/Container';
 import { BoxedValue } from '../../../__test__/BoxedValue';
 import { external } from '../../sync/external';
 import { asyncDefine } from '../asyncDefine';
-import { AsyncInstanceDefinition } from '../../abstract/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../../abstract/base/AsyncInstanceDefinition';
 
 describe(`asyncDefine`, () => {
   type Ext1 = { ext1: number };
@@ -16,8 +16,12 @@ describe(`asyncDefine`, () => {
 
   describe(`types`, () => {
     it(`does not allow externals for singleton lifetime`, async () => {
-      // @ts-expect-error - accepts only single parameter (without externals)
-      const z = asyncDefine(LifeTime.singleton)([ext1], async locator => null);
+      const build = () => {
+        // @ts-expect-error - accepts only single parameter (without externals)
+        const z = asyncDefine(LifeTime.singleton)([ext1], async locator => null);
+      }
+
+      expect(build).toThrow('Externals with singleton life time is not supported')
     });
 
     it(`preserves externals type`, async () => {

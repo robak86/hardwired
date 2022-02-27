@@ -1,7 +1,7 @@
 import { ContainerContext } from '../context/ContainerContext';
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../definitions/abstract/base/AsyncInstanceDefinition';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
 import { IContainer } from './IContainer';
 import { RequestContainer } from './RequestContainer';
@@ -11,9 +11,7 @@ import { v4 } from 'uuid';
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
-  get<TValue>(
-    instanceDefinition: InstanceDefinition<TValue, any, []>,
-  ): TValue {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
     return requestContext.get(instanceDefinition);
   }

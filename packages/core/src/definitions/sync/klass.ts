@@ -1,5 +1,5 @@
 import { ClassType } from '../../utils/ClassType';
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
 import { InstanceDefinitionDependency } from '../abstract/InstanceDefinitionDependency';

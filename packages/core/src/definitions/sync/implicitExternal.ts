@@ -1,7 +1,6 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { v4 } from 'uuid';
 import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
 
 export const implicitExternal = <TExternalParams = never>(
   name: string,

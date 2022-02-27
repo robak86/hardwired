@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { uncurryAsync, UnCurryAsync } from '../../utils/UnCurryAsync';
 import { LifeTime } from '../abstract/LifeTime';
-import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../abstract/base/AsyncInstanceDefinition';
 import { Resolution } from '../abstract/Resolution';
 
 export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
@@ -16,7 +16,7 @@ export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   ): AsyncInstanceDefinition<
     PartiallyAppliedAsyncFn<Parameters<UnCurryAsync<Fn>>, TArgs, ReturnType<UnCurryAsync<Fn>>>,
     TLifeTime,
-    PickExternals<TArgs>
+    PickExternals<TArgs> extends any[] ? PickExternals<TArgs> : never
   >;
 };
 

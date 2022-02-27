@@ -2,7 +2,7 @@ import { external } from '../external';
 import { define } from '../define';
 import { LifeTime } from '../../abstract/LifeTime';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../../abstract/base/InstanceDefinition';
 import { request, singleton } from '../../definitions';
 import { container } from '../../../container/Container';
 import { BoxedValue } from '../../../__test__/BoxedValue';

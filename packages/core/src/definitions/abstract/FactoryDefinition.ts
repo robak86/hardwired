@@ -1,5 +1,5 @@
 import { LifeTime } from './LifeTime';
-import { InstanceDefinition } from './InstanceDefinition';
+import { InstanceDefinition } from './base/InstanceDefinition';
 
 // prettier-ignore
 export type FactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams extends any[]> =

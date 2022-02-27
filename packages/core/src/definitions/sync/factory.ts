@@ -1,4 +1,4 @@
-import { InstanceDefinition, InstanceDefinitionContext } from '../abstract/InstanceDefinition';
+import { InstanceDefinition, InstanceDefinitionContext } from '../abstract/base/InstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { FactoryDefinition } from '../abstract/FactoryDefinition';
 

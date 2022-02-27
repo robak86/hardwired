@@ -1,8 +1,7 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
 import { InstanceDefinitionDependency } from '../abstract/InstanceDefinitionDependency';
 
 export type FunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {

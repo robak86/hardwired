@@ -1,10 +1,10 @@
-import { InstanceDefinition, InstanceDefinitionContext } from '../abstract/InstanceDefinition';
+import { InstanceDefinition, InstanceDefinitionContext } from '../abstract/base/InstanceDefinition';
 import { v4 } from 'uuid';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { Resolution } from '../abstract/Resolution';
 import { AsyncFactoryDefinition } from '../abstract/AsyncFactoryDefinition';
-import { AsyncInstanceDefinition } from "../abstract/AsyncInstanceDefinition";
+import { AsyncInstanceDefinition } from "../abstract/base/AsyncInstanceDefinition";
 
 export type IAsyncFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
   build(...params: TParams): Promise<TReturn>;

@@ -1,7 +1,7 @@
 import { request, scoped, singleton } from '../../definitions';
 import { object } from '../object';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../../abstract/base/InstanceDefinition';
 import { container } from '../../../container/Container';
 import { SingletonStrategy } from '../../../strategies/SingletonStrategy';
 import { TransientStrategy } from '../../../strategies/TransientStrategy';

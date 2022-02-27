@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 
 export const value = <TValue, TDeps extends any[]>(

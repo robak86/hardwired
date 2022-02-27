@@ -1,5 +1,5 @@
 import { PartialFnDependencies, PartiallyAppliedFn } from '../../utils/PartiallyApplied';
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { uncurry, UnCurry } from '../../utils/UnCurry';
 import { LifeTime } from '../abstract/LifeTime';

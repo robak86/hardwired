@@ -1,5 +1,5 @@
 import { ClassType } from '../../utils/ClassType';
-import { AsyncInstanceDefinition } from '../abstract/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../abstract/base/AsyncInstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
 import { AsyncInstanceDefinitionDependency } from '../abstract/AsyncInstanceDefinitionDependency';
@@ -12,7 +12,11 @@ export type AsyncClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   >(
     cls: ClassType<TInstance, TArgs>,
     ...args: TDependencies
-  ): AsyncInstanceDefinition<TInstance, TLifeTime, PickExternals<TDependencies>>;
+  ): AsyncInstanceDefinition<
+    TInstance,
+    TLifeTime,
+    PickExternals<TDependencies> extends any[] ? PickExternals<TDependencies> : never
+  >;
 };
 
 export const asyncClass = <TLifeTime extends LifeTime>(strategy: TLifeTime): AsyncClassDefinitionBuildFn<TLifeTime> => {

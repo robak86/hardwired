@@ -1,13 +1,13 @@
 import { InstancesStore } from './InstancesStore';
 import { ContainerScopeOptions } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
-import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../definitions/abstract/base/AsyncInstanceDefinition';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
