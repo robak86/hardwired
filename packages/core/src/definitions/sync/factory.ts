@@ -1,6 +1,7 @@
-import { InstanceDefinition, InstanceDefinitionContext } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { FactoryDefinition } from '../abstract/FactoryDefinition';
+import { ContainerContext } from "../../context/ContainerContext";
 
 export type IFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
   build(...params: TParams): TReturn;
@@ -22,7 +23,7 @@ export const factory: FactoryBuildFn = (definition, factoryMixingDef?) => {
   return new InstanceDefinition({
     strategy: LifeTime.transient as const,
     externals: [],
-    create: (context: InstanceDefinitionContext): IFactory<any, any> => {
+    create: (context: ContainerContext): IFactory<any, any> => {
       const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
 
       return {

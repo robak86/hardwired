@@ -12,7 +12,11 @@ export type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   >(
     cls: ClassType<TInstance, TArgs>,
     ...args: TDependencies
-  ): InstanceDefinition<TInstance, TLifeTime, PickExternals<TDependencies> extends any[] ? PickExternals<TDependencies> : []>;
+  ): InstanceDefinition<
+    TInstance,
+    TLifeTime,
+    PickExternals<TDependencies> extends any[] ? PickExternals<TDependencies> : []
+  >;
 };
 
 export const klass = <TLifeTime extends LifeTime>(strategy: TLifeTime): ClassDefinitionBuildFn<TLifeTime> => {
@@ -22,7 +26,7 @@ export const klass = <TLifeTime extends LifeTime>(strategy: TLifeTime): ClassDef
       strategy,
       create: context => {
         return new cls(...(dependencies.map(context.buildWithStrategy) as any));
-      }
+      },
     });
   };
 };

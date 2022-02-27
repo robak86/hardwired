@@ -13,10 +13,6 @@ export interface BaseDefinitionParams<TInstance, TLifeTime extends LifeTime = an
   id?: string;
 }
 
-// type AsyncInstanceCreator = {
-//   resolution:
-// }
-
 export class BaseDefinition<
   TInstance,
   TLifeTime extends LifeTime,
