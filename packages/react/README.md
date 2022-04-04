@@ -2,7 +2,7 @@
 
 Integration for [Hardwired](github.com/robak86/hardwired) and [React](https://reactjs.org/).
 
-**Warning: This library is in an alpha stage.**
+**Warning: This library is in experimental stage.**
 
 ## Motivation
 
@@ -21,21 +21,15 @@ application/currying or reader monad.
 )
 
 At last, dependency injection is also relevant in React applications. React already provides a
-mechanism for dependency injection in the form of [context](https://reactjs.org/docs/context. html).
-Context
-was [introduced](https://jaysoo.ca/2015/06/09/react-contexts-and-dependency-injection/#react-and-contexts)
-a long time before `useContext` hook, and it was used by libraries like `react-redux` for providing
-dependencies implicitly through a hierarchy of components - in the case of `react-redux` it was an
-instance of a redux store (with all subscription-based machinery providing reactivity).
-
+mechanism for dependency injection in the form of [context](https://reactjs.org/docs/context.html).
 This library aims to provide standard semantics for defining and injecting dependencies to React
-components (using service locator style).
+components (using service locator paradigm).
 
 ## Limitations
 
 React context supports basic reactivity / change detection for the state stored in the context, but
 it has performance penalties in case of frequent updates. Additionally, container implementation
-used by Hardwired uses mutable state internally that cannot be used with shallow comparison. Because
+used by Hardwired internally uses mutable state that cannot be used with shallow comparison. Because
 of these limitations, hardwired-react doesn't provide observability features for objects created by
 the container. However, observability can be still easily enabled by using MobX or other libraries
 providing similar functionality.
@@ -65,23 +59,23 @@ npm install hardwired hardwired-react mobx mobx-react
 import { makeAutoObservable } from 'mobx';
 
 class CounterStore {
-    constructor(public value: number) {
-        makeAutoObservable(this);
-    }
+  constructor(public value: number) {
+    makeAutoObservable(this);
+  }
 }
 
 class CounterActions {
-    constructor(private store: CounterStore) {
-        makeAutoObservable(this);
-    }
+  constructor(private store: CounterStore) {
+    makeAutoObservable(this);
+  }
 
-    increment = () => {
-        this.store.value += 1;
-    };
+  increment = () => {
+    this.store.value += 1;
+  };
 
-    decrement = () => {
-        this.store.value -= 1;
-    };
+  decrement = () => {
+    this.store.value -= 1;
+  };
 }
 
 // app.di.ts
@@ -103,24 +97,24 @@ import { useDefinition } from './useDefinition';
 import { observer } from 'mobx-react';
 
 export const Counter = observer(() => {
-    const state = useDefinition(counterStoreDef);
+  const state = useDefinition(counterStoreDef);
 
-    return (
-        <h2>
-            Current value: <span data-testid={'counter-value'}>{state.value}</span>
-        </h2>
-    );
+  return (
+    <h2>
+      Current value: <span data-testid={'counter-value'}>{state.value}</span>
+    </h2>
+  );
 });
 
 export const CounterButtons = observer(() => {
-    const actions = useDefinition(counterActionsDef);
+  const actions = useDefinition(counterActionsDef);
 
-    return (
-        <>
-            <button onClick={actions.increment}>Increment</button>
-            <button onClick={actions.decrement}>Decrement</button>
-        </>
-    );
+  return (
+    <>
+      <button onClick={actions.increment}>Increment</button>
+      <button onClick={actions.decrement}>Decrement</button>
+    </>
+  );
 });
 ```
 
@@ -132,12 +126,12 @@ import { FC } from 'react';
 import { ContainerProvider } from 'hardwired-react';
 
 export const App: FC = () => {
-    return (
-        <ContainerProvider>
-            <Counter/>
-            <CounterButtons/>
-        </ContainerProvider>
-    );
+  return (
+    <ContainerProvider>
+      <Counter />
+      <CounterButtons />
+    </ContainerProvider>
+  );
 };
 ```
 
@@ -155,30 +149,30 @@ implement counter as a hook, that stores state using `useState`.
 import { container, set } from 'hardwired';
 
 describe('CounterAction', () => {
-    describe('.increment()', () => {
-        // manually creating instances
-        it('increments counter state by 1', () => {
-            const counterStore = new CounterStore(0);
-            const counterStoreActions = new CounterActions(counterStore);
-            counterStoreActions.increment();
-            expect(counterStore.value).toEqual(1);
-        });
-
-        // delegating instances construction to container
-        it('increments counter state by 1', () => {
-            const [counterStore, counterStoreActions] = container().getAll(counterStoreDef, counterActionsDef);
-            counterStoreActions.increment();
-            expect(counterStore.value).toEqual(1);
-        });
-
-        // delegating instances construction to container and overriding initial value for counter store
-        it('increments counter state by 1', () => {
-            const cnt = container([set(counterInitialValueDef, 10)]);
-            const [counterStore, counterStoreActions] = cnt.getAll(counterStoreDef, counterActionsDef);
-            counterStoreActions.increment();
-            expect(counterStore.value).toEqual(11);
-        });
+  describe('.increment()', () => {
+    // manually creating instances
+    it('increments counter state by 1', () => {
+      const counterStore = new CounterStore(0);
+      const counterStoreActions = new CounterActions(counterStore);
+      counterStoreActions.increment();
+      expect(counterStore.value).toEqual(1);
     });
+
+    // delegating instances construction to container
+    it('increments counter state by 1', () => {
+      const [counterStore, counterStoreActions] = container().getAll(counterStoreDef, counterActionsDef);
+      counterStoreActions.increment();
+      expect(counterStore.value).toEqual(1);
+    });
+
+    // delegating instances construction to container and overriding initial value for counter store
+    it('increments counter state by 1', () => {
+      const cnt = container([set(counterInitialValueDef, 10)]);
+      const [counterStore, counterStoreActions] = cnt.getAll(counterStoreDef, counterActionsDef);
+      counterStoreActions.increment();
+      expect(counterStore.value).toEqual(11);
+    });
+  });
 });
 ```
 
@@ -205,44 +199,44 @@ import { Container, apply, container } from 'hardwired';
 import { ContainerProvider } from 'hardwired-react';
 
 describe('CounterButtons', () => {
-    function setup() {
-        const cnt = container([
-            apply(counterActionsDef, actions => {
-                jest.spyOn(actions, 'increment');
-                jest.spyOn(actions, 'decrement');
-            }),
-        ]);
+  function setup() {
+    const cnt = container([
+      apply(counterActionsDef, actions => {
+        jest.spyOn(actions, 'increment');
+        jest.spyOn(actions, 'decrement');
+      }),
+    ]);
 
-        const result = render(
-            <ContainerProvider>
-                <CounterButtons/>
-            </ContainerProvider>,
-        );
+    const result = render(
+      <ContainerProvider container={cnt}>
+        <CounterButtons />
+      </ContainerProvider>,
+    );
 
-        return {
-            clickIncrementButton: () => {
-                const incrementBtn = result.getByRole('button', {name: /increment/i});
-                userEvent.click(incrementBtn);
-            },
-            clickDecrementButton: () => {
-                const decrementBtn = result.getByRole('button', {name: /decrement/i});
-                userEvent.click(decrementBtn);
-            },
-            counterActions: cnt.get(counterActionsDef),
-        };
-    }
+    return {
+      clickIncrementButton: () => {
+        const incrementBtn = result.getByRole('button', { name: /increment/i });
+        userEvent.click(incrementBtn);
+      },
+      clickDecrementButton: () => {
+        const decrementBtn = result.getByRole('button', { name: /decrement/i });
+        userEvent.click(decrementBtn);
+      },
+      counterActions: cnt.get(counterActionsDef),
+    };
+  }
 
-    it(`calls correct method on "increment" button click`, async () => {
-        const {counterActions, clickIncrementButton} = setup();
-        clickIncrementButton();
-        expect(counterActions.increment).toBeCalledTimes(1);
-    });
+  it(`calls correct method on "increment" button click`, async () => {
+    const { counterActions, clickIncrementButton } = setup();
+    clickIncrementButton();
+    expect(counterActions.increment).toBeCalledTimes(1);
+  });
 
-    it(`calls correct method on "decrement" button click`, async () => {
-        const {counterActions, clickDecrementButton} = setup();
-        clickDecrementButton();
-        expect(counterActions.decrement).toBeCalledTimes(1);
-    });
+  it(`calls correct method on "decrement" button click`, async () => {
+    const { counterActions, clickDecrementButton } = setup();
+    clickDecrementButton();
+    expect(counterActions.decrement).toBeCalledTimes(1);
+  });
 });
 ```
 
@@ -258,47 +252,47 @@ import { ContainerProvider } from 'hardwired-react';
 import { runInAction } from 'mobx';
 
 describe('CounterButtons', () => {
-    function setup(initialValue: number) {
-        const cnt = container([set(counterInitialValueDef, initialValue)]);
+  function setup(initialValue: number) {
+    const cnt = container([set(counterInitialValueDef, initialValue)]);
 
-        const result = render(
-            <ContainerProvider>
-                <Counter/>
-            </ContainerProvider>,
-        );
+    const result = render(
+      <ContainerProvider container={cnt}>
+        <Counter />
+      </ContainerProvider>,
+    );
 
-        return {
-            getRenderedValue: () => {
-                return result.getByTestId('counter-value').text;
-            },
-            setCounterValue: (newValue: number) => {
-                const store = cnt.get(counterStoreDef);
-                runInAction(() => {
-                    store.value = newValue;
-                });
-            },
-        };
-    }
+    return {
+      getRenderedValue: () => {
+        return result.getByTestId('counter-value').text;
+      },
+      setCounterValue: (newValue: number) => {
+        const store = cnt.get(counterStoreDef);
+        runInAction(() => {
+          store.value = newValue;
+        });
+      },
+    };
+  }
 
-    it(`renders correct value`, async () => {
-        const {getRenderedValue} = setup(1);
-        expect(getRenderedValue()).toEqual('1');
-    });
+  it(`renders correct value`, async () => {
+    const { getRenderedValue } = setup(1);
+    expect(getRenderedValue()).toEqual('1');
+  });
 
-    it(`re-renders on counter value change`, async () => {
-        const {getRenderedValue, setCounterValue} = setup(1);
-        setCounterValue(200);
-        expect(getRenderedValue()).toEqual('200');
-    });
+  it(`re-renders on counter value change`, async () => {
+    const { getRenderedValue, setCounterValue } = setup(1);
+    setCounterValue(200);
+    expect(getRenderedValue()).toEqual('200');
+  });
 });
 ```
 
-### Factory
+### External dependencies
 
 There are cases, where some objects injected to the component need to be parametrized. (e.g. using
-props). For such scenarios `useDefinition|useDefinitions` accepts `...rest` argument with external
-parameters.
-(For detailed explanation of factories and external parameters feature please refer to hardwired
+props). For such scenarios hardwired provides `external` definitions, for which the values can
+be provided at runtime.
+(For detailed explanation of factories and external definitions feature please refer to hardwired
 [documentation](https://github.com/robak86/hardwired#factories)). Following example would enable
 adding multiple labeled instances of counters from Getting started section.
 
@@ -308,23 +302,23 @@ import { makeAutoObservable } from 'mobx';
 import { request, external } from 'hardwired';
 
 class CounterStore {
-    constructor(public value: number, public label: string) {
-        makeAutoObservable(this);
-    }
+  constructor(public value: number, public label: string) {
+    makeAutoObservable(this);
+  }
 }
 
 class CounterActions {
-    constructor(private store: CounterStore) {
-        makeAutoObservable(this);
-    }
+  constructor(private store: CounterStore) {
+    makeAutoObservable(this);
+  }
 
-    increment = () => {
-        this.store.value += 1;
-    };
+  increment = () => {
+    this.store.value += 1;
+  };
 
-    decrement = () => {
-        this.store.value -= 1;
-    };
+  decrement = () => {
+    this.store.value -= 1;
+  };
 }
 
 // app.di.ts
@@ -339,7 +333,7 @@ const counterActionsDef = request.class(CounterActions, counterStoreDef);
 Notice that the lifetime for counter store and counter actions was changed from `singleton` to
 `request` (Request scope in the context of hardwired react integration means that created instance is
 bound to component that requested given definition). Additionally, the counter store takes external
-string parameter that will be passed through a factory.
+string parameter that will be passed at runtime.
 
 Since hardwired binds request scope definitions to component, we need to introduce new component
 that will hold parametrized instances of `CounterStore` and `CounterActions`, and pass them down do
@@ -349,42 +343,42 @@ child components as props.
 import { useDefinition } from './useDefinition';
 import { observer } from 'mobx-react';
 
-export const Counter:FC<{store: CounterStore}> = observer(({store}) => {
-    return (
-        <h2>
-            Current value: <span data-testid={'counter-value'}>{store.value}</span>
-        </h2>
-    );
+export const Counter: FC<{ store: CounterStore }> = observer(({ store }) => {
+  return (
+    <h2>
+      Current value: <span data-testid={'counter-value'}>{store.value}</span>
+    </h2>
+  );
 });
 
-export const CounterButtons:FC<{actions: CounterActions}> = observer(({actions}) => {
-    return (
-        <>
-            <button onClick={actions.increment}>Increment</button>
-            <button onClick={actions.decrement}>Decrement</button>
-        </>
-    );
+export const CounterButtons: FC<{ actions: CounterActions }> = observer(({ actions }) => {
+  return (
+    <>
+      <button onClick={actions.increment}>Increment</button>
+      <button onClick={actions.decrement}>Decrement</button>
+    </>
+  );
 });
 
-export const LabeledCounter: FC<{ label: string }> = observer(({label}) => {
-    const [store, actions] = useDefinitions([counterStoreDef, counterActionsDef], label);
+export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
+  const [store, actions] = useDefinitions(counterStoreDef.bind(label), counterActionsDef.bind(label));
 
-    return (
-        <div>
-            <h1>{label}</h1>
-            <Counter store={store}/>
-            <CounterButtons actions={actions}/>
-        </div>
-    );
+  return (
+    <div>
+      <h1>{label}</h1>
+      <Counter store={store} />
+      <CounterButtons actions={actions} />
+    </div>
+  );
 });
 
 export const App = () => {
-    return (
-        <ContainerProvider>
-            <LabeledCounter label={'first counter'}/>
-            <LabeledCounter label={'second counter'}/>
-        </ContainerProvider>
-    );
+  return (
+    <ContainerProvider>
+      <LabeledCounter label={'first counter'} />
+      <LabeledCounter label={'second counter'} />
+    </ContainerProvider>
+  );
 };
 ```
 
@@ -402,15 +396,15 @@ const nextId = () => (id += 1);
 const valD = request.fn(() => nextId());
 
 const SomeComponent = () => {
-    const value1 = useDefinition(valD);
-    const value2 = useDefinition(valD);
+  const value1 = useDefinition(valD);
+  const value2 = useDefinition(valD);
 
-    // value1 is not equal to value2 because useDefinition uses different request scope for each call
-    return (
-        <span>
+  // value1 is not equal to value2 because useDefinition uses different request scope for each call
+  return (
+    <span>
       {value1}, {value2}
     </span>
-    );
+  );
 };
 ```
 
@@ -427,16 +421,16 @@ const nextId = () => (id += 1);
 const valueDef = request.fn(nextId);
 
 const SomeComponent = () => {
-    const [value1, value2] = useDefinitions(valueDef, valueDef);
+  const [value1, value2] = useDefinitions(valueDef, valueDef);
 
-    // value1 equals to value2 because useDefinitions used the same request scope for
-    // creating/getting "valueDef" instance
+  // value1 equals to value2 because useDefinitions used the same request scope for
+  // creating/getting "valueDef" instance
 
-    return (
-        <span>
+  return (
+    <span>
       {value1}, {value2}
     </span>
-    );
+  );
 };
 ```
 
@@ -450,23 +444,23 @@ import { useDefinition } from 'hardwired-react';
 let id = 0;
 const nextId = () => (id += 1);
 
-const valueDef = singleton.fn(nextId); // valueDef is now singleton
+const valueDef = singleton.fn(nextId); // valueDef is defined as a singleton
 
 const Parent = () => {
-    const value = useDefinition(valueDef);
+  const value = useDefinition(valueDef);
 
-    return (
-        <span>
-      <Child/>
+  return (
+    <span>
+      <Child />
     </span>
-    );
+  );
 };
 
 const Child = () => {
-    const value = useDefinition(valueDef);
+  const value = useDefinition(valueDef);
 
-    // value is equal to value from Parent
-    return <span>{value1}</span>;
+  // value is equal to value from Parent
+  return <span>{value1}</span>;
 };
 ```
 
@@ -479,15 +473,15 @@ import { useDefinition } from 'hardwired-react';
 let renderCount = 0;
 const increaseRenderCount = () => (renderCount += 1);
 
-const valueDef = transient.fn(() => increaseRenderCount()); // valueDef is now transient
+const valueDef = transient.fn(() => increaseRenderCount()); // valueDef is defined as a transient
 
 const Parent = () => {
-    const value = useDefinition(valueDef); // new instance on each re-render
-  
-    return (
-        <h1>
-            Component rendered <span>{value}</span> times
-        </h1>
-    );
+  const value = useDefinition(valueDef); // new instance on each re-render
+
+  return (
+    <h1>
+      Component rendered <span>{value}</span> times
+    </h1>
+  );
 };
 ```

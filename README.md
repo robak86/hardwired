@@ -421,18 +421,17 @@ in order to get an instance of http server one need to provide `EnvConfig`.
 There are two ways to instantiate definition referencing external parameters.
 
 1. At the container level, while getting instance of **composition root** (container instance
-   shouldn't be used as service locator in lower level modules)
+   shouldn't be used as service locator in lower level modules). The runtime value needs to be 
+   provided to the definition using `.bind` method.
 
 ```typescript
 import { container } from 'hardwired';
 
 const cnt = container();
-cnt.get(httpServerD, { server: { port: 1234 } });
-// when instance definition with external param is provided to .get
-// then additional param is required
+cnt.get(httpServerD.bind({ server: { port: 1234 } }));
 ```
 
-2. By using `factory`|`asyncFactory` builders which create definitions of automatically
+2. By using `factory`|`asyncFactory` builders which create definitions for automatically
    generated factory. This approach solves the issue of using container as a service locator.
    Instead of using a reference to service locator, `hardwired` injects factory created
    specifically for creating one particular type of instance coupling the consumer code with
