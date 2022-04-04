@@ -1,6 +1,6 @@
 # Hardwired React
 
-Integration for [Hardwired](github.com/robak86/hardwired) and [React](https://reactjs.org/).
+Integration for [Hardwired](https://github.com/robak86/hardwired) and [React](https://reactjs.org/).
 
 **Warning: This library is in experimental stage.**
 
@@ -23,7 +23,7 @@ application/currying or reader monad.
 At last, dependency injection is also relevant in React applications. React already provides a
 mechanism for dependency injection in the form of [context](https://reactjs.org/docs/context.html).
 This library aims to provide standard semantics for defining and injecting dependencies to React
-components (using service locator paradigm).
+components (using service locator pattern).
 
 ## Limitations
 
@@ -36,7 +36,7 @@ providing similar functionality.
 
 ### Installation
 
-The following examples will use `mobx` for enabling observability for objects holding state.
+The following examples will use `mobx` for enabling observability for objects with observable state.
 
 yarn
 
@@ -58,13 +58,13 @@ npm install hardwired hardwired-react mobx mobx-react
 // counter.ts
 import { makeAutoObservable } from 'mobx';
 
-class CounterStore {
+export class CounterStore {
   constructor(public value: number) {
     makeAutoObservable(this);
   }
 }
 
-class CounterActions {
+export class CounterActions {
   constructor(private store: CounterStore) {
     makeAutoObservable(this);
   }
@@ -201,9 +201,10 @@ import { ContainerProvider } from 'hardwired-react';
 describe('CounterButtons', () => {
   function setup() {
     const cnt = container([
-      apply(counterActionsDef, actions => {
-        jest.spyOn(actions, 'increment');
-        jest.spyOn(actions, 'decrement');
+      apply(counterActionsDef, counterActionsInstance => {
+        // setup mocks on counterActionsInstance
+        jest.spyOn(counterActionsInstance, 'increment');
+        jest.spyOn(counterActionsInstance, 'decrement');
       }),
     ]);
 
@@ -253,7 +254,10 @@ import { runInAction } from 'mobx';
 
 describe('CounterButtons', () => {
   function setup(initialValue: number) {
-    const cnt = container([set(counterInitialValueDef, initialValue)]);
+    const cnt = container([
+        set(counterInitialValueDef, initialValue) // initialValue will be used instead of original
+                                                  // counterInitialValueDef  
+    ]);  
 
     const result = render(
       <ContainerProvider container={cnt}>
@@ -336,7 +340,7 @@ bound to component that requested given definition). Additionally, the counter s
 string parameter that will be passed at runtime.
 
 Since hardwired binds request scope definitions to component, we need to introduce new component
-that will hold parametrized instances of `CounterStore` and `CounterActions`, and pass them down do
+that will hold parametrized instances of `CounterStore` and `CounterActions`, and pass them down to
 child components as props.
 
 ```typescript jsx
