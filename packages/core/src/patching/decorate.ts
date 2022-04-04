@@ -20,7 +20,6 @@ export function decorate<
   return new InstanceDefinition({
     id: instance.id,
     strategy: instance.strategy,
-    // resolution: instance.resolution,
     externals: instance.externals,
     create: context => {
       const decorated = instance.create(context);

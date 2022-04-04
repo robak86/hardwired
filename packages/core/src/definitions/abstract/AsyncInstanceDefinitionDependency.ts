@@ -5,7 +5,7 @@ import { AnyInstanceDefinition } from './AnyInstanceDefinition';
 export type AsyncInstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> =
     TLifeTime extends LifeTime.singleton ?
         | AnyInstanceDefinition<TValue, LifeTime.singleton, []>
-        | AnyInstanceDefinition<TValue, LifeTime.scoped, any>
+        | AnyInstanceDefinition<TValue, LifeTime.scoped, []>
         | AnyInstanceDefinition<TValue, LifeTime.transient, any>
         | AnyInstanceDefinition<TValue, LifeTime.request, any> :
     TLifeTime extends LifeTime.transient ?
@@ -20,7 +20,7 @@ export type AsyncInstanceDefinitionDependency<TValue, TLifeTime extends LifeTime
         | AnyInstanceDefinition<TValue, LifeTime.transient, any>:
     TLifeTime extends LifeTime.scoped ?
         | AnyInstanceDefinition<TValue, LifeTime.singleton, []>
-        | AnyInstanceDefinition<TValue, LifeTime.scoped, any>
+        | AnyInstanceDefinition<TValue, LifeTime.scoped, []>
         | AnyInstanceDefinition<TValue, LifeTime.request, any>
         | AnyInstanceDefinition<TValue, LifeTime.transient, any>:
         never
