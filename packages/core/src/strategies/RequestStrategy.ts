@@ -1,6 +1,6 @@
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesStore } from '../context/InstancesStore';
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
 
 export class RequestStrategy extends BuildStrategy {
   build(definition: InstanceDefinition<any, any>, instancesCache: InstancesStore, resolvers, instancesBuilder) {

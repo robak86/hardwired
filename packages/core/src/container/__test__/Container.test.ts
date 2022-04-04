@@ -1,6 +1,8 @@
 import { request, singleton } from '../../definitions/definitions';
 import { container } from '../Container';
 import { replace } from '../../patching/replace';
+import { BoxedValue } from '../../__test__/BoxedValue';
+import { external } from '../../definitions/sync/external';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -87,6 +89,44 @@ describe(`Container`, () => {
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
+
+    it(`allows using external params`, async () => {
+      const extD = external<BoxedValue<number>>();
+      const multiplyBy2D = request.fn((val: BoxedValue<number>) => val.value * 2, extD);
+      const divideBy2D = request.fn((val: BoxedValue<number>) => val.value / 2, extD);
+      const [val1, val2] = container().getAll(
+        multiplyBy2D.bind(new BoxedValue(10)),
+        divideBy2D.bind(new BoxedValue(10)),
+      );
+      expect(val1).toEqual(20);
+      expect(val2).toEqual(5);
+    });
+
+    it(`allows using external params ex.2`, async () => {
+      const extD = external<BoxedValue<number>>();
+
+      let count = 0;
+      const requestSharedValD = request.fn(() => (count += 1));
+      const multiplyBy2D = request.fn(
+        (val: BoxedValue<number>, sharedVal: number) => ({ result: val.value * 2, shared: sharedVal }),
+        extD,
+        requestSharedValD,
+      );
+      const divideBy2D = request.fn(
+        (val: BoxedValue<number>, sharedVal: number) => ({ result: val.value / 2, shared: sharedVal }),
+        extD,
+        requestSharedValD,
+      );
+
+      const [req1, req2] = container().getAll(
+        multiplyBy2D.bind(new BoxedValue(10)),
+        divideBy2D.bind(new BoxedValue(10)),
+      );
+      expect(req1.result).toEqual(20);
+      expect(req2.result).toEqual(5);
+
+      expect(req1.shared).toEqual(req2.shared);
+    });
   });
 
   describe(`getAllAsync`, () => {
@@ -112,6 +152,21 @@ describe(`Container`, () => {
       const c = container();
       const k3Instance = c.get(k3);
       expect(await k3Instance).toEqual(3);
+    });
+  });
+
+  describe(`.checkoutRequestScope`, () => {
+    it(`returns clear request scope`, async () => {
+      const requestVal = request.fn(() => new BoxedValue(Math.random()));
+
+      const cnt = container();
+      const reqCnt1 = cnt.checkoutRequestScope();
+      const reqCnt2 = cnt.checkoutRequestScope();
+
+      const result1 = reqCnt1.get(requestVal);
+      const result2 = reqCnt2.get(requestVal);
+
+      expect(result1).not.toBe(result2);
     });
   });
 });

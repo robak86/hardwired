@@ -5,7 +5,7 @@ import { container } from '../../../container/Container';
 import { BoxedValue } from '../../../__test__/BoxedValue';
 import { external } from '../../sync/external';
 import { asyncDefine } from '../asyncDefine';
-import { AsyncInstanceDefinition } from '../../abstract/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../../abstract/base/AsyncInstanceDefinition';
 
 describe(`asyncDefine`, () => {
   type Ext1 = { ext1: number };
@@ -16,8 +16,12 @@ describe(`asyncDefine`, () => {
 
   describe(`types`, () => {
     it(`does not allow externals for singleton lifetime`, async () => {
-      // @ts-expect-error - accepts only single parameter (without externals)
-      const z = asyncDefine(LifeTime.singleton)([ext1], async locator => null);
+      const build = () => {
+        // @ts-expect-error - accepts only single parameter (without externals)
+        const z = asyncDefine(LifeTime.singleton)([ext1], async locator => null);
+      }
+
+      expect(build).toThrow('Externals with singleton life time is not supported')
     });
 
     it(`preserves externals type`, async () => {
@@ -27,8 +31,8 @@ describe(`asyncDefine`, () => {
 
     it(`.get is typesafe`, async () => {
       const ext3 = external<{ ext3: string }>();
-      const usingBothExternals = singleton.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
-      const usingBothExternalsWithNotAllowed = singleton.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
+      const usingBothExternals = request.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
+      const usingBothExternalsWithNotAllowed = request.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
 
       const definition = asyncDefine(LifeTime.transient)([ext1, ext2], async locator => {
         const instance1 = await locator.get(ext1);
@@ -51,7 +55,7 @@ describe(`asyncDefine`, () => {
         return [await locator.get(ext1), await locator.get(ext2)];
       });
 
-      const result = await container().getAsync(definition, { ext1: 1 }, { ext2: 'str' });
+      const result = await container().getAsync(definition.bind({ ext1: 1 }, { ext2: 'str' }));
       expect(result).toEqual([{ ext1: 1 }, { ext2: 'str' }]);
     });
 

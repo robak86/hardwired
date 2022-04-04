@@ -1,11 +1,11 @@
 import { LifeTime } from './LifeTime';
-import { InstanceDefinition } from './InstanceDefinition';
+import { InstanceDefinition } from './base/InstanceDefinition';
 
 // prettier-ignore
 export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> =
     TLifeTime extends LifeTime.singleton ?
         | InstanceDefinition<TValue, LifeTime.singleton, []>
-        | InstanceDefinition<TValue, LifeTime.scoped, any>
+        | InstanceDefinition<TValue, LifeTime.scoped, []>
         | InstanceDefinition<TValue, LifeTime.transient, any>
         | InstanceDefinition<TValue, LifeTime.request, any> :
     TLifeTime extends LifeTime.transient ?
@@ -20,7 +20,7 @@ export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> =
         | InstanceDefinition<TValue, LifeTime.transient, any>:
     TLifeTime extends LifeTime.scoped ?
         | InstanceDefinition<TValue, LifeTime.singleton, []>
-        | InstanceDefinition<TValue, LifeTime.scoped, any>
+        | InstanceDefinition<TValue, LifeTime.scoped, []>
         | InstanceDefinition<TValue, LifeTime.request, any>
         | InstanceDefinition<TValue, LifeTime.transient, any>:
         never

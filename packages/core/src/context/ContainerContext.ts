@@ -1,14 +1,11 @@
 import { InstancesStore } from './InstancesStore';
 import { ContainerScopeOptions } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
-import { LifeTime } from '../definitions/abstract/LifeTime';
-import { Resolution } from '../definitions/abstract/Resolution';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
-import { AsyncInstanceDefinition } from "../definitions/abstract/AsyncInstanceDefinition";
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -33,61 +30,33 @@ export class ContainerContext implements InstancesBuilder {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  get<TValue, TExternalParams extends any[]>(
-    instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
-    ...externals: TExternalParams
-  ): TValue {
-    if (externals.length !== instanceDefinition.externals.length) {
-      throw new Error('Invalid external params count');
-    }
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue {
+    if (instanceDefinition.hasScopeOverrides) {
+      const scopedContainer = this.checkoutScope(
+        {
+          scopeOverrides: instanceDefinition.scopeOverrides,
+        },
+        true,
+      );
 
-    if (instanceDefinition.externals.length > 0) {
-      const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externals.map((externalDef, idx) => {
-          return {
-            id: externalDef.id,
-            externals: [],
-            strategy: LifeTime.transient,
-            create: () => externals[idx],
-            resolution: Resolution.sync,
-          };
-        }),
-      });
-
-      return scopedContainer.get({
-        ...instanceDefinition,
-        externals: [],
-      } as any);
+      return scopedContainer.get(instanceDefinition.withoutOverrides());
     } else {
-      const requestContext = this.checkoutRequestScope();
-      return requestContext.buildWithStrategy(instanceDefinition);
+      return this.buildWithStrategy(instanceDefinition);
     }
   }
 
-  getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternalParams>,
-    ...externalParams: TExternalParams
-  ): Promise<TValue> {
-    if (instanceDefinition.externals.length > 0) {
-      const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externals.map((externalDef, idx) => {
-          return {
-            id: externalDef.id,
-            externals: [],
-            strategy: LifeTime.transient,
-            create: () => externalParams[idx],
-            resolution: Resolution.sync,
-          };
-        }),
-      });
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, []>): Promise<TValue> {
+    if (instanceDefinition.hasScopeOverrides) {
+      const scopedContainer = this.checkoutScope(
+        {
+          scopeOverrides: instanceDefinition.scopeOverrides,
+        },
+        true,
+      );
 
-      return scopedContainer.getAsync({
-        ...instanceDefinition,
-        externals: [],
-      } as any);
+      return scopedContainer.getAsync(instanceDefinition.withoutOverrides());
     } else {
-      const requestContext = this.checkoutRequestScope();
-      return requestContext.buildWithStrategy(instanceDefinition);
+      return this.buildWithStrategy(instanceDefinition);
     }
   }
 
@@ -107,17 +76,19 @@ export class ContainerContext implements InstancesBuilder {
     return new ContainerContext(
       this.instancesDefinitionsRegistry.checkoutForRequestScope(),
       this.instancesCache.checkoutForRequestScope(),
-
       this.strategiesRegistry,
     );
   }
 
-  checkoutScope(options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext {
+  checkoutScope(
+    options: Omit<ContainerScopeOptions, 'globalOverrides'> = {},
+    inheritRequestScope = false,
+  ): ContainerContext {
     const { scopeOverrides = [] } = options;
 
     return new ContainerContext(
       this.instancesDefinitionsRegistry.checkoutForScope(scopeOverrides),
-      this.instancesCache.childScope(scopeOverrides),
+      this.instancesCache.childScope(scopeOverrides, inheritRequestScope),
       this.strategiesRegistry,
     );
   }

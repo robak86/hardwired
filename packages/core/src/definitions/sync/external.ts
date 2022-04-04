@@ -1,30 +1,27 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { v4 } from 'uuid';
-import { LifeTime} from '../abstract/LifeTime';
-import { Resolution } from "../abstract/Resolution";
+import { LifeTime } from '../abstract/LifeTime';
 
-export const external = <TExternalParams= never>(
+export const external = <TExternalParams = never>(
   name?: string,
 ): InstanceDefinition<TExternalParams, LifeTime.request, [TExternalParams]> => {
   const id = `${name ?? ''}:${v4()}`;
 
-  return {
+  return new InstanceDefinition({
     id,
-    resolution: Resolution.sync,
     strategy: LifeTime.request,
     externals: [
-      {
+      new InstanceDefinition({
         id,
-        resolution: Resolution.sync,
         strategy: LifeTime.request,
         externals: [] as any,
         create: (build): TExternalParams => {
           throw new Error('Not applicable. External values are managed by the container');
         },
-      },
+      }),
     ],
     create: (build): TExternalParams => {
       throw new Error('Not applicable. External values are managed by the container');
     },
-  };
+  });
 };

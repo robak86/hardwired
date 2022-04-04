@@ -11,10 +11,14 @@ describe(`fn`, () => {
 
     describe(`transient`, () => {
       it(`does not accept singletons with externals`, async () => {
-        const dep = singleton.fn(val => val, ext);
+        const buildDef = () => {
+          const dep = singleton.fn(val => val, ext);
 
-        // @ts-expect-error transient does not accept singleton dependencies with externals
-        fn(LifeTime.transient)(numberConsumer, dep);
+          // @ts-expect-error transient does not accept singleton dependencies with externals
+          fn(LifeTime.transient)(numberConsumer, dep);
+        };
+
+        expect(buildDef).toThrow('Externals with singleton life time is not supported');
       });
 
       it(`accepts request def with externals`, async () => {
@@ -30,10 +34,14 @@ describe(`fn`, () => {
 
     describe(`request`, () => {
       it(`does not accept singletons with externals`, async () => {
-        const dep = singleton.fn(val => val, ext);
+        const buildDef = () => {
+          const dep = singleton.fn(val => val, ext);
 
-        // @ts-expect-error transient does not accept singleton dependencies with externals
-        fn(LifeTime.request)(numberConsumer, dep);
+          // @ts-expect-error transient does not accept singleton dependencies with externals
+          fn(LifeTime.request)(numberConsumer, dep);
+        };
+
+        expect(buildDef).toThrow('Externals with singleton life time is not supported');
       });
 
       it(`accepts request def with externals`, async () => {
@@ -49,20 +57,31 @@ describe(`fn`, () => {
 
     describe(`singleton`, () => {
       it(`does not accept singletons with externals`, async () => {
-        const dep = singleton.fn(val => val, ext);
+        const buildDef = () => {
+          const dep = singleton.fn(val => val, ext);
 
-        // @ts-expect-error transient does not accept singleton dependencies with externals
-        fn(LifeTime.singleton)(numberConsumer, dep);
+          // @ts-expect-error transient does not accept singleton dependencies with externals
+          fn(LifeTime.singleton)(numberConsumer, dep);
+        };
+
+        expect(buildDef).toThrow('Externals with singleton life time is not supported');
       });
 
-      it(`accepts request def with externals`, async () => {
-        const dep = request.fn(val => val, ext);
-        fn(LifeTime.singleton)(numberConsumer, dep);
+      it(`does not accept request dependency def with externals`, async () => {
+        const buildDef = () => {
+          const dep = request.fn(val => val, ext);
+          fn(LifeTime.singleton)(numberConsumer, dep);
+        };
+
+        expect(buildDef).toThrow('Externals with singleton life time is not supported');
       });
 
-      it(`accepts transient with externals`, async () => {
-        const dep = transient.fn(val => val, ext);
-        fn(LifeTime.singleton)(numberConsumer, dep);
+      it(`does not accept transient dependency with externals`, async () => {
+        const buildDef = () => {
+          const dep = transient.fn(val => val, ext);
+          fn(LifeTime.singleton)(numberConsumer, dep);
+        };
+        expect(buildDef).toThrow('Externals with singleton life time is not supported');
       });
     });
   });

@@ -1,34 +1,37 @@
 import { ContainerContext } from '../context/ContainerContext';
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { AsyncInstanceDefinition } from '../definitions/abstract/AsyncInstanceDefinition';
-import { defaultStrategiesRegistry } from "../strategies/collection/defaultStrategiesRegistry";
+import { AsyncInstanceDefinition } from '../definitions/abstract/base/AsyncInstanceDefinition';
+import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
+import { IContainer } from './IContainer';
+import { RequestContainer } from './RequestContainer';
+import { v4 } from 'uuid';
 
-export class Container {
-  constructor(protected readonly containerContext: ContainerContext) {}
+// TODO: instead of using separate implementation for RequestContainer parametrize Container with reuseRequestContext = boolean
+export class Container implements IContainer {
+  constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
-  get<TValue, TExternalParams extends any[]>(
-    instanceDefinition: InstanceDefinition<TValue, any, TExternalParams>,
-    ...externals: TExternalParams
-  ): TValue {
-    return this.containerContext.get(instanceDefinition, ...externals);
-  }
-
-  getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternalParams>,
-    ...externalParams: TExternalParams
-  ): Promise<TValue> {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.getAsync(instanceDefinition, ...externalParams);
+    return requestContext.get(instanceDefinition);
   }
 
-  getAll<TLazyModule extends Array<InstanceDefinition<any, any, []>>>(
-    ...definitions: TLazyModule
+  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, []>): Promise<TValue> {
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.getAsync(instanceDefinition);
+  }
+
+  getAll<
+    TDefinition extends InstanceDefinition<any, any, []>,
+    TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
+  >(
+    ...definitions: TDefinitions
   ): {
-    [K in keyof TLazyModule]: TLazyModule[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown;
+    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
+      ? TInstance
+      : unknown;
   } {
     const requestContext = this.containerContext.checkoutRequestScope();
-
     return definitions.map(def => requestContext.get(def)) as any;
   }
 
@@ -45,13 +48,27 @@ export class Container {
 
     return Promise.all(definitions.map(def => requestContext.getAsync(def))) as any;
   }
+
+  checkoutRequestScope(): IContainer {
+    return new RequestContainer(this.containerContext.checkoutRequestScope());
+  }
+
+  /***
+   * New container inherits current's container scopeOverrides, e.g. if current container has overrides for some singleton
+   * then new scope will inherit this singleton unless one provides new overrides in options for this singleton.
+   * Current containers instances built by "scoped" strategy are not inherited
+   * @param options
+   */
+  checkoutScope(options: ContainerScopeOptions = {}): Container {
+    return new Container(this.containerContext.checkoutScope(options));
+  }
 }
 
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
   scopeOverrides?: AnyInstanceDefinition<any, any, any>[];
-  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to whole dependencies graph
+  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to descendant containers
 };
 
 export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[]): Container;

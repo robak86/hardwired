@@ -11,8 +11,8 @@ lib
 *.tsbuildinfo
 .nyc_output
 .vscode
-packages/example-wip/dist
-packages/example-wip/.cache
+packages/react-example/dist
+packages/react-example/.cache
 packages/core/README.md
 coverage
 .idea

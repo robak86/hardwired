@@ -1,11 +1,14 @@
-import { InstanceDefinition } from 'hardwired';
-import { useContainer } from '../context/ContainerContext';
+import { InstanceDefinition, LifeTime, Resolution } from 'hardwired';
+import { useRequestContainer } from '../context/ContainerContext';
+import invariant from 'tiny-invariant';
 
 export type UseDefinitionHook = {
-  <TInstance>(definition: InstanceDefinition<TInstance, any>): TInstance;
+  <TInstance, TExt>(factoryDefinition: InstanceDefinition<TInstance, LifeTime, []>, ...params: []): TInstance;
 };
 
 export const useDefinition: UseDefinitionHook = definition => {
-  const container = useContainer();
+  invariant(definition.resolution === Resolution.sync, `Using async definitions in react components is not supported.`);
+  const container = useRequestContainer(definition.externalsValues);
+
   return container.get(definition);
 };

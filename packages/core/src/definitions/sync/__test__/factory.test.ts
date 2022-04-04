@@ -3,7 +3,7 @@ import { external } from '../external';
 import { factory, IFactory } from '../factory';
 import { request, scoped, singleton, transient } from '../../definitions';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../../abstract/base/InstanceDefinition';
 import { container } from '../../../container/Container';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set';
@@ -70,10 +70,14 @@ describe(`factory`, () => {
   describe(`allowed instance definitions`, () => {
     it(`does not accepts singleton with externals`, async () => {
       const ext = external<number>();
-      const def = singleton.fn((val: number) => val, ext);
+      const buildDef = () => {
+        const def = singleton.fn((val: number) => val, ext);
 
-      // @ts-expect-error factory does not accept singleton with externals
-      const factoryD = factory(def);
+        // @ts-expect-error factory does not accept singleton with externals
+        const factoryD = factory(def);
+      }
+
+      expect(buildDef).toThrow('Externals with singleton life time is not supported')
     });
   });
 
@@ -112,7 +116,7 @@ describe(`factory`, () => {
 
         const factoryD = factory(handlerD);
         expectType<
-          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.singleton, []>>
+          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient, []>>
         >(true);
       });
     });

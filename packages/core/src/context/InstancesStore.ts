@@ -1,6 +1,5 @@
 import { HierarchicalStore } from './HierarchicalStore';
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
-import { AnyInstanceDefinition } from "../definitions/abstract/AnyInstanceDefinition";
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 
 export class InstancesStore {
   static create(scopeOverrides: AnyInstanceDefinition<any, any>[]): InstancesStore {
@@ -15,13 +14,13 @@ export class InstancesStore {
     private globalOverridesScope: Record<string, any>,
   ) {}
 
-  childScope(scopeOverrides: AnyInstanceDefinition<any, any>[]): InstancesStore {
+  childScope(scopeOverrides: AnyInstanceDefinition<any, any>[], inheritRequestScope = false): InstancesStore {
     const scopeOverridesResolversIds = scopeOverrides.map(def => def.id);
 
     return new InstancesStore(
       this.hierarchicalScope.checkoutChild(scopeOverridesResolversIds),
       {},
-      {},
+      inheritRequestScope ? this.requestScope : {},
       this.globalOverridesScope,
     );
   }

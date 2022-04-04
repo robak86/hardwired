@@ -1,16 +1,12 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { v4 } from 'uuid';
-import { LifeTime} from '../abstract/LifeTime';
-import { Resolution } from "../abstract/Resolution";
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { LifeTime } from '../abstract/LifeTime';
 
 export const value = <TValue, TDeps extends any[]>(
   value: TValue,
 ): InstanceDefinition<TValue, LifeTime.singleton, []> => {
-  return {
-    id: v4(),
-    resolution: Resolution.sync,
+  return new InstanceDefinition({
     externals: [],
     strategy: LifeTime.singleton,
     create: () => value,
-  };
+  });
 };

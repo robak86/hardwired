@@ -1,41 +1,38 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
-import { v4 } from 'uuid';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
 import { FactoryDefinition } from '../abstract/FactoryDefinition';
+import { ContainerContext } from "../../context/ContainerContext";
 
 export type IFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
   build(...params: TParams): TReturn;
 } & TFactoryMixin;
 
+// factory is always transient in order to prevent memory leaks if factory definition is created dynamically - each dynamically created factory would create new entry for singleton in instances store
 export type FactoryBuildFn = {
   <TInstance, TExternalParams extends any[]>(
-    definition: FactoryDefinition<TInstance, any, TExternalParams>,
-  ): InstanceDefinition<IFactory<TInstance, TExternalParams>, LifeTime.singleton, []>;
+    definition: FactoryDefinition<TInstance, LifeTime.request, TExternalParams>,
+  ): InstanceDefinition<IFactory<TInstance, TExternalParams>, LifeTime.transient, []>;
 
   <TInstance, TExternalParams extends any[], TFactoryMixin extends object, TLifeTime extends LifeTime>(
-    definition: FactoryDefinition<TInstance, TLifeTime, TExternalParams>,
+    definition: FactoryDefinition<TInstance, LifeTime.request, TExternalParams>,
     factoryMixinDef: InstanceDefinition<TFactoryMixin, TLifeTime>,
-  ): InstanceDefinition<IFactory<TInstance, TExternalParams, TFactoryMixin>, TLifeTime, []>;
+  ): InstanceDefinition<IFactory<TInstance, TExternalParams, TFactoryMixin>, LifeTime.transient, []>;
 };
 
 export const factory: FactoryBuildFn = (definition, factoryMixingDef?) => {
-  const strategy = factoryMixingDef ? factoryMixingDef.strategy : LifeTime.singleton;
-
-  return {
-    id: v4(),
-    strategy,
-    resolution: Resolution.sync as const,
+  return new InstanceDefinition({
+    strategy: LifeTime.transient as const,
     externals: [],
-    create: (context): IFactory<any, any> => {
+    create: (context: ContainerContext): IFactory<any, any> => {
       const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
 
       return {
         ...base,
         build(...params): any {
-          return context.get(definition, ...params);
+          const reqContext = context.checkoutRequestScope(); // factory always uses new request context for building definitions
+          return reqContext.get(definition.bind(...params));
         },
       };
     },
-  };
+  });
 };

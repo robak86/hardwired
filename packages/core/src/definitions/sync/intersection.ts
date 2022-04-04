@@ -1,9 +1,7 @@
-import { v4 } from 'uuid';
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { UnionToIntersection } from 'type-fest';
 import { derivedLifeTime, DerivedLifeTime } from '../abstract/DerivedLifeTime';
-import { Resolution } from '../abstract/Resolution';
 
 export const intersection = <T extends Array<InstanceDefinition<object, any, any>>, TMeta>(
   ...definitions: T
@@ -18,10 +16,8 @@ export const intersection = <T extends Array<InstanceDefinition<object, any, any
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
-  return {
-    id: v4(),
+  return new InstanceDefinition({
     strategy,
-    resolution: Resolution.sync,
     externals: pickExternals(definitions),
     create: context => {
       return definitions.reduce((result, def) => {
@@ -31,5 +27,5 @@ export const intersection = <T extends Array<InstanceDefinition<object, any, any
         };
       }, {}) as any;
     },
-  };
+  });
 };

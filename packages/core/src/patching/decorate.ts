@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
 import invariant from 'tiny-invariant';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 
@@ -17,10 +17,9 @@ export function decorate<
     dependencies.every(d => d.externals.length === 0),
     `decorate does accept additional dependencies with external params`,
   );
-  return {
+  return new InstanceDefinition({
     id: instance.id,
     strategy: instance.strategy,
-    resolution: instance.resolution,
     externals: instance.externals,
     create: context => {
       const decorated = instance.create(context);
@@ -28,5 +27,5 @@ export function decorate<
 
       return decorator(decorated, ...(decoratorDeps as any));
     },
-  };
+  });
 }

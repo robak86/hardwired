@@ -4,12 +4,20 @@
   "license": "MIT",
   "homepage": "https://github.com/robak86/hardwired",
   "description": "Hardwired integration for React",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
     "hardwired": "*",
-    "find-my-way": "*"
+    "find-my-way": "*",
+    "dotenv": "^10.0.0",
+    "winston": "^3.3.3",
+    "node-fetch": "^2.6.6",
+    "url-join": "*"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.12",
+    "@types/url-join": "^4.0.1"
   },
   "files": [
     "lib",

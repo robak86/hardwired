@@ -2,7 +2,7 @@ import { singleton, transient } from '../definitions/definitions';
 import { external } from '../definitions/sync/external';
 import { value } from '../definitions/sync/value';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
 import { container } from '../container/Container';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 
@@ -1026,7 +1026,7 @@ const consumer999 = transient.class(Consumer, a1, a2, val, consumer998);
 const consumer1000 = transient.class(Consumer, a1, a2, val, consumer999);
 
 const cnt = container();
-cnt.get(consumer1000, { value: 1 }, { otherValue: 2 });
+cnt.get(consumer1000.bind({ value: 1 }, { otherValue: 2 }));
 // @ts-expect-error should correctly infer external types
 cnt.get(consumer1000);
 

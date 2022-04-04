@@ -1,9 +1,10 @@
-import { container, request, singleton } from 'hardwired';
+import { container, request, singleton, external } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 import { useDefinition } from '../useDefinition';
+import { FC } from 'react';
 
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
@@ -31,19 +32,16 @@ describe(`useDefinition`, () => {
     });
   });
 
-  describe(`binding transient dependencies to component instance`, () => {
-    class TestClass {
-      public id = Math.random();
-
-      constructor() {}
-    }
-
-    const clsDef = request.class(TestClass);
-
+  describe(`binding request dependencies to component instance`, () => {
     function setup() {
+      let counter = 0;
+      const checkoutRenderId = () => (counter += 1);
+
+      const clsDef = request.fn(checkoutRenderId);
+
       const Consumer = () => {
         const cls = useDefinition(clsDef);
-        return <DummyComponent value={cls.id.toString()} />;
+        return <DummyComponent value={cls} />;
       };
 
       const c = container();
@@ -54,6 +52,7 @@ describe(`useDefinition`, () => {
             <div data-testid={'consumer1'}>
               <Consumer />
             </div>
+
             <div data-testid={'consumer2'}>
               <Consumer />
             </div>
@@ -61,26 +60,77 @@ describe(`useDefinition`, () => {
         );
       };
 
-      return { TestSubject };
+      return { TestSubject, c };
     }
 
-    it.skip(`reuses the same transient instance for component rerender`, async () => {
-      const { TestSubject } = setup();
+    it(`reuses the same request instance for component rerender`, async () => {
+      const { TestSubject, c } = setup();
       const result = render(<TestSubject />);
 
       const render1Consumer1Value = result.getByTestId('consumer1').textContent;
       const render1Consumer2Value = result.getByTestId('consumer2').textContent;
 
-      expect(render1Consumer1Value).not.toEqual(render1Consumer2Value);
+      expect(render1Consumer1Value).toEqual('1');
+      expect(render1Consumer2Value).toEqual('2');
 
       result.rerender(<TestSubject />);
 
       const render2Consumer1Value = result.getByTestId('consumer1').textContent;
       const render2Consumer2Value = result.getByTestId('consumer2').textContent;
 
-      expect(render2Consumer1Value).not.toEqual(render2Consumer2Value);
       expect(render1Consumer1Value).toEqual(render2Consumer1Value);
       expect(render1Consumer2Value).toEqual(render2Consumer2Value);
+
+      expect(render1Consumer1Value).not.toEqual(render1Consumer2Value);
+    });
+  });
+
+  describe(`using externals`, () => {
+    function setup() {
+      const someExternalParam = external<string>();
+      const val1Def = request.fn((ext: string) => `render:${checkoutRenderId()};value:${ext}`, someExternalParam);
+
+      let counter = 0;
+      const checkoutRenderId = () => (counter += 1);
+
+      const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
+        const val1 = useDefinition(val1Def.bind(externalValue));
+        return <DummyComponent value={val1} />;
+      };
+
+      const c = container();
+
+      const TestSubject = ({ externalValue }) => {
+        return (
+          <ContainerProvider container={c}>
+            <Consumer externalValue={externalValue} />
+          </ContainerProvider>
+        );
+      };
+
+      return { TestSubject };
+    }
+
+    it(`builds instance using external value provided by props`, async () => {
+      const { TestSubject } = setup();
+      const result = render(<TestSubject externalValue={'initialValue'} />);
+      expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
+    });
+
+    it(`does not revalidate instance if external parameter does not change`, async () => {
+      const { TestSubject } = setup();
+      const result = render(<TestSubject externalValue={'initialValue'} />);
+      expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
+      result.rerender(<TestSubject externalValue={'initialValue'} />);
+      expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
+    });
+
+    it(`revalidates instance on external parameter change`, async () => {
+      const { TestSubject } = setup();
+      const result = render(<TestSubject externalValue={'initialValue'} />);
+      expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
+      result.rerender(<TestSubject externalValue={'changed'} />);
+      expect(result.getByTestId('value').textContent).toEqual('render:2;value:changed');
     });
   });
 });

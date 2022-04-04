@@ -1,23 +1,23 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
-const shallowCompareArrays = (arr1: ReadonlyArray<any>, arr2: ReadonlyArray<any>) => {
+export const isShallowEqual = (arr1: ReadonlyArray<any>, arr2: ReadonlyArray<any>) => {
   return arr1.length === arr2.length && arr1.every((val, idx) => val === arr2[idx]);
 };
 
 export function useMemoized<T>(factory: () => T): (invalidateKeys: ReadonlyArray<any>) => T {
   const scopedContainer = useRef<{
     invalidationKeys: ReadonlyArray<any>;
-    container: T | undefined;
-  }>({ invalidationKeys: [], container: undefined });
+    value: T | undefined;
+  }>({ invalidationKeys: [], value: undefined });
 
   function getValue(keys: ReadonlyArray<any>) {
-    const areKeysEqual = shallowCompareArrays(keys, scopedContainer.current.invalidationKeys);
-    if (!areKeysEqual || !scopedContainer.current.container) {
-      scopedContainer.current = { invalidationKeys: [...keys], container: factory() };
+    const areKeysEqual = isShallowEqual(keys, scopedContainer.current.invalidationKeys);
+    if (!areKeysEqual || !scopedContainer.current.value) {
+      scopedContainer.current = { invalidationKeys: [...keys], value: factory() };
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return scopedContainer.current.container!;
+    return scopedContainer.current.value!;
   }
 
   return getValue;

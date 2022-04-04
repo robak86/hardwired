@@ -1,14 +1,17 @@
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
-import { v4 } from 'uuid';
-import { Resolution } from '../abstract/Resolution';
 import { ContainerContext } from '../../context/ContainerContext';
+import { AsyncInstanceDefinition } from '../abstract/base/AsyncInstanceDefinition';
 
 export interface DefineServiceLocator<TExternalParams extends any[]> {
   get<TValue, Externals extends Array<TExternalParams[number]>>(
     instanceDefinition: InstanceDefinition<TValue, any, Externals>,
   ): TValue;
+
+  getAsync<TValue, Externals extends Array<TExternalParams[number]>>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, any, Externals>,
+  ): Promise<TValue>;
 
   withNewRequestScope<TValue>(fn: (locator: DefineServiceLocator<TExternalParams>) => TValue): TValue;
 }
@@ -33,20 +36,19 @@ export type DefineBuildFn<TLifeTime extends LifeTime> = TLifeTime extends LifeTi
       ): InstanceDefinition<TInstance, TLifeTime, PickExternals<TExternals>>;
     };
 
-export const define =
-  <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineBuildFn<TLifeTime> =>
-  (fnOrExternals, fn?): InstanceDefinition<any, any, any> => {
+
+export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineBuildFn<TLifeTime> =>
+  ((fnOrExternals, fn?) => {
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externals = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 
-    return {
-      id: v4(),
-      resolution: Resolution.sync,
+    return new InstanceDefinition({
       strategy: lifetime,
       create: (context: ContainerContext) => {
         const buildLocator = (context: ContainerContext): DefineServiceLocator<any> => {
           return {
             get: context.buildWithStrategy,
+            getAsync: context.buildWithStrategy,
             withNewRequestScope: fn => fn(buildLocator(context.checkoutRequestScope())),
           };
         };
@@ -54,5 +56,5 @@ export const define =
         return buildFn(buildLocator(context));
       },
       externals,
-    };
-  };
+    });
+  }) as any;

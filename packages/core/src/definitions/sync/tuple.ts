@@ -1,5 +1,4 @@
-import { v4 } from 'uuid';
-import { InstanceDefinition } from '../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { Resolution } from '../abstract/Resolution';
 import { derivedLifeTime, DerivedLifeTime } from '../abstract/DerivedLifeTime';
@@ -15,15 +14,13 @@ export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
-  return {
-    id: v4(),
+  return new InstanceDefinition({
     strategy,
-    resolution: Resolution.sync,
     externals: pickExternals(definitions),
     create: context => {
       return definitions.map(def => {
         return context.buildWithStrategy(def);
       }) as any;
     },
-  };
+  });
 };

@@ -29,10 +29,9 @@ export type ComputedBuildFn = {
 };
 
 export const action: ComputedBuildFn = (factory, ...dependencies): InstanceDefinition<any, LifeTime.singleton> => {
-  return {
+  return new InstanceDefinition({
     id: `action:${v4()}`,
     strategy: LifeTime.singleton,
-    resolution: Resolution.sync,
     externals: dependencies.flatMap(def => def.externals),
     create: context => {
       // TODO: optimize - at this line we can check which dependencies are observable and call .get selectively in computed body
@@ -48,5 +47,5 @@ export const action: ComputedBuildFn = (factory, ...dependencies): InstanceDefin
         });
       };
     },
-  };
+  });
 };

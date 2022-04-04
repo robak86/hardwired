@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
 import invariant from 'tiny-invariant';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 
@@ -18,10 +18,10 @@ export const apply = <
     `apply does accept additional dependencies with external params`,
   );
 
-  return {
+  return new InstanceDefinition({
     id: instance.id,
     strategy: instance.strategy,
-    resolution: instance.resolution,
+    // resolution: instance.resolution,
     externals: instance.externals,
     create: context => {
       const decorated = instance.create(context);
@@ -30,5 +30,5 @@ export const apply = <
 
       return decorated;
     },
-  };
+  });
 };

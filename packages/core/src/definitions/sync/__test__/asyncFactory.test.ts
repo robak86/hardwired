@@ -2,7 +2,7 @@ import { external } from '../external';
 import { factory, IFactory } from '../factory';
 import { request, singleton, transient } from '../../definitions';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/InstanceDefinition';
+import { InstanceDefinition } from '../../abstract/base/InstanceDefinition';
 import { container } from '../../../container/Container';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set';
@@ -71,10 +71,14 @@ describe(`factory`, () => {
   describe(`allowed instance definitions`, () => {
     it(`does not accepts singleton with externals`, async () => {
       const ext = external<number>();
-      const def = singleton.asyncFn(async (val: number) => val, ext);
+      const build = () => {
+        const def = singleton.asyncFn(async (val: number) => val, ext);
 
-      // @ts-expect-error factory does not accept singleton with externals
-      const factoryD = asyncFactory(def);
+        // @ts-expect-error factory does not accept singleton with externals
+        const factoryD = asyncFactory(def);
+      }
+
+      expect(build).toThrow()
     });
   });
 
