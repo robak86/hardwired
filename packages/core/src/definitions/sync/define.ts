@@ -36,9 +36,9 @@ export type DefineBuildFn<TLifeTime extends LifeTime> = TLifeTime extends LifeTi
       ): InstanceDefinition<TInstance, TLifeTime, PickExternals<TExternals>>;
     };
 
-export const define =
-  <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineBuildFn<TLifeTime> =>
-  (fnOrExternals, fn?): InstanceDefinition<any, any, any> => {
+
+export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineBuildFn<TLifeTime> =>
+  ((fnOrExternals, fn?) => {
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externals = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 
@@ -57,4 +57,4 @@ export const define =
       },
       externals,
     });
-  };
+  }) as any;

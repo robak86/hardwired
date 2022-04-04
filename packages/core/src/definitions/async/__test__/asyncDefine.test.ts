@@ -55,7 +55,7 @@ describe(`asyncDefine`, () => {
         return [await locator.get(ext1), await locator.get(ext2)];
       });
 
-      const result = await container().getAsync(definition, { ext1: 1 }, { ext2: 'str' });
+      const result = await container().getAsync(definition.bind({ ext1: 1 }, { ext2: 'str' }));
       expect(result).toEqual([{ ext1: 1 }, { ext2: 'str' }]);
     });
 

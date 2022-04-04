@@ -15,7 +15,7 @@ describe(`view`, () => {
     const selectorD = view(select, stateD);
     const cnt = container();
 
-    const [_, selectorInstance] = cnt.getAll([stateD, selectorD]);
+    const [_, selectorInstance] = cnt.getAll(stateD, selectorD);
     expect(isComputed(selectorInstance)).toEqual(true);
     expect(selectorInstance.get()).toEqual('myValue');
   });
@@ -30,7 +30,7 @@ describe(`view`, () => {
     const selectorD = view(select, stateD);
     const cnt = container();
 
-    const [selectorInstance1, selectorInstance2] = cnt.getAll([selectorD, selectorD]);
+    const [selectorInstance1, selectorInstance2] = cnt.getAll(selectorD, selectorD);
     expect(selectorInstance1).toBe(selectorInstance2);
   });
 
@@ -55,7 +55,7 @@ describe(`view`, () => {
     const selectorD = view(select, stateD, dummyDep);
     const cnt = container();
 
-    const [_, selectorInstance] = cnt.getAll([stateD, selectorD]);
+    const [_, selectorInstance] = cnt.getAll(stateD, selectorD);
 
     expect(selectorInstance.get()).toEqual(['myValue', 123]);
   });
@@ -70,7 +70,7 @@ describe(`view`, () => {
     const selectorD = view(select, stateD);
     const cnt = container();
 
-    const [stateInstance, selectorInstance] = cnt.getAll([stateD, selectorD]);
+    const [stateInstance, selectorInstance] = cnt.getAll(stateD, selectorD);
     const autorunValues: string[] = [];
 
     autorun(() => {
@@ -101,7 +101,7 @@ describe(`view`, () => {
     const selectorD = view(select, state1D, state2D);
     const cnt = container();
 
-    const [state1Instance, state2Instance, selectorInstance] = cnt.getAll([state1D, state2D, selectorD]);
+    const [state1Instance, state2Instance, selectorInstance] = cnt.getAll(state1D, state2D, selectorD);
     const autorunValues: (readonly [string, string])[] = [];
 
     autorun(() => {
@@ -148,7 +148,7 @@ describe(`view`, () => {
     const selectorD = view(select, stateD);
     const cnt = container();
 
-    const [stateInstance, selectorInstance] = cnt.getAll([stateD, selectorD]);
+    const [stateInstance, selectorInstance] = cnt.getAll(stateD, selectorD);
     const autorunValues: string[] = [];
 
     autorun(() => {

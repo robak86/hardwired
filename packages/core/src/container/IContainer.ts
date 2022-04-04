@@ -6,19 +6,13 @@ export interface IContainer {
   readonly id: string;
 
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue;
-
-  getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternalParams>,
-    ...externalParams: TExternalParams
-  ): Promise<TValue>;
+  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, []>): Promise<TValue>;
 
   getAll<
-    TDefinition extends InstanceDefinition<any, any, TExternalParams>,
+    TDefinition extends InstanceDefinition<any, any, []>,
     TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
-    TExternalParams extends any[],
   >(
-    definitions: TDefinitions,
-    ...externalParams: TExternalParams
+    ...definitions: TDefinitions
   ): {
     [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
       ? TInstance

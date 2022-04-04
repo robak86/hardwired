@@ -85,7 +85,7 @@ describe(`Container`, () => {
       const b = request.fn(() => 2);
 
       const c = container();
-      const [aInstance, bInstance] = c.getAll([a, b]);
+      const [aInstance, bInstance] = c.getAll(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -94,7 +94,10 @@ describe(`Container`, () => {
       const extD = external<BoxedValue<number>>();
       const multiplyBy2D = request.fn((val: BoxedValue<number>) => val.value * 2, extD);
       const divideBy2D = request.fn((val: BoxedValue<number>) => val.value / 2, extD);
-      const [val1, val2] = container().getAll([multiplyBy2D, divideBy2D], new BoxedValue(10));
+      const [val1, val2] = container().getAll(
+        multiplyBy2D.bind(new BoxedValue(10)),
+        divideBy2D.bind(new BoxedValue(10)),
+      );
       expect(val1).toEqual(20);
       expect(val2).toEqual(5);
     });
@@ -103,7 +106,7 @@ describe(`Container`, () => {
       const extD = external<BoxedValue<number>>();
 
       let count = 0;
-      const requestSharedValD = request.fn(() => count += 1);
+      const requestSharedValD = request.fn(() => (count += 1));
       const multiplyBy2D = request.fn(
         (val: BoxedValue<number>, sharedVal: number) => ({ result: val.value * 2, shared: sharedVal }),
         extD,
@@ -115,12 +118,14 @@ describe(`Container`, () => {
         requestSharedValD,
       );
 
-
-      const [req1, req2] = container().getAll([multiplyBy2D, divideBy2D], new BoxedValue(10));
+      const [req1, req2] = container().getAll(
+        multiplyBy2D.bind(new BoxedValue(10)),
+        divideBy2D.bind(new BoxedValue(10)),
+      );
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);
 
-      expect(req1.shared).toEqual(req2.shared)
+      expect(req1.shared).toEqual(req2.shared);
     });
   });
 

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import { CounterStore } from './counter/CounterStore';
 import { ContainerProvider, useDefinitions } from 'hardwired-react';
 import { counterActionsDef, counterStoreDef } from './app.module';
-import { CounterActions } from "./counter/CounterActions";
+import { CounterActions } from './counter/CounterActions';
 
 export const Counter: FC<{ store: CounterStore }> = observer(({ store }) => {
   return (
@@ -23,7 +23,7 @@ export const CounterButtons: FC<{ actions: CounterActions }> = observer(({ actio
 });
 
 export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
-  const [store, actions] = useDefinitions([counterStoreDef, counterActionsDef], label);
+  const [store, actions] = useDefinitions(counterStoreDef.bind(label), counterActionsDef.bind(label));
 
   return (
     <div>
@@ -37,8 +37,10 @@ export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
 export default () => {
   return (
     <ContainerProvider>
-      <LabeledCounter label={'first counter'} />
-      <LabeledCounter label={'second counter'} />
+      <LabeledCounter label={'counter 1'} />
+      <LabeledCounter label={'counter 2'} />
+      <LabeledCounter label={'counter 3'} />
+      <LabeledCounter label={'counter 4'} />
     </ContainerProvider>
   );
 };

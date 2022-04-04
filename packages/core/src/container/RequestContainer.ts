@@ -12,26 +12,21 @@ export class RequestContainer implements IContainer {
     return this.containerContext.get(instanceDefinition);
   }
 
-  getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternalParams>,
-    ...externalParams: TExternalParams
-  ): Promise<TValue> {
-    return this.containerContext.getAsync(instanceDefinition, ...externalParams);
+  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, []>): Promise<TValue> {
+    return this.containerContext.getAsync(instanceDefinition);
   }
 
   getAll<
-    TDefinition extends InstanceDefinition<any, any, TExternalParams>,
+    TDefinition extends InstanceDefinition<any, any, []>,
     TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
-    TExternalParams extends any[],
   >(
-    definitions: TDefinitions,
-    ...externalParams: TExternalParams
+    ...definitions: TDefinitions
   ): {
     [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
       ? TInstance
       : unknown;
   } {
-    return definitions.map(def => this.containerContext.get(def.bind(...externalParams))) as any;
+    return definitions.map(def => this.containerContext.get(def)) as any;
   }
 
   getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(

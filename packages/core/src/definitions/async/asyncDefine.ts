@@ -34,9 +34,8 @@ export type DefineAsyncBuildFn<TLifeTime extends LifeTime> = TLifeTime extends L
       ): AsyncInstanceDefinition<TInstance, TLifeTime, PickExternals<TExternals>>;
     };
 
-export const asyncDefine =
-  <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineAsyncBuildFn<TLifeTime> =>
-  (fnOrExternals, fn?): AsyncInstanceDefinition<any, any, any> => {
+export const asyncDefine = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineAsyncBuildFn<TLifeTime> =>
+  ((fnOrExternals, fn?): AsyncInstanceDefinition<any, any, any> => {
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externals = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 
@@ -55,4 +54,4 @@ export const asyncDefine =
       },
       externals,
     });
-  };
+  }) as any;

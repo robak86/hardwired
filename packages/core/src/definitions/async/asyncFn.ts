@@ -2,7 +2,6 @@ import { AsyncInstanceDefinition } from '../abstract/base/AsyncInstanceDefinitio
 import { v4 } from 'uuid';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
 import { AsyncInstanceDefinitionDependency } from '../abstract/AsyncInstanceDefinitionDependency';
 
 export type AsyncFunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {

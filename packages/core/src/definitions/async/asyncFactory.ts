@@ -1,10 +1,7 @@
 import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
-import { v4 } from 'uuid';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
 import { AsyncFactoryDefinition } from '../abstract/AsyncFactoryDefinition';
-import { AsyncInstanceDefinition } from "../abstract/base/AsyncInstanceDefinition";
 import { ContainerContext } from "../../context/ContainerContext";
 
 export type IAsyncFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
@@ -37,7 +34,7 @@ export const asyncFactory: AsyncFactoryBuildFn = (
         ...base,
         build(...params): any {
           const reqContext = context.checkoutRequestScope(); // factory always uses new request context for building definitions
-          return reqContext.getAsync(definition, ...params);
+          return reqContext.getAsync(definition.bind(...params));
         },
       };
     },

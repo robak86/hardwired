@@ -5,9 +5,7 @@ import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinit
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
-import { LifeTime } from '../definitions/abstract/LifeTime';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
-import { AsyncInstanceDefinition } from '../definitions/abstract/base/AsyncInstanceDefinition';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -47,26 +45,16 @@ export class ContainerContext implements InstancesBuilder {
     }
   }
 
-  getAsync<TValue, TExternalParams extends any[]>(
-    instanceDefinition: AnyInstanceDefinition<TValue, any, TExternalParams>,
-    ...externalParams: TExternalParams
-  ): Promise<TValue> {
-    if (instanceDefinition.externals.length > 0) {
-      const scopedContainer = this.checkoutScope({
-        scopeOverrides: instanceDefinition.externals.map((externalDef, idx) => {
-          return new AsyncInstanceDefinition({
-            id: externalDef.id,
-            externals: [],
-            strategy: LifeTime.transient,
-            create: () => externalParams[idx],
-          });
-        }),
-      });
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, []>): Promise<TValue> {
+    if (instanceDefinition.hasScopeOverrides) {
+      const scopedContainer = this.checkoutScope(
+        {
+          scopeOverrides: instanceDefinition.scopeOverrides,
+        },
+        true,
+      );
 
-      return scopedContainer.getAsync({
-        ...instanceDefinition,
-        externals: [],
-      } as any);
+      return scopedContainer.getAsync(instanceDefinition.withoutOverrides());
     } else {
       return this.buildWithStrategy(instanceDefinition);
     }
