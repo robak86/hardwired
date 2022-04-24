@@ -20,7 +20,7 @@ describe(`define`, () => {
         // @ts-expect-error - accepts only single parameter (without externals)
         const z = define(LifeTime.singleton)([ext1], locator => null);
       }
-      expect(buildDef).toThrow('Externals with singleton life time is not supported');
+      expect(buildDef).toThrow('Externals with singleton life time are not supported');
     });
 
     it(`preserves externals type`, async () => {

@@ -18,7 +18,7 @@ describe(`fn`, () => {
           fn(LifeTime.transient)(numberConsumer, dep);
         };
 
-        expect(buildDef).toThrow('Externals with singleton life time is not supported');
+        expect(buildDef).toThrow('Externals with singleton life time are not supported');
       });
 
       it(`accepts request def with externals`, async () => {
@@ -41,7 +41,7 @@ describe(`fn`, () => {
           fn(LifeTime.request)(numberConsumer, dep);
         };
 
-        expect(buildDef).toThrow('Externals with singleton life time is not supported');
+        expect(buildDef).toThrow('Externals with singleton life time are not supported');
       });
 
       it(`accepts request def with externals`, async () => {
@@ -64,7 +64,7 @@ describe(`fn`, () => {
           fn(LifeTime.singleton)(numberConsumer, dep);
         };
 
-        expect(buildDef).toThrow('Externals with singleton life time is not supported');
+        expect(buildDef).toThrow('Externals with singleton life time are not supported');
       });
 
       it(`does not accept request dependency def with externals`, async () => {
@@ -73,7 +73,7 @@ describe(`fn`, () => {
           fn(LifeTime.singleton)(numberConsumer, dep);
         };
 
-        expect(buildDef).toThrow('Externals with singleton life time is not supported');
+        expect(buildDef).toThrow('Externals with singleton life time are not supported');
       });
 
       it(`does not accept transient dependency with externals`, async () => {
@@ -81,7 +81,7 @@ describe(`fn`, () => {
           const dep = transient.fn(val => val, ext);
           fn(LifeTime.singleton)(numberConsumer, dep);
         };
-        expect(buildDef).toThrow('Externals with singleton life time is not supported');
+        expect(buildDef).toThrow('Externals with singleton life time are not supported');
       });
     });
   });

@@ -39,7 +39,7 @@ export class BaseDefinition<
     }: BaseDefinitionParams<TInstance, TLifeTime, TExternals>,
   ) {
     if (strategy === LifeTime.singleton && externals.length > 0) {
-      throw new Error('Externals with singleton life time is not supported');
+      throw new Error('Externals with singleton life time are not supported');
     }
 
     this.id = id;

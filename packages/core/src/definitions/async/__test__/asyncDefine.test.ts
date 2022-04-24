@@ -21,7 +21,7 @@ describe(`asyncDefine`, () => {
         const z = asyncDefine(LifeTime.singleton)([ext1], async locator => null);
       }
 
-      expect(build).toThrow('Externals with singleton life time is not supported')
+      expect(build).toThrow('Externals with singleton life time are not supported')
     });
 
     it(`preserves externals type`, async () => {
