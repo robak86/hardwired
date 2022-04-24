@@ -70,7 +70,7 @@ describe(`partial`, () => {
             // @ts-expect-error transient does not accept singleton dependencies with externals
             partial(LifeTime.transient)(numberConsumer, dep);
           };
-          expect(buildDef).toThrow('Externals with singleton life time is not supported');
+          expect(buildDef).toThrow('Externals with singleton life time are not supported');
         });
 
         it(`accepts request def with externals`, async () => {
@@ -93,7 +93,7 @@ describe(`partial`, () => {
             partial(LifeTime.request)(numberConsumer, dep);
           };
 
-          expect(buildDef).toThrow('Externals with singleton life time is not supported');
+          expect(buildDef).toThrow('Externals with singleton life time are not supported');
         });
 
         it(`accepts request dependency def with externals`, async () => {
@@ -115,7 +115,7 @@ describe(`partial`, () => {
             // @ts-expect-error transient does not accept singleton dependencies with externals
             partial(LifeTime.singleton)(numberConsumer, dep);
           };
-          expect(buildDef).toThrow('Externals with singleton life time is not supported');
+          expect(buildDef).toThrow('Externals with singleton life time are not supported');
         });
 
         it(`accepts request def with externals`, async () => {
@@ -124,7 +124,7 @@ describe(`partial`, () => {
             partial(LifeTime.singleton)(numberConsumer, dep);
           };
 
-          expect(buildDef).toThrow('Externals with singleton life time is not supported');
+          expect(buildDef).toThrow('Externals with singleton life time are not supported');
         });
 
         it(`accepts transient with externals`, async () => {
@@ -132,7 +132,7 @@ describe(`partial`, () => {
             const dep = transient.fn(val => val, ext);
             partial(LifeTime.singleton)(numberConsumer, dep);
           };
-          expect(buildDef).toThrow('Externals with singleton life time is not supported');
+          expect(buildDef).toThrow('Externals with singleton life time are not supported');
         });
       });
     });

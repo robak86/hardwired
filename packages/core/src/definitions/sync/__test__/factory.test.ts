@@ -77,7 +77,7 @@ describe(`factory`, () => {
         const factoryD = factory(def);
       }
 
-      expect(buildDef).toThrow('Externals with singleton life time is not supported')
+      expect(buildDef).toThrow('Externals with singleton life time are not supported')
     });
   });
 

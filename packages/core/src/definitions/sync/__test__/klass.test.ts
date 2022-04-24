@@ -48,7 +48,7 @@ describe(`klass`, () => {
               klass(LifeTime.transient)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time is not supported');
+            expect(buildDef).toThrow('Externals with singleton life time are not supported');
           });
 
           it(`accepts request def with externals`, async () => {
@@ -71,7 +71,7 @@ describe(`klass`, () => {
               klass(LifeTime.request)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time is not supported');
+            expect(buildDef).toThrow('Externals with singleton life time are not supported');
           });
 
           it(`accepts request def with externals`, async () => {
@@ -94,7 +94,7 @@ describe(`klass`, () => {
               klass(LifeTime.singleton)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time is not supported');
+            expect(buildDef).toThrow('Externals with singleton life time are not supported');
           });
 
           it(`accepts request def with externals`, async () => {
@@ -103,7 +103,7 @@ describe(`klass`, () => {
               klass(LifeTime.singleton)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time is not supported');
+            expect(buildDef).toThrow('Externals with singleton life time are not supported');
           });
 
           it(`accepts transient with externals`, async () => {
@@ -112,7 +112,7 @@ describe(`klass`, () => {
               klass(LifeTime.singleton)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time is not supported');
+            expect(buildDef).toThrow('Externals with singleton life time are not supported');
           });
         });
       });
