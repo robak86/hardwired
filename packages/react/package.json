@@ -3,7 +3,13 @@
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/robak86/hardwired",
-  "description": "Hardwired integration for React",
+  "description": "Dependency injection container for React.",
+  "keywords": [
+    "ioc",
+    "react",
+    "dependency injection",
+    "di"
+  ],
   "version": "0.7.0",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
