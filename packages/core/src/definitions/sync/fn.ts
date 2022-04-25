@@ -8,7 +8,7 @@ export type FunctionDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <
     TValue,
     TArgs extends any[],
-    TDependencies extends { [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K], TLifeTime> },
+    TDependencies extends { [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K]> },
   >(
     factory: (...args: TArgs) => TValue,
     ...args: TDependencies

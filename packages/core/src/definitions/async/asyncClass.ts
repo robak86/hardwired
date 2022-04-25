@@ -8,7 +8,7 @@ export type AsyncClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <
     TInstance,
     TArgs extends any[],
-    TDependencies extends { [K in keyof TArgs]: AsyncInstanceDefinitionDependency<TArgs[K], TLifeTime> },
+    TDependencies extends { [K in keyof TArgs]: AsyncInstanceDefinitionDependency<TArgs[K]> },
   >(
     cls: ClassType<TInstance, TArgs>,
     ...args: TDependencies
