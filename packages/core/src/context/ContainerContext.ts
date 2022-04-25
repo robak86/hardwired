@@ -30,31 +30,31 @@ export class ContainerContext implements InstancesBuilder {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue {
-    if (instanceDefinition.hasScopeOverrides) {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>, useOverrides = true): TValue {
+    if (instanceDefinition.scopeOverrides && useOverrides) {
       const scopedContainer = this.checkoutScope(
-        {
-          scopeOverrides: instanceDefinition.scopeOverrides,
-        },
-        true,
+          {
+            scopeOverrides: instanceDefinition.scopeOverrides,
+          },
+          true,
       );
 
-      return scopedContainer.get(instanceDefinition.withoutOverrides());
+      return scopedContainer.get(instanceDefinition, false);
     } else {
       return this.buildWithStrategy(instanceDefinition);
     }
   }
 
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, []>): Promise<TValue> {
-    if (instanceDefinition.hasScopeOverrides) {
+  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, []>, useOverrides = true): Promise<TValue> {
+    if (instanceDefinition.scopeOverrides && useOverrides) {
       const scopedContainer = this.checkoutScope(
-        {
-          scopeOverrides: instanceDefinition.scopeOverrides,
-        },
-        true,
+          {
+            scopeOverrides: instanceDefinition.scopeOverrides,
+          },
+          true,
       );
 
-      return scopedContainer.getAsync(instanceDefinition.withoutOverrides());
+      return scopedContainer.getAsync(instanceDefinition, false);
     } else {
       return this.buildWithStrategy(instanceDefinition);
     }

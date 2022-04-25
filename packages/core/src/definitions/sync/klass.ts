@@ -8,7 +8,7 @@ export type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <
     TInstance,
     TArgs extends any[],
-    TDependencies extends { [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K], TLifeTime> },
+    TDependencies extends { [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K]> },
   >(
     cls: ClassType<TInstance, TArgs>,
     ...args: TDependencies
