@@ -1,7 +1,7 @@
 import { InstancesStore } from './InstancesStore';
 import { ContainerScopeOptions } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { InstancesBuilder } from './abstract/InstancesBuilder';

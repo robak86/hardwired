@@ -1,8 +1,8 @@
 import { ClassType } from '../../utils/ClassType';
-import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
-import { InstanceDefinitionDependency } from '../abstract/InstanceDefinitionDependency';
+import { InstanceDefinitionDependency } from '../abstract/sync/InstanceDefinitionDependency';
 
 export type ClassDefinitionBuildFn<TLifeTime extends LifeTime> = {
   <

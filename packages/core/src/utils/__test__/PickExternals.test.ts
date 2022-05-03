@@ -1,5 +1,5 @@
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition';
 import { PickExternals } from '../PickExternals';
 
 describe(`PickExternals`, () => {

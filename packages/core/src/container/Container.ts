@@ -1,7 +1,7 @@
 import { ContainerContext } from '../context/ContainerContext';
-import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { AsyncInstanceDefinition } from '../definitions/abstract/base/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
 import { IContainer } from './IContainer';
 import { RequestContainer } from './RequestContainer';

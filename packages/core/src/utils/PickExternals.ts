@@ -1,6 +1,6 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { filterDuplicates, FilterDuplicates } from './FilterDuplicates';
-import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import { IsFinite } from './IsFinite';
 
 type Concat<T> = T extends [infer A, ...infer Rest] ? (A extends any[] ? [...A, ...Concat<Rest>] : A) : T;

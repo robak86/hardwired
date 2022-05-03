@@ -1,5 +1,5 @@
-import { LifeTime } from './LifeTime';
-import { InstanceDefinition } from './base/InstanceDefinition';
+import { LifeTime } from '../LifeTime';
+import { InstanceDefinition } from './InstanceDefinition';
 
 export type InstanceDefinitionDependency<TValue> =
   | InstanceDefinition<TValue, LifeTime.singleton, []>

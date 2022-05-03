@@ -1,6 +1,6 @@
 import { BuildStrategy } from './abstract/BuildStrategy';
 import { InstancesStore } from '../context/InstancesStore';
-import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder';
 
 export class SingletonStrategy extends BuildStrategy {

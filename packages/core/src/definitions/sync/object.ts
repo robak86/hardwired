@@ -1,6 +1,6 @@
-import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { pickExternals } from '../../utils/PickExternals';
-import { derivedLifeTime, DerivedLifeTime } from '../abstract/DerivedLifeTime';
+import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
 
 export const object = <T extends Record<keyof any, InstanceDefinition<any, any, []>>>(
   record: T,

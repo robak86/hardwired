@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import invariant from 'tiny-invariant';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 

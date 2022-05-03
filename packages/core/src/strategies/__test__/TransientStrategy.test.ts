@@ -2,7 +2,7 @@ import { container } from '../../container/Container';
 import { v4 } from 'uuid';
 import { transient } from '../../definitions/definitions';
 import { value } from '../../definitions/sync/value';
-import { InstanceDefinition } from '../../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition';
 
 describe(`ClassTransientResolver`, () => {
   describe(`sync resolution`, () => {

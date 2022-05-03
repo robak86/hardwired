@@ -1,8 +1,8 @@
-import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
 import { ContainerContext } from '../../context/ContainerContext';
-import { AsyncInstanceDefinition } from '../abstract/base/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
 
 export interface DefineServiceLocator<TExternalParams extends any[]> {
   get<TValue, Externals extends Array<TExternalParams[number]>>(

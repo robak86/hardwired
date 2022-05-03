@@ -2,7 +2,7 @@ import { external } from '../external';
 import { value } from '../value';
 import { klass } from '../klass';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
 import { LifeTime } from '../../abstract/LifeTime';
 import { request, singleton, transient } from '../../definitions';
 

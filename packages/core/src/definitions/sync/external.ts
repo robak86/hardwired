@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { v4 } from 'uuid';
 import { LifeTime } from '../abstract/LifeTime';
 
