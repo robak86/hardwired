@@ -1,7 +1,13 @@
-import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
-import { FactoryDefinition } from '../abstract/FactoryDefinition';
-import { ContainerContext } from "../../context/ContainerContext";
+import { ContainerContext } from '../../context/ContainerContext';
+
+// prettier-ignore
+export type FactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams extends any[]> =
+    | InstanceDefinition<TValue, LifeTime.singleton, []>
+    | InstanceDefinition<TValue, LifeTime.transient, TExternalParams>
+    | InstanceDefinition<TValue, LifeTime.request, TExternalParams>
+    | InstanceDefinition<TValue, LifeTime.scoped, TExternalParams>
 
 export type IFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
   build(...params: TParams): TReturn;

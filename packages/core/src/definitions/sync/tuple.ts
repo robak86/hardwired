@@ -1,7 +1,7 @@
-import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { Resolution } from '../abstract/Resolution';
-import { derivedLifeTime, DerivedLifeTime } from '../abstract/DerivedLifeTime';
+import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
 
 export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>(
   ...definitions: T

@@ -5,7 +5,7 @@ export * from './strategies/RequestStrategy';
 export * from './strategies/SingletonStrategy';
 export * from './strategies/TransientStrategy';
 export * from './definitions/definitions';
-export * from './definitions/abstract/base/InstanceDefinition';
+export * from './definitions/abstract/sync/InstanceDefinition';
 export * from './definitions/abstract/AnyInstanceDefinition';
 
 export * from './patching/replace';
@@ -28,5 +28,5 @@ export * from './definitions/sync/external';
 export * from './definitions/sync/implicitExternal';
 export * from './definitions/sync/intersection';
 export * from './definitions/abstract/LifeTime';
-export type { DerivedLifeTime } from './definitions/abstract/DerivedLifeTime';
+export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime';
 export { Resolution } from './definitions/abstract/Resolution';

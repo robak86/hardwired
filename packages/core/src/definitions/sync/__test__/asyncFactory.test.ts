@@ -2,7 +2,7 @@ import { external } from '../external';
 import { factory, IFactory } from '../factory';
 import { request, singleton, transient } from '../../definitions';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
 import { container } from '../../../container/Container';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set';

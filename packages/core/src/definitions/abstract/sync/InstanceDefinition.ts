@@ -1,7 +1,7 @@
 import { ContainerContext } from '../../../context/ContainerContext';
 import { LifeTime } from '../LifeTime';
 import { Resolution } from '../Resolution';
-import { BaseDefinition } from './BaseDefinition';
+import { BaseDefinition } from '../base/BaseDefinition';
 
 
 export interface InstanceDefinitionParams<TInstance, TLifeTime extends LifeTime = any, TExternals extends any[] = []> {

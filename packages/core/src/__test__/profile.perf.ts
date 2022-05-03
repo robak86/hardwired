@@ -2,7 +2,7 @@ import now from 'performance-now';
 import { Container, container } from '../container/Container';
 
 import { singleton, transient } from '../definitions/definitions';
-import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import 'source-map-support/register';
 
 function buildSingletonsTree(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any, []>[] {

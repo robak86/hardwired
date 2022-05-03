@@ -1,5 +1,5 @@
-import { InstanceDefinition } from '../definitions/abstract/base/InstanceDefinition';
-import { AsyncInstanceDefinition } from '../definitions/abstract/base/AsyncInstanceDefinition';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
+import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
 import { ContainerScopeOptions } from './Container';
 
 export interface IContainer {

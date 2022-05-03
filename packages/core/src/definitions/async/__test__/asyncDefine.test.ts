@@ -5,7 +5,7 @@ import { container } from '../../../container/Container';
 import { BoxedValue } from '../../../__test__/BoxedValue';
 import { external } from '../../sync/external';
 import { asyncDefine } from '../asyncDefine';
-import { AsyncInstanceDefinition } from '../../abstract/base/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition';
 
 describe(`asyncDefine`, () => {
   type Ext1 = { ext1: number };

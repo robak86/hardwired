@@ -1,8 +1,14 @@
-import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
-import { AsyncFactoryDefinition } from '../abstract/AsyncFactoryDefinition';
-import { ContainerContext } from "../../context/ContainerContext";
+import { ContainerContext } from '../../context/ContainerContext';
+
+// prettier-ignore
+export type AsyncFactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams extends any[]> =
+    | AnyInstanceDefinition<TValue, LifeTime.singleton, []>
+    | AnyInstanceDefinition<TValue, LifeTime.transient, TExternalParams>
+    | AnyInstanceDefinition<TValue, LifeTime.request, TExternalParams>
+    | AnyInstanceDefinition<TValue, LifeTime.scoped, TExternalParams>
 
 export type IAsyncFactory<TReturn, TParams extends any[], TFactoryMixin = unknown> = {
   build(...params: TParams): Promise<TReturn>;

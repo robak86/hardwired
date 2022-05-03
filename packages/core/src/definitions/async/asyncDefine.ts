@@ -1,7 +1,7 @@
-import { InstanceDefinition } from '../abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
-import { AsyncInstanceDefinition } from '../abstract/base/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
 import { ContainerContext } from '../../context/ContainerContext';
 
 export interface DefineAsyncServiceLocator<TExternalParams extends any[]> {

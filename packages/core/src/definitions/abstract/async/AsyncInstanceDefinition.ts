@@ -1,7 +1,7 @@
-import { InstanceDefinition } from './InstanceDefinition';
+import { InstanceDefinition } from '../sync/InstanceDefinition';
 import { LifeTime } from '../LifeTime';
 import { Resolution } from '../Resolution';
-import { BaseDefinition } from './BaseDefinition';
+import { BaseDefinition } from '../base/BaseDefinition';
 import { ContainerContext } from "../../../context/ContainerContext";
 
 interface AsyncInstanceDefinitionParams<T, TLifeTime extends LifeTime, TExternals> {

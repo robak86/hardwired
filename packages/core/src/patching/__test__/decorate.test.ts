@@ -1,7 +1,7 @@
 import { set } from '../set';
 import { container } from '../../container/Container';
 import { request, scoped, singleton, transient } from '../../definitions/definitions';
-import { InstanceDefinition } from '../../definitions/abstract/base/InstanceDefinition';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition';
 import { decorate } from '../decorate';
 import { object } from '../../definitions/sync/object';
 import { value } from '../../definitions/sync/value';

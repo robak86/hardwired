@@ -1,5 +1,5 @@
-import { LifeTime } from './LifeTime';
-import { AnyInstanceDefinition } from './AnyInstanceDefinition';
+import { LifeTime } from '../LifeTime';
+import { AnyInstanceDefinition } from '../AnyInstanceDefinition';
 
 export type AsyncInstanceDefinitionDependency<TValue> =
   | AnyInstanceDefinition<TValue, LifeTime.singleton, []>
