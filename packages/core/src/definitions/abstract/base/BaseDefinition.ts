@@ -26,7 +26,7 @@ export class BaseDefinition<
 
   readonly resolution: TResolution; // discriminator used for disabling usage of async defs as a dependencies to sync defs
   readonly create: (context: BaseDefinitionContext) => TInstance;
-  readonly externalsValues: any[] = [];x
+  readonly externalsValues: any[] = [];
 
   constructor(
     resolution: TResolution,
