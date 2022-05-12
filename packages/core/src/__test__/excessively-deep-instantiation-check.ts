@@ -1027,7 +1027,6 @@ const consumer1000 = transient.class(Consumer, a1, a2, val, consumer999);
 
 const cnt = container();
 
-
 cnt.get(consumer1000, { someObject: { value: 1 }, otherObject: { otherValue: 2 } });
 // @ts-expect-error should correctly infer external types
 cnt.get(consumer1000);
