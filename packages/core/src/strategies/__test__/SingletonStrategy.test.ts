@@ -430,7 +430,7 @@ describe(`SingletonStrategy`, () => {
 
           const ctn = container();
 
-          const [result1, result2, result3] = await ctn.getAllAsync(consumer1, consumer2, consumer3);
+          const [result1, result2, result3] = await ctn.getAllAsync([consumer1, consumer2, consumer3]);
 
           expect(result1).toBe(result2);
           expect(result2).toBe(result3);

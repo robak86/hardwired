@@ -11,7 +11,7 @@ describe(`asyncClass`, () => {
         constructor(private value: number) {}
       }
 
-      const ext = external<number>();
+      const ext = external('ext').type<number>();
 
       describe(`transient`, () => {
         it(`does not accept singletons with externals`, async () => {

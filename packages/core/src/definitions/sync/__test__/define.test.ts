@@ -1,37 +1,41 @@
 import { external } from '../external';
 import { define } from '../define';
 import { LifeTime } from '../../abstract/LifeTime';
-import { expectType, TypeEqual } from 'ts-expect';
+import { expectType, TypeEqual, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
 import { request, singleton } from '../../definitions';
 import { container } from '../../../container/Container';
 import { BoxedValue } from '../../../__test__/BoxedValue';
 
 describe(`define`, () => {
-  type Ext1 = { ext1: number };
-  type Ext2 = { ext2: string };
-
-  const ext1 = external<Ext1>();
-  const ext2 = external<Ext2>();
+  const ext1 = external('ext1').type<number>();
+  const ext2 = external('ext2').type<string>();
 
   describe(`types`, () => {
     it(`does not allow externals for singleton lifetime`, async () => {
       const buildDef = () => {
         // @ts-expect-error - accepts only single parameter (without externals)
         const z = define(LifeTime.singleton)([ext1], locator => null);
-      }
+      };
       expect(buildDef).toThrow('Externals with singleton life time are not supported');
     });
 
     it(`preserves externals type`, async () => {
       const definition = define(LifeTime.transient)([ext1, ext2], locator => null);
-      expectType<TypeEqual<typeof definition, InstanceDefinition<null, LifeTime.transient, [Ext1, Ext2]>>>(true);
+      expectType<
+        TypeOf<typeof definition, InstanceDefinition<null, LifeTime.transient, { ext1: number; ext2: string }>>
+      >(true);
     });
 
     it(`.get is typesafe`, async () => {
-      const ext3 = external<{ ext3: string }>();
-      const usingBothExternals = request.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
-      const usingBothExternalsWithNotAllowed = request.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
+      const ext3 = external('ext3').type<string>();
+      const usingBothExternals = request.fn((ext1: number, ext2: string) => [ext1, ext2] as const, ext1, ext2);
+      const usingBothExternalsWithNotAllowed = request.fn(
+        (ext1: number, ext2: string, ext3: string) => [ext1, ext2, ext3],
+        ext1,
+        ext2,
+        ext3,
+      );
 
       const definition = define(LifeTime.transient)([ext1, ext2], locator => {
         const instance1 = locator.get(ext1);
@@ -54,7 +58,7 @@ describe(`define`, () => {
         return [locator.get(ext1), locator.get(ext2)];
       });
 
-      const result = container().get(definition.bind({ ext1: 1 }, { ext2: 'str' }));
+      const result = container().get(definition, { ext1: 1, ext2: 'str' });
       expect(result).toEqual([{ ext1: 1 }, { ext2: 'str' }]);
     });
 
@@ -94,7 +98,7 @@ describe(`define`, () => {
       });
 
       const cnt = container();
-      const [result1, result2] = cnt.getAll(definition, definition);
+      const [result1, result2] = cnt.getAll([definition, definition]);
 
       expect(result1).toBe(result2);
     });
@@ -140,7 +144,7 @@ describe(`define`, () => {
       });
 
       const result = container().get(exampleD);
-      expect(result.req1[0]).toEqual(result.req2[0])
+      expect(result.req1[0]).toEqual(result.req2[0]);
     });
   });
 });

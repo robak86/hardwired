@@ -1,23 +1,23 @@
 import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { pickExternals } from '../../utils/PickExternals';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
+import { Resolution } from "../abstract/Resolution";
+import { v4 } from "uuid";
 
-export const object = <T extends Record<keyof any, InstanceDefinition<any, any, []>>>(
+export const object = <T extends Record<keyof any, InstanceDefinition<any, any, never>>>(
   record: T,
 ): InstanceDefinition<
   { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown },
   DerivedLifeTime<
     { [K in keyof T]: T[K] extends InstanceDefinition<any, infer TLifeTime, any> ? TLifeTime : never }[keyof T]
   >,
-  []
-  // due to typescript limitations there is no way to correctly infer externals from record.
-  // Order of the record properties is not guaranteed therefore the order of externals in tuple cannot be guaranteed
-  // (Object.values(...) may return values in different order than mapped type
-  // TODO: alternatively object may accept record of InstanceDefinition which the same externals tuple
+  never // TODO: set correct externals type
 > => {
   const strategy = derivedLifeTime(Object.values(record).map(r => r.strategy)) as any;
 
-  return new InstanceDefinition({
+  return {
+    id: v4(),
+    resolution: Resolution.sync,
     strategy,
     externals: pickExternals(Object.values(record)),
     create: context => {
@@ -27,5 +27,5 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any, any, 
         return result;
       }, {} as any);
     },
-  });
+  };
 };

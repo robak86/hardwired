@@ -1,7 +1,7 @@
 import { value } from '../value';
 import { external } from '../external';
 import { factory, IFactory } from '../factory';
-import { request, scoped, singleton, transient } from '../../definitions';
+import { request, singleton, transient } from '../../definitions';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
 import { container } from '../../../container/Container';
@@ -16,7 +16,7 @@ describe(`factory`, () => {
       const randomNumFactoryD = factory(randomNumD);
 
       const factoryInstance = container().get(randomNumFactoryD);
-      expectType<TypeEqual<typeof factoryInstance, IFactory<number, []>>>(true);
+      expectType<TypeEqual<typeof factoryInstance, IFactory<number, never>>>(true);
       expect(typeof factoryInstance.build()).toEqual('number');
     });
 
@@ -39,17 +39,16 @@ describe(`factory`, () => {
 
   describe(`mixin extension`, () => {
     it(`extends IFactory with provided base definition`, async () => {
-      type Ext = { ext: number };
       type Mixin = { someNum: number; someStr: string };
 
       const mixinD = value({ someNum: 123, someStr: 'str' });
-      const extD = external<Ext>();
+      const extD = external('ext').type<string>();
 
       class ExtConsumer {
-        constructor(public external: Ext) {}
+        constructor(public external: string) {}
       }
 
-      type Factory = IFactory<ExtConsumer, [Ext], Mixin>;
+      type Factory = IFactory<ExtConsumer, { ext: string }, Mixin>;
 
       const consumerD = transient.class(ExtConsumer, extD);
 
@@ -69,15 +68,15 @@ describe(`factory`, () => {
 
   describe(`allowed instance definitions`, () => {
     it(`does not accepts singleton with externals`, async () => {
-      const ext = external<number>();
+      const ext = external('someNumber').type<number>();
       const buildDef = () => {
         const def = singleton.fn((val: number) => val, ext);
 
         // @ts-expect-error factory does not accept singleton with externals
         const factoryD = factory(def);
-      }
+      };
 
-      expect(buildDef).toThrow('Externals with singleton life time are not supported')
+      expect(buildDef).toThrow('Externals with singleton life time are not supported');
     });
   });
 
@@ -98,14 +97,15 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IFactory<Handler, [Request]>) {}
+      constructor(public handlersFactory: IFactory<Handler, { req: Request }>) {}
     }
 
     class DbConnection {
       public connectionId = v4();
     }
 
-    const requestD = external<Request>();
+    const requestD = external('req').type<Request>();
+
     describe(`building definition`, () => {
       it(`cancels moves externals to IFactory params producing InstanceDefinition having void for TExternals`, async () => {
         const requestIdD = value('1');
@@ -116,7 +116,7 @@ describe(`factory`, () => {
 
         const factoryD = factory(handlerD);
         expectType<
-          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient, []>>
+          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, { req: Request }>, LifeTime.transient, never>>
         >(true);
       });
     });
@@ -133,9 +133,9 @@ describe(`factory`, () => {
         const result = cnt.get(routerD);
         const externalsValue: Request = { requestObj: 'req' };
 
-        expect(result.handlersFactory.build(externalsValue)).toBeInstanceOf(Handler);
-        expect(result.handlersFactory.build(externalsValue).request).toEqual(externalsValue);
-        expect(result.handlersFactory.build(externalsValue).requestId).toEqual('1');
+        expect(result.handlersFactory.build({ req: externalsValue })).toBeInstanceOf(Handler);
+        expect(result.handlersFactory.build({ req: externalsValue }).request).toEqual(externalsValue);
+        expect(result.handlersFactory.build({ req: externalsValue }).requestId).toEqual('1');
       });
 
       it(`allow overriding external params`, async () => {
@@ -149,9 +149,9 @@ describe(`factory`, () => {
         const result = cnt.get(routerD);
         const externalsValue: Request = { requestObj: 'req' };
 
-        expect(result.handlersFactory.build(externalsValue)).toBeInstanceOf(Handler);
-        expect(result.handlersFactory.build(externalsValue).request).toEqual(externalsValue);
-        expect(result.handlersFactory.build(externalsValue).requestId).toEqual('2');
+        expect(result.handlersFactory.build({ req: externalsValue })).toBeInstanceOf(Handler);
+        expect(result.handlersFactory.build({ req: externalsValue }).request).toEqual(externalsValue);
+        expect(result.handlersFactory.build({ req: externalsValue }).requestId).toEqual('2');
       });
 
       describe('request lifetime support', () => {
@@ -166,7 +166,7 @@ describe(`factory`, () => {
           const result = cnt.get(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
-          const handler = result.handlersFactory.build(externalsValue);
+          const handler = result.handlersFactory.build({ req: externalsValue });
 
           expect(handler).toBeInstanceOf(Handler);
           expect(handler.requestId).toEqual(handler.logger.requestId);
@@ -183,8 +183,8 @@ describe(`factory`, () => {
           const result = cnt.get(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
-          const handlerInstance1 = result.handlersFactory.build(externalsValue);
-          const handlerInstance2 = result.handlersFactory.build(externalsValue);
+          const handlerInstance1 = result.handlersFactory.build({ req: externalsValue });
+          const handlerInstance2 = result.handlersFactory.build({ req: externalsValue });
 
           expect(handlerInstance1.requestId).not.toEqual(handlerInstance2.requestId);
         });
@@ -201,7 +201,7 @@ describe(`factory`, () => {
           const cnt = container([set(requestIdD, 'overridden')]);
           const result = cnt.get(routerD);
           const externalsValue: Request = { requestObj: 'req' };
-          const handler = result.handlersFactory.build(externalsValue);
+          const handler = result.handlersFactory.build({ req: externalsValue });
 
           expect(handler).toBeInstanceOf(Handler);
           expect(handler.requestId).toEqual('overridden');
@@ -215,7 +215,7 @@ describe(`factory`, () => {
           const routerD = transient.class(Router, factory(handlerD));
           const cnt = container([set(requestD, { requestObj: 'sss' })]);
           const result = cnt.get(routerD);
-          const handler = result.handlersFactory.build({ requestObj: 'req' });
+          const handler = result.handlersFactory.build({ req: { requestObj: 'req' } });
 
           expect(handler.request).toEqual({ requestObj: 'sss' });
         });
@@ -229,10 +229,9 @@ describe(`factory`, () => {
 
           const cnt = container();
           const result = cnt.get(routerD);
-          const externalsValue: Request = { requestObj: 'req' };
 
-          const handlerInstance1 = result.handlersFactory.build(externalsValue);
-          const handlerInstance2 = result.handlersFactory.build(externalsValue);
+          const handlerInstance1 = result.handlersFactory.build({ req: { requestObj: 'req' } });
+          const handlerInstance2 = result.handlersFactory.build({ req: { requestObj: 'req' } });
 
           expect(handlerInstance1.dbConnection.connectionId).toEqual(handlerInstance2.dbConnection.connectionId);
         });
@@ -242,24 +241,18 @@ describe(`factory`, () => {
 
   describe(`using definitions with multiple externals provided in different orders`, () => {
     it(`provides correct dependencies`, async () => {
-      type Ext1 = { ext1: string };
-      const ext1 = external<Ext1>();
+      type Ext1 = string;
+      const ext1 = external('ext1').type<Ext1>();
 
-      type Ext2 = { ext2: string };
-      const ext2 = external<Ext2>();
+      type Ext2 = string;
+      const ext2 = external('ext2').type<Ext2>();
 
-      const consumer1 = (ext1: Ext1, ext2: Ext2): [Ext1, Ext2] => [
-        { ext1: `consumer1${ext1.ext1}` },
-        { ext2: `consumer2${ext2.ext2}` },
-      ];
+      const consumer1 = (ext1: Ext1, ext2: Ext2): [Ext1, Ext2] => [`consumer1${ext1}`, `consumer2${ext2}`];
 
       const consumer1Spy = jest.fn(consumer1);
       const consumer1D = transient.partial(consumer1Spy, ext1, ext2);
 
-      const consumer2 = (ext2: Ext2, ext1: Ext1): [Ext2, Ext1] => [
-        { ext2: `consumer2${ext2.ext2}` },
-        { ext1: `consumer1${ext1.ext1}` },
-      ];
+      const consumer2 = (ext2: Ext2, ext1: Ext1): [Ext2, Ext1] => [`consumer2${ext2}`, `consumer1${ext1}`];
 
       const consumer2Spy = jest.fn(consumer2);
       const consumer2D = transient.partial(consumer2Spy, ext2, ext1);
@@ -269,11 +262,15 @@ describe(`factory`, () => {
       };
       const combinedD = transient.fn(combined, consumer1D, consumer2D);
 
-      const compositionRoot = (factory: IFactory<[Ext1, Ext2, Ext2, Ext1], [Ext1, Ext2]>): [Ext1, Ext2, Ext2, Ext1] => {
-        return factory.build({ ext1: 'ext1' }, { ext2: 'ext2' });
+      const compositionRoot = (
+        factory: IFactory<[Ext1, Ext2, Ext2, Ext1], { ext1: string; ext2: string }>,
+      ): [Ext1, Ext2, Ext2, Ext1] => {
+        return factory.build({ ext1: 'ext1', ext2: 'ext2' });
       };
 
-      const compositionRootD = singleton.fn(compositionRoot, factory(combinedD));
+      const asFactory = factory(combinedD);
+
+      const compositionRootD = singleton.fn(compositionRoot, asFactory);
 
       const cnt = container();
       const result = cnt.get(compositionRootD);
@@ -315,7 +312,7 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IFactory<Handler, [Request]>) {}
+      constructor(public handlersFactory: IFactory<Handler, { req: Request }>) {}
     }
 
     class App {
@@ -326,9 +323,9 @@ describe(`factory`, () => {
       public app1: App;
       public app2: App;
 
-      constructor(modulesFactory: IFactory<App, [EnvConfig]>) {
-        this.app1 = modulesFactory.build({ mountPoint: '/app1' });
-        this.app2 = modulesFactory.build({ mountPoint: '/app2' });
+      constructor(modulesFactory: IFactory<App, { env: EnvConfig }>) {
+        this.app1 = modulesFactory.build({ env: { mountPoint: '/app1' } });
+        this.app2 = modulesFactory.build({ env: { mountPoint: '/app2' } });
       }
     }
 
@@ -336,8 +333,8 @@ describe(`factory`, () => {
       public connectionId = v4();
     }
 
-    const requestD = external<Request>();
-    const envConfigD = external<EnvConfig>();
+    const requestD = external('req').type<Request>();
+    const envConfigD = external('env').type<EnvConfig>();
 
     it(`creates correct composition root`, async () => {
       const requestIdD = request.fn(() => v4());
@@ -369,10 +366,10 @@ describe(`factory`, () => {
       expect(app.app2.envConfig.mountPoint).toEqual('/app2');
 
       const requestObject = { requestObj: 'req' as const };
-      const handlerInstance11 = app.app1.router.handlersFactory.build(requestObject);
-      const handlerInstance12 = app.app1.router.handlersFactory.build(requestObject);
-      const handlerInstance21 = app.app2.router.handlersFactory.build(requestObject);
-      const handlerInstance22 = app.app2.router.handlersFactory.build(requestObject);
+      const handlerInstance11 = app.app1.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance12 = app.app1.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance21 = app.app2.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance22 = app.app2.router.handlersFactory.build({ req: requestObject });
 
       expect(handlerInstance11.dbConnection.connectionId).toEqual(handlerInstance12.dbConnection.connectionId);
       expect(handlerInstance12.dbConnection.connectionId).toEqual(handlerInstance21.dbConnection.connectionId);
@@ -399,10 +396,10 @@ describe(`factory`, () => {
       expect(app.app2.envConfig.mountPoint).toEqual('/app2');
 
       const requestObject = { requestObj: 'req' as const };
-      const handlerInstance11 = app.app1.router.handlersFactory.build(requestObject);
-      const handlerInstance12 = app.app1.router.handlersFactory.build(requestObject);
-      const handlerInstance21 = app.app2.router.handlersFactory.build(requestObject);
-      const handlerInstance22 = app.app2.router.handlersFactory.build(requestObject);
+      const handlerInstance11 = app.app1.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance12 = app.app1.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance21 = app.app2.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance22 = app.app2.router.handlersFactory.build({ req: requestObject });
 
       expect(handlerInstance11.dbConnection.connectionId).toEqual(handlerInstance12.dbConnection.connectionId);
       expect(handlerInstance21.dbConnection.connectionId).toEqual(handlerInstance22.dbConnection.connectionId);

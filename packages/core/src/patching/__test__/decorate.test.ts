@@ -48,7 +48,7 @@ describe(`decorate`, () => {
   it(`allows using additional dependencies, ex2`, async () => {
     const a = value(1);
     const b = value(2);
-    const someValue = singleton.fn((a, b) => a + b, a, b);
+    const someValue = singleton.fn((a: number, b: number) => a + b, a, b);
 
     const mPatch = decorate(someValue, (val, b) => val * b, b);
 
@@ -76,13 +76,15 @@ describe(`decorate`, () => {
 
     it(`uses different request scope for each subsequent asObject call`, async () => {
       const source = request.fn(() => Math.random());
-      const a = request.fn((source:number) => source, source);
+      const a = request.fn((source: number) => source, source);
 
       const mPatch = decorate(a, a => a);
 
       const c = container({ scopeOverrides: [mPatch] });
-      const req1 = c.get(object({ source, a }));
-      const req2 = c.get(object({ source, a }));
+      const obj1 = object({ source, a })
+      const obj2 = object({ source, a })
+      const req1 = c.get(obj1);
+      const req2 = c.get(obj2);
 
       expect(req1.source).toEqual(req1.a);
       expect(req2.source).toEqual(req2.a);
@@ -102,7 +104,7 @@ describe(`decorate`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceDefinition<MyService, any>) {
+    function setup(instanceDef: InstanceDefinition<MyService, any, never>) {
       const mPatch = decorate(instanceDef, a => {
         jest.spyOn(a, 'callMe');
         return a;

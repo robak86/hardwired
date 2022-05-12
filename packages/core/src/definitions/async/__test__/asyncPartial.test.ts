@@ -9,7 +9,7 @@ describe(`asyncFn`, () => {
     describe(`allowed dependencies life times`, () => {
       const numberConsumer = async (val: number) => val;
 
-      const ext = external<number>();
+      const ext = external('ext1').type<number>();
 
       describe(`transient`, () => {
         it(`does not accept singletons with externals`, async () => {

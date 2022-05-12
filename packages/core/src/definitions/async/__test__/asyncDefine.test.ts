@@ -1,5 +1,5 @@
 import { LifeTime } from '../../abstract/LifeTime';
-import { expectType, TypeEqual } from 'ts-expect';
+import { expectType, TypeEqual, TypeOf } from 'ts-expect';
 import { request, singleton } from '../../definitions';
 import { container } from '../../../container/Container';
 import { BoxedValue } from '../../../__test__/BoxedValue';
@@ -8,29 +8,28 @@ import { asyncDefine } from '../asyncDefine';
 import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition';
 
 describe(`asyncDefine`, () => {
-  type Ext1 = { ext1: number };
-  type Ext2 = { ext2: string };
-
-  const ext1 = external<Ext1>();
-  const ext2 = external<Ext2>();
+  const ext1 = external('ext1').type<number>();
+  const ext2 = external('ext2').type<string>();
 
   describe(`types`, () => {
     it(`does not allow externals for singleton lifetime`, async () => {
       const build = () => {
         // @ts-expect-error - accepts only single parameter (without externals)
         const z = asyncDefine(LifeTime.singleton)([ext1], async locator => null);
-      }
+      };
 
-      expect(build).toThrow('Externals with singleton life time are not supported')
+      expect(build).toThrow('Externals with singleton life time are not supported');
     });
 
     it(`preserves externals type`, async () => {
       const definition = asyncDefine(LifeTime.transient)([ext1, ext2], async locator => null);
-      expectType<TypeEqual<typeof definition, AsyncInstanceDefinition<null, LifeTime.transient, [Ext1, Ext2]>>>(true);
+      expectType<
+        TypeOf<typeof definition, AsyncInstanceDefinition<null, LifeTime.transient, { ext1: number; ext2: string }>>
+      >(true);
     });
 
     it(`.get is typesafe`, async () => {
-      const ext3 = external<{ ext3: string }>();
+      const ext3 = external('ext3').type<string>();
       const usingBothExternals = request.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
       const usingBothExternalsWithNotAllowed = request.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
 
@@ -55,7 +54,7 @@ describe(`asyncDefine`, () => {
         return [await locator.get(ext1), await locator.get(ext2)];
       });
 
-      const result = await container().getAsync(definition.bind({ ext1: 1 }, { ext2: 'str' }));
+      const result = await container().getAsync(definition, { ext1: 1, ext2: 'str' });
       expect(result).toEqual([{ ext1: 1 }, { ext2: 'str' }]);
     });
 
@@ -95,7 +94,7 @@ describe(`asyncDefine`, () => {
       });
 
       const cnt = container();
-      const [result1, result2] = await cnt.getAllAsync(definition, definition);
+      const [result1, result2] = await cnt.getAllAsync([definition, definition]);
 
       expect(result1).toBe(result2);
     });

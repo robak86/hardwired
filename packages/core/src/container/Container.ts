@@ -6,26 +6,37 @@ import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrat
 import { IContainer } from './IContainer';
 import { RequestContainer } from './RequestContainer';
 import { v4 } from 'uuid';
+import { IsNever } from '../utils/TypesHelpers';
+import { PickExternals } from '../utils/PickExternals';
+
+export type ExternalsValues<TExternals> = IsNever<TExternals> extends true ? [] : [TExternals];
 
 // TODO: instead of using separate implementation for RequestContainer parametrize Container with reuseRequestContext = boolean
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue {
+  get<TValue, TExternals>(
+    instanceDefinition: InstanceDefinition<TValue, any, TExternals>,
+    ...externals: ExternalsValues<TExternals>
+  ): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.get(instanceDefinition);
+    return requestContext.get(instanceDefinition, ...externals);
   }
 
-  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, []>): Promise<TValue> {
+  getAsync<TValue, TExternals>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternals>,
+    ...externals: ExternalsValues<TExternals>
+  ): Promise<TValue> {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.getAsync(instanceDefinition);
+    return requestContext.getAsync(instanceDefinition, ...externals);
   }
 
   getAll<
-    TDefinition extends InstanceDefinition<any, any, []>,
-    TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
+    TDefinition extends InstanceDefinition<any, any, any>,
+    TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
   >(
-    ...definitions: TDefinitions
+    definitions: TDefinitions,
+    ...externals: ExternalsValues<PickExternals<TDefinitions>>
   ): {
     [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
       ? TInstance
@@ -35,11 +46,15 @@ export class Container implements IContainer {
     return definitions.map(def => requestContext.get(def)) as any;
   }
 
-  getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(
-    ...definitions: TLazyModule
+  getAllAsync<
+    TDefinition extends AsyncInstanceDefinition<any, any, any>,
+    TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
+  >(
+    definitions: TDefinitions,
+    ...externals: IsNever<PickExternals<TDefinitions>> extends true ? [] : [PickExternals<TDefinitions>]
   ): Promise<
     {
-      [K in keyof TLazyModule]: TLazyModule[K] extends AsyncInstanceDefinition<infer TInstance, any, []>
+      [K in keyof TDefinitions]: TDefinitions[K] extends AsyncInstanceDefinition<infer TInstance, any, []>
         ? TInstance
         : unknown;
     }
