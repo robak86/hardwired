@@ -10,7 +10,7 @@ export class HierarchicalStore {
     return new HierarchicalStore(overriddenKeys, this);
   }
 
-  set(key, value) {
+  set(key: string, value: any) {
     if (this.ownDefinitionsIds.includes(key) || !this.parent) {
       this.ownEntries[key] = value;
     } else {
@@ -18,7 +18,7 @@ export class HierarchicalStore {
     }
   }
 
-  get(key) {
+  get(key: string): any {
     if (this.ownDefinitionsIds.includes(key) || !this.parent) {
       return this.ownEntries[key];
     } else {
@@ -26,7 +26,7 @@ export class HierarchicalStore {
     }
   }
 
-  has(key: string) {
+  has(key: string): boolean {
     if (this.ownDefinitionsIds.includes(key) || !this.parent) {
       return !!this.ownEntries[key];
     }

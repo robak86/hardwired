@@ -1,11 +1,11 @@
 import { InstancesStore } from './InstancesStore';
-import { ContainerScopeOptions } from '../container/Container';
+import { ContainerScopeOptions, ExternalsValues } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -30,13 +30,16 @@ export class ContainerContext implements InstancesBuilder {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>, useOverrides = true): TValue {
+  get<TValue, TExternals>(
+    instanceDefinition: InstanceDefinition<TValue, any, TExternals>,
+    ...externals: ExternalsValues<TExternals>
+  ): TValue {
     if (instanceDefinition.scopeOverrides && useOverrides) {
       const scopedContainer = this.checkoutScope(
-          {
-            scopeOverrides: instanceDefinition.scopeOverrides,
-          },
-          true,
+        {
+          scopeOverrides: instanceDefinition.scopeOverrides,
+        },
+        true,
       );
 
       return scopedContainer.get(instanceDefinition, false);
@@ -45,13 +48,16 @@ export class ContainerContext implements InstancesBuilder {
     }
   }
 
-  getAsync<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, []>, useOverrides = true): Promise<TValue> {
+  getAsync<TValue, TExternals>(
+    instanceDefinition: AnyInstanceDefinition<TValue, any, TExternals>,
+    ...externals: ExternalsValues<TExternals>
+  ): Promise<TValue> {
     if (instanceDefinition.scopeOverrides && useOverrides) {
       const scopedContainer = this.checkoutScope(
-          {
-            scopeOverrides: instanceDefinition.scopeOverrides,
-          },
-          true,
+        {
+          scopeOverrides: instanceDefinition.scopeOverrides,
+        },
+        true,
       );
 
       return scopedContainer.getAsync(instanceDefinition, false);

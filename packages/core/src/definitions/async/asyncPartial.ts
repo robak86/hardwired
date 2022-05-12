@@ -4,6 +4,7 @@ import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { uncurryAsync, UnCurryAsync } from '../../utils/UnCurryAsync';
 import { LifeTime } from '../abstract/LifeTime';
 import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
+import { Resolution } from '../abstract/Resolution';
 
 export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   <
@@ -15,7 +16,7 @@ export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
   ): AsyncInstanceDefinition<
     PartiallyAppliedAsyncFn<Parameters<UnCurryAsync<Fn>>, TArgs, ReturnType<UnCurryAsync<Fn>>>,
     TLifeTime,
-    PickExternals<TArgs> extends any[] ? PickExternals<TArgs> : never
+    PickExternals<TArgs>
   >;
 };
 
@@ -25,14 +26,15 @@ export const asyncPartial = <TLifeTime extends LifeTime>(
   return (fn, ...args) => {
     const uncurried: any = uncurryAsync(fn);
 
-    return new AsyncInstanceDefinition({
+    return {
       id: v4(),
+      resolution: Resolution.async,
       strategy,
-      externals: pickExternals(args),
+      externals: pickExternals(args) as any,
       create: async context => {
         const dependenciesInstance = await Promise.all(args.map(context.buildWithStrategy));
         return uncurried.bind(null, ...dependenciesInstance);
       },
-    });
+    };
   };
 };

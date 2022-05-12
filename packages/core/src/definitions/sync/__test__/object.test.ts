@@ -17,7 +17,7 @@ describe(`object`, () => {
     const someStr = value('str');
     const composed = object({ num: someNumberD, str: someStr });
 
-    expectType<TypeEqual<typeof composed, InstanceDefinition<{ num: number; str: string }, LifeTime.singleton, []>>>(
+    expectType<TypeEqual<typeof composed, InstanceDefinition<{ num: number; str: string }, LifeTime.singleton, never>>>(
       true,
     );
   });

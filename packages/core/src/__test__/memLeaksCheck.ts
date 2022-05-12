@@ -6,7 +6,7 @@ import { scoped, singleton, transient } from '../definitions/definitions';
 import { external } from '../definitions/sync/external';
 import { factory, IFactory } from '../definitions/sync/factory';
 
-export const inspect = obj => {
+export const inspect = (obj: any) => {
   return console.log(u.inspect(obj, false, null, true));
 };
 
@@ -18,10 +18,10 @@ type ConfigData = { data: string };
 
 class ConfigConsumer {
   public data = Array.from(Array(10000).keys());
-  constructor(public configFactory: IFactory<ConfigProvider, [ConfigData]>) {}
+  constructor(public configFactory: IFactory<ConfigProvider, { config: ConfigData }>) {}
 }
 
-const config = external<ConfigData>();
+const config = external('config').type<ConfigData>();
 const d1 = transient.class(ConfigProvider, config);
 const d2 = scoped.class(ConfigConsumer, factory(d1));
 
@@ -30,7 +30,7 @@ const c = container();
 const hd = new memwatch.HeapDiff();
 
 for (let i = 0; i < 100000000; i++) {
-  c.get(d2).configFactory.build({ data: 'someData' });
+  c.get(d2).configFactory.build({ config: { data: 'someData' } });
 
   if (i % 100 === 0) {
     console.log(i);

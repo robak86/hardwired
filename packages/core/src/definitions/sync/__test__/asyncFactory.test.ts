@@ -17,7 +17,7 @@ describe(`factory`, () => {
       const randomNumFactoryD = asyncFactory(randomNumD);
 
       const factoryInstance = container().get(randomNumFactoryD);
-      expectType<TypeEqual<typeof factoryInstance, IFactory<Promise<number>, []>>>(true);
+      expectType<TypeEqual<typeof factoryInstance, IFactory<Promise<number>, never>>>(true);
       expect(typeof (await factoryInstance.build())).toEqual('number');
     });
 
@@ -40,17 +40,16 @@ describe(`factory`, () => {
 
   describe(`mixin extension`, () => {
     it(`extends IFactory with provided base definition`, async () => {
-      type Ext = { ext: number };
       type Mixin = { someNum: number; someStr: string };
 
       const mixinD = value({ someNum: 123, someStr: 'str' });
-      const extD = external<Ext>();
+      const extD = external('ext').type<string>();
 
       class ExtConsumer {
-        constructor(public external: Ext) {}
+        constructor(public external: string) {}
       }
 
-      type Factory = IAsyncFactory<ExtConsumer, [Ext], Mixin>;
+      type Factory = IAsyncFactory<ExtConsumer, { ext: string }, Mixin>;
 
       const consumerD = request.asyncClass(ExtConsumer, extD);
 
@@ -70,54 +69,52 @@ describe(`factory`, () => {
 
   describe(`allowed instance definitions`, () => {
     it(`does not accepts singleton with externals`, async () => {
-      const ext = external<number>();
+      const ext = external('ext').type<number>();
       const build = () => {
         const def = singleton.asyncFn(async (val: number) => val, ext);
 
         // @ts-expect-error factory does not accept singleton with externals
         const factoryD = asyncFactory(def);
-      }
+      };
 
-      expect(build).toThrow()
+      expect(build).toThrow();
     });
   });
 
   describe(`using definitions with multiple externals provided in different orders`, () => {
     it(`provides correct dependencies`, async () => {
-      type Ext1 = { ext1: string };
-      const ext1 = external<Ext1>();
+      const ext1 = external('ext1').type<string>();
 
-      type Ext2 = { ext2: string };
-      const ext2 = external<Ext2>();
+      const ext2 = external('ext2').type<string>();
 
-      const consumer1 = async (ext1: Ext1, ext2: Ext2): Promise<[Ext1, Ext2]> => [
-        { ext1: `consumer1${ext1.ext1}` },
-        { ext2: `consumer2${ext2.ext2}` },
+      const consumer1 = async (ext1: string, ext2: string): Promise<[string, string]> => [
+        `consumer1${ext1}`,
+        `consumer2${ext2}`,
       ];
 
       const consumer1Spy = jest.fn(consumer1);
       const consumer1D = request.asyncPartial(consumer1Spy, ext1, ext2);
 
-      const consumer2 = async (ext2: Ext2, ext1: Ext1): Promise<[Ext2, Ext1]> => [
-        { ext2: `consumer2${ext2.ext2}` },
-        { ext1: `consumer1${ext1.ext1}` },
+      const consumer2 = async (ext2: string, ext1: string): Promise<[string, string]> => [
+        `consumer2${ext2}`,
+        `consumer1${ext1}`,
       ];
 
       const consumer2Spy = jest.fn(consumer2);
       const consumer2D = request.asyncPartial(consumer2Spy, ext2, ext1);
 
       const combined = async (
-        consumer1: () => Promise<[Ext1, Ext2]>,
-        consumer2: () => Promise<[Ext2, Ext1]>,
-      ): Promise<[Ext1, Ext2, Ext2, Ext1]> => {
+        consumer1: () => Promise<[string, string]>,
+        consumer2: () => Promise<[string, string]>,
+      ): Promise<[string, string, string, string]> => {
         return [...(await consumer1()), ...(await consumer2())];
       };
       const combinedD = request.asyncFn(combined, consumer1D, consumer2D);
 
       const compositionRoot = async (
-        factory: IAsyncFactory<[Ext1, Ext2, Ext2, Ext1], [Ext1, Ext2]>,
-      ): Promise<[Ext1, Ext2, Ext2, Ext1]> => {
-        return factory.build({ ext1: 'ext1' }, { ext2: 'ext2' });
+        factory: IAsyncFactory<[string, string, string, string], { ext1: string; ext2: string }>,
+      ): Promise<[string, string, string, string]> => {
+        return factory.build({ ext1: 'ext1', ext2: 'ext2' });
       };
 
       const compositionRootD = singleton.asyncFn(compositionRoot, asyncFactory(combinedD));
@@ -161,25 +158,29 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IAsyncFactory<Handler, [Request]>) {}
+      constructor(public handlersFactory: IAsyncFactory<Handler, { req: Request }>) {}
     }
 
     class DbConnection {
       public connectionId = v4();
     }
 
-    const requestD = external<Request>();
+    const requestD = external('req').type<Request>();
     describe(`building definition`, () => {
       it(`cancels moves externals to IFactory params producing InstanceDefinition having void for TExternals`, async () => {
         const requestIdD = singleton.asyncFn(async () => '1');
         const dbConnectionD = singleton.asyncClass(DbConnection);
         const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
         const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-        const routerD = transient.asyncClass(Router, asyncFactory(handlerD));
+        const handlerFactory = asyncFactory(handlerD);
+        const routerD = transient.asyncClass(Router, handlerFactory);
 
         const factoryD = asyncFactory(handlerD);
         expectType<
-          TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, LifeTime.transient, []>>
+          TypeEqual<
+            typeof factoryD,
+            InstanceDefinition<IAsyncFactory<Handler, { req: Request }>, LifeTime.transient, never>
+          >
         >(true);
       });
     });
@@ -196,7 +197,7 @@ describe(`factory`, () => {
         const result = await cnt.getAsync(routerD);
         const externalsValue: Request = { requestObj: 'req' };
 
-        const handler = await result.handlersFactory.build(externalsValue);
+        const handler = await result.handlersFactory.build({ req: externalsValue });
         expect(handler).toBeInstanceOf(Handler);
         expect(handler.request).toEqual(externalsValue);
         expect(handler.requestId).toEqual('1');
@@ -216,7 +217,7 @@ describe(`factory`, () => {
           const result = await cnt.getAsync(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
-          const handler = await result.handlersFactory.build(externalsValue);
+          const handler = await result.handlersFactory.build({ req: externalsValue });
 
           expect(handler).toBeInstanceOf(Handler);
           expect(handler.requestId).toEqual(handler.logger.requestId);
@@ -233,8 +234,8 @@ describe(`factory`, () => {
           const result = await cnt.getAsync(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
-          const handlerInstance1 = await result.handlersFactory.build(externalsValue);
-          const handlerInstance2 = await result.handlersFactory.build(externalsValue);
+          const handlerInstance1 = await result.handlersFactory.build({ req: externalsValue });
+          const handlerInstance2 = await result.handlersFactory.build({ req: externalsValue });
 
           expect(handlerInstance1.requestId).not.toEqual(handlerInstance2.requestId);
         });
@@ -251,7 +252,7 @@ describe(`factory`, () => {
           const cnt = container([set(requestIdD, 'overridden')]);
           const result = await cnt.getAsync(routerD);
           const externalsValue: Request = { requestObj: 'req' };
-          const handler = await result.handlersFactory.build(externalsValue);
+          const handler = await result.handlersFactory.build({ req: externalsValue });
 
           expect(handler).toBeInstanceOf(Handler);
           expect(handler.requestId).toEqual('overridden');
@@ -268,8 +269,8 @@ describe(`factory`, () => {
           const result = await cnt.getAsync(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
-          const handlerInstance1 = await result.handlersFactory.build(externalsValue);
-          const handlerInstance2 = await result.handlersFactory.build(externalsValue);
+          const handlerInstance1 = await result.handlersFactory.build({ req: externalsValue });
+          const handlerInstance2 = await result.handlersFactory.build({ req: externalsValue });
 
           expect(handlerInstance1.dbConnection.connectionId).toEqual(handlerInstance2.dbConnection.connectionId);
         });
@@ -295,7 +296,7 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IAsyncFactory<Handler, [Request]>) {}
+      constructor(public handlersFactory: IAsyncFactory<Handler, { req: Request }>) {}
     }
 
     class App {
@@ -306,11 +307,11 @@ describe(`factory`, () => {
       public app1?: App;
       public app2?: App;
 
-      constructor(private modulesFactory: IAsyncFactory<App, [EnvConfig]>) {}
+      constructor(private modulesFactory: IAsyncFactory<App, { env: EnvConfig }>) {}
 
       async mountApps() {
-        this.app1 = await this.modulesFactory.build({ mountPoint: '/app1' });
-        this.app2 = await this.modulesFactory.build({ mountPoint: '/app2' });
+        this.app1 = await this.modulesFactory.build({ env: { mountPoint: '/app1' } });
+        this.app2 = await this.modulesFactory.build({ env: { mountPoint: '/app2' } });
       }
     }
 
@@ -318,8 +319,8 @@ describe(`factory`, () => {
       public connectionId = v4();
     }
 
-    const requestD = external<Request>();
-    const envConfigD = external<EnvConfig>();
+    const requestD = external('req').type<Request>();
+    const envConfigD = external('env').type<EnvConfig>();
 
     it(`creates correct composition root`, async () => {
       const requestIdD = request.asyncFn(async () => v4());
@@ -355,10 +356,10 @@ describe(`factory`, () => {
       expect(app.app2?.envConfig.mountPoint).toEqual('/app2');
 
       const requestObject = { requestObj: 'req' as const };
-      const handlerInstance11 = await app.app1?.router.handlersFactory.build(requestObject);
-      const handlerInstance12 = await app.app1?.router.handlersFactory.build(requestObject);
-      const handlerInstance21 = await app.app2?.router.handlersFactory.build(requestObject);
-      const handlerInstance22 = await app.app2?.router.handlersFactory.build(requestObject);
+      const handlerInstance11 = await app.app1?.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance12 = await app.app1?.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance21 = await app.app2?.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance22 = await app.app2?.router.handlersFactory.build({ req: requestObject });
 
       expect(handlerInstance11?.dbConnection.connectionId).toEqual(handlerInstance12?.dbConnection.connectionId);
       expect(handlerInstance12?.dbConnection.connectionId).toEqual(handlerInstance21?.dbConnection.connectionId);
@@ -386,10 +387,10 @@ describe(`factory`, () => {
       expect(app.app2?.envConfig.mountPoint).toEqual('/app2');
 
       const requestObject = { requestObj: 'req' as const };
-      const handlerInstance11 = await app.app1?.router.handlersFactory.build(requestObject);
-      const handlerInstance12 = await app.app1?.router.handlersFactory.build(requestObject);
-      const handlerInstance21 = await app.app2?.router.handlersFactory.build(requestObject);
-      const handlerInstance22 = await app.app2?.router.handlersFactory.build(requestObject);
+      const handlerInstance11 = await app.app1?.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance12 = await app.app1?.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance21 = await app.app2?.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance22 = await app.app2?.router.handlersFactory.build({ req: requestObject });
 
       expect(handlerInstance11?.dbConnection.connectionId).toEqual(handlerInstance12?.dbConnection.connectionId);
       expect(handlerInstance21?.dbConnection.connectionId).toEqual(handlerInstance22?.dbConnection.connectionId);

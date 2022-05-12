@@ -19,7 +19,7 @@ function buildSingletonsTree(times: number, depth: number, currentDepth = 0): In
   return definitions;
 }
 
-function buildTransient(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any>[] {
+function buildTransient(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any, never>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -33,7 +33,7 @@ function buildTransient(times: number, depth: number, currentDepth = 0): Instanc
   return definitions;
 }
 
-function resolveByObject(container: Container, def: InstanceDefinition<any, any>, times: number) {
+function resolveByObject(container: Container, def: InstanceDefinition<any, any, never>, times: number) {
   const result = {
     avg: -1,
     max: -1,

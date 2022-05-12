@@ -1,23 +1,12 @@
-import { InstanceDefinition } from '../sync/InstanceDefinition';
 import { LifeTime } from '../LifeTime';
 import { Resolution } from '../Resolution';
-import { BaseDefinition } from '../base/BaseDefinition';
-import { ContainerContext } from "../../../context/ContainerContext";
+import { InstanceDefinitionContext } from '../sync/InstanceDefinition';
+import { ExternalsInstances } from '../base/BaseDefinition';
 
-interface AsyncInstanceDefinitionParams<T, TLifeTime extends LifeTime, TExternals> {
-  id?: string;
+export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime, TExternals> = {
+  id: string;
   strategy: TLifeTime;
-  externals: Array<InstanceDefinition<any, any>>;
-  create: (context: ContainerContext, _?: TExternals) => Promise<T>;
-}
-
-export class AsyncInstanceDefinition<T, TLifeTime extends LifeTime, TExternals extends any[]> extends BaseDefinition<
-  Promise<T>,
-  TLifeTime,
-  TExternals,
-  Resolution.async
-> {
-  constructor(params: AsyncInstanceDefinitionParams<T, TLifeTime, TExternals>) {
-    super(Resolution.async, params);
-  }
-}
+  resolution: Resolution.async;
+  externals: ExternalsInstances<TExternals>;
+  create: (context: InstanceDefinitionContext, _?: TExternals) => Promise<T>;
+};

@@ -2,11 +2,12 @@ import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { Resolution } from '../abstract/Resolution';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
+import { v4 } from "uuid";
 
 export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>(
   ...definitions: T
 ): InstanceDefinition<
-  { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : unknown },
+  { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any, never> ? TInstance : unknown },
   DerivedLifeTime<
     { [K in keyof T]: T[K] extends InstanceDefinition<any, infer TLifeTime, any> ? TLifeTime : never }[number]
   >,
@@ -14,7 +15,9 @@ export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
-  return new InstanceDefinition({
+  return {
+    id: v4(),
+    resolution: Resolution.sync,
     strategy,
     externals: pickExternals(definitions),
     create: context => {
@@ -22,5 +25,5 @@ export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>
         return context.buildWithStrategy(def);
       }) as any;
     },
-  });
+  };
 };
