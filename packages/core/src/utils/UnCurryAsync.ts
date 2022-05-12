@@ -15,7 +15,7 @@ export type UnCurryAsync<T, TArgsAggregate extends any[] = []> =
 export function uncurryAsync<T extends (...args: any[]) => any>(fn: T): UnCurryAsync<T> {
   type AnyFn = (...args: any[]) => Promise<any>;
 
-  const run = async (fn: AnyFn, args: any[]) => {
+  const run = async (fn: AnyFn, args: any[]): Promise<any> => {
     const arity = fn.length;
 
     const own = args.slice(0, arity);
@@ -30,5 +30,5 @@ export function uncurryAsync<T extends (...args: any[]) => any>(fn: T): UnCurryA
     }
   };
 
-  return ((...args) => run(fn, args)) as any;
+  return ((...args: any[]) => run(fn, args)) as any;
 }
