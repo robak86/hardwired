@@ -1,5 +1,5 @@
 import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
+import { assertNoExternals, pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
 import { ContainerContext } from '../../context/ContainerContext';
 import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
@@ -41,7 +41,9 @@ export type DefineBuildFn<TLifeTime extends LifeTime> = TLifeTime extends LifeTi
 export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineBuildFn<TLifeTime> =>
   ((fnOrExternals: any, fn?: any) => {
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
-    const externals = Array.isArray(fnOrExternals) ? fnOrExternals : [];
+    const externalsArr = Array.isArray(fnOrExternals) ? fnOrExternals : [];
+    const externals = pickExternals(externalsArr);
+    assertNoExternals(lifetime, externals);
 
     return {
       id: v4(),

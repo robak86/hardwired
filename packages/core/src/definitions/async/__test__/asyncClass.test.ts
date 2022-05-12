@@ -22,7 +22,7 @@ describe(`asyncClass`, () => {
             asyncClass(LifeTime.transient)(NumberConsumer, dep);
           };
 
-          expect(build).toThrow('Externals with singleton life time are not supported');
+          expect(build).toThrow('Strategy=singleton does not support external parameters.');
         });
 
         it(`accepts request def with externals`, async () => {
@@ -45,7 +45,7 @@ describe(`asyncClass`, () => {
             asyncClass(LifeTime.request)(NumberConsumer, dep);
           };
 
-          expect(build).toThrow('Externals with singleton life time are not supported');
+          expect(build).toThrow('Strategy=singleton does not support external parameters.');
         });
 
         it(`accepts request def with externals`, async () => {
@@ -68,7 +68,7 @@ describe(`asyncClass`, () => {
             asyncClass(LifeTime.singleton)(NumberConsumer, dep);
           };
 
-          expect(build).toThrow('Externals with singleton life time are not supported');
+          expect(build).toThrow('Strategy=singleton does not support external parameters.');
         });
 
         it(`accepts request def with externals`, async () => {

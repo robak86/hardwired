@@ -76,7 +76,7 @@ describe(`factory`, () => {
         const factoryD = factory(def);
       };
 
-      expect(buildDef).toThrow('Externals with singleton life time are not supported');
+      expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
     });
   });
 
@@ -213,7 +213,9 @@ describe(`factory`, () => {
           const loggerD = transient.class(Logger, requestD, requestIdD);
           const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
           const routerD = transient.class(Router, factory(handlerD));
-          const cnt = container([set(requestD, { requestObj: 'sss' })]);
+          const override = set(requestD, { requestObj: 'sss' });
+
+          const cnt = container([override]);
           const result = cnt.get(routerD);
           const handler = result.handlersFactory.build({ req: { requestObj: 'req' } });
 
@@ -274,23 +276,10 @@ describe(`factory`, () => {
 
       const cnt = container();
       const result = cnt.get(compositionRootD);
-      expect(result).toEqual([
-        {
-          ext1: 'consumer1ext1',
-        },
-        {
-          ext2: 'consumer2ext2',
-        },
-        {
-          ext2: 'consumer2ext2',
-        },
-        {
-          ext1: 'consumer1ext1',
-        },
-      ]);
+      expect(result).toEqual(['consumer1ext1', 'consumer2ext2', 'consumer2ext2', 'consumer1ext1']);
 
-      expect(consumer1Spy).toHaveBeenCalledWith({ ext1: 'ext1' }, { ext2: 'ext2' });
-      expect(consumer2Spy).toHaveBeenCalledWith({ ext2: 'ext2' }, { ext1: 'ext1' });
+      expect(consumer1Spy).toHaveBeenCalledWith('ext1', 'ext2');
+      expect(consumer2Spy).toHaveBeenCalledWith('ext2', 'ext1');
     });
   });
 

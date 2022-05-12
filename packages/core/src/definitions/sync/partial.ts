@@ -1,6 +1,6 @@
 import { PartialFnDependencies, PartiallyAppliedFn } from '../../utils/PartiallyApplied';
 import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { pickExternals, PickExternals } from '../../utils/PickExternals';
+import { assertNoExternals, pickExternals, PickExternals } from '../../utils/PickExternals';
 import { uncurry, UnCurry } from '../../utils/UnCurry';
 import { LifeTime } from '../abstract/LifeTime';
 import { Resolution } from '../abstract/Resolution';
@@ -20,12 +20,14 @@ export type PartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
 export const partial = <TLifeTime extends LifeTime>(strategy: TLifeTime): PartiallyAppliedFnBuild<TLifeTime> => {
   return (fn: any, ...dependencies: any[]) => {
     const uncurried: any = uncurry(fn);
+    const externals = pickExternals(dependencies);
+    assertNoExternals(strategy, externals);
 
     return {
       id: `${fn.name}:${v4()}`,
       resolution: Resolution.sync,
       strategy,
-      externals: pickExternals(dependencies),
+      externals,
       create: context => uncurried.bind(null, ...dependencies.map(context.buildWithStrategy)),
     };
   };

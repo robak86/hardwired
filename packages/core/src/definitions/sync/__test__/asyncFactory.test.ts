@@ -121,23 +121,10 @@ describe(`factory`, () => {
 
       const cnt = container();
       const result = await cnt.getAsync(compositionRootD);
-      expect(result).toEqual([
-        {
-          ext1: 'consumer1ext1',
-        },
-        {
-          ext2: 'consumer2ext2',
-        },
-        {
-          ext2: 'consumer2ext2',
-        },
-        {
-          ext1: 'consumer1ext1',
-        },
-      ]);
+      expect(result).toEqual(['consumer1ext1', 'consumer2ext2', 'consumer2ext2', 'consumer1ext1']);
 
-      expect(consumer1Spy).toHaveBeenCalledWith({ ext1: 'ext1' }, { ext2: 'ext2' });
-      expect(consumer2Spy).toHaveBeenCalledWith({ ext2: 'ext2' }, { ext1: 'ext1' });
+      expect(consumer1Spy).toHaveBeenCalledWith('ext1', 'ext2');
+      expect(consumer2Spy).toHaveBeenCalledWith('ext2', 'ext1');
     });
   });
 

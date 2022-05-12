@@ -1,7 +1,7 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import invariant from 'tiny-invariant';
 import { LifeTime } from '../definitions/abstract/LifeTime';
-import { ExternalsValuesRecord } from "../definitions/abstract/base/BaseDefinition";
+import { ExternalsValuesRecord } from '../definitions/abstract/base/BaseDefinition';
+import { assertCompatible } from '../utils/PickExternals';
 
 export const apply = <
   TInstance,
@@ -14,10 +14,7 @@ export const apply = <
   applyFn: (prevValue: TInstance, ...decoratorDeps: TDecoratorDependencies) => void,
   ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any, never> }
 ): InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals> => {
-  invariant(
-    dependencies.every(d => d.externals.length === 0),
-    `apply does accept additional dependencies with external params`,
-  );
+  assertCompatible(instance, dependencies);
 
   return {
     id: instance.id,

@@ -33,14 +33,14 @@ export class Container implements IContainer {
     TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
   >(
     definitions: TDefinitions,
-    ...externals: ExternalsValues<PickExternals<TDefinitions>>
+    ...[externals]: ExternalsValues<PickExternals<TDefinitions>>
   ): {
     [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
       ? TInstance
       : unknown;
   } {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return definitions.map(def => requestContext.get(def)) as any;
+    return definitions.map(def => requestContext.get(def, externals)) as any;
   }
 
   getAllAsync<
@@ -48,7 +48,7 @@ export class Container implements IContainer {
     TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
   >(
     definitions: TDefinitions,
-    ...externals: ExternalsValues<PickExternals<TDefinitions>>
+    ...[externals]: ExternalsValues<PickExternals<TDefinitions>>
   ): Promise<
     {
       [K in keyof TDefinitions]: TDefinitions[K] extends AsyncInstanceDefinition<infer TInstance, any, []>
@@ -58,11 +58,11 @@ export class Container implements IContainer {
   > {
     const requestContext = this.containerContext.checkoutRequestScope();
 
-    return Promise.all(definitions.map(def => requestContext.getAsync(def))) as any;
+    return Promise.all(definitions.map(def => requestContext.getAsync(def, externals))) as any;
   }
 
-  checkoutRequestScope(): IContainer {
-    return new RequestContainer(this.containerContext.checkoutRequestScope());
+  checkoutRequestScope<TExternals = never>(externals?: TExternals): RequestContainer<TExternals> {
+    return new RequestContainer<TExternals>(this.containerContext.checkoutRequestScope(), externals);
   }
 
   /***
@@ -76,16 +76,19 @@ export class Container implements IContainer {
   }
 }
 
+
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  scopeOverrides?: AnyInstanceDefinition<any, any, any>[];
-  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to descendant containers
+  scopeOverrides?: AnyInstanceDefinition<any, any, never>[];
+  globalOverrides?: AnyInstanceDefinition<any, any, never>[]; // propagated to descendant containers
 };
 
-export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[]): Container;
+export function container(globalOverrides?: AnyInstanceDefinition<any, any, never>[]): Container;
 export function container(options?: ContainerOptions): Container;
-export function container(overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any>>): Container {
+export function container(
+  overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any, never>>,
+): Container {
   if (Array.isArray(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {
