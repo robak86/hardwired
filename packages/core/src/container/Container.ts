@@ -6,10 +6,7 @@ import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrat
 import { IContainer } from './IContainer';
 import { RequestContainer } from './RequestContainer';
 import { v4 } from 'uuid';
-import { IsNever } from '../utils/TypesHelpers';
-import { PickExternals } from '../utils/PickExternals';
-
-export type ExternalsValues<TExternals> = IsNever<TExternals> extends true ? [] : [TExternals];
+import { ExternalsValues, PickExternals } from '../utils/PickExternals';
 
 // TODO: instead of using separate implementation for RequestContainer parametrize Container with reuseRequestContext = boolean
 export class Container implements IContainer {
@@ -51,7 +48,7 @@ export class Container implements IContainer {
     TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
   >(
     definitions: TDefinitions,
-    ...externals: IsNever<PickExternals<TDefinitions>> extends true ? [] : [PickExternals<TDefinitions>]
+    ...externals: ExternalsValues<PickExternals<TDefinitions>>
   ): Promise<
     {
       [K in keyof TDefinitions]: TDefinitions[K] extends AsyncInstanceDefinition<infer TInstance, any, []>

@@ -2,9 +2,10 @@ import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { ContainerContext } from '../../context/ContainerContext';
-import { IsNever } from '../../utils/TypesHelpers';
+
 import { v4 } from 'uuid';
 import { Resolution } from '../abstract/Resolution';
+import { NeverToVoid } from "../../utils/PickExternals";
 
 // prettier-ignore
 export type AsyncFactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams> =
@@ -14,7 +15,7 @@ export type AsyncFactoryDefinition<TValue, TLifeTime extends LifeTime, TExternal
     | AnyInstanceDefinition<TValue, LifeTime.scoped, TExternalParams>
 
 export type IAsyncFactory<TReturn, TParams extends Record<string, any>, TFactoryMixin = unknown> = {
-  build(params: IsNever<TParams> extends true ? void : TParams): Promise<TReturn>;
+  build(params: NeverToVoid<TParams>): Promise<TReturn>;
 } & TFactoryMixin;
 
 // factory is always transient in order to prevent memory leaks if factory definition is created dynamically - each dynamically created factory would create new entry for singleton in instances store

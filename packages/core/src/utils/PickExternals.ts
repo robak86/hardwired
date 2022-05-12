@@ -1,71 +1,40 @@
-import { filterDuplicates } from './FilterDuplicates';
-import { WithExternals } from '../definitions/abstract/base/BaseDefinition';
-import { IsNever, IsUnknown } from './TypesHelpers';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import { Simplify } from 'type-fest';
-import { ExternalsValues } from "../container/Container";
-
-// prettier-ignore
-// export type PickExternals<T> =
-//     UnknownToNever<
-//         T extends [infer A] ? ExtractExternals<A> :
-//         T extends [infer A, ...infer Rest] ? Merge<ExtractExternals<A>,PickExternals<Rest>> :
-//         never
-//       >
-//
-// type Merge<T1, T2> = NeverToUnknown<T1> & NeverToUnknown<T2>;
-
-type A = never | 1
+import { ExternalsDefinitions, WithExternals } from '../definitions/abstract/base/BaseDefinition';
 
 // prettier-ignore
 export type PickExternals<T> =
-    // // UnknownToNever<
-    //     T extends [] ? never :
-    //     T extends [infer A] ? ExtractExternals<A> :
-    //     T extends [infer A, ...infer Rest] ? (NeverToUnknown<ExtractExternals<A>> & NeverToUnknown<PickExternals<Rest>>) :
-    //     never
-    //     // >
-
-UnknownToNever<
     T extends [] ? never :
-    T extends [infer A] ? ExtractExternals<A> :
-    T extends [infer A, ...infer Rest] ? (NeverToUnknown<ExtractExternals<A>> & NeverToUnknown<PickExternals<Rest>>) :
+    T extends [WithExternals<never>] ? never :
+    T extends [WithExternals<infer TExternals>] ? TExternals :
+    T extends [WithExternals<never>, ...infer Rest] ? PickExternals<Rest> :
+    T extends [WithExternals<infer TExternals>, ...infer Rest] ? TExternals & NeverToUnknown<PickExternals<Rest>>:
     never
->
 
-// export type PickExternals<T> = PickExternalsRec<T>
+export type IsNever<T> = [T] extends [never] ? true : false;
+export type NeverToVoid<T> = IsNever<T> extends true ? void : T;
+type NeverToUnknown<T> = IsNever<T> extends true ? unknown : T;
 
-type ZZZ<T> = T extends [infer A] ? 1 : T extends [infer A, ...infer Rest] ? 2 : never;
+export type ExternalsValues<TExternals> = IsNever<TExternals> extends true ? [] : [TExternals];
 
-type ExtractExternals<T> =
-    T extends WithExternals<never> ? never :
-    T extends WithExternals<infer TExternals> ? TExternals : 'WTF';
+export const pickExternals = <T extends WithExternals<any>[]>(externals: T): ExternalsDefinitions<PickExternals<T>> => {
+  const merged = {} as ExternalsDefinitions<PickExternals<T>>;
 
-type CO_DO_KURWY = ExtractExternals<InstanceDefinition<any, any, never>>;
+  externals.forEach(externalsObj => {
+    Object.keys(externalsObj).forEach(key => {
+      const current = externalsObj[key as keyof typeof externalsObj] as any;
 
-type AA = PickExternals<[WithExternals<{ b: 1 }>, WithExternals<never>]>;
-type sdfsAA = PickExternals<[WithExternals<never>]>;
-type asdfasfd = PickExternals<[InstanceDefinition<any, any, never>]>;
-type sdfAA = PickExternals<[WithExternals<never>, WithExternals<{ b: 1 }>]>;
-type AAs = PickExternals<[WithExternals<{ b: 1 }>]>;
-type AsdfA = PickExternals<[WithExternals<never>]>;
-type AsasdfdfA = UnknownToNever<PickExternals<[WithExternals<never>, WithExternals<never>]>>;
-type AssddfA = PickExternals<[]>;
+      if (merged[key as keyof typeof merged]) {
+        if (merged[key as keyof typeof merged] !== current) {
+          throw new Error(`Multiple externals with id=${current.id} detected.`);
+        }
+      }
 
-export type UnknownToNever<T> = IsUnknown<T> extends true ? never : T;
-export type NeverToUnknown<T> = IsNever<T> extends true ? unknown : T;
+      merged[key as keyof typeof merged] = current;
+    });
+  });
 
-// prettier-ignore
-// export type PickExternals<TDepsInstances extends WithExternals<any>[]> =
-//     // UnknownToNever<UnionToIntersection<TDepsInstances[number] extends AnyInstanceDefinition<any, any, infer TExternals> ? TExternals : never>>
-//     Concat<TDepsInstances>
-// // IsFinite<
-// //     TDepsInstances,
-// //     // FilterDuplicates<Concat<{[K in keyof TDepsInstances]: TDepsInstances[K] extends AnyInstanceDefinition<any,any, infer TExternals> ? TExternals : never}>>,
-// //     UnionToIntersection<{ [K in keyof TDepsInstances]: TDepsInstances[K] extends AnyInstanceDefinition<any, any, infer TExternals> ? TExternals : never }>,
-// //     []
-// // >
-
-export const pickExternals = <T extends WithExternals<any>[]>(externals: T): ExternalsValues<PickExternals<T>> => {
-  return filterDuplicates(externals.flatMap(def => def.externals));
+  return merged;
 };
+
+export const externalsToScopeOverrides = () => {
+
+}

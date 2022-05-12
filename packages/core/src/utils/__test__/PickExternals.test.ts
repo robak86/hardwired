@@ -12,6 +12,21 @@ describe(`PickExternals`, () => {
     expectType<TypeEqual<Combined, never>>(true);
   });
 
+  it(`returns correct type for empty externals tuple`, async () => {
+    type Combined = PickExternals<[]>;
+    expectType<TypeEqual<Combined, never>>(true);
+  });
+
+  it(`returns correct type ex.1`, async () => {
+    type Combined = PickExternals<[WithExternals<{ b: 1 }>, WithExternals<never>]>;
+    expectType<TypeEqual<Combined, { b: 1 }>>(true);
+  });
+
+  it(`returns correct type ex.2`, async () => {
+    type Combined = PickExternals<[PickExternals<[WithExternals<never>, WithExternals<never>]>]>;
+    expectType<TypeEqual<Combined, never>>(true);
+  });
+
   it(`returns correct type`, async () => {
     type Combined = PickExternals<
       [
@@ -19,7 +34,7 @@ describe(`PickExternals`, () => {
         InstanceDefinition<any, any, { item2: string }>,
         InstanceDefinition<any, any, { item3: boolean }>,
         InstanceDefinition<any, any, never>,
-        // WithExternals< never>,
+        WithExternals<never>,
       ]
     >;
     expectType<

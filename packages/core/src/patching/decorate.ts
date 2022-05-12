@@ -1,12 +1,11 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import invariant from 'tiny-invariant';
 import { LifeTime } from '../definitions/abstract/LifeTime';
-import { ExternalsRecord } from '../definitions/abstract/base/BaseDefinition';
-import { Resolution } from "../definitions/abstract/Resolution";
+import { ExternalsValuesRecord } from '../definitions/abstract/base/BaseDefinition';
 
 export function decorate<
   TInstance,
-  TDecoratedExternals extends ExternalsRecord,
+  TDecoratedExternals extends ExternalsValuesRecord,
   TNextValue extends TInstance,
   TDecoratorDependencies extends any[],
   TLifeTime extends LifeTime,
@@ -15,10 +14,13 @@ export function decorate<
   decorator: (prevValue: TInstance, ...decoratorDeps: TDecoratorDependencies) => TNextValue,
   ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any, never> }
 ): InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals> {
+  const externalKeys = Object.keys(instance.externals);
+
   invariant(
-    dependencies.every(d => d.externals.length === 0),
+    dependencies.every(d => Object.keys(d.externals).forEach(key => externalKeys.includes(key))),
     `decorate does accept additional dependencies with external params`,
   );
+
   return {
     id: instance.id,
     strategy: instance.strategy,
