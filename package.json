@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@airbnb/node-memwatch": "^2.0.0",
+    "@types/airbnb__node-memwatch": "^2.0.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/react-hooks": "^7.0.0",
