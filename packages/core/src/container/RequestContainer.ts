@@ -1,24 +1,30 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
 import { ContainerContext } from '../context/ContainerContext';
-import { IContainer } from './IContainer';
 import { v4 } from 'uuid';
-import { ContainerScopeOptions } from './Container';
 
-export class RequestContainer  {
-  constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
+export class RequestContainer<TBoundExternals> {
+  constructor(
+    protected readonly containerContext: ContainerContext,
+    private externalValues?: TBoundExternals,
+    public id: string = v4(),
+  ) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, never>): TValue {
-    return this.containerContext.get(instanceDefinition);
+  get<TValue, TExternals extends Partial<TBoundExternals>>(
+    instanceDefinition: InstanceDefinition<TValue, any, TExternals>,
+  ): TValue {
+    return this.containerContext.get(instanceDefinition, this.externalValues as any);
   }
 
-  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, never>): Promise<TValue> {
-    return this.containerContext.getAsync(instanceDefinition);
+  getAsync<TValue, TExternals extends Partial<TBoundExternals>>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternals>,
+  ): Promise<TValue> {
+    return this.containerContext.getAsync(instanceDefinition, this.externalValues as any);
   }
 
   getAll<
     TDefinition extends InstanceDefinition<any, any, never>,
-    TDefinitions extends  [TDefinition] | [TDefinition, ...TDefinition[]],
+    TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
   >(
     ...definitions: TDefinitions
   ): {
@@ -26,7 +32,7 @@ export class RequestContainer  {
       ? TInstance
       : unknown;
   } {
-    return definitions.map(def => this.containerContext.get(def)) as any;
+    return definitions.map(def => this.containerContext.get(def, this.containerContext)) as any;
   }
 
   getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(
@@ -38,14 +44,16 @@ export class RequestContainer  {
         : unknown;
     }
   > {
-    return Promise.all(definitions.map(def => this.containerContext.getAsync(def))) as any;
+    return Promise.all(
+      definitions.map(def => this.containerContext.getAsync(def, this.containerContext as any)),
+    ) as any;
   }
 
-  checkoutRequestScope(): IContainer {
-    return new RequestContainer(this.containerContext.checkoutRequestScope());
-  }
-
-  checkoutScope(options: ContainerScopeOptions = {}): IContainer {
-    return new RequestContainer(this.containerContext.checkoutScope(options));
-  }
+  // checkoutRequestScope(): IContainer {
+  //   return new RequestContainer(this.containerContext.checkoutRequestScope());
+  // }
+  //
+  // checkoutScope(options: ContainerScopeOptions = {}): IContainer {
+  //   return new RequestContainer(this.containerContext.checkoutScope(options));
+  // }
 }

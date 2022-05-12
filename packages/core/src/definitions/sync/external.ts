@@ -1,28 +1,32 @@
-
 import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
+import { Resolution } from '../abstract/Resolution';
+
 
 export const external = <TId extends string>(id: TId) => {
   return {
     type<TValue>(): InstanceDefinition<TValue, LifeTime.request, { [K in TId]: TValue }> {
-      throw new Error('Implement me!');
-      // return new InstanceDefinition({
-      //   id,
-      //   strategy: LifeTime.request,
-      //   externals: [
-      //     new InstanceDefinition({
-      //       id,
-      //       strategy: LifeTime.request,
-      //       externals: [] as any,
-      //       create: (build): TExternalParams => {
-      //         throw new Error('Not applicable. External values are managed by the container');
-      //       },
-      //     }),
-      //   ],
-      //   create: (build): TExternalParams => {
-      //     throw new Error('Not applicable. External values are managed by the container');
-      //   },
-      // });
+      const external: InstanceDefinition<TValue, LifeTime.request, any> = {
+        id,
+        strategy: LifeTime.request,
+        resolution: Resolution.sync,
+        externals: [] as any,
+        create: (build: any) => {
+          throw new Error('Not applicable. External values are managed by the container');
+        },
+      };
+
+      return {
+        id,
+        strategy: LifeTime.request,
+        resolution: Resolution.sync,
+        externals: {
+          [id]: external,
+        } as unknown as { [K in TId]: InstanceDefinition<TValue, LifeTime.request, any> },
+        create: build => {
+          throw new Error('Not applicable. External values are managed by the container');
+        },
+      };
     },
   };
 };

@@ -2,10 +2,9 @@ import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { ContainerContext } from '../../context/ContainerContext';
-
 import { v4 } from 'uuid';
 import { Resolution } from '../abstract/Resolution';
-import { NeverToVoid } from "../../utils/PickExternals";
+import { NeverToVoid } from '../../utils/PickExternals';
 
 // prettier-ignore
 export type AsyncFactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams> =

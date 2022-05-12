@@ -17,7 +17,7 @@ describe(`define`, () => {
         // @ts-expect-error - accepts only single parameter (without externals)
         const z = define(LifeTime.singleton)([ext1], locator => null);
       };
-      expect(buildDef).toThrow('Externals with singleton life time are not supported');
+      expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
     });
 
     it(`preserves externals type`, async () => {
@@ -59,7 +59,7 @@ describe(`define`, () => {
       });
 
       const result = container().get(definition, { ext1: 1, ext2: 'str' });
-      expect(result).toEqual([{ ext1: 1 }, { ext2: 'str' }]);
+      expect(result).toEqual([1, 'str']);
     });
 
     it(`uses the same request scope for every get call`, async () => {

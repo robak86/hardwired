@@ -20,7 +20,7 @@ describe(`asyncFn`, () => {
             asyncPartial(LifeTime.transient)(numberConsumer, dep);
           }
 
-          expect(build).toThrow('Externals with singleton life time are not supported')
+          expect(build).toThrow('Strategy=singleton does not support external parameters.')
         });
 
         it(`accepts request def with externals`, async () => {
@@ -43,7 +43,7 @@ describe(`asyncFn`, () => {
             asyncPartial(LifeTime.request)(numberConsumer, dep);
           }
 
-          expect(build).toThrow('Externals with singleton life time are not supported')
+          expect(build).toThrow('Strategy=singleton does not support external parameters.')
         });
 
         it(`accepts request def with externals`, async () => {
@@ -66,7 +66,7 @@ describe(`asyncFn`, () => {
             asyncPartial(LifeTime.singleton)(numberConsumer, dep);
           }
 
-          expect(build).toThrow('Externals with singleton life time are not supported')
+          expect(build).toThrow('Strategy=singleton does not support external parameters.')
         });
 
         it(`accepts request def with externals`, async () => {

@@ -2,6 +2,7 @@ import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinit
 import invariant from 'tiny-invariant';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 import { ExternalsValuesRecord } from '../definitions/abstract/base/BaseDefinition';
+import { assertCompatible } from '../utils/PickExternals';
 
 export function decorate<
   TInstance,
@@ -14,12 +15,7 @@ export function decorate<
   decorator: (prevValue: TInstance, ...decoratorDeps: TDecoratorDependencies) => TNextValue,
   ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any, never> }
 ): InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals> {
-  const externalKeys = Object.keys(instance.externals);
-
-  invariant(
-    dependencies.every(d => Object.keys(d.externals).forEach(key => externalKeys.includes(key))),
-    `decorate does accept additional dependencies with external params`,
-  );
+  assertCompatible(instance, dependencies);
 
   return {
     id: instance.id,

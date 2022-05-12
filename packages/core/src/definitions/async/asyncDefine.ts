@@ -1,5 +1,5 @@
 import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
+import { assertNoExternals, pickExternals, PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
 import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
 import { ContainerContext } from '../../context/ContainerContext';
@@ -42,10 +42,8 @@ export const asyncDefine = <TLifeTime extends LifeTime>(lifetime: TLifeTime): De
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externalsArr = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 
-    const externals: ExternalsDefinitions<any> = {};
-    externalsArr.forEach((externalDefinition: InstanceDefinition<any, any, any>) => {
-      externals[externalDefinition.id] = externalDefinition;
-    });
+    const externals = pickExternals(externalsArr);
+    assertNoExternals(lifetime, externals);
 
     return {
       id: v4(),

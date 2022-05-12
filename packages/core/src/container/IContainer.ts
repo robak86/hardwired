@@ -2,6 +2,7 @@ import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinit
 import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
 import { ContainerScopeOptions } from './Container';
 import { ExternalsValues, PickExternals } from '../utils/PickExternals';
+import { RequestContainer } from './RequestContainer';
 
 export interface IContainer {
   readonly id: string;
@@ -42,6 +43,6 @@ export interface IContainer {
     }
   >;
 
-  checkoutRequestScope(): IContainer;
+  checkoutRequestScope<TExternals = never>(externals?:TExternals): RequestContainer<TExternals>;
   checkoutScope(options?: ContainerScopeOptions): IContainer;
 }

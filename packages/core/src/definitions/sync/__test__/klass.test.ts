@@ -45,7 +45,7 @@ describe(`klass`, () => {
               klass(LifeTime.transient)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time are not supported');
+            expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
           });
 
           it(`accepts request def with externals`, async () => {
@@ -68,7 +68,7 @@ describe(`klass`, () => {
               klass(LifeTime.request)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time are not supported');
+            expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
           });
 
           it(`accepts request def with externals`, async () => {
@@ -91,7 +91,7 @@ describe(`klass`, () => {
               klass(LifeTime.singleton)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time are not supported');
+            expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
           });
 
           it(`accepts request def with externals`, async () => {
@@ -100,7 +100,7 @@ describe(`klass`, () => {
               klass(LifeTime.singleton)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time are not supported');
+            expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
           });
 
           it(`accepts transient with externals`, async () => {
@@ -109,7 +109,7 @@ describe(`klass`, () => {
               klass(LifeTime.singleton)(NumberConsumer, dep);
             };
 
-            expect(buildDef).toThrow('Externals with singleton life time are not supported');
+            expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
           });
         });
       });
@@ -131,7 +131,10 @@ describe(`klass`, () => {
         const ext1 = external('objectId1').type<string>();
         const ext2 = external('objectId2').type<number>();
         const cls = klass(LifeTime.request)(TestCls, ext1, ext2);
-        expect(cls.externals).toEqual({ objectId1: 'someString', objectId2: 123 });
+        expect(cls.externals).toEqual({
+          objectId1: ext1.externals['objectId1'],
+          objectId2: ext2.externals['objectId2'],
+        });
       });
 
       it(`correctly picks unique externals2`, async () => {
@@ -153,7 +156,7 @@ describe(`klass`, () => {
         const cls2 = klass(LifeTime.transient)(TestCls2, ext2);
         const cls3 = klass(LifeTime.transient)(TestCls3, ext1, ext2, cls1, cls2);
 
-        expect(cls3.externals).toEqual({ ext1, ext2 });
+        expect(cls3.externals).toEqual({ objectId1: ext1.externals.objectId1, objectId2: ext2.externals.objectId2 });
       });
     });
   });

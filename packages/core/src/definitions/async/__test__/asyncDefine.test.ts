@@ -18,7 +18,7 @@ describe(`asyncDefine`, () => {
         const z = asyncDefine(LifeTime.singleton)([ext1], async locator => null);
       };
 
-      expect(build).toThrow('Externals with singleton life time are not supported');
+      expect(build).toThrow('Strategy=singleton does not support external parameters.');
     });
 
     it(`preserves externals type`, async () => {
@@ -55,7 +55,7 @@ describe(`asyncDefine`, () => {
       });
 
       const result = await container().getAsync(definition, { ext1: 1, ext2: 'str' });
-      expect(result).toEqual([{ ext1: 1 }, { ext2: 'str' }]);
+      expect(result).toEqual([1, 'str']);
     });
 
     it(`uses the same request scope for every get call`, async () => {
