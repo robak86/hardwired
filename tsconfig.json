@@ -11,7 +11,7 @@
     "isolatedModules": true,
     "declaration": true,
     "strict": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
     "removeComments": true,
