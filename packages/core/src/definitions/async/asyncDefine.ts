@@ -5,6 +5,7 @@ import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefiniti
 import { ContainerContext } from '../../context/ContainerContext';
 import { v4 } from 'uuid';
 import { Resolution } from '../abstract/Resolution';
+import { ExternalsDefinitions } from '../abstract/base/BaseDefinition';
 
 export interface DefineAsyncServiceLocator<TExternalParams> {
   get<TValue, Externals extends Partial<TExternalParams>>(
@@ -37,9 +38,14 @@ export type DefineAsyncBuildFn<TLifeTime extends LifeTime> = TLifeTime extends L
     };
 
 export const asyncDefine = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineAsyncBuildFn<TLifeTime> =>
-  ((fnOrExternals, fn?): AsyncInstanceDefinition<any, any, any> => {
+  ((fnOrExternals: any, fn?: any): AsyncInstanceDefinition<any, any, any> => {
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
-    const externals = Array.isArray(fnOrExternals) ? fnOrExternals : [];
+    const externalsArr = Array.isArray(fnOrExternals) ? fnOrExternals : [];
+
+    const externals: ExternalsDefinitions<any> = {};
+    externalsArr.forEach((externalDefinition: InstanceDefinition<any, any, any>) => {
+      externals[externalDefinition.id] = externalDefinition;
+    });
 
     return {
       id: v4(),

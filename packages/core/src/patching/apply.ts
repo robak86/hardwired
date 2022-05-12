@@ -1,11 +1,11 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import invariant from 'tiny-invariant';
 import { LifeTime } from '../definitions/abstract/LifeTime';
-import { ExternalsRecord } from "../definitions/abstract/base/BaseDefinition";
+import { ExternalsValuesRecord } from "../definitions/abstract/base/BaseDefinition";
 
 export const apply = <
   TInstance,
-  TDecoratedExternals extends ExternalsRecord,
+  TDecoratedExternals extends ExternalsValuesRecord,
   TNextValue extends TInstance,
   TDecoratorDependencies extends any[],
   TLifeTime extends LifeTime,

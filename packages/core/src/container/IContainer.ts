@@ -1,20 +1,19 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
-import { ContainerScopeOptions, ExternalsValues } from './Container';
-import { IsNever } from '../utils/TypesHelpers';
-import { PickExternals } from '../utils/PickExternals';
+import { ContainerScopeOptions } from './Container';
+import { ExternalsValues, PickExternals } from '../utils/PickExternals';
 
 export interface IContainer {
   readonly id: string;
 
   get<TValue, TExternals>(
     instanceDefinition: InstanceDefinition<TValue, any, TExternals>,
-    ...externals: IsNever<TExternals> extends true ? [] : [TExternals]
+    ...externals: ExternalsValues<TExternals>
   ): TValue;
 
   getAsync<TValue, TExternals>(
     instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternals>,
-    ...externals: IsNever<TExternals> extends true ? [] : [TExternals]
+    ...externals: ExternalsValues<TExternals>
   ): Promise<TValue>;
 
   getAll<
@@ -34,7 +33,7 @@ export interface IContainer {
     TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
   >(
     definitions: TDefinitions,
-    ...externals: IsNever<PickExternals<TDefinitions>> extends true ? [] : [PickExternals<TDefinitions>]
+    ...externals: ExternalsValues<PickExternals<TDefinitions>>
   ): Promise<
     {
       [K in keyof TDefinitions]: TDefinitions[K] extends AsyncInstanceDefinition<infer TInstance, any, []>

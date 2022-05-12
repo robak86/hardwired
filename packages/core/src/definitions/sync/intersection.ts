@@ -2,8 +2,8 @@ import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { pickExternals, PickExternals } from '../../utils/PickExternals';
 import { UnionToIntersection } from 'type-fest';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
-import { v4 } from "uuid";
-import { Resolution } from "../abstract/Resolution";
+import { v4 } from 'uuid';
+import { Resolution } from '../abstract/Resolution';
 
 export const intersection = <T extends Array<InstanceDefinition<object, any, any>>, TMeta>(
   ...definitions: T

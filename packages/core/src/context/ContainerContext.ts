@@ -1,11 +1,13 @@
 import { InstancesStore } from './InstancesStore';
-import { ContainerScopeOptions, ExternalsValues } from '../container/Container';
+import { ContainerScopeOptions } from '../container/Container';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
 import { InstancesBuilder } from './abstract/InstancesBuilder';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
+import { ExternalsValues } from '../utils/PickExternals';
+import { set } from '../patching/set';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -32,17 +34,28 @@ export class ContainerContext implements InstancesBuilder {
 
   get<TValue, TExternals>(
     instanceDefinition: InstanceDefinition<TValue, any, TExternals>,
-    ...externals: ExternalsValues<TExternals>
+    ...[externals]: ExternalsValues<TExternals>
   ): TValue {
-    if (instanceDefinition.scopeOverrides && useOverrides) {
+    if (externals) {
+      const scopeOverrides = Object.keys(instanceDefinition.externals).map(externalDefId => {
+        const externalValue = externals[externalDefId as keyof TExternals];
+        const externalDefinition = instanceDefinition.externals[externalDefId as keyof TExternals];
+
+        if (externalValue === undefined) {
+          throw new Error(`Missing external value for id=${externalDefId}`);
+        }
+
+        return set(externalDefinition, externalValue);
+      });
+
       const scopedContainer = this.checkoutScope(
         {
-          scopeOverrides: instanceDefinition.scopeOverrides,
+          scopeOverrides,
         },
         true,
       );
 
-      return scopedContainer.get(instanceDefinition, false);
+      return scopedContainer.get(instanceDefinition, ...([] as ExternalsValues<TExternals>));
     } else {
       return this.buildWithStrategy(instanceDefinition);
     }
@@ -50,7 +63,7 @@ export class ContainerContext implements InstancesBuilder {
 
   getAsync<TValue, TExternals>(
     instanceDefinition: AnyInstanceDefinition<TValue, any, TExternals>,
-    ...externals: ExternalsValues<TExternals>
+    ...[externals]: ExternalsValues<TExternals>
   ): Promise<TValue> {
     if (instanceDefinition.scopeOverrides && useOverrides) {
       const scopedContainer = this.checkoutScope(

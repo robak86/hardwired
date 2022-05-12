@@ -5,20 +5,20 @@ import { IContainer } from './IContainer';
 import { v4 } from 'uuid';
 import { ContainerScopeOptions } from './Container';
 
-export class RequestContainer implements IContainer {
+export class RequestContainer  {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, never>): TValue {
     return this.containerContext.get(instanceDefinition);
   }
 
-  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, []>): Promise<TValue> {
+  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, never>): Promise<TValue> {
     return this.containerContext.getAsync(instanceDefinition);
   }
 
   getAll<
-    TDefinition extends InstanceDefinition<any, any, []>,
-    TDefinitions extends [] | [TDefinition] | [TDefinition, ...TDefinition[]],
+    TDefinition extends InstanceDefinition<any, any, never>,
+    TDefinitions extends  [TDefinition] | [TDefinition, ...TDefinition[]],
   >(
     ...definitions: TDefinitions
   ): {

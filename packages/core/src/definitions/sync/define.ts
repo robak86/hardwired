@@ -39,7 +39,7 @@ export type DefineBuildFn<TLifeTime extends LifeTime> = TLifeTime extends LifeTi
     };
 
 export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineBuildFn<TLifeTime> =>
-  ((fnOrExternals, fn?) => {
+  ((fnOrExternals: any, fn?: any) => {
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externals = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 

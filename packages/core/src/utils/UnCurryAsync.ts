@@ -1,5 +1,6 @@
 import { IsFinite } from './IsFinite';
 
+
 type Awaited<T> = T extends Promise<infer TInner> ? TInner : T;
 
 // prettier-ignore

@@ -1,6 +1,7 @@
 import { IsFinite } from './IsFinite';
 
 // prettier-ignore
+// prettier-ignore
 export type UnCurry<T, TArgsAggregate extends any[] = []> =
   T extends (...args: infer TArgs) => infer TReturn ?
     IsFinite<
@@ -13,7 +14,7 @@ export type UnCurry<T, TArgsAggregate extends any[] = []> =
 export function uncurry<T extends (...args: any[]) => any>(fn: T): UnCurry<T> {
   type AnyFn = (...args: any[]) => any;
 
-  const run = (fn: AnyFn, args: any[]) => {
+  const run = (fn: AnyFn, args: any[]): any => {
     const arity = fn.length;
 
     const own = args.slice(0, arity);
@@ -28,5 +29,5 @@ export function uncurry<T extends (...args: any[]) => any>(fn: T): UnCurry<T> {
     }
   };
 
-  return ((...args) => run(fn, args)) as any;
+  return ((...args: any[]) => run(fn, args)) as any;
 }
