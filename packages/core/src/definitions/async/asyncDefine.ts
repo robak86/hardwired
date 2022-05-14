@@ -8,13 +8,9 @@ import { Resolution } from '../abstract/Resolution';
 import { ExternalsDefinitions } from '../abstract/base/BaseDefinition';
 
 export interface DefineAsyncServiceLocator<TExternalParams> {
-  get<TValue, Externals extends Partial<TExternalParams>>(
-    instanceDefinition: InstanceDefinition<TValue, any, Externals>,
-  ): TValue;
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, Partial<TExternalParams>>): TValue;
 
-  getAsync<TValue, Externals extends Partial<TExternalParams>>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, any, Externals>,
-  ): Promise<TValue>;
+  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, Partial<TExternalParams>>): Promise<TValue>;
 
   withNewRequestScope<TValue>(
     fn: (locator: DefineAsyncServiceLocator<TExternalParams>) => Promise<TValue>,

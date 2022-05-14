@@ -12,7 +12,7 @@ describe(`ContainerScope`, () => {
 
       const valueD = scoped.fn(() => (counter += 1));
 
-      const ValueRenderer = ({ testId }) => {
+      const ValueRenderer = ({ testId }: { testId: any }) => {
         const value = useDefinition(valueD);
 
         return <div data-testid={testId}>{value}</div>;
@@ -56,7 +56,7 @@ describe(`ContainerScope`, () => {
 
       const valueD = scoped.fn(() => (counter += 1));
 
-      const ValueRenderer = ({ testId }) => {
+      const ValueRenderer = ({ testId }: { testId: any }) => {
         const value = useDefinition(valueD);
         return <div data-testid={testId}>{value}</div>;
       };
@@ -105,7 +105,7 @@ describe(`ContainerScope`, () => {
       const baseD = scoped.fn(() => 0);
       const valueD = scoped.fn(base => (counter += 1 + base), baseD);
 
-      const ValueRenderer = ({ testId }) => {
+      const ValueRenderer = ({ testId }: { testId: any }) => {
         const value = useDefinition(valueD);
 
         return <div data-testid={testId}>{value}</div>;

@@ -34,12 +34,12 @@ describe(`asyncDefine`, () => {
       const usingBothExternalsWithNotAllowed = request.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
 
       const definition = asyncDefine(LifeTime.transient)([ext1, ext2], async locator => {
-        const instance1 = await locator.get(ext1);
-        const instance2 = await locator.get(ext2);
-        const usingBoth = await locator.get(usingBothExternals);
+        const instance1 = locator.get(ext1);
+        const instance2 = locator.get(ext2);
+        const usingBoth = locator.get(usingBothExternals);
 
-        // @ts-expect-error - does not accept definitions with ext3 because it wasn't provided to externals [ext1, ext2]
-        const usingBothNotAllowed = await locator.get(usingBothExternalsWithNotAllowed);
+        // TODO: should throw a compile time error
+        const usingBothNotAllowed = locator.get(usingBothExternalsWithNotAllowed);
 
         // @ts-expect-error - does not accept definitions with ext3 because it wasn't provided to externals [ext1, ext2]
         const instance3 = await locator.get(ext3);

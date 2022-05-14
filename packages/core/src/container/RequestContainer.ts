@@ -1,5 +1,5 @@
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition';
+import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition';
 import { ContainerContext } from '../context/ContainerContext';
 import { v4 } from 'uuid';
 
@@ -22,38 +22,15 @@ export class RequestContainer<TBoundExternals> {
     return this.containerContext.getAsync(instanceDefinition, this.externalValues as any);
   }
 
-  getAll<
-    TDefinition extends InstanceDefinition<any, any, never>,
-    TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
-  >(
-    ...definitions: TDefinitions
-  ): {
-    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
-      ? TInstance
-      : unknown;
-  } {
-    return definitions.map(def => this.containerContext.get(def, this.containerContext)) as any;
+  getAll<TDefinitions extends InstanceDefinition<any, any, never>[]>(
+    definitions: [...TDefinitions],
+  ): InstancesArray<TDefinitions> {
+    return definitions.map(def => this.containerContext.get(def, this.externalValues as any)) as any;
   }
 
-  getAllAsync<TLazyModule extends Array<AsyncInstanceDefinition<any, any, []>>>(
-    ...definitions: TLazyModule
-  ): Promise<
-    {
-      [K in keyof TLazyModule]: TLazyModule[K] extends AsyncInstanceDefinition<infer TInstance, any, []>
-        ? TInstance
-        : unknown;
-    }
-  > {
-    return Promise.all(
-      definitions.map(def => this.containerContext.getAsync(def, this.containerContext as any)),
-    ) as any;
+  getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, []>[]>(
+    definitions: [...TDefinitions],
+  ): Promise<AsyncInstancesArray<TDefinitions>> {
+    return Promise.all(definitions.map(def => this.containerContext.getAsync(def, this.externalValues as any))) as any;
   }
-
-  // checkoutRequestScope(): IContainer {
-  //   return new RequestContainer(this.containerContext.checkoutRequestScope());
-  // }
-  //
-  // checkoutScope(options: ContainerScopeOptions = {}): IContainer {
-  //   return new RequestContainer(this.containerContext.checkoutScope(options));
-  // }
 }

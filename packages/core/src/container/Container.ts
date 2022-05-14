@@ -1,7 +1,7 @@
 import { ContainerContext } from '../context/ContainerContext';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
+import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
 import { IContainer } from './IContainer';
 import { RequestContainer } from './RequestContainer';
@@ -28,34 +28,18 @@ export class Container implements IContainer {
     return requestContext.getAsync(instanceDefinition, ...externals);
   }
 
-  getAll<
-    TDefinition extends InstanceDefinition<any, any, any>,
-    TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
-  >(
-    definitions: TDefinitions,
+  getAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+    definitions: [...TDefinitions],
     ...[externals]: ExternalsValues<PickExternals<TDefinitions>>
-  ): {
-    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
-      ? TInstance
-      : unknown;
-  } {
+  ): InstancesArray<TDefinitions> {
     const requestContext = this.containerContext.checkoutRequestScope();
     return definitions.map(def => requestContext.get(def, externals)) as any;
   }
 
-  getAllAsync<
-    TDefinition extends AsyncInstanceDefinition<any, any, any>,
-    TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
-  >(
-    definitions: TDefinitions,
+  getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
+    definitions: [...TDefinitions],
     ...[externals]: ExternalsValues<PickExternals<TDefinitions>>
-  ): Promise<
-    {
-      [K in keyof TDefinitions]: TDefinitions[K] extends AsyncInstanceDefinition<infer TInstance, any, []>
-        ? TInstance
-        : unknown;
-    }
-  > {
+  ): Promise<AsyncInstancesArray<TDefinitions>> {
     const requestContext = this.containerContext.checkoutRequestScope();
 
     return Promise.all(definitions.map(def => requestContext.getAsync(def, externals))) as any;
@@ -75,7 +59,6 @@ export class Container implements IContainer {
     return new Container(this.containerContext.checkoutScope(options));
   }
 }
-
 
 export type ContainerOptions = ContainerScopeOptions;
 

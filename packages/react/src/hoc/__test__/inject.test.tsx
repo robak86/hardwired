@@ -10,23 +10,23 @@ describe(`inject`, () => {
       const valueA = value(1);
       const valueB = value(2);
 
-      const ValueRenderer = ({ testId, value }) => <div data-testid={testId}>{value}</div>;
+      const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 
       const Cmp = inject({ valueA, valueB })(({ valueA, valueB }) => {
         return (
-            <>
-              <ValueRenderer testId={'valueA'} value={valueA} />
-              <ValueRenderer testId={'valueB'} value={valueB} />
-            </>
+          <>
+            <ValueRenderer testId={'valueA'} value={valueA} />
+            <ValueRenderer testId={'valueB'} value={valueB} />
+          </>
         );
       });
 
       const cnt = container();
 
       const result = render(
-          <ContainerProvider container={cnt}>
-            <Cmp />
-          </ContainerProvider>,
+        <ContainerProvider container={cnt}>
+          <Cmp />
+        </ContainerProvider>,
       );
 
       return {
@@ -48,23 +48,23 @@ describe(`inject`, () => {
       const valueA = value(1);
       const valueB = value(2);
 
-      const ValueRenderer = ({ testId, value }) => <div data-testid={testId}>{value}</div>;
+      const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 
       const Cmp = inject({ valueA, valueB })(({ valueA, valueB }) => {
         return (
-            <>
-              <ValueRenderer testId={'valueA'} value={valueA} />
-              <ValueRenderer testId={'valueB'} value={valueB} />
-            </>
+          <>
+            <ValueRenderer testId={'valueA'} value={valueA} />
+            <ValueRenderer testId={'valueB'} value={valueB} />
+          </>
         );
       });
 
       const cnt = container();
 
       const result = render(
-          <ContainerProvider container={cnt}>
-            <Cmp valueA={100}/>
-          </ContainerProvider>,
+        <ContainerProvider container={cnt}>
+          <Cmp valueA={100} />
+        </ContainerProvider>,
       );
 
       return {
@@ -85,7 +85,7 @@ describe(`inject`, () => {
     function setup() {
       const valueA = request.fn(() => Math.random());
 
-      const ValueRenderer = ({ testId, value }) => <div data-testid={testId}>{value}</div>;
+      const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 
       const Cmp = inject({ valueA, valueB: valueA })(({ valueA, valueB }) => {
         return (

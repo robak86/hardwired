@@ -6,7 +6,7 @@ import { InstanceDefinition } from 'hardwired';
 
 export type ContainerScopeProps = {
   invalidateKeys?: ReadonlyArray<any>;
-  scopeOverrides?: InstanceDefinition<any>[];
+  scopeOverrides?: InstanceDefinition<any, any, never>[];
 };
 
 export const ContainerScope: FC<ContainerScopeProps> = ({ children, invalidateKeys = [], scopeOverrides = [] }) => {

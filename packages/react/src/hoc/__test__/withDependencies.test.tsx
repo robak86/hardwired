@@ -20,7 +20,9 @@ describe(`withDependencies`, () => {
       testId: string;
     };
 
-    const ValueRenderer = ({ testId, value }) => <div data-testid={testId}>{value}</div>;
+    const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => (
+      <div data-testid={testId}>{value}</div>
+    );
 
     const ageDef = scoped.fn(() => new BoxedValue(initialAge()));
     const firstNameDef = scoped.fn(() => new BoxedValue(initialName()));

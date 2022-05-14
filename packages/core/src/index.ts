@@ -1,3 +1,5 @@
+
+
 export type { IContainer } from './container/IContainer';
 export { container, Container } from './container/Container';
 
@@ -30,3 +32,7 @@ export * from './definitions/sync/intersection';
 export * from './definitions/abstract/LifeTime';
 export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime';
 export { Resolution } from './definitions/abstract/Resolution';
+export { RequestContainer } from './container/RequestContainer';
+
+export type { ExternalsValues } from "./utils/PickExternals";
+

@@ -1,5 +1,5 @@
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition';
+import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition';
 import { ContainerScopeOptions } from './Container';
 import { ExternalsValues, PickExternals } from '../utils/PickExternals';
 import { RequestContainer } from './RequestContainer';
@@ -17,32 +17,16 @@ export interface IContainer {
     ...externals: ExternalsValues<TExternals>
   ): Promise<TValue>;
 
-  getAll<
-    TDefinition extends InstanceDefinition<any, any, any>,
-    TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
-  >(
-    definitions: TDefinitions,
-    ...externals: ExternalsValues<PickExternals<TDefinitions>>
-  ): {
-    [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
-      ? TInstance
-      : unknown;
-  };
+  getAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+    definitions: [...TDefinitions],
+    ...[externals]: ExternalsValues<PickExternals<TDefinitions>>
+  ): InstancesArray<TDefinitions>;
 
-  getAllAsync<
-    TDefinition extends AsyncInstanceDefinition<any, any, any>,
-    TDefinitions extends [TDefinition] | [TDefinition, ...TDefinition[]],
-  >(
-    definitions: TDefinitions,
-    ...externals: ExternalsValues<PickExternals<TDefinitions>>
-  ): Promise<
-    {
-      [K in keyof TDefinitions]: TDefinitions[K] extends AsyncInstanceDefinition<infer TInstance, any, []>
-        ? TInstance
-        : unknown;
-    }
-  >;
+  getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
+    definitions: [...TDefinitions],
+    ...[externals]: ExternalsValues<PickExternals<TDefinitions>>
+  ): Promise<AsyncInstancesArray<TDefinitions>>;
 
-  checkoutRequestScope<TExternals = never>(externals?:TExternals): RequestContainer<TExternals>;
+  checkoutRequestScope<TExternals = never>(externals?: TExternals): RequestContainer<TExternals>;
   checkoutScope(options?: ContainerScopeOptions): IContainer;
 }
