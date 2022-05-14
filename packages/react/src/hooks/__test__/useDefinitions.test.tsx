@@ -1,10 +1,9 @@
-import { container, request, singleton, external } from 'hardwired';
+import { container, external, request, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent';
 import * as React from 'react';
-import { ContainerProvider } from '../../components/ContainerProvider';
-import { useDefinition } from '../useDefinition';
 import { FC } from 'react';
+import { ContainerProvider } from '../../components/ContainerProvider';
 import { useDefinitions } from '../useDefinitions';
 import { expectType, TypeEqual } from 'ts-expect';
 
@@ -15,19 +14,19 @@ describe(`useDefinitions`, () => {
       const val2Def = request.fn(() => 123);
 
       const Component = () => {
-        const [val1, val2] = useDefinitions(val1Def, val2Def);
+        const [val1, val2] = useDefinitions([val1Def, val2Def]);
         expectType<TypeEqual<typeof val1, string>>(true);
         expectType<TypeEqual<typeof val2, number>>(true);
       };
     });
 
     it(`returns correct types using externals`, async () => {
-      const ext = external<boolean>();
+      const ext = external('ext').type<boolean>();
       const val1Def = request.fn(b => 'someString', ext);
       const val2Def = request.fn(b => 123, ext);
 
       const Component = () => {
-        const [val1, val2] = useDefinitions(val1Def.bind(true), val2Def.bind(true));
+        const [val1, val2] = useDefinitions([val1Def, val2Def], { ext: true });
         expectType<TypeEqual<typeof val1, string>>(true);
         expectType<TypeEqual<typeof val2, number>>(true);
       };
@@ -40,7 +39,7 @@ describe(`useDefinitions`, () => {
 
     function setup() {
       const Consumer = () => {
-        const values = useDefinitions(val1Def, val2Def);
+        const values = useDefinitions([val1Def, val2Def]);
         return <DummyComponent value={values.join(',')} />;
       };
 
@@ -67,7 +66,7 @@ describe(`useDefinitions`, () => {
       const clsDef = request.fn(checkoutRenderId);
 
       const Consumer = () => {
-        const [cls] = useDefinitions(clsDef);
+        const [cls] = useDefinitions([clsDef]);
         return <DummyComponent value={cls} />;
       };
 
@@ -114,7 +113,7 @@ describe(`useDefinitions`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = external<string>();
+      const someExternalParam = external('ext').type<string>();
       const val1Def = request.fn((ext: string) => `def:1,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
       const val2Def = request.fn((ext: string) => `def:2,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
 
@@ -122,13 +121,13 @@ describe(`useDefinitions`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const values = useDefinitions(val1Def.bind(externalValue), val2Def.bind(externalValue));
+        const values = useDefinitions([val1Def, val2Def], { ext: externalValue });
         return <DummyComponent value={values.join('|')} />;
       };
 
       const c = container();
 
-      const TestSubject = ({ externalValue }) => {
+      const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (
           <ContainerProvider container={c}>
             <Consumer externalValue={externalValue} />

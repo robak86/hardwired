@@ -13,13 +13,13 @@ describe(`useFactory`, () => {
     constructor(public externalParam: string) {}
   }
 
-  const externalParam = external<string>();
+  const externalParam = external('ext').type<string>();
   const clsDef = request.class(TestClass, externalParam);
   const clsFactory = factory(clsDef);
 
   function setup() {
     const Consumer: FC<{ externalParam: string }> = ({ externalParam }) => {
-      const cls = useFactory(clsFactory, externalParam);
+      const cls = useFactory(clsFactory, {ext: externalParam});
       return <DummyComponent value={cls.id.toString()} optionalValue={cls.externalParam} />;
     };
 

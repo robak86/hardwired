@@ -10,7 +10,7 @@ describe(`InstancesConsumer`, () => {
       const valDef = singleton.fn(() => 1);
       const val2Def = singleton.fn(val => val + 10, valDef);
 
-      const ValueRenderer = ({ testId, value }) => {
+      const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => {
         return <div data-testid={testId}>{value}</div>;
       };
 
@@ -52,7 +52,7 @@ describe(`InstancesConsumer`, () => {
       const valDef = singleton.fn(() => 1);
       const val2Def = singleton.fn(val => val + 10, valDef);
 
-      const ValueRenderer = ({ testId, value }) => {
+      const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => {
         return <div data-testid={testId}>{value}</div>;
       };
 

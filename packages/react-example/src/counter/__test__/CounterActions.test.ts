@@ -15,10 +15,9 @@ describe('CounterAction', () => {
 
     // delegating instances construction to container
     it('increments counter state by 1', () => {
-      const [counterStore, counterStoreActions] = container().getAll(
-        counterStoreDef.bind('some label'),
-        counterActionsDef.bind('some label'),
-      );
+      const [counterStore, counterStoreActions] = container().getAll([counterStoreDef, counterActionsDef], {
+        counterLabel: 'some label',
+      });
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(1);
     });
@@ -26,10 +25,9 @@ describe('CounterAction', () => {
     // delegating instances construction to container and overriding initial value for counter store
     it('increments counter state by 1', () => {
       const cnt = container([set(counterInitialValueDef, 10)]);
-      const [counterStore, counterStoreActions] = cnt.getAll(
-        counterStoreDef.bind('some label'),
-        counterActionsDef.bind('some label'),
-      );
+      const [counterStore, counterStoreActions] = cnt.getAll([counterStoreDef, counterActionsDef], {
+        counterLabel: 'some label',
+      });
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(11);
     });

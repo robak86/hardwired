@@ -42,7 +42,7 @@ describe(`define`, () => {
         const instance2 = locator.get(ext2);
         const usingBoth = locator.get(usingBothExternals);
 
-        // @ts-expect-error - does not accept definitions with ext3 because it wasn't provided to externals [ext1, ext2]
+        // TODO: should throw a compile time error
         const usingBothNotAllowed = locator.get(usingBothExternalsWithNotAllowed);
 
         // @ts-expect-error - does not accept definitions with ext3 because it wasn't provided to externals [ext1, ext2]

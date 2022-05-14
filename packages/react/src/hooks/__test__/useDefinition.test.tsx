@@ -87,20 +87,20 @@ describe(`useDefinition`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = external<string>();
+      const someExternalParam = external('ext').type<string>();
       const val1Def = request.fn((ext: string) => `render:${checkoutRenderId()};value:${ext}`, someExternalParam);
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const val1 = useDefinition(val1Def.bind(externalValue));
+        const val1 = useDefinition(val1Def, { ext: externalValue });
         return <DummyComponent value={val1} />;
       };
 
       const c = container();
 
-      const TestSubject = ({ externalValue }) => {
+      const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (
           <ContainerProvider container={c}>
             <Consumer externalValue={externalValue} />

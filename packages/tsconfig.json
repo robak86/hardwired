@@ -12,9 +12,6 @@
       "path": "./http-server-example-wip/tsconfig.json"
     },
     {
-      "path": "./mobx-wip/tsconfig.json"
-    },
-    {
       "path": "./react-example/tsconfig.json"
     }
   ]

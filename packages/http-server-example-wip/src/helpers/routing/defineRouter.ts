@@ -5,8 +5,8 @@ import { AnyInstanceDefinition, asyncFactory, LifeTime, singleton } from 'hardwi
 import { RequestContext } from '../server/requestContext';
 
 export type RouteHandlerDefinition =
-  | AnyInstanceDefinition<ResponseEffect, LifeTime.request, []>
-  | AnyInstanceDefinition<ResponseEffect, LifeTime.request, [RequestContext]>;
+  | AnyInstanceDefinition<ResponseEffect, LifeTime.request, never>
+  | AnyInstanceDefinition<ResponseEffect, LifeTime.request, { reqCtx: RequestContext }>;
 
 const responseInterpreter = singleton.class(ResponseInterpreter);
 const routerD = singleton.class(Router, responseInterpreter);
@@ -26,10 +26,12 @@ export const defineRouter = (
         ] as const,
     );
 
-    factories.forEach(([method, path, responseDef]) => {
-      router.append(method, path, locator.get(responseDef));
-    });
-
-    return router;
+    throw new Error("Implement me!")
+    //
+    // factories.forEach(([method, path, responseDef]) => {
+    //   router.append(method, path, locator.get(responseDef));
+    // });
+    //
+    // return router;
   });
 };
