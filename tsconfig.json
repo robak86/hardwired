@@ -14,7 +14,6 @@
     "noImplicitAny": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "removeComments": true,
-    "skipLibCheck": false
+    "removeComments": true
   }
 }
