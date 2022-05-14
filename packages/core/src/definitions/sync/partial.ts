@@ -1,34 +1,27 @@
 import { PartialFnDependencies, PartiallyAppliedFn } from '../../utils/PartiallyApplied';
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { assertNoExternals, pickExternals, PickExternals } from '../../utils/PickExternals';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
+import { PickExternals } from '../../utils/PickExternals';
 import { uncurry, UnCurry } from '../../utils/UnCurry';
 import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
-import { v4 } from 'uuid';
 
-export type PartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
-  <Fn extends (...args: any[]) => any, TArgs extends PartialFnDependencies<Parameters<UnCurry<Fn>>, TLifeTime>>(
-    factory: Fn,
-    ...dependencies: TArgs
+export const partial = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
+  return <
+    TFunction extends (...args: any[]) => any,
+    TFunctionParams extends PartialFnDependencies<Parameters<UnCurry<TFunction>>, TLifeTime>,
+  >(
+    fn: TFunction,
+    ...dependencies: TFunctionParams
   ): InstanceDefinition<
-    PartiallyAppliedFn<Parameters<UnCurry<Fn>>, TArgs, ReturnType<UnCurry<Fn>>>,
+    PartiallyAppliedFn<Parameters<UnCurry<TFunction>>, TFunctionParams, ReturnType<UnCurry<TFunction>>>,
     TLifeTime,
-    PickExternals<TArgs>
-  >;
-};
-
-export const partial = <TLifeTime extends LifeTime>(strategy: TLifeTime): PartiallyAppliedFnBuild<TLifeTime> => {
-  return (fn: any, ...dependencies: any[]) => {
+    PickExternals<TFunctionParams>
+  > => {
     const uncurried: any = uncurry(fn);
-    const externals = pickExternals(dependencies);
-    assertNoExternals(strategy, externals);
 
-    return {
-      id: `${fn.name}:${v4()}`,
-      resolution: Resolution.sync,
+    return instanceDefinition({
       strategy,
-      externals,
+      dependencies,
       create: context => uncurried.bind(null, ...dependencies.map(context.buildWithStrategy)),
-    };
+    });
   };
 };

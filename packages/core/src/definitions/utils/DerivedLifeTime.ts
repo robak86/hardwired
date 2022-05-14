@@ -10,7 +10,7 @@ export type DerivedLifeTime<T extends LifeTime> =
     TypeEqual<T, LifeTime.scoped> extends true ? LifeTime.scoped :
     LifeTime.transient;
 
-export const derivedLifeTime = (lifeTimes: LifeTime[]): LifeTime => {
+export const derivedLifeTime = <TLifeTime extends LifeTime[]>(lifeTimes: TLifeTime): LifeTime => {
   if (lifeTimes.some(l => l === LifeTime.singleton)) {
     return LifeTime.singleton;
   }
