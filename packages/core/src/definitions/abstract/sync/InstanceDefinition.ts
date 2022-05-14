@@ -5,14 +5,12 @@ import { ExternalsDefinitions } from '../base/BaseDefinition';
 import { assertNoExternals, pickExternals, PickExternals } from '../../../utils/PickExternals';
 import { v4 } from 'uuid';
 
-export type InstanceDefinitionContext = ContainerContext;
-
 export type InstanceDefinition<TInstance, TLifeTime extends LifeTime, TExternals> = {
   id: string;
   strategy: TLifeTime;
   resolution: Resolution.sync;
   externals: ExternalsDefinitions<TExternals>;
-  create: (context: InstanceDefinitionContext) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
+  create: (context: ContainerContext) => TInstance; // _ is fake parameter introduced in order to preserve TExternal type
 };
 
 export function instanceDefinition<
@@ -28,7 +26,7 @@ export function instanceDefinition<
   id?: string;
   dependencies: [...TDependency];
   strategy: TLifeTime;
-  create: (context: InstanceDefinitionContext) => TInstance;
+  create: (context: ContainerContext) => TInstance;
 }): InstanceDefinition<TInstance, TLifeTime, PickExternals<TDependency>> {
   const externals = pickExternals(dependencies);
   assertNoExternals(strategy, externals);

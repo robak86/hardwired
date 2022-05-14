@@ -1,18 +1,20 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
+import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition';
 import { PickExternals } from '../../utils/PickExternals';
 import { UnionToIntersection } from 'type-fest';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
 
-export const intersection = <T extends Array<InstanceDefinition<object, any, any>>, TMeta>(
-  ...definitions: T
+export const intersection = <TDefinitions extends Array<InstanceDefinition<object, any, any>>, TMeta>(
+  ...definitions: TDefinitions
 ): InstanceDefinition<
-  UnionToIntersection<
-    { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any, any> ? TInstance : unknown }[number]
-  >,
+  UnionToIntersection<InstancesArray<TDefinitions>[number]>,
   DerivedLifeTime<
-    { [K in keyof T]: T[K] extends InstanceDefinition<any, infer TLifeTime, any> ? TLifeTime : never }[number]
+    {
+      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<any, infer TLifeTime, any>
+        ? TLifeTime
+        : never;
+    }[number]
   >,
-  PickExternals<T>
+  PickExternals<TDefinitions>
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 

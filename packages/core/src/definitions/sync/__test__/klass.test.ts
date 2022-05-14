@@ -13,7 +13,7 @@ describe(`klass`, () => {
     }
 
     describe(`types`, () => {
-      it(`correctly picks external params from instances definitions provided as dependencies`, async () => {
+      it(`correctly picks external params from instances definitions provided as dependencies ex.1`, async () => {
         const ext = external('objectId').type<string>();
         const numD = value(123);
         const cls = klass(LifeTime.request)(TestClass, numD, ext);
@@ -21,7 +21,7 @@ describe(`klass`, () => {
         expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, LifeTime.request, { objectId: string }>>>(true);
       });
 
-      it(`correctly picks external params from instances definitions provided as dependencies`, async () => {
+      it(`correctly picks external params from instances definitions provided as dependencies ex.1`, async () => {
         const numD = value(123);
         const objD = value('123');
         const cls = klass(LifeTime.request)(TestClass, numD, objD);

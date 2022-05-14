@@ -1,7 +1,7 @@
 import { container, request, value } from 'hardwired';
 import { inject } from '../inject';
 import React from 'react';
-import { render, within } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { ContainerProvider } from '../../components/ContainerProvider';
 
 describe(`inject`, () => {

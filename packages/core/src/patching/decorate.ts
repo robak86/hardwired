@@ -1,5 +1,4 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import invariant from 'tiny-invariant';
 import { LifeTime } from '../definitions/abstract/LifeTime';
 import { ExternalsValuesRecord } from '../definitions/abstract/base/BaseDefinition';
 import { assertCompatible } from '../utils/PickExternals';

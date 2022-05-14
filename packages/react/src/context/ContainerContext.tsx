@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useContext, useRef } from 'react';
 import { IContainer, RequestContainer } from 'hardwired';
 import invariant from 'tiny-invariant';
-import { isShallowEqual} from '../utils/useMemoized';
 import { ExternalValues, isShallowEqualRec } from "../utils/useMemoizedByRec";
 
 export type ContainerContextValue = {
