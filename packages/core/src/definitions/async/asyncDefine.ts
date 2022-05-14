@@ -1,11 +1,8 @@
 import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { assertNoExternals, pickExternals, PickExternals } from '../../utils/PickExternals';
+import { PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
-import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
+import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
 import { ContainerContext } from '../../context/ContainerContext';
-import { v4 } from 'uuid';
-import { Resolution } from '../abstract/Resolution';
-import { ExternalsDefinitions } from '../abstract/base/BaseDefinition';
 
 export interface DefineAsyncServiceLocator<TExternalParams> {
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, Partial<TExternalParams>>): TValue;
@@ -33,18 +30,14 @@ export type DefineAsyncBuildFn<TLifeTime extends LifeTime> = TLifeTime extends L
       ): AsyncInstanceDefinition<TInstance, TLifeTime, PickExternals<TExternals>>;
     };
 
-export const asyncDefine = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineAsyncBuildFn<TLifeTime> =>
+export const asyncDefine = <TLifeTime extends LifeTime>(strategy: TLifeTime): DefineAsyncBuildFn<TLifeTime> =>
   ((fnOrExternals: any, fn?: any): AsyncInstanceDefinition<any, any, any> => {
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externalsArr = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 
-    const externals = pickExternals(externalsArr);
-    assertNoExternals(lifetime, externals);
-
-    return {
-      id: v4(),
-      resolution: Resolution.async,
-      strategy: lifetime,
+    return asyncDefinition({
+      dependencies: externalsArr,
+      strategy,
       create: async (context: ContainerContext) => {
         const buildLocator = (context: ContainerContext): DefineAsyncServiceLocator<any> => {
           return {
@@ -56,6 +49,5 @@ export const asyncDefine = <TLifeTime extends LifeTime>(lifetime: TLifeTime): De
 
         return buildFn(buildLocator(context));
       },
-      externals,
-    };
+    });
   }) as any;

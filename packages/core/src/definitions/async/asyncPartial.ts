@@ -1,43 +1,30 @@
 import { AsyncPartialFnDependencies, PartiallyAppliedAsyncFn } from '../../utils/PartiallyApplied';
-import { v4 } from 'uuid';
-import { assertNoExternals, pickExternals, PickExternals } from '../../utils/PickExternals';
+import { PickExternals } from '../../utils/PickExternals';
 import { uncurryAsync, UnCurryAsync } from '../../utils/UnCurryAsync';
 import { LifeTime } from '../abstract/LifeTime';
-import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
-import { Resolution } from '../abstract/Resolution';
+import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
 
-export type AsyncPartiallyAppliedFnBuild<TLifeTime extends LifeTime> = {
-  <
-    Fn extends (...args: any[]) => Promise<any>,
-    TArgs extends AsyncPartialFnDependencies<Parameters<UnCurryAsync<Fn>>, TLifeTime>,
+export const asyncPartial = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
+  return <
+    TFunction extends (...params: any[]) => Promise<any>,
+    TFunctionParams extends AsyncPartialFnDependencies<Parameters<UnCurryAsync<TFunction>>, TLifeTime>,
   >(
-    factory: Fn,
-    ...dependencies: TArgs
+    fn: TFunction,
+    ...dependencies: TFunctionParams
   ): AsyncInstanceDefinition<
-    PartiallyAppliedAsyncFn<Parameters<UnCurryAsync<Fn>>, TArgs, ReturnType<UnCurryAsync<Fn>>>,
+    PartiallyAppliedAsyncFn<Parameters<UnCurryAsync<TFunction>>, TFunctionParams, ReturnType<UnCurryAsync<TFunction>>>,
     TLifeTime,
-    PickExternals<TArgs>
-  >;
-};
-
-export const asyncPartial = <TLifeTime extends LifeTime>(
-  strategy: TLifeTime,
-): AsyncPartiallyAppliedFnBuild<TLifeTime> => {
-  return (fn, ...args) => {
-    const externals = pickExternals(args);
-    // assertNoExternals(strategy, externals);
-
+    PickExternals<TFunctionParams>
+  > => {
     const uncurried: any = uncurryAsync(fn);
 
-    return {
-      id: v4(),
-      resolution: Resolution.async,
+    return asyncDefinition({
+      dependencies,
       strategy,
-      externals,
       create: async context => {
-        const dependenciesInstance = await Promise.all(args.map(context.buildWithStrategy));
+        const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));
         return uncurried.bind(null, ...dependenciesInstance);
       },
-    };
+    });
   };
 };

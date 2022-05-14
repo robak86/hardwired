@@ -3,8 +3,32 @@ import { request, singleton, transient } from '../../definitions';
 import { asyncFn } from '../asyncFn';
 import { LifeTime } from '../../abstract/LifeTime';
 import { asyncPartial } from '../asyncPartial';
+import { value } from '../../sync/value';
+import { container } from "../../../container/Container";
 
 describe(`asyncFn`, () => {
+  describe(`instantiate`, () => {
+    it(`returns correct value`, async () => {
+      const fn = async (p1: number) => async (p2: string) => async () => [p1, p2] as const;
+      const p1Def = value(1);
+      const p2Def = value('str');
+
+      const fnDef = singleton.asyncPartial(fn, p1Def, p2Def);
+      const result = await container().getAsync(fnDef)
+      expect(await result()).toEqual([1, 'str'])
+    });
+
+    it(`returns correct value, ex.2`, async () => {
+      const fn = async (p1: number) => async () => async (p2: string) => [p1, p2] as const;
+      const p1Def = value(1);
+      const p2Def = value('str');
+
+      const fnDef = singleton.asyncPartial(fn, p1Def, p2Def);
+      const result = await container().getAsync(fnDef)
+      expect(await result()).toEqual([1, 'str'])
+    });
+  });
+
   describe(`types`, () => {
     describe(`allowed dependencies life times`, () => {
       const numberConsumer = async (val: number) => val;
@@ -18,9 +42,9 @@ describe(`asyncFn`, () => {
 
             // @ts-expect-error transient does not accept singleton dependencies with externals
             asyncPartial(LifeTime.transient)(numberConsumer, dep);
-          }
+          };
 
-          expect(build).toThrow('Strategy=singleton does not support external parameters.')
+          expect(build).toThrow('Strategy=singleton does not support external parameters.');
         });
 
         it(`accepts request def with externals`, async () => {
@@ -41,9 +65,9 @@ describe(`asyncFn`, () => {
 
             // @ts-expect-error transient does not accept singleton dependencies with externals
             asyncPartial(LifeTime.request)(numberConsumer, dep);
-          }
+          };
 
-          expect(build).toThrow('Strategy=singleton does not support external parameters.')
+          expect(build).toThrow('Strategy=singleton does not support external parameters.');
         });
 
         it(`accepts request def with externals`, async () => {
@@ -64,9 +88,9 @@ describe(`asyncFn`, () => {
 
             // @ts-expect-error singleton does not accept singleton dependencies with externals
             asyncPartial(LifeTime.singleton)(numberConsumer, dep);
-          }
+          };
 
-          expect(build).toThrow('Strategy=singleton does not support external parameters.')
+          expect(build).toThrow('Strategy=singleton does not support external parameters.');
         });
 
         it(`accepts request def with externals`, async () => {

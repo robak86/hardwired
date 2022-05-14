@@ -2,18 +2,14 @@ import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstr
 import { PickExternals } from '../../utils/PickExternals';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
 
-export const tuple = <TDefinitions extends Array<InstanceDefinition<any, any, any>>, TMeta>(
-  ...definitions: TDefinitions
+export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>(
+  ...definitions: T
 ): InstanceDefinition<
-  InstancesArray<TDefinitions>,
+  InstancesArray<T>,
   DerivedLifeTime<
-    {
-      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<any, infer TLifeTime, any>
-        ? TLifeTime
-        : never;
-    }[number]
+    { [K in keyof T]: T[K] extends InstanceDefinition<any, infer TLifeTime, any> ? TLifeTime : never }[number]
   >,
-  PickExternals<TDefinitions>
+  PickExternals<T>
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 

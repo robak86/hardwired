@@ -1,10 +1,11 @@
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { ContainerContext } from '../../context/ContainerContext';
 import { v4 } from 'uuid';
 import { Resolution } from '../abstract/Resolution';
 import { NeverToVoid } from '../../utils/PickExternals';
+import { asyncDefinition } from '../abstract/async/AsyncInstanceDefinition';
 
 // prettier-ignore
 export type AsyncFactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams> =
@@ -33,11 +34,9 @@ export const asyncFactory: AsyncFactoryBuildFn = (
   definition: AnyInstanceDefinition<any, any, any>,
   factoryMixingDef?: any,
 ): any => {
-  return {
-    id: v4(),
-    resolution: Resolution.sync,
-    strategy: LifeTime.transient as const,
-    externals: [],
+  return instanceDefinition({
+    strategy: LifeTime.transient,
+    dependencies: [],
     create: (context: ContainerContext): IAsyncFactory<any, any> => {
       const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
 
@@ -49,5 +48,5 @@ export const asyncFactory: AsyncFactoryBuildFn = (
         },
       };
     },
-  };
+  });
 };
