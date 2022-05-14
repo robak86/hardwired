@@ -15,7 +15,7 @@ Minimalistic, type-safe DI/IoC solution for TypeScript.
 
 ## Installation
 
-This library requires typescript >= 4.1
+This library requires typescript >= 4.7
 
 yarn
 
@@ -391,8 +391,9 @@ expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
 
 Sometimes there are cases where we don't know every parameter during the construction of
 definitions, e.g. application takes some input from the user. For such scenarios the library
-provides `external` definitions, which acts like a placeholder for a value that will be provided
-at the runtime. Dependency to external parameter is propagated through definitions graph:
+provides `external` definitions, which acts like a named placeholder for a value that will be
+provided at the runtime. Dependency to the external parameter is propagated through definitions
+graph:
 
 ```typescript
 import { external, singleton } from 'hardwired';
@@ -404,7 +405,7 @@ type EnvConfig = {
   };
 };
 
-const envD = external<EnvConfig>();
+const envD = external('env').type<EnvConfig>();
 const appPortD = singleton.fn((config: EnvConfig) => config.server.port, envD);
 const httpServerD = singleton.fn((port: number) => {
   const requestListener = (req, res) => {};
@@ -414,21 +415,21 @@ const httpServerD = singleton.fn((port: number) => {
 }, appPortD);
 ```
 
-`httpServerD` does not directly references `envD`, but the type for `httpServerD`
-(`InstanceDefinition<http.Server, LifeTime.singleton, [EnvConfig]>`) reflects the fact that
-in order to get an instance of http server one need to provide `EnvConfig`.
+`httpServerD` does not directly reference `envD`, but the type for `httpServerD`
+(`InstanceDefinition<http.Server, LifeTime.singleton, { env: EnvConfig }>`) reflects the fact that
+in order to get an instance of http server one need to provide external value `{ env: EnvConfig }`.
 
-There are two ways to instantiate definition referencing external parameters.
+There are two ways to instantiate definition referencing external parameters:
 
 1. At the container level, while getting instance of **composition root** (container instance
-   shouldn't be used as service locator in lower level modules). The runtime value needs to be 
-   provided to the definition using `.bind` method.
+   shouldn't be used as service locator in lower level modules). The runtime value needs to be
+   provided as a second parameter to `.get | .getAsync | .getAll | .getAllAsync` method.
 
 ```typescript
 import { container } from 'hardwired';
 
 const cnt = container();
-cnt.get(httpServerD.bind({ server: { port: 1234 } }));
+cnt.get(httpServerD, { env: { server: { port: 1234 } } });
 ```
 
 2. By using `factory`|`asyncFactory` builders which create definitions for automatically
@@ -460,11 +461,11 @@ class Request {
 }
 
 class RequestsExecutor {
-  constructor(private requestsFactory: IFactory<Request, [url: string]>) {}
+  constructor(private requestsFactory: IFactory<Request, { url: string }>) {}
 
   fetch(url: string) {
     // additional behavior related to requests - e.g. retrying of failed requests or caching
-    return this.requestsFactory.build(url).fetch();
+    return this.requestsFactory.build({ url }).fetch();
   }
 }
 
@@ -480,7 +481,7 @@ class App {
 }
 
 // app.module.ts
-const urlD = external<string>();
+const urlD = external('url').type<string>();
 const loggerConfigD = singleton.class(LoggerConfig);
 const loggerD = singleton.class(Logger, loggerConfigD);
 const requestD = request.class(Request, urlD, loggerD);

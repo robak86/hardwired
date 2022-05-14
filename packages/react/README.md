@@ -255,9 +255,9 @@ import { runInAction } from 'mobx';
 describe('CounterButtons', () => {
   function setup(initialValue: number) {
     const cnt = container([
-        set(counterInitialValueDef, initialValue) // initialValue will be used instead of original
-                                                  // counterInitialValueDef  
-    ]);  
+      set(counterInitialValueDef, initialValue), // initialValue will be used instead of original
+      // counterInitialValueDef
+    ]);
 
     const result = render(
       <ContainerProvider container={cnt}>
@@ -329,7 +329,7 @@ class CounterActions {
 import { singleton, value } from 'hardwired';
 
 const counterInitialValueDef = value(0);
-const counterLabelValueDef = external<string>();
+const counterLabelValueDef = external('label').type<string>();
 const counterStoreDef = request.class(CounterStore, counterInitialValueDef, counterLabelValueDef);
 const counterActionsDef = request.class(CounterActions, counterStoreDef);
 ```
@@ -365,7 +365,7 @@ export const CounterButtons: FC<{ actions: CounterActions }> = observer(({ actio
 });
 
 export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
-  const [store, actions] = useDefinitions(counterStoreDef.bind(label), counterActionsDef.bind(label));
+  const [store, actions] = useDefinitions([counterStoreDef, counterActionsDef], { label });
 
   return (
     <div>
