@@ -1,9 +1,8 @@
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { assertNoExternals, pickExternals, PickExternals } from '../../utils/PickExternals';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
+import { PickExternals } from '../../utils/PickExternals';
 import { LifeTime } from '../abstract/LifeTime';
 import { ContainerContext } from '../../context/ContainerContext';
 import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
-import { Resolution } from '../abstract/Resolution';
 import { v4 } from 'uuid';
 
 export interface DefineServiceLocator<TExternalParams> {
@@ -38,17 +37,15 @@ export type DefineBuildFn<TLifeTime extends LifeTime> = TLifeTime extends LifeTi
       ): InstanceDefinition<TInstance, TLifeTime, PickExternals<TExternals>>;
     };
 
-export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineBuildFn<TLifeTime> =>
-  ((fnOrExternals: any, fn?: any) => {
+export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineBuildFn<TLifeTime> => {
+  return ((fnOrExternals: any, fn?: any) => {
     const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     const externalsArr = Array.isArray(fnOrExternals) ? fnOrExternals : [];
-    const externals = pickExternals(externalsArr);
-    assertNoExternals(lifetime, externals);
 
-    return {
+    return instanceDefinition({
       id: v4(),
-      resolution: Resolution.sync,
       strategy: lifetime,
+      dependencies: externalsArr,
       create: (context: ContainerContext) => {
         const buildLocator = (context: ContainerContext): DefineServiceLocator<any> => {
           return {
@@ -60,6 +57,6 @@ export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime): DefineB
 
         return buildFn(buildLocator(context));
       },
-      externals,
-    };
+    });
   }) as any;
+};

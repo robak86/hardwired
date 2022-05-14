@@ -1,7 +1,6 @@
 import { IsFinite } from './IsFinite';
 
 // prettier-ignore
-// prettier-ignore
 export type UnCurry<T, TArgsAggregate extends any[] = []> =
   T extends (...args: infer TArgs) => infer TReturn ?
     IsFinite<

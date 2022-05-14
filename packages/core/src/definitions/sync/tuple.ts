@@ -1,29 +1,29 @@
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { pickExternals, PickExternals } from '../../utils/PickExternals';
-import { Resolution } from '../abstract/Resolution';
+import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition';
+import { PickExternals } from '../../utils/PickExternals';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
-import { v4 } from "uuid";
 
-export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>(
-  ...definitions: T
+export const tuple = <TDefinitions extends Array<InstanceDefinition<any, any, any>>, TMeta>(
+  ...definitions: TDefinitions
 ): InstanceDefinition<
-  { [K in keyof T]: T[K] extends InstanceDefinition<infer TInstance, any, never> ? TInstance : unknown },
+  InstancesArray<TDefinitions>,
   DerivedLifeTime<
-    { [K in keyof T]: T[K] extends InstanceDefinition<any, infer TLifeTime, any> ? TLifeTime : never }[number]
+    {
+      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<any, infer TLifeTime, any>
+        ? TLifeTime
+        : never;
+    }[number]
   >,
-  PickExternals<T>
+  PickExternals<TDefinitions>
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
-  return {
-    id: v4(),
-    resolution: Resolution.sync,
+  return instanceDefinition({
     strategy,
-    externals: pickExternals(definitions),
+    dependencies: definitions,
     create: context => {
       return definitions.map(def => {
         return context.buildWithStrategy(def);
       }) as any;
     },
-  };
+  });
 };

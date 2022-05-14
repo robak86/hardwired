@@ -8,7 +8,6 @@ import { RequestContainer } from './RequestContainer';
 import { v4 } from 'uuid';
 import { ExternalsValues, PickExternals } from '../utils/PickExternals';
 
-// TODO: instead of using separate implementation for RequestContainer parametrize Container with reuseRequestContext = boolean
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 

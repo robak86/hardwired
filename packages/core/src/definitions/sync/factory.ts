@@ -1,10 +1,8 @@
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { LifeTime } from '../abstract/LifeTime';
 import { ContainerContext } from '../../context/ContainerContext';
 import { ExternalsValuesRecord } from '../abstract/base/BaseDefinition';
-import { Resolution } from '../abstract/Resolution';
-import { v4 } from 'uuid';
-import { NeverToVoid } from "../../utils/PickExternals";
+import { NeverToVoid } from '../../utils/PickExternals';
 
 // prettier-ignore
 export type FactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams extends ExternalsValuesRecord> =
@@ -30,11 +28,9 @@ export type FactoryBuildFn = {
 };
 
 export const factory: FactoryBuildFn = (definition: any, factoryMixingDef?: any): any => {
-  return {
-    id: v4(),
-    resolution: Resolution.sync,
-    strategy: LifeTime.transient as const,
-    externals: [],
+  return instanceDefinition({
+    strategy: LifeTime.transient,
+    dependencies: [],
     create: (context: ContainerContext): IFactory<any, any> => {
       const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
 
@@ -46,5 +42,5 @@ export const factory: FactoryBuildFn = (definition: any, factoryMixingDef?: any)
         },
       };
     },
-  };
+  });
 };

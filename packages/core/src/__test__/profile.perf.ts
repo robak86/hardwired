@@ -66,8 +66,8 @@ function resolveByObject(container: Container, def: InstanceDefinition<any, any,
 }
 
 const singletonD: any = singleton.fn((...args) => args, ...buildSingletonsTree(4, 10));
-const transientD: any = transient.fn((...args) => args, ...buildTransient(3, 5));
+const transientD: any = transient.fn((...args) => args, ...buildTransient(3, 10));
 
 const cWithoutProxy = container();
-const result10KWithoutProxy = resolveByObject(cWithoutProxy, transientD, 10000);
+const result10KWithoutProxy = resolveByObject(cWithoutProxy, singletonD, 1000000);
 console.log(result10KWithoutProxy);

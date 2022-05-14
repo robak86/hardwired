@@ -1,7 +1,7 @@
-import { singleton, transient } from '../definitions/definitions';
+import { transient } from '../definitions/definitions';
 import { external } from '../definitions/sync/external';
 import { value } from '../definitions/sync/value';
-import { expectType, TypeEqual, TypeOf } from 'ts-expect';
+import { expectType, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
 import { container } from '../container/Container';
 import { LifeTime } from '../definitions/abstract/LifeTime';

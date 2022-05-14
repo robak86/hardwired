@@ -1,9 +1,5 @@
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
-import { Resolution } from '../abstract/Resolution';
-import { v4 } from 'uuid';
-import { pickExternals } from "../../utils/PickExternals";
 
 export const object = <T extends Record<keyof any, InstanceDefinition<any, any, never>>>(
   record: T,
@@ -14,19 +10,14 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any, any, 
   >,
   never // TODO: set correct externals type
 > => {
-  const strategy = derivedLifeTime(Object.values(record).map(r => r.strategy)) as any;
-
-  return {
-    id: v4(),
-    resolution: Resolution.sync,
-    strategy,
-    externals: pickExternals(Object.values(record)),
+  return instanceDefinition({
+    strategy: derivedLifeTime(Object.values(record).map(r => r.strategy)) as any,
+    dependencies: Object.values(record),
     create: context => {
       return Object.keys(record).reduce((result, property) => {
         result[property] = context.buildWithStrategy(record[property]);
-
         return result;
       }, {} as any);
     },
-  };
+  });
 };
