@@ -1,8 +1,8 @@
-import { request, singleton } from '../../definitions/definitions';
-import { container } from '../Container';
-import { replace } from '../../patching/replace';
-import { BoxedValue } from '../../__test__/BoxedValue';
-import { external } from '../../definitions/sync/external';
+import { request, singleton } from '../../definitions/definitions.js';
+import { container } from '../Container.js';
+import { replace } from '../../patching/replace.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
+import { external } from '../../definitions/sync/external.js';
 
 describe(`Container`, () => {
   describe(`.get`, () => {

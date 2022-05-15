@@ -1,10 +1,10 @@
-import { container } from '../container/Container';
+import { container } from '../container/Container.js';
 import u from 'util';
 
 import memwatch from '@airbnb/node-memwatch';
-import { scoped, singleton, transient } from '../definitions/definitions';
-import { external } from '../definitions/sync/external';
-import { factory, IFactory } from '../definitions/sync/factory';
+import { scoped, singleton, transient } from '../definitions/definitions.js';
+import { external } from '../definitions/sync/external.js';
+import { factory, IFactory } from '../definitions/sync/factory.js';
 
 export const inspect = (obj: any) => {
   return console.log(u.inspect(obj, false, null, true));

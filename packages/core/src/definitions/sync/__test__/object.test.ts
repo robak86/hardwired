@@ -1,15 +1,11 @@
-import { request, scoped, singleton } from '../../definitions';
-import { object } from '../object';
+import { request, scoped, singleton } from '../../definitions.js';
+import { object } from '../object.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
-import { container } from '../../../container/Container';
-import { SingletonStrategy } from '../../../strategies/SingletonStrategy';
-import { TransientStrategy } from '../../../strategies/TransientStrategy';
-import { ScopeStrategy } from '../../../strategies/ScopeStrategy';
-import { RequestStrategy } from '../../../strategies/RequestStrategy';
-import { set } from '../../../patching/set';
-import { value } from '../value';
-import { LifeTime } from '../../abstract/LifeTime';
+import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+import { container } from '../../../container/Container.js';
+import { set } from '../../../patching/set.js';
+import { value } from '../value.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
 
 describe(`object`, () => {
   it(`returns definition with correct type`, async () => {

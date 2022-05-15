@@ -1,7 +1,7 @@
-import { external } from '../external';
-import { transient } from '../../definitions';
-import { container } from '../../../container/Container';
-import { value } from '../value';
+import { external } from '../external.js';
+import { transient } from '../../definitions.js';
+import { container } from '../../../container/Container.js';
+import { value } from '../value.js';
 
 describe(`external`, () => {
   type Externals = { someExternalParam: number };

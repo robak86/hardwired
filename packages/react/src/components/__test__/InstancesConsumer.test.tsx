@@ -1,7 +1,7 @@
 import { singleton } from 'hardwired';
-import { ContainerProvider } from '../ContainerProvider';
+import { ContainerProvider } from '../ContainerProvider.js';
 import React from 'react';
-import { DefinitionsConsumer } from '../DefinitionsConsumer';
+import { DefinitionsConsumer } from '../DefinitionsConsumer.js';
 import { render } from '@testing-library/react';
 
 describe(`InstancesConsumer`, () => {

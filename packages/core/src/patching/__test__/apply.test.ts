@@ -1,13 +1,13 @@
-import { container } from '../../container/Container';
-import { BoxedValue } from '../../__test__/BoxedValue';
-import { request, scoped, singleton, transient } from '../../definitions/definitions';
-import { set } from '../set';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition';
-import { decorate } from '../decorate';
-import { apply } from '../apply';
-import { object } from '../../definitions/sync/object';
-import { ContainerContext } from '../../context/ContainerContext';
-import { value } from '../../definitions/sync/value';
+import { container } from '../../container/Container.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
+import { request, scoped, singleton, transient } from '../../definitions/definitions.js';
+import { set } from '../set.js';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
+import { decorate } from '../decorate.js';
+import { apply } from '../apply.js';
+import { object } from '../../definitions/sync/object.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
+import { value } from '../../definitions/sync/value.js';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {

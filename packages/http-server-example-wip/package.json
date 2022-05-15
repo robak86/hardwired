@@ -5,18 +5,19 @@
   "homepage": "https://github.com/robak86/hardwired",
   "description": "Hardwired integration for React",
   "version": "0.7.0",
+  "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "dependencies": {
     "hardwired": "*",
     "find-my-way": "*",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.1",
     "winston": "^3.3.3",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^3.2.4",
     "url-join": "*"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.5.12",
+    "@types/node-fetch": "^2.6.1",
     "@types/url-join": "^4.0.1"
   },
   "files": [

@@ -1,8 +1,8 @@
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { LifeTime } from '../definitions/abstract/LifeTime';
-import { Resolution } from '../definitions/abstract/Resolution';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { Resolution } from '../definitions/abstract/Resolution.js';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 
 export function set<T, TInstance, TLifeTime extends LifeTime>(
   instance: InstanceDefinition<TInstance, TLifeTime, any>,
@@ -18,7 +18,6 @@ export function set<T, TInstance, TLifeTime extends LifeTime, TResolution extend
   instance: AnyInstanceDefinition<TInstance, TLifeTime, any>,
   newValue: TInstance,
 ): AnyInstanceDefinition<TInstance, TLifeTime, never> {
-
   return {
     ...instance,
     create: () => newValue,

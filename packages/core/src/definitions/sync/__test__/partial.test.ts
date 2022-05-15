@@ -1,13 +1,13 @@
-import { request, singleton, transient } from '../../definitions';
+import { request, singleton, transient } from '../../definitions.js';
 
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
-import { value } from '../value';
-import { container } from '../../../container/Container';
-import { LifeTime } from '../../abstract/LifeTime';
-import { external } from '../external';
-import { fn } from '../fn';
-import { partial } from '../partial';
+import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+import { value } from '../value.js';
+import { container } from '../../../container/Container.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
+import { external } from '../external.js';
+import { fn } from '../fn.js';
+import { partial } from '../partial.js';
 
 describe(`partial`, () => {
   describe(`types`, () => {
@@ -28,9 +28,9 @@ describe(`partial`, () => {
 
       it(`returns correct type for no args passed`, async () => {
         const ap = singleton.partial((a: number, b: string) => true);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton, never>>>(
-          true,
-        );
+        expectType<
+          TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton, never>>
+        >(true);
       });
     });
 
@@ -51,9 +51,9 @@ describe(`partial`, () => {
 
       it(`returns correct type for no args passed`, async () => {
         const ap = singleton.partial((a: number) => (b: string) => true);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton, never>>>(
-          true,
-        );
+        expectType<
+          TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton, never>>
+        >(true);
       });
     });
 

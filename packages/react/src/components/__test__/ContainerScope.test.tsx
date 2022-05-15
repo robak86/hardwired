@@ -1,8 +1,8 @@
 import { scoped, set } from 'hardwired';
 import React, { FC } from 'react';
-import { ContainerProvider } from '../ContainerProvider';
-import { ContainerScope } from '../ContainerScope';
-import { useDefinition } from '../../hooks/useDefinition';
+import { ContainerProvider } from '../ContainerProvider.js';
+import { ContainerScope } from '../ContainerScope.js';
+import { useDefinition } from '../../hooks/useDefinition.js';
 import { render } from '@testing-library/react';
 
 describe(`ContainerScope`, () => {

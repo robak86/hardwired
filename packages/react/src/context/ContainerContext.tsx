@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { useContext, useRef } from 'react';
 import { IContainer, RequestContainer } from 'hardwired';
-import invariant from 'tiny-invariant';
-import { ExternalValues, isShallowEqualRec } from "../utils/useMemoizedByRec";
+import { ExternalValues, isShallowEqualRec } from '../utils/useMemoizedByRec.js';
 
 export type ContainerContextValue = {
   container: IContainer | undefined;
@@ -18,13 +17,14 @@ export const useContainerContext = (): ContainerContextValue => {
 
 export const useContainer = (): IContainer => {
   const { container } = useContainerContext();
-  invariant(container, `Cannot find container. Make sure that component is wrapped with ContainerProvider`);
+  if (!container) {
+    throw new Error(`Cannot find container. Make sure that component is wrapped with ContainerProvider`);
+  }
   return container;
 };
 
 export const useRequestContainer = <T extends ExternalValues = never>(deps?: T): RequestContainer<T> => {
-  const { container } = useContainerContext();
-  invariant(container, `Cannot find container. Make sure that component is wrapped with ContainerProvider`);
+  const container = useContainer();
 
   const requestContainerRef = useRef<null | RequestContainer<any>>();
   const parentContainerIdRef = useRef<null | string>();

@@ -1,10 +1,10 @@
-import { LifeTime } from '../LifeTime';
-import { Resolution } from '../Resolution';
-import { ExternalsDefinitions } from '../base/BaseDefinition';
-import { ContainerContext } from '../../../context/ContainerContext';
+import { LifeTime } from '../LifeTime.js';
+import { Resolution } from '../Resolution.js';
+import { ExternalsDefinitions } from '../base/BaseDefinition.js';
+import { ContainerContext } from '../../../context/ContainerContext.js';
 import { v4 } from 'uuid';
-import { assertNoExternals, pickExternals, PickExternals } from '../../../utils/PickExternals';
-import { AnyInstanceDefinition } from '../AnyInstanceDefinition';
+import { assertNoExternals, pickExternals, PickExternals } from '../../../utils/PickExternals.js';
+import { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
 
 export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime, TExternals> = {
   id: string;

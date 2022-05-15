@@ -1,7 +1,7 @@
-import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
-import { LifeTime } from '../abstract/LifeTime';
-import { AsyncInstanceDefinitionDependency } from '../abstract/async/AsyncInstanceDefinitionDependency';
+import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition.js';
+import { PickExternals } from '../../utils/PickExternals.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import { AsyncInstanceDefinitionDependency } from '../abstract/async/AsyncInstanceDefinitionDependency.js';
 
 export const asyncFn = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   return <

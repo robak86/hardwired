@@ -1,15 +1,15 @@
-import { BuildStrategy } from './abstract/BuildStrategy';
-import { InstancesStore } from '../context/InstancesStore';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry';
-import { InstancesBuilder } from "../context/abstract/InstancesBuilder";
+import { BuildStrategy } from './abstract/BuildStrategy.js';
+import { InstancesStore } from '../context/InstancesStore.js';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry.js';
+import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 
 export class RequestStrategy extends BuildStrategy {
   build(
     definition: InstanceDefinition<any, any, any>,
     instancesCache: InstancesStore,
     resolvers: InstancesDefinitionsRegistry,
-    instancesBuilder:InstancesBuilder,
+    instancesBuilder: InstancesBuilder,
   ) {
     const id = definition.id;
 

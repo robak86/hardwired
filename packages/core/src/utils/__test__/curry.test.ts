@@ -1,4 +1,4 @@
-import { curry } from '../curry';
+import { curry } from '../curry.js';
 
 describe(`curry`, () => {
   it(`works for multiple args`, async () => {

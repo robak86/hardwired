@@ -1,9 +1,9 @@
 import { singleton } from 'hardwired';
-import { createServer } from './app/createServer';
-import { envConfigD } from './config/config.di';
-import { buildServerFetch } from './server/createAppClient';
-import { loggerD } from './logger/createLogger';
-import { appRouterD } from './app/appRouter';
+import { createServer } from './app/createServer.js';
+import { envConfigD } from './config/config.di.js';
+import { buildServerFetch } from './server/createAppClient.js';
+import { loggerD } from './logger/createLogger.js';
+import { appRouterD } from './app/appRouter.js';
 
 export const appServerD = singleton.fn(createServer, appRouterD, envConfigD, loggerD);
 export const appClientD = singleton.fn(buildServerFetch, appServerD);

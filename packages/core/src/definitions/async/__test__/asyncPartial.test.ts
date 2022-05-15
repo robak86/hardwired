@@ -1,10 +1,10 @@
-import { external } from '../../sync/external';
-import { request, singleton, transient } from '../../definitions';
-import { asyncFn } from '../asyncFn';
-import { LifeTime } from '../../abstract/LifeTime';
-import { asyncPartial } from '../asyncPartial';
-import { value } from '../../sync/value';
-import { container } from "../../../container/Container";
+import { external } from '../../sync/external.js';
+import { request, singleton, transient } from '../../definitions.js';
+import { asyncFn } from '../asyncFn.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
+import { asyncPartial } from '../asyncPartial.js';
+import { value } from '../../sync/value.js';
+import { container } from '../../../container/Container.js';
 
 describe(`asyncFn`, () => {
   describe(`instantiate`, () => {
@@ -14,8 +14,8 @@ describe(`asyncFn`, () => {
       const p2Def = value('str');
 
       const fnDef = singleton.asyncPartial(fn, p1Def, p2Def);
-      const result = await container().getAsync(fnDef)
-      expect(await result()).toEqual([1, 'str'])
+      const result = await container().getAsync(fnDef);
+      expect(await result()).toEqual([1, 'str']);
     });
 
     it(`returns correct value, ex.2`, async () => {
@@ -24,8 +24,8 @@ describe(`asyncFn`, () => {
       const p2Def = value('str');
 
       const fnDef = singleton.asyncPartial(fn, p1Def, p2Def);
-      const result = await container().getAsync(fnDef)
-      expect(await result()).toEqual([1, 'str'])
+      const result = await container().getAsync(fnDef);
+      expect(await result()).toEqual([1, 'str']);
     });
   });
 

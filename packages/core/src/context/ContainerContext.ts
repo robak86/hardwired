@@ -1,12 +1,12 @@
-import { InstancesStore } from './InstancesStore';
-import { ContainerScopeOptions } from '../container/Container';
-import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry';
-import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { InstancesBuilder } from './abstract/InstancesBuilder';
-import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import { externalsToScopeOverrides, ExternalsValues } from '../utils/PickExternals';
+import { InstancesStore } from './InstancesStore.js';
+import { ContainerScopeOptions } from '../container/Container.js';
+import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry.js';
+import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
+import { InstancesBuilder } from './abstract/InstancesBuilder.js';
+import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { externalsToScopeOverrides, ExternalsValues } from '../utils/PickExternals.js';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {

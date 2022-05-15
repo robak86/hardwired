@@ -1,5 +1,5 @@
-import { Instance, instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime';
+import { Instance, instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime.js';
 
 export const object = <T extends Record<keyof any, InstanceDefinition<any, any, never>>>(
   record: T,

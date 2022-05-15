@@ -1,6 +1,7 @@
-const defaults = require('../../jest.shared.js');
+import defaults from '../../jest.shared.js';
 
-module.exports = {
+
+export default {
   ...defaults,
   testEnvironment: 'jsdom',
   displayName: 'example',
@@ -12,3 +13,4 @@ module.exports = {
   },
   collectCoverageFrom: [],
 };
+

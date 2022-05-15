@@ -1,8 +1,8 @@
-import { ResponseEffect, ResponseInterpreter } from '../server/Response';
+import { ResponseEffect, ResponseInterpreter } from '../server/Response.js';
 import { HTTPMethod } from 'find-my-way';
-import { Router } from './Router';
+import { Router } from './Router.js';
 import { AnyInstanceDefinition, asyncFactory, LifeTime, singleton } from 'hardwired';
-import { RequestContext } from '../server/requestContext';
+import { RequestContext } from '../server/requestContext.js';
 
 export type RouteHandlerDefinition =
   | AnyInstanceDefinition<ResponseEffect, LifeTime.request, never>
@@ -26,7 +26,7 @@ export const defineRouter = (
         ] as const,
     );
 
-    throw new Error("Implement me!")
+    throw new Error('Implement me!');
     //
     // factories.forEach(([method, path, responseDef]) => {
     //   router.append(method, path, locator.get(responseDef));

@@ -1,5 +1,5 @@
 import React, { ComponentType } from 'react';
-import { useContainerContext } from '../context/ContainerContext';
+import { useContainerContext } from '../context/ContainerContext.js';
 import { Diff } from 'utility-types';
 import { InstanceDefinition } from 'hardwired';
 

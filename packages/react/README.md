@@ -93,7 +93,7 @@ please refer to hardwired
 2. Create components
 
 ```typescript jsx
-import { useDefinition } from './useDefinition';
+import { useDefinition } from './useDefinition.js';
 import { observer } from 'mobx-react';
 
 export const Counter = observer(() => {
@@ -344,7 +344,7 @@ that will hold parametrized instances of `CounterStore` and `CounterActions`, an
 child components as props.
 
 ```typescript jsx
-import { useDefinition } from './useDefinition';
+import { useDefinition } from './useDefinition.js';
 import { observer } from 'mobx-react';
 
 export const Counter: FC<{ store: CounterStore }> = observer(({ store }) => {

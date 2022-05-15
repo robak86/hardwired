@@ -1,7 +1,7 @@
 import winston from 'winston';
-import { EnvConfig, EnvConfigKey } from '../config/EnvConfig';
+import { EnvConfig, EnvConfigKey } from '../config/EnvConfig.js';
 import { singleton } from 'hardwired';
-import { envConfigD } from '../config/config.di';
+import { envConfigD } from '../config/config.di.js';
 
 export const createLogger = (env: EnvConfig) => {
   const format = winston.format.combine(

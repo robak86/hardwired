@@ -1,11 +1,11 @@
-import { request, scoped, singleton } from '../../definitions';
-import { intersection } from '../intersection';
+import { request, scoped, singleton } from '../../definitions.js';
+import { intersection } from '../intersection.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
-import { object } from '../object';
-import { container } from '../../../container/Container';
-import { set } from '../../../patching/set';
-import { LifeTime } from '../../abstract/LifeTime';
+import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+import { object } from '../object.js';
+import { container } from '../../../container/Container.js';
+import { set } from '../../../patching/set.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
 
 describe(`intersection`, () => {
   describe(`types`, () => {

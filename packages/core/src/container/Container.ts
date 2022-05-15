@@ -1,12 +1,12 @@
-import { ContainerContext } from '../context/ContainerContext';
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
-import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition';
-import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry';
-import { IContainer } from './IContainer';
-import { RequestContainer } from './RequestContainer';
+import { ContainerContext } from '../context/ContainerContext.js';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
+import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
+import { IContainer } from './IContainer.js';
+import { RequestContainer } from './RequestContainer.js';
 import { v4 } from 'uuid';
-import { ExternalsValues, PickExternals } from '../utils/PickExternals';
+import { ExternalsValues, PickExternals } from '../utils/PickExternals.js';
 
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}

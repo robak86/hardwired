@@ -1,5 +1,5 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { LifeTime } from '../abstract/LifeTime';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { LifeTime } from '../abstract/LifeTime.js';
 
 export const value = <TValue>(value: TValue): InstanceDefinition<TValue, LifeTime.singleton, never> => {
   return instanceDefinition({

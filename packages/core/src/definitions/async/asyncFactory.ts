@@ -1,11 +1,11 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition';
-import { LifeTime } from '../abstract/LifeTime';
-import { ContainerContext } from '../../context/ContainerContext';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
 import { v4 } from 'uuid';
-import { Resolution } from '../abstract/Resolution';
-import { NeverToVoid } from '../../utils/PickExternals';
-import { asyncDefinition } from '../abstract/async/AsyncInstanceDefinition';
+import { Resolution } from '../abstract/Resolution.js';
+import { NeverToVoid } from '../../utils/PickExternals.js';
+import { asyncDefinition } from '../abstract/async/AsyncInstanceDefinition.js';
 
 // prettier-ignore
 export type AsyncFactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams> =

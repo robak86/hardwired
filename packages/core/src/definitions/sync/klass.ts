@@ -1,8 +1,8 @@
-import { ClassType } from '../../utils/ClassType';
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
-import { LifeTime } from '../abstract/LifeTime';
-import { InstanceDefinitionDependency } from '../abstract/sync/InstanceDefinitionDependency';
+import { ClassType } from '../../utils/ClassType.js';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { PickExternals } from '../../utils/PickExternals.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import { InstanceDefinitionDependency } from '../abstract/sync/InstanceDefinitionDependency.js';
 
 export const klass = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   return <

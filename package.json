@@ -10,8 +10,8 @@
     "test": "yarn run jest --config jest.config.js",
     "test:coverage": "yarn run jest --config jest.config.js --selectProjects core react --coverage",
     "postinstall": "yarn run update:tsconfig.json && yarn run update:package.json",
-    "update:tsconfig.json": "ts-node scripts/update-package-tsconfig.ts",
-    "update:package.json": "ts-node scripts/update-package-json.ts",
+    "update:tsconfig.json": "node --loader ts-node/esm scripts/update-package-tsconfig.ts",
+    "update:package.json": "node --loader ts-node/esm scripts/update-package-json.ts",
     "purge": "rimraf packages/**/lib/* packages/**/*.tsbuildinfo",
     "format": "prettier --write 'packages/**/src/**/*.{ts,tsx,js}'",
     "lint": "eslint 'packages/**/*.{!d.ts,ts,tsx}'"
@@ -21,6 +21,7 @@
   "workspaces": [
     "packages/*"
   ],
+  "type": "module",
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
@@ -35,14 +36,13 @@
   },
   "devDependencies": {
     "@airbnb/node-memwatch": "^2.0.0",
-    "@types/airbnb__node-memwatch": "^2.0.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/react-hooks": "^7.0.0",
     "@testing-library/user-event": "^13.1.9",
-    "@types/benchmark": "^2.1.0",
-    "@types/jest": "^27.0.1",
-    "@types/node": "^15.12.4",
+    "@types/airbnb__node-memwatch": "^2.0.0",
+    "@types/jest": "^27.5.1",
+    "@types/node": "^17.0.33",
     "@types/react": "^17.0.11",
     "@types/react-dom": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^4.29.1",
@@ -52,23 +52,21 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.24.0",
     "husky": "^4.2.5",
-    "identity-obj-proxy": "^3.0.0",
-    "jest": "^27.0.6",
+    "jest": "^28.1.0",
+    "jest-environment-jsdom": "^28.1.0",
     "lint-staged": "^11.1.2",
     "prettier": "^2.6.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "redux": "^4.0.5",
     "rimraf": "^3.0.2",
     "source-map-support": "^0.5.19",
     "ts-expect": "^1.1.0",
-    "ts-jest": "^27.0.4",
+    "ts-jest": "^28.0.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.7.0-dev.20220503"
   },
   "dependencies": {
     "memoize-one": "^5.1.1",
-    "tiny-invariant": "^1.1.0",
     "utility-types": "^3.10.0"
   }
 }

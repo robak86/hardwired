@@ -1,6 +1,6 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { LifeTime } from '../abstract/LifeTime';
-import { Resolution } from '../abstract/Resolution';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import { Resolution } from '../abstract/Resolution.js';
 
 export const external = <TId extends string>(id: TId) => {
   return {

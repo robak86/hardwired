@@ -1,4 +1,4 @@
-import { IsFinite } from './IsFinite';
+import { IsFinite } from './IsFinite.js';
 
 // prettier-ignore
 export type UnCurry<T, TArgsAggregate extends any[] = []> =

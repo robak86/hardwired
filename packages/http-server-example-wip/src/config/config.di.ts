@@ -1,7 +1,7 @@
 import { singleton, value } from 'hardwired';
-import { envConfig } from './EnvConfig';
-import { loadEnvConfig } from './loadEnvConfig';
-import { parseConfigValue } from './parseConfigValue';
+import { envConfig } from './EnvConfig.js';
+import { loadEnvConfig } from './loadEnvConfig.js';
+import { parseConfigValue } from './parseConfigValue.js';
 
 export const envConfigDataD = singleton.fn(loadEnvConfig);
 export const envValueParserD = value(parseConfigValue);

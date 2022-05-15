@@ -1,4 +1,4 @@
-import { AnyInstanceDefinition } from '../../definitions/abstract/AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../../definitions/abstract/AnyInstanceDefinition.js';
 
 export interface InstancesBuilder {
   buildExact(definition: AnyInstanceDefinition<any, any, any>): any;

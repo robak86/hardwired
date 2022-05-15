@@ -1,11 +1,11 @@
-import { set } from '../set';
-import { container } from '../../container/Container';
-import { request, scoped, singleton, transient } from '../../definitions/definitions';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition';
-import { decorate } from '../decorate';
-import { object } from '../../definitions/sync/object';
-import { value } from '../../definitions/sync/value';
-import { ContainerContext } from '../../context/ContainerContext';
+import { set } from '../set.js';
+import { container } from '../../container/Container.js';
+import { request, scoped, singleton, transient } from '../../definitions/definitions.js';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
+import { decorate } from '../decorate.js';
+import { object } from '../../definitions/sync/object.js';
+import { value } from '../../definitions/sync/value.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
 
 describe(`decorate`, () => {
   it(`decorates original value`, async () => {
@@ -81,8 +81,8 @@ describe(`decorate`, () => {
       const mPatch = decorate(a, a => a);
 
       const c = container({ scopeOverrides: [mPatch] });
-      const obj1 = object({ source, a })
-      const obj2 = object({ source, a })
+      const obj1 = object({ source, a });
+      const obj2 = object({ source, a });
       const req1 = c.get(obj1);
       const req2 = c.get(obj2);
 

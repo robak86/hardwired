@@ -1,8 +1,8 @@
-import { AsyncPartialFnDependencies, PartiallyAppliedAsyncFn } from '../../utils/PartiallyApplied';
-import { PickExternals } from '../../utils/PickExternals';
-import { uncurryAsync, UnCurryAsync } from '../../utils/UnCurryAsync';
-import { LifeTime } from '../abstract/LifeTime';
-import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
+import { AsyncPartialFnDependencies, PartiallyAppliedAsyncFn } from '../../utils/PartiallyApplied.js';
+import { PickExternals } from '../../utils/PickExternals.js';
+import { uncurryAsync, UnCurryAsync } from '../../utils/UnCurryAsync.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition.js';
 
 export const asyncPartial = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   return <

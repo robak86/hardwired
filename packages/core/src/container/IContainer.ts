@@ -1,8 +1,8 @@
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition';
-import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition';
-import { ContainerScopeOptions } from './Container';
-import { ExternalsValues, PickExternals } from '../utils/PickExternals';
-import { RequestContainer } from './RequestContainer';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+import { ContainerScopeOptions } from './Container.js';
+import { ExternalsValues, PickExternals } from '../utils/PickExternals.js';
+import { RequestContainer } from './RequestContainer.js';
 
 export interface IContainer {
   readonly id: string;

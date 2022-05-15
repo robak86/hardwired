@@ -1,7 +1,7 @@
-import { container } from '../../container/Container';
+import { container } from '../../container/Container.js';
 import { v4 } from 'uuid';
-import { transient } from '../../definitions/definitions';
-import { value } from '../../definitions/sync/value';
+import { transient } from '../../definitions/definitions.js';
+import { value } from '../../definitions/sync/value.js';
 
 describe(`ClassTransientResolver`, () => {
   describe(`sync resolution`, () => {

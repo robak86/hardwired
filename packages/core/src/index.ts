@@ -1,37 +1,36 @@
+export type { IContainer } from './container/IContainer.js';
+export { container, Container } from './container/Container.js';
 
+export * from './strategies/RequestStrategy.js';
+export * from './strategies/SingletonStrategy.js';
+export * from './strategies/TransientStrategy.js';
+export * from './definitions/definitions.js';
+export * from './definitions/abstract/sync/InstanceDefinition.js';
+export * from './definitions/abstract/async/AsyncInstanceDefinition.js';
+export * from './definitions/abstract/AnyInstanceDefinition.js';
 
-export type { IContainer } from './container/IContainer';
-export { container, Container } from './container/Container';
+export * from './patching/replace.js';
+export * from './patching/apply.js';
+export * from './patching/set.js';
+export * from './patching/decorate.js';
 
-export * from './strategies/RequestStrategy';
-export * from './strategies/SingletonStrategy';
-export * from './strategies/TransientStrategy';
-export * from './definitions/definitions';
-export * from './definitions/abstract/sync/InstanceDefinition';
-export * from './definitions/abstract/AnyInstanceDefinition';
+export { ContainerContext } from './context/ContainerContext.js';
 
-export * from './patching/replace';
-export * from './patching/apply';
-export * from './patching/set';
-export * from './patching/decorate';
+export { BuildStrategy } from './strategies/abstract/BuildStrategy.js';
 
-export { ContainerContext } from './context/ContainerContext';
+export * from './definitions/sync/object.js';
+export * from './definitions/sync/tuple.js';
 
-export { BuildStrategy } from './strategies/abstract/BuildStrategy';
+export { value } from './definitions/sync/value.js';
 
-export * from './definitions/sync/object';
-export * from './definitions/sync/tuple';
+export * from './definitions/sync/factory.js';
+export * from './definitions/async/asyncFactory.js';
+export * from './definitions/sync/external.js';
+export * from './definitions/sync/intersection.js';
+export * from './definitions/abstract/LifeTime.js';
+export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
+export { Resolution } from './definitions/abstract/Resolution.js';
+export { RequestContainer } from './container/RequestContainer.js';
 
-export { value } from './definitions/sync/value';
-
-export * from './definitions/sync/factory';
-export * from './definitions/async/asyncFactory';
-export * from './definitions/sync/external';
-export * from './definitions/sync/intersection';
-export * from './definitions/abstract/LifeTime';
-export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime';
-export { Resolution } from './definitions/abstract/Resolution';
-export { RequestContainer } from './container/RequestContainer';
-
-export type { ExternalsValues } from "./utils/PickExternals";
+export type { ExternalsValues, PickExternals } from './utils/PickExternals.js';
 

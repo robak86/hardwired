@@ -1,9 +1,9 @@
 import { container, request, singleton, external } from 'hardwired';
 import { render } from '@testing-library/react';
-import { DummyComponent } from '../../__test__/DummyComponent';
+import { DummyComponent } from '../../__test__/DummyComponent.js';
 import * as React from 'react';
-import { ContainerProvider } from '../../components/ContainerProvider';
-import { useDefinition } from '../useDefinition';
+import { ContainerProvider } from '../../components/ContainerProvider.js';
+import { useDefinition } from '../useDefinition.js';
 import { FC } from 'react';
 
 describe(`useDefinition`, () => {

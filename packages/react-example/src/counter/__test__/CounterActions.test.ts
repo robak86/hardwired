@@ -1,7 +1,7 @@
-import { CounterStore } from '../CounterStore';
-import { CounterActions } from '../CounterActions';
+import { CounterStore } from '../CounterStore.js';
+import { CounterActions } from '../CounterActions.js';
 import { container, set } from 'hardwired';
-import { counterActionsDef, counterInitialValueDef, counterStoreDef } from '../../app.module';
+import { counterActionsDef, counterInitialValueDef, counterStoreDef } from '../../app.module.js';
 
 describe('CounterAction', () => {
   describe('.increment()', () => {

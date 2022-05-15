@@ -1,5 +1,5 @@
 import { container } from 'hardwired';
-import { appClientD } from '../../app.di';
+import { appClientD } from '../../app.di.js';
 
 describe.skip(`createApp`, () => {
   it(`hello world route`, async () => {
@@ -14,8 +14,8 @@ describe.skip(`createApp`, () => {
     const cnt = container();
     const fetch = cnt.get(appClientD);
 
-    const response1 = await fetch('/').then(r => r.json());
-    const response2 = await fetch('/').then(r => r.json());
+    const response1 = await fetch('/').then(r => r.json() as any);
+    const response2 = await fetch('/').then(r => r.json() as any);
     expect(response1.id).not.toEqual(response2.id);
   });
 
@@ -26,7 +26,7 @@ describe.skip(`createApp`, () => {
       const response1 = await fetch('/', { method: 'POST', body: JSON.stringify({ inputData: '1234' }) }).then(r =>
         r.json(),
       );
-      expect(response1).toEqual('')
+      expect(response1).toEqual('');
     });
   });
 });

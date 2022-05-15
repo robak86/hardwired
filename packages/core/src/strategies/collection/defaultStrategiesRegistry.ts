@@ -1,9 +1,9 @@
-import { StrategiesRegistry } from './StrategiesRegistry';
-import { LifeTime } from '../../definitions/abstract/LifeTime';
-import { SingletonStrategy } from '../SingletonStrategy';
-import { TransientStrategy } from '../TransientStrategy';
-import { RequestStrategy } from '../RequestStrategy';
-import { ScopeStrategy } from '../ScopeStrategy';
+import { StrategiesRegistry } from './StrategiesRegistry.js';
+import { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import { SingletonStrategy } from '../SingletonStrategy.js';
+import { TransientStrategy } from '../TransientStrategy.js';
+import { RequestStrategy } from '../RequestStrategy.js';
+import { ScopeStrategy } from '../ScopeStrategy.js';
 
 export const defaultStrategiesRegistry = new StrategiesRegistry({
   [LifeTime.singleton]: new SingletonStrategy(),
