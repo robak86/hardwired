@@ -1,5 +1,5 @@
 export enum Resolution {
-    sync = 'sync',
-    async = 'async',
-    external = 'external',
+  sync = 'sync',
+  async = 'async',
+  external = 'external',
 }

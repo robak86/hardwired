@@ -1,6 +1,6 @@
-import { LifeTime } from '../definitions/abstract/LifeTime';
-import { InstanceDefinitionDependency } from '../definitions/abstract/sync/InstanceDefinitionDependency';
-import { AsyncInstanceDefinitionDependency } from '../definitions/abstract/async/AsyncInstanceDefinitionDependency';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { InstanceDefinitionDependency } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import { AsyncInstanceDefinitionDependency } from '../definitions/abstract/async/AsyncInstanceDefinitionDependency.js';
 
 // prettier-ignore
 export type PartiallyApplied<A extends any[], D extends PartialArgs<A>, R> =

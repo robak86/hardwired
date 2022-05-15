@@ -1,4 +1,4 @@
-import { ValueParserBuilder } from './parseConfigValue';
+import { ValueParserBuilder } from './parseConfigValue.js';
 import { DotenvParseOutput } from 'dotenv';
 
 export enum EnvConfigKey {

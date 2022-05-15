@@ -1,10 +1,10 @@
-import { transient } from '../definitions/definitions';
-import { external } from '../definitions/sync/external';
-import { value } from '../definitions/sync/value';
+import { transient } from '../definitions/definitions.js';
+import { external } from '../definitions/sync/external.js';
+import { value } from '../definitions/sync/value.js';
 import { expectType, TypeOf } from 'ts-expect';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import { container } from '../container/Container';
-import { LifeTime } from '../definitions/abstract/LifeTime';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { container } from '../container/Container.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 export type SomeObject = {
   value: number;

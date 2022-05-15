@@ -1,6 +1,6 @@
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition';
-import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition';
-import { ContainerContext } from '../context/ContainerContext';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+import { ContainerContext } from '../context/ContainerContext.js';
 import { v4 } from 'uuid';
 
 export class RequestContainer<TBoundExternals> {

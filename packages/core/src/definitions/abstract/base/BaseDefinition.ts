@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../sync/InstanceDefinition';
+import { InstanceDefinition } from '../sync/InstanceDefinition.js';
 
 export type ExternalsValuesRecord = Record<string, any>;
 

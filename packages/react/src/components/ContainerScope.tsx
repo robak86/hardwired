@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FC } from 'react';
-import { ContainerContext, useContainer } from '../context/ContainerContext';
-import { useMemoized } from '../utils/useMemoized';
+import { ContainerContext, useContainer } from '../context/ContainerContext.js';
+import { useMemoized } from '../utils/useMemoized.js';
 import { InstanceDefinition } from 'hardwired';
 
 export type ContainerScopeProps = {

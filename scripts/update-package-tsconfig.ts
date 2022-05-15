@@ -1,9 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
 const PACKAGE_TSCONFIG = 'tsconfig.json';
 const PROJECT_TSCONFIG = 'tsconfig.json';
 
+const __dirname = dirname(fileURLToPath(import.meta.url))
 const packagesRoot = path.join(__dirname, '..', 'packages');
 const packageDirectories = fs
   .readdirSync(packagesRoot)

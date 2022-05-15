@@ -1,8 +1,8 @@
-import { ContainerContext } from '../../../context/ContainerContext';
-import { LifeTime } from '../LifeTime';
-import { Resolution } from '../Resolution';
-import { ExternalsDefinitions } from '../base/BaseDefinition';
-import { assertNoExternals, pickExternals, PickExternals } from '../../../utils/PickExternals';
+import { ContainerContext } from '../../../context/ContainerContext.js';
+import { LifeTime } from '../LifeTime.js';
+import { Resolution } from '../Resolution.js';
+import { ExternalsDefinitions } from '../base/BaseDefinition.js';
+import { assertNoExternals, pickExternals, PickExternals } from '../../../utils/PickExternals.js';
 import { v4 } from 'uuid';
 
 export type InstanceDefinition<TInstance, TLifeTime extends LifeTime, TExternals> = {

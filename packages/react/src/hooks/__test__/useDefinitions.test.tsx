@@ -1,10 +1,10 @@
 import { container, external, request, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
-import { DummyComponent } from '../../__test__/DummyComponent';
+import { DummyComponent } from '../../__test__/DummyComponent.js';
 import * as React from 'react';
 import { FC } from 'react';
-import { ContainerProvider } from '../../components/ContainerProvider';
-import { useDefinitions } from '../useDefinitions';
+import { ContainerProvider } from '../../components/ContainerProvider.js';
+import { useDefinitions } from '../useDefinitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`useDefinitions`, () => {

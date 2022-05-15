@@ -7,4 +7,4 @@ export type RequestContext = {
   routeParams: unknown;
 };
 
-export const requestContextD = external('reqCtx',).type<RequestContext>();
+export const requestContextD = external('reqCtx').type<RequestContext>();

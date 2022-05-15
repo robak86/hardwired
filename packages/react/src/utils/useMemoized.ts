@@ -22,4 +22,3 @@ export function useMemoized<T>(factory: () => T): (invalidateKeys: ReadonlyArray
 
   return getValue;
 }
-

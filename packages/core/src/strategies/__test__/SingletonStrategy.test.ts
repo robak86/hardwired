@@ -1,11 +1,11 @@
-import { container } from '../../container/Container';
-import { set } from '../../patching/set';
+import { container } from '../../container/Container.js';
+import { set } from '../../patching/set.js';
 import { v4 } from 'uuid';
-import { singleton } from '../../definitions/definitions';
-import { value } from '../../definitions/sync/value';
-import { ContainerContext } from '../../context/ContainerContext';
-import { BoxedValue } from '../../__test__/BoxedValue';
-import { replace } from '../../patching/replace';
+import { singleton } from '../../definitions/definitions.js';
+import { value } from '../../definitions/sync/value.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
+import { replace } from '../../patching/replace.js';
 
 describe(`SingletonStrategy`, () => {
   describe(`sync resolution`, () => {

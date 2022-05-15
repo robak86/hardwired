@@ -1,7 +1,7 @@
-import { external } from '../../sync/external';
-import { request, singleton, transient } from '../../definitions';
-import { asyncFn } from '../asyncFn';
-import { LifeTime } from '../../abstract/LifeTime';
+import { external } from '../../sync/external.js';
+import { request, singleton, transient } from '../../definitions.js';
+import { asyncFn } from '../asyncFn.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
 
 describe(`asyncFn`, () => {
   describe(`types`, () => {

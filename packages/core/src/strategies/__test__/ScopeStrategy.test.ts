@@ -1,7 +1,7 @@
-import { scoped } from '../../definitions/definitions';
-import { BoxedValue } from '../../__test__/BoxedValue';
-import { replace } from '../../patching/replace';
-import { ContainerContext } from '../../context/ContainerContext';
+import { scoped } from '../../definitions/definitions.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
+import { replace } from '../../patching/replace.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
 
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {
@@ -70,7 +70,7 @@ describe(`ScopeStrategy`, () => {
     it(`replaces definitions for scoped scope`, async () => {
       const a = scoped.fn(() => new BoxedValue(1));
 
-      const c = ContainerContext.empty()
+      const c = ContainerContext.empty();
       expect(c.get(a).value).toEqual(1);
 
       const mPatch = replace(
@@ -84,7 +84,7 @@ describe(`ScopeStrategy`, () => {
     it(`new scope inherits parent scope overrides`, async () => {
       const a = scoped.fn(() => new BoxedValue(1));
 
-      const root = ContainerContext.empty()
+      const root = ContainerContext.empty();
       expect(root.get(a).value).toEqual(1);
 
       const mPatch = replace(

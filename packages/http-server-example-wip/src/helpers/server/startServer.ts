@@ -1,6 +1,5 @@
 import http from 'http';
 import { AddressInfo } from 'net';
-import invariant from 'tiny-invariant';
 
 export type ServerInstance = {
   port: number;
@@ -14,7 +13,9 @@ export const startServer = (server: http.Server, port: number): ServerInstance =
     get port(): number {
       const serverInstanceAddress = instance.address();
       const port = (serverInstanceAddress as AddressInfo)?.port;
-      invariant(!!port, `Cannot get server port number`);
+      if (!port) {
+        throw new Error(`Cannot get server port number`);
+      }
       return port;
     },
     close: () => {

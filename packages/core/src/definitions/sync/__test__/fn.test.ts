@@ -1,8 +1,8 @@
-import { external } from '../external';
-import { request, singleton, transient } from '../../definitions';
-import { LifeTime } from '../../abstract/LifeTime';
-import { fn } from '../fn';
-import { PickExternals } from "../../../utils/PickExternals";
+import { external } from '../external.js';
+import { request, singleton, transient } from '../../definitions.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
+import { fn } from '../fn.js';
+import { PickExternals } from '../../../utils/PickExternals.js';
 
 describe(`fn`, () => {
   describe(`allowed dependencies life times`, () => {
@@ -13,9 +13,9 @@ describe(`fn`, () => {
     describe(`transient`, () => {
       it(`does not accept singletons with externals`, async () => {
         const buildDef = () => {
-          const dep = singleton.fn((val:number) => val, ext);
+          const dep = singleton.fn((val: number) => val, ext);
 
-          type WTF = PickExternals<[typeof ext]>
+          type WTF = PickExternals<[typeof ext]>;
 
           // @ts-expect-error transient does not accept singleton dependencies with externals
           fn(LifeTime.transient)(numberConsumer, dep);

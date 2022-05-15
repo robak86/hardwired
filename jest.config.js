@@ -1,3 +1,5 @@
-module.exports = {
-  projects: ['<rootDir>/packages/*/jest.config.js'],
+const config = {
+  projects: ['<rootDir>/packages/core/jest.config.js', '<rootDir>/packages/react/jest.config.js'],
 };
+
+export default config;

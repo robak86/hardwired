@@ -1,12 +1,12 @@
-import { fn } from './sync/fn';
-import { partial } from './sync/partial';
-import { klass } from './sync/klass';
-import { asyncFn } from './async/asyncFn';
-import { asyncClass } from './async/asyncClass';
-import { asyncPartial } from './async/asyncPartial';
-import { LifeTime } from './abstract/LifeTime';
-import { define } from './sync/define';
-import { asyncDefine } from './async/asyncDefine';
+import { fn } from './sync/fn.js';
+import { partial } from './sync/partial.js';
+import { klass } from './sync/klass.js';
+import { asyncFn } from './async/asyncFn.js';
+import { asyncClass } from './async/asyncClass.js';
+import { asyncPartial } from './async/asyncPartial.js';
+import { LifeTime } from './abstract/LifeTime.js';
+import { define } from './sync/define.js';
+import { asyncDefine } from './async/asyncDefine.js';
 
 export const singleton = {
   fn: fn(LifeTime.singleton),

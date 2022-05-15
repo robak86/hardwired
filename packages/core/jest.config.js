@@ -1,6 +1,6 @@
-const defaults = require('../../jest.shared.js');
+import defaults from '../../jest.shared.js';
 
-module.exports = {
+export default {
   ...defaults,
   displayName: 'core',
 };

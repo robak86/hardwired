@@ -1,8 +1,8 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { LifeTime } from '../abstract/LifeTime';
-import { ContainerContext } from '../../context/ContainerContext';
-import { ExternalsValuesRecord } from '../abstract/base/BaseDefinition';
-import { NeverToVoid } from '../../utils/PickExternals';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
+import { ExternalsValuesRecord } from '../abstract/base/BaseDefinition.js';
+import { NeverToVoid } from '../../utils/PickExternals.js';
 
 // prettier-ignore
 export type FactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams extends ExternalsValuesRecord> =

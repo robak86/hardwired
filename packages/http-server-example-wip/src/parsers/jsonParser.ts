@@ -1,4 +1,4 @@
-import { RequestContext } from '../helpers/server/requestContext';
+import { RequestContext } from '../helpers/server/requestContext.js';
 
 export const jsonParams = async ({ req }: RequestContext): Promise<object | null> => {
   const buffers: any[] = [];

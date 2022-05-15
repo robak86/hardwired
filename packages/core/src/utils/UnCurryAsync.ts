@@ -1,5 +1,4 @@
-import { IsFinite } from './IsFinite';
-
+import { IsFinite } from './IsFinite.js';
 
 type Awaited<T> = T extends Promise<infer TInner> ? TInner : T;
 

@@ -1,8 +1,8 @@
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
-import { LifeTime } from '../abstract/LifeTime';
-import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
-import { ContainerContext } from '../../context/ContainerContext';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { PickExternals } from '../../utils/PickExternals.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
 
 export interface DefineAsyncServiceLocator<TExternalParams> {
   get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, Partial<TExternalParams>>): TValue;

@@ -1,10 +1,10 @@
-import { external } from '../external';
-import { value } from '../value';
-import { klass } from '../klass';
+import { external } from '../external.js';
+import { value } from '../value.js';
+import { klass } from '../klass.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
-import { LifeTime } from '../../abstract/LifeTime';
-import { request, singleton, transient } from '../../definitions';
+import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
+import { request, singleton, transient } from '../../definitions.js';
 
 describe(`klass`, () => {
   describe(`external params`, () => {

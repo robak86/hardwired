@@ -1,8 +1,8 @@
-import { PartialFnDependencies, PartiallyAppliedFn } from '../../utils/PartiallyApplied';
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
-import { uncurry, UnCurry } from '../../utils/UnCurry';
-import { LifeTime } from '../abstract/LifeTime';
+import { PartialFnDependencies, PartiallyAppliedFn } from '../../utils/PartiallyApplied.js';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { PickExternals } from '../../utils/PickExternals.js';
+import { uncurry, UnCurry } from '../../utils/UnCurry.js';
+import { LifeTime } from '../abstract/LifeTime.js';
 
 export const partial = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   return <

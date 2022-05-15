@@ -1,7 +1,7 @@
 import { expectType, TypeEqual, TypeOf } from 'ts-expect';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition';
-import { PickExternals } from '../PickExternals';
-import { WithExternals } from '../../definitions/abstract/base/BaseDefinition';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
+import { PickExternals } from '../PickExternals.js';
+import { WithExternals } from '../../definitions/abstract/base/BaseDefinition.js';
 
 describe(`PickExternals`, () => {
   it(`returns correct type for no externals`, async () => {

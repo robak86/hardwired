@@ -1,11 +1,11 @@
-import { LifeTime } from '../../abstract/LifeTime';
+import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeEqual, TypeOf } from 'ts-expect';
-import { request, singleton } from '../../definitions';
-import { container } from '../../../container/Container';
-import { BoxedValue } from '../../../__test__/BoxedValue';
-import { external } from '../../sync/external';
-import { asyncDefine } from '../asyncDefine';
-import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition';
+import { request, singleton } from '../../definitions.js';
+import { container } from '../../../container/Container.js';
+import { BoxedValue } from '../../../__test__/BoxedValue.js';
+import { external } from '../../sync/external.js';
+import { asyncDefine } from '../asyncDefine.js';
+import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition.js';
 
 describe(`asyncDefine`, () => {
   const ext1 = external('ext1').type<number>();

@@ -1,5 +1,5 @@
 import { TypeEqual } from 'ts-expect';
-import { LifeTime } from '../abstract/LifeTime';
+import { LifeTime } from '../abstract/LifeTime.js';
 
 // prettier-ignore
 export type DerivedLifeTime<T extends LifeTime> =

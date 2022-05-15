@@ -1,4 +1,4 @@
-import { uncurry } from '../UnCurry';
+import { uncurry } from '../UnCurry.js';
 import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`uncurry`, () => {

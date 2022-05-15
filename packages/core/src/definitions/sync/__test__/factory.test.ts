@@ -1,13 +1,13 @@
-import { value } from '../value';
-import { external } from '../external';
-import { factory, IFactory } from '../factory';
-import { request, singleton, transient } from '../../definitions';
+import { value } from '../value.js';
+import { external } from '../external.js';
+import { factory, IFactory } from '../factory.js';
+import { request, singleton, transient } from '../../definitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition';
-import { container } from '../../../container/Container';
+import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+import { container } from '../../../container/Container.js';
 import { v4 } from 'uuid';
-import { set } from '../../../patching/set';
-import { LifeTime } from '../../abstract/LifeTime';
+import { set } from '../../../patching/set.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {

@@ -1,8 +1,8 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition';
-import { PickExternals } from '../../utils/PickExternals';
-import { LifeTime } from '../abstract/LifeTime';
-import { ContainerContext } from '../../context/ContainerContext';
-import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition';
+import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { PickExternals } from '../../utils/PickExternals.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
+import { AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition.js';
 import { v4 } from 'uuid';
 
 export interface DefineServiceLocator<TExternalParams> {

@@ -1,7 +1,7 @@
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
-import { LifeTime } from '../definitions/abstract/LifeTime';
-import { ExternalsValuesRecord } from '../definitions/abstract/base/BaseDefinition';
-import { assertCompatible } from '../utils/PickExternals';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { ExternalsValuesRecord } from '../definitions/abstract/base/BaseDefinition.js';
+import { assertCompatible } from '../utils/PickExternals.js';
 
 export function decorate<
   TInstance,

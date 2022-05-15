@@ -1,6 +1,6 @@
 import { container, set } from 'hardwired';
-import { envConfigD, envConfigDataD } from '../config.di';
-import { EnvConfigKey } from '../EnvConfig';
+import { envConfigD, envConfigDataD } from '../config.di.js';
+import { EnvConfigKey } from '../EnvConfig.js';
 import { DotenvParseOutput } from 'dotenv';
 
 describe(`EnvConfig`, () => {

@@ -1,8 +1,8 @@
-import { ExternalsDefinitions, WithExternals } from '../definitions/abstract/base/BaseDefinition';
-import invariant from 'tiny-invariant';
-import { LifeTime } from '../definitions/abstract/LifeTime';
-import { set } from '../patching/set';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition';
+import { ExternalsDefinitions, WithExternals } from '../definitions/abstract/base/BaseDefinition.js';
+
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { set } from '../patching/set.js';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 
 // prettier-ignore
 export type PickExternals<T> =
@@ -12,7 +12,6 @@ export type PickExternals<T> =
     T extends [WithExternals<never>, ...infer Rest] ? PickExternals<Rest> :
     T extends [WithExternals<infer TExternals>, ...infer Rest] ? TExternals & NeverToUnknown<PickExternals<Rest>>:
     never
-
 
 export type IsNever<T> = [T] extends [never] ? true : false;
 export type NeverToVoid<T> = IsNever<T> extends true ? void : T;
@@ -69,10 +68,11 @@ export const externalsToScopeOverrides = <TExternals>(
 export const assertCompatible = (definition: WithExternals<any>, dependencies: WithExternals<any>[]) => {
   const externalKeys = Object.keys(definition.externals);
 
-  invariant(
-    dependencies.every(d => {
+  if (
+    !dependencies.every(d => {
       return Object.keys(d.externals).every(key => externalKeys.includes(key));
-    }),
-    `Override does accept additional dependencies with external params`,
-  );
+    })
+  ) {
+    throw new Error(`Override does accept additional dependencies with external params`);
+  }
 };

@@ -1,8 +1,8 @@
 import { container, request, value } from 'hardwired';
-import { inject } from '../inject';
+import { inject } from '../inject.js';
 import React from 'react';
 import { render } from '@testing-library/react';
-import { ContainerProvider } from '../../components/ContainerProvider';
+import { ContainerProvider } from '../../components/ContainerProvider.js';
 
 describe(`inject`, () => {
   describe(`injecting dependencies`, () => {

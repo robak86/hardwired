@@ -1,18 +1,18 @@
 // components
-export { ContainerProvider } from './components/ContainerProvider';
-export type { ContainerProviderProps } from './components/ContainerProvider';
+export { ContainerProvider } from './components/ContainerProvider.js';
+export type { ContainerProviderProps } from './components/ContainerProvider.js';
 
-export * from './components/ContainerScope';
+export * from './components/ContainerScope.js';
 
-export { DefinitionsConsumer } from './components/DefinitionsConsumer';
-export type { DefinitionsConsumerProps } from './components/DefinitionsConsumer';
+export { DefinitionsConsumer } from './components/DefinitionsConsumer.js';
+export type { DefinitionsConsumerProps } from './components/DefinitionsConsumer.js';
 
 // hooks
-export { useDefinition } from './hooks/useDefinition';
-export { useDefinitions } from './hooks/useDefinitions';
-export { useFactory } from './hooks/useFactory';
+export { useDefinition } from './hooks/useDefinition.js';
+export { useDefinitions } from './hooks/useDefinitions.js';
+export { useFactory } from './hooks/useFactory.js';
 
 // HOC
-export { withDependencies } from './hoc/withDependencies';
-export type { WithDependenciesConfigured } from './hoc/withDependencies';
-export * from './hoc/inject'
+export { withDependencies } from './hoc/withDependencies.js';
+export type { WithDependenciesConfigured } from './hoc/withDependencies.js';
+export * from './hoc/inject.js';

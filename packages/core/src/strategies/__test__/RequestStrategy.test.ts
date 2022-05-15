@@ -1,7 +1,7 @@
-import { container } from '../../container/Container';
-import { request } from '../../definitions/definitions';
-import { replace } from '../../patching/replace';
-import { ContainerContext } from '../../context/ContainerContext';
+import { container } from '../../container/Container.js';
+import { request } from '../../definitions/definitions.js';
+import { replace } from '../../patching/replace.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
 
 describe(`RequestStrategy`, () => {
   describe(`sync definitions`, () => {
@@ -34,7 +34,7 @@ describe(`RequestStrategy`, () => {
         it(`does not inherit any values from parent scope`, async () => {
           const a = request.fn(() => Math.random());
 
-          const c = ContainerContext.empty()
+          const c = ContainerContext.empty();
           const req1 = c.get(a);
 
           const childC = c.checkoutScope();
@@ -49,11 +49,11 @@ describe(`RequestStrategy`, () => {
       it(`replaces definitions for request scope`, async () => {
         const a = request.fn(() => 1);
 
-        const c = ContainerContext.empty()
+        const c = ContainerContext.empty();
 
         const mPatch = replace(
-            a,
-            request.fn(() => 2),
+          a,
+          request.fn(() => 2),
         );
 
         const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
@@ -68,12 +68,12 @@ describe(`RequestStrategy`, () => {
         const k1 = request.fn(() => Math.random());
 
         const invariantPatch = replace(
-            k1,
-            request.fn(() => 1),
+          k1,
+          request.fn(() => 1),
         );
         const childScopePatch = replace(
-            k1,
-            request.fn(() => 2),
+          k1,
+          request.fn(() => 2),
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
@@ -88,12 +88,12 @@ describe(`RequestStrategy`, () => {
         const k2 = request.fn(() => Math.random());
 
         const invariantPatch = replace(
-            k1,
-            request.fn(() => 1),
+          k1,
+          request.fn(() => 1),
         );
         const childScopePatch = replace(
-            k2,
-            request.fn(() => 2),
+          k2,
+          request.fn(() => 2),
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
@@ -154,8 +154,8 @@ describe(`RequestStrategy`, () => {
         const c = ContainerContext.empty();
 
         const mPatch = replace(
-            a,
-            request.asyncFn(async () => 2),
+          a,
+          request.asyncFn(async () => 2),
         );
 
         const childC = c.checkoutScope({ scopeOverrides: [mPatch] });
@@ -170,12 +170,12 @@ describe(`RequestStrategy`, () => {
         const k1 = request.asyncFn(async () => Math.random());
 
         const invariantPatch = replace(
-            k1,
-            request.asyncFn(async () => 1),
+          k1,
+          request.asyncFn(async () => 1),
         );
         const childScopePatch = replace(
-            k1,
-            request.asyncFn(async () => 2),
+          k1,
+          request.asyncFn(async () => 2),
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
@@ -191,12 +191,12 @@ describe(`RequestStrategy`, () => {
         const k2 = request.asyncFn(async () => Math.random());
 
         const invariantPatch = replace(
-            k1,
-            request.asyncFn(async () => 1),
+          k1,
+          request.asyncFn(async () => 1),
         );
         const childScopePatch = replace(
-            k2,
-            request.asyncFn(async () => 2),
+          k2,
+          request.asyncFn(async () => 2),
         );
 
         const c = ContainerContext.create([], [invariantPatch]);

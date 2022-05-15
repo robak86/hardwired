@@ -1,8 +1,7 @@
-import { deflateRawSync } from 'zlib';
-import { external } from '../../sync/external';
-import { request, singleton, transient } from '../../definitions';
-import { asyncClass } from '../asyncClass';
-import { LifeTime } from '../../abstract/LifeTime';
+import { external } from '../../sync/external.js';
+import { request, singleton, transient } from '../../definitions.js';
+import { asyncClass } from '../asyncClass.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
 
 describe(`asyncClass`, () => {
   describe(`types`, () => {

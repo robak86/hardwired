@@ -1,9 +1,9 @@
-import { DummyComponent } from '../../__test__/DummyComponent';
-import { ContainerProvider } from '../../components/ContainerProvider';
+import { DummyComponent } from '../../__test__/DummyComponent.js';
+import { ContainerProvider } from '../../components/ContainerProvider.js';
 import * as React from 'react';
 import { FC } from 'react';
 import { container, external, factory, request } from 'hardwired';
-import { useFactory } from '../useFactory';
+import { useFactory } from '../useFactory.js';
 import { render, within } from '@testing-library/react';
 
 describe(`useFactory`, () => {
@@ -19,7 +19,7 @@ describe(`useFactory`, () => {
 
   function setup() {
     const Consumer: FC<{ externalParam: string }> = ({ externalParam }) => {
-      const cls = useFactory(clsFactory, {ext: externalParam});
+      const cls = useFactory(clsFactory, { ext: externalParam });
       return <DummyComponent value={cls.id.toString()} optionalValue={cls.externalParam} />;
     };
 

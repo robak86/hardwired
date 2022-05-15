@@ -1,5 +1,4 @@
-import invariant from 'tiny-invariant';
-import { EnvConfigKey } from './EnvConfig';
+import { EnvConfigKey } from './EnvConfig.js';
 import { DotenvParseOutput } from 'dotenv';
 
 export type GetConfigFn = {
@@ -8,19 +7,24 @@ export type GetConfigFn = {
   (key: EnvConfigKey, parser: 'boolean'): boolean;
 };
 
+export type ValueParserBuilder = (config: DotenvParseOutput) => GetConfigFn;
 
-export type ValueParserBuilder = (config:DotenvParseOutput) => GetConfigFn
-
-export const parseConfigValue:ValueParserBuilder = config => {
+export const parseConfigValue: ValueParserBuilder = config => {
   return (key, parser?): any => {
-    invariant(config, `Cannot load data with env configuration`);
+    if (!config) {
+      new Error(`Cannot load data with env configuration`);
+    }
 
-    invariant(config[key], `Env variable: ${key} is missing`);
+    if (!config[key]) {
+      throw new Error(`Env variable: ${key} is missing`);
+    }
     const value = config[key];
 
     if (parser === 'int') {
       const parsedValue = parseInt(value, 10);
-      invariant(Number.isFinite(parsedValue), `Variable: ${key} cannot be parsed to int`);
+      if (!Number.isFinite(parsedValue)) {
+        throw new Error(`Variable: ${key} cannot be parsed to int`);
+      }
       return parsedValue;
     }
 

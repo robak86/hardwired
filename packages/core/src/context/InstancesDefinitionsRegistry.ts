@@ -1,5 +1,4 @@
-import invariant from 'tiny-invariant';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
 export class InstancesDefinitionsRegistry {
   static empty(): InstancesDefinitionsRegistry {
@@ -36,7 +35,9 @@ export class InstancesDefinitionsRegistry {
     return newRegistry;
   }
 
-  getInstanceDefinition(instanceDefinition: AnyInstanceDefinition<any, any, any>): AnyInstanceDefinition<any, any, any> {
+  getInstanceDefinition(
+    instanceDefinition: AnyInstanceDefinition<any, any, any>,
+  ): AnyInstanceDefinition<any, any, any> {
     const id = instanceDefinition.id;
 
     if (this.globalOverrideDefinitionsById[id]) {
@@ -63,10 +64,9 @@ export class InstancesDefinitionsRegistry {
   }
 
   private addGlobalOverrideResolver(resolver: AnyInstanceDefinition<any, any, never>) {
-    invariant(
-      !this.globalOverrideDefinitionsById[resolver.id],
-      `Invariant resolves cannot be updated after container creation`,
-    );
+    if (this.globalOverrideDefinitionsById[resolver.id]) {
+      throw new Error(`Invariant resolves cannot be updated after container creation`);
+    }
     this.globalOverrideDefinitionsById[resolver.id] = resolver;
   }
 

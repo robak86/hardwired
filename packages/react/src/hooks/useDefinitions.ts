@@ -1,6 +1,6 @@
-import { ExternalsValues, InstanceDefinition, InstancesArray } from 'hardwired';
-import { PickExternals } from 'hardwired/lib/utils/PickExternals';
-import { useRequestContainer } from '../context/ContainerContext';
+import { ExternalsValues, InstanceDefinition, InstancesArray, PickExternals } from 'hardwired';
+
+import { useRequestContainer } from '../context/ContainerContext.js';
 
 export type UseDefinitionsHook = {
   <TDefinitions extends InstanceDefinition<any, any, any>[]>(
