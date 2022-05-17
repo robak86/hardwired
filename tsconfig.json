@@ -1,19 +1,14 @@
 {
   "compilerOptions": {
-    "preserveSymlinks": true,
-    "lib": ["ES2019.Array", "DOM"],
-    "declarationMap": true,
-    "sourceMap": true,
     "composite": true,
+    "declarationMap": true,
+    "declaration": true,
+    "sourceMap": true,
     "target": "ES6",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "jsx": "react",
-    "isolatedModules": true,
-    "declaration": true,
     "strict": true,
-    "noImplicitAny": true,
-    "esModuleInterop": true,
     "removeComments": true
   }
 }
