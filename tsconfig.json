@@ -9,6 +9,7 @@
     "moduleResolution": "NodeNext",
     "jsx": "react",
     "strict": true,
-    "removeComments": true
+    "removeComments": true,
+    "esModuleInterop": true
   }
 }

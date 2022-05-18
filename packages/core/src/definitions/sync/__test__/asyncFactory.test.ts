@@ -9,6 +9,7 @@ import { set } from '../../../patching/set.js';
 import { asyncFactory, IAsyncFactory } from '../../async/asyncFactory.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { value } from '../value.js';
+import { jest } from '@jest/globals';
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {

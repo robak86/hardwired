@@ -1,5 +1,4 @@
-import { FunctionComponent } from 'react';
-import React = require('react');
+import React, { FunctionComponent } from 'react';
 
 export type DummyComponentProps = {
   value: string | number;
