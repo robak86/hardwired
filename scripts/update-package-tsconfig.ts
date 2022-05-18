@@ -78,9 +78,7 @@ packageDirnameMap.forEach((packageDirname, packageName) => {
     },
     references: internalDependencies.map(dep => {
       return { path: `../${packageDirnameMap.get(dep)}/${PACKAGE_TSCONFIG}` };
-    }),
-    include: ['./src'],
-    exclude: ['./tests', './lib'],
+    })
   };
   fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfigData, null, '  '));
 });

@@ -15,12 +15,5 @@
     {
       "path": "../react/tsconfig.json"
     }
-  ],
-  "include": [
-    "./src"
-  ],
-  "exclude": [
-    "./tests",
-    "./lib"
   ]
 }
