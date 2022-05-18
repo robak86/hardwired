@@ -9,12 +9,5 @@
     {
       "path": "../core/tsconfig.json"
     }
-  ],
-  "include": [
-    "./src"
-  ],
-  "exclude": [
-    "./tests",
-    "./lib"
   ]
 }

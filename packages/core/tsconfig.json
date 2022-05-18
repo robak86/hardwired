@@ -5,12 +5,5 @@
     "rootDir": "./src",
     "composite": true
   },
-  "references": [],
-  "include": [
-    "./src"
-  ],
-  "exclude": [
-    "./tests",
-    "./lib"
-  ]
+  "references": []
 }
