@@ -6,6 +6,7 @@ import { decorate } from '../decorate.js';
 import { object } from '../../definitions/sync/object.js';
 import { value } from '../../definitions/sync/value.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
+import {jest} from '@jest/globals';
 
 describe(`decorate`, () => {
   it(`decorates original value`, async () => {

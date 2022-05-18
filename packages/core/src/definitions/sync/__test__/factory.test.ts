@@ -8,6 +8,8 @@ import { container } from '../../../container/Container.js';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
+import {jest} from '@jest/globals';
+
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {

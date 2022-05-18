@@ -8,6 +8,7 @@ import { apply } from '../apply.js';
 import { object } from '../../definitions/sync/object.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { value } from '../../definitions/sync/value.js';
+import { jest } from '@jest/globals';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
