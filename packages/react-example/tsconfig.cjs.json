@@ -1,13 +1,16 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.cjs.json",
   "compilerOptions": {
-    "outDir": "./dist/esm",
+    "outDir": "./dist/cjs",
     "rootDir": "./src",
     "composite": true
   },
   "references": [
     {
-      "path": "../core/tsconfig.json"
+      "path": "../core/tsconfig.cjs.json"
+    },
+    {
+      "path": "../react/tsconfig.cjs.json"
     }
   ],
   "exclude": [

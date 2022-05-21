@@ -18,8 +18,14 @@ packages.forEach(packageName => {
     url: 'git@github.com:robak86/hardwired.git',
   };
 
-  packageJSONData.main = './lib/index.js';
-  packageJSONData.types = './lib/index.d.ts';
-  packageJSONData.files = ['lib', 'README.md'];
+  packageJSONData.main = './dist/cjs/index.js';
+  packageJSONData.types = './dist/cjs/index.d.ts';
+  packageJSONData.exports = {
+    default: './dist/esm/index.js',
+    import: './dist/esm/index.js',
+    types: './dist/esm/index.d.ts',
+    require: './dist/cjs/index.js',
+  };
+  packageJSONData.files = ['dist', 'README.md'];
   fs.writeFileSync(packageJSONPath, JSON.stringify(packageJSONData, null, '  '));
 });

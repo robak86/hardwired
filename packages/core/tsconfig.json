@@ -1,9 +1,15 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./lib",
+    "outDir": "./dist/esm",
     "rootDir": "./src",
     "composite": true
   },
-  "references": []
+  "references": [],
+  "exclude": [
+    "./dist"
+  ],
+  "include": [
+    "./src"
+  ]
 }

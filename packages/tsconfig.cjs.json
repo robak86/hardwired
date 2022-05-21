@@ -1,0 +1,18 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./core/tsconfig.cjs.json"
+    },
+    {
+      "path": "./react/tsconfig.cjs.json"
+    },
+    {
+      "path": "./http-server-example-wip/tsconfig.cjs.json"
+    },
+    {
+      "path": "./react-example/tsconfig.cjs.json"
+    }
+  ]
+}

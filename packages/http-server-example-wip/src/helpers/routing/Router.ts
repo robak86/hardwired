@@ -1,8 +1,8 @@
 import createRouter, { HTTPMethod } from 'find-my-way';
-import { IncomingMessage, ServerResponse } from 'http';
 import { IAsyncFactory } from 'hardwired';
 import { ResponseEffect, ResponseInterpreter } from '../server/Response.js';
 import { RequestContext } from '../server/requestContext.js';
+import { IncomingMessage, ServerResponse } from "http";
 
 export class Router {
   private router = createRouter();
