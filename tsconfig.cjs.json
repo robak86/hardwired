@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "declarationMap": true,
+    "declaration": true,
+    "sourceMap": true,
+    "target": "ES5",
+    "module": "commonjs",
+    "jsx": "react",
+    "strict": true,
+    "removeComments": true,
+    "esModuleInterop": true
+  }
+}

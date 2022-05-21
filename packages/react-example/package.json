@@ -27,14 +27,20 @@
     "type": "git",
     "url": "git@github.com:robak86/hardwired.git"
   },
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/cjs/index.d.ts",
   "files": [
-    "lib",
+    "dist",
     "README.md"
   ],
   "devDependencies": {},
   "scripts": {
     "start": "parcel public/index.html"
+  },
+  "exports": {
+    "default": "./dist/esm/index.js",
+    "import": "./dist/esm/index.js",
+    "types": "./dist/esm/index.d.ts",
+    "require": "./dist/cjs/index.js"
   }
 }

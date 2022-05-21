@@ -1,12 +1,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { dirname } from "path";
-import { fileURLToPath } from "url";
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 const PACKAGE_TSCONFIG = 'tsconfig.json';
-const PROJECT_TSCONFIG = 'tsconfig.json';
+const PACKAGE_TSCONFIG_CJS = 'tsconfig.cjs.json';
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const PROJECT_TSCONFIG = 'tsconfig.json';
+const PROJECT_TSCONFIG_CJS = 'tsconfig.cjs.json';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const packagesRoot = path.join(__dirname, '..', 'packages');
 const packageDirectories = fs
   .readdirSync(packagesRoot)
@@ -61,36 +64,54 @@ function resolveInternalDependencies(dependencies: string[]): string[] {
   return resolved.filter((item, idx) => resolved.indexOf(item) === idx);
 }
 
-packageDirnameMap.forEach((packageDirname, packageName) => {
-  const tsconfigPath = path.join(packagesRoot, packageDirname, PACKAGE_TSCONFIG);
+function updateTsConfig(
+  packageDirname: string,
+  packageName: string,
+  outDir: string,
+  tsconfigFileName: string,
+  baseTsConfigName: string,
+) {
+  const tsconfigPath = path.join(packagesRoot, packageDirname, tsconfigFileName);
   const existingConfigData = fs.readFileSync(tsconfigPath);
   const existingConfig = JSON.parse(existingConfigData.toString());
 
   const internalDependencies = resolveInternalDependencies(internalDependencyMap.get(packageName)!);
 
   const tsconfigData = {
-    extends: '../../tsconfig.json',
+    extends: `../../${baseTsConfigName}`,
     compilerOptions: {
       ...existingConfig.compilerOptions,
-      outDir: './lib',
+      outDir,
       rootDir: './src',
       composite: true,
     },
     references: internalDependencies.map(dep => {
-      return { path: `../${packageDirnameMap.get(dep)}/${PACKAGE_TSCONFIG}` };
-    })
+      return { path: `../${packageDirnameMap.get(dep)}/${tsconfigFileName}` };
+    }),
+    exclude: ['./dist'],
+    include: ['./src'],
   };
   fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfigData, null, '  '));
+}
+
+packageDirnameMap.forEach((packageDirname, packageName) => {
+  updateTsConfig(packageDirname, packageName, './dist/esm', PACKAGE_TSCONFIG, PACKAGE_TSCONFIG);
+  updateTsConfig(packageDirname, packageName, './dist/cjs', PROJECT_TSCONFIG_CJS, PROJECT_TSCONFIG_CJS);
 });
 
-const projectLevelTsconfigPath = path.join(packagesRoot, PROJECT_TSCONFIG);
+function updateRootTsConfig(rootTsConfigFileName: string, targetTsConfigFileName: string) {
+  const projectLevelTsconfigPath = path.join(packagesRoot, rootTsConfigFileName);
 
-const projectLevelTsconfigData = {
-  files: [],
-  include: [],
-  references: resolveInternalDependencies(Array.from(packageDirnameMap.keys())).map(packageName => ({
-    path: `./${packageDirnameMap.get(packageName)}/${PACKAGE_TSCONFIG}`,
-  })),
-};
+  const projectLevelTsconfigData = {
+    files: [],
+    include: [],
+    references: resolveInternalDependencies(Array.from(packageDirnameMap.keys())).map(packageName => ({
+      path: `./${packageDirnameMap.get(packageName)}/${targetTsConfigFileName}`,
+    })),
+  };
 
-fs.writeFileSync(projectLevelTsconfigPath, JSON.stringify(projectLevelTsconfigData, null, '  '));
+  fs.writeFileSync(projectLevelTsconfigPath, JSON.stringify(projectLevelTsconfigData, null, '  '));
+}
+
+updateRootTsConfig(PROJECT_TSCONFIG, PACKAGE_TSCONFIG);
+updateRootTsConfig(PROJECT_TSCONFIG_CJS, PACKAGE_TSCONFIG_CJS);

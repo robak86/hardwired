@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./lib",
+    "outDir": "./dist/esm",
     "rootDir": "./src",
     "composite": true,
     "jsx": "react",
@@ -15,5 +15,11 @@
     {
       "path": "../react/tsconfig.json"
     }
+  ],
+  "exclude": [
+    "./dist"
+  ],
+  "include": [
+    "./src"
   ]
 }
