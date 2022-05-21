@@ -4,10 +4,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const PACKAGE_TSCONFIG = 'tsconfig.json';
-const PACKAGE_TSCONFIG_CJS = 'tsconfig.cjs.json';
-
 const PROJECT_TSCONFIG = 'tsconfig.json';
-const PROJECT_TSCONFIG_CJS = 'tsconfig.cjs.json';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packagesRoot = path.join(__dirname, '..', 'packages');
@@ -96,7 +93,6 @@ function updateTsConfig(
 
 packageDirnameMap.forEach((packageDirname, packageName) => {
   updateTsConfig(packageDirname, packageName, './dist/esm', PACKAGE_TSCONFIG, PACKAGE_TSCONFIG);
-  updateTsConfig(packageDirname, packageName, './dist/cjs', PROJECT_TSCONFIG_CJS, PROJECT_TSCONFIG_CJS);
 });
 
 function updateRootTsConfig(rootTsConfigFileName: string, targetTsConfigFileName: string) {
@@ -114,4 +110,3 @@ function updateRootTsConfig(rootTsConfigFileName: string, targetTsConfigFileName
 }
 
 updateRootTsConfig(PROJECT_TSCONFIG, PACKAGE_TSCONFIG);
-updateRootTsConfig(PROJECT_TSCONFIG_CJS, PACKAGE_TSCONFIG_CJS);
