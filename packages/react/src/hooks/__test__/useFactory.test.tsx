@@ -5,6 +5,7 @@ import { FC } from 'react';
 import { container, external, factory, request } from 'hardwired';
 import { useFactory } from '../useFactory.js';
 import { render, within } from '@testing-library/react';
+import {describe, expect, it, vi} from 'vitest'
 
 describe(`useFactory`, () => {
   class TestClass {

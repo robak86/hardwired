@@ -9,7 +9,8 @@ import { set } from '../../../patching/set.js';
 import { asyncFactory, IAsyncFactory } from '../../async/asyncFactory.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { value } from '../value.js';
-import { jest } from '@jest/globals';
+import { describe, it, expect, vi } from 'vitest';
+
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {
@@ -57,7 +58,7 @@ describe(`factory`, () => {
       const factoryD = asyncFactory(consumerD, mixinD);
 
       const factoryConsumer = async (f: Factory) => {};
-      const factoryConsumerSpy = jest.fn(factoryConsumer);
+      const factoryConsumerSpy = vi.fn(factoryConsumer);
 
       const factoryConsumerD = transient.asyncFn(factoryConsumerSpy, factoryD);
 
@@ -93,7 +94,7 @@ describe(`factory`, () => {
         `consumer2${ext2}`,
       ];
 
-      const consumer1Spy = jest.fn(consumer1);
+      const consumer1Spy = vi.fn(consumer1);
       const consumer1D = request.asyncPartial(consumer1Spy, ext1, ext2);
 
       const consumer2 = async (ext2: string, ext1: string): Promise<[string, string]> => [
@@ -101,7 +102,7 @@ describe(`factory`, () => {
         `consumer1${ext1}`,
       ];
 
-      const consumer2Spy = jest.fn(consumer2);
+      const consumer2Spy = vi.fn(consumer2);
       const consumer2D = request.asyncPartial(consumer2Spy, ext2, ext1);
 
       const combined = async (

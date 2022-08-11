@@ -9,6 +9,9 @@
       "path": "./react/tsconfig.json"
     },
     {
+      "path": "./hooks/tsconfig.json"
+    },
+    {
       "path": "./http-server-example-wip/tsconfig.json"
     },
     {

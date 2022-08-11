@@ -5,6 +5,7 @@ import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies.js';
 import { useDefinition } from '../../hooks/useDefinition.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
+import {describe, expect, it, vi} from 'vitest'
 
 describe(`withDependencies`, () => {
   function setupDefinitions({

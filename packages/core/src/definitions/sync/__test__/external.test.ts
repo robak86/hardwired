@@ -2,6 +2,7 @@ import { external } from '../external.js';
 import { transient } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { value } from '../value.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`external`, () => {
   type Externals = { someExternalParam: number };

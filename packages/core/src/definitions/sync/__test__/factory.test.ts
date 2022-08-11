@@ -8,7 +8,8 @@ import { container } from '../../../container/Container.js';
 import { v4 } from 'uuid';
 import { set } from '../../../patching/set.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import {jest} from '@jest/globals';
+
+import { describe, it, expect, vi } from 'vitest';
 
 
 describe(`factory`, () => {
@@ -57,7 +58,7 @@ describe(`factory`, () => {
       const factoryD = factory(consumerD, mixinD);
 
       const factoryConsumer = (f: Factory) => {};
-      const factoryConsumerSpy = jest.fn(factoryConsumer);
+      const factoryConsumerSpy = vi.fn(factoryConsumer);
 
       const factoryConsumerD = singleton.fn(factoryConsumerSpy, factoryD);
 
@@ -253,12 +254,12 @@ describe(`factory`, () => {
 
       const consumer1 = (ext1: Ext1, ext2: Ext2): [Ext1, Ext2] => [`consumer1${ext1}`, `consumer2${ext2}`];
 
-      const consumer1Spy = jest.fn(consumer1);
+      const consumer1Spy = vi.fn(consumer1);
       const consumer1D = transient.partial(consumer1Spy, ext1, ext2);
 
       const consumer2 = (ext2: Ext2, ext1: Ext1): [Ext2, Ext1] => [`consumer2${ext2}`, `consumer1${ext1}`];
 
-      const consumer2Spy = jest.fn(consumer2);
+      const consumer2Spy = vi.fn(consumer2);
       const consumer2D = transient.partial(consumer2Spy, ext2, ext1);
 
       const combined = (consumer1: () => [Ext1, Ext2], consumer2: () => [Ext2, Ext1]): [Ext1, Ext2, Ext2, Ext1] => {

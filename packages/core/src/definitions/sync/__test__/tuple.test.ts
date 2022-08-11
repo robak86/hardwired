@@ -7,6 +7,7 @@ import { set } from '../../../patching/set.js';
 import { value } from '../value.js';
 import { tuple } from '../tuple.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`object`, () => {
   it(`returns definition with correct type`, async () => {

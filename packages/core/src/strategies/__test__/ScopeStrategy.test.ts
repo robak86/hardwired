@@ -2,6 +2,7 @@ import { scoped } from '../../definitions/definitions.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { replace } from '../../patching/replace.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {

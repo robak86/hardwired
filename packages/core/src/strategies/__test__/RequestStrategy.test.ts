@@ -2,6 +2,7 @@ import { container } from '../../container/Container.js';
 import { request } from '../../definitions/definitions.js';
 import { replace } from '../../patching/replace.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`RequestStrategy`, () => {
   describe(`sync definitions`, () => {

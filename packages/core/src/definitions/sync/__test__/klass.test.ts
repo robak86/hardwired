@@ -5,6 +5,7 @@ import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { request, singleton, transient } from '../../definitions.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`klass`, () => {
   describe(`external params`, () => {

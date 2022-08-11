@@ -6,6 +6,7 @@ import { object } from '../object.js';
 import { container } from '../../../container/Container.js';
 import { set } from '../../../patching/set.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`intersection`, () => {
   describe(`types`, () => {

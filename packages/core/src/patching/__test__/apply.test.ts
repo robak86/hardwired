@@ -8,7 +8,7 @@ import { apply } from '../apply.js';
 import { object } from '../../definitions/sync/object.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { value } from '../../definitions/sync/value.js';
-import { jest } from '@jest/globals';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
@@ -120,7 +120,7 @@ describe(`apply`, () => {
   describe(`globalOverrides`, () => {
     function setup(instanceDef: InstanceDefinition<MyService, any, never>) {
       const mPatch = decorate(instanceDef, a => {
-        jest.spyOn(a, 'callMe');
+        vi.spyOn(a, 'callMe');
         return a;
       });
 

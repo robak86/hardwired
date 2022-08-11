@@ -1,5 +1,6 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { PartiallyApplied } from '../PartiallyApplied.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`PartiallyApplied`, () => {
   it(`returns correct type if no args are provided`, async () => {

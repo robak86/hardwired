@@ -6,7 +6,7 @@ import { value } from '../../definitions/sync/value.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { replace } from '../../patching/replace.js';
-import { jest } from '@jest/globals';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`SingletonStrategy`, () => {
   describe(`sync resolution`, () => {
@@ -100,7 +100,7 @@ describe(`SingletonStrategy`, () => {
         });
       });
 
-      describe(`container scopes`, () => {});
+      // describe(`container scopes`, () => {});
     });
 
     describe(`scope overrides`, () => {
@@ -142,7 +142,7 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
-        const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
+        const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
         const a = singleton.fn(randomFactorySpy);
 
@@ -163,7 +163,7 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
-        const randomFactorySpy = jest.fn().mockImplementation(() => Math.random());
+        const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
         const a = singleton.fn(randomFactorySpy);
 
