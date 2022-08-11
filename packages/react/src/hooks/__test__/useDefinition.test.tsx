@@ -5,6 +5,7 @@ import * as React from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useDefinition } from '../useDefinition.js';
 import { FC } from 'react';
+import {describe, expect, it, vi} from 'vitest'
 
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {

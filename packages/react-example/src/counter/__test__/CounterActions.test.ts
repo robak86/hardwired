@@ -2,6 +2,7 @@ import { CounterStore } from '../CounterStore.js';
 import { CounterActions } from '../CounterActions.js';
 import { container, set } from 'hardwired';
 import { counterActionsDef, counterInitialValueDef, counterStoreDef } from '../../app.module.js';
+import {describe, expect, it, vi} from 'vitest'
 
 describe('CounterAction', () => {
   describe('.increment()', () => {

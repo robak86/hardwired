@@ -2,6 +2,7 @@ import { expectType, TypeEqual, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { PickExternals } from '../PickExternals.js';
 import { WithExternals } from '../../definitions/abstract/base/BaseDefinition.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`PickExternals`, () => {
   it(`returns correct type for no externals`, async () => {

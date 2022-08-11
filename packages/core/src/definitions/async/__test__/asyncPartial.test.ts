@@ -5,6 +5,8 @@ import { LifeTime } from '../../abstract/LifeTime.js';
 import { asyncPartial } from '../asyncPartial.js';
 import { value } from '../../sync/value.js';
 import { container } from '../../../container/Container.js';
+import { describe, it, expect } from 'vitest';
+
 
 describe(`asyncFn`, () => {
   describe(`instantiate`, () => {

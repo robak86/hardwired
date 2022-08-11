@@ -6,6 +6,7 @@ import { FC } from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useDefinitions } from '../useDefinitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
+import {describe, expect, it, vi} from 'vitest'
 
 describe(`useDefinitions`, () => {
   describe(`types`, () => {

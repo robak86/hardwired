@@ -6,8 +6,8 @@ import { value } from '../value.js';
 import { container } from '../../../container/Container.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { external } from '../external.js';
-import { fn } from '../fn.js';
 import { partial } from '../partial.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`partial`, () => {
   describe(`types`, () => {

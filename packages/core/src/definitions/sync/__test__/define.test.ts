@@ -6,6 +6,7 @@ import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { request, singleton } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`define`, () => {
   const ext1 = external('ext1').type<number>();

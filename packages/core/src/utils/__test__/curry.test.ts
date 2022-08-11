@@ -1,4 +1,5 @@
 import { curry } from '../curry.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`curry`, () => {
   it(`works for multiple args`, async () => {

@@ -3,6 +3,7 @@ import { request, singleton, transient } from '../../definitions.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { fn } from '../fn.js';
 import { PickExternals } from '../../../utils/PickExternals.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`fn`, () => {
   describe(`allowed dependencies life times`, () => {

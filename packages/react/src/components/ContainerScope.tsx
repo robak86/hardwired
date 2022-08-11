@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FC } from 'react';
+import { FC, PropsWithChildren } from 'react';
 import { ContainerContext, useContainer } from '../context/ContainerContext.js';
 import { useMemoized } from '../utils/useMemoized.js';
 import { InstanceDefinition } from 'hardwired';
@@ -9,7 +9,7 @@ export type ContainerScopeProps = {
   scopeOverrides?: InstanceDefinition<any, any, never>[];
 };
 
-export const ContainerScope: FC<ContainerScopeProps> = ({ children, invalidateKeys = [], scopeOverrides = [] }) => {
+export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({ children, invalidateKeys = [], scopeOverrides = [] }) => {
   const container = useContainer();
   const getScopedContainer = useMemoized(() => {
     return container.checkoutScope({ scopeOverrides });

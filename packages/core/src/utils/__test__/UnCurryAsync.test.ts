@@ -1,5 +1,6 @@
 import { expectType, TypeEqual } from 'ts-expect';
 import { uncurryAsync } from '../UnCurryAsync.js';
+import { describe, it, expect, vi } from 'vitest';
 
 describe(`uncurryAsync`, () => {
   describe(`fn without params`, () => {

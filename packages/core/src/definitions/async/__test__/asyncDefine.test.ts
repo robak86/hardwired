@@ -6,6 +6,8 @@ import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { external } from '../../sync/external.js';
 import { asyncDefine } from '../asyncDefine.js';
 import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition.js';
+import { describe, it, expect } from 'vitest';
+
 
 describe(`asyncDefine`, () => {
   const ext1 = external('ext1').type<number>();

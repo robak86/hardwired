@@ -2,6 +2,8 @@ import { external } from '../../sync/external.js';
 import { request, singleton, transient } from '../../definitions.js';
 import { asyncClass } from '../asyncClass.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
+import { describe, it, expect } from 'vitest';
+
 
 describe(`asyncClass`, () => {
   describe(`types`, () => {
