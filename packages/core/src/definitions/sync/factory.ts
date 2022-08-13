@@ -1,44 +1,53 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
-import { ExternalsValuesRecord } from '../abstract/base/BaseDefinition.js';
-import { NeverToVoid } from '../../utils/PickExternals.js';
+import {
+  InstanceDefinitionDependency,
+  ValidDependenciesLifeTime,
+} from '../abstract/sync/InstanceDefinitionDependency.js';
+import { set } from '../../patching/set.js';
 
 // prettier-ignore
-export type FactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams extends ExternalsValuesRecord> =
-    | InstanceDefinition<TValue, LifeTime.singleton, never>
-    | InstanceDefinition<TValue, LifeTime.transient, TExternalParams>
-    | InstanceDefinition<TValue, LifeTime.request, TExternalParams>
-    | InstanceDefinition<TValue, LifeTime.scoped, TExternalParams>
+export type FactoryDefinition<TValue> =
+    | InstanceDefinition<TValue, LifeTime.singleton>
+    | InstanceDefinition<TValue, LifeTime.transient>
+    | InstanceDefinition<TValue, LifeTime.request>
+    | InstanceDefinition<TValue, LifeTime.scoped>
 
-export type IFactory<TReturn, TParams extends ExternalsValuesRecord, TFactoryMixin = unknown> = {
-  build(params: NeverToVoid<TParams>): TReturn;
-} & TFactoryMixin;
-
-// factory is always transient in order to prevent memory leaks if factory definition is created dynamically - each dynamically created factory would create new entry for singleton in instances store
-export type FactoryBuildFn = {
-  <TInstance, TExternalParams extends ExternalsValuesRecord>(
-    definition: FactoryDefinition<TInstance, LifeTime.request, TExternalParams>,
-  ): InstanceDefinition<IFactory<TInstance, TExternalParams>, LifeTime.transient, never>;
-
-  <TInstance, TExternalParams extends ExternalsValuesRecord, TFactoryMixin extends object, TLifeTime extends LifeTime>(
-    definition: FactoryDefinition<TInstance, LifeTime.request, TExternalParams>,
-    factoryMixinDef: InstanceDefinition<TFactoryMixin, TLifeTime, never>,
-  ): InstanceDefinition<IFactory<TInstance, TExternalParams, TFactoryMixin>, LifeTime.transient, never>;
+export type IFactory<TReturn, TParams extends any[]> = {
+  build(...params: TParams): TReturn;
 };
 
-export const factory: FactoryBuildFn = (definition: any, factoryMixingDef?: any): any => {
+export type FactoryBuildFn = {
+  <
+    TInstance,
+    TLifeTime extends LifeTime,
+    TDependencies extends InstanceDefinitionDependency<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >(
+    definition: FactoryDefinition<TInstance>,
+    ...dependencies: TDependencies
+  ): InstanceDefinition<IFactory<TInstance, InstancesArray<TDependencies>>, LifeTime.transient>;
+};
+
+// export const factory: FactoryBuildFn = (definition: any, factoryMixingDef?: any): any => {
+export const factory: FactoryBuildFn = (definition: any, ...dependencies: InstanceDefinition<any, any>[]): any => {
   return instanceDefinition({
     strategy: LifeTime.transient,
-    dependencies: [],
     create: (context: ContainerContext): IFactory<any, any> => {
-      const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
-
+      // const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
       return {
-        ...base,
+        // ...base,
         build(...params): any {
-          const reqContext = context.checkoutRequestScope(); // factory always uses new request context for building definitions
-          return reqContext.get(definition, ...params);
+          if (params.length !== dependencies.length) {
+            throw new Error(
+              `Factory called with wrong count of params. Expected ${dependencies.length} implicit definitions.`,
+            );
+          }
+
+          const scopedContext = context.checkoutScope({
+            scopeOverrides: dependencies.map((dep, idx) => set(dep, params[idx])),
+          });
+          return scopedContext.get(definition);
         },
       };
     },

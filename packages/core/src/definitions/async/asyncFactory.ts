@@ -1,50 +1,51 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
 import { AnyInstanceDefinition } from '../abstract/AnyInstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
-import { v4 } from 'uuid';
-import { Resolution } from '../abstract/Resolution.js';
-import { NeverToVoid } from '../../utils/PickExternals.js';
-import { asyncDefinition } from '../abstract/async/AsyncInstanceDefinition.js';
+import {
+  InstanceDefinitionDependency,
+  ValidDependenciesLifeTime,
+} from '../abstract/sync/InstanceDefinitionDependency.js';
+import { set } from '../../patching/set.js';
 
-// prettier-ignore
-export type AsyncFactoryDefinition<TValue, TLifeTime extends LifeTime, TExternalParams> =
-    | AnyInstanceDefinition<TValue, LifeTime.singleton, never>
-    | AnyInstanceDefinition<TValue, LifeTime.transient, TExternalParams>
-    | AnyInstanceDefinition<TValue, LifeTime.request, TExternalParams>
-    | AnyInstanceDefinition<TValue, LifeTime.scoped, TExternalParams>
+export type IAsyncFactory<TReturn, TParams extends any[]> = {
+  build(...params: TParams): Promise<TReturn>;
+};
 
-export type IAsyncFactory<TReturn, TParams extends Record<string, any>, TFactoryMixin = unknown> = {
-  build(params: NeverToVoid<TParams>): Promise<TReturn>;
-} & TFactoryMixin;
-
-// factory is always transient in order to prevent memory leaks if factory definition is created dynamically - each dynamically created factory would create new entry for singleton in instances store
 export type AsyncFactoryBuildFn = {
-  <TInstance, TExternalParams>(
-    definition: AsyncFactoryDefinition<TInstance, LifeTime.request, TExternalParams>,
-  ): InstanceDefinition<IAsyncFactory<TInstance, TExternalParams>, LifeTime.transient, never>;
-
-  <TInstance, TExternalParams, TFactoryMixin extends object, TLifeTime extends LifeTime>(
-    definition: AsyncFactoryDefinition<TInstance, LifeTime.request, TExternalParams>,
-    factoryMixinDef: InstanceDefinition<TFactoryMixin, TLifeTime, never>,
-  ): InstanceDefinition<IAsyncFactory<TInstance, TExternalParams, TFactoryMixin>, LifeTime.transient, never>;
+  <
+    TInstance,
+    TExternalParams,
+    TLifeTime extends LifeTime,
+    TDependencies extends InstanceDefinitionDependency<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >(
+    definition: AnyInstanceDefinition<TInstance, TLifeTime>,
+    ...dependencies: TDependencies
+  ): InstanceDefinition<IAsyncFactory<TInstance, InstancesArray<TDependencies>>, LifeTime.transient>;
 };
 
 export const asyncFactory: AsyncFactoryBuildFn = (
-  definition: AnyInstanceDefinition<any, any, any>,
-  factoryMixingDef?: any,
+  definition: any,
+  ...dependencies: InstanceDefinition<any, any>[]
 ): any => {
   return instanceDefinition({
     strategy: LifeTime.transient,
-    dependencies: [],
     create: (context: ContainerContext): IAsyncFactory<any, any> => {
-      const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
+      // const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
 
       return {
-        ...base,
+        // ...base,
         build(...params): any {
-          const reqContext = context.checkoutRequestScope(); // factory always uses new request context for building definitions
-          return reqContext.getAsync(definition, ...params);
+          if (params.length !== dependencies.length) {
+            throw new Error(
+              `Factory called with wrong count of params. Expected ${dependencies.length} implicit definitions.`,
+            );
+          }
+
+          const scopedContext = context.checkoutScope({
+            scopeOverrides: dependencies.map((dep, idx) => set(dep, params[idx])),
+          });
+          return scopedContext.getAsync(definition);
         },
       };
     },

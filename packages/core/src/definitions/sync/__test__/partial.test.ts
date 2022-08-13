@@ -5,9 +5,10 @@ import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { value } from '../value.js';
 import { container } from '../../../container/Container.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { external } from '../external.js';
 import { partial } from '../partial.js';
 import { describe, it, expect, vi } from 'vitest';
+import { implicit } from "../external.js";
+import { fn } from "../fn.js";
 
 describe(`partial`, () => {
   describe(`types`, () => {
@@ -16,20 +17,20 @@ describe(`partial`, () => {
         const a = value(1);
         const b = value('str');
         const ap = singleton.partial((a: number, b: string) => true, a, b);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, LifeTime.singleton, never>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, LifeTime.singleton>>>(true);
       });
 
       it(`returns correct type for partially applied function`, async () => {
         const a = value(1);
         const b = value('str');
         const ap = singleton.partial((a: number, b: string) => true, a);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, LifeTime.singleton, never>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, LifeTime.singleton>>>(true);
       });
 
       it(`returns correct type for no args passed`, async () => {
         const ap = singleton.partial((a: number, b: string) => true);
         expectType<
-          TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton, never>>
+          TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton>>
         >(true);
       });
     });
@@ -39,20 +40,20 @@ describe(`partial`, () => {
         const a = value(1);
         const b = value('str');
         const ap = singleton.partial((a: number) => (b: string) => true, a, b);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, LifeTime.singleton, never>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<() => boolean, LifeTime.singleton>>>(true);
       });
 
       it(`returns correct type for partially applied function`, async () => {
         const a = value(1);
         const b = value('str');
         const ap = singleton.partial((a: number) => (b: string) => true, a);
-        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, LifeTime.singleton, never>>>(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(b: string) => boolean, LifeTime.singleton>>>(true);
       });
 
       it(`returns correct type for no args passed`, async () => {
         const ap = singleton.partial((a: number) => (b: string) => true);
         expectType<
-          TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton, never>>
+          TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton>>
         >(true);
       });
     });
@@ -60,79 +61,27 @@ describe(`partial`, () => {
     describe(`allowed dependencies life times`, () => {
       const numberConsumer = (val: number) => val;
 
-      const ext = external('number').type<number>();
-
-      describe(`transient`, () => {
-        it(`does not accept singletons with externals`, async () => {
-          const buildDef = () => {
-            const dep = singleton.fn(val => val, ext);
-
-            // @ts-expect-error transient does not accept singleton dependencies with externals
-            partial(LifeTime.transient)(numberConsumer, dep);
-          };
-          expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
-        });
-
-        it(`accepts request def with externals`, async () => {
-          const dep = request.fn(val => val, ext);
-          partial(LifeTime.transient)(numberConsumer, dep);
-        });
-
-        it(`accepts transient with externals`, async () => {
-          const dep = transient.fn(val => val, ext);
-          partial(LifeTime.transient)(numberConsumer, dep);
-        });
-      });
-
-      describe(`request`, () => {
-        it(`does not accept singletons with externals`, async () => {
-          const buildDef = () => {
-            const dep = singleton.fn(val => val, ext);
-
-            // @ts-expect-error transient does not accept singleton dependencies with externals
-            partial(LifeTime.request)(numberConsumer, dep);
-          };
-
-          expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
-        });
-
-        it(`accepts request dependency def with externals`, async () => {
-          const dep = request.fn(val => val, ext);
-          partial(LifeTime.request)(numberConsumer, dep);
-        });
-
-        it(`accepts transient dependency with externals`, async () => {
-          const dep = transient.fn(val => val, ext);
-          partial(LifeTime.request)(numberConsumer, dep);
-        });
-      });
+      const implDef = implicit<number>('number');
 
       describe(`singleton`, () => {
-        it(`does not accept singletons with externals`, async () => {
-          const buildDef = () => {
-            const dep = singleton.fn(val => val, ext);
-
-            // @ts-expect-error transient does not accept singleton dependencies with externals
-            partial(LifeTime.singleton)(numberConsumer, dep);
-          };
-          expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
+        describe(`compile-time`, () => {
+          it(`does not accept implicit definitions`, async () => {
+            try {
+              // @ts-expect-error request does not accept implicit definitions
+              const dep = fn(LifeTime.singleton)(numberConsumer, implDef);
+            } catch (err) {}
+          });
         });
 
-        it(`accepts request def with externals`, async () => {
-          const buildDef = () => {
-            const dep = request.fn(val => val, ext);
-            partial(LifeTime.singleton)(numberConsumer, dep);
-          };
+        describe(`runtime`, () => {
+          it(`does not accept implicit definitions`, async () => {
+            const buildDef = () => {
+              // @ts-expect-error singleton does not accept implicit definitions
+              fn(LifeTime.singleton)(numberConsumer, implDef);
+            };
 
-          expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
-        });
-
-        it(`accepts transient with externals`, async () => {
-          const buildDef = () => {
-            const dep = transient.fn(val => val, ext);
-            partial(LifeTime.singleton)(numberConsumer, dep);
-          };
-          expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
+            expect(buildDef).toThrow('Cannot use scoped dependency for singleton definition.');
+          });
         });
       });
     });

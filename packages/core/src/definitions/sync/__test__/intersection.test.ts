@@ -16,7 +16,7 @@ describe(`intersection`, () => {
       const combined = intersection(obj1, obj2);
 
       expectType<
-        TypeEqual<typeof combined, InstanceDefinition<{ a: number } & { b: number }, LifeTime.singleton, never>>
+        TypeEqual<typeof combined, InstanceDefinition<{ a: number } & { b: number }, LifeTime.singleton>>
       >(true);
     });
   });

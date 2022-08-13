@@ -1,42 +1,25 @@
 import { InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
-import { PickExternals } from '../../utils/PickExternals.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
+import { ValidDependenciesLifeTime } from '../abstract/sync/InstanceDefinitionDependency.js';
 
-export interface DefineAsyncServiceLocator<TExternalParams> {
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, Partial<TExternalParams>>): TValue;
+export interface DefineAsyncServiceLocator<TLifeTime extends LifeTime> {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TLifeTime>>): TValue;
 
-  getAsync<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, Partial<TExternalParams>>): Promise<TValue>;
-
-  withNewRequestScope<TValue>(
-    fn: (locator: DefineAsyncServiceLocator<TExternalParams>) => Promise<TValue>,
+  getAsync<TValue>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, ValidDependenciesLifeTime<TLifeTime>>,
   ): Promise<TValue>;
+
+  withNewRequestScope<TValue>(fn: (locator: DefineAsyncServiceLocator<TLifeTime>) => Promise<TValue>): Promise<TValue>;
 }
 
-export type DefineAsyncBuildFn<TLifeTime extends LifeTime> = TLifeTime extends LifeTime.singleton
-  ? {
-      <TInstance>(
-        fn: (locator: DefineAsyncServiceLocator<PickExternals<[]>>) => Promise<TInstance>,
-      ): AsyncInstanceDefinition<TInstance, TLifeTime, never>;
-    }
-  : {
-      <TInstance>(
-        fn: (locator: DefineAsyncServiceLocator<PickExternals<[]>>) => Promise<TInstance>,
-      ): AsyncInstanceDefinition<TInstance, TLifeTime, never>;
-      <TExternal extends InstanceDefinition<any, any, any>, TExternals extends [TExternal, ...TExternal[]], TInstance>(
-        externals: TExternals,
-        fn: (locator: DefineAsyncServiceLocator<PickExternals<TExternals>>) => Promise<TInstance>,
-      ): AsyncInstanceDefinition<TInstance, TLifeTime, PickExternals<TExternals>>;
-    };
-
-export const asyncDefine = <TLifeTime extends LifeTime>(strategy: TLifeTime): DefineAsyncBuildFn<TLifeTime> =>
-  ((fnOrExternals: any, fn?: any): AsyncInstanceDefinition<any, any, any> => {
-    const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
-    const externalsArr = Array.isArray(fnOrExternals) ? fnOrExternals : [];
+export const asyncDefine = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
+  return <TValue>(fn: (locator: DefineAsyncServiceLocator<TLifeTime>) => TValue): AsyncInstanceDefinition<any, any> => {
+    // const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
+    // const externalsArr = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 
     return asyncDefinition({
-      dependencies: externalsArr,
       strategy,
       create: async (context: ContainerContext) => {
         const buildLocator = (context: ContainerContext): DefineAsyncServiceLocator<any> => {
@@ -47,7 +30,8 @@ export const asyncDefine = <TLifeTime extends LifeTime>(strategy: TLifeTime): De
           };
         };
 
-        return buildFn(buildLocator(context));
+        return fn(buildLocator(context));
       },
     });
-  }) as any;
+  };
+};

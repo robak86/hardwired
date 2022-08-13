@@ -6,42 +6,37 @@ import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrat
 import { IContainer } from './IContainer.js';
 import { RequestContainer } from './RequestContainer.js';
 import { v4 } from 'uuid';
-import { ExternalsValues, PickExternals } from '../utils/PickExternals.js';
 
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
 
-  get<TValue, TExternals>(
-    instanceDefinition: InstanceDefinition<TValue, any, TExternals>,
-    ...externals: ExternalsValues<TExternals>
-  ): TValue {
+  get<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any>): TValue {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.get(instanceDefinition, ...externals);
+    return requestContext.get(instanceDefinition);
   }
 
-  getAsync<TValue, TExternals>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternals>,
-    ...externals: ExternalsValues<TExternals>
-  ): Promise<TValue> {
-    const requestContext = this.containerContext.checkoutRequestScope();
-    return requestContext.getAsync(instanceDefinition, ...externals);
+  withImplicits(...implicits: AnyInstanceDefinition<any, any>[]): Container {
+    return new Container(this.containerContext.checkoutScope({ scopeOverrides: implicits }));
   }
 
-  getAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+  getAsync<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any>): Promise<TValue> {
+    const requestContext = this.containerContext.checkoutRequestScope();
+    return requestContext.getAsync(instanceDefinition);
+  }
+
+  getAll<TDefinitions extends InstanceDefinition<any, any>[]>(
     definitions: [...TDefinitions],
-    ...[externals]: ExternalsValues<PickExternals<TDefinitions>>
   ): InstancesArray<TDefinitions> {
     const requestContext = this.containerContext.checkoutRequestScope();
-    return definitions.map(def => requestContext.get(def, externals)) as any;
+    return definitions.map(def => requestContext.get(def)) as any;
   }
 
-  getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
+  getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any>[]>(
     definitions: [...TDefinitions],
-    ...[externals]: ExternalsValues<PickExternals<TDefinitions>>
   ): Promise<AsyncInstancesArray<TDefinitions>> {
     const requestContext = this.containerContext.checkoutRequestScope();
 
-    return Promise.all(definitions.map(def => requestContext.getAsync(def, externals))) as any;
+    return Promise.all(definitions.map(def => requestContext.getAsync(def))) as any;
   }
 
   checkoutRequestScope<TExternals = never>(externals?: TExternals): RequestContainer<TExternals> {
@@ -62,15 +57,13 @@ export class Container implements IContainer {
 export type ContainerOptions = ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  scopeOverrides?: AnyInstanceDefinition<any, any, never>[];
-  globalOverrides?: AnyInstanceDefinition<any, any, never>[]; // propagated to descendant containers
+  scopeOverrides?: AnyInstanceDefinition<any, any>[];
+  globalOverrides?: AnyInstanceDefinition<any, any>[]; // propagated to descendant containers
 };
 
-export function container(globalOverrides?: AnyInstanceDefinition<any, any, never>[]): Container;
+export function container(globalOverrides?: AnyInstanceDefinition<any, any>[]): Container;
 export function container(options?: ContainerOptions): Container;
-export function container(
-  overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any, never>>,
-): Container {
+export function container(overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {

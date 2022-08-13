@@ -6,7 +6,6 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 import { InstancesBuilder } from './abstract/InstancesBuilder.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { externalsToScopeOverrides, ExternalsValues } from '../utils/PickExternals.js';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
@@ -16,8 +15,8 @@ export class ContainerContext implements InstancesBuilder {
   }
 
   static create(
-    scopeOverrides: AnyInstanceDefinition<any, any, never>[],
-    globalOverrides: AnyInstanceDefinition<any, any, never>[],
+    scopeOverrides: AnyInstanceDefinition<any, any>[],
+    globalOverrides: AnyInstanceDefinition<any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
@@ -31,48 +30,20 @@ export class ContainerContext implements InstancesBuilder {
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {}
 
-  get<TValue, TExternals>(
-    instanceDefinition: InstanceDefinition<TValue, any, TExternals>,
-    ...[externals]: ExternalsValues<TExternals>
-  ): TValue {
-    if (externals) {
-      const scopedContainer = this.checkoutScope(
-        {
-          scopeOverrides: externalsToScopeOverrides(instanceDefinition, externals),
-        },
-        true,
-      );
-
-      return scopedContainer.get(instanceDefinition, ...([] as ExternalsValues<TExternals>));
-    } else {
-      return this.buildWithStrategy(instanceDefinition);
-    }
+  get<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any>): TValue {
+    return this.buildWithStrategy(instanceDefinition);
   }
 
-  getAsync<TValue, TExternals>(
-    instanceDefinition: AnyInstanceDefinition<TValue, any, TExternals>,
-    ...[externals]: ExternalsValues<TExternals>
-  ): Promise<TValue> {
-    if (externals) {
-      const scopedContainer = this.checkoutScope(
-        {
-          scopeOverrides: externalsToScopeOverrides(instanceDefinition, externals),
-        },
-        true,
-      );
-
-      return scopedContainer.getAsync(instanceDefinition, ...([] as ExternalsValues<TExternals>));
-    } else {
-      return this.buildWithStrategy(instanceDefinition);
-    }
+  getAsync<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> {
+    return this.buildWithStrategy(instanceDefinition);
   }
 
-  buildExact = (definition: AnyInstanceDefinition<any, any, any>) => {
+  buildExact = (definition: AnyInstanceDefinition<any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     return patchedInstanceDef.create(this);
   };
 
-  buildWithStrategy = (definition: AnyInstanceDefinition<any, any, any>) => {
+  buildWithStrategy = (definition: AnyInstanceDefinition<any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 

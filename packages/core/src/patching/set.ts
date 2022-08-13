@@ -5,19 +5,19 @@ import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinit
 import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 
 export function set<T, TInstance, TLifeTime extends LifeTime>(
-  instance: InstanceDefinition<TInstance, TLifeTime, any>,
+  instance: InstanceDefinition<TInstance, TLifeTime>,
   newValue: TInstance,
-): InstanceDefinition<TInstance, TLifeTime, never>;
+): InstanceDefinition<TInstance, TLifeTime>;
 
 export function set<T, TInstance, TLifeTime extends LifeTime>(
-  instance: AsyncInstanceDefinition<TInstance, TLifeTime, any>,
+  instance: AsyncInstanceDefinition<TInstance, TLifeTime>,
   newValue: TInstance,
-): AsyncInstanceDefinition<TInstance, TLifeTime, never>;
+): AsyncInstanceDefinition<TInstance, TLifeTime>;
 
 export function set<T, TInstance, TLifeTime extends LifeTime, TResolution extends Resolution>(
-  instance: AnyInstanceDefinition<TInstance, TLifeTime, any>,
+  instance: AnyInstanceDefinition<TInstance, TLifeTime>,
   newValue: TInstance,
-): AnyInstanceDefinition<TInstance, TLifeTime, never> {
+): AnyInstanceDefinition<TInstance, TLifeTime> {
   return {
     ...instance,
     create: () => newValue,
