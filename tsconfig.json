@@ -10,6 +10,7 @@
     "jsx": "react",
     "strict": true,
     "removeComments": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   }
 }

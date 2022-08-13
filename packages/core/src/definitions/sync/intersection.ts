@@ -1,5 +1,4 @@
 import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
-import { PickExternals } from '../../utils/PickExternals.js';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime.js';
 
 export type UnionToIntersection<Union> = (Union extends unknown ? (distributedUnion: Union) => void : never) extends (
@@ -8,18 +7,15 @@ export type UnionToIntersection<Union> = (Union extends unknown ? (distributedUn
   ? Intersection
   : never;
 
-export const intersection = <TDefinitions extends Array<InstanceDefinition<object, any, any>>, TMeta>(
+export const intersection = <TDefinitions extends Array<InstanceDefinition<object, any>>, TMeta>(
   ...definitions: TDefinitions
 ): InstanceDefinition<
   UnionToIntersection<InstancesArray<TDefinitions>[number]>,
   DerivedLifeTime<
     {
-      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<any, infer TLifeTime, any>
-        ? TLifeTime
-        : never;
+      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<any, infer TLifeTime> ? TLifeTime : never;
     }[number]
-  >,
-  PickExternals<TDefinitions>
+  >
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 

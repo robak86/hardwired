@@ -1,41 +1,31 @@
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { expectType, TypeEqual, TypeOf } from 'ts-expect';
+import { expectType, TypeOf } from 'ts-expect';
 import { request, singleton } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
-import { external } from '../../sync/external.js';
+
 import { asyncDefine } from '../asyncDefine.js';
 import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition.js';
-import { describe, it, expect } from 'vitest';
-
+import { describe, expect, it } from 'vitest';
+import { implicit } from '../../sync/external.js';
+import { set } from '../../../patching/set.js';
 
 describe(`asyncDefine`, () => {
-  const ext1 = external('ext1').type<number>();
-  const ext2 = external('ext2').type<string>();
+  const ext1 = implicit<number>('ext1');
+  const ext2 = implicit<string>('ext2');
 
   describe(`types`, () => {
-    it(`does not allow externals for singleton lifetime`, async () => {
-      const build = () => {
-        // @ts-expect-error - accepts only single parameter (without externals)
-        const z = asyncDefine(LifeTime.singleton)([ext1], async locator => null);
-      };
-
-      expect(build).toThrow('Strategy=singleton does not support external parameters.');
-    });
-
     it(`preserves externals type`, async () => {
-      const definition = asyncDefine(LifeTime.transient)([ext1, ext2], async locator => null);
-      expectType<
-        TypeOf<typeof definition, AsyncInstanceDefinition<null, LifeTime.transient, { ext1: number; ext2: string }>>
-      >(true);
+      const definition = asyncDefine(LifeTime.transient)(async locator => null);
+      expectType<TypeOf<typeof definition, AsyncInstanceDefinition<null, LifeTime.transient>>>(true);
     });
 
     it(`.get is typesafe`, async () => {
-      const ext3 = external('ext3').type<string>();
+      const ext3 = implicit<string>('ext3');
       const usingBothExternals = request.fn((ext1, ext2) => [ext1, ext2], ext1, ext2);
       const usingBothExternalsWithNotAllowed = request.fn((ext1, ext2, ext3) => [ext1, ext2], ext1, ext2, ext3);
 
-      const definition = asyncDefine(LifeTime.transient)([ext1, ext2], async locator => {
+      const definition = asyncDefine(LifeTime.transient)(async locator => {
         const instance1 = locator.get(ext1);
         const instance2 = locator.get(ext2);
         const usingBoth = locator.get(usingBothExternals);
@@ -52,11 +42,11 @@ describe(`asyncDefine`, () => {
 
   describe(`instantiation`, () => {
     it(`correctly resolves externals`, async () => {
-      const definition = asyncDefine(LifeTime.transient)([ext1, ext2], async locator => {
-        return [await locator.get(ext1), await locator.get(ext2)];
+      const definition = asyncDefine(LifeTime.transient)(async locator => {
+        return [locator.get(ext1), locator.get(ext2)];
       });
 
-      const result = await container().getAsync(definition, { ext1: 1, ext2: 'str' });
+      const result = await container().withImplicits(set(ext1, 1), set(ext2, 'str')).getAsync(definition);
       expect(result).toEqual([1, 'str']);
     });
 

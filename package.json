@@ -13,7 +13,7 @@
     "build:cjs:clear": "cd packages/react && tsc --outDir ./dist/cjs --module commonjs",
     "build:cjs:prepublish": "node --loader ts-node/esm scripts/prepublish.ts",
     "prepublishOnly": "yarn build:cjs:clear && yarn build:cjs:prepublish",
-    "test": "yarn run vitest --config ./vitest.config.ts --run",
+    "test": "yarn run vitest --config ./vitest.config.ts",
     "test:coverage": "yarn run vitest --config ./vitest.config.ts --coverage --run",
     "postinstall": "yarn run update:tsconfig.json && yarn run update:package.json",
     "update:tsconfig.json": "node --loader ts-node/esm scripts/update-package-tsconfig.ts",

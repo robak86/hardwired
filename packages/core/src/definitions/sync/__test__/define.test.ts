@@ -1,35 +1,26 @@
-import { external } from '../external.js';
+import { implicit } from '../external.js';
 import { define } from '../define.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { expectType, TypeEqual, TypeOf } from 'ts-expect';
+import { expectType, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { request, singleton } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { set } from '../../../patching/set.js';
 
 describe(`define`, () => {
-  const ext1 = external('ext1').type<number>();
-  const ext2 = external('ext2').type<string>();
+  const ext1 = implicit<number>('ext1');
+  const ext2 = implicit<string>('ext2');
 
   describe(`types`, () => {
-    it(`does not allow externals for singleton lifetime`, async () => {
-      const buildDef = () => {
-        // @ts-expect-error - accepts only single parameter (without externals)
-        const z = define(LifeTime.singleton)([ext1], locator => null);
-      };
-      expect(buildDef).toThrow('Strategy=singleton does not support external parameters.');
-    });
-
     it(`preserves externals type`, async () => {
       const definition = define(LifeTime.transient)([ext1, ext2], locator => null);
-      expectType<
-        TypeOf<typeof definition, InstanceDefinition<null, LifeTime.transient, { ext1: number; ext2: string }>>
-      >(true);
+      expectType<TypeOf<typeof definition, InstanceDefinition<null, LifeTime.transient>>>(true);
     });
 
     it(`.get is typesafe`, async () => {
-      const ext3 = external('ext3').type<string>();
+      const ext3 = implicit<string>('ext3');
       const usingBothExternals = request.fn((ext1: number, ext2: string) => [ext1, ext2] as const, ext1, ext2);
       const usingBothExternalsWithNotAllowed = request.fn(
         (ext1: number, ext2: string, ext3: string) => [ext1, ext2, ext3],
@@ -59,7 +50,7 @@ describe(`define`, () => {
         return [locator.get(ext1), locator.get(ext2)];
       });
 
-      const result = container().get(definition, { ext1: 1, ext2: 'str' });
+      const result = container().withImplicits(set(ext1, 1), set(ext2, 'str')).get(definition);
       expect(result).toEqual([1, 'str']);
     });
 

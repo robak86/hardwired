@@ -1,4 +1,4 @@
-import { external } from '../external.js';
+import { implicit } from '../external.js';
 import { factory, IFactory } from '../factory.js';
 import { request, singleton, transient } from '../../definitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
@@ -8,9 +8,7 @@ import { v4 } from 'uuid';
 import { set } from '../../../patching/set.js';
 import { asyncFactory, IAsyncFactory } from '../../async/asyncFactory.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { value } from '../value.js';
-import { describe, it, expect, vi } from 'vitest';
-
+import { describe, expect, it, vi } from 'vitest';
 
 describe(`factory`, () => {
   describe(`factory without params`, () => {
@@ -40,38 +38,9 @@ describe(`factory`, () => {
     });
   });
 
-  describe(`mixin extension`, () => {
-    it(`extends IFactory with provided base definition`, async () => {
-      type Mixin = { someNum: number; someStr: string };
-
-      const mixinD = value({ someNum: 123, someStr: 'str' });
-      const extD = external('ext').type<string>();
-
-      class ExtConsumer {
-        constructor(public external: string) {}
-      }
-
-      type Factory = IAsyncFactory<ExtConsumer, { ext: string }, Mixin>;
-
-      const consumerD = request.asyncClass(ExtConsumer, extD);
-
-      const factoryD = asyncFactory(consumerD, mixinD);
-
-      const factoryConsumer = async (f: Factory) => {};
-      const factoryConsumerSpy = vi.fn(factoryConsumer);
-
-      const factoryConsumerD = transient.asyncFn(factoryConsumerSpy, factoryD);
-
-      await container().getAsync(factoryConsumerD);
-
-      expect(factoryConsumerSpy.mock.calls[0][0].someNum).toEqual(123);
-      expect(factoryConsumerSpy.mock.calls[0][0].someStr).toEqual('str');
-    });
-  });
-
   describe(`allowed instance definitions`, () => {
     it(`does not accepts singleton with externals`, async () => {
-      const ext = external('ext').type<number>();
+      const ext = implicit('ext');
       const build = () => {
         const def = singleton.asyncFn(async (val: number) => val, ext);
 
@@ -85,9 +54,9 @@ describe(`factory`, () => {
 
   describe(`using definitions with multiple externals provided in different orders`, () => {
     it(`provides correct dependencies`, async () => {
-      const ext1 = external('ext1').type<string>();
+      const ext1 = implicit<string>('ext1');
 
-      const ext2 = external('ext2').type<string>();
+      const ext2 = implicit<string>('ext2');
 
       const consumer1 = async (ext1: string, ext2: string): Promise<[string, string]> => [
         `consumer1${ext1}`,
@@ -114,12 +83,12 @@ describe(`factory`, () => {
       const combinedD = request.asyncFn(combined, consumer1D, consumer2D);
 
       const compositionRoot = async (
-        factory: IAsyncFactory<[string, string, string, string], { ext1: string; ext2: string }>,
+        factory: IAsyncFactory<[string, string, string, string], [string, string]>,
       ): Promise<[string, string, string, string]> => {
-        return factory.build({ ext1: 'ext1', ext2: 'ext2' });
+        return factory.build('ext1', 'ext2');
       };
 
-      const compositionRootD = singleton.asyncFn(compositionRoot, asyncFactory(combinedD));
+      const compositionRootD = singleton.asyncFn(compositionRoot, asyncFactory(combinedD, ext1, ext2));
 
       const cnt = container();
       const result = await cnt.getAsync(compositionRootD);
@@ -147,29 +116,25 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IAsyncFactory<Handler, { req: Request }>) {}
+      constructor(public handlersFactory: IAsyncFactory<Handler, [Request]>) {}
     }
 
     class DbConnection {
       public connectionId = v4();
     }
 
-    const requestD = external('req').type<Request>();
+    const requestD = implicit<Request>('req');
+
     describe(`building definition`, () => {
       it(`cancels moves externals to IFactory params producing InstanceDefinition having void for TExternals`, async () => {
         const requestIdD = singleton.asyncFn(async () => '1');
         const dbConnectionD = singleton.asyncClass(DbConnection);
         const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
         const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-        const handlerFactory = asyncFactory(handlerD);
-        const routerD = transient.asyncClass(Router, handlerFactory);
 
-        const factoryD = asyncFactory(handlerD);
+        const factoryD = asyncFactory(handlerD, requestD);
         expectType<
-          TypeEqual<
-            typeof factoryD,
-            InstanceDefinition<IAsyncFactory<Handler, { req: Request }>, LifeTime.transient, never>
-          >
+          TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, LifeTime.transient>>
         >(true);
       });
     });
@@ -180,13 +145,13 @@ describe(`factory`, () => {
         const dbConnectionD = singleton.asyncClass(DbConnection);
         const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
         const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-        const routerD = transient.asyncClass(Router, asyncFactory(handlerD));
+        const routerD = transient.asyncClass(Router, asyncFactory(handlerD, requestD));
 
         const cnt = container();
         const result = await cnt.getAsync(routerD);
         const externalsValue: Request = { requestObj: 'req' };
 
-        const handler = await result.handlersFactory.build({ req: externalsValue });
+        const handler = await result.handlersFactory.build(externalsValue);
         expect(handler).toBeInstanceOf(Handler);
         expect(handler.request).toEqual(externalsValue);
         expect(handler.requestId).toEqual('1');
@@ -198,7 +163,7 @@ describe(`factory`, () => {
           const dbConnectionD = singleton.asyncClass(DbConnection);
           const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
           const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = transient.asyncClass(Router, asyncFactory(handlerD));
+          const routerD = transient.asyncClass(Router, asyncFactory(handlerD, requestD));
 
           const factoryD = asyncFactory(handlerD);
 
@@ -206,7 +171,7 @@ describe(`factory`, () => {
           const result = await cnt.getAsync(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
-          const handler = await result.handlersFactory.build({ req: externalsValue });
+          const handler = await result.handlersFactory.build(externalsValue);
 
           expect(handler).toBeInstanceOf(Handler);
           expect(handler.requestId).toEqual(handler.logger.requestId);
@@ -217,14 +182,14 @@ describe(`factory`, () => {
           const dbConnectionD = singleton.asyncClass(DbConnection);
           const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
           const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = transient.asyncClass(Router, asyncFactory(handlerD));
+          const routerD = transient.asyncClass(Router, asyncFactory(handlerD, requestD));
 
           const cnt = container();
           const result = await cnt.getAsync(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
-          const handlerInstance1 = await result.handlersFactory.build({ req: externalsValue });
-          const handlerInstance2 = await result.handlersFactory.build({ req: externalsValue });
+          const handlerInstance1 = await result.handlersFactory.build(externalsValue);
+          const handlerInstance2 = await result.handlersFactory.build(externalsValue);
 
           expect(handlerInstance1.requestId).not.toEqual(handlerInstance2.requestId);
         });
@@ -234,14 +199,14 @@ describe(`factory`, () => {
           const dbConnectionD = singleton.asyncClass(DbConnection);
           const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
           const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = transient.asyncClass(Router, asyncFactory(handlerD));
+          const routerD = transient.asyncClass(Router, asyncFactory(handlerD, requestD));
 
           // TODO: providing requestId override as singleton will create memory leaks in current implementation, where
           //       singletons from child scopes are propagated to parent scopes
           const cnt = container([set(requestIdD, 'overridden')]);
           const result = await cnt.getAsync(routerD);
           const externalsValue: Request = { requestObj: 'req' };
-          const handler = await result.handlersFactory.build({ req: externalsValue });
+          const handler = await result.handlersFactory.build(externalsValue);
 
           expect(handler).toBeInstanceOf(Handler);
           expect(handler.requestId).toEqual('overridden');
@@ -252,14 +217,14 @@ describe(`factory`, () => {
           const dbConnectionD = singleton.asyncClass(DbConnection);
           const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
           const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = transient.asyncClass(Router, asyncFactory(handlerD));
+          const routerD = transient.asyncClass(Router, asyncFactory(handlerD, requestD));
 
           const cnt = container();
           const result = await cnt.getAsync(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
-          const handlerInstance1 = await result.handlersFactory.build({ req: externalsValue });
-          const handlerInstance2 = await result.handlersFactory.build({ req: externalsValue });
+          const handlerInstance1 = await result.handlersFactory.build(externalsValue);
+          const handlerInstance2 = await result.handlersFactory.build(externalsValue);
 
           expect(handlerInstance1.dbConnection.connectionId).toEqual(handlerInstance2.dbConnection.connectionId);
         });
@@ -285,7 +250,7 @@ describe(`factory`, () => {
     }
 
     class Router {
-      constructor(public handlersFactory: IAsyncFactory<Handler, { req: Request }>) {}
+      constructor(public handlersFactory: IAsyncFactory<Handler, [Request]>) {}
     }
 
     class App {
@@ -296,11 +261,11 @@ describe(`factory`, () => {
       public app1?: App;
       public app2?: App;
 
-      constructor(private modulesFactory: IAsyncFactory<App, { env: EnvConfig }>) {}
+      constructor(private modulesFactory: IAsyncFactory<App, [EnvConfig]>) {}
 
       async mountApps() {
-        this.app1 = await this.modulesFactory.build({ env: { mountPoint: '/app1' } });
-        this.app2 = await this.modulesFactory.build({ env: { mountPoint: '/app2' } });
+        this.app1 = await this.modulesFactory.build({ mountPoint: '/app1' });
+        this.app2 = await this.modulesFactory.build({ mountPoint: '/app2' });
       }
     }
 
@@ -308,17 +273,17 @@ describe(`factory`, () => {
       public connectionId = v4();
     }
 
-    const requestD = external('req').type<Request>();
-    const envConfigD = external('env').type<EnvConfig>();
+    const requestD = implicit<Request>('req');
+    const envConfigD = implicit<EnvConfig>('env');
 
     it(`creates correct composition root`, async () => {
       const requestIdD = request.asyncFn(async () => v4());
       const dbConnectionD = singleton.asyncClass(DbConnection);
       const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
       const handlerD = request.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-      const routerD = request.asyncClass(Router, asyncFactory(handlerD));
+      const routerD = request.asyncClass(Router, asyncFactory(handlerD, requestD));
       const appModuleD = request.asyncClass(App, routerD, envConfigD);
-      const appsClusterD = singleton.asyncClass(AppsCluster, asyncFactory(appModuleD));
+      const appsClusterD = singleton.asyncClass(AppsCluster, asyncFactory(appModuleD, envConfigD));
 
       const cnt = container();
       const app = await cnt.getAsync(appsClusterD);
@@ -333,9 +298,9 @@ describe(`factory`, () => {
       const dbConnectionD = singleton.asyncClass(DbConnection);
       const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
       const handlerD = request.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-      const routerD = request.asyncClass(Router, asyncFactory(handlerD));
+      const routerD = request.asyncClass(Router, asyncFactory(handlerD, requestD));
       const appModuleD = request.asyncClass(App, routerD, envConfigD);
-      const appsClusterD = singleton.asyncClass(AppsCluster, asyncFactory(appModuleD));
+      const appsClusterD = singleton.asyncClass(AppsCluster, asyncFactory(appModuleD, envConfigD));
 
       const cnt = container();
       const app = await cnt.getAsync(appsClusterD);
@@ -345,10 +310,10 @@ describe(`factory`, () => {
       expect(app.app2?.envConfig.mountPoint).toEqual('/app2');
 
       const requestObject = { requestObj: 'req' as const };
-      const handlerInstance11 = await app.app1?.router.handlersFactory.build({ req: requestObject });
-      const handlerInstance12 = await app.app1?.router.handlersFactory.build({ req: requestObject });
-      const handlerInstance21 = await app.app2?.router.handlersFactory.build({ req: requestObject });
-      const handlerInstance22 = await app.app2?.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance11 = await app.app1?.router.handlersFactory.build(requestObject);
+      const handlerInstance12 = await app.app1?.router.handlersFactory.build(requestObject);
+      const handlerInstance21 = await app.app2?.router.handlersFactory.build(requestObject);
+      const handlerInstance22 = await app.app2?.router.handlersFactory.build(requestObject);
 
       expect(handlerInstance11?.dbConnection.connectionId).toEqual(handlerInstance12?.dbConnection.connectionId);
       expect(handlerInstance12?.dbConnection.connectionId).toEqual(handlerInstance21?.dbConnection.connectionId);
@@ -376,10 +341,10 @@ describe(`factory`, () => {
       expect(app.app2?.envConfig.mountPoint).toEqual('/app2');
 
       const requestObject = { requestObj: 'req' as const };
-      const handlerInstance11 = await app.app1?.router.handlersFactory.build({ req: requestObject });
-      const handlerInstance12 = await app.app1?.router.handlersFactory.build({ req: requestObject });
-      const handlerInstance21 = await app.app2?.router.handlersFactory.build({ req: requestObject });
-      const handlerInstance22 = await app.app2?.router.handlersFactory.build({ req: requestObject });
+      const handlerInstance11 = await app.app1?.router.handlersFactory.build(requestObject);
+      const handlerInstance12 = await app.app1?.router.handlersFactory.build(requestObject);
+      const handlerInstance21 = await app.app2?.router.handlersFactory.build(requestObject);
+      const handlerInstance22 = await app.app2?.router.handlersFactory.build(requestObject);
 
       expect(handlerInstance11?.dbConnection.connectionId).toEqual(handlerInstance12?.dbConnection.connectionId);
       expect(handlerInstance21?.dbConnection.connectionId).toEqual(handlerInstance22?.dbConnection.connectionId);

@@ -1,26 +1,20 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ExternalsValuesRecord } from '../definitions/abstract/base/BaseDefinition.js';
-import { assertCompatible } from '../utils/PickExternals.js';
 
 export const apply = <
   TInstance,
-  TDecoratedExternals extends ExternalsValuesRecord,
   TNextValue extends TInstance,
   TDecoratorDependencies extends any[],
   TLifeTime extends LifeTime,
 >(
-  instance: InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals>,
+  instance: InstanceDefinition<TInstance, TLifeTime>,
   applyFn: (prevValue: TInstance, ...decoratorDeps: TDecoratorDependencies) => void,
-  ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any, never> }
-): InstanceDefinition<TInstance, TLifeTime, TDecoratedExternals> => {
-  assertCompatible(instance, dependencies);
-
+  ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any> }
+): InstanceDefinition<TInstance, TLifeTime> => {
   return {
     id: instance.id,
     strategy: instance.strategy,
     resolution: instance.resolution,
-    externals: instance.externals,
     create: context => {
       const decorated = instance.create(context);
       const applyDeps = dependencies.map(context.buildWithStrategy);

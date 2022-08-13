@@ -1,8 +1,6 @@
 import { LifeTime } from '../LifeTime.js';
 import { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
+import { ValidDependenciesLifeTime } from "../sync/InstanceDefinitionDependency.js";
 
-export type AsyncInstanceDefinitionDependency<TValue> =
-  | AnyInstanceDefinition<TValue, LifeTime.singleton, never>
-  | AnyInstanceDefinition<TValue, LifeTime.scoped, never>
-  | AnyInstanceDefinition<TValue, LifeTime.transient, any>
-  | AnyInstanceDefinition<TValue, LifeTime.request, any>;
+export type AsyncInstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> = AnyInstanceDefinition<TValue, ValidDependenciesLifeTime<TLifeTime>>
+

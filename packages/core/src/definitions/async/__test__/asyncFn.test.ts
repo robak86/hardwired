@@ -1,16 +1,15 @@
-import { external } from '../../sync/external.js';
+import { implicit } from '../../sync/external.js';
 import { request, singleton, transient } from '../../definitions.js';
 import { asyncFn } from '../asyncFn.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { describe, it, expect } from 'vitest';
-
+import { describe, expect, it } from 'vitest';
 
 describe(`asyncFn`, () => {
   describe(`types`, () => {
     describe(`allowed dependencies life times`, () => {
       const numberConsumer = async (val: number) => val;
 
-      const ext = external('ext1').type<number>();
+      const ext = implicit<number>('ext1');
 
       describe(`transient`, () => {
         it(`does not accept singletons with externals`, async () => {
@@ -21,7 +20,7 @@ describe(`asyncFn`, () => {
             asyncFn(LifeTime.transient)(numberConsumer, dep);
           };
 
-          expect(build).toThrow('Strategy=singleton does not support external parameters.');
+          expect(build).toThrow('Cannot use scoped dependency for singleton definition.');
         });
 
         it(`accepts request def with externals`, async () => {
@@ -44,7 +43,7 @@ describe(`asyncFn`, () => {
             asyncFn(LifeTime.request)(numberConsumer, dep);
           };
 
-          expect(build).toThrow('Strategy=singleton does not support external parameters.');
+          expect(build).toThrow('Cannot use scoped dependency for singleton definition.');
         });
 
         it(`accepts request def with externals`, async () => {
@@ -67,7 +66,7 @@ describe(`asyncFn`, () => {
             asyncFn(LifeTime.singleton)(numberConsumer, dep);
           };
 
-          expect(build).toThrow('Strategy=singleton does not support external parameters.');
+          expect(build).toThrow('Cannot use scoped dependency for singleton definition.');
         });
 
         it(`accepts request def with externals`, async () => {

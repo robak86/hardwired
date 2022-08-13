@@ -1,10 +1,11 @@
-import { external } from '../external.js';
 import { transient } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { value } from '../value.js';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { implicit } from '../external.js';
+import { set } from '../../../patching/set.js';
 
-describe(`external`, () => {
+describe(`implicit`, () => {
   type Externals = { someExternalParam: number };
   type OtherExternals = { otherExternalParam: number };
 
@@ -17,72 +18,35 @@ describe(`external`, () => {
   }
 
   const numD = value('otherDependency');
-  const externalParams1D = external('params1').type<Externals>();
-  const externalParams2D = external('params2').type<OtherExternals>();
+  const externalParams1D = implicit<Externals>('params1');
+  const externalParams2D = implicit<OtherExternals>('params2');
 
   const defUsingExternals1 = transient.class(ExternalsConsumer, externalParams1D, numD);
   const defUsingBothExternals = transient.class(BothExternalsConsumer, externalParams1D, externalParams2D, numD);
 
   describe(`container.get`, () => {
-    describe(`types`, () => {
-      describe(`single external definition`, () => {
-        it(`requires external params if InstanceDefinition TExternal is different than void`, async () => {
-          const cnt = container();
-
-          try {
-            // @ts-expect-error defUsingExternals requires external params to be passed
-            cnt.get(defUsingExternals1);
-          } catch (err) {
-            // expected
-          }
-
-          cnt.get(defUsingExternals1, { params1: { someExternalParam: 123 } });
-        });
-      });
-
-      describe(`multiple externals`, () => {
-        it(`requires intersection of all externals objects`, async () => {
-          const cnt = container();
-
-          try {
-            // @ts-expect-error defUsingExternals requires external params to be passed
-            cnt.get(defUsingBothExternals);
-
-            // @ts-expect-error defUsingExternals requires intersection of Externals and OtherExternals
-            cnt.get(defUsingBothExternals, { someExternalParam: 123 });
-          } catch (err) {
-            // expected
-          }
-
-          cnt.get(defUsingBothExternals, { params1: { someExternalParam: 123 }, params2: { otherExternalParam: 456 } });
-        });
-      });
-    });
-
     it(`returns correct instance`, async () => {
       const cnt = container();
-      const result = cnt.get(defUsingExternals1, { params1: { someExternalParam: 111 } });
+      const result = cnt
+        .checkoutScope({ scopeOverrides: [set(externalParams1D, { someExternalParam: 111 })] })
+        .get(defUsingExternals1);
 
       expect(result.externals).toEqual({ someExternalParam: 111 });
       expect(result.otherNumDependency).toEqual('otherDependency');
     });
 
-    it(`uses transient lifetime`, async () => {
-      const cnt = container();
-
-      const result1 = cnt.get(defUsingExternals1, { params1: { someExternalParam: 111 } });
-      const result2 = cnt.get(defUsingExternals1, { params1: { someExternalParam: 111 } });
-
-      expect(result1).not.toBe(result2);
-    });
-
     it(`merges external params`, async () => {
       const cnt = container();
-      const result = cnt.get(defUsingBothExternals, {
-        params1: { someExternalParam: 123 },
-        params2: { otherExternalParam: 456 },
-      });
-      expect(result.externals).toEqual({ someExternalParam: 123 });
+      const result = cnt
+        .checkoutScope({
+          scopeOverrides: [
+            set(externalParams1D, { someExternalParam: 111 }),
+            set(externalParams2D, { otherExternalParam: 456 }),
+          ],
+        })
+        .get(defUsingBothExternals);
+
+      expect(result.externals).toEqual({ someExternalParam: 111 });
       expect(result.externals2).toEqual({ otherExternalParam: 456 });
     });
   });
