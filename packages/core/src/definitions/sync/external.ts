@@ -28,7 +28,10 @@ import { LifeTime } from '../abstract/LifeTime.js';
 //   };
 // };
 
-export const implicit = <T>(name: string): InstanceDefinition<T, LifeTime.scoped> => {
+// TODO: extend instance definition with instanceHash!
+// TODO: use functions overloading for making buildInstanceHash required only for non primitive types
+
+export const implicit = <T>(name: string, buildInstanceHash?: (val: T) => string): InstanceDefinition<T, LifeTime.scoped> => {
   return instanceDefinition({
     strategy: LifeTime.scoped,
     create: () => {

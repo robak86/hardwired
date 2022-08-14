@@ -18,7 +18,7 @@ describe(`factory`, () => {
       const randomNumFactoryD = factory(randomNumD);
 
       const factoryInstance = container().get(randomNumFactoryD);
-      expectType<TypeEqual<typeof factoryInstance, IFactory<number, never>>>(true);
+      expectType<TypeEqual<typeof factoryInstance, IFactory<number, []>>>(true);
       expect(typeof factoryInstance.build()).toEqual('number');
     });
 
@@ -74,7 +74,7 @@ describe(`factory`, () => {
 
         const factoryD = factory(handlerD, requestD);
         expectType<
-          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request], object>, LifeTime.transient>>
+          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient>>
         >(true);
       });
     });

@@ -7,7 +7,7 @@ type ContainerContext = {
   container: Container | null;
 };
 
-export type DefinitionOverride = AnyInstanceDefinition<any, LifeTime, never>;
+export type DefinitionOverride = AnyInstanceDefinition<any, LifeTime>;
 
 const storage = new AsyncLocalStorage<ContainerContext>();
 

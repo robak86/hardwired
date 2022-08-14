@@ -17,7 +17,7 @@ describe(`factory`, () => {
       const randomNumFactoryD = asyncFactory(randomNumD);
 
       const factoryInstance = container().get(randomNumFactoryD);
-      expectType<TypeEqual<typeof factoryInstance, IFactory<Promise<number>, never>>>(true);
+      expectType<TypeEqual<typeof factoryInstance, IFactory<Promise<number>, []>>>(true);
       expect(typeof (await factoryInstance.build())).toEqual('number');
     });
 
@@ -35,20 +35,6 @@ describe(`factory`, () => {
 
       const factoryInstance = container().get(randomNumFactoryD);
       expect(await factoryInstance.build()).not.toEqual(await factoryInstance.build());
-    });
-  });
-
-  describe(`allowed instance definitions`, () => {
-    it(`does not accepts singleton with externals`, async () => {
-      const ext = implicit('ext');
-      const build = () => {
-        const def = singleton.asyncFn(async (val: number) => val, ext);
-
-        // @ts-expect-error factory does not accept singleton with externals
-        const factoryD = asyncFactory(def);
-      };
-
-      expect(build).toThrow();
     });
   });
 

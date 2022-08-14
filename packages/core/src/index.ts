@@ -32,5 +32,4 @@ export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
 export { Resolution } from './definitions/abstract/Resolution.js';
 export { RequestContainer } from './container/RequestContainer.js';
 
-export type { ExternalsValues, PickExternals } from './utils/PickExternals.js';
 

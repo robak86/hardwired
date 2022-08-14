@@ -6,7 +6,7 @@ import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 
 export class ScopeStrategy extends BuildStrategy {
   build(
-    definition: InstanceDefinition<any, any, any>,
+    definition: InstanceDefinition<any, any>,
     instancesCache: InstancesStore,
     resolvers: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

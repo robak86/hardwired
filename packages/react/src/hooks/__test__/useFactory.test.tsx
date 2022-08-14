@@ -2,10 +2,11 @@ import { DummyComponent } from '../../__test__/DummyComponent.js';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import * as React from 'react';
 import { FC } from 'react';
-import { container, external, factory, request } from 'hardwired';
+import { container, factory, request } from 'hardwired';
 import { useFactory } from '../useFactory.js';
 import { render, within } from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest'
+import { describe, expect, it, vi } from 'vitest';
+import { implicit } from 'hardwired';
 
 describe(`useFactory`, () => {
   class TestClass {
@@ -14,13 +15,13 @@ describe(`useFactory`, () => {
     constructor(public externalParam: string) {}
   }
 
-  const externalParam = external('ext').type<string>();
+  const externalParam = implicit<string>('ext');
   const clsDef = request.class(TestClass, externalParam);
-  const clsFactory = factory(clsDef);
+  const clsFactory = factory(clsDef, externalParam);
 
   function setup() {
     const Consumer: FC<{ externalParam: string }> = ({ externalParam }) => {
-      const cls = useFactory(clsFactory, { ext: externalParam });
+      const cls = useFactory(clsFactory, externalParam);
       return <DummyComponent value={cls.id.toString()} optionalValue={cls.externalParam} />;
     };
 

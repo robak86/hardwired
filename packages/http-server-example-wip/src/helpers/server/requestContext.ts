@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { external } from 'hardwired';
+import { implicit } from 'hardwired';
 
 export type RequestContext = {
   req: IncomingMessage;
@@ -7,4 +7,4 @@ export type RequestContext = {
   routeParams: unknown;
 };
 
-export const requestContextD = external('reqCtx').type<RequestContext>();
+export const requestContextD = implicit<RequestContext>('reqCtx');

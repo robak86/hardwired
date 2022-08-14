@@ -1,10 +1,11 @@
 import { transient } from '../definitions/definitions.js';
-import { external } from '../definitions/sync/external.js';
+
 import { value } from '../definitions/sync/value.js';
 import { expectType, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { container } from '../container/Container.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { implicit } from '../definitions/sync/external.js';
 
 export type SomeObject = {
   value: number;
@@ -18,8 +19,8 @@ class Consumer {
   constructor(private a: SomeObject, private b: OtherObject, private someValue: number, private consumer?: Consumer) {}
 }
 
-const a1 = external('someObject').type<SomeObject>();
-const a2 = external('otherObject').type<OtherObject>();
+const a1 = implicit<SomeObject>('someObject');
+const a2 = implicit<OtherObject>('otherObject');
 const val = value(123);
 
 const consumer0 = transient.class(Consumer, a1, a2, val);
@@ -1027,13 +1028,6 @@ const consumer1000 = transient.class(Consumer, a1, a2, val, consumer999);
 
 const cnt = container();
 
-cnt.get(consumer1000, { someObject: { value: 1 }, otherObject: { otherValue: 2 } });
-// @ts-expect-error should correctly infer external types
 cnt.get(consumer1000);
 
-expectType<
-  TypeOf<
-    typeof consumer1000,
-    InstanceDefinition<Consumer, LifeTime.transient, { someObject: SomeObject; otherObject: OtherObject }>
-  >
->(true);
+expectType<TypeOf<typeof consumer1000, InstanceDefinition<Consumer, LifeTime.transient>>>(true);

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useContext, useRef } from 'react';
-import { IContainer, RequestContainer } from 'hardwired';
+import { AnyInstanceDefinition, IContainer, RequestContainer } from 'hardwired';
 import { ExternalValues, isShallowEqualRec } from '../utils/useMemoizedByRec.js';
 
 export type ContainerContextValue = {
@@ -23,7 +23,7 @@ export const useContainer = (): IContainer => {
   return container;
 };
 
-export const useRequestContainer = <T extends ExternalValues = never>(deps?: T): RequestContainer<T> => {
+export const useRequestContainer = <T extends AnyInstanceDefinition<any, any>[]>(deps: T): RequestContainer<T> => {
   const container = useContainer();
 
   const requestContainerRef = useRef<null | RequestContainer<any>>();

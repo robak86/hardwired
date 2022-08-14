@@ -15,38 +15,14 @@ describe(`define`, () => {
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
-      const definition = define(LifeTime.transient)([ext1, ext2], locator => null);
+      const definition = define(LifeTime.transient)(locator => null);
       expectType<TypeOf<typeof definition, InstanceDefinition<null, LifeTime.transient>>>(true);
-    });
-
-    it(`.get is typesafe`, async () => {
-      const ext3 = implicit<string>('ext3');
-      const usingBothExternals = request.fn((ext1: number, ext2: string) => [ext1, ext2] as const, ext1, ext2);
-      const usingBothExternalsWithNotAllowed = request.fn(
-        (ext1: number, ext2: string, ext3: string) => [ext1, ext2, ext3],
-        ext1,
-        ext2,
-        ext3,
-      );
-
-      const definition = define(LifeTime.transient)([ext1, ext2], locator => {
-        const instance1 = locator.get(ext1);
-        const instance2 = locator.get(ext2);
-        const usingBoth = locator.get(usingBothExternals);
-
-        // TODO: should throw a compile time error
-        const usingBothNotAllowed = locator.get(usingBothExternalsWithNotAllowed);
-
-        // @ts-expect-error - does not accept definitions with ext3 because it wasn't provided to externals [ext1, ext2]
-        const instance3 = locator.get(ext3);
-        return null;
-      });
     });
   });
 
   describe(`instantiation`, () => {
     it(`correctly resolves externals`, async () => {
-      const definition = define(LifeTime.transient)([ext1, ext2], locator => {
+      const definition = define(LifeTime.transient)( locator => {
         return [locator.get(ext1), locator.get(ext2)];
       });
 

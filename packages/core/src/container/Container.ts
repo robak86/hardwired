@@ -39,8 +39,8 @@ export class Container implements IContainer {
     return Promise.all(definitions.map(def => requestContext.getAsync(def))) as any;
   }
 
-  checkoutRequestScope<TExternals = never>(externals?: TExternals): RequestContainer<TExternals> {
-    return new RequestContainer<TExternals>(this.containerContext.checkoutRequestScope(), externals);
+  checkoutRequestScope<TExternals = never>(): RequestContainer<TExternals> {
+    return new RequestContainer<TExternals>(this.containerContext.checkoutRequestScope());
   }
 
   /***

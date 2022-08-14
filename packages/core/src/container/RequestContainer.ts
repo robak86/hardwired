@@ -6,31 +6,30 @@ import { v4 } from 'uuid';
 export class RequestContainer<TBoundExternals> {
   constructor(
     protected readonly containerContext: ContainerContext,
-    private externalValues?: TBoundExternals,
     public id: string = v4(),
   ) {}
 
-  get<TValue, TExternals extends Partial<TBoundExternals>>(
-    instanceDefinition: InstanceDefinition<TValue, any, TExternals>,
+  get<TValue>(
+    instanceDefinition: InstanceDefinition<TValue, any>,
   ): TValue {
-    return this.containerContext.get(instanceDefinition, this.externalValues as any);
+    return this.containerContext.get(instanceDefinition);
   }
 
-  getAsync<TValue, TExternals extends Partial<TBoundExternals>>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, any, TExternals>,
+  getAsync<TValue>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, any>,
   ): Promise<TValue> {
-    return this.containerContext.getAsync(instanceDefinition, this.externalValues as any);
+    return this.containerContext.getAsync(instanceDefinition);
   }
 
-  getAll<TDefinitions extends InstanceDefinition<any, any, never>[]>(
+  getAll<TDefinitions extends InstanceDefinition<any, any>[]>(
     definitions: [...TDefinitions],
   ): InstancesArray<TDefinitions> {
-    return definitions.map(def => this.containerContext.get(def, this.externalValues as any)) as any;
+    return definitions.map(def => this.containerContext.get(def) as any) as any;
   }
 
-  getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, []>[]>(
+  getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any>[]>(
     definitions: [...TDefinitions],
   ): Promise<AsyncInstancesArray<TDefinitions>> {
-    return Promise.all(definitions.map(def => this.containerContext.getAsync(def, this.externalValues as any))) as any;
+    return Promise.all(definitions.map(def => this.containerContext.getAsync(def))) as any;
   }
 }

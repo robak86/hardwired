@@ -1,4 +1,4 @@
-import { container, request, singleton, external } from 'hardwired';
+import { container, request, singleton,  set, implicit } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 import * as React from 'react';
@@ -88,14 +88,14 @@ describe(`useDefinition`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = external('ext').type<string>();
+      const someExternalParam = implicit<string>('ext');
       const val1Def = request.fn((ext: string) => `render:${checkoutRenderId()};value:${ext}`, someExternalParam);
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const val1 = useDefinition(val1Def, { ext: externalValue });
+        const val1 = useDefinition(val1Def, set(someExternalParam, externalValue));
         return <DummyComponent value={val1} />;
       };
 

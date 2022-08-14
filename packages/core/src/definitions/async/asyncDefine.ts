@@ -15,7 +15,7 @@ export interface DefineAsyncServiceLocator<TLifeTime extends LifeTime> {
 }
 
 export const asyncDefine = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
-  return <TValue>(fn: (locator: DefineAsyncServiceLocator<TLifeTime>) => TValue): AsyncInstanceDefinition<any, any> => {
+  return <TValue>(fn: (locator: DefineAsyncServiceLocator<TLifeTime>) => Promise<TValue>): AsyncInstanceDefinition<TValue, TLifeTime> => {
     // const buildFn = Array.isArray(fnOrExternals) ? fn : fnOrExternals;
     // const externalsArr = Array.isArray(fnOrExternals) ? fnOrExternals : [];
 

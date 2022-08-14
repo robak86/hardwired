@@ -10,7 +10,7 @@ export type WithDependenciesConfigured<TDependencies extends object, TExternalPr
 };
 
 export function withDependencies<TDependencies extends Record<string, any>>(
-  definition: InstanceDefinition<TDependencies, any, never>,
+  definition: InstanceDefinition<TDependencies, any>,
 ): WithDependenciesConfigured<TDependencies> {
   return <TProps extends TDependencies>(
     WrappedComponent: ComponentType<TProps>,
