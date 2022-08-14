@@ -8,12 +8,12 @@ export class SingletonStrategy extends BuildStrategy {
   build(
     definition: InstanceDefinition<any, any>,
     instancesCache: InstancesStore,
-    resolvers: InstancesDefinitionsRegistry,
+    definitionsRegistry: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,
   ) {
     const id = definition.id;
 
-    if (resolvers.hasGlobalOverrideDefinition(id)) {
+    if (definitionsRegistry.hasGlobalOverrideDefinition(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
         return instancesBuilder.buildExact(definition);
       });

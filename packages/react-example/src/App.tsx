@@ -47,9 +47,16 @@ export default () => {
     <ContainerProvider>
       <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 1')]}>
         <LabeledCounter />
+        Within the same request scope:
+        <p style={{ paddingLeft: 50 }}>
+          <LabeledCounter />
+        </p>
       </ContainerScope>
       <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 2')]}>
         <LabeledCounter />
+        <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'Nested counter 2')]}>
+          <LabeledCounter />
+        </ContainerScope>
       </ContainerScope>
       <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 3')]}>
         <LabeledCounter />

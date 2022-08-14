@@ -3,7 +3,7 @@ import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abs
 import { ContainerContext } from '../context/ContainerContext.js';
 import { v4 } from 'uuid';
 import { IContainer } from './IContainer.js';
-import { Container, ContainerScopeOptions } from './Container.js';
+import { ContainerScopeOptions } from './Container.js';
 
 export class RequestContainer implements IContainer {
   constructor(protected readonly containerContext: ContainerContext, public id: string = v4()) {}
