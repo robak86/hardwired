@@ -1,9 +1,10 @@
 import React, { FC } from 'react';
 import { observer } from 'mobx-react';
 import { CounterStore } from './counter/CounterStore.js';
-import { ContainerProvider, useDefinitions } from 'hardwired-react';
-import { counterActionsDef, counterStoreDef } from './app.module.js';
+import { ContainerProvider, ContainerScope, useDefinitions } from 'hardwired-react';
+import { counterActionsDef, counterLabelValueDef, counterStoreDef } from './app.module.js';
 import { CounterActions } from './counter/CounterActions.js';
+import { set } from 'hardwired';
 
 export const Counter: FC<{ store: CounterStore }> = observer(({ store }) => {
   return (
@@ -22,14 +23,21 @@ export const CounterButtons: FC<{ actions: CounterActions }> = observer(({ actio
   );
 });
 
-export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
-  const [store, actions] = useDefinitions([counterStoreDef, counterActionsDef], { counterLabel: label });
+export const CounterFooter: FC = observer(() => {
+  const [label] = useDefinitions([counterLabelValueDef]);
+  return <code>{label}</code>;
+});
+
+export const LabeledCounter: FC = observer(() => {
+  const [store, actions, label] = useDefinitions([counterStoreDef, counterActionsDef, counterLabelValueDef]);
 
   return (
     <div>
       <h1>{label}</h1>
       <Counter store={store} />
       <CounterButtons actions={actions} />
+      <br />
+      <CounterFooter />
     </div>
   );
 });
@@ -37,10 +45,18 @@ export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
 export default () => {
   return (
     <ContainerProvider>
-      <LabeledCounter label={'counter 1'} />
-      <LabeledCounter label={'counter 2'} />
-      <LabeledCounter label={'counter 3'} />
-      <LabeledCounter label={'counter 4'} />
+      <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 1')]}>
+        <LabeledCounter />
+      </ContainerScope>
+      <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 2')]}>
+        <LabeledCounter />
+      </ContainerScope>
+      <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 3')]}>
+        <LabeledCounter />
+      </ContainerScope>
+      <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 4')]}>
+        <LabeledCounter />
+      </ContainerScope>
     </ContainerProvider>
   );
 };
