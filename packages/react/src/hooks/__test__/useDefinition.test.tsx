@@ -1,11 +1,13 @@
-import { container, request, singleton,  set, implicit } from 'hardwired';
+import { container, implicit, request, set, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 import * as React from 'react';
+import { FC } from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useDefinition } from '../useDefinition.js';
-import { FC } from 'react';
-import {describe, expect, it, vi} from 'vitest'
+import { describe, expect, it } from 'vitest';
+import { ContainerScope } from '../../components/ContainerScope.js';
+import { ContainerRequest } from '../../components/ContainerRequest.js';
 
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
@@ -50,13 +52,17 @@ describe(`useDefinition`, () => {
       const TestSubject = () => {
         return (
           <ContainerProvider container={c}>
-            <div data-testid={'consumer1'}>
-              <Consumer />
-            </div>
+            <ContainerRequest>
+              <div data-testid={'consumer1'}>
+                <Consumer />
+              </div>
+            </ContainerRequest>
 
-            <div data-testid={'consumer2'}>
-              <Consumer />
-            </div>
+            <ContainerRequest>
+              <div data-testid={'consumer2'}>
+                <Consumer />
+              </div>
+            </ContainerRequest>
           </ContainerProvider>
         );
       };
@@ -79,8 +85,8 @@ describe(`useDefinition`, () => {
       const render2Consumer1Value = result.getByTestId('consumer1').textContent;
       const render2Consumer2Value = result.getByTestId('consumer2').textContent;
 
-      expect(render1Consumer1Value).toEqual(render2Consumer1Value);
-      expect(render1Consumer2Value).toEqual(render2Consumer2Value);
+      expect(render2Consumer1Value).toEqual('1');
+      expect(render2Consumer2Value).toEqual('2');
 
       expect(render1Consumer1Value).not.toEqual(render1Consumer2Value);
     });
@@ -95,7 +101,7 @@ describe(`useDefinition`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const val1 = useDefinition(val1Def, set(someExternalParam, externalValue));
+        const val1 = useDefinition(val1Def);
         return <DummyComponent value={val1} />;
       };
 
@@ -104,7 +110,9 @@ describe(`useDefinition`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (
           <ContainerProvider container={c}>
-            <Consumer externalValue={externalValue} />
+            <ContainerScope invalidateKeys={[externalValue]} scopeOverrides={[set(someExternalParam, externalValue)]}>
+              <Consumer externalValue={externalValue} />
+            </ContainerScope>
           </ContainerProvider>
         );
       };

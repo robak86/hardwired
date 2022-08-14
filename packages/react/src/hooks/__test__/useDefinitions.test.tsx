@@ -6,7 +6,9 @@ import { FC } from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useDefinitions } from '../useDefinitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { ContainerScope } from '../../components/ContainerScope.js';
+import { ContainerRequest } from '../../components/ContainerRequest.js';
 
 describe(`useDefinitions`, () => {
   describe(`types`, () => {
@@ -27,9 +29,13 @@ describe(`useDefinitions`, () => {
       const val2Def = request.fn(b => 123, ext);
 
       const Component = () => {
-        const [val1, val2] = useDefinitions([val1Def, val2Def], set(ext, true));
-        expectType<TypeEqual<typeof val1, string>>(true);
-        expectType<TypeEqual<typeof val2, number>>(true);
+        try {
+          const [val1, val2] = useDefinitions([val1Def, val2Def]);
+          expectType<TypeEqual<typeof val1, string>>(true);
+          expectType<TypeEqual<typeof val2, number>>(true);
+        } catch (e) {
+          // ext is not provided
+        }
       };
     });
   });
@@ -76,13 +82,17 @@ describe(`useDefinitions`, () => {
       const TestSubject = () => {
         return (
           <ContainerProvider container={c}>
-            <div data-testid={'consumer1'}>
-              <Consumer />
-            </div>
+            <ContainerRequest>
+              <div data-testid={'consumer1'}>
+                <Consumer />
+              </div>
+            </ContainerRequest>
 
-            <div data-testid={'consumer2'}>
-              <Consumer />
-            </div>
+            <ContainerRequest>
+              <div data-testid={'consumer2'}>
+                <Consumer />
+              </div>
+            </ContainerRequest>
           </ContainerProvider>
         );
       };
@@ -105,8 +115,8 @@ describe(`useDefinitions`, () => {
       const render2Consumer1Value = result.getByTestId('consumer1').textContent;
       const render2Consumer2Value = result.getByTestId('consumer2').textContent;
 
-      expect(render1Consumer1Value).toEqual(render2Consumer1Value);
-      expect(render1Consumer2Value).toEqual(render2Consumer2Value);
+      expect(render2Consumer1Value).toEqual('1');
+      expect(render2Consumer2Value).toEqual('2');
 
       expect(render1Consumer1Value).not.toEqual(render1Consumer2Value);
     });
@@ -122,7 +132,7 @@ describe(`useDefinitions`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const values = useDefinitions([val1Def, val2Def], set(someExternalParam, externalValue));
+        const values = useDefinitions([val1Def, val2Def]);
         return <DummyComponent value={values.join('|')} />;
       };
 
@@ -131,7 +141,10 @@ describe(`useDefinitions`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (
           <ContainerProvider container={c}>
-            <Consumer externalValue={externalValue} />
+            <ContainerScope scopeOverrides={[set(someExternalParam, externalValue)]} invalidateKeys={[externalValue]}>
+              <h1>{externalValue}</h1>
+              <Consumer externalValue={externalValue} />
+            </ContainerScope>
           </ContainerProvider>
         );
       };

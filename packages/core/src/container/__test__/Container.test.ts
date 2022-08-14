@@ -3,7 +3,7 @@ import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, it, expect } from 'vitest';
-import { implicit } from '../../definitions/sync/external.js';
+import { implicit } from '../../definitions/sync/implicit.js';
 import { set } from '../../patching/set.js';
 
 describe(`Container`, () => {

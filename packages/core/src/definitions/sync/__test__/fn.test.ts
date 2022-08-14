@@ -2,7 +2,7 @@ import { singleton } from '../../definitions.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { fn } from '../fn.js';
 import { describe, expect, it } from 'vitest';
-import { implicit } from '../external.js';
+import { implicit } from '../implicit.js';
 
 describe(`fn`, () => {
   describe(`allowed dependencies life times`, () => {

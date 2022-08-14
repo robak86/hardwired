@@ -2,7 +2,7 @@ import { transient } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { value } from '../value.js';
 import { describe, expect, it } from 'vitest';
-import { implicit } from '../external.js';
+import { implicit } from '../implicit.js';
 import { set } from '../../../patching/set.js';
 
 describe(`implicit`, () => {

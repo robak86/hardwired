@@ -5,7 +5,7 @@ import { expectType, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { container } from '../container/Container.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { implicit } from '../definitions/sync/external.js';
+import { implicit } from '../definitions/sync/implicit.js';
 
 export type SomeObject = {
   value: number;

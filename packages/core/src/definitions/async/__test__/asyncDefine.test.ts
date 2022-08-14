@@ -7,7 +7,7 @@ import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { asyncDefine } from '../asyncDefine.js';
 import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition.js';
 import { describe, expect, it } from 'vitest';
-import { implicit } from '../../sync/external.js';
+import { implicit } from '../../sync/implicit.js';
 import { set } from '../../../patching/set.js';
 
 describe(`asyncDefine`, () => {

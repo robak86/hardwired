@@ -25,7 +25,7 @@ export { value } from './definitions/sync/value.js';
 
 export * from './definitions/sync/factory.js';
 export * from './definitions/async/asyncFactory.js';
-export * from './definitions/sync/external.js';
+export * from './definitions/sync/implicit.js';
 export * from './definitions/sync/intersection.js';
 export * from './definitions/abstract/LifeTime.js';
 export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';

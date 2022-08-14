@@ -1,4 +1,4 @@
-import { implicit } from '../external.js';
+import { implicit } from '../implicit.js';
 import { factory, IFactory } from '../factory.js';
 import { request, singleton, transient } from '../../definitions.js';
 import { expectType, TypeEqual } from 'ts-expect';

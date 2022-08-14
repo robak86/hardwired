@@ -1,4 +1,4 @@
-import { implicit } from '../../sync/external.js';
+import { implicit } from '../../sync/implicit.js';
 import { singleton } from '../../definitions.js';
 import { asyncClass } from '../asyncClass.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
