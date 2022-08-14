@@ -6,7 +6,7 @@ import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsReg
 
 export class SingletonStrategy extends BuildStrategy {
   build(
-    definition: InstanceDefinition<any, any, any>,
+    definition: InstanceDefinition<any, any>,
     instancesCache: InstancesStore,
     resolvers: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

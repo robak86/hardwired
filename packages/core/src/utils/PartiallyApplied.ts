@@ -23,12 +23,12 @@ export type PartiallyAppliedFn<A extends any[], D extends PartialFnDependencies<
 // prettier-ignore
 export type PartialFnDependencies<TArgs, TLifeTime extends LifeTime> =
     [] extends TArgs ? []:
-    TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K]>} ) | PartialFnDependencies<TPRev, TLifeTime> : [];
+    TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K], TLifeTime>} ) | PartialFnDependencies<TPRev, TLifeTime> : [];
 
 // prettier-ignore
 export type AsyncPartialFnDependencies<TArgs extends any[], TLifeTime extends LifeTime> =
     [] extends TArgs ? []:
-        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AsyncInstanceDefinitionDependency<TArgs[K]>} ) | AsyncPartialFnDependencies<TPRev, TLifeTime> : [];
+        TArgs extends [...infer TPRev, any] ? ( {[K in keyof TArgs]: AsyncInstanceDefinitionDependency<TArgs[K], TLifeTime>} ) | AsyncPartialFnDependencies<TPRev, TLifeTime> : [];
 
 // prettier-ignore
 export type PartiallyAppliedAsyncFn<A extends any[], D extends AsyncPartialFnDependencies<A, any>, R> =

@@ -2,12 +2,12 @@ import { ReactElement } from 'react';
 import { InstanceDefinition, InstancesArray } from 'hardwired';
 import { useDefinitions } from '../hooks/useDefinitions.js';
 
-export type DefinitionsConsumerProps<TInstanceDefinitions extends InstanceDefinition<any, any, never>[]> = {
+export type DefinitionsConsumerProps<TInstanceDefinitions extends InstanceDefinition<any, any>[]> = {
   definitions: TInstanceDefinitions;
   render: (...moduleAsObject: InstancesArray<TInstanceDefinitions>) => ReactElement;
 };
 
-export function DefinitionsConsumer<TInstances extends InstanceDefinition<any, any, never>[]>({
+export function DefinitionsConsumer<TInstances extends InstanceDefinition<any, any>[]>({
   definitions,
   render,
 }: DefinitionsConsumerProps<[...TInstances]>) {

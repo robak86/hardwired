@@ -1,10 +1,10 @@
-import { ExternalsValues, InstanceDefinition, LifeTime, Resolution } from 'hardwired';
+import { AnyInstanceDefinition, InstanceDefinition, LifeTime, Resolution } from 'hardwired';
 import { useRequestContainer } from '../context/ContainerContext.js';
 
 export type UseDefinitionHook = {
   <TInstance, TExt>(
-    factoryDefinition: InstanceDefinition<TInstance, LifeTime, TExt>,
-    ...externals: ExternalsValues<TExt>
+    factoryDefinition: InstanceDefinition<TInstance, LifeTime>,
+    ...externals: AnyInstanceDefinition<any, LifeTime>[]
   ): TInstance;
 };
 

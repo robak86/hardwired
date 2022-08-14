@@ -1,11 +1,11 @@
 import { IFactory, InstanceDefinition, Resolution } from 'hardwired';
 import { useContainer } from '../context/ContainerContext.js';
-import { ExternalValues, useMemoizedByRec } from '../utils/useMemoizedByRec.js';
+import { useMemoizedByRec } from '../utils/useMemoizedByRec.js';
 
 export type UseFactoryHook = {
-  <TInstance, TParams extends ExternalValues, TExt>(
-    factoryDefinition: InstanceDefinition<IFactory<TInstance, TParams, TExt>, any, never>,
-    params: TParams,
+  <TInstance, TParams extends any[]>(
+    factoryDefinition: InstanceDefinition<IFactory<TInstance, TParams>, any>,
+    ...params: TParams
   ): TInstance;
 };
 

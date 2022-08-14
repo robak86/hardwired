@@ -1,4 +1,4 @@
-import { container, external, request, singleton } from 'hardwired';
+import { container, implicit, request, set, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 import * as React from 'react';
@@ -6,7 +6,7 @@ import { FC } from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useDefinitions } from '../useDefinitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import {describe, expect, it, vi} from 'vitest'
+import { describe, expect, it, vi } from 'vitest';
 
 describe(`useDefinitions`, () => {
   describe(`types`, () => {
@@ -22,12 +22,12 @@ describe(`useDefinitions`, () => {
     });
 
     it(`returns correct types using externals`, async () => {
-      const ext = external('ext').type<boolean>();
+      const ext = implicit<boolean>('ext');
       const val1Def = request.fn(b => 'someString', ext);
       const val2Def = request.fn(b => 123, ext);
 
       const Component = () => {
-        const [val1, val2] = useDefinitions([val1Def, val2Def], { ext: true });
+        const [val1, val2] = useDefinitions([val1Def, val2Def], set(ext, true));
         expectType<TypeEqual<typeof val1, string>>(true);
         expectType<TypeEqual<typeof val2, number>>(true);
       };
@@ -114,7 +114,7 @@ describe(`useDefinitions`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = external('ext').type<string>();
+      const someExternalParam = implicit<string>('ext');
       const val1Def = request.fn((ext: string) => `def:1,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
       const val2Def = request.fn((ext: string) => `def:2,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
 
@@ -122,7 +122,7 @@ describe(`useDefinitions`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const values = useDefinitions([val1Def, val2Def], { ext: externalValue });
+        const values = useDefinitions([val1Def, val2Def], set(someExternalParam, externalValue));
         return <DummyComponent value={values.join('|')} />;
       };
 

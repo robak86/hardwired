@@ -4,10 +4,10 @@ import { Optional } from 'utility-types';
 import { useDefinitions } from '../hooks/useDefinitions.js';
 
 export const inject =
-  <TDefinitions extends Record<string, InstanceDefinition<any, any, never>>>(definitions: TDefinitions) =>
+  <TDefinitions extends Record<string, InstanceDefinition<any, any>>>(definitions: TDefinitions) =>
   <
     TProps extends {
-      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
+      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any>
         ? TInstance
         : never;
     },
