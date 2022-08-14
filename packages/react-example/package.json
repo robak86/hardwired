@@ -5,10 +5,11 @@
   "type": "module",
   "dependencies": {
     "hardwired": "*",
+    "hardwired-react": "*",
     "mobx": "^6.3.13",
     "mobx-react": "^7.2.1",
-    "hardwired-react": "*",
-    "parcel-bundler": "^1.12.4"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "browserslist": {
     "production": [
@@ -33,9 +34,13 @@
     "dist",
     "README.md"
   ],
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@vitejs/plugin-react": "^2.0.1"
+  },
   "scripts": {
-    "start": "parcel public/index.html"
+    "start": "vite"
   },
   "exports": {
     "default": "./dist/esm/index.js",

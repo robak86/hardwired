@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { useContext, useRef } from 'react';
-import { AnyInstanceDefinition, IContainer, RequestContainer } from 'hardwired';
-import { ExternalValues, isShallowEqualRec } from '../utils/useMemoizedByRec.js';
+import { useContext } from 'react';
+import { IContainer } from 'hardwired';
 
 export type ContainerContextValue = {
   container: IContainer | undefined;
@@ -22,24 +21,3 @@ export const useContainer = (): IContainer => {
   }
   return container;
 };
-//
-// export const useRequestContainer = <T extends AnyInstanceDefinition<any, any>[]>(deps: T): RequestContainer<T> => {
-//   const container = useContainer();
-//
-//   const requestContainerRef = useRef<null | RequestContainer<any>>();
-//   const parentContainerIdRef = useRef<null | string>();
-//   const depsRef = useRef<undefined | ExternalValues>(undefined);
-//
-//   // if container stored in react context has changed we need to also revalidate request scope
-//   const containerHasChanged = parentContainerIdRef.current && parentContainerIdRef.current !== container.id;
-//   const componentRequestScopeIsMissing = !requestContainerRef.current;
-//   const depsHasChanged = !isShallowEqualRec(depsRef.current, deps);
-//
-//   if (depsHasChanged || componentRequestScopeIsMissing || containerHasChanged) {
-//     requestContainerRef.current = container.checkoutRequestScope(deps);
-//     parentContainerIdRef.current = container.id;
-//     depsRef.current = deps;
-//   }
-//
-//   return requestContainerRef.current!;
-// };
