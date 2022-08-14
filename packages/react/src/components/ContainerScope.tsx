@@ -9,10 +9,14 @@ export type ContainerScopeProps = {
   scopeOverrides?: InstanceDefinition<any, any>[];
 };
 
-export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({ children, invalidateKeys = [], scopeOverrides = [] }) => {
+export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({
+  children,
+  invalidateKeys = [],
+  scopeOverrides = [],
+}) => {
   const container = useContainer();
   const getScopedContainer = useMemoized(() => {
-    return container.checkoutScope({ scopeOverrides });
+    return container.checkoutScope({ scopeOverrides }).checkoutRequestScope();
   });
 
   // eslint-disable-next-line react/no-children-prop

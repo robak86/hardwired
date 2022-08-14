@@ -7,7 +7,7 @@ import { container } from '../../../container/Container.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { partial } from '../partial.js';
 import { describe, it, expect, vi } from 'vitest';
-import { implicit } from "../external.js";
+import { implicit } from "../implicit.js";
 import { fn } from "../fn.js";
 
 describe(`partial`, () => {

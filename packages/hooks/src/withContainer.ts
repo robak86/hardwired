@@ -1,10 +1,8 @@
-import { Container } from 'hardwired';
+import { AnyInstanceDefinition, container, IContainer, LifeTime } from 'hardwired';
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { container } from 'hardwired';
-import { AnyInstanceDefinition, LifeTime } from 'hardwired';
 
 type ContainerContext = {
-  container: Container | null;
+  container: IContainer | null;
 };
 
 export type DefinitionOverride = AnyInstanceDefinition<any, LifeTime>;

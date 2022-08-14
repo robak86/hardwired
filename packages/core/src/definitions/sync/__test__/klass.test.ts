@@ -5,7 +5,7 @@ import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { request, singleton } from '../../definitions.js';
 import { describe, it, expect } from 'vitest';
-import { implicit } from '../external.js';
+import { implicit } from '../implicit.js';
 
 describe(`klass`, () => {
   describe(`external params`, () => {

@@ -39,8 +39,8 @@ export class Container implements IContainer {
     return Promise.all(definitions.map(def => requestContext.getAsync(def))) as any;
   }
 
-  checkoutRequestScope<TExternals = never>(): RequestContainer<TExternals> {
-    return new RequestContainer<TExternals>(this.containerContext.checkoutRequestScope());
+  checkoutRequestScope(): IContainer {
+    return new RequestContainer(this.containerContext.checkoutRequestScope());
   }
 
   /***
@@ -49,7 +49,7 @@ export class Container implements IContainer {
    * Current containers instances built by "scoped" strategy are not inherited
    * @param options
    */
-  checkoutScope(options: ContainerScopeOptions = {}): Container {
+  checkoutScope(options: ContainerScopeOptions = {}): IContainer {
     return new Container(this.containerContext.checkoutScope(options));
   }
 }

@@ -1,4 +1,4 @@
-import { implicit } from '../external.js';
+import { implicit } from '../implicit.js';
 import { define } from '../define.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeOf } from 'ts-expect';

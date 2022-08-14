@@ -5,7 +5,7 @@ import memwatch from '@airbnb/node-memwatch';
 import { scoped, transient } from '../definitions/definitions.js';
 
 import { factory, IFactory } from '../definitions/sync/factory.js';
-import { implicit } from '../definitions/sync/external.js';
+import { implicit } from '../definitions/sync/implicit.js';
 
 export const inspect = (obj: any) => {
   return console.log(u.inspect(obj, false, null, true));
