@@ -4,10 +4,10 @@ import { ContainerContext } from '../../../context/ContainerContext.js';
 import { v4 } from 'uuid';
 
 export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime> = {
-  id: string;
-  strategy: TLifeTime;
-  resolution: Resolution.async;
-  create: (context: ContainerContext) => Promise<T>;
+  readonly id: string;
+  readonly strategy: TLifeTime;
+  readonly resolution: Resolution.async;
+  readonly create: (context: ContainerContext) => Promise<T>;
 };
 
 export function asyncDefinition<TInstance, TLifeTime extends LifeTime>({

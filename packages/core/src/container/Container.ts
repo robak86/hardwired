@@ -52,6 +52,10 @@ export class Container implements IContainer {
   checkoutScope(options: ContainerScopeOptions = {}): IContainer {
     return new Container(this.containerContext.checkoutScope(options));
   }
+
+  withNewRequestScope<TValue>(fn: (locator: IContainer) => TValue): TValue {
+    return fn(this.checkoutRequestScope());
+  }
 }
 
 export type ContainerOptions = ContainerScopeOptions;
