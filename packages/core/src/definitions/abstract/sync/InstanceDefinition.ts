@@ -4,11 +4,12 @@ import { Resolution } from '../Resolution.js';
 import { v4 } from 'uuid';
 
 export type InstanceDefinition<TInstance, TLifeTime extends LifeTime> = {
-  id: string;
-  strategy: TLifeTime;
-  resolution: Resolution.sync;
-  create: (context: ContainerContext) => TInstance; // _ is a fake parameter introduced in order to preserve TExternal type
+  readonly id: string;
+  readonly strategy: TLifeTime;
+  readonly resolution: Resolution.sync;
+  readonly create: (context: ContainerContext) => TInstance; // _ is a fake parameter introduced in order to preserve TExternal type
 };
+
 
 export function instanceDefinition<TInstance, TLifeTime extends LifeTime>({
   id = v4(),

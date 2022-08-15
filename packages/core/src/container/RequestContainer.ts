@@ -35,4 +35,8 @@ export class RequestContainer implements IContainer {
   checkoutScope(options?: ContainerScopeOptions): IContainer {
     return new RequestContainer(this.containerContext.checkoutScope(options));
   }
+
+  withNewRequestScope<TValue>(fn: (locator: IContainer) => TValue): TValue {
+    return fn(this.checkoutRequestScope());
+  }
 }
