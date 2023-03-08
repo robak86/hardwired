@@ -16,6 +16,7 @@
     "test": "yarn run vitest --config ./vitest.config.ts",
     "test:coverage": "yarn run vitest --config ./vitest.config.ts --coverage --run",
     "postinstall": "yarn run update:tsconfig.json && yarn run update:package.json",
+    "prepare": "husky install",
     "update:tsconfig.json": "node --loader ts-node/esm scripts/update-package-tsconfig.ts",
     "update:package.json": "node --loader ts-node/esm scripts/update-package-json.ts",
     "purge": "rimraf packages/**/dist/* packages/**/*.tsbuildinfo node_modules packages/**/node_modules",
@@ -28,12 +29,6 @@
     "packages/*"
   ],
   "type": "module",
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "yarn build && yarn test"
-    }
-  },
   "lint-staged": {
     "packages/**/*.{ts,tsx}": [
       "yarn format",
