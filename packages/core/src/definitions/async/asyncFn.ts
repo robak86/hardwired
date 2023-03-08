@@ -2,7 +2,7 @@ import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/Asyn
 
 import { LifeTime } from '../abstract/LifeTime.js';
 import { AsyncInstanceDefinitionDependency } from '../abstract/async/AsyncInstanceDefinitionDependency.js';
-import { assertValidDependency } from "../abstract/sync/InstanceDefinitionDependency.js";
+import { assertValidDependency } from '../abstract/sync/InstanceDefinitionDependency.js';
 
 export const asyncFn = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   return <
@@ -13,7 +13,7 @@ export const asyncFn = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
     factory: (...params: TParams) => Promise<TValue> | TValue,
     ...dependencies: TDependencies
   ): AsyncInstanceDefinition<TValue, TLifeTime> => {
-    assertValidDependency(strategy, dependencies)
+    assertValidDependency(strategy, dependencies);
 
     return asyncDefinition({
       strategy,

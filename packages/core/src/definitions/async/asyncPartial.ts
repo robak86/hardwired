@@ -2,7 +2,7 @@ import { AsyncPartialFnDependencies, PartiallyAppliedAsyncFn } from '../../utils
 import { uncurryAsync, UnCurryAsync } from '../../utils/UnCurryAsync.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { asyncDefinition, AsyncInstanceDefinition } from '../abstract/async/AsyncInstanceDefinition.js';
-import { assertValidDependency } from "../abstract/sync/InstanceDefinitionDependency.js";
+import { assertValidDependency } from '../abstract/sync/InstanceDefinitionDependency.js';
 
 export const asyncPartial = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   return <

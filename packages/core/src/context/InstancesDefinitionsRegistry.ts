@@ -1,5 +1,8 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
+/**
+ * This class represents a registry for storing definitions overrides for scope.
+ */
 export class InstancesDefinitionsRegistry {
   static empty(): InstancesDefinitionsRegistry {
     return new InstancesDefinitionsRegistry({}, {});
@@ -22,8 +25,9 @@ export class InstancesDefinitionsRegistry {
     private globalOverrideDefinitionsById: Record<string, AnyInstanceDefinition<any, any>>,
   ) {}
 
-  checkoutForRequestScope() {
-    return this;
+
+  addScopeOverride(definition: AnyInstanceDefinition<any, any>) {
+    this.updateScopeOverride(definition);
   }
 
   checkoutForScope(scopeResolversOverrides: AnyInstanceDefinition<any, any>[]) {
@@ -57,7 +61,7 @@ export class InstancesDefinitionsRegistry {
     return !!this.scopeOverrideDefinitionsById[resolverId];
   }
 
-  private addScopeOverrideResolver(resolver: AnyInstanceDefinition<any, any>) {
+  private updateScopeOverride(resolver: AnyInstanceDefinition<any, any>) {
     this.scopeOverrideDefinitionsById[resolver.id] = resolver;
   }
 
@@ -76,7 +80,7 @@ export class InstancesDefinitionsRegistry {
 
   private addScopeOverrides(patches: AnyInstanceDefinition<any, any>[]) {
     patches.forEach(patchedResolver => {
-      this.addScopeOverrideResolver(patchedResolver);
+      this.updateScopeOverride(patchedResolver);
     });
   }
 }

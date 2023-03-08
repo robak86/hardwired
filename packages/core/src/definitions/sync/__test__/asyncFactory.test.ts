@@ -1,6 +1,6 @@
 import { implicit } from '../implicit.js';
 import { factory, IFactory } from '../factory.js';
-import { request, singleton, transient } from '../../definitions.js';
+import { scoped, singleton, transient } from '../../definitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { container } from '../../../container/Container.js';
@@ -50,7 +50,7 @@ describe(`factory`, () => {
       ];
 
       const consumer1Spy = vi.fn(consumer1);
-      const consumer1D = request.asyncPartial(consumer1Spy, ext1, ext2);
+      const consumer1D = scoped.asyncPartial(consumer1Spy, ext1, ext2);
 
       const consumer2 = async (ext2: string, ext1: string): Promise<[string, string]> => [
         `consumer2${ext2}`,
@@ -58,7 +58,7 @@ describe(`factory`, () => {
       ];
 
       const consumer2Spy = vi.fn(consumer2);
-      const consumer2D = request.asyncPartial(consumer2Spy, ext2, ext1);
+      const consumer2D = scoped.asyncPartial(consumer2Spy, ext2, ext1);
 
       const combined = async (
         consumer1: () => Promise<[string, string]>,
@@ -66,7 +66,7 @@ describe(`factory`, () => {
       ): Promise<[string, string, string, string]> => {
         return [...(await consumer1()), ...(await consumer2())];
       };
-      const combinedD = request.asyncFn(combined, consumer1D, consumer2D);
+      const combinedD = scoped.asyncFn(combined, consumer1D, consumer2D);
 
       const compositionRoot = async (
         factory: IAsyncFactory<[string, string, string, string], [string, string]>,
@@ -77,7 +77,7 @@ describe(`factory`, () => {
       const compositionRootD = singleton.asyncFn(compositionRoot, asyncFactory(combinedD, ext1, ext2));
 
       const cnt = container();
-      const result = await cnt.getAsync(compositionRootD);
+      const result = await cnt.get(compositionRootD);
       expect(result).toEqual(['consumer1ext1', 'consumer2ext2', 'consumer2ext2', 'consumer1ext1']);
 
       expect(consumer1Spy).toHaveBeenCalledWith('ext1', 'ext2');
@@ -134,7 +134,7 @@ describe(`factory`, () => {
         const routerD = transient.asyncClass(Router, asyncFactory(handlerD, requestD));
 
         const cnt = container();
-        const result = await cnt.getAsync(routerD);
+        const result = await cnt.get(routerD);
         const externalsValue: Request = { requestObj: 'req' };
 
         const handler = await result.handlersFactory.build(externalsValue);
@@ -145,7 +145,7 @@ describe(`factory`, () => {
 
       describe('request lifetime support', () => {
         it(`creates new request scope for each IFactory .build call, ex. 1`, async () => {
-          const requestIdD = request.asyncFn(async () => v4());
+          const requestIdD = scoped.asyncFn(async () => v4());
           const dbConnectionD = singleton.asyncClass(DbConnection);
           const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
           const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
@@ -154,7 +154,7 @@ describe(`factory`, () => {
           const factoryD = asyncFactory(handlerD);
 
           const cnt = container();
-          const result = await cnt.getAsync(routerD);
+          const result = await cnt.get(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
           const handler = await result.handlersFactory.build(externalsValue);
@@ -164,14 +164,14 @@ describe(`factory`, () => {
         });
 
         it(`creates new request scope for each IFactory .build call, ex. 2`, async () => {
-          const requestIdD = request.asyncFn(async () => v4());
+          const requestIdD = scoped.asyncFn(async () => v4());
           const dbConnectionD = singleton.asyncClass(DbConnection);
           const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
           const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
           const routerD = transient.asyncClass(Router, asyncFactory(handlerD, requestD));
 
           const cnt = container();
-          const result = await cnt.getAsync(routerD);
+          const result = await cnt.get(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
           const handlerInstance1 = await result.handlersFactory.build(externalsValue);
@@ -181,7 +181,7 @@ describe(`factory`, () => {
         });
 
         it(`supports global override`, async () => {
-          const requestIdD = request.asyncFn(async () => v4());
+          const requestIdD = scoped.asyncFn(async () => v4());
           const dbConnectionD = singleton.asyncClass(DbConnection);
           const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
           const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
@@ -190,7 +190,7 @@ describe(`factory`, () => {
           // TODO: providing requestId override as singleton will create memory leaks in current implementation, where
           //       singletons from child scopes are propagated to parent scopes
           const cnt = container([set(requestIdD, 'overridden')]);
-          const result = await cnt.getAsync(routerD);
+          const result = await cnt.get(routerD);
           const externalsValue: Request = { requestObj: 'req' };
           const handler = await result.handlersFactory.build(externalsValue);
 
@@ -199,14 +199,14 @@ describe(`factory`, () => {
         });
 
         it(`propagates singletons created by factory to parent scope to make them reusable in next .build calls`, async () => {
-          const requestIdD = request.asyncFn(async () => v4());
+          const requestIdD = scoped.asyncFn(async () => v4());
           const dbConnectionD = singleton.asyncClass(DbConnection);
           const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
           const handlerD = transient.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
           const routerD = transient.asyncClass(Router, asyncFactory(handlerD, requestD));
 
           const cnt = container();
-          const result = await cnt.getAsync(routerD);
+          const result = await cnt.get(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
           const handlerInstance1 = await result.handlersFactory.build(externalsValue);
@@ -263,16 +263,16 @@ describe(`factory`, () => {
     const envConfigD = implicit<EnvConfig>('env');
 
     it(`creates correct composition root`, async () => {
-      const requestIdD = request.asyncFn(async () => v4());
+      const requestIdD = scoped.asyncFn(async () => v4());
       const dbConnectionD = singleton.asyncClass(DbConnection);
       const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
-      const handlerD = request.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-      const routerD = request.asyncClass(Router, asyncFactory(handlerD, requestD));
-      const appModuleD = request.asyncClass(App, routerD, envConfigD);
+      const handlerD = scoped.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
+      const routerD = scoped.asyncClass(Router, asyncFactory(handlerD, requestD));
+      const appModuleD = scoped.asyncClass(App, routerD, envConfigD);
       const appsClusterD = singleton.asyncClass(AppsCluster, asyncFactory(appModuleD, envConfigD));
 
       const cnt = container();
-      const app = await cnt.getAsync(appsClusterD);
+      const app = await cnt.get(appsClusterD);
       await app.mountApps();
 
       expect(app.app1?.envConfig.mountPoint).toEqual('/app1');
@@ -280,16 +280,16 @@ describe(`factory`, () => {
     });
 
     it(`propagates singleton`, async () => {
-      const requestIdD = request.asyncFn(async () => v4());
+      const requestIdD = scoped.asyncFn(async () => v4());
       const dbConnectionD = singleton.asyncClass(DbConnection);
       const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
-      const handlerD = request.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-      const routerD = request.asyncClass(Router, asyncFactory(handlerD, requestD));
-      const appModuleD = request.asyncClass(App, routerD, envConfigD);
+      const handlerD = scoped.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
+      const routerD = scoped.asyncClass(Router, asyncFactory(handlerD, requestD));
+      const appModuleD = scoped.asyncClass(App, routerD, envConfigD);
       const appsClusterD = singleton.asyncClass(AppsCluster, asyncFactory(appModuleD, envConfigD));
 
       const cnt = container();
-      const app = await cnt.getAsync(appsClusterD);
+      const app = await cnt.get(appsClusterD);
       await app.mountApps();
 
       expect(app.app1?.envConfig.mountPoint).toEqual('/app1');
@@ -311,16 +311,16 @@ describe(`factory`, () => {
       //       new scope for factory needs to be parametrized and therefore is temporal for .build call
       //       we would need to create two kinds of scope - persistent scope for factory where all scoped(scoped should in
       //       theory always contain externals therefore it shouldn't be persisted?) instances will be persisted
-      const requestIdD = request.asyncFn(async () => v4());
+      const requestIdD = scoped.asyncFn(async () => v4());
       const dbConnectionD = singleton.asyncClass(DbConnection);
       const loggerD = transient.asyncClass(Logger, requestD, requestIdD);
-      const handlerD = request.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-      const routerD = request.asyncClass(Router, asyncFactory(handlerD));
-      const appModuleD = request.asyncClass(App, routerD, envConfigD);
+      const handlerD = scoped.asyncClass(Handler, requestD, loggerD, requestIdD, dbConnectionD);
+      const routerD = scoped.asyncClass(Router, asyncFactory(handlerD));
+      const appModuleD = scoped.asyncClass(App, routerD, envConfigD);
       const appsClusterD = singleton.asyncClass(AppsCluster, asyncFactory(appModuleD));
 
       const cnt = container();
-      const app = await cnt.getAsync(appsClusterD);
+      const app = await cnt.get(appsClusterD);
       await app.mountApps();
 
       expect(app.app1?.envConfig.mountPoint).toEqual('/app1');

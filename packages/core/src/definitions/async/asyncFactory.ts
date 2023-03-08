@@ -43,9 +43,9 @@ export const asyncFactory: AsyncFactoryBuildFn = (
           }
 
           const scopedContext = context.checkoutScope({
-            scopeOverrides: dependencies.map((dep, idx) => set(dep, params[idx])),
+            overrides: dependencies.map((dep, idx) => set(dep, params[idx])),
           });
-          return scopedContext.getAsync(definition);
+          return scopedContext.get(definition);
         },
       };
     },

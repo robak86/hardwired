@@ -1,4 +1,4 @@
-import { request, singleton, transient } from '../../definitions.js';
+import { singleton, transient } from '../../definitions.js';
 
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
@@ -7,8 +7,8 @@ import { container } from '../../../container/Container.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { partial } from '../partial.js';
 import { describe, it, expect, vi } from 'vitest';
-import { implicit } from "../implicit.js";
-import { fn } from "../fn.js";
+import { implicit } from '../implicit.js';
+import { fn } from '../fn.js';
 
 describe(`partial`, () => {
   describe(`types`, () => {
@@ -29,9 +29,9 @@ describe(`partial`, () => {
 
       it(`returns correct type for no args passed`, async () => {
         const ap = singleton.partial((a: number, b: string) => true);
-        expectType<
-          TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton>>
-        >(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton>>>(
+          true,
+        );
       });
     });
 
@@ -52,9 +52,9 @@ describe(`partial`, () => {
 
       it(`returns correct type for no args passed`, async () => {
         const ap = singleton.partial((a: number) => (b: string) => true);
-        expectType<
-          TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton>>
-        >(true);
+        expectType<TypeEqual<typeof ap, InstanceDefinition<(a: number, b: string) => boolean, LifeTime.singleton>>>(
+          true,
+        );
       });
     });
 
@@ -69,14 +69,16 @@ describe(`partial`, () => {
             try {
               // @ts-expect-error request does not accept implicit definitions
               const dep = fn(LifeTime.singleton)(numberConsumer, implDef);
-            } catch (err) {}
+            } catch (err) {
+              // noop
+            }
           });
         });
 
         describe(`runtime`, () => {
           it(`does not accept implicit definitions`, async () => {
             const buildDef = () => {
-              // @ts-expect-error singleton does not accept implicit definitions
+              // @ts-expect-error singleton does not accept implicit definition
               fn(LifeTime.singleton)(numberConsumer, implDef);
             };
 

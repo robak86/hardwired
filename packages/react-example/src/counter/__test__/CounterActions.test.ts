@@ -17,8 +17,9 @@ describe('CounterAction', () => {
     // delegating instances construction to container
     it('increments counter state by 1', () => {
       const [counterStore, counterStoreActions] = container()
-        .withImplicits(set(counterLabelValueDef, 'some label'))
+        .checkoutScope({ overrides: [set(counterLabelValueDef, 'some label')] })
         .getAll([counterStoreDef, counterActionsDef]);
+
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(1);
     });
@@ -28,7 +29,7 @@ describe('CounterAction', () => {
       const cnt = container([set(counterInitialValueDef, 10)]);
 
       const [counterStore, counterStoreActions] = cnt
-        .withImplicits(set(counterLabelValueDef, 'some label'))
+        .checkoutScope({ overrides: [set(counterLabelValueDef, 'some label')] })
         .getAll([counterStoreDef, counterActionsDef]);
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(11);

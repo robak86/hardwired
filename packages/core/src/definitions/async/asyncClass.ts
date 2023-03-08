@@ -18,8 +18,8 @@ export const asyncClass = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
     return asyncDefinition({
       strategy,
       create: async context => {
-        const dependenciesInstance = await Promise.all((dependencies as any).map(context.buildWithStrategy));
-        return new cls(...(dependenciesInstance as any));
+        const dependenciesInstance = (await Promise.all(dependencies.map(context.buildWithStrategy))) as TArgs;
+        return new cls(...dependenciesInstance);
       },
     });
   };

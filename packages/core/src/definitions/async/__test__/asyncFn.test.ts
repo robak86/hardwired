@@ -17,7 +17,9 @@ describe(`asyncFn`, () => {
             try {
               // @ts-expect-error request does not accept implicit definitions
               const dep = asyncFn(LifeTime.singleton)(numberConsumer, implDef);
-            } catch (err) {}
+            } catch (err) {
+              // noop
+            }
           });
         });
 

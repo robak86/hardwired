@@ -1,6 +1,6 @@
 {
   "name": "hardwired",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
@@ -12,7 +12,6 @@
     "container",
     "type-safe"
   ],
-  "type": "module",
   "exports": {
     "default": "./dist/esm/index.js",
     "import": "./dist/esm/index.js",
@@ -21,20 +20,17 @@
   },
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
-  "files": [
-    "dist",
-    "README.md"
-  ],
   "dependencies": {
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "performance-now": "^2.1.0",
-    "@types/uuid": "^8.3.4"
+    "@types/uuid": "^8.3.4",
+    "performance-now": "^2.1.0"
   },
-  "publishConfig": {
-    "access": "public"
-  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:robak86/hardwired.git"

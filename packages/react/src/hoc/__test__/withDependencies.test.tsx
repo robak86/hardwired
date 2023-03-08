@@ -1,11 +1,17 @@
-import React, { FC, ReactElement } from 'react';
+
+import * as React from 'react';
 import { container, object, replace, scoped, set, singleton } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies.js';
 import { useDefinition } from '../../hooks/useDefinition.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import {describe, expect, it, vi} from 'vitest'
+import { describe, expect, it, vi } from 'vitest';
+
+/**
+ * @vitest-environment happy-dom
+ */
+
 
 describe(`withDependencies`, () => {
   function setupDefinitions({
@@ -26,7 +32,7 @@ describe(`withDependencies`, () => {
     const ageDef = scoped.fn(() => new BoxedValue(initialAge()));
     const firstNameDef = scoped.fn(() => new BoxedValue(initialName()));
 
-    const WrappedComponent: FC<DummyComponentProps> = ({ age, firstName, testId }) => {
+    const WrappedComponent: React.FC<DummyComponentProps> = ({ age, firstName, testId }) => {
       return (
         <div data-testid={testId}>
           <ValueRenderer testId={'age'} value={age.value} />
@@ -55,12 +61,12 @@ describe(`withDependencies`, () => {
     return { WrappedComponent, dependenciesSelector, ageDef, firstNameDef };
   }
 
-  function renderWithContainer(element: ReactElement, cnt = container()) {
+  function renderWithContainer(element: React.ReactElement, cnt = container()) {
     const result = render(<ContainerProvider container={cnt}>{element}</ContainerProvider>);
     return {
       result,
       unmount: result.unmount,
-      rerender: (element: ReactElement) => {
+      rerender: (element: React.ReactElement) => {
         result.rerender(<ContainerProvider container={cnt}>{element}</ContainerProvider>);
       },
       getRenderedAge: (testId: string) => within(result.getByTestId(testId)).getByTestId('age').textContent,

@@ -1,10 +1,14 @@
 import { scoped, set } from 'hardwired';
-import React, { FC } from 'react';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { useDefinition } from '../../hooks/useDefinition.js';
 import { render } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
+import * as React from 'react';
+
+/**
+ * @vitest-environment happy-dom
+ */
 
 
 describe(`ContainerScope`, () => {
@@ -63,7 +67,7 @@ describe(`ContainerScope`, () => {
         return <div data-testid={testId}>{value}</div>;
       };
 
-      const TestSubject: FC<{ scope1Keys: ReadonlyArray<any>; scope2Keys: ReadonlyArray<any> }> = ({
+      const TestSubject: React.FC<{ scope1Keys: ReadonlyArray<any>; scope2Keys: ReadonlyArray<any> }> = ({
         scope1Keys,
         scope2Keys,
       }) => (
@@ -116,11 +120,11 @@ describe(`ContainerScope`, () => {
       const TestSubject = () => (
         <ContainerProvider>
           S1
-          <ContainerScope scopeOverrides={[set(baseD, 10)]}>
+          <ContainerScope overrides={[set(baseD, 10)]}>
             <ValueRenderer testId={'scope1'} />
           </ContainerScope>
           S2
-          <ContainerScope scopeOverrides={[set(baseD, 100)]}>
+          <ContainerScope overrides={[set(baseD, 100)]}>
             <ValueRenderer testId={'scope2'} />
           </ContainerScope>
         </ContainerProvider>

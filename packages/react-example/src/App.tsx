@@ -45,23 +45,23 @@ export const LabeledCounter: FC = observer(() => {
 export default () => {
   return (
     <ContainerProvider>
-      <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 1')]}>
+      <ContainerScope overrides={[set(counterLabelValueDef, 'counter 1')]}>
         <LabeledCounter />
         Within the same request scope:
         <p style={{ paddingLeft: 50 }}>
           <LabeledCounter />
         </p>
       </ContainerScope>
-      <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 2')]}>
+      <ContainerScope overrides={[set(counterLabelValueDef, 'counter 2')]}>
         <LabeledCounter />
-        <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'Nested counter 2')]}>
+        <ContainerScope overrides={[set(counterLabelValueDef, 'Nested counter 2')]}>
           <LabeledCounter />
         </ContainerScope>
       </ContainerScope>
-      <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 3')]}>
+      <ContainerScope overrides={[set(counterLabelValueDef, 'counter 3')]}>
         <LabeledCounter />
       </ContainerScope>
-      <ContainerScope scopeOverrides={[set(counterLabelValueDef, 'counter 4')]}>
+      <ContainerScope overrides={[set(counterLabelValueDef, 'counter 4')]}>
         <LabeledCounter />
       </ContainerScope>
     </ContainerProvider>

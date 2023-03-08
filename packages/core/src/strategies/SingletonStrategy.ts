@@ -1,12 +1,12 @@
 import { BuildStrategy } from './abstract/BuildStrategy.js';
 import { InstancesStore } from '../context/InstancesStore.js';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry.js';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
 export class SingletonStrategy extends BuildStrategy {
   build(
-    definition: InstanceDefinition<any, any>,
+    definition: AnyInstanceDefinition<any, any>,
     instancesCache: InstancesStore,
     definitionsRegistry: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

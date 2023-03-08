@@ -1,4 +1,4 @@
-import { request, scoped, singleton } from '../../definitions.js';
+import {  scoped, singleton } from '../../definitions.js';
 import { object } from '../object.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
@@ -49,13 +49,6 @@ describe(`object`, () => {
         const someStr = scoped.fn(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
         expect(composed.strategy).toEqual(LifeTime.scoped);
-      });
-
-      it(`uses strategy from record instance definitions, ex.3`, async () => {
-        const someNumberD = request.fn(() => 1);
-        const someStr = request.fn(() => 'str');
-        const composed = object({ num: someNumberD, str: someStr });
-        expect(composed.strategy).toEqual(LifeTime.request);
       });
     });
 

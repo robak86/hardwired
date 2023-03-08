@@ -1,7 +1,6 @@
 export type { IContainer } from './container/IContainer.js';
 export { container, Container } from './container/Container.js';
 
-export * from './strategies/RequestStrategy.js';
 export * from './strategies/SingletonStrategy.js';
 export * from './strategies/TransientStrategy.js';
 export * from './definitions/definitions.js';
@@ -30,6 +29,4 @@ export * from './definitions/sync/intersection.js';
 export * from './definitions/abstract/LifeTime.js';
 export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
 export { Resolution } from './definitions/abstract/Resolution.js';
-export { RequestContainer } from './container/RequestContainer.js';
-
-
+export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';

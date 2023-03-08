@@ -1,13 +1,15 @@
-import { container, implicit, request, set, singleton } from 'hardwired';
+import { container, implicit, scoped, set, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 import * as React from 'react';
-import { FC } from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useDefinition } from '../useDefinition.js';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
-import { ContainerRequest } from '../../components/ContainerRequest.js';
+
+/**
+ * @vitest-environment happy-dom
+ */
 
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
@@ -40,7 +42,7 @@ describe(`useDefinition`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const clsDef = request.fn(checkoutRenderId);
+      const clsDef = scoped.fn(checkoutRenderId);
 
       const Consumer = () => {
         const cls = useDefinition(clsDef);
@@ -52,17 +54,17 @@ describe(`useDefinition`, () => {
       const TestSubject = () => {
         return (
           <ContainerProvider container={c}>
-            <ContainerRequest>
+            <ContainerScope>
               <div data-testid={'consumer1'}>
                 <Consumer />
               </div>
-            </ContainerRequest>
+            </ContainerScope>
 
-            <ContainerRequest>
+            <ContainerScope>
               <div data-testid={'consumer2'}>
                 <Consumer />
               </div>
-            </ContainerRequest>
+            </ContainerScope>
           </ContainerProvider>
         );
       };
@@ -95,12 +97,12 @@ describe(`useDefinition`, () => {
   describe(`using externals`, () => {
     function setup() {
       const someExternalParam = implicit<string>('ext');
-      const val1Def = request.fn((ext: string) => `render:${checkoutRenderId()};value:${ext}`, someExternalParam);
+      const val1Def = scoped.fn((ext: string) => `render:${checkoutRenderId()};value:${ext}`, someExternalParam);
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
+      const Consumer: React.FC<{ externalValue: string }> = ({ externalValue }) => {
         const val1 = useDefinition(val1Def);
         return <DummyComponent value={val1} />;
       };
@@ -110,7 +112,7 @@ describe(`useDefinition`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (
           <ContainerProvider container={c}>
-            <ContainerScope invalidateKeys={[externalValue]} scopeOverrides={[set(someExternalParam, externalValue)]}>
+            <ContainerScope invalidateKeys={[externalValue]} overrides={[set(someExternalParam, externalValue)]}>
               <Consumer externalValue={externalValue} />
             </ContainerScope>
           </ContainerProvider>

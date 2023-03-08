@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useContext } from 'react';
+
 import { IContainer } from 'hardwired';
 
 export type ContainerContextValue = {
@@ -11,7 +11,7 @@ export const ContainerContext = React.createContext<ContainerContextValue>({
 });
 
 export const useContainerContext = (): ContainerContextValue => {
-  return useContext(ContainerContext);
+  return React.useContext(ContainerContext);
 };
 
 export const useContainer = (): IContainer => {

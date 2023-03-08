@@ -14,7 +14,7 @@ describe(`asyncFn`, () => {
       const p2Def = value('str');
 
       const fnDef = singleton.asyncPartial(fn, p1Def, p2Def);
-      const result = await container().getAsync(fnDef);
+      const result = await container().get(fnDef);
       expect(await result()).toEqual([1, 'str']);
     });
 
@@ -24,7 +24,7 @@ describe(`asyncFn`, () => {
       const p2Def = value('str');
 
       const fnDef = singleton.asyncPartial(fn, p1Def, p2Def);
-      const result = await container().getAsync(fnDef);
+      const result = await container().get(fnDef);
       expect(await result()).toEqual([1, 'str']);
     });
   });
@@ -40,7 +40,9 @@ describe(`asyncFn`, () => {
           try {
             // @ts-expect-error request does not accept implicit definitions
             const dep = asyncFn(LifeTime.singleton)(numberConsumer, implDef);
-          } catch (err) {}
+          } catch (err) {
+            //noop
+          }
         });
       });
 

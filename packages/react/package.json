@@ -1,6 +1,6 @@
 {
   "name": "hardwired-react",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/robak86/hardwired",
@@ -20,20 +20,20 @@
   },
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
+  "dependencies": {
+    "hardwired": "0.8.0"
+  },
+  "peerDependencies": {
+    "hardwired": "0.8.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "hardwired": "0.0.7"
+  },
   "files": [
     "dist",
     "README.md"
   ],
-  "peerDependencies": {
-    "hardwired": "0.7.0",
-    "react": "^17.0.0"
-  },
-  "devDependencies": {
-    "hardwired": "0.7.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "git@github.com:robak86/hardwired.git"

@@ -1,22 +1,26 @@
 import { replace, scoped, value } from 'hardwired';
-import { withContainer, withRequest, withScope } from '../withContainer.js';
-import { useDefinition } from '../useDefinition.js';
+
+import { use } from '../use.js';
 import { describe, expect, it } from 'vitest';
+import { withScope } from '../withScope.js';
+import { withContainer } from '../withContainer.js';
 
 describe(`AsyncContext`, () => {
   it(`works`, async () => {
     const someValue = scoped.fn(() => Math.random());
+
     const result = await withContainer(async () => {
       const collected: number[] = [];
 
-      collected.push(useDefinition(someValue));
+      collected.push(use(someValue));
+      collected.push(use(someValue));
 
-      withRequest(() => {
-        collected.push(useDefinition(someValue));
+      withScope(() => {
+        collected.push(use(someValue));
       });
 
       await withScope(async () => {
-        collected.push(useDefinition(someValue));
+        collected.push(use(someValue));
       });
 
       return collected;
@@ -24,6 +28,7 @@ describe(`AsyncContext`, () => {
 
     expect(result[0]).toEqual(result[1]);
     expect(result[1]).not.toEqual(result[2]);
+    expect(result[2]).not.toEqual(result[3]);
   });
 
   it(`works with overrides`, async () => {
@@ -32,12 +37,12 @@ describe(`AsyncContext`, () => {
     const result = await withContainer(async () => {
       const collected: number[] = [];
 
-      collected.push(useDefinition(someValue));
+      collected.push(use(someValue));
 
-      withRequest(() => collected.push(useDefinition(someValue)));
+      withScope(() => collected.push(use(someValue)));
 
       await withScope([replace(someValue, value(2))], async () => {
-        collected.push(useDefinition(someValue));
+        collected.push(use(someValue));
       });
 
       return collected;

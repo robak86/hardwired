@@ -1,18 +1,17 @@
 import * as React from 'react';
-import { FunctionComponent, PropsWithChildren, useRef } from 'react';
-import { Container, container as buildContainer } from 'hardwired';
-import { ContainerContext, ContainerContextValue } from '../context/ContainerContext.js';
+
+import {container as buildContainer, IContainer} from 'hardwired';
+import {ContainerContext, ContainerContextValue} from '../context/ContainerContext.js';
 
 export type ContainerProviderProps = {
-  container?: Container;
-
+  container?: IContainer
 };
 
-export const ContainerProvider: FunctionComponent<ContainerProviderProps & PropsWithChildren> = ({
+export const ContainerProvider: React.FC<ContainerProviderProps & React.PropsWithChildren> = ({
   children,
   container,
 }) => {
-  const containerInstance = useRef<ContainerContextValue | null>();
+  const containerInstance = React.useRef<ContainerContextValue | null>();
 
   if (!containerInstance.current) {
     containerInstance.current = {

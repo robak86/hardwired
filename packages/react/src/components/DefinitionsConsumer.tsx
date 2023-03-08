@@ -1,10 +1,10 @@
-import { ReactElement } from 'react';
+
 import { InstanceDefinition, InstancesArray } from 'hardwired';
 import { useDefinitions } from '../hooks/useDefinitions.js';
 
 export type DefinitionsConsumerProps<TInstanceDefinitions extends InstanceDefinition<any, any>[]> = {
   definitions: TInstanceDefinitions;
-  render: (...moduleAsObject: InstancesArray<TInstanceDefinitions>) => ReactElement;
+  render: (...moduleAsObject: InstancesArray<TInstanceDefinitions>) => React.ReactElement;
 };
 
 export function DefinitionsConsumer<TInstances extends InstanceDefinition<any, any>[]>({

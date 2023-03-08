@@ -1,20 +1,22 @@
-import { container, implicit, request, set, singleton } from 'hardwired';
+import { container, implicit, scoped, set, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 import * as React from 'react';
-import { FC } from 'react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useDefinitions } from '../useDefinitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
-import { ContainerRequest } from '../../components/ContainerRequest.js';
+
+/**
+ * @vitest-environment happy-dom
+ */
 
 describe(`useDefinitions`, () => {
   describe(`types`, () => {
     it(`returns correct types`, async () => {
-      const val1Def = request.fn(() => 'someString');
-      const val2Def = request.fn(() => 123);
+      const val1Def = scoped.fn(() => 'someString');
+      const val2Def = scoped.fn(() => 123);
 
       const Component = () => {
         const [val1, val2] = useDefinitions([val1Def, val2Def]);
@@ -25,8 +27,8 @@ describe(`useDefinitions`, () => {
 
     it(`returns correct types using externals`, async () => {
       const ext = implicit<boolean>('ext');
-      const val1Def = request.fn(b => 'someString', ext);
-      const val2Def = request.fn(b => 123, ext);
+      const val1Def = scoped.fn(b => 'someString', ext);
+      const val2Def = scoped.fn(b => 123, ext);
 
       const Component = () => {
         try {
@@ -70,7 +72,7 @@ describe(`useDefinitions`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const clsDef = request.fn(checkoutRenderId);
+      const clsDef = scoped.fn(checkoutRenderId);
 
       const Consumer = () => {
         const [cls] = useDefinitions([clsDef]);
@@ -82,17 +84,17 @@ describe(`useDefinitions`, () => {
       const TestSubject = () => {
         return (
           <ContainerProvider container={c}>
-            <ContainerRequest>
+            <ContainerScope>
               <div data-testid={'consumer1'}>
                 <Consumer />
               </div>
-            </ContainerRequest>
+            </ContainerScope>
 
-            <ContainerRequest>
+            <ContainerScope>
               <div data-testid={'consumer2'}>
                 <Consumer />
               </div>
-            </ContainerRequest>
+            </ContainerScope>
           </ContainerProvider>
         );
       };
@@ -125,13 +127,13 @@ describe(`useDefinitions`, () => {
   describe(`using externals`, () => {
     function setup() {
       const someExternalParam = implicit<string>('ext');
-      const val1Def = request.fn((ext: string) => `def:1,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
-      const val2Def = request.fn((ext: string) => `def:2,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
+      const val1Def = scoped.fn((ext: string) => `def:1,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
+      const val2Def = scoped.fn((ext: string) => `def:2,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
+      const Consumer: React.FC<{ externalValue: string }> = ({ externalValue }) => {
         const values = useDefinitions([val1Def, val2Def]);
         return <DummyComponent value={values.join('|')} />;
       };
@@ -141,7 +143,7 @@ describe(`useDefinitions`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (
           <ContainerProvider container={c}>
-            <ContainerScope scopeOverrides={[set(someExternalParam, externalValue)]} invalidateKeys={[externalValue]}>
+            <ContainerScope overrides={[set(someExternalParam, externalValue)]} invalidateKeys={[externalValue]}>
               <h1>{externalValue}</h1>
               <Consumer externalValue={externalValue} />
             </ContainerScope>

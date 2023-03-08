@@ -110,7 +110,7 @@ describe(`SingletonStrategy`, () => {
         const c = ContainerContext.empty();
 
         const patchedA = set(a, 2);
-        const childC = c.checkoutScope({ scopeOverrides: [patchedA] });
+        const childC = c.checkoutScope({ overrides: [patchedA] });
 
         expect(childC.get(a)).toEqual(2);
         expect(c.get(a)).toEqual(1);
@@ -123,7 +123,7 @@ describe(`SingletonStrategy`, () => {
 
         const patchedA = set(a, 2);
 
-        const level1 = root.checkoutScope({ scopeOverrides: [patchedA] });
+        const level1 = root.checkoutScope({ overrides: [patchedA] });
         const level2 = level1.checkoutScope({});
 
         expect(level2.get(a)).toEqual(2);
@@ -148,7 +148,7 @@ describe(`SingletonStrategy`, () => {
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope();
-        const level2 = level1.checkoutScope({ scopeOverrides: [set(a, 1)] });
+        const level2 = level1.checkoutScope({ overrides: [set(a, 1)] });
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.get(a); // important that level1 is called as first
@@ -168,11 +168,11 @@ describe(`SingletonStrategy`, () => {
         const a = singleton.fn(randomFactorySpy);
 
         const root = ContainerContext.empty();
-        const level1 = root.checkoutScope({ scopeOverrides: [set(a, 1)] });
-        const level2 = level1.checkoutScope({ scopeOverrides: [set(a, 2)] });
+        const level1 = root.checkoutScope({ overrides: [set(a, 1)] });
+        const level2 = level1.checkoutScope({ overrides: [set(a, 2)] });
         const level3 = level2.checkoutScope();
 
-        const level3Call = level3.get(a); // important that level1 is called as first
+        const level3Call = level3.get(a);
         const level2Call = level2.get(a);
         const level1Call = level1.get(a);
         const rootCall = root.get(a);
@@ -194,7 +194,7 @@ describe(`SingletonStrategy`, () => {
         const c = ContainerContext.create([], [invariantPatch]);
         expect(c.get(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
+        const childScope = c.checkoutScope({ overrides: [childScopePatch] });
         expect(childScope.get(k1)).toEqual(1);
       });
 
@@ -209,7 +209,7 @@ describe(`SingletonStrategy`, () => {
 
         expect(c.get(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ scopeOverrides: [childScopePatch] });
+        const childScope = c.checkoutScope({ overrides: [childScopePatch] });
         expect(childScope.get(k1)).toEqual(1);
         expect(childScope.get(k2)).toEqual(2);
       });
@@ -237,7 +237,7 @@ describe(`SingletonStrategy`, () => {
           }
 
           const asyncDef = singleton.asyncClass(NoArgsCls);
-          const result = await container().getAsync(asyncDef);
+          const result = await container().get(asyncDef);
           expect(result).toBeInstanceOf(NoArgsCls);
         });
       });
@@ -247,7 +247,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDep = singleton.asyncFn(async () => 123);
           const syncDep = singleton.fn(() => 'str');
           const asyncDef = singleton.asyncClass(TestClassArgs2, asyncDep, syncDep);
-          const result = await container().getAsync(asyncDef);
+          const result = await container().get(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -256,7 +256,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDep = singleton.asyncFn(async () => 123);
           const syncDep = singleton.asyncFn(async () => 'str');
           const asyncDef = singleton.asyncClass(TestClassArgs2, asyncDep, syncDep);
-          const result = await container().getAsync(asyncDef);
+          const result = await container().get(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -265,7 +265,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDep = singleton.fn(() => 123);
           const syncDep = singleton.fn(() => 'str');
           const asyncDef = singleton.asyncClass(TestClassArgs2, asyncDep, syncDep);
-          const result = await container().getAsync(asyncDef);
+          const result = await container().get(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -276,7 +276,7 @@ describe(`SingletonStrategy`, () => {
       describe(`no dependencies`, () => {
         it(`returns correct value`, async () => {
           const asyncDef = singleton.asyncFn(async () => 123);
-          const result = await container().getAsync(asyncDef);
+          const result = await container().get(asyncDef);
           expect(result).toEqual(123);
         });
       });
@@ -288,7 +288,7 @@ describe(`SingletonStrategy`, () => {
             const syncDep = singleton.fn(() => 'str');
 
             const asyncDef = singleton.asyncFn(async (a: number, b: string) => [a, b], asyncDep, syncDep);
-            const result = await container().getAsync(asyncDef);
+            const result = await container().get(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -299,7 +299,7 @@ describe(`SingletonStrategy`, () => {
             const syncDep = singleton.asyncFn(async () => 'str');
 
             const asyncDef = singleton.asyncFn(async (a: number, b: string) => [a, b], asyncDep, syncDep);
-            const result = await container().getAsync(asyncDef);
+            const result = await container().get(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -310,7 +310,7 @@ describe(`SingletonStrategy`, () => {
             const syncDep = singleton.fn(() => 'str');
 
             const asyncDef = singleton.asyncFn(async (a: number, b: string) => [a, b], asyncDep, syncDep);
-            const result = await container().getAsync(asyncDef);
+            const result = await container().get(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -323,7 +323,7 @@ describe(`SingletonStrategy`, () => {
           const consumer2 = singleton.asyncFn(async s => s, slowSingleton);
           const ctn = container();
 
-          const [result1, result2] = await Promise.all([ctn.getAsync(consumer1), ctn.getAsync(consumer2)]);
+          const [result1, result2] = await Promise.all([ctn.get(consumer1), ctn.get(consumer2)]);
 
           expect(result1).toBe(result2);
         });
@@ -340,7 +340,7 @@ describe(`SingletonStrategy`, () => {
           );
 
           const ctn = container({ globalOverrides: [patch] });
-          const [result1, result2] = await Promise.all([ctn.getAsync(consumer1), ctn.getAsync(consumer2)]);
+          const [result1, result2] = await Promise.all([ctn.get(consumer1), ctn.get(consumer2)]);
           expect(result1.value).toEqual(123);
           expect(result2.value).toEqual(123);
         });
@@ -351,7 +351,7 @@ describe(`SingletonStrategy`, () => {
       describe(`no dependencies`, () => {
         it(`returns correct value`, async () => {
           const asyncDef = singleton.asyncPartial(async () => 123);
-          const result = await container().getAsync(asyncDef);
+          const result = await container().get(asyncDef);
           // this looks like it could be resolved synchronously, but in order to bind async args they needs to be awaited, therefore returning the partially applied fn also needs to be awaited
           expect(await result()).toEqual(123);
         });
@@ -359,7 +359,7 @@ describe(`SingletonStrategy`, () => {
         it(`returns correct value, ex.2`, async () => {
           const asyncDef = singleton.asyncPartial(async () => 123);
           const asyncConsumer = singleton.asyncFn(async def => new BoxedValue(def), asyncDef);
-          const result = await container().getAsync(asyncConsumer);
+          const result = await container().get(asyncConsumer);
           expect(await result.value()).toEqual(123);
         });
       });
@@ -375,7 +375,7 @@ describe(`SingletonStrategy`, () => {
               asyncDep,
               syncDep,
             );
-            const fn = await container().getAsync(asyncDef);
+            const fn = await container().get(asyncDef);
             expect(await fn('str2')).toEqual([123, 'str', 'str2']);
           });
         });
@@ -386,7 +386,7 @@ describe(`SingletonStrategy`, () => {
             const syncDep = singleton.asyncFn(async () => 'str');
 
             const asyncDef = singleton.asyncFn(async (a: number, b: string) => [a, b], asyncDep, syncDep);
-            const result = await container().getAsync(asyncDef);
+            const result = await container().get(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -401,7 +401,7 @@ describe(`SingletonStrategy`, () => {
               asyncDep,
               syncDep,
             );
-            const result = await container().getAsync(asyncDef);
+            const result = await container().get(asyncDef);
             expect(await result('str2')).toEqual([123, 'str', 'str2']);
           });
         });
@@ -414,7 +414,7 @@ describe(`SingletonStrategy`, () => {
           const consumer2 = singleton.asyncFn(async s => s, slowSingleton);
           const ctn = container();
 
-          const [result1, result2] = await Promise.all([ctn.getAsync(consumer1), ctn.getAsync(consumer2)]);
+          const [result1, result2] = await Promise.all([ctn.get(consumer1), ctn.get(consumer2)]);
 
           expect(result1).toBe(result2);
         });
@@ -454,7 +454,7 @@ describe(`SingletonStrategy`, () => {
           );
 
           const ctn = container({ globalOverrides: [patch1, patch2] });
-          const [result1, result2] = await Promise.all([ctn.getAsync(consumer1), ctn.getAsync(consumer2)]);
+          const [result1, result2] = await Promise.all([ctn.get(consumer1), ctn.get(consumer2)]);
           expect(await result1('irrelevant')).toEqual([new BoxedValue('singleton'), 'replaced']);
           expect(await result2('irrelevant')).toEqual([new BoxedValue('singleton'), 'replaced']);
         });

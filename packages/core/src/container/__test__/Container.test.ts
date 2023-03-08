@@ -1,10 +1,14 @@
-import { request, singleton } from '../../definitions/definitions.js';
+import { scoped, singleton } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
 import { set } from '../../patching/set.js';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
+import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
+import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -26,7 +30,7 @@ describe(`Container`, () => {
           singleton.fn(() => 2),
         );
 
-        expect(container({ scopeOverrides: [mPatch] }).get(a)).toEqual(2);
+        expect(container({ overrides: [mPatch] }).get(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
@@ -37,7 +41,7 @@ describe(`Container`, () => {
           a,
           singleton.fn(() => 2),
         );
-        expect(container({ scopeOverrides: [mPatch] }).get(b)).toEqual('b');
+        expect(container({ overrides: [mPatch] }).get(b)).toEqual('b');
       });
     });
   });
@@ -83,8 +87,8 @@ describe(`Container`, () => {
 
   describe(`getAll`, () => {
     it(`returns array of instances`, async () => {
-      const a = request.fn(() => 1);
-      const b = request.fn(() => 2);
+      const a = scoped.fn(() => 1);
+      const b = scoped.fn(() => 2);
 
       const c = container();
       const [aInstance, bInstance] = c.getAll([a, b]);
@@ -94,10 +98,10 @@ describe(`Container`, () => {
 
     it(`allows using external params`, async () => {
       const extD = implicit<BoxedValue<number>>('ext');
-      const multiplyBy2D = request.fn((val: BoxedValue<number>) => val.value * 2, extD);
-      const divideBy2D = request.fn((val: BoxedValue<number>) => val.value / 2, extD);
+      const multiplyBy2D = scoped.fn((val: BoxedValue<number>) => val.value * 2, extD);
+      const divideBy2D = scoped.fn((val: BoxedValue<number>) => val.value / 2, extD);
       const [val1, val2] = container()
-        .checkoutScope({ scopeOverrides: [set(extD, new BoxedValue(10))] })
+        .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
         .getAll([multiplyBy2D, divideBy2D]);
       expect(val1).toEqual(20);
       expect(val2).toEqual(5);
@@ -107,21 +111,21 @@ describe(`Container`, () => {
       const extD = implicit<BoxedValue<number>>('ext');
 
       let count = 0;
-      const requestSharedValD = request.fn(() => (count += 1));
-      const multiplyBy2D = request.fn(
+      const scopeSharedValD = scoped.fn(() => (count += 1));
+      const multiplyBy2D = scoped.fn(
         (val: BoxedValue<number>, sharedVal: number) => ({ result: val.value * 2, shared: sharedVal }),
         extD,
-        requestSharedValD,
+        scopeSharedValD,
       );
-      const divideBy2D = request.fn(
+      const divideBy2D = scoped.fn(
         (val: BoxedValue<number>, sharedVal: number) => ({ result: val.value / 2, shared: sharedVal }),
         extD,
-        requestSharedValD,
+        scopeSharedValD,
       );
 
       const [req1, req2] = container()
-          .checkoutScope({ scopeOverrides: [set(extD, new BoxedValue(10))] })
-          .getAll([multiplyBy2D, divideBy2D]);
+        .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
+        .getAll([multiplyBy2D, divideBy2D]);
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);
 
@@ -131,13 +135,131 @@ describe(`Container`, () => {
 
   describe(`getAllAsync`, () => {
     it(`returns array of instances`, async () => {
-      const a = request.asyncFn(async () => 1);
-      const b = request.asyncFn(async () => 2);
+      const a = scoped.asyncFn(async () => 1);
+      const b = scoped.asyncFn(async () => 2);
 
       const c = container();
       const [aInstance, bInstance] = await c.getAllAsync([a, b]);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
+    });
+  });
+
+  describe(`interceptors`, () => {
+    describe(`interceptors for checkoutRequestScope`, () => {
+      it(`does not inherit interceptors`, async () => {
+        const def = singleton.fn(() => 123);
+        const interceptSyncSpy = vi.fn();
+        const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } }).checkoutScope();
+        ctn.get(def);
+        expect(interceptSyncSpy).not.toBeCalled();
+      });
+
+      it(`does not call parent interceptors`, async () => {
+        const def = singleton.fn(() => 123);
+        const interceptSyncParentSpy = vi.fn();
+        const interceptSyncReqSpy = vi.fn();
+
+        const ctn = container({ interceptors: { interceptSync: interceptSyncParentSpy } }).checkoutScope({
+          interceptors: { interceptSync: interceptSyncReqSpy },
+        });
+        ctn.get(def);
+        expect(interceptSyncParentSpy).not.toBeCalled();
+        expect(interceptSyncReqSpy).toBeCalled();
+      });
+    });
+
+    describe(`sync`, () => {
+      describe(`no deps`, () => {
+        it(`is called with created instance`, async () => {
+          const def = singleton.fn(() => 123);
+
+          const interceptSyncSpy = vi.fn();
+          const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } });
+          ctn.get(def);
+          expect(interceptSyncSpy).toBeCalledWith(123, def, expect.any(ContainerContext));
+        });
+
+        it(`is called only once preserving singleton strategy`, async () => {
+          const def = singleton.fn(() => 123);
+
+          const interceptSyncSpy = vi.fn(val => val);
+          const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } });
+          ctn.get(def);
+          ctn.get(def);
+          expect(interceptSyncSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it(`is called multiple times preserving request strategy`, async () => {
+          const def = scoped.fn(() => 123);
+
+          const interceptSyncSpy = vi.fn();
+          const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } });
+          ctn.get(def);
+          ctn.get(def);
+          expect(interceptSyncSpy).toHaveBeenCalledTimes(2);
+        });
+
+        it(`returns intercepted value`, async () => {
+          const def = singleton.fn(() => 123);
+
+          const interceptSyncSpy = vi.fn(
+            <T>(val: T, def: InstanceDefinition<T, any>, ctx: InstancesBuilder): T => 456 as T,
+          );
+          const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } });
+
+          expect(ctn.get(def)).toEqual(456);
+        });
+      });
+    });
+    describe(`async`, () => {
+      describe(`no deps`, () => {
+        it(`is called with created instance`, async () => {
+          const def = singleton.asyncFn(async () => 123);
+
+          const interceptAsyncSpy = vi.fn();
+          const ctn = container({ interceptors: { interceptAsync: interceptAsyncSpy } });
+          await ctn.get(def);
+          expect(interceptAsyncSpy).toBeCalledWith(123, def, expect.any(ContainerContext));
+        });
+
+        it(`works with sync factory`, async () => {
+          const def = singleton.asyncFn(() => 123);
+
+          const interceptAsyncSpy = vi.fn();
+          const ctn = container({ interceptors: { interceptAsync: interceptAsyncSpy } });
+          await ctn.get(def);
+          expect(interceptAsyncSpy).toBeCalledWith(123, def, expect.any(ContainerContext));
+        });
+
+        it(`returns intercepted value`, async () => {
+          const def = singleton.asyncFn(() => 123);
+
+          const interceptAsyncSpy = vi.fn(
+            <T>(val: T, def: AsyncInstanceDefinition<T, any>, ctx: InstancesBuilder): T => 456 as T,
+          );
+          const ctn = container({ interceptors: { interceptAsync: interceptAsyncSpy } });
+
+          expect(await ctn.get(def)).toEqual(456);
+        });
+      });
+
+      describe(`with deps`, () => {
+        it(`it calls interceptor on dependency definition`, async () => {
+          const def1 = singleton.asyncFn(async () => 123);
+          const def2 = singleton.asyncFn(async (n1: number) => n1 + 1000, def1);
+
+          const interceptAsyncSpy = vi.fn(
+            <T>(val: T, def: AsyncInstanceDefinition<T, any>, ctx: InstancesBuilder): T => val,
+          );
+          const ctn = container({ interceptors: { interceptAsync: interceptAsyncSpy } });
+
+          await ctn.get(def2);
+          expect(interceptAsyncSpy).toHaveBeenCalledTimes(2);
+          expect(interceptAsyncSpy.mock.calls[0]).toEqual([123, def1, expect.any(ContainerContext)]);
+          expect(interceptAsyncSpy.mock.calls[1]).toEqual([1123, def2, expect.any(ContainerContext)]);
+        });
+      });
     });
   });
 
@@ -157,14 +279,14 @@ describe(`Container`, () => {
 
   describe(`.checkoutRequestScope`, () => {
     it(`returns clear request scope`, async () => {
-      const requestVal = request.fn(() => new BoxedValue(Math.random()));
+      const scopedVal = scoped.fn(() => new BoxedValue(Math.random()));
 
       const cnt = container();
-      const reqCnt1 = cnt.checkoutRequestScope();
-      const reqCnt2 = cnt.checkoutRequestScope();
+      const reqCnt1 = cnt.checkoutScope();
+      const reqCnt2 = cnt.checkoutScope();
 
-      const result1 = reqCnt1.get(requestVal);
-      const result2 = reqCnt2.get(requestVal);
+      const result1 = reqCnt1.get(scopedVal);
+      const result2 = reqCnt2.get(scopedVal);
 
       expect(result1).not.toBe(result2);
     });
