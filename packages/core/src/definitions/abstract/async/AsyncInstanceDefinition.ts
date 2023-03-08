@@ -27,6 +27,16 @@ export function asyncDefinition<TInstance, TLifeTime extends LifeTime>({
   };
 }
 
+// TODO: is this check really necessary? perf ?
+export const isAsyncInstanceDef = (val: any): val is AsyncInstanceDefinition<any, any> => {
+  return (
+    typeof val.id === 'string' &&
+    val.resolution === Resolution.async &&
+    typeof val.strategy === 'string' &&
+    val.create instanceof Function
+  );
+};
+
 // prettier-ignore
 export type AsyncInstance<T extends AsyncInstanceDefinition<any, any>> =
     T extends AsyncInstanceDefinition<infer T, any> ? T : unknown;

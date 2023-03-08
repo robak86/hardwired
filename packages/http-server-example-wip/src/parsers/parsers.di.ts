@@ -1,5 +1,5 @@
-import { request } from 'hardwired';
-import { jsonParams } from './jsonParser.js';
-import { requestContextD } from '../helpers/server/requestContext.js';
+import {jsonParams} from './jsonParser.js';
+import {requestContextD} from '../helpers/server/requestContext.js';
+import {scoped} from 'hardwired';
 
-export const jsonParamsD = request.asyncFn(jsonParams, requestContextD);
+export const jsonParamsD = scoped.asyncFn(jsonParams, requestContextD);

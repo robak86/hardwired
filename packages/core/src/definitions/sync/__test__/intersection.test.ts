@@ -1,4 +1,4 @@
-import { request, scoped, singleton } from '../../definitions.js';
+import { scoped, singleton } from '../../definitions.js';
 import { intersection } from '../intersection.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
@@ -15,9 +15,9 @@ describe(`intersection`, () => {
       const obj2 = singleton.fn(() => ({ b: 1 }));
       const combined = intersection(obj1, obj2);
 
-      expectType<
-        TypeEqual<typeof combined, InstanceDefinition<{ a: number } & { b: number }, LifeTime.singleton>>
-      >(true);
+      expectType<TypeEqual<typeof combined, InstanceDefinition<{ a: number } & { b: number }, LifeTime.singleton>>>(
+        true,
+      );
     });
   });
 
@@ -55,13 +55,6 @@ describe(`intersection`, () => {
         const someStr = scoped.fn(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
         expect(combined.strategy).toEqual(LifeTime.scoped);
-      });
-
-      it(`uses strategy from record instance definitions, ex.3`, async () => {
-        const someNumberD = request.fn(() => 1);
-        const someStr = request.fn(() => 'str');
-        const combined = object({ num: someNumberD, str: someStr });
-        expect(combined.strategy).toEqual(LifeTime.request);
       });
     });
 

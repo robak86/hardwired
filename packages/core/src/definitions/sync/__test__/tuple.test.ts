@@ -1,4 +1,4 @@
-import { request, scoped, singleton } from '../../definitions.js';
+import { scoped, singleton } from '../../definitions.js';
 import { object } from '../object.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
@@ -7,7 +7,7 @@ import { set } from '../../../patching/set.js';
 import { value } from '../value.js';
 import { tuple } from '../tuple.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 describe(`object`, () => {
   it(`returns definition with correct type`, async () => {
@@ -49,13 +49,6 @@ describe(`object`, () => {
         const someStr = scoped.fn(() => 'str');
         const composed = tuple(someNumberD, someStr);
         expect(composed.strategy).toEqual(LifeTime.scoped);
-      });
-
-      it(`uses strategy from record instance definitions, ex.3`, async () => {
-        const someNumberD = request.fn(() => 1);
-        const someStr = request.fn(() => 'str');
-        const composed = tuple(someNumberD, someStr);
-        expect(composed.strategy).toEqual(LifeTime.request);
       });
     });
 

@@ -1,9 +1,13 @@
 import { singleton } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
-import React from 'react';
+import * as React from 'react';
 import { DefinitionsConsumer } from '../DefinitionsConsumer.js';
 import { render } from '@testing-library/react';
-import {describe, expect, it, vi} from 'vitest'
+import { describe, expect, it, vi } from 'vitest';
+
+/**
+ * @vitest-environment happy-dom
+ */
 
 describe(`InstancesConsumer`, () => {
   describe(`nesting modules`, () => {

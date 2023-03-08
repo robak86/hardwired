@@ -16,7 +16,9 @@ describe(`fn`, () => {
           try {
             // @ts-expect-error request does not accept implicit definitions
             const dep = fn(LifeTime.singleton)(numberConsumer, implDef);
-          } catch (err) {}
+          } catch (err) {
+            //noop
+          }
         });
       });
 

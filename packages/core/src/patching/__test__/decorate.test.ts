@@ -1,19 +1,19 @@
 import { set } from '../set.js';
 import { container } from '../../container/Container.js';
-import { request, scoped, singleton, transient } from '../../definitions/definitions.js';
+import { scoped, singleton, transient } from '../../definitions/definitions.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
 import { object } from '../../definitions/sync/object.js';
 import { value } from '../../definitions/sync/value.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { describe, it, expect, vi } from 'vitest';
-
+import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 describe(`decorate`, () => {
   it(`decorates original value`, async () => {
     const someValue = value(1);
 
-    const c = container({ scopeOverrides: [decorate(someValue, val => val + 1)] });
+    const c = container({ overrides: [decorate(someValue, val => val + 1)] });
     expect(c.get(someValue)).toEqual(2);
   });
 
@@ -22,7 +22,7 @@ describe(`decorate`, () => {
     const mPatch = decorate(someValue, val => val + 1);
 
     expect(container().get(someValue)).toEqual(1);
-    expect(container({ scopeOverrides: [mPatch] }).get(someValue)).toEqual(2);
+    expect(container({ overrides: [mPatch] }).get(someValue)).toEqual(2);
   });
 
   it(`allows for multiple decorations`, async () => {
@@ -32,7 +32,7 @@ describe(`decorate`, () => {
       val => val * 3,
     );
 
-    const c = container({ scopeOverrides: [mPatch] });
+    const c = container({ overrides: [mPatch] });
     expect(c.get(someValue)).toEqual(6);
   });
 
@@ -43,7 +43,7 @@ describe(`decorate`, () => {
 
     const mPatch = decorate(someValue, (val, a: number, b: number) => val + a + b, a, b);
 
-    const c = container({ scopeOverrides: [mPatch] });
+    const c = container({ overrides: [mPatch] });
     expect(c.get(someValue)).toEqual(13);
   });
 
@@ -54,7 +54,7 @@ describe(`decorate`, () => {
 
     const mPatch = decorate(someValue, (val, b) => val * b, b);
 
-    const c = container({ scopeOverrides: [mPatch] });
+    const c = container({ overrides: [mPatch] });
     expect(c.get(someValue)).toEqual(6);
   });
 
@@ -63,7 +63,7 @@ describe(`decorate`, () => {
       const a = singleton.fn(() => Math.random());
       const mPatch = decorate(a, a => a);
 
-      const c = container({ scopeOverrides: [mPatch] });
+      const c = container({ overrides: [mPatch] });
       expect(c.get(a)).toEqual(c.get(a));
     });
 
@@ -72,36 +72,34 @@ describe(`decorate`, () => {
 
       const mPatch = decorate(a, a => a);
 
-      const c = container({ scopeOverrides: [mPatch] });
+      const c = container({ overrides: [mPatch] });
       expect(c.get(a)).not.toEqual(c.get(a));
     });
 
-    it(`uses different request scope for each subsequent asObject call`, async () => {
-      const source = request.fn(() => Math.random());
-      const a = request.fn((source: number) => source, source);
+    it(`uses correct scope`, async () => {
+      const source = scoped.fn(() => Math.random());
+      const a = scoped.fn((source: number) => source, source);
 
       const mPatch = decorate(a, a => a);
 
-      const c = container({ scopeOverrides: [mPatch] });
+      const c = container({ overrides: [mPatch] });
       const obj1 = object({ source, a });
-      const obj2 = object({ source, a });
-      const req1 = c.get(obj1);
-      const req2 = c.get(obj2);
 
-      expect(req1.source).toEqual(req1.a);
-      expect(req2.source).toEqual(req2.a);
-      expect(req1.source).not.toEqual(req2.source);
-      expect(req1.a).not.toEqual(req2.a);
+      const req1 = c.get(obj1);
+      const req2 = c.get(obj1);
+
+      expect(obj1.strategy).toEqual(LifeTime.scoped);
+      expect(req1).toBe(req2);
     });
 
-    it(`does not cache produced object`, async () => {
-      const a = request.fn(() => Math.random());
+    it(`caches produced object`, async () => {
+      const a = scoped.fn(() => Math.random());
 
       const c = container();
       const obj1 = c.get(a);
       const obj2 = c.get(a);
 
-      expect(obj1).not.toBe(obj2);
+      expect(obj1).toBe(obj2);
     });
   });
 
@@ -115,7 +113,7 @@ describe(`decorate`, () => {
       const replaced = set(instanceDef, { callMe: () => {} });
 
       const scope1 = ContainerContext.create([], [mPatch]);
-      const scope2 = scope1.checkoutScope({ scopeOverrides: [replaced] });
+      const scope2 = scope1.checkoutScope({ overrides: [replaced] });
       const instance1 = scope1.get(instanceDef);
       const instance2 = scope2.get(instanceDef);
       return { instance1, instance2 };
@@ -157,7 +155,7 @@ describe(`decorate`, () => {
 
     describe(`apply on request definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(request.class(MyService));
+        const { instance1, instance2 } = setup(scoped.class(MyService));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

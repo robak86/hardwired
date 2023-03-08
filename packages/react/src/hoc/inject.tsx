@@ -1,5 +1,6 @@
 import { InstanceDefinition } from 'hardwired';
-import React, { FC } from 'react';
+
+import * as React from 'react';
 import { Optional } from 'utility-types';
 import { useDefinitions } from '../hooks/useDefinitions.js';
 
@@ -7,17 +8,17 @@ export const inject =
   <TDefinitions extends Record<string, InstanceDefinition<any, any>>>(definitions: TDefinitions) =>
   <
     TProps extends {
-      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any>
-        ? TInstance
-        : never;
+      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : never;
     },
   >(
-    Component: FC<TProps>,
-  ): FC<Optional<TProps, keyof TDefinitions>> => {
-    const definitionsKeys = Object.keys(definitions);
+    Component: React.FC<TProps>,
+  ): React.FC<Optional<TProps, keyof TDefinitions>> => {
+    const definitionKeys = Object.keys(definitions);
 
-    return props => {
-      const definitionKeysForInject = definitionsKeys.filter(key => {
+    return InjectWrapper;
+
+    function InjectWrapper(props: Optional<TProps, keyof TDefinitions>) {
+      const definitionKeysForInject = definitionKeys.filter(key => {
         return !props[key];
       });
 
@@ -30,5 +31,5 @@ export const inject =
       });
 
       return <Component {...instancesObj} {...(props as any)} />;
-    };
+    }
   };

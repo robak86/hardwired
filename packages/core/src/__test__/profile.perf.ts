@@ -37,7 +37,7 @@ function resolveByObject(container: Container, def: InstanceDefinition<any, any>
   const result = {
     avg: -1,
     max: -1,
-    min: 9999999999999999,
+    min: Infinity,
   };
 
   const items: number[] = [];

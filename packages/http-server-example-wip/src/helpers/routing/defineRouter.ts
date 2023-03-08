@@ -10,7 +10,7 @@ export const defineRouter = (
   ...handlers: [
     method: HTTPMethod,
     path: string,
-    responseFactory: AnyInstanceDefinition<ResponseEffect, LifeTime.request>,
+    responseFactory: AnyInstanceDefinition<ResponseEffect, LifeTime.scoped>,
   ][]
 ) => {
   return singleton.define(locator => {
@@ -18,7 +18,7 @@ export const defineRouter = (
 
     const factories = handlers.map(
       ([method, path, responseDef]) =>
-        [method, path, asyncFactory(responseDef as AnyInstanceDefinition<ResponseEffect, LifeTime.request>)] as const,
+        [method, path, asyncFactory(responseDef as AnyInstanceDefinition<ResponseEffect, LifeTime.scoped>)] as const,
     );
 
     throw new Error('Implement me!');

@@ -19,7 +19,9 @@ describe(`asyncClass`, () => {
             try {
               // @ts-expect-error singleton does not accept implicit definitions
               const dep = asyncClass(LifeTime.singleton)(NumberConsumer, implDef);
-            } catch (e) {}
+            } catch (e) {
+              // nothing to do here
+            }
           });
         });
 

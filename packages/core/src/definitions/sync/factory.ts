@@ -11,7 +11,6 @@ import { set } from '../../patching/set.js';
 export type FactoryDefinition<TValue> =
     | InstanceDefinition<TValue, LifeTime.singleton>
     | InstanceDefinition<TValue, LifeTime.transient>
-    | InstanceDefinition<TValue, LifeTime.request>
     | InstanceDefinition<TValue, LifeTime.scoped>
 
 export type IFactory<TReturn, TParams extends any[]> = {
@@ -45,7 +44,7 @@ export const factory: FactoryBuildFn = (definition: any, ...dependencies: Instan
           }
 
           const scopedContext = context.checkoutScope({
-            scopeOverrides: dependencies.map((dep, idx) => set(dep, params[idx])),
+            overrides: dependencies.map((dep, idx) => set(dep, params[idx])),
           });
           return scopedContext.get(definition);
         },

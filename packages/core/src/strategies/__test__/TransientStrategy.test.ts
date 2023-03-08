@@ -46,19 +46,19 @@ describe(`ClassTransientResolver`, () => {
 
     it(`returns class instance`, async () => {
       const c = container();
-      expect(await c.getAsync(a)).toBeInstanceOf(TestClass);
+      expect(await c.get(a)).toBeInstanceOf(TestClass);
     });
 
     it(`constructs class with correct dependencies`, async () => {
       const c = container();
-      const instance = await c.getAsync(a);
+      const instance = await c.get(a);
       expect(instance.value).toEqual('someString');
     });
 
     it(`caches class instance`, async () => {
       const c = container();
-      const instance = await c.getAsync(a);
-      const instance2 = await c.getAsync(a);
+      const instance = await c.get(a);
+      const instance2 = await c.get(a);
       expect(instance).not.toBe(instance2);
     });
   });

@@ -1,9 +1,13 @@
-import { container, request, value } from 'hardwired';
+import {container, scoped, value} from 'hardwired';
 import { inject } from '../inject.js';
-import React from 'react';
+import * as React from 'react';
 import { render } from '@testing-library/react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
-import {describe, expect, it, vi} from 'vitest'
+import { describe, expect, it, vi } from 'vitest';
+
+/**
+ * @vitest-environment happy-dom
+ */
 
 describe(`inject`, () => {
   describe(`injecting dependencies`, () => {
@@ -84,7 +88,7 @@ describe(`inject`, () => {
 
   describe(`request`, () => {
     function setup() {
-      const valueA = request.fn(() => Math.random());
+      const valueA = scoped.fn(() => Math.random());
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 

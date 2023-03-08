@@ -7,7 +7,7 @@ declare const trait: any;
 declare const loggerImpl: any;
 
 const loggerDef = singleton.fn(() => loggerImpl);
-const requestDefinition = singleton.fn();
+
 
 // const Logger = trait([loggerDef], class extends base {
 // const Logger = trait([], [loggerDef], base => class extends base {

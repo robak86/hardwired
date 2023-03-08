@@ -1,11 +1,12 @@
-import React, { FunctionComponent, PropsWithChildren, useContext } from 'react';
+
+import * as React from 'react';
 
 const DummyContext = React.createContext(123);
 
-export const DummyProvider: FunctionComponent<{ value: number } & PropsWithChildren> = ({ children, value }) => {
+export const DummyProvider: React.FC<{ value: number } & React.PropsWithChildren> = ({ children, value }) => {
   return <DummyContext.Provider value={value}>{children}</DummyContext.Provider>;
 };
 
 export const useDummyProviderValue = () => {
-  return useContext(DummyContext);
+  return React.useContext(DummyContext);
 };

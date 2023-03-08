@@ -2,8 +2,8 @@ import { instanceDefinition, InstanceDefinition } from '../abstract/sync/Instanc
 import { LifeTime } from '../abstract/LifeTime.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { v4 } from 'uuid';
-import { RequestContainer } from '../../container/RequestContainer.js';
 import { IContainerScopes, ISyncContainer } from '../../container/IContainer.js';
+import {Container} from "../../container/Container.js";
 
 export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime) => {
   return <TValue>(
@@ -13,7 +13,7 @@ export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime) => {
       id: v4(),
       strategy: lifetime,
       create: (context: ContainerContext) => {
-        return buildFn(new RequestContainer(context));
+        return buildFn(new Container(context));
       },
     });
   };

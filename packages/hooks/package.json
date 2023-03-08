@@ -1,6 +1,6 @@
 {
   "name": "hardwired-hooks",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
@@ -21,17 +21,14 @@
   },
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
+  "dependencies": {
+    "hardwired": "0.8.0"
+  },
+  "devDependencies": {},
   "files": [
     "dist",
     "README.md"
   ],
-  "dependencies": {
-    "hardwired": "*"
-  },
-  "devDependencies": {},
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "git@github.com:robak86/hardwired.git"
