@@ -9,13 +9,11 @@ export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> = I
 export type ValidDependenciesLifeTime<TLifeTime extends LifeTime> =
     TLifeTime extends LifeTime.singleton ?
         | LifeTime.singleton
-        | LifeTime.transient
-         :
+        | LifeTime.transient :
     TLifeTime extends LifeTime.transient ?
         | LifeTime.singleton
         | LifeTime.transient
-        | LifeTime.scoped
-         :
+        | LifeTime.scoped :
     TLifeTime extends LifeTime.scoped ?
         | LifeTime.singleton
         | LifeTime.scoped
@@ -26,7 +24,7 @@ const validLifeTimes = {
   [LifeTime.singleton]: {
     [LifeTime.singleton]: true,
     [LifeTime.transient]: true,
-    [LifeTime.scoped]: false, // scoped is invalid
+    [LifeTime.scoped]: false, // singleton shouldn't have scoped dependencies
   },
   [LifeTime.transient]: {
     [LifeTime.singleton]: true,

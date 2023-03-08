@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import {container as buildContainer, IContainer} from 'hardwired';
-import {ContainerContext, ContainerContextValue} from '../context/ContainerContext.js';
+import { container as buildContainer, IContainer } from 'hardwired';
+import { ContainerContext, ContainerContextValue } from '../context/ContainerContext.js';
 
 export type ContainerProviderProps = {
-  container?: IContainer
+  container?: IContainer;
 };
 
 export const ContainerProvider: React.FC<ContainerProviderProps & React.PropsWithChildren> = ({

@@ -1,15 +1,19 @@
-import {IContainer, InstanceDefinition, LifeTime} from 'hardwired';
-import {provide} from './use.js';
+import { IContainer, InstanceDefinition, LifeTime } from 'hardwired';
+import { provide } from './use.js';
 
 const groupUniqueBy = <T extends Record<keyof any, any>, TProperty extends keyof T>(
-    groupByProperty: TProperty,
-    items: ReadonlyArray<T>,
+  groupByProperty: TProperty,
+  items: ReadonlyArray<T>,
 ): Record<T[TProperty], T> => {
   const grouped = {} as Record<T[TProperty], T>;
 
   items.forEach(item => {
     if (!grouped[item[groupByProperty]]) {
-      throw new Error(`Cannot group by ${String(groupByProperty)}. ${String(groupByProperty)} is not unique across items in the array.`)
+      throw new Error(
+        `Cannot group by ${String(groupByProperty)}. ${String(
+          groupByProperty,
+        )} is not unique across items in the array.`,
+      );
     }
 
     grouped[item[groupByProperty]] = item;
@@ -17,7 +21,6 @@ const groupUniqueBy = <T extends Record<keyof any, any>, TProperty extends keyof
 
   return grouped;
 };
-
 
 export class Dependency<TInstance, TParams extends any[]> {
   constructor(

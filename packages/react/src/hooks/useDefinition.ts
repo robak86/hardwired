@@ -1,5 +1,5 @@
-import {InstanceDefinition, LifeTime, Resolution} from 'hardwired';
-import {useContainer} from '../context/ContainerContext.js';
+import { InstanceDefinition, LifeTime, Resolution } from 'hardwired';
+import { useContainer } from '../context/ContainerContext.js';
 
 export type UseDefinitionHook = {
   <TInstance, TExt>(factoryDefinition: InstanceDefinition<TInstance, LifeTime>): TInstance;

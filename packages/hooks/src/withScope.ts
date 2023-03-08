@@ -1,5 +1,5 @@
-import {__storage, DefinitionOverride, getContainer, hasContainer} from './containerStorage.js';
-import {container} from 'hardwired';
+import { __storage, DefinitionOverride, getContainer, hasContainer } from './containerStorage.js';
+import { container } from 'hardwired';
 
 export function withScope<T>(runFn: () => T): T;
 export function withScope<T>(overrides: DefinitionOverride[], runFn: () => T): T;

@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { useContainerContext } from '../context/ContainerContext.js';
 import { Diff } from 'utility-types';

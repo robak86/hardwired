@@ -1,4 +1,4 @@
-import {  scoped, singleton } from '../../definitions.js';
+import { scoped, singleton } from '../../definitions.js';
 import { object } from '../object.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
