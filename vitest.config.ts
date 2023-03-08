@@ -7,7 +7,7 @@ export default defineConfig({
             "./packages/react/**/__test__/*.test.{ts,tsx}",
             "./packages/hooks/**/__test__/*.test.{ts,tsx}",
         ],
-        environment: "jsdom", // "happy-dom" ?
+        environment: "happy-dom",
         clearMocks: true,
         globals: true,
     },
