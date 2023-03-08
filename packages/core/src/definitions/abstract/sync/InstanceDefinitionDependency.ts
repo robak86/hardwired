@@ -28,22 +28,39 @@ export type ValidDependenciesLifeTime<TLifeTime extends LifeTime> =
         | LifeTime.transient :
         never
 
-// TODO: optimize
 const validLifeTimes = {
-    [LifeTime.singleton]: [LifeTime.singleton, LifeTime.request, LifeTime.transient],
-    [LifeTime.transient]: [LifeTime.singleton, LifeTime.request, LifeTime.transient, LifeTime.scoped],
-    [LifeTime.request]: [LifeTime.singleton, LifeTime.request, LifeTime.transient, LifeTime.scoped],
-    [LifeTime.scoped]: [LifeTime.singleton, LifeTime.request, LifeTime.transient, LifeTime.scoped],
-};
+  [LifeTime.singleton]: {
+    [LifeTime.singleton]: true,
+    [LifeTime.request]: true,
+    [LifeTime.transient]: true,
+    [LifeTime.scoped]: false, // scoped is invalid
+  },
+  [LifeTime.transient]: {
+    [LifeTime.singleton]: true,
+    [LifeTime.request]: true,
+    [LifeTime.transient]: true,
+    [LifeTime.scoped]: true,
+  },
+  [LifeTime.request]: {
+    [LifeTime.singleton]: true,
+    [LifeTime.request]: true,
+    [LifeTime.transient]: true,
+    [LifeTime.scoped]: true,
+  },
+  [LifeTime.scoped]: {
+    [LifeTime.singleton]: true,
+    [LifeTime.request]: true,
+    [LifeTime.transient]: true,
+    [LifeTime.scoped]: true,
+  },
+} as const
 
-export const assertValidDependency = (lifeTime: LifeTime, deps: AnyInstanceDefinition<any, any>[]) => {
-    const valid = validLifeTimes[lifeTime] || [];
+export const assertValidDependency = (lifeTime: LifeTime, deps: AnyInstanceDefinition<any, LifeTime>[]) => {
+  for (let dependency of deps) {
+    const isValid = validLifeTimes[lifeTime][dependency.strategy];
 
-    for (let dependency of deps) {
-        const isValid = valid.some(allowedLifeTime => dependency.strategy === allowedLifeTime);
-
-        if (!isValid) {
-            throw new Error(`Cannot use ${dependency.strategy} dependency for ${lifeTime} definition.`);
-        }
+    if (!isValid) {
+      throw new Error(`Cannot use ${dependency.strategy} dependency for ${lifeTime} definition.`);
     }
+  }
 };
