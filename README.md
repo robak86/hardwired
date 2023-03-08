@@ -8,10 +8,10 @@ Minimalistic, type-safe DI/IoC solution for TypeScript.
 - [x] No decorators, no reflection
 - [x] Designed for structural typing
 - [x] Enables easy mocking for integration tests
-- [x] Allows writing code that is completely decoupled from DI/IoC specific api - does not
+- [x] Allows writing code that is completely decoupled from DI/IoC specific api - doesn't
       pollute user code with decorators (combined with reflection) or static properties containing
-      list of dependencies
-- [x] Works both on node.js and browser
+      the list of dependencies
+- [x] Works both on node.js and the browser
 
 ## Installation
 
@@ -33,11 +33,12 @@ npm install hardwired
 
 The library uses two main concepts:
 
-- **Instance definition** - object that describes how instances should be created. It contains:
-  - details about lifespan of an instance (`singleton` | `transient` | `request`)
-  - references to other definitions that need to be injected during creation of a new instance
-  - unique definition id
-- **Container** - creates and optionally stores object instances (e.g. for singleton lifetime)
+- **Instance definition** – object that describes how instances should be created. It contains:
+  - the details about lifespan of an instance (`singleton` | `transient` | `scoped`)
+  - the references to other definitions that need to be injected during creation of a new instance
+  - an unique definition id
+- **Container** – creates and optionally stores object instances (for singleton or scoped
+  lifetimes).
 
 ### Example
 
@@ -62,10 +63,11 @@ export const configurationDef = singleton.class(LoggerConfiguration);
 export const loggerDef = singleton.class(Logger, configurationDef);
 ```
 
-All definitions should be defined **in separate modules** (`ts` files) making the implementation
-completely decoupled from `hardwired`. Container and definitions should be treated like an
-**additional layer** above implementation, which is responsible for wiring components together by
-creating instances, injecting dependencies and managing lifetime.
+It's worth considering to have definitions defined **in separate modules** (`ts` files)
+making the implementation completely decoupled from `hardwired`.
+Container and definitions should be treated like an **additional layer** above implementation,
+which is responsible for wiring components together by creating instances,
+injecting dependencies and managing lifetime.
 
 2. Create a container
 
@@ -87,16 +89,51 @@ Library provides definitions builders grouped by lifetime:
 
 - **`transient`** always creates a new instance
 - **`singleton`** always uses single instance
-- **`request`** acts like singleton across a request (`container.get(...)` or `container.getAll(...) ` call )
+- **`scoped`** acts like singleton within scope (`container.get(...)` or `container.getAll(...) ` call)
 
-Each group object provides definitions builders for specific type of instance and specific
-resolution model:
+## Container scope
+
+Each container instance has its own registry for holding instances of `singleton` and `scoped`
+definitions.
+New container's scope can be created using container's `checkoutScope` method.
+It returns a new instance of the container with clean registry for `scoped` dependencies and
+`singletons` registry inherited from the parent container.
+
+```typescript
+import { container, scoped, singleton } from 'hardwired';
+
+const scopedRandomVal = scoped.fn(() => Math.random());
+const singletonRandomVal = singleton.fn(() => Math.random());
+
+const appContainer = container();
+const requestContainer = appContainer.checkoutScope();
+
+const val1 = appContainer.get(scopedRandomVal);
+const val2 = requestContainer.get(scopedRandomVal);
+// val1 is not equal to val2, because every container has it's own registry for scoped definitions
+
+const singletonVal1 = appContainer.get(singletonRandomVal);
+const singletonVal2 = requestContainer.get(singletonRandomVal);
+// singletonVal1 is equal to singletonVal2, because parent and the child container share
+// registry for singleton instances
+```
 
 ## Sync definitions
 
-Definitions which can be instantiated using `.get` | `.getAll` container methods. They
-accept only sync dependencies. In order to inject async dependency to sync definition, it
-previously needs to be converted to async definition.
+Definitions, that are instantiated synchronously.
+They can reference only other sync definitions as dependencies.
+
+- **`value`** - defines a static value
+
+```typescript
+import { value, container } from 'hardwired';
+
+const configDef = value({ port: 1234 });
+const cnt = container();
+const config = cnt.get(configDef); // { port: 1234 }
+
+cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
+```
 
 - **`fn`** - takes as an argument a factory function.
 
@@ -180,10 +217,30 @@ const getUrl = cnt.get(getUserDetailsUrlDef); // (userId: string) => string
 const url = getUrl('someUserId');
 ```
 
+- **`define`** - low-level definition that provides access to the container
+
+```typescript
+import { singleton, container, value, define } from 'hardwired';
+
+const randomValD = scoped.fn(() => Math.random());
+
+const myDef = singleton.define(container => {
+  const val1 = container.get(randomValD);
+  const val2 = container.withScope(childContainer => {
+    return childContainer.get(randomValD);
+  });
+
+  return [val1, val2];
+});
+
+const [val1, val2] = container().get(myDef);
+// val1 is not eq to val2, because was created in other scope
+```
+
 ## Asynchronous resolution
 
-Definitions which can be instantiated using `.getAsync` | `.getAllAsync` container methods. They
-accept both sync and async dependencies.
+Definitions returning instances of definitions asynchronously. They can reference both sync and
+async definitions as dependencies.
 
 - **`asyncClass`** - the same as `class` but accepts async dependencies
 
@@ -206,7 +263,7 @@ class UserRepository {
 const dbDef = singleton.asyncFn(createDbConnection);
 const userRepositoryDef = singleton.asyncClass(UserRepository, dbDef);
 const cnt = container();
-const userRepository: UserRepository = await cnt.getAsync(userRepositoryDef);
+const userRepository: UserRepository = await cnt.get(userRepositoryDef);
 ```
 
 - **`asyncFn`** - the same as `fn` but accepts async dependencies
@@ -221,54 +278,44 @@ const findUserById =
     return db.users.findOne({ id: userId });
   };
 
-const dbDef = singleton.fn((): Db => null as any);
+const dbDef = singleton.fn((): Db => databaseInstance);
 const findUserByIdDef = singleton.asyncPartial(findUserById, dbDef);
 
 const cnt = container();
-const findUserByIdBoundToDb = cnt.getAsync(findUserByIdDef);
+const findUserByIdBoundToDb = cnt.get(findUserByIdDef);
 // (userId: string) => Promise<User | undefined>
 const user = await findUserByIdBoundToDb('someUserId');
 ```
 
-### Other definitions
-
-- **`value`** - defines a static value
+- **`asyncDefine`** - the same as `define` but accepts async function
 
 ```typescript
-import { value, container } from 'hardwired';
+import { singleton, container, value, define } from 'hardwired';
 
-const configDef = value({ port: 1234 });
-const cnt = container();
-const config = cnt.get(configDef); // { port: 1234 }
+const randomValD = scoped.asyncFn(async () => Math.random());
 
-cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
-```
+const myDef = singleton.asyncDefine(async container => {
+  const val1 = await container.get(randomValD);
+  const val2 = await container.withScope(childContainer => {
+    return childContainer.get(randomValD);
+  });
 
-- **`object`** - aggregates multiple definitions within a new object. The lifetime for
-  `object` is determined from used dependencies. If any singleton dependency is used then
-  objects lifetime is singleton. If all dependencies have the same lifetime, then this
-  same lifetime is also used for `object` definition. If dependencies have multiple lifetimes then
-  lifetime for `object` is set to `transient`
+  return [val1, val2];
+});
 
-```typescript
-import { value, container, object } from 'hardwired';
-
-const serverConfigDef = value({ port: 1234 });
-const clientConfigDef = value({ host: 'example.com' });
-
-const configDef = object({ server: serverConfigDef, client: clientConfigDef });
-
-const config = container().get(configDef); //returns {server: {port: number}, client: {host: 'example.com'}}
+const [val1, val2] = await container().get(myDef);
+// val1 is not eq to val2, because was created in other scope
 ```
 
 ### Overriding definitions
 
-Each instance definition which is already used within some definitions graph can be overridden
-at the container level. This e.g. allows replacing deeply nested definitions with mocked instances for
-integration tests (see `apply` override). Overriding is achieved by providing patched instance
-definition (having the same id as the original one) to container constructor.
-On each request(`.get` | `.getAll` | `.getAsync` | `.getAsyncAll`) container checks if it has
-overridden definition for the original one that was requested. If overridden definition is found
+Each instance definition can be overridden at the container level.
+This e.g. allows replacing deeply nested definitions with mocked instances for
+integration tests (see `apply` override).
+Overriding is achieved by providing a patched
+definition to the container constructor or `checkoutScope` method. On each request
+(`.get` | `. getAll` | `. getAsyncAll`) container checks if it has
+overridden definition for the original one that was requested. If the overridden definition is found,
 then it is used instead of the original one.
 
 ```typescript
@@ -282,15 +329,19 @@ const someRandomSeedD = singleton.fn(() => Math.random());
 const randomGeneratorDef = singleton.class(RandomGenerator, someRandomSeedD);
 
 const cnt = container([set(someRandomSeedD, 1)]);
+//const cnt = container({overrides: [set(someRandomSeedD, 1)]}); 
+//const cnt = container({gloablOverrides: [set(someRandomSeedD, 1)]});
+//const cnt = container().checkoutScope({overrides:[set(someRandomSeedD, 1)] });
+
 const randomGenerator = cnt.get(randomGeneratorDef);
 randomGenerator.seed === 1; // true
 ```
 
 ### Available overrides
 
-- **`set`** - it replaces original definition with a static value
+- **`set`** - it replaces original definition with a new static value
 - **`replace`** - it replaces original definition with new one. This enables switching lifetime of
-  definition
+  the definition
 
 ```typescript
 import { singleton, container, replace, transient } from 'hardwired';
@@ -375,9 +426,9 @@ const writerDef = singleton.class(Writer);
 const writeManagerDef = singleton.class(WriteManager, writerDef);
 const storeDocumentActionDef = singleton.class(StoreDocumentAction, writeManagerDef);
 
-const writerPatch = apply(writerDef, writerDef => {
-  jest.spyOn(writerDef, 'write');
-  // comparing to decorator, there is no need to return decorated value
+const writerPatch = apply(writerDef, writerInstance => {
+  jest.spyOn(writerInstance, 'write');
+  // comparing to the decorator override, there is no need to return decorated value
 });
 const cnt = container([writerPatch]);
 
@@ -387,13 +438,12 @@ storeDocumentAction.run();
 expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
 ```
 
-### Factories
+### Implicit Definition
 
 Sometimes there are cases where we don't know every parameter during the construction of
 definitions, e.g. application takes some input from the user. For such scenarios the library
-provides `external` definitions, which acts like a named placeholder for a value that will be
-provided at the runtime. Dependency to the external parameter is propagated through definitions
-graph:
+provides `implicit` definitions, which acts like a named placeholder for a value that will be
+provided at the runtime.
 
 ```typescript
 import { external, singleton } from 'hardwired';
@@ -405,7 +455,7 @@ type EnvConfig = {
   };
 };
 
-const envD = external('env').type<EnvConfig>();
+const envD = implicit<EnvConfig>('env');
 const appPortD = singleton.fn((config: EnvConfig) => config.server.port, envD);
 const httpServerD = singleton.fn((port: number) => {
   const requestListener = (req, res) => {};
@@ -415,97 +465,13 @@ const httpServerD = singleton.fn((port: number) => {
 }, appPortD);
 ```
 
-`httpServerD` does not directly reference `envD`, but the type for `httpServerD`
-(`InstanceDefinition<http.Server, LifeTime.singleton, { env: EnvConfig }>`) reflects the fact that
-in order to get an instance of http server one need to provide external value `{ env: EnvConfig }`.
-
-There are two ways to instantiate definition referencing external parameters:
-
-1. At the container level, while getting instance of **composition root** (container instance
-   shouldn't be used as service locator in lower level modules). The runtime value needs to be
-   provided as a second parameter to `.get | .getAsync | .getAll | .getAllAsync` method.
+To create the instance of an implicit definition, one needs to 
+instantiate container/container scope with overrides for implicit definition.
 
 ```typescript
 import { container } from 'hardwired';
 
-const cnt = container();
-cnt.get(httpServerD, { env: { server: { port: 1234 } } });
+const cnt = container({ scopeOverrides: [set(envD, { server: { port: 1234 } })] });
+// const cnt = container().checkoutScope({scopeOverrides: [set(envD, { server: { port: 1234 } })]});
+cnt.get(httpServerD);
 ```
-
-2. By using `factory`|`asyncFactory` builders which create definitions for automatically
-   generated factory. This approach solves the issue of using container as a service locator.
-   Instead of using a reference to service locator, `hardwired` injects factory created
-   specifically for creating one particular type of instance coupling the consumer code with
-   generic `IFactory` | `IAsyncFactory` type instead of `Container`.
-
-```typescript
-import { external, factory, IFactory, request, singleton } from 'hardwired';
-
-class LoggerConfig {
-  transport: any;
-}
-
-class Logger {
-  constructor(private config: LoggerConfig) {}
-  info(msg) {}
-}
-
-class Request {
-  constructor(private url: string, private logger: Logger) {}
-
-  async fetch(): Promise<any> {
-    this.logger.info(`Fetching ${this.url}`);
-    // make actual fetch
-    this.logger.info(`Done`);
-  }
-}
-
-class RequestsExecutor {
-  constructor(private requestsFactory: IFactory<Request, { url: string }>) {}
-
-  fetch(url: string) {
-    // additional behavior related to requests - e.g. retrying of failed requests or caching
-    return this.requestsFactory.build({ url }).fetch();
-  }
-}
-
-class App {
-  constructor(private requestsExecutor: RequestsExecutor) {}
-
-  // userId was selected by the user at the runtime
-  onUserLoad({ userId }) {
-    this.doSomethingWithData(this.requestsExecutor.fetch(`http:example.com/users/${userId}`));
-  }
-
-  doSomethingWithData(data) {}
-}
-
-// app.module.ts
-const urlD = external('url').type<string>();
-const loggerConfigD = singleton.class(LoggerConfig);
-const loggerD = singleton.class(Logger, loggerConfigD);
-const requestD = request.class(Request, urlD, loggerD);
-const requestsExecutorD = singleton.class(RequestsExecutor, factory(requestD));
-
-export const appD = singleton.class(App, requestsExecutorD);
-```
-
-`factory(requestD)` automatically produces factory which without IoC probably would have to be
-implemented like (assuming that we don't care that logger is not singleton):
-
-```typescript
-import { IFactory } from 'hardwired';
-
-class RequestsFactory implements IFactory<Request> {
-  build(url: string) {
-    const loggerConfig = new LoggerConfig();
-    const logger = new Logger(loggerConfig);
-    return new Request(url, logger);
-  }
-}
-```
-
-In order to preserve singleton scope of the logger, the implementation would have to be much more
-complicated. `logger` would need to be provided as constructor argument to `RequestsFactory` and
-`RequestFactory` would have to be created by another factory. This chain of manual objects creation
-would have to be propagated all the way to the composition root.
