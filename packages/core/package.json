@@ -4,6 +4,7 @@
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
+  "type": "module",
   "homepage": "https://github.com/robak86/hardwired",
   "keywords": [
     "ioc",
