@@ -10,7 +10,6 @@ import * as React from 'react';
  * @vitest-environment happy-dom
  */
 
-
 describe(`ContainerScope`, () => {
   describe(`without invalidation keys`, () => {
     function setup() {

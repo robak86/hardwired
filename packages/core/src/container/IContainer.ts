@@ -1,10 +1,10 @@
-import {InstanceDefinition, InstancesArray} from '../definitions/abstract/sync/InstanceDefinition.js';
-import {AsyncInstanceDefinition} from '../definitions/abstract/async/AsyncInstanceDefinition.js';
-import {ContainerScopeOptions} from './Container.js';
-import {LifeTime} from '../definitions/abstract/LifeTime.js';
-import {ValidDependenciesLifeTime} from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import {AnyInstanceDefinition} from '../definitions/abstract/AnyInstanceDefinition.js';
-import {ContextEvents} from '../events/ContextEvents.js';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+import { ContainerScopeOptions } from './Container.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
+import { ContextEvents } from '../events/ContextEvents.js';
 
 export interface ISyncContainer<TAllowedLifeTime extends LifeTime = LifeTime> {
   get<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any>): TValue;
@@ -23,7 +23,7 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
   provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped>, instance: T): void;
   provideAsync<T>(def: AnyInstanceDefinition<T, LifeTime.scoped>, instance: () => Promise<T>): void;
   dispose(): void; // runs dispose method on every scoped/request instance created within this scope?
-                   // but what about singletons that were already propagated to parent scope?
+  // but what about singletons that were already propagated to parent scope?
 }
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>

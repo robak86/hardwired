@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { container, object, replace, scoped, set, singleton } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
@@ -11,7 +10,6 @@ import { describe, expect, it, vi } from 'vitest';
 /**
  * @vitest-environment happy-dom
  */
-
 
 describe(`withDependencies`, () => {
   function setupDefinitions({

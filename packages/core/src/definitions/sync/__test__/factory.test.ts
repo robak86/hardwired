@@ -1,7 +1,7 @@
 import { value } from '../value.js';
 import { implicit } from '../implicit.js';
 import { factory, IFactory } from '../factory.js';
-import {scoped, singleton, transient} from '../../definitions.js';
+import { scoped, singleton, transient } from '../../definitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { container } from '../../../container/Container.js';

@@ -1,15 +1,15 @@
-import {container} from '../../container/Container.js';
-import {BoxedValue} from '../../__test__/BoxedValue.js';
-import {scoped, singleton, transient} from '../../definitions/definitions.js';
-import {set} from '../set.js';
-import {InstanceDefinition} from '../../definitions/abstract/sync/InstanceDefinition.js';
-import {decorate} from '../decorate.js';
-import {apply} from '../apply.js';
-import {object} from '../../definitions/sync/object.js';
-import {ContainerContext} from '../../context/ContainerContext.js';
-import {value} from '../../definitions/sync/value.js';
-import {describe, expect, it, vi} from 'vitest';
-import {LifeTime} from '../../definitions/abstract/LifeTime.js';
+import { container } from '../../container/Container.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
+import { scoped, singleton, transient } from '../../definitions/definitions.js';
+import { set } from '../set.js';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
+import { decorate } from '../decorate.js';
+import { apply } from '../apply.js';
+import { object } from '../../definitions/sync/object.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
+import { value } from '../../definitions/sync/value.js';
+import { describe, expect, it, vi } from 'vitest';
+import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {

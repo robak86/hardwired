@@ -25,7 +25,6 @@ export class InstancesDefinitionsRegistry {
     private globalOverrideDefinitionsById: Record<string, AnyInstanceDefinition<any, any>>,
   ) {}
 
-
   addScopeOverride(definition: AnyInstanceDefinition<any, any>) {
     this.updateScopeOverride(definition);
   }

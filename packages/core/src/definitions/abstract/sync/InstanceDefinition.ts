@@ -1,7 +1,7 @@
-import {ContainerContext} from '../../../context/ContainerContext.js';
-import {LifeTime} from '../LifeTime.js';
-import {Resolution} from '../Resolution.js';
-import {v4} from 'uuid';
+import { ContainerContext } from '../../../context/ContainerContext.js';
+import { LifeTime } from '../LifeTime.js';
+import { Resolution } from '../Resolution.js';
+import { v4 } from 'uuid';
 
 export type InstanceDefinition<TInstance, TLifeTime extends LifeTime> = {
   readonly id: string;

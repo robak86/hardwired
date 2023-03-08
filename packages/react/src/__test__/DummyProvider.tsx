@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 
 const DummyContext = React.createContext(123);
