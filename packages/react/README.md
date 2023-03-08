@@ -2,16 +2,14 @@
 
 Integration for [Hardwired](https://github.com/robak86/hardwired) and [React](https://reactjs.org/).
 
-**Warning: This library is in experimental stage.**
-
 ## Motivation
 
 [Dependency injection](https://en.wikipedia.org/wiki/Dependency_injection) pattern is one of the
 fundamental techniques for writing modular, loosely coupled, and testable code. The pattern is
-usually associated with object-oriented programming, where the construction of the dependencies
+usually associated with object-oriented programming, where the construction of dependencies'
 graph is most often delegated to
-the [Inversion of Control Container](https://www.martinfowler.com/articles/injection.html).
-Dependency injection is also present in functional programming in the form of partial
+the [Inversion of Control Container](https://www.martinfowler.com/articles/injection.html), but
+dependency injection is also present in functional programming in the form of partial
 application/currying or reader monad.
 ([Functional approaches to dependency injection](https://fsharpforfunandprofit.com/posts/dependency-injection-1/)
 ,
@@ -20,10 +18,10 @@ application/currying or reader monad.
 [Getting started with fp-ts: Reader](https://dev.to/gcanti/getting-started-with-fp-ts-reader-1ie5)
 )
 
-At last, dependency injection is also relevant in React applications. React already provides a
+Dependency injection is also relevant in React applications. React already provides a
 mechanism for dependency injection in the form of [context](https://reactjs.org/docs/context.html).
-This library aims to provide standard semantics for defining and injecting dependencies to React
-components (using service locator pattern).
+This library aims to provide opinionated standard semantics for defining and injecting
+dependencies to the React components (using the service locator pattern).
 
 ## Limitations
 
@@ -31,7 +29,7 @@ React context supports basic reactivity / change detection for the state stored 
 it has performance penalties in case of frequent updates. Additionally, container implementation
 used by Hardwired internally uses mutable state that cannot be used with shallow comparison. Because
 of these limitations, hardwired-react doesn't provide observability features for objects created by
-the container. However, observability can be still easily enabled by using MobX or other libraries
+the container. However, observability can be easily enabled by using MobX or other libraries
 providing similar functionality.
 
 ### Installation
@@ -86,8 +84,8 @@ export const counterStoreDef = singleton.class(CounterStore, counterInitialValue
 export const counterActionsDef = singleton.class(CounterActions, counterStoreDef);
 ```
 
-For purpose of this example we use `singleton` lifetime. For detailed explanation of life times
-please refer to hardwired
+For purpose of this example we use `singleton` lifetime. For the detailed explanation of life times,
+please refer to hardwired docs
 [documentation](https://github.com/robak86/hardwired#definitions-lifetimes)
 
 2. Create components
@@ -178,12 +176,12 @@ describe('CounterAction', () => {
 
 #### Components
 
-React components can be tested using both unit-test and integration-test oriented approaches.
+React components can be tested using both unit and integration oriented approaches.
 Without using dependency injection, we are somewhat forced to the latter. Integration tests focus on
 testing the component's real, user-facing behavior. They are not burden with testing implementation
 details, so in theory they shouldn't be as fragile as unit tests. Unfortunately, in case of complex
 components, depending solely on integration tests can be costly because they very often require a
-complex setup for every test case. In this section I will present more unit-test oriented
+complex setup for every test case. In this section, I will present a more unit-test oriented
 approach. (In real-world application, one should probably find a good balance between both
 approaches).
 
@@ -291,19 +289,19 @@ describe('CounterButtons', () => {
 });
 ```
 
-### External dependencies
+### Implicit dependencies
 
-There are cases, where some objects injected to the component need to be parametrized. (e.g. using
-props). For such scenarios hardwired provides `external` definitions, for which the values can
+There are cases, where some objects injected into the component need to be parametrized. (e.g. using
+props). For such scenarios hardwired provides `implicit` definitions, for which the values can
 be provided at runtime.
 (For detailed explanation of factories and external definitions feature please refer to hardwired
-[documentation](https://github.com/robak86/hardwired#factories)). Following example would enable
-adding multiple labeled instances of counters from Getting started section.
+[documentation](https://github.com/robak86/hardwired#factories)). The following example would enable
+adding multiple labeled instances of counters from the getting-started section.
 
 ```typescript
 // counter.ts
 import { makeAutoObservable } from 'mobx';
-import { request, external } from 'hardwired';
+import { external, scoped } from 'hardwired';
 
 class CounterStore {
   constructor(public value: number, public label: string) {
@@ -329,22 +327,18 @@ class CounterActions {
 import { singleton, value } from 'hardwired';
 
 const counterInitialValueDef = value(0);
-const counterLabelValueDef = external('label').type<string>();
-const counterStoreDef = request.class(CounterStore, counterInitialValueDef, counterLabelValueDef);
-const counterActionsDef = request.class(CounterActions, counterStoreDef);
+const counterLabelValueDef = implicit<string>('label');
+const counterStoreDef = scoped.class(CounterStore, counterInitialValueDef, counterLabelValueDef);
+const counterActionsDef = scoped.class(CounterActions, counterStoreDef);
 ```
 
 Notice that the lifetime for counter store and counter actions was changed from `singleton` to
-`request` (Request scope in the context of hardwired react integration means that created instance is
-bound to component that requested given definition). Additionally, the counter store takes external
-string parameter that will be passed at runtime.
-
-Since hardwired binds request scope definitions to component, we need to introduce new component
-that will hold parametrized instances of `CounterStore` and `CounterActions`, and pass them down to
-child components as props.
+`request`. Additionally, the counter store takes label parameter that will be passed at
+runtime.
 
 ```typescript jsx
-import { useDefinition } from './useDefinition.js';
+import { useDefinition, ContainerProvider, ContainerScope } from 'hardwired-react';
+import { set } from 'hardwired';
 import { observer } from 'mobx-react';
 
 export const Counter: FC<{ store: CounterStore }> = observer(({ store }) => {
@@ -353,6 +347,11 @@ export const Counter: FC<{ store: CounterStore }> = observer(({ store }) => {
       Current value: <span data-testid={'counter-value'}>{store.value}</span>
     </h2>
   );
+});
+
+export const CounterLabel = observer(() => {
+  const store = useDefinitions(counterStoreDef);
+  return <h2>{store.label}</h2>;
 });
 
 export const CounterButtons: FC<{ actions: CounterActions }> = observer(({ actions }) => {
@@ -364,12 +363,12 @@ export const CounterButtons: FC<{ actions: CounterActions }> = observer(({ actio
   );
 });
 
-export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
-  const [store, actions] = useDefinitions([counterStoreDef, counterActionsDef], { label });
+export const ComplexLabel = observer(() => {
+  const [store, actions] = useDefinitions([counterStoreDef, counterActionsDef]);
 
   return (
     <div>
-      <h1>{label}</h1>
+      <CounterLabel />
       <Counter store={store} />
       <CounterButtons actions={actions} />
     </div>
@@ -379,31 +378,47 @@ export const LabeledCounter: FC<{ label: string }> = observer(({ label }) => {
 export const App = () => {
   return (
     <ContainerProvider>
-      <LabeledCounter label={'first counter'} />
-      <LabeledCounter label={'second counter'} />
+      <ContainerScope overrides={[set(counterLabelValueDef, 'first counter')]}>
+        <ComplexLabel />
+      </ContainerScope>
+
+      <ContainerScope overrides={[set(counterLabelValueDef, 'second counter')]}>
+        <ComplexLabel />
+      </ContainerScope>
     </ContainerProvider>
   );
 };
 ```
 
+The presented may seems to be a perfect example of over-engineering, because one could just pass
+`label` in props for `<ComplexLabel/>`, but on the other hand, thanks to dependency injection,
+we don't need to force all the parent component to know about properties that are only required by the
+leaves of the components tree. That's why very often `container` components are usually the
+difficult ones (comparing to `dummy` components). They aggregate all the dependencies that are
+required by the child components. By delegating this functionality to the IoC container,
+we can handle this complexity by specialised unit, and we can keep top-level components simple
+and focused on their main responsibility, which is composition of child components without
+knowing its implementation details.
+
 ### Definition life times in relation to React components rendering
 
-- each `useDefinition's` call uses its own request scope
+- each `useDefinition` call gets instances from the closest parent scope provided by
+  `ContainerProvider` or `ContainerScope` components
 
 ```typescript jsx
-import { request } from 'hardwired';
+import { scoped } from 'hardwired';
 import { useDefinition } from 'hardwired-react';
 
 let id = 0;
 const nextId = () => (id += 1);
 
-const valD = request.fn(() => nextId());
+const valD = scoped.fn(() => nextId());
 
 const SomeComponent = () => {
   const value1 = useDefinition(valD);
   const value2 = useDefinition(valD);
 
-  // value1 is not equal to value2 because useDefinition uses different request scope for each call
+  // value1 is equal to value2 because component is rendered within a single scope
   return (
     <span>
       {value1}, {value2}
@@ -412,37 +427,45 @@ const SomeComponent = () => {
 };
 ```
 
-- in order to get multiple instances using the same request scope one should use
-  `useDefinitions` hook.
-
 ```typescript jsx
-import { request } from 'hardwired';
+import { scoped } from 'hardwired';
 import { useDefinition } from 'hardwired-react';
+import { ContainerProvider, ContainerScope } from 'hardwired-react/dist/esm';
 
 let id = 0;
 const nextId = () => (id += 1);
 
-const valueDef = request.fn(nextId);
+const valD = scoped.fn(() => nextId());
 
 const SomeComponent = () => {
-  const [value1, value2] = useDefinitions(valueDef, valueDef);
+  const value1 = useDefinition(valD);
+  return <span>{value1}</span>;
+};
 
-  // value1 equals to value2 because useDefinitions used the same request scope for
-  // creating/getting "valueDef" instance
-
+const App = () => {
   return (
-    <span>
-      {value1}, {value2}
-    </span>
+    <ContainerProvider>
+      <SomeComponent />  
+      
+      <ContainerScope>
+        <SomeComponent />
+      </ContainerScope>
+      <ContainerScope>
+        <SomeComponent />
+      </ContainerScope>
+    </ContainerProvider>
   );
 };
+
+// each component will display different value, because each is wrapped with different container
+// scope
 ```
 
-- singleton instances created by `useDefinition` become globally cached and are available for every
-  component
+- singleton instances created by `useDefinition` become globally cached and are available for all
+  components wrapped with common `ContainerProvider`.
 
 ```typescript jsx
-import { request } from 'hardwired';
+import { singleton } from 'hardwired';
 import { useDefinition } from 'hardwired-react';
 
 let id = 0;
