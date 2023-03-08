@@ -20,7 +20,7 @@ application/currying or reader monad.
 
 Dependency injection is also relevant in React applications. React already provides a
 mechanism for dependency injection in the form of [context](https://reactjs.org/docs/context.html).
-This library aims to provide opinionated standard semantics for defining and injecting
+This library aims to provide opinionated semantics for defining and injecting
 dependencies to the React components (using the service locator pattern).
 
 ## Limitations
@@ -253,8 +253,8 @@ import { runInAction } from 'mobx';
 describe('CounterButtons', () => {
   function setup(initialValue: number) {
     const cnt = container([
-      set(counterInitialValueDef, initialValue), // initialValue will be used instead of original
-      // counterInitialValueDef
+      set(counterInitialValueDef, initialValue), // initialValue will be used instead of the
+      // original defined by counterInitialValueDef
     ]);
 
     const result = render(
@@ -293,9 +293,7 @@ describe('CounterButtons', () => {
 
 There are cases, where some objects injected into the component need to be parametrized. (e.g. using
 props). For such scenarios hardwired provides `implicit` definitions, for which the values can
-be provided at runtime.
-(For detailed explanation of factories and external definitions feature please refer to hardwired
-[documentation](https://github.com/robak86/hardwired#factories)). The following example would enable
+be provided at runtime. The following example would enable
 adding multiple labeled instances of counters from the getting-started section.
 
 ```typescript
@@ -382,7 +380,12 @@ export const App = () => {
         <ComplexLabel />
       </ContainerScope>
 
-      <ContainerScope overrides={[set(counterLabelValueDef, 'second counter')]}>
+      <ContainerScope
+        overrides={[
+          set(counterLabelValueDef, 'second counter'), //
+          set(counterInitialValueDef, 100),
+        ]}
+      >
         <ComplexLabel />
       </ContainerScope>
     </ContainerProvider>
@@ -390,10 +393,10 @@ export const App = () => {
 };
 ```
 
-The presented may seems to be a perfect example of over-engineering, because one could just pass
-`label` in props for `<ComplexLabel/>`, but on the other hand, thanks to dependency injection,
-we don't need to force all the parent component to know about properties that are only required by the
-leaves of the components tree. That's why very often `container` components are usually the
+The presented example may seem to be completely over-engineered, because one could just 
+pass `label` in props for `<ComplexLabel/>`, but on the other hand, thanks to dependency injection,
+we don't need to force the parent component to know about properties that are only required by the
+leaves of the component tree. That's why very often `container` components are the
 difficult ones (comparing to `dummy` components). They aggregate all the dependencies that are
 required by the child components. By delegating this functionality to the IoC container,
 we can handle this complexity by specialised unit, and we can keep top-level components simple
@@ -402,7 +405,7 @@ necessarily knowing its implementation details.
 
 ### Definition life times in relation to React components rendering
 
-- each `useDefinition` call gets instances from the closest parent scope provided by
+- each `useDefinition` call gets instances from the closest container scope provided by
   `ContainerProvider` or `ContainerScope` components
 
 ```typescript jsx

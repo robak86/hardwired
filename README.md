@@ -37,7 +37,7 @@ The library uses two main concepts:
   - the details about lifespan of an instance (`singleton` | `transient` | `scoped`)
   - the references to other definitions that need to be injected during creation of a new instance
   - an unique definition id
-- **Container** – creates and optionally stores object instances (for singleton or scoped
+- **Container** – creates and optionally stores object instances (for `singleton` or `scoped`
   lifetimes).
 
 ### Example
@@ -63,8 +63,8 @@ export const configurationDef = singleton.class(LoggerConfiguration);
 export const loggerDef = singleton.class(Logger, configurationDef);
 ```
 
-It's worth considering to have definitions defined **in separate modules** (`ts` files)
-making the implementation completely decoupled from `hardwired`.
+Definitions are implemented **in separate modules** (`ts` files)
+making the original implementation completely decoupled from `hardwired`.
 Container and definitions should be treated like an **additional layer** above implementation,
 which is responsible for wiring components together by creating instances,
 injecting dependencies and managing lifetime.
@@ -89,7 +89,7 @@ Library provides definitions builders grouped by lifetime:
 
 - **`transient`** always creates a new instance
 - **`singleton`** always uses single instance
-- **`scoped`** acts like singleton within scope (`container.get(...)` or `container.getAll(...) ` call)
+- **`scoped`** acts like singleton within a scope  
 
 ## Container scope
 
@@ -135,15 +135,16 @@ const config = cnt.get(configDef); // { port: 1234 }
 cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
 ```
 
-- **`fn`** - takes as an argument a factory function.
+- **`fn`** - takes as an arguments a factory function and other definitions. 
+Definitions are instantiated and injected into the factory function during definition instantiation.
 
 ```typescript
 import { singleton, container, transient } from 'hardwired';
 
 const aDef = transient.fn(() => 1);
 const bDef = transient.fn(() => 2);
-const cDef = singleton.fn((d1, d2) => d1 + d2, aDef, bDef);
-const result = container().get(cDef); // result equals to 3
+const cDef = singleton.fn((a, b) => a + b, aDef, bDef);
+const c = container().get(cDef); // result equals to 3
 ```
 
 - **`class`** - creates instance of a class.
