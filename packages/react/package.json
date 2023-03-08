@@ -28,7 +28,7 @@
     "react": "^18.2.0"
   },
   "devDependencies": {
-    "hardwired": "0.0.7"
+    "hardwired": "0.8.0"
   },
   "files": [
     "dist",

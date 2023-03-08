@@ -1,5 +1,5 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { SignalEmitter } from './SignalEmitter';
+import { SignalEmitter } from './SignalEmitter.js';
 
 export type OnScopeSignal = {
   initiatorContainerId: string;
