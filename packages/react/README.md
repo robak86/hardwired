@@ -398,7 +398,7 @@ difficult ones (comparing to `dummy` components). They aggregate all the depende
 required by the child components. By delegating this functionality to the IoC container,
 we can handle this complexity by specialised unit, and we can keep top-level components simple
 and focused on their main responsibility, which is composition of child components without
-knowing its implementation details.
+necessarily knowing its implementation details.
 
 ### Definition life times in relation to React components rendering
 
@@ -445,8 +445,8 @@ const SomeComponent = () => {
 const App = () => {
   return (
     <ContainerProvider>
-      <SomeComponent />  
-      
+      <SomeComponent />
+
       <ContainerScope>
         <SomeComponent />
       </ContainerScope>
