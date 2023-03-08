@@ -42,7 +42,7 @@ export const LabeledCounter: FC = observer(() => {
   );
 });
 
-export default () => {
+export const App = () => {
   return (
     <ContainerProvider>
       <ContainerScope overrides={[set(counterLabelValueDef, 'counter 1')]}>
