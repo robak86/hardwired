@@ -27,9 +27,9 @@ dependencies to the React components (using the service locator pattern).
 
 React context supports basic reactivity / change detection for the state stored in the context, but
 it has performance penalties in case of frequent updates. Additionally, container implementation
-used by Hardwired internally uses mutable state that cannot be used with shallow comparison. Because
-of these limitations, hardwired-react doesn't provide observability features for objects created by
-the container. However, observability can be easily enabled by using MobX or other libraries
+used by `Hardwired` internally uses mutable state that cannot be used with shallow comparison. Because
+of these limitations, `hardwired-react` doesn't provide **observability** features for objects created by
+the container. However, observability can be easily enabled by using `MobX` or other libraries
 providing similar functionality.
 
 ### Installation
@@ -395,12 +395,12 @@ export const App = () => {
 
 ### Discussion
 
-At first glance, the presented example seems to completely over-engineered, because one could just
+Using the IoC for such a simple case is absolute overkill. One could just
 pass `label` in props for `<ComplexLabel/>` and have two instances of the component rendering
-different label. On the other hand, thanks to IoC container,
+different label. On the other hand, the example shows that, thanks to IoC container,
 we don't need to force the parent component to know about properties that are only required by the
 leaves of the component tree. That's why very often `container` components are the
-difficult ones (comparing to `dummy` components). They aggregate all the dependencies that are
+"difficult" ones (comparing to `dummy` components). They aggregate all the dependencies that are
 required by the child components. By delegating this functionality to the IoC container,
 we can handle this complexity by specialised unit, and can keep top-level components simple
 and focused on their main responsibility, which is the composition of child components without
@@ -410,7 +410,7 @@ logic to plain classes becomes easier when we don't have to manually build these
 encapsulate instantiation details within 
 [definitions](https://github.com/robak86/hardwired#overview).
 
-Unfortunately, this approach is not without any flaws.
+Unfortunately, this approach is not without flaws.
 Fetching dependencies (`useDefinition`) from container creates additional level of
 indirection comparing to passing the dependencies via props.
 
@@ -425,7 +425,7 @@ Using `useDefinition` also introduce coupling between the component and `hardwir
 whenever possible one should strive for using `dummy` components as the leaves of components tree.
 
 The easiness of injecting dependencies to the components may also encourage creating a lot of
-dependencies between components and instances fetched from the container.
+coupling between multiple components and instances fetched from the container.
 This may complicate reasoning about the code.
 However, the issue may be reduced by introducing strict control over mutability of the injected 
 objects.
