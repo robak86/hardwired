@@ -19,7 +19,8 @@ application/currying or reader monad.
 )
 
 Dependency injection is also relevant in React applications. React already provides a
-mechanism for dependency injection in the form of [context](https://reactjs.org/docs/context.html).
+mechanism for dependency injection in the form of
+[context](https://beta.reactjs.org/learn/passing-data-deeply-with-context).
 This library aims to provide opinionated semantics for defining and injecting
 dependencies to the React components (using the service locator pattern).
 
@@ -27,7 +28,7 @@ dependencies to the React components (using the service locator pattern).
 
 React context supports basic reactivity / change detection for the state stored in the context, but
 it has performance penalties in case of frequent updates. Additionally, container implementation
-used by `hardwired` internally uses mutable state that cannot be used with shallow comparison. 
+used by `hardwired` internally uses mutable state that cannot be used with shallow comparison.
 Because
 of these limitations, `hardwired-react` doesn't provide **observability** features for objects created by
 the container. However, observability can be easily enabled by using `MobX` or other libraries
@@ -396,19 +397,21 @@ export const App = () => {
 
 ### Discussion
 
-Using the IoC for such a simple case is absolute overkill. One could just
-pass `label` in props for `<ComplexLabel/>` and have two instances of the component rendering
-different label. On the other hand, the example illustrates that, thanks to IoC container,
+Using the IoC for such a simple case is absolute overkill as the component tree is rather flat.
+One could just pass `label` in props for `<ComplexLabel/>` that would propagate this value
+`<CounterLabel/>`. This way we could have two instances of the component rendering
+different labels. On the other hand, the example illustrates that, thanks to IoC container,
 we don't need to force the parent component to know about properties that are only required by the
-leaves of the component tree. That's why very often `container` components are the
-"difficult" ones (comparing to `dummy` components). They aggregate all the dependencies that are
+leaves of the component tree (or distant components). That's why very often `container` components
+are the "difficult" ones (comparing to `dummy` components). They aggregate all the dependencies
+that are
 required by the child components. By delegating this functionality to the IoC container,
 we delegate the complexity to the specialised unit, and can keep top-level components simple
 and focused on their main responsibility, which is the composition of child components without
 necessarily knowing its implementation details. The Presented approach also helps in treating
 React components just as view layer (by the analogy to the MVC pattern). Delegating all the business
 logic to plain classes becomes easier when we don't have to manually build these objects and can
-encapsulate instantiation details within 
+encapsulate instantiation details within
 [definitions](https://github.com/robak86/hardwired#overview).
 
 Unfortunately, this approach is not without flaws.
@@ -422,15 +425,15 @@ In a lot of cases, this kind of freedom gives big advantage over manual passing 
 but on the other hand, it hinders the flow of data/dependencies through the hierarchy of the
 components.
 
-Using `useDefinition` also introduce coupling between the component and `hardwired` so still 
+Using `useDefinition` also introduce coupling between the component and `hardwired` so still
 whenever possible one should strive for using `dummy` components as the leaves of components tree.
 
 The easiness of injecting dependencies to the components may also encourage creating a lot of
-coupling between multiple components and instances fetched from the container.
+references between multiple components and instances fetched from the container.
 This may complicate reasoning about the code.
-However, the issue may be reduced by introducing strict control over mutability of the injected 
+However, the issue may be reduced by introducing strict control over mutability of the injected
 objects.
-Usually the read-only (getters only) objects injected into multiple components don't create 
+Usually the read-only (getters only) objects injected into multiple components don't create
 problems.
 Uncontrolled mutability with side effects available for multiple consumers is usually the main
 source of complexity.
