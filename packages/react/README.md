@@ -407,7 +407,8 @@ and focused on their main responsibility, which is the composition of child comp
 necessarily knowing its implementation details. The Presented approach also helps in treating
 React components just as view layer (by the analogy to the MVC pattern). Delegating all the business
 logic to plain classes becomes easier when we don't have to manually build these objects and can
-encapsulate instantiation details within [definitions](https://github.com/robak86/hardwired#overview)
+encapsulate instantiation details within 
+[definitions](https://github.com/robak86/hardwired#overview).
 
 Unfortunately, this approach is not without any flaws.
 Fetching dependencies (`useDefinition`) from container creates additional level of
