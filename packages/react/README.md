@@ -335,11 +335,12 @@ Notice that the lifetime for counter store and counter actions was changed from 
 runtime.
 
 ```typescript jsx
-import { useDefinition, ContainerProvider, ContainerScope } from 'hardwired-react';
+import { useDefinition, ContainerProvider, ContainerScope, useDefinition, useDefinitions } from 'hardwired-react';
 import { set } from 'hardwired';
 import { observer } from 'mobx-react';
 
-export const Counter: FC<{ store: CounterStore }> = observer(({ store }) => {
+export const Counter = observer(() => {
+  const store = useDefinition(counterStoreDef);
   return (
     <h2>
       Current value: <span data-testid={'counter-value'}>{store.value}</span>
@@ -348,11 +349,12 @@ export const Counter: FC<{ store: CounterStore }> = observer(({ store }) => {
 });
 
 export const CounterLabel = observer(() => {
-  const store = useDefinitions(counterStoreDef);
+  const store = useDefinition(counterStoreDef);
   return <h2>{store.label}</h2>;
 });
 
-export const CounterButtons: FC<{ actions: CounterActions }> = observer(({ actions }) => {
+export const CounterButtons = observer(() => {
+  const actions = useDefinition(counterActionsDef);
   return (
     <>
       <button onClick={actions.increment}>Increment</button>
@@ -362,12 +364,10 @@ export const CounterButtons: FC<{ actions: CounterActions }> = observer(({ actio
 });
 
 export const ComplexLabel = observer(() => {
-  const [store, actions] = useDefinitions([counterStoreDef, counterActionsDef]);
-
   return (
     <div>
       <CounterLabel />
-      <Counter store={store} />
+      <Counter />
       <CounterButtons actions={actions} />
     </div>
   );
@@ -393,15 +393,46 @@ export const App = () => {
 };
 ```
 
-The presented example may seem to be completely over-engineered, because one could just 
-pass `label` in props for `<ComplexLabel/>`, but on the other hand, thanks to dependency injection,
+### Discussion
+
+At first glance, the presented example seems to completely over-engineered, because one could just
+pass `label` in props for `<ComplexLabel/>` and have two instances of the component rendering
+different label. On the other hand, thanks to IoC container,
 we don't need to force the parent component to know about properties that are only required by the
 leaves of the component tree. That's why very often `container` components are the
 difficult ones (comparing to `dummy` components). They aggregate all the dependencies that are
 required by the child components. By delegating this functionality to the IoC container,
-we can handle this complexity by specialised unit, and we can keep top-level components simple
-and focused on their main responsibility, which is composition of child components without
-necessarily knowing its implementation details.
+we can handle this complexity by specialised unit, and can keep top-level components simple
+and focused on their main responsibility, which is the composition of child components without
+necessarily knowing its implementation details. The Presented approach also helps in treating
+React components just as view layer (by the analogy to the MVC pattern). Delegating all the business
+logic to plain classes becomes easier when we don't have to manually build these objects and can
+encapsulate instantiation details within [definitions](https://github.
+com/robak86/hardwired#overview)
+
+Unfortunately, this approach is not without any flaws.
+Fetching dependencies (`useDefinition`) from container creates additional level of
+indirection comparing to passing the dependencies via props.
+
+Dependencies fetched by `useDefinition` also create hierarchy(directed acyclic graph)
+of objects with their dependencies, that very often do not correspond the hierarchy of the components.
+In a lot of cases, this kind of freedom gives big advantage over manual passing deps via props
+(especially for data that are shared by many components),
+but on the other hand, it hinders the flow of data/dependencies through the hierarchy of the
+components.
+
+Using `useDefinition` also introduce coupling between the component and `hardwired` so still 
+whenever possible one should strive for using `dummy` components as the leaves of components tree.
+
+The easiness of injecting dependencies to the components may also encourage creating a lot of
+dependencies between components and instances fetched from the container.
+This may complicate reasoning about the code.
+However, the issue may be reduced by introducing strict control over mutability of the injected 
+objects.
+Usually the read-only (getters only) objects injected into multiple components don't create 
+problems.
+Uncontrolled mutability with side effects available for multiple consumers is usually the main
+source of complexity.
 
 ### Definition life times in relation to React components rendering
 
