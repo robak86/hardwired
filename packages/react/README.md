@@ -51,7 +51,7 @@ npm install hardwired hardwired-react mobx mobx-react
 
 ## Getting started
 
-1. Create implementation and DI definitions
+1. Create implementation and instances definitions
 
 ```typescript
 // counter.ts
@@ -332,7 +332,7 @@ const counterActionsDef = scoped.class(CounterActions, counterStoreDef);
 ```
 
 Notice that the lifetime for counter store and counter actions was changed from `singleton` to
-`request`. Additionally, the counter store takes label parameter that will be passed at
+`scoped`. Additionally, the counter store takes label parameter that will be passed at
 runtime.
 
 ```typescript jsx
@@ -398,12 +398,12 @@ export const App = () => {
 
 Using the IoC for such a simple case is absolute overkill. One could just
 pass `label` in props for `<ComplexLabel/>` and have two instances of the component rendering
-different label. On the other hand, the example shows that, thanks to IoC container,
+different label. On the other hand, the example illustrates that, thanks to IoC container,
 we don't need to force the parent component to know about properties that are only required by the
 leaves of the component tree. That's why very often `container` components are the
 "difficult" ones (comparing to `dummy` components). They aggregate all the dependencies that are
 required by the child components. By delegating this functionality to the IoC container,
-we can handle this complexity by specialised unit, and can keep top-level components simple
+we delegate the complexity to the specialised unit, and can keep top-level components simple
 and focused on their main responsibility, which is the composition of child components without
 necessarily knowing its implementation details. The Presented approach also helps in treating
 React components just as view layer (by the analogy to the MVC pattern). Delegating all the business
@@ -529,7 +529,7 @@ const Child = () => {
 - transient instances are created on each component rerender
 
 ```typescript jsx
-import { request } from 'hardwired';
+import { transient } from 'hardwired';
 import { useDefinition } from 'hardwired-react';
 
 let renderCount = 0;
