@@ -27,7 +27,8 @@ dependencies to the React components (using the service locator pattern).
 
 React context supports basic reactivity / change detection for the state stored in the context, but
 it has performance penalties in case of frequent updates. Additionally, container implementation
-used by `Hardwired` internally uses mutable state that cannot be used with shallow comparison. Because
+used by `hardwired` internally uses mutable state that cannot be used with shallow comparison. 
+Because
 of these limitations, `hardwired-react` doesn't provide **observability** features for objects created by
 the container. However, observability can be easily enabled by using `MobX` or other libraries
 providing similar functionality.
