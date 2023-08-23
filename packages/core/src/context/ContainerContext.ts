@@ -12,8 +12,8 @@ import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 
 export type ContainerInterceptor = {
-  interceptSync?<T>(instance: T, definition: InstanceDefinition<T, any>, context: InstancesBuilder): T;
-  interceptAsync?<T>(instance: T, definition: AsyncInstanceDefinition<T, any>, context: InstancesBuilder): Promise<T>;
+  interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
+  interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any>, context: ContainerContext): Promise<T>;
   interceptScopeCreate?(currentContext: ContainerContext): ContainerContext;
 };
 
@@ -79,17 +79,16 @@ export class ContainerContext implements InstancesBuilder {
 
   buildExact = (definition: AnyInstanceDefinition<any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-    const instance = patchedInstanceDef.create(this);
 
     if (definition.resolution === Resolution.sync && this.interceptors.interceptSync) {
-      return this.interceptors.interceptSync(instance, definition, this);
+      return this.interceptors.interceptSync(definition, this);
     }
 
     if (definition.resolution === Resolution.async && this.interceptors.interceptAsync) {
-      return Promise.resolve(instance).then(instance => this.interceptors.interceptAsync?.(instance, definition, this));
+      return this.interceptors.interceptAsync?.(definition, this);
     }
 
-    return instance;
+    return patchedInstanceDef.create(this);
   };
 
   buildWithStrategy = (definition: AnyInstanceDefinition<any, any>) => {

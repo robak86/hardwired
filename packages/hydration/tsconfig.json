@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/esm",
+    "rootDir": "./src",
+    "composite": true,
+    "jsx": "react"
+  },
+  "references": [],
+  "exclude": [
+    "./dist"
+  ],
+  "include": [
+    "./src"
+  ]
+}

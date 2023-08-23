@@ -10,11 +10,18 @@ describe(`implicit`, () => {
   type OtherExternals = { otherExternalParam: number };
 
   class ExternalsConsumer {
-    constructor(public externals: Externals, public otherNumDependency: string) {}
+    constructor(
+      public externals: Externals,
+      public otherNumDependency: string,
+    ) {}
   }
 
   class BothExternalsConsumer {
-    constructor(public externals: Externals, public externals2: OtherExternals, public otherNumDependency: string) {}
+    constructor(
+      public externals: Externals,
+      public externals2: OtherExternals,
+      public otherNumDependency: string,
+    ) {}
   }
 
   const numD = value('otherDependency');

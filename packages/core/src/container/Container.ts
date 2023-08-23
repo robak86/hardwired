@@ -68,7 +68,6 @@ export class Container implements IContainer {
 }
 
 export type ContainerOptions = {
-  restoreFrom?: object;
   globalOverrides?: AnyInstanceDefinition<any, any>[]; // propagated to descendant containers
 } & ContainerScopeOptions;
 

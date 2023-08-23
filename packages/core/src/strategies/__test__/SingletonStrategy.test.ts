@@ -226,7 +226,10 @@ describe(`SingletonStrategy`, () => {
     };
 
     class TestClassArgs2 {
-      constructor(public someNumber: number, public someString: string) {}
+      constructor(
+        public someNumber: number,
+        public someString: string,
+      ) {}
     }
 
     describe(`class`, () => {

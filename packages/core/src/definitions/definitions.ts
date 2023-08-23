@@ -7,7 +7,6 @@ import { asyncPartial } from './async/asyncPartial.js';
 import { LifeTime } from './abstract/LifeTime.js';
 import { define } from './sync/define.js';
 import { asyncDefine } from './async/asyncDefine.js';
-import { serializableClass } from './sync/serializableClass.js';
 
 export const singleton = {
   fn: fn(LifeTime.singleton),
@@ -18,7 +17,6 @@ export const singleton = {
   asyncClass: asyncClass(LifeTime.singleton),
   asyncPartial: asyncPartial(LifeTime.singleton),
   asyncDefine: asyncDefine(LifeTime.singleton),
-  serializableClass: serializableClass(LifeTime.singleton),
 };
 
 export const transient = {
