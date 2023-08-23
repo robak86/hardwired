@@ -1,5 +1,5 @@
 export interface HydrateAwareState<T> {
-  readonly state: T;
+  readonly state: T | null;
   hydrate(data: T): void;
 }
 
