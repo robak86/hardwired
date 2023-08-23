@@ -150,7 +150,7 @@ describe(`Container`, () => {
       it(`does not inherit interceptors`, async () => {
         const def = singleton.fn(() => 123);
         const interceptSyncSpy = vi.fn();
-        const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } }).checkoutScope();
+        const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } }).checkoutScope();
         ctn.get(def);
         expect(interceptSyncSpy).not.toBeCalled();
       });
@@ -160,8 +160,8 @@ describe(`Container`, () => {
         const interceptSyncParentSpy = vi.fn();
         const interceptSyncReqSpy = vi.fn();
 
-        const ctn = container({ interceptors: { interceptSync: interceptSyncParentSpy } }).checkoutScope({
-          interceptors: { interceptSync: interceptSyncReqSpy },
+        const ctn = container({ interceptor: { interceptSync: interceptSyncParentSpy } }).checkoutScope({
+          interceptor: { interceptSync: interceptSyncReqSpy },
         });
         ctn.get(def);
         expect(interceptSyncParentSpy).not.toBeCalled();
@@ -175,7 +175,7 @@ describe(`Container`, () => {
           const def = singleton.fn(() => 123);
 
           const interceptSyncSpy = vi.fn();
-          const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } });
+          const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
           ctn.get(def);
           expect(interceptSyncSpy).toBeCalledWith(123, def, expect.any(ContainerContext));
         });
@@ -184,7 +184,7 @@ describe(`Container`, () => {
           const def = singleton.fn(() => 123);
 
           const interceptSyncSpy = vi.fn(val => val);
-          const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } });
+          const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
           ctn.get(def);
           ctn.get(def);
           expect(interceptSyncSpy).toHaveBeenCalledTimes(1);
@@ -194,7 +194,7 @@ describe(`Container`, () => {
           const def = scoped.fn(() => 123);
 
           const interceptSyncSpy = vi.fn();
-          const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } });
+          const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
           ctn.get(def);
           ctn.get(def);
           expect(interceptSyncSpy).toHaveBeenCalledTimes(2);
@@ -206,7 +206,7 @@ describe(`Container`, () => {
           const interceptSyncSpy = vi.fn(
             <T>(val: T, def: InstanceDefinition<T, any>, ctx: InstancesBuilder): T => 456 as T,
           );
-          const ctn = container({ interceptors: { interceptSync: interceptSyncSpy } });
+          const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
 
           expect(ctn.get(def)).toEqual(456);
         });
@@ -218,7 +218,7 @@ describe(`Container`, () => {
           const def = singleton.asyncFn(async () => 123);
 
           const interceptAsyncSpy = vi.fn();
-          const ctn = container({ interceptors: { interceptAsync: interceptAsyncSpy } });
+          const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
           await ctn.get(def);
           expect(interceptAsyncSpy).toBeCalledWith(123, def, expect.any(ContainerContext));
         });
@@ -227,7 +227,7 @@ describe(`Container`, () => {
           const def = singleton.asyncFn(() => 123);
 
           const interceptAsyncSpy = vi.fn();
-          const ctn = container({ interceptors: { interceptAsync: interceptAsyncSpy } });
+          const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
           await ctn.get(def);
           expect(interceptAsyncSpy).toBeCalledWith(123, def, expect.any(ContainerContext));
         });
@@ -236,9 +236,9 @@ describe(`Container`, () => {
           const def = singleton.asyncFn(() => 123);
 
           const interceptAsyncSpy = vi.fn(
-            <T>(val: T, def: AsyncInstanceDefinition<T, any>, ctx: InstancesBuilder): T => 456 as T,
+            async <T>(val: T, def: AsyncInstanceDefinition<T, any>, ctx: InstancesBuilder): Promise<T> => 456 as T,
           );
-          const ctn = container({ interceptors: { interceptAsync: interceptAsyncSpy } });
+          const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
 
           expect(await ctn.get(def)).toEqual(456);
         });
@@ -252,7 +252,7 @@ describe(`Container`, () => {
           const interceptAsyncSpy = vi.fn(
             <T>(val: T, def: AsyncInstanceDefinition<T, any>, ctx: InstancesBuilder): T => val,
           );
-          const ctn = container({ interceptors: { interceptAsync: interceptAsyncSpy } });
+          const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
 
           await ctn.get(def2);
           expect(interceptAsyncSpy).toHaveBeenCalledTimes(2);

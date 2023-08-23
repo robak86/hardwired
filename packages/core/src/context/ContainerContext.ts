@@ -11,13 +11,17 @@ import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 
-export type Interceptors = {
+export type ContainerInterceptor = {
   interceptSync?<T>(instance: T, definition: InstanceDefinition<T, any>, context: InstancesBuilder): T;
-  interceptAsync?<T>(instance: T, definition: AsyncInstanceDefinition<T, any>, context: InstancesBuilder): T;
+  interceptAsync?<T>(instance: T, definition: AsyncInstanceDefinition<T, any>, context: InstancesBuilder): Promise<T>;
+  interceptScopeCreate?(currentContext: ContainerContext): ContainerContext;
 };
 
 export class ContainerContext implements InstancesBuilder {
-  static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry, interceptors: Interceptors = {}) {
+  static empty(
+    strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
+    interceptors: ContainerInterceptor = {},
+  ) {
     const instancesEntries = InstancesDefinitionsRegistry.empty();
 
     return new ContainerContext(
@@ -33,7 +37,7 @@ export class ContainerContext implements InstancesBuilder {
     scopeOverrides: AnyInstanceDefinition<any, any>[],
     globalOverrides: AnyInstanceDefinition<any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    interceptors: Interceptors = {},
+    interceptors: ContainerInterceptor = {},
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
@@ -52,7 +56,7 @@ export class ContainerContext implements InstancesBuilder {
     private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
     private instancesCache: InstancesStore,
     private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    private interceptors: Interceptors,
+    private interceptors: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {}
 
@@ -102,7 +106,7 @@ export class ContainerContext implements InstancesBuilder {
       this.instancesDefinitionsRegistry.checkoutForScope(overrides),
       this.instancesCache.childScope(overrides),
       this.strategiesRegistry,
-      options.interceptors || {},
+      options.interceptor || {},
       this.events,
     );
 

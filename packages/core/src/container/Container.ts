@@ -1,4 +1,4 @@
-import { ContainerContext, Interceptors } from '../context/ContainerContext.js';
+import { ContainerContext, ContainerInterceptor } from '../context/ContainerContext.js';
 import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
@@ -74,7 +74,7 @@ export type ContainerOptions = {
 
 export type ContainerScopeOptions = {
   overrides?: AnyInstanceDefinition<any, any>[];
-  interceptors?: Interceptors;
+  interceptor?: ContainerInterceptor;
 };
 
 export function container(globalOverrides?: AnyInstanceDefinition<any, any>[]): Container;
@@ -88,7 +88,7 @@ export function container(overridesOrOptions?: ContainerOptions | Array<AnyInsta
         overridesOrOptions?.overrides ?? [],
         overridesOrOptions?.globalOverrides ?? [],
         defaultStrategiesRegistry,
-        overridesOrOptions?.interceptors,
+        overridesOrOptions?.interceptor,
       ),
     );
   }

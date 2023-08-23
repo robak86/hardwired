@@ -15,6 +15,7 @@ export const apply = <
     id: instance.id,
     strategy: instance.strategy,
     resolution: instance.resolution,
+    meta: {},
     create: context => {
       const decorated = instance.create(context);
       const applyDeps = dependencies.map(context.buildWithStrategy);

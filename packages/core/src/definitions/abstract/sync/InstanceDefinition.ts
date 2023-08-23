@@ -8,23 +8,27 @@ export type InstanceDefinition<TInstance, TLifeTime extends LifeTime> = {
   readonly strategy: TLifeTime;
   readonly resolution: Resolution.sync;
   readonly create: (context: ContainerContext) => TInstance; // _ is a fake parameter introduced in order to preserve TExternal type
+  readonly meta: {};
 };
 
 export function instanceDefinition<TInstance, TLifeTime extends LifeTime>({
   id = v4(),
   strategy,
   create,
+  meta,
 }: {
   id?: string;
   strategy: TLifeTime;
   create: (context: ContainerContext) => TInstance;
   serializable?: boolean;
+  meta?: any;
 }): InstanceDefinition<TInstance, TLifeTime> {
   return {
     id,
     strategy,
     create,
     resolution: Resolution.sync,
+    meta,
   };
 }
 
