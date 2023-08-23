@@ -3,33 +3,22 @@ import { LifeTime } from '../LifeTime.js';
 import { Resolution } from '../Resolution.js';
 import { v4 } from 'uuid';
 
-export type InstanceDefinition<TInstance, TLifeTime extends LifeTime> = {
-  readonly id: string;
-  readonly strategy: TLifeTime;
-  readonly resolution: Resolution.sync;
-  readonly create: (context: ContainerContext) => TInstance; // _ is a fake parameter introduced in order to preserve TExternal type
-  readonly meta: Record<string, any>;
-};
+export class InstanceDefinition<TInstance, TLifeTime extends LifeTime> {
+  static create<TInstance, TLifeTime extends LifeTime>(
+    strategy: TLifeTime,
+    create: (context: ContainerContext) => TInstance, // _ is a fake parameter introduced in order to preserve TExternal type
+    meta: Record<string, any> = {},
+  ) {
+    return new InstanceDefinition<TInstance, TLifeTime>(v4(), Resolution.sync, strategy, create, meta);
+  }
 
-export function instanceDefinition<TInstance, TLifeTime extends LifeTime>({
-  id = v4(),
-  strategy,
-  create,
-  meta,
-}: {
-  id?: string;
-  strategy: TLifeTime;
-  create: (context: ContainerContext) => TInstance;
-  serializable?: boolean;
-  meta?: any;
-}): InstanceDefinition<TInstance, TLifeTime> {
-  return {
-    id,
-    strategy,
-    create,
-    resolution: Resolution.sync,
-    meta,
-  };
+  constructor(
+    readonly id: string,
+    readonly resolution: Resolution.sync,
+    readonly strategy: TLifeTime,
+    readonly create: (context: ContainerContext) => TInstance, // _ is a fake parameter introduced in order to preserve TExternal type
+    readonly meta: Record<string, any>,
+  ) {}
 }
 
 export const isInstanceDef = (val: any): val is InstanceDefinition<any, any> => {

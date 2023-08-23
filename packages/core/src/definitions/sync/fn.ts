@@ -1,4 +1,4 @@
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { assertValidDependency, InstanceDefinitionDependency } from '../abstract/sync/InstanceDefinitionDependency.js';
 
@@ -13,11 +13,8 @@ export const fn = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   ): InstanceDefinition<TValue, TLifeTime> => {
     assertValidDependency(strategy, dependencies);
 
-    return instanceDefinition({
-      strategy,
-      create: context => {
-        return factory(...(dependencies.map(context.buildWithStrategy) as TArgs));
-      },
+    return InstanceDefinition.create(strategy, context => {
+      return factory(...(dependencies.map(context.buildWithStrategy) as TArgs));
     });
   };
 };

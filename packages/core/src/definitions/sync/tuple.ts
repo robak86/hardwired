@@ -1,4 +1,4 @@
-import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime.js';
 
 export const tuple = <T extends Array<InstanceDefinition<any, any>>, TMeta>(
@@ -9,12 +9,9 @@ export const tuple = <T extends Array<InstanceDefinition<any, any>>, TMeta>(
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
-  return instanceDefinition({
-    strategy,
-    create: context => {
-      return definitions.map(def => {
-        return context.buildWithStrategy(def);
-      }) as any;
-    },
+  return InstanceDefinition.create(strategy, context => {
+    return definitions.map(def => {
+      return context.buildWithStrategy(def);
+    }) as any;
   });
 };
