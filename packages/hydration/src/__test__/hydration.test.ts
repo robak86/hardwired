@@ -10,7 +10,7 @@ describe(`serialization`, () => {
 
     constructor() {}
 
-    hydrate(data: any) {
+    setState(data: any) {
       this._data = data;
     }
 
@@ -31,8 +31,8 @@ describe(`serialization`, () => {
         const def1 = hydratable('someId', DummyHydratable);
         const def2 = hydratable('otherId', DummyHydratable);
 
-        cnt.get(def1).hydrate({ value: 1 });
-        cnt.get(def2).hydrate({ value: 2 });
+        cnt.get(def1).setState({ value: 1 });
+        cnt.get(def2).setState({ value: 2 });
 
         const dump = interceptor.dump();
 
@@ -59,8 +59,8 @@ describe(`serialization`, () => {
         const def1 = hydratable('someId', DummyHydratable);
         const def2 = hydratable('otherId', DummyHydratable);
 
-        cnt.get(def1).hydrate({ value: 1 });
-        cnt.get(def2).hydrate({ value: 2 });
+        cnt.get(def1).setState({ value: 1 });
+        cnt.get(def2).setState({ value: 2 });
 
         const dump = interceptor.dump();
 

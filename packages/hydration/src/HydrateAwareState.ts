@@ -1,10 +1,10 @@
 export interface HydrateAwareState<T> {
   readonly state: T | null;
-  hydrate(data: T): void;
+  setState(data: T): void;
 }
 
 export const isHydratable = (val: any): val is HydrateAwareState<any> => {
-  return typeof val.hydrate === 'function' && !!getPropertyDescriptor(val, 'state');
+  return typeof val.setState === 'function' && !!getPropertyDescriptor(val, 'state');
 };
 
 function getPropertyDescriptor(obj: any, prop: string): PropertyDescriptor | undefined {
@@ -15,3 +15,19 @@ function getPropertyDescriptor(obj: any, prop: string): PropertyDescriptor | und
 
   return desc;
 }
+
+// type Payload = {
+//   some: number;
+// };
+//
+// class RequestState implements HydrateAwareState<Payload> {
+//   readonly state: Payload | null;
+//
+//   setState(data: Payload): void {}
+//
+//   load(fn: () => Promise<Payload>) {}
+//
+//   // get suspended: Promise<Payload> {
+//   //
+//   // }
+// }

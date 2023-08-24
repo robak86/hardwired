@@ -7,13 +7,21 @@ export class HydrationInterceptor implements ContainerInterceptor {
   constructor(private restoreFrom?: Record<string, any>) {}
 
   interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T {
+    console.log('intercept definition', definition, 'container id', context.id);
+
     if (definition.meta.hydratable) {
+      console.log('marking hydratable', definition.id);
+
       const instance = definition.create(context);
+      if (Object.prototype.hasOwnProperty.call(this.hydratableInstances, definition.id)) {
+        throw new Error(`Hydratable instance ${definition.id} already exists. There is a probably an id collision.`);
+      }
+
       this.hydratableInstances[definition.id] = instance;
 
       if (this.restoreFrom && Object.prototype.hasOwnProperty.call(this.restoreFrom, definition.id)) {
         if (isHydratable(instance)) {
-          instance.hydrate(this.restoreFrom[definition.id]);
+          instance.setState(this.restoreFrom[definition.id]);
         } else {
           throw new Error(`Trying to restore non-serializable instance ${definition.id}`);
         }
