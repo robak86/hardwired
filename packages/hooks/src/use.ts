@@ -15,6 +15,10 @@ export function use<T>(def: AnyInstanceDefinition<T, any>): Promise<T> | T {
   return getContainer().get(def);
 }
 
+export function useGlobalContainer() {
+  return getContainer();
+}
+
 export function provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped>, instance: T): void {
   const override = set(def as any, instance); //TODO
 

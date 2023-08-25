@@ -1,27 +1,46 @@
-import { AnyInstanceDefinition, IContainer, LifeTime } from 'hardwired';
+import { AnyInstanceDefinition, container, IContainer, LifeTime } from 'hardwired';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { isServer } from './utils/isServer.js';
 
-export type ContainerContext = {
+export type AsyncLocalStorageValue = {
   container: IContainer | null;
 };
 
 export type DefinitionOverride = AnyInstanceDefinition<any, LifeTime>;
 
-export const __storage = new AsyncLocalStorage<ContainerContext>();
+const __storage = new AsyncLocalStorage<AsyncLocalStorageValue>();
+const __container = container();
 
-export function withScope<T>(runFn: () => T): T {
-  return __storage.run({ container: getContainer().checkoutScope() as any }, runFn as () => T);
+export function runWithContainer<T>(container: IContainer, runFn: () => T): T {
+  return __storage.run({ container }, runFn);
 }
 
 export const hasContainer = () => {
   return !!__storage.getStore()?.container;
 };
 
-export const getContainer = () => {
-  const container = __storage.getStore()?.container;
-
-  if (!container) {
-    throw new Error(`Container is not in the scope.`);
+declare global {
+  interface Window {
+    __container?: IContainer;
   }
-  return container;
+}
+
+export const getContainer = (): IContainer => {
+  if (isServer) {
+    const container = __storage.getStore()?.container;
+
+    if (!container) {
+      return __container;
+    }
+
+    return container;
+  } else {
+    if (!window.__container) {
+      window.__container = __container;
+    }
+
+    return window.__container;
+  }
 };
+
+export const getContainerId = () => getContainer().id;

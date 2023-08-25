@@ -4,24 +4,29 @@ import { use } from '../use.js';
 import { describe, expect, it } from 'vitest';
 import { withScope } from '../withScope.js';
 import { withContainer } from '../withContainer.js';
+import { getContainerId } from '../containerStorage.js';
 
 describe(`AsyncContext`, () => {
   it(`works`, async () => {
     const someValue = scoped.fn(() => Math.random());
 
     const result = await withContainer(async () => {
+      console.log(getContainerId());
       const collected: number[] = [];
 
       collected.push(use(someValue));
       collected.push(use(someValue));
 
       withScope(() => {
+        console.log('withScope', getContainerId());
         collected.push(use(someValue));
       });
 
       await withScope(async () => {
+        console.log('withscope2', getContainerId());
         collected.push(use(someValue));
       });
+      console.log(getContainerId());
 
       return collected;
     });
