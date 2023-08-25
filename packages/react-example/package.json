@@ -43,9 +43,11 @@
     "start": "vite"
   },
   "exports": {
-    "default": "./dist/esm/index.js",
-    "import": "./dist/esm/index.js",
-    "types": "./dist/esm/index.d.ts",
-    "require": "./dist/cjs/index.js"
+    ".": {
+      "default": "./dist/esm/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts",
+      "require": "./dist/cjs/index.js"
+    }
   }
 }

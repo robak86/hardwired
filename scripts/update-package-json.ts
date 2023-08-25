@@ -20,12 +20,17 @@ packages.forEach(packageName => {
 
   packageJSONData.main = './dist/cjs/index.js';
   packageJSONData.types = './dist/cjs/index.d.ts';
-  packageJSONData.exports = {
-    default: './dist/esm/index.js',
-    import: './dist/esm/index.js',
-    types: './dist/esm/index.d.ts',
-    require: './dist/cjs/index.js',
+
+  const exportsDefaults = {
+    '.': {
+      default: './dist/esm/index.js',
+      import: './dist/esm/index.js',
+      types: './dist/esm/index.d.ts',
+      require: './dist/cjs/index.js',
+    },
   };
+
+  packageJSONData.exports = { ...(packageJSONData.exports || {}), ...exportsDefaults };
   packageJSONData.files = ['dist', 'README.md'];
   fs.writeFileSync(packageJSONPath, JSON.stringify(packageJSONData, null, '  '));
 });
