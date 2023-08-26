@@ -6,7 +6,7 @@ import { v4 } from 'uuid';
 export class InstanceDefinition<TInstance, TLifeTime extends LifeTime> {
   static create<TInstance, TLifeTime extends LifeTime>(
     strategy: TLifeTime,
-    create: (context: ContainerContext) => TInstance, // _ is a fake parameter introduced in order to preserve TExternal type
+    create: (context: ContainerContext) => TInstance,
     meta: Record<string, any> = {},
   ) {
     return new InstanceDefinition<TInstance, TLifeTime>(v4(), Resolution.sync, strategy, create, meta);
@@ -16,7 +16,7 @@ export class InstanceDefinition<TInstance, TLifeTime extends LifeTime> {
     readonly id: string,
     readonly resolution: Resolution.sync,
     readonly strategy: TLifeTime,
-    readonly create: (context: ContainerContext) => TInstance, // _ is a fake parameter introduced in order to preserve TExternal type
+    readonly create: (context: ContainerContext) => TInstance,
     readonly meta: Record<string, any>,
   ) {}
 }

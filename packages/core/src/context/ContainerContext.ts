@@ -14,7 +14,6 @@ import { ContextEvents } from '../events/ContextEvents.js';
 export type ContainerInterceptor = {
   interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
   interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any>, context: ContainerContext): Promise<T>;
-  interceptScopeCreate?(currentContext: ContainerContext): ContainerContext;
 };
 
 export class ContainerContext implements InstancesBuilder {
