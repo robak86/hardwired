@@ -70,7 +70,15 @@ function updateTsConfig(
 ) {
   const tsconfigPath = path.join(packagesRoot, packageDirname, tsconfigFileName);
   const existingConfigData = fs.readFileSync(tsconfigPath);
-  const existingConfig = JSON.parse(existingConfigData.toString());
+
+  let existingConfig;
+
+  try {
+    existingConfig = JSON.parse(existingConfigData.toString());
+  } catch (err) {
+    console.error(`Failed to parse tsconfig.json ${tsconfigPath}`);
+    throw err;
+  }
 
   const internalDependencies = resolveInternalDependencies(internalDependencyMap.get(packageName)!);
 
