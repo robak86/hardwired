@@ -3,14 +3,14 @@ import { replace, scoped, value } from 'hardwired';
 import { use } from '../use.js';
 import { describe, expect, it } from 'vitest';
 import { withScope } from '../withScope.js';
-import { withContainer } from '../withContainer.js';
+import { withLocalContainer } from '../withLocalContainer.js';
 import { getContainerId } from '../asyncContainerStorage.js';
 
 describe(`AsyncContext`, () => {
   it(`works`, async () => {
     const someValue = scoped.fn(() => Math.random());
 
-    const result = await withContainer(async () => {
+    const result = await withLocalContainer(async () => {
       console.log(getContainerId());
       const collected: number[] = [];
 
@@ -39,7 +39,7 @@ describe(`AsyncContext`, () => {
   it(`works with overrides`, async () => {
     const someValue = scoped.fn(() => 1);
 
-    const result = await withContainer(async () => {
+    const result = await withLocalContainer(async () => {
       const collected: number[] = [];
 
       collected.push(use(someValue));
