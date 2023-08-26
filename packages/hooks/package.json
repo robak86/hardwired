@@ -24,10 +24,9 @@
   },
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
-  "dependencies": {
-    "hardwired": "0.8.2"
+  "peerDependencies": {
+    "hardwired": "0.8.3"
   },
-  "devDependencies": {},
   "files": [
     "dist",
     "README.md"

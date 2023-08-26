@@ -25,7 +25,7 @@
   "types": "./dist/cjs/index.d.ts",
   "dependencies": {},
   "peerDependencies": {
-    "hardwired": "0.8.2"
+    "hardwired": "0.8.3"
   },
   "files": [
     "dist",

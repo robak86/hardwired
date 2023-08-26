@@ -6,7 +6,11 @@
     "composite": true,
     "jsx": "react"
   },
-  "references": [],
+  "references": [
+    {
+      "path": "../core/tsconfig.json"
+    }
+  ],
   "exclude": [
     "./dist"
   ],
