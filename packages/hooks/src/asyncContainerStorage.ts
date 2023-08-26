@@ -1,10 +1,16 @@
 import { AnyInstanceDefinition, container, IContainer, LifeTime } from 'hardwired';
-import { AsyncLocalStorage } from 'node:async_hooks';
+import { AsyncLocalStorage } from './polyfill/async_hooks.js';
 import { isServer } from './utils/isServer.js';
 
 export type AsyncLocalStorageValue = {
   container: IContainer | null;
 };
+
+declare global {
+  interface Window {
+    __container?: IContainer;
+  }
+}
 
 export type DefinitionOverride = AnyInstanceDefinition<any, LifeTime>;
 
@@ -15,17 +21,11 @@ export function runWithContainer<T>(container: IContainer, runFn: () => T): T {
   return __storage.run({ container }, runFn);
 }
 
-export const hasContainer = () => {
+export function hasLocalContainer() {
   return !!__storage.getStore()?.container;
-};
-
-declare global {
-  interface Window {
-    __container?: IContainer;
-  }
 }
 
-export const getContainer = (): IContainer => {
+export function useContainer(): IContainer {
   if (isServer) {
     const container = __storage.getStore()?.container;
 
@@ -41,6 +41,6 @@ export const getContainer = (): IContainer => {
 
     return window.__container;
   }
-};
+}
 
-export const getContainerId = () => getContainer().id;
+export const getContainerId = () => useContainer().id;

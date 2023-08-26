@@ -1,5 +1,4 @@
-import { DefinitionOverride, getContainer, hasContainer, runWithContainer } from './containerStorage.js';
-import { container } from 'hardwired';
+import { DefinitionOverride, useContainer, runWithContainer } from './asyncContainerStorage.js';
 import { isServer } from './utils/isServer.js';
 
 export function withScope<T>(runFn: () => T): T;
@@ -14,11 +13,5 @@ export function withScope<T>(overridesOrRunFn: DefinitionOverride[] | (() => T),
     );
   }
 
-  if (!hasContainer()) {
-    throw new Error(
-      `Container is not in the current execution scope. Wrap your code with withContainer(() => your code here)`,
-    );
-  }
-
-  return runWithContainer(getContainer().checkoutScope({ overrides: overrides }), run);
+  return runWithContainer(useContainer().checkoutScope({ overrides: overrides }), run);
 }

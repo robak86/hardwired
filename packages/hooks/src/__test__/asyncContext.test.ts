@@ -4,7 +4,7 @@ import { use } from '../use.js';
 import { describe, expect, it } from 'vitest';
 import { withScope } from '../withScope.js';
 import { withContainer } from '../withContainer.js';
-import { getContainerId } from '../containerStorage.js';
+import { getContainerId } from '../asyncContainerStorage.js';
 
 describe(`AsyncContext`, () => {
   it(`works`, async () => {

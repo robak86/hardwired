@@ -4,9 +4,8 @@
     "outDir": "./dist/esm",
     "rootDir": "./src",
     "composite": true,
-    "jsx": "react",
-    "module": "es2022",
-    "target": "es2022"
+    "module": "nodenext",
+    "target": "es2022",
   },
   "references": [
     {
