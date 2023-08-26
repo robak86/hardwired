@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "composite": true,
     "module": "nodenext",
-    "target": "es2022",
+    "target": "es2022"
   },
   "references": [
     {

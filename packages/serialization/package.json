@@ -1,5 +1,5 @@
 {
-  "name": "hardwired-hydration",
+  "name": "hardwired-serializable",
   "version": "0.8.2",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",

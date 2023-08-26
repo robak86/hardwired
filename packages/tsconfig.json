@@ -15,10 +15,10 @@
       "path": "./http-server-example-wip/tsconfig.json"
     },
     {
-      "path": "./hydration/tsconfig.json"
+      "path": "./react-example/tsconfig.json"
     },
     {
-      "path": "./react-example/tsconfig.json"
+      "path": "./serialization/tsconfig.json"
     }
   ]
 }

@@ -1,23 +1,25 @@
 import { AsyncInstanceDefinition, ContainerContext, ContainerInterceptor, InstanceDefinition } from 'hardwired';
-import { isHydratable } from './HydrateAwareState.js';
+import { isSerializable } from '../abstract/Serializable.js';
 
-export class HydrationInterceptor implements ContainerInterceptor {
-  private hydratableInstances: Record<string, any> = {};
+export class SerializationInterceptor implements ContainerInterceptor {
+  private serializableInstances: Record<string, any> = {};
 
   constructor(private restoreFrom?: Record<string, any>) {}
 
   interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T {
-    if (definition.meta.hydratable) {
+    if (definition.meta.serializable) {
       const instance = definition.create(context);
-      if (Object.prototype.hasOwnProperty.call(this.hydratableInstances, definition.id)) {
-        throw new Error(`Hydratable instance ${definition.id} already exists. There is a probably an id collision.`);
+      if (Object.prototype.hasOwnProperty.call(this.serializableInstances, definition.id)) {
+        throw new Error(
+          `Serializable instance ${definition.id} already marked for serialization. There is a probably an id collision.`,
+        );
       }
 
-      this.hydratableInstances[definition.id] = instance;
+      this.serializableInstances[definition.id] = instance;
 
       if (this.restoreFrom && Object.prototype.hasOwnProperty.call(this.restoreFrom, definition.id)) {
-        if (isHydratable(instance)) {
-          instance.setState(this.restoreFrom[definition.id]);
+        if (isSerializable(instance)) {
+          instance.restore(this.restoreFrom[definition.id]);
         } else {
           throw new Error(`Trying to restore non-serializable instance ${definition.id}`);
         }
@@ -35,9 +37,9 @@ export class HydrationInterceptor implements ContainerInterceptor {
 
   dump() {
     const output = {} as any;
-    for (const [id, instance] of Object.entries(this.hydratableInstances)) {
-      if (isHydratable(instance)) {
-        output[id] = instance.state;
+    for (const [id, instance] of Object.entries(this.serializableInstances)) {
+      if (isSerializable(instance)) {
+        output[id] = instance.dump();
       } else {
         throw new Error('Implement me!');
       }

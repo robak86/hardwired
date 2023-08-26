@@ -6,10 +6,10 @@ import {
   LifeTime,
   Resolution,
 } from 'hardwired';
-import { HydrateAwareState } from './HydrateAwareState.js';
+import { Serializable } from '../abstract/Serializable.js';
 
-export const hydratable = <
-  TInstance extends HydrateAwareState<any>,
+export const serializable = <
+  TInstance extends Serializable<any>,
   TArgs extends any[],
   TDependencies extends { [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K], LifeTime.scoped> },
 >(
@@ -25,7 +25,7 @@ export const hydratable = <
     LifeTime.scoped,
     context => new cls(...(dependencies.map(context.buildWithStrategy) as TArgs)),
     {
-      hydratable: true,
+      serializable: true,
     },
   );
 };
