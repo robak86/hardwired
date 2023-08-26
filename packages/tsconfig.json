@@ -18,7 +18,7 @@
       "path": "./react-example/tsconfig.json"
     },
     {
-      "path": "./serialization/tsconfig.json"
+      "path": "./serializable/tsconfig.json"
     }
   ]
 }
