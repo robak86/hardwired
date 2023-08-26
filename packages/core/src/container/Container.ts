@@ -14,6 +14,10 @@ import { ContextEvents } from '../events/ContextEvents.js';
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext) {}
 
+  get parentId() {
+    return this.containerContext.parentId;
+  }
+
   get id() {
     return this.containerContext.id;
   }

@@ -30,5 +30,6 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime> {
   readonly id: string;
+  readonly parentId: string | null;
   readonly events: ContextEvents;
 }

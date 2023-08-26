@@ -25,6 +25,7 @@ export class ContainerContext implements InstancesBuilder {
     const instancesEntries = InstancesDefinitionsRegistry.empty();
 
     return new ContainerContext(
+      null,
       instancesEntries,
       InstancesStore.create([]),
       strategiesRegistry,
@@ -42,6 +43,7 @@ export class ContainerContext implements InstancesBuilder {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
     return new ContainerContext(
+      null,
       definitionsRegistry,
       InstancesStore.create(scopeOverrides),
       strategiesRegistry,
@@ -53,10 +55,11 @@ export class ContainerContext implements InstancesBuilder {
   public readonly id = v4();
 
   constructor(
-    private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
-    private instancesCache: InstancesStore,
-    private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    private interceptors: ContainerInterceptor,
+    public readonly parentId: string | null,
+    private readonly instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
+    private readonly instancesCache: InstancesStore,
+    private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
+    private readonly interceptors: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {}
 
@@ -102,6 +105,7 @@ export class ContainerContext implements InstancesBuilder {
     const { overrides = [] } = options;
 
     const scopeContext = new ContainerContext(
+      this.id,
       this.instancesDefinitionsRegistry.checkoutForScope(overrides),
       this.instancesCache.childScope(overrides),
       this.strategiesRegistry,
