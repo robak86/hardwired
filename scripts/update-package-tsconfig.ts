@@ -21,6 +21,7 @@ const packageJSONMap: Map<
     name: string;
     dependencies: { [packageName: string]: string };
     devDependencies: { [packageName: string]: string };
+    peerDependencies: { [packageName: string]: string };
   }
 > = new Map();
 
@@ -36,11 +37,12 @@ packageDirectories.forEach(packageDirname => {
 
 const internalDependencyMap: Map<string, string[]> = new Map();
 packageDirnameMap.forEach((_packageDirname, packageName) => {
-  const { dependencies, devDependencies } = packageJSONMap.get(packageName)!;
+  const { dependencies, devDependencies, peerDependencies } = packageJSONMap.get(packageName)!;
 
   const internalDependencies = [
     ...(dependencies ? Object.keys(dependencies) : []),
     ...(devDependencies ? Object.keys(devDependencies) : []),
+    ...(peerDependencies ? Object.keys(peerDependencies) : []),
   ].filter(dep => packageDirnameMap.has(dep));
 
   internalDependencyMap.set(packageName, internalDependencies);
