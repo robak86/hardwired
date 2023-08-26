@@ -34,7 +34,7 @@ describe(`serialization`, () => {
         cnt.get(def1).setState({ value: 1 });
         cnt.get(def2).setState({ value: 2 });
 
-        const dump = interceptor.dump();
+        const dump = interceptor.dumpJSON();
 
         const parsed = JSON.parse(dump);
         expect(parsed).toEqual({
@@ -62,7 +62,7 @@ describe(`serialization`, () => {
         cnt.get(def1).setState({ value: 1 });
         cnt.get(def2).setState({ value: 2 });
 
-        const dump = interceptor.dump();
+        const dump = interceptor.dumpJSON();
 
         const restoringInterceptor = new HydrationInterceptor(JSON.parse(dump));
         const cnt2 = container({ interceptor: restoringInterceptor });

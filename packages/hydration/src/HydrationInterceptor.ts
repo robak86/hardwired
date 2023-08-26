@@ -7,11 +7,7 @@ export class HydrationInterceptor implements ContainerInterceptor {
   constructor(private restoreFrom?: Record<string, any>) {}
 
   interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T {
-    console.log('intercept definition', definition, 'container id', context.id);
-
     if (definition.meta.hydratable) {
-      console.log('marking hydratable', definition.id);
-
       const instance = definition.create(context);
       if (Object.prototype.hasOwnProperty.call(this.hydratableInstances, definition.id)) {
         throw new Error(`Hydratable instance ${definition.id} already exists. There is a probably an id collision.`);
@@ -37,7 +33,7 @@ export class HydrationInterceptor implements ContainerInterceptor {
     throw new Error('Implement me!');
   }
 
-  dump(): string {
+  dump() {
     const output = {} as any;
     for (const [id, instance] of Object.entries(this.hydratableInstances)) {
       if (isHydratable(instance)) {
@@ -47,6 +43,10 @@ export class HydrationInterceptor implements ContainerInterceptor {
       }
     }
 
-    return JSON.stringify(output);
+    return output;
+  }
+
+  dumpJSON(): string {
+    return JSON.stringify(this.dump());
   }
 }

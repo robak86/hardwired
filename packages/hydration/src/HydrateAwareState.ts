@@ -15,19 +15,3 @@ function getPropertyDescriptor(obj: any, prop: string): PropertyDescriptor | und
 
   return desc;
 }
-
-// type Payload = {
-//   some: number;
-// };
-//
-// class RequestState implements HydrateAwareState<Payload> {
-//   readonly state: Payload | null;
-//
-//   setState(data: Payload): void {}
-//
-//   load(fn: () => Promise<Payload>) {}
-//
-//   // get suspended: Promise<Payload> {
-//   //
-//   // }
-// }
