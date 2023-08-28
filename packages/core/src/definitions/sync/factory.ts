@@ -1,4 +1,4 @@
-import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import {
@@ -30,25 +30,22 @@ export type FactoryBuildFn = {
 
 // export const factory: FactoryBuildFn = (definition: any, factoryMixingDef?: any): any => {
 export const factory: FactoryBuildFn = (definition: any, ...dependencies: InstanceDefinition<any, any>[]): any => {
-  return instanceDefinition({
-    strategy: LifeTime.transient,
-    create: (context: ContainerContext): IFactory<any, any> => {
-      // const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
-      return {
-        // ...base,
-        build(...params): any {
-          if (params.length !== dependencies.length) {
-            throw new Error(
-              `Factory called with wrong count of params. Expected ${dependencies.length} implicit definitions.`,
-            );
-          }
+  return InstanceDefinition.create(LifeTime.transient, (context: ContainerContext): IFactory<any, any> => {
+    // const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
+    return {
+      // ...base,
+      build(...params): any {
+        if (params.length !== dependencies.length) {
+          throw new Error(
+            `Factory called with wrong count of params. Expected ${dependencies.length} implicit definitions.`,
+          );
+        }
 
-          const scopedContext = context.checkoutScope({
-            overrides: dependencies.map((dep, idx) => set(dep, params[idx])),
-          });
-          return scopedContext.get(definition);
-        },
-      };
-    },
+        const scopedContext = context.checkoutScope({
+          overrides: dependencies.map((dep, idx) => set(dep, params[idx])),
+        });
+        return scopedContext.get(definition);
+      },
+    };
   });
 };

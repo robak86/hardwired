@@ -3,14 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist/esm",
     "rootDir": "./src",
-    "composite": true,
-    "jsx": "react"
+    "composite": true
   },
-  "references": [
-    {
-      "path": "../core/tsconfig.json"
-    }
-  ],
+  "references": [],
   "exclude": [
     "./dist"
   ],

@@ -11,16 +11,20 @@ import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 
-export type Interceptors = {
-  interceptSync?<T>(instance: T, definition: InstanceDefinition<T, any>, context: InstancesBuilder): T;
-  interceptAsync?<T>(instance: T, definition: AsyncInstanceDefinition<T, any>, context: InstancesBuilder): T;
+export type ContainerInterceptor = {
+  interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
+  interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any>, context: ContainerContext): Promise<T>;
 };
 
 export class ContainerContext implements InstancesBuilder {
-  static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry, interceptors: Interceptors = {}) {
+  static empty(
+    strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
+    interceptors: ContainerInterceptor = {},
+  ) {
     const instancesEntries = InstancesDefinitionsRegistry.empty();
 
     return new ContainerContext(
+      null,
       instancesEntries,
       InstancesStore.create([]),
       strategiesRegistry,
@@ -33,11 +37,12 @@ export class ContainerContext implements InstancesBuilder {
     scopeOverrides: AnyInstanceDefinition<any, any>[],
     globalOverrides: AnyInstanceDefinition<any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    interceptors: Interceptors = {},
+    interceptors: ContainerInterceptor = {},
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
     return new ContainerContext(
+      null,
       definitionsRegistry,
       InstancesStore.create(scopeOverrides),
       strategiesRegistry,
@@ -49,10 +54,11 @@ export class ContainerContext implements InstancesBuilder {
   public readonly id = v4();
 
   constructor(
-    private instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
-    private instancesCache: InstancesStore,
-    private strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    private interceptors: Interceptors,
+    public readonly parentId: string | null,
+    private readonly instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
+    private readonly instancesCache: InstancesStore,
+    private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
+    private readonly interceptors: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {}
 
@@ -75,17 +81,16 @@ export class ContainerContext implements InstancesBuilder {
 
   buildExact = (definition: AnyInstanceDefinition<any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-    const instance = patchedInstanceDef.create(this);
 
     if (definition.resolution === Resolution.sync && this.interceptors.interceptSync) {
-      return this.interceptors.interceptSync(instance, definition, this);
+      return this.interceptors.interceptSync(definition, this);
     }
 
     if (definition.resolution === Resolution.async && this.interceptors.interceptAsync) {
-      return Promise.resolve(instance).then(instance => this.interceptors.interceptAsync?.(instance, definition, this));
+      return this.interceptors.interceptAsync?.(definition, this);
     }
 
-    return instance;
+    return patchedInstanceDef.create(this);
   };
 
   buildWithStrategy = (definition: AnyInstanceDefinition<any, any>) => {
@@ -99,10 +104,11 @@ export class ContainerContext implements InstancesBuilder {
     const { overrides = [] } = options;
 
     const scopeContext = new ContainerContext(
+      this.id,
       this.instancesDefinitionsRegistry.checkoutForScope(overrides),
       this.instancesCache.childScope(overrides),
       this.strategiesRegistry,
-      options.interceptors || {},
+      options.interceptor || {},
       this.events,
     );
 

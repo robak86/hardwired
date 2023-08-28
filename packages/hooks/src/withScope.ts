@@ -1,16 +1,17 @@
-import { __storage, DefinitionOverride, getContainer, hasContainer } from './containerStorage.js';
-import { container } from 'hardwired';
+import { DefinitionOverride, useContainer, runWithContainer } from './asyncContainerStorage.js';
+import { isServer } from './utils/isServer.js';
 
 export function withScope<T>(runFn: () => T): T;
 export function withScope<T>(overrides: DefinitionOverride[], runFn: () => T): T;
 export function withScope<T>(overridesOrRunFn: DefinitionOverride[] | (() => T), runFn?: () => T): T {
   const overrides = (runFn ? overridesOrRunFn : []) as DefinitionOverride[];
-  const run = runFn || overridesOrRunFn;
+  const run = (runFn || overridesOrRunFn) as () => T;
 
-  if (hasContainer()) {
-    return __storage.run({ container: getContainer().checkoutScope({ overrides: overrides }) }, run as () => T);
-  } else {
-    console.warn(`Missing container context. Using implicit temporal container`);
-    return __storage.run({ container: container().checkoutScope({ overrides: overrides }) }, run as () => T);
+  if (!isServer) {
+    throw new Error(
+      `withScope is not supported on the browser. It requires AsyncLocalStorage that is only available on the NodeJS.`,
+    );
   }
+
+  return runWithContainer(useContainer().checkoutScope({ overrides: overrides }), run);
 }

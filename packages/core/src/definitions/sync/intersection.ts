@@ -1,4 +1,4 @@
-import { instanceDefinition, InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime.js';
 
 export type UnionToIntersection<Union> = (Union extends unknown ? (distributedUnion: Union) => void : never) extends (
@@ -19,15 +19,12 @@ export const intersection = <TDefinitions extends Array<InstanceDefinition<objec
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
-  return instanceDefinition({
-    strategy,
-    create: context => {
-      return definitions.reduce((result, def) => {
-        return {
-          ...result,
-          ...context.buildWithStrategy(def),
-        };
-      }, {}) as any;
-    },
+  return InstanceDefinition.create(strategy, context => {
+    return definitions.reduce((result, def) => {
+      return {
+        ...result,
+        ...context.buildWithStrategy(def),
+      };
+    }, {}) as any;
   });
 };

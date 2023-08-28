@@ -6,7 +6,7 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { ContextEvents } from '../events/ContextEvents.js';
 
-export interface ISyncContainer<TAllowedLifeTime extends LifeTime = LifeTime> {
+export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   get<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any>): TValue;
   get<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any>): Promise<TValue>;
   get<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> | TValue;
@@ -27,8 +27,9 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
 }
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
-  extends ISyncContainer<TAllowedLifeTime>,
+  extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime> {
   readonly id: string;
+  readonly parentId: string | null;
   readonly events: ContextEvents;
 }

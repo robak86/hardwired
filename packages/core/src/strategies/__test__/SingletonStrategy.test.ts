@@ -126,6 +126,7 @@ describe(`SingletonStrategy`, () => {
         const level1 = root.checkoutScope({ overrides: [patchedA] });
         const level2 = level1.checkoutScope({});
 
+        expect(level1.get(a)).toEqual(2);
         expect(level2.get(a)).toEqual(2);
         expect(root.get(a)).toEqual(1);
       });
@@ -226,7 +227,10 @@ describe(`SingletonStrategy`, () => {
     };
 
     class TestClassArgs2 {
-      constructor(public someNumber: number, public someString: string) {}
+      constructor(
+        public someNumber: number,
+        public someString: string,
+      ) {}
     }
 
     describe(`class`, () => {

@@ -1,5 +1,5 @@
 import { ClassType } from '../../utils/ClassType.js';
-import { instanceDefinition, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { assertValidDependency, InstanceDefinitionDependency } from '../abstract/sync/InstanceDefinitionDependency.js';
 
@@ -14,9 +14,9 @@ export const klass = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   ): InstanceDefinition<TInstance, TLifeTime> => {
     assertValidDependency(strategy, dependencies);
 
-    return instanceDefinition({
+    return InstanceDefinition.create(
       strategy,
-      create: context => new cls(...(dependencies.map(context.buildWithStrategy) as TArgs)),
-    });
+      context => new cls(...(dependencies.map(context.buildWithStrategy) as TArgs)),
+    );
   };
 };

@@ -16,7 +16,12 @@ export type OtherObject = {
 };
 
 class Consumer {
-  constructor(private a: SomeObject, private b: OtherObject, private someValue: number, private consumer?: Consumer) {}
+  constructor(
+    private a: SomeObject,
+    private b: OtherObject,
+    private someValue: number,
+    private consumer?: Consumer,
+  ) {}
 }
 
 const a1 = implicit<SomeObject>('someObject');

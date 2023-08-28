@@ -10,7 +10,10 @@ import { implicit } from '../implicit.js';
 describe(`klass`, () => {
   describe(`external params`, () => {
     class TestClass {
-      constructor(private num: number, private ext: string) {}
+      constructor(
+        private num: number,
+        private ext: string,
+      ) {}
     }
 
     describe(`types`, () => {

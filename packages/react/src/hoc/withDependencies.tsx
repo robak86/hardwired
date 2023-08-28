@@ -4,9 +4,9 @@ import { Diff } from 'utility-types';
 import { InstanceDefinition } from 'hardwired';
 
 export type WithDependenciesConfigured<TDependencies extends object, TExternalProps = {}> = {
-  <TProps extends TDependencies>(WrappedComponent: React.ComponentType<TProps>): React.ComponentType<
-    Diff<TProps, TDependencies> & TExternalProps
-  >;
+  <TProps extends TDependencies>(
+    WrappedComponent: React.ComponentType<TProps>,
+  ): React.ComponentType<Diff<TProps, TDependencies> & TExternalProps>;
 };
 
 export function withDependencies<TDependencies extends Record<string, any>>(

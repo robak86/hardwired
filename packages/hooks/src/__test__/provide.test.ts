@@ -2,7 +2,7 @@ import { implicit, implicitAsync } from 'hardwired';
 import { provide, provideAsync, use } from '../use.js';
 import { describe, expect, it } from 'vitest';
 import { withScope } from '../withScope.js';
-import { withContainer } from '../withContainer.js';
+import { withLocalContainer } from '../withLocalContainer.js';
 
 describe(`provide`, () => {
   const impl = implicit<number>('someNumber');
@@ -10,7 +10,7 @@ describe(`provide`, () => {
 
   describe(`root container`, () => {
     it(`returns correct value`, async () => {
-      const result = withContainer(() => {
+      const result = withLocalContainer(() => {
         provide(impl, 123);
         return use(impl);
       });
@@ -19,7 +19,7 @@ describe(`provide`, () => {
     });
 
     it(`can be resolved with async`, async () => {
-      const result = await withContainer(async () => {
+      const result = await withLocalContainer(async () => {
         provideAsync(implAsync, async () => 123);
         return use(implAsync);
       });
@@ -28,7 +28,7 @@ describe(`provide`, () => {
     });
 
     it(`returns correct async value`, async () => {
-      const result = await withContainer(async () => {
+      const result = await withLocalContainer(async () => {
         provideAsync(implAsync, async () => 123);
         return await use(implAsync);
       });
@@ -38,7 +38,7 @@ describe(`provide`, () => {
 
     it(`throws if definition was already instantiated`, async () => {
       const run = () => {
-        const result = withContainer(() => {
+        const result = withLocalContainer(() => {
           provide(impl, 123);
           const instance = use(impl);
           provide(impl, 123);
@@ -50,7 +50,7 @@ describe(`provide`, () => {
     });
 
     it(`allows overriding values until an instance is created`, async () => {
-      const result = withContainer(() => {
+      const result = withLocalContainer(() => {
         provide(impl, 123);
         provide(impl, 456);
         return use(impl);
@@ -62,7 +62,7 @@ describe(`provide`, () => {
 
   describe(`child scope`, () => {
     it(`inherits overrides`, async () => {
-      const result = withContainer(() => {
+      const result = withLocalContainer(() => {
         provide(impl, 123);
         return withScope(() => {
           return use(impl);
@@ -73,7 +73,7 @@ describe(`provide`, () => {
     });
 
     it(`allows providing a new value for child scope`, async () => {
-      const result = withContainer(() => {
+      const result = withLocalContainer(() => {
         provide(impl, 123);
         return withScope(() => {
           provide(impl, 456);

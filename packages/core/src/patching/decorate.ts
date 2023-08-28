@@ -15,6 +15,7 @@ export function decorate<
     id: instance.id,
     strategy: instance.strategy,
     resolution: instance.resolution,
+    meta: {},
     create: context => {
       const decorated = instance.create(context);
       const decoratorDeps = dependencies.map(d => context.buildWithStrategy(d));

@@ -4,13 +4,15 @@
   "license": "MIT",
   "homepage": "https://github.com/robak86/hardwired",
   "description": "Hardwired integration for React",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "type": "module",
   "exports": {
-    "default": "./dist/esm/index.js",
-    "import": "./dist/esm/index.js",
-    "types": "./dist/esm/index.d.ts",
-    "require": "./dist/cjs/index.js"
+    ".": {
+      "default": "./dist/esm/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/esm/index.d.ts",
+      "require": "./dist/cjs/index.js"
+    }
   },
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
@@ -19,7 +21,7 @@
     "README.md"
   ],
   "dependencies": {
-    "hardwired": "*",
+    "hardwired": "0.8.3",
     "find-my-way": "*",
     "dotenv": "^16.0.1",
     "winston": "^3.3.3",

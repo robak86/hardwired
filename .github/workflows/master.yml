@@ -12,10 +12,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 17.x, 18.x, 19.x]
+        node-version: [16.x, 18.x, 19.x, 20.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
@@ -41,12 +41,12 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 18.x
 
       - run: yarn install
       - run: yarn build
@@ -65,3 +65,15 @@ jobs:
         with:
           token: ${{ secrets.NPM_TOKEN }}
           package: packages/react/package.json
+
+      - name: Publish hooks addon
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: packages/hooks/package.json
+
+      - name: Publish serializable addon
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          package: packages/serializable/package.json

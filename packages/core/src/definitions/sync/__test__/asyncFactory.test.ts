@@ -98,7 +98,10 @@ describe(`factory`, () => {
     }
 
     class Logger {
-      constructor(public request: Request, public requestId: string) {}
+      constructor(
+        public request: Request,
+        public requestId: string,
+      ) {}
     }
 
     class Router {
@@ -232,7 +235,10 @@ describe(`factory`, () => {
     }
 
     class Logger {
-      constructor(public request: Request, public requestId: string) {}
+      constructor(
+        public request: Request,
+        public requestId: string,
+      ) {}
     }
 
     class Router {
@@ -240,7 +246,10 @@ describe(`factory`, () => {
     }
 
     class App {
-      constructor(public router: Router, public envConfig: EnvConfig) {}
+      constructor(
+        public router: Router,
+        public envConfig: EnvConfig,
+      ) {}
     }
 
     class AppsCluster {
