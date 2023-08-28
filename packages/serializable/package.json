@@ -29,7 +29,11 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "!/**/__tests__",
+    "!/**/__test__",
+    "!/**/*.test.ts",
+    "!/**/*.test.tsx"
   ],
   "repository": {
     "type": "git",

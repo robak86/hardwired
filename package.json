@@ -62,7 +62,7 @@
     "@vitest/coverage-v8": "^0.34.3",
     "vite": "^4.4.9",
     "vitest": "^0.34.2",
-    "ts-monorepo": "^0.3.0"
+    "ts-monorepo": "^0.3.4"
   },
   "dependencies": {
     "memoize-one": "^6.0.0",

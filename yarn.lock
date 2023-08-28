@@ -4055,10 +4055,10 @@ ts-expect@^1.3.0:
   resolved "https://registry.yarnpkg.com/ts-expect/-/ts-expect-1.3.0.tgz#3f8d3966e0e22b5e2bb88337eb99db6816a4c1cf"
   integrity sha512-e4g0EJtAjk64xgnFPD6kTBUtpnMVzDrMb12N1YZV0VvSlhnVT3SGxiYTLdGy8Q5cYHOIC/FAHmZ10eGrAguicQ==
 
-ts-monorepo@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/ts-monorepo/-/ts-monorepo-0.3.0.tgz#6ab53843efbd59ae40a0acb4d57076ec7936eed0"
-  integrity sha512-FFVvsd4gMyGpZyUuMZdoYWjF85wD92PYa8+H1qI85hIeDo47KSp3mWw8MY/yuyzL3pSasyqdgqFQvzHNdPKy3g==
+ts-monorepo@^0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/ts-monorepo/-/ts-monorepo-0.3.4.tgz#ce5a25b64c050c461caacd778394efeea84a4421"
+  integrity sha512-WY5QEWWM8ZPy//Eo0xywT1vzINUoiD8nSv19R7A6IR7HiNq02wCeVK8JAQG9vCMVh9XJExbJAzCarodaaAGZ1g==
   dependencies:
     chalk "^4.1.0"
     commander "^11.0.0"

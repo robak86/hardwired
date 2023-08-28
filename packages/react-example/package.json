@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "hardwired": "*",
-    "hardwired-react": "*",
+    "hardwired": "0.8.3",
+    "hardwired-react": "0.8.3",
     "mobx": "^6.3.13",
     "mobx-react": "^7.2.1",
     "react": "^18.2.0",
