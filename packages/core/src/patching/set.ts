@@ -1,6 +1,5 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { Resolution } from '../definitions/abstract/Resolution.js';
 import { InstanceDefinition, isInstanceDef } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { AsyncInstanceDefinition, isAsyncInstanceDef } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 

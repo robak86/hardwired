@@ -79,7 +79,9 @@ export class ContainerContext implements InstancesBuilder {
     return this.buildWithStrategy(definition);
   }
 
-  buildExact = (definition: AnyInstanceDefinition<any, any>) => {
+  buildExact<T>(definition: InstanceDefinition<T, any>): T;
+  buildExact<T>(definition: AsyncInstanceDefinition<T, any>): Promise<T>;
+  buildExact<T>(definition: AnyInstanceDefinition<T, any>): T | Promise<T> {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     if (definition.resolution === Resolution.sync && this.interceptors.interceptSync) {
@@ -91,7 +93,7 @@ export class ContainerContext implements InstancesBuilder {
     }
 
     return patchedInstanceDef.create(this);
-  };
+  }
 
   buildWithStrategy = (definition: AnyInstanceDefinition<any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
