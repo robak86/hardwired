@@ -4,7 +4,7 @@
   "license": "MIT",
   "homepage": "https://github.com/robak86/hardwired",
   "description": "Hardwired integration for React",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "type": "module",
   "exports": {
     ".": {
@@ -21,7 +21,7 @@
     "README.md"
   ],
   "dependencies": {
-    "hardwired": "0.8.3",
+    "hardwired": "0.8.4",
     "find-my-way": "*",
     "dotenv": "^16.0.1",
     "winston": "^3.3.3",

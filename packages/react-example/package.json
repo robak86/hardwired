@@ -1,11 +1,11 @@
 {
   "name": "@hardwired/example",
-  "version": "0.1.0",
+  "version": "0.8.4",
   "private": true,
   "type": "module",
   "dependencies": {
-    "hardwired": "0.8.3",
-    "hardwired-react": "0.8.3",
+    "hardwired": "0.8.4",
+    "hardwired-react": "0.8.4",
     "mobx": "^6.3.13",
     "mobx-react": "^7.2.1",
     "react": "^18.2.0",
