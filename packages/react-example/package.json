@@ -6,8 +6,8 @@
   "dependencies": {
     "hardwired": "0.8.4",
     "hardwired-react": "0.8.4",
-    "mobx": "^6.3.13",
-    "mobx-react": "^7.2.1",
+    "mobx": "^6.12.3",
+    "mobx-react": "^9.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -35,8 +35,8 @@
     "README.md"
   ],
   "devDependencies": {
-    "@types/react": "^18.0.17",
-    "@types/react-dom": "^18.0.6",
+    "@types/react": "^18.2.78",
+    "@types/react-dom": "^18.2.25",
     "@vitejs/plugin-react": "^3.1.0"
   },
   "scripts": {
