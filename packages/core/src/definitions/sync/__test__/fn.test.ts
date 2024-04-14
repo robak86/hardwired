@@ -10,6 +10,13 @@ describe(`fn`, () => {
 
     const implDef = implicit<number>('number');
 
+    it(`is type-safe`, async () => {
+      const dep = fn(LifeTime.scoped)(val => {
+        // TODO: not typesafe
+        // expectType<TypeEqual<typeof val, number>>(true);
+      }, implDef);
+    });
+
     describe(`singleton`, () => {
       describe(`compile-time`, () => {
         it(`does not accept implicit definitions`, async () => {

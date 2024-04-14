@@ -2,6 +2,7 @@ import { InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { assertValidDependency, InstanceDefinitionDependency } from '../abstract/sync/InstanceDefinitionDependency.js';
 
+// TODO: it's not type-safe when the user doesn't provide types for factory function arguments
 export const fn = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   return <
     TValue,
