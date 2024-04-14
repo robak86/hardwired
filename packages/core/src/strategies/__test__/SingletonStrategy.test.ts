@@ -23,7 +23,7 @@ describe(`SingletonStrategy`, () => {
     describe(`resolution`, () => {
       describe(`single module`, () => {
         const someValue = value('someString');
-        const a = singleton.class(TestClass, someValue);
+        const a = singleton.using(someValue).class(TestClass);
 
         it(`returns class instance`, async () => {
           const c = container();
@@ -58,11 +58,11 @@ describe(`SingletonStrategy`, () => {
         //   .build();
 
         const someValue = value('someValue');
-        const theSingleton = singleton.class(TestClass, someValue);
+        const theSingleton = singleton.using(someValue).class(TestClass);
 
-        const rootSingletonConsumer = singleton.class(TestClassConsumer, theSingleton);
-        const child1SingletonConsumer = singleton.class(TestClassConsumer, theSingleton);
-        const child2SingletonConsumer = singleton.class(TestClassConsumer, theSingleton);
+        const rootSingletonConsumer = singleton.using(theSingleton).class(TestClassConsumer);
+        const child1SingletonConsumer = singleton.using(theSingleton).class(TestClassConsumer);
+        const child2SingletonConsumer = singleton.using(theSingleton).class(TestClassConsumer);
 
         it(`reuses the same instance`, async () => {
           const c = container();
@@ -250,7 +250,7 @@ describe(`SingletonStrategy`, () => {
         it(`returns correct value, ex.1`, async () => {
           const asyncDep = singleton.asyncFn(async () => 123);
           const syncDep = singleton.fn(() => 'str');
-          const asyncDef = singleton.asyncClass(TestClassArgs2, asyncDep, syncDep);
+          const asyncDef = singleton.usingAsync(asyncDep, syncDep).class(TestClassArgs2);
           const result = await container().get(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
@@ -259,7 +259,7 @@ describe(`SingletonStrategy`, () => {
         it(`returns correct value, ex.2`, async () => {
           const asyncDep = singleton.asyncFn(async () => 123);
           const syncDep = singleton.asyncFn(async () => 'str');
-          const asyncDef = singleton.asyncClass(TestClassArgs2, asyncDep, syncDep);
+          const asyncDef = singleton.usingAsync(asyncDep, syncDep).class(TestClassArgs2);
           const result = await container().get(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);

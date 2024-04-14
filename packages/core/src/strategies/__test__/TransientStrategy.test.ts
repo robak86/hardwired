@@ -42,7 +42,7 @@ describe(`ClassTransientResolver`, () => {
     }
 
     const someValue = transient.asyncFn(async () => 'someString');
-    const a = transient.asyncClass(TestClass, someValue);
+    const a = transient.usingAsync(someValue).class(TestClass);
 
     it(`returns class instance`, async () => {
       const c = container();
