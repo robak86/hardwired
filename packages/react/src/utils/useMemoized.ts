@@ -1,11 +1,11 @@
-import * as React from 'react';
+import { useRef } from 'react';
 
 export const isShallowEqual = (arr1: ReadonlyArray<any>, arr2: ReadonlyArray<any>) => {
   return arr1.length === arr2.length && arr1.every((val, idx) => val === arr2[idx]);
 };
 
 export function useMemoized<T>(factory: () => T): (invalidateKeys: ReadonlyArray<any>) => T {
-  const scopedContainer = React.useRef<{
+  const scopedContainer = useRef<{
     invalidationKeys: ReadonlyArray<any>;
     value: T | undefined;
   }>({ invalidationKeys: [], value: undefined });

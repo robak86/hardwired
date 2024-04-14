@@ -1,20 +1,20 @@
-import * as React from 'react';
 import { useContainerContext } from '../context/ContainerContext.js';
 import { Diff } from 'utility-types';
 import { InstanceDefinition } from 'hardwired';
+import { ComponentType } from 'react';
 
 export type WithDependenciesConfigured<TDependencies extends object, TExternalProps = {}> = {
   <TProps extends TDependencies>(
-    WrappedComponent: React.ComponentType<TProps>,
-  ): React.ComponentType<Diff<TProps, TDependencies> & TExternalProps>;
+    WrappedComponent: ComponentType<TProps>,
+  ): ComponentType<Diff<TProps, TDependencies> & TExternalProps>;
 };
 
 export function withDependencies<TDependencies extends Record<string, any>>(
   definition: InstanceDefinition<TDependencies, any>,
 ): WithDependenciesConfigured<TDependencies> {
   return <TProps extends TDependencies>(
-    WrappedComponent: React.ComponentType<TProps>,
-  ): React.ComponentType<Diff<TProps, TDependencies>> => {
+    WrappedComponent: ComponentType<TProps>,
+  ): ComponentType<Diff<TProps, TDependencies>> => {
     const ContainerScopeHOC = ({ ...props }) => {
       const containerContext = useContainerContext();
       const deps = containerContext.container?.get(definition);

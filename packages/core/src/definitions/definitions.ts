@@ -7,16 +7,22 @@ import { asyncPartial } from './async/asyncPartial.js';
 import { LifeTime } from './abstract/LifeTime.js';
 import { define } from './sync/define.js';
 import { asyncDefine } from './async/asyncDefine.js';
+import { using } from '../builder/DefinitionBuilder.js';
+import { usingAsync } from '../builder/AsyncDefinitionBuilder.js';
 
 export const singleton = {
   fn: fn(LifeTime.singleton),
   class: klass(LifeTime.singleton),
   partial: partial(LifeTime.singleton),
   define: define(LifeTime.singleton),
+
   asyncFn: asyncFn(LifeTime.singleton),
   asyncClass: asyncClass(LifeTime.singleton),
   asyncPartial: asyncPartial(LifeTime.singleton),
   asyncDefine: asyncDefine(LifeTime.singleton),
+
+  using: using(LifeTime.singleton),
+  usingAsync: usingAsync(LifeTime.singleton),
 };
 
 export const transient = {
@@ -29,6 +35,9 @@ export const transient = {
   asyncClass: asyncClass(LifeTime.transient),
   asyncPartial: asyncPartial(LifeTime.transient),
   asyncDefine: asyncDefine(LifeTime.transient),
+
+  using: using(LifeTime.transient),
+  usingAsync: usingAsync(LifeTime.transient),
 };
 
 export const scoped = {
@@ -36,8 +45,12 @@ export const scoped = {
   class: klass(LifeTime.scoped),
   partial: partial(LifeTime.scoped),
   define: define(LifeTime.scoped),
+
   asyncFn: asyncFn(LifeTime.scoped),
   asyncClass: asyncClass(LifeTime.scoped),
   asyncPartial: asyncPartial(LifeTime.scoped),
   asyncDefine: asyncDefine(LifeTime.scoped),
+
+  using: using(LifeTime.scoped),
+  usingAsync: usingAsync(LifeTime.scoped),
 };

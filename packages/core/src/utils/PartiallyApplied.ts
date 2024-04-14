@@ -37,4 +37,4 @@ export type PartiallyAppliedAsyncFn<A extends any[], D extends AsyncPartialFnDep
     A extends [...SameLength<D>, ...infer TRest] ? (...args:TRest) => R :
     never;
 
-type SameLength<T extends any[]> = { [K in keyof T]: any };
+type SameLength<T extends any[]> = T extends [infer First, ...infer Rest] ? [any, ...SameLength<Rest>] : [];

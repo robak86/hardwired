@@ -2,9 +2,8 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    coverage: {
-      provider: 'v8',
-      reporter: 'cobertura',
-    },
+    include: ['**/__test__/*.test.{ts,tsx}'],
+    clearMocks: true,
+    globals: true,
   },
 });

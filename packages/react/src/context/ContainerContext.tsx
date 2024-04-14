@@ -1,17 +1,16 @@
-import * as React from 'react';
-
 import { IContainer } from 'hardwired';
+import { createContext, useContext } from 'react';
 
 export type ContainerContextValue = {
   container: IContainer | undefined;
 };
 
-export const ContainerContext = React.createContext<ContainerContextValue>({
+export const ContainerContext = createContext<ContainerContextValue>({
   container: undefined,
 });
 
 export const useContainerContext = (): ContainerContextValue => {
-  return React.useContext(ContainerContext);
+  return useContext(ContainerContext);
 };
 
 export const useContainer = (): IContainer => {

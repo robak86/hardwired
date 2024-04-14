@@ -63,7 +63,7 @@ describe(`intersection`, () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
-        expect(combined.strategy).toEqual(LifeTime.singleton);
+        expect(combined.strategy).toEqual(LifeTime.transient);
       });
     });
 

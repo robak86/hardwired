@@ -1,11 +1,12 @@
 import { container, implicit, scoped, set, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
-import * as React from 'react';
+
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useDefinition } from '../useDefinition.js';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
+import { FC } from 'react';
 
 /**
  * @vitest-environment happy-dom
@@ -102,7 +103,7 @@ describe(`useDefinition`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const Consumer: React.FC<{ externalValue: string }> = ({ externalValue }) => {
+      const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
         const val1 = useDefinition(val1Def);
         return <DummyComponent value={val1} />;
       };

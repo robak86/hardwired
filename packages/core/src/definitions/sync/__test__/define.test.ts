@@ -77,7 +77,7 @@ describe(`define`, () => {
     it(`correctly uses singleton lifetime`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = define(LifeTime.scoped)(locator => {
+      const definition = scoped.using().define(locator => {
         return [locator.get(value), locator.get(value)];
       });
 
@@ -95,7 +95,7 @@ describe(`define`, () => {
       const singletonD = singleton.fn(() => new BoxedValue(Math.random()));
       const randomD = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const exampleD = scoped.define(locator => {
+      const exampleD = scoped.using().define(locator => {
         const s1 = locator.get(singletonD);
         const r1 = locator.get(randomD);
         const r2 = locator.get(randomD);
