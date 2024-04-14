@@ -57,7 +57,7 @@ describe(`object`, () => {
         const someNumberD = singleton.fn(() => 1);
         const someStr = scoped.fn(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
-        expect(composed.strategy).toEqual(LifeTime.singleton);
+        expect(composed.strategy).toEqual(LifeTime.transient);
       });
     });
 
