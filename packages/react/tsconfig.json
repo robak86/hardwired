@@ -4,7 +4,8 @@
     "outDir": "./dist/esm",
     "rootDir": "./src",
     "composite": true,
-    "jsx": "react"
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true
   },
   "references": [],
   "exclude": [

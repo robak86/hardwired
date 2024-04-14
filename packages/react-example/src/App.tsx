@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { observer } from 'mobx-react';
 import { CounterStore } from './counter/CounterStore.js';
 import { ContainerProvider, ContainerScope, useDefinitions } from 'hardwired-react';
@@ -42,7 +42,7 @@ export const LabeledCounter: FC = observer(() => {
   );
 });
 
-export const App = () => {
+export const App: FC = () => {
   return (
     <ContainerProvider>
       <ContainerScope overrides={[set(counterLabelValueDef, 'counter 1')]}>

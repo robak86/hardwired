@@ -3,8 +3,8 @@ import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { useDefinition } from '../../hooks/useDefinition.js';
 import { render } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import * as React from 'react';
+import { describe, expect, it } from 'vitest';
+import { FC } from 'react';
 
 /**
  * @vitest-environment happy-dom
@@ -66,7 +66,7 @@ describe(`ContainerScope`, () => {
         return <div data-testid={testId}>{value}</div>;
       };
 
-      const TestSubject: React.FC<{ scope1Keys: ReadonlyArray<any>; scope2Keys: ReadonlyArray<any> }> = ({
+      const TestSubject: FC<{ scope1Keys: ReadonlyArray<any>; scope2Keys: ReadonlyArray<any> }> = ({
         scope1Keys,
         scope2Keys,
       }) => (

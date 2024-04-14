@@ -1,8 +1,8 @@
 import { InstanceDefinition } from 'hardwired';
 
-import * as React from 'react';
 import { Optional } from 'utility-types';
 import { useDefinitions } from '../hooks/useDefinitions.js';
+import { FC } from 'react';
 
 export const inject =
   <TDefinitions extends Record<string, InstanceDefinition<any, any>>>(definitions: TDefinitions) =>
@@ -11,8 +11,8 @@ export const inject =
       [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any> ? TInstance : never;
     },
   >(
-    Component: React.FC<TProps>,
-  ): React.FC<Optional<TProps, keyof TDefinitions>> => {
+    Component: FC<TProps>,
+  ): FC<Optional<TProps, keyof TDefinitions>> => {
     const definitionKeys = Object.keys(definitions);
 
     return InjectWrapper;

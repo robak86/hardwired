@@ -7,10 +7,11 @@
     "sourceMap": true,
     "target": "ESNext",
     "module": "Node16",
-    "jsx": "react",
+    "jsx": "react-jsx", // support JSX
     "strict": true,
     "removeComments": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true
   }
 }
