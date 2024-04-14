@@ -2,6 +2,8 @@ import { ContainerContext } from '../../../context/ContainerContext.js';
 import { LifeTime } from '../LifeTime.js';
 import { Resolution } from '../Resolution.js';
 import { v4 } from 'uuid';
+import type { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
+import type { AsyncInstanceDefinition } from '../async/AsyncInstanceDefinition.js';
 
 export class InstanceDefinition<TInstance, TLifeTime extends LifeTime> {
   static create<TInstance, TLifeTime extends LifeTime>(
@@ -30,8 +32,12 @@ export const isInstanceDef = (val: any): val is InstanceDefinition<any, any> => 
   );
 };
 
-export type Instance<T extends InstanceDefinition<any, any>> = T extends InstanceDefinition<infer T, any> ? T : unknown;
+// prettier-ignore
+export type Instance<T extends AnyInstanceDefinition<any, any>> =
+  T extends InstanceDefinition<infer T, any> ? T :
+  T extends AsyncInstanceDefinition<infer T, any>? T :
+    unknown;
 
-export type InstancesArray<T extends InstanceDefinition<any, any>[]> = {
+export type InstancesArray<T extends AnyInstanceDefinition<any, any>[]> = {
   [K in keyof T]: Instance<T[K]>;
 };
