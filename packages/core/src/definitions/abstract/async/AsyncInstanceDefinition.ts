@@ -8,22 +8,26 @@ export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime> = {
   readonly strategy: TLifeTime;
   readonly resolution: Resolution.async;
   readonly create: (context: ContainerContext) => Promise<T>;
+  readonly meta?: Record<string, any>;
 };
 
 export function asyncDefinition<TInstance, TLifeTime extends LifeTime>({
   id = v4(),
   strategy,
   create,
+  meta,
 }: {
   id?: string;
   strategy: TLifeTime;
   create: (context: ContainerContext) => Promise<TInstance>;
+  meta?: Record<string, any>;
 }): AsyncInstanceDefinition<TInstance, TLifeTime> {
   return {
     id,
     strategy,
     create,
     resolution: Resolution.async,
+    meta,
   };
 }
 
