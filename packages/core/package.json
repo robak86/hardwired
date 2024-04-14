@@ -1,6 +1,6 @@
 {
   "name": "hardwired",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
