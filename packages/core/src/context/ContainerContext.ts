@@ -10,6 +10,7 @@ import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInst
 import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
+import { getEagerDefinitions } from './eagerDefinitions.js';
 
 export type ContainerInterceptor = {
   interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
@@ -38,6 +39,7 @@ export class ContainerContext implements InstancesBuilder {
     globalOverrides: AnyInstanceDefinition<any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
+    eagerGroups: string[] = [],
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
@@ -60,7 +62,23 @@ export class ContainerContext implements InstancesBuilder {
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     private readonly interceptors: ContainerInterceptor,
     public readonly events: ContextEvents,
-  ) {}
+  ) {
+    this.createEager();
+  }
+
+  // TODO: this could be probably optimized, because for a new scope we don't need to re-instantiate singletons
+  // TODO: this can be massively optimized. We can create eager instances only when a dependency of eager instance is requested
+  private createEager() {
+    const definitions = getEagerDefinitions().definitions;
+    for (const definition of definitions) {
+      this.get(definition);
+    }
+
+    const asyncDefinitions = getEagerDefinitions().asyncDefinitions;
+    for (const definition of asyncDefinitions) {
+      this.get(definition);
+    }
+  }
 
   addScopeOverride(definition: AnyInstanceDefinition<any, any>): void {
     if (this.instancesCache.hasInCurrentScope(definition.id)) {

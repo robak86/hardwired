@@ -22,5 +22,6 @@ export function decorate<
 
       return decorator(decorated, ...(decoratorDeps as any));
     },
+    dependencies: [...instance.dependencies, ...dependencies],
   };
 }

@@ -21,6 +21,7 @@ export const asyncFn = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
         const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));
         return factory(...(dependenciesInstance as any));
       },
+      dependencies,
     });
   };
 };

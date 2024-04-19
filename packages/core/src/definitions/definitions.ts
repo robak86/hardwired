@@ -7,7 +7,7 @@ import { asyncPartial } from './async/asyncPartial.js';
 import { LifeTime } from './abstract/LifeTime.js';
 import { define } from './sync/define.js';
 import { asyncDefine } from './async/asyncDefine.js';
-import { using } from '../builder/DefinitionBuilder.js';
+import { DefinitionBuilder, using } from '../builder/DefinitionBuilder.js';
 import { usingAsync } from '../builder/AsyncDefinitionBuilder.js';
 
 export const singleton = {
@@ -24,6 +24,8 @@ export const singleton = {
   using: using(LifeTime.singleton),
   usingAsync: usingAsync(LifeTime.singleton),
 };
+
+// export const singleton = new DefinitionBuilder([], LifeTime.singleton, false);
 
 export const transient = {
   fn: fn(LifeTime.transient),

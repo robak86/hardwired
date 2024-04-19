@@ -28,23 +28,27 @@ export const asyncFactory: AsyncFactoryBuildFn = (
   definition: any,
   ...dependencies: InstanceDefinition<any, any>[]
 ): any => {
-  return InstanceDefinition.create(LifeTime.transient, (context: ContainerContext): IAsyncFactory<any, any> => {
-    // const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
+  return InstanceDefinition.create(
+    LifeTime.transient,
+    (context: ContainerContext): IAsyncFactory<any, any> => {
+      // const base = factoryMixingDef ? context.buildWithStrategy(factoryMixingDef) : {};
 
-    return {
-      // ...base,
-      build(...params): any {
-        if (params.length !== dependencies.length) {
-          throw new Error(
-            `Factory called with wrong count of params. Expected ${dependencies.length} implicit definitions.`,
-          );
-        }
+      return {
+        // ...base,
+        build(...params): any {
+          if (params.length !== dependencies.length) {
+            throw new Error(
+              `Factory called with wrong count of params. Expected ${dependencies.length} implicit definitions.`,
+            );
+          }
 
-        const scopedContext = context.checkoutScope({
-          overrides: dependencies.map((dep, idx) => set(dep, params[idx])),
-        });
-        return scopedContext.get(definition);
-      },
-    };
-  });
+          const scopedContext = context.checkoutScope({
+            overrides: dependencies.map((dep, idx) => set(dep, params[idx])),
+          });
+          return scopedContext.get(definition);
+        },
+      };
+    },
+    dependencies,
+  );
 };

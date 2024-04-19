@@ -13,6 +13,7 @@ export const asyncDefine = <TLifeTime extends LifeTime>(strategy: TLifeTime) => 
       create: async (context: ContainerContext) => {
         return fn(new Container(context));
       },
+      dependencies: [],
     });
   };
 };

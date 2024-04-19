@@ -14,8 +14,12 @@ export const fn = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   ): InstanceDefinition<TValue, TLifeTime> => {
     assertValidDependency(strategy, dependencies);
 
-    return InstanceDefinition.create(strategy, context => {
-      return factory(...(dependencies.map(context.buildWithStrategy) as TArgs));
-    });
+    return InstanceDefinition.create(
+      strategy,
+      context => {
+        return factory(...(dependencies.map(context.buildWithStrategy) as TArgs));
+      },
+      dependencies,
+    );
   };
 };

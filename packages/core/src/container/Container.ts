@@ -10,6 +10,7 @@ import { set } from '../patching/set.js';
 import { replace } from '../patching/replace.js';
 import { asyncFn } from '../definitions/async/asyncFn.js';
 import { ContextEvents } from '../events/ContextEvents.js';
+import { getEagerDefinitions } from '../context/eagerDefinitions.js';
 
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext) {}
@@ -73,11 +74,13 @@ export class Container implements IContainer {
 
 export type ContainerOptions = {
   globalOverrides?: AnyInstanceDefinition<any, any>[]; // propagated to descendant containers
+  eagerGroups?: string[];
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
   overrides?: AnyInstanceDefinition<any, any>[];
   interceptor?: ContainerInterceptor;
+  eagerGroups?: string[];
 };
 
 export function container(globalOverrides?: AnyInstanceDefinition<any, any>[]): Container;

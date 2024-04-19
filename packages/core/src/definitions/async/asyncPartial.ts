@@ -25,6 +25,7 @@ export const asyncPartial = <TLifeTime extends LifeTime>(strategy: TLifeTime) =>
         const dependenciesInstance = await Promise.all(dependencies.map(context.buildWithStrategy));
         return uncurried.bind(null, ...dependenciesInstance);
       },
+      dependencies,
     });
   };
 };

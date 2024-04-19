@@ -8,8 +8,12 @@ export const define = <TLifeTime extends LifeTime>(lifetime: TLifeTime) => {
   return <TValue>(
     buildFn: (locator: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime>) => TValue,
   ): InstanceDefinition<TValue, TLifeTime> => {
-    return InstanceDefinition.create(lifetime, (context: ContainerContext) => {
-      return buildFn(new Container(context));
-    });
+    return InstanceDefinition.create(
+      lifetime,
+      (context: ContainerContext) => {
+        return buildFn(new Container(context));
+      },
+      [],
+    );
   };
 };

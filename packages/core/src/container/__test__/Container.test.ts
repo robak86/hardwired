@@ -2,13 +2,16 @@ import { scoped, singleton } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
 import { set } from '../../patching/set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { ContainerContext, ContainerInterceptor } from '../../context/ContainerContext.js';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
+import { getEagerDefinitions } from '../../context/eagerDefinitions.js';
+import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
+import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -296,6 +299,47 @@ describe(`Container`, () => {
       const result2 = reqCnt2.get(scopedVal);
 
       expect(result1).not.toBe(result2);
+    });
+  });
+
+  describe(`eager instantiation`, () => {
+    const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, false);
+
+    beforeEach(() => {
+      getEagerDefinitions().clear();
+    });
+
+    it(`creates eager definitions on container creation`, async () => {
+      const factory = vi.fn(() => Math.random());
+      const myDef = singleton.eager().fn(factory);
+      const cnt = container();
+      expect(factory).toHaveBeenCalledTimes(1);
+    });
+
+    it(`creates eager definitions on container creation`, async () => {
+      let valueAssigned = 0;
+
+      const factory = vi.fn(async () => {
+        valueAssigned = Math.random();
+        return valueAssigned;
+      });
+      const myDef = singleton.eager().async().fn(factory);
+
+      const consumer = singleton
+        .async()
+        .using(myDef)
+        .fn(async val => {
+          return val;
+        });
+
+      const cnt = container();
+
+      const val = await cnt.get(myDef);
+      const consumerVal = await cnt.get(consumer);
+
+      expect(factory).toHaveBeenCalledTimes(1);
+      expect(val).toEqual(consumerVal);
+      expect(valueAssigned).toEqual(val);
     });
   });
 });

@@ -16,8 +16,10 @@ export const partial = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
   > => {
     const uncurried: any = uncurry(fn);
 
-    return InstanceDefinition.create(strategy, context =>
-      uncurried.bind(null, ...dependencies.map(context.buildWithStrategy)),
+    return InstanceDefinition.create(
+      strategy,
+      context => uncurried.bind(null, ...dependencies.map(context.buildWithStrategy)),
+      dependencies,
     );
   };
 };

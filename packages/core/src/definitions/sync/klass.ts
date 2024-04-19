@@ -17,6 +17,7 @@ export const klass = <TLifeTime extends LifeTime>(strategy: TLifeTime) => {
     return InstanceDefinition.create(
       strategy,
       context => new cls(...(dependencies.map(context.buildWithStrategy) as TArgs)),
+      dependencies,
     );
   };
 };
