@@ -1,5 +1,5 @@
 import { beforeEach, describe } from 'vitest';
-import { getEagerDefinitions } from '../../context/eagerDefinitions.js';
+import { getEagerDefinitions } from '../../context/EagerDefinitions.js';
 import { DefinitionBuilder } from '../DefinitionBuilder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 

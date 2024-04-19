@@ -9,9 +9,10 @@ import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefi
 import { ContainerContext, ContainerInterceptor } from '../../context/ContainerContext.js';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
-import { getEagerDefinitions } from '../../context/eagerDefinitions.js';
+import { getEagerDefinitions } from '../../context/EagerDefinitions.js';
 import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import EventEmitter from 'node:events';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -309,14 +310,15 @@ describe(`Container`, () => {
       getEagerDefinitions().clear();
     });
 
-    it(`creates eager definitions on container creation`, async () => {
+    it(`doesn't creates eager definitions on container creation`, async () => {
       const factory = vi.fn(() => Math.random());
       const myDef = singleton.eager().fn(factory);
-      const cnt = container();
+
+      container();
       expect(factory).toHaveBeenCalledTimes(1);
     });
 
-    it(`creates eager definitions on container creation`, async () => {
+    it(`creates eager definitions on referencing dependency creation`, async () => {
       let valueAssigned = 0;
 
       const factory = vi.fn(async () => {
@@ -340,6 +342,56 @@ describe(`Container`, () => {
       expect(factory).toHaveBeenCalledTimes(1);
       expect(val).toEqual(consumerVal);
       expect(valueAssigned).toEqual(val);
+    });
+
+    it(`creates eager definitions when dependency of eager definition is requested`, () => {
+      const eventEmitterD = singleton.fn(() => {
+        console.log('create:eventEmitterD');
+        return new EventEmitter<{ onMessage: [number] }>();
+      });
+
+      const consumer1D = singleton
+        .using(eventEmitterD)
+        .eager()
+        .fn(val => {
+          console.log('create:consumer1D');
+          const messages: number[] = [];
+          val.on('onMessage', value => messages.push(value));
+          return messages;
+        });
+
+      const consumer2D = singleton
+        .using(eventEmitterD)
+        .eager()
+        .fn(val => {
+          console.log('create:consumer2D');
+          const messages: number[] = [];
+          val.on('onMessage', value => messages.push(value));
+          return messages;
+        });
+
+      const producerD = singleton //
+        .using(eventEmitterD)
+        .fn(emitter => {
+          console.log('create:producerD');
+          return () => {
+            return emitter.emit('onMessage', Math.random());
+          };
+        });
+
+      const cnt = container();
+
+      const producer = cnt.get(producerD);
+      producer();
+      producer();
+
+      const consumer1 = cnt.get(consumer1D);
+      const consumer2 = cnt.get(consumer2D);
+
+      expect(consumer1.length).toEqual(2);
+      expect(consumer2.length).toEqual(2);
+
+      expect(consumer1).toEqual(consumer2);
     });
   });
 });

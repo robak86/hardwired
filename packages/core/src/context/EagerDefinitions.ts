@@ -1,8 +1,6 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 
-export const DEFAULT_EAGER_GROUP = 'default';
-
 class EagerDefinitionsGroup {
   private _definitions = new Map<string, InstanceDefinition<any, any>>();
   private _invertedDefinitions = new Map<string, InstanceDefinition<any, any>[]>();
@@ -16,6 +14,14 @@ class EagerDefinitionsGroup {
 
   get asyncDefinitions() {
     return this._asyncDefinitions.values();
+  }
+
+  getInvertedDefinitions(definitionId: string) {
+    return this._invertedDefinitions.get(definitionId) ?? [];
+  }
+
+  getInvertedAsyncDefinitions(definitionId: string) {
+    return this._invertedAsyncDefinitions.get(definitionId) ?? [];
   }
 
   append(definition: InstanceDefinition<any, any>) {
@@ -49,66 +55,6 @@ class EagerDefinitionsGroup {
   clear() {
     this._definitions.clear();
     this._asyncDefinitions.clear();
-  }
-}
-
-class EagerDefinitions {
-  private _groups = new Map<string, EagerDefinitionsGroup>();
-
-  getGroup(group: string) {
-    if (!this._groups.has(group)) {
-      throw new Error(`Eager group with id ${group} does not exist`);
-    }
-    return this._groups.get(group)!;
-  }
-
-  upsertGroup(group: string) {
-    if (!this._groups.has(group)) {
-      this._groups.set(group, new EagerDefinitionsGroup());
-    }
-    return this._groups.get(group)!;
-  }
-
-  getGroupNames() {
-    return this._groups.keys();
-  }
-
-  getReferencingDefinitions(definitionId: string, ...groups: string[]) {}
-
-  getDefinitions(...groups: string[]): Iterable<InstanceDefinition<any, any>> {
-    const definitions: InstanceDefinition<any, any>[] = [];
-
-    if (groups.length === 0) {
-      for (const group of this._groups.values()) {
-        definitions.push(...group.definitions);
-      }
-    } else {
-      for (const group of groups) {
-        definitions.push(...this.getGroup(group).definitions);
-      }
-    }
-
-    return definitions;
-  }
-
-  getAsyncDefinitions(...groups: string[]): Iterable<AsyncInstanceDefinition<any, any>> {
-    const definitions: AsyncInstanceDefinition<any, any>[] = [];
-
-    if (groups.length === 0) {
-      for (const group of this._groups.values()) {
-        definitions.push(...group.asyncDefinitions);
-      }
-    } else {
-      for (const group of groups) {
-        definitions.push(...this.getGroup(group).asyncDefinitions);
-      }
-    }
-
-    return definitions;
-  }
-
-  clear() {
-    this._groups.clear();
   }
 }
 

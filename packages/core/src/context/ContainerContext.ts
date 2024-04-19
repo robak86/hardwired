@@ -10,7 +10,7 @@ import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInst
 import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
-import { getEagerDefinitions } from './eagerDefinitions.js';
+import { getEagerDefinitions } from './EagerDefinitions.js';
 
 export type ContainerInterceptor = {
   interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
@@ -103,10 +103,12 @@ export class ContainerContext implements InstancesBuilder {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     if (definition.resolution === Resolution.sync && this.interceptors.interceptSync) {
+      // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
       return this.interceptors.interceptSync(definition, this);
     }
 
     if (definition.resolution === Resolution.async && this.interceptors.interceptAsync) {
+      // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
       return this.interceptors.interceptAsync?.(definition, this);
     }
 

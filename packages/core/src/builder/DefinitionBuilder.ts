@@ -8,7 +8,7 @@ import {
 import { IContainerScopes, InstanceCreationAware } from '../container/IContainer.js';
 import { ContainerContext } from '../context/ContainerContext.js';
 import { Container } from '../container/Container.js';
-import { DEFAULT_EAGER_GROUP, getEagerDefinitions } from '../context/eagerDefinitions.js';
+import { getEagerDefinitions } from '../context/EagerDefinitions.js';
 import { AsyncDefinitionBuilder } from './AsyncDefinitionBuilder.js';
 
 export class DefinitionBuilder<
