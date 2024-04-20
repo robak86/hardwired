@@ -1,12 +1,12 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
 class EagerDefinitionsGroup {
   private _definitions = new Map<string, InstanceDefinition<any, any>>();
   private _invertedDefinitions = new Map<string, InstanceDefinition<any, any>[]>();
 
-  private _asyncDefinitions = new Map<string, AsyncInstanceDefinition<any, any>>();
-  private _invertedAsyncDefinitions = new Map<string, AsyncInstanceDefinition<any, any>[]>();
+  private _asyncDefinitions = new Map<string, AnyInstanceDefinition<any, any>>();
+  private _invertedAsyncDefinitions = new Map<string, AnyInstanceDefinition<any, any>[]>();
 
   get definitions() {
     return this._definitions.values();
@@ -20,14 +20,16 @@ class EagerDefinitionsGroup {
     return this._invertedDefinitions.get(definitionId) ?? [];
   }
 
+  // TODO: there is a chance that we could store together sync and async definitions
   getInvertedAsyncDefinitions(definitionId: string) {
     return this._invertedAsyncDefinitions.get(definitionId) ?? [];
   }
 
   append(definition: InstanceDefinition<any, any>) {
     if (this._definitions.has(definition.id)) {
-      throw new Error(`Eager definition with id ${definition.id} already exists`);
+      return;
     }
+
     this._definitions.set(definition.id, definition);
 
     definition.dependencies.forEach(dependency => {
@@ -35,13 +37,17 @@ class EagerDefinitionsGroup {
         this._invertedDefinitions.set(dependency.id, []);
       }
       this._invertedDefinitions.get(dependency.id)!.push(definition);
+
+      this.append(dependency);
     });
   }
 
-  appendAsync(definition: AsyncInstanceDefinition<any, any>) {
+  appendAsync(definition: AnyInstanceDefinition<any, any>) {
+    console.log('appendAsyncEager', definition.meta?.name);
     if (this._asyncDefinitions.has(definition.id)) {
-      throw new Error(`Eager async definition with id ${definition.id} already exists`);
+      return;
     }
+
     this._asyncDefinitions.set(definition.id, definition);
 
     definition.dependencies.forEach(dependency => {
@@ -49,6 +55,8 @@ class EagerDefinitionsGroup {
         this._invertedAsyncDefinitions.set(dependency.id, []);
       }
       this._invertedAsyncDefinitions.get(dependency.id)!.push(definition);
+
+      this.appendAsync(dependency);
     });
   }
 

@@ -2,7 +2,7 @@ import { scoped, singleton } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
 import { set } from '../../patching/set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
@@ -13,6 +13,7 @@ import { getEagerDefinitions } from '../../context/EagerDefinitions.js';
 import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import EventEmitter from 'node:events';
+import { EagerDefinitionsInterceptor } from '../../context/EagerDefinitionsInterceptor.js';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -304,94 +305,218 @@ describe(`Container`, () => {
   });
 
   describe(`eager instantiation`, () => {
-    const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, false);
+    const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, false);
 
     beforeEach(() => {
       getEagerDefinitions().clear();
     });
 
-    it(`doesn't creates eager definitions on container creation`, async () => {
-      const factory = vi.fn(() => Math.random());
-      const myDef = singleton.eager().fn(factory);
+    describe(`sync eager`, () => {
+      it(`doesn't creates eager definitions on container creation`, async () => {
+        const factory = vi.fn(() => Math.random());
+        const myDef = singleton.eager().fn(factory);
 
-      container();
-      expect(factory).toHaveBeenCalledTimes(1);
-    });
-
-    it(`creates eager definitions on referencing dependency creation`, async () => {
-      let valueAssigned = 0;
-
-      const factory = vi.fn(async () => {
-        valueAssigned = Math.random();
-        return valueAssigned;
-      });
-      const myDef = singleton.eager().async().fn(factory);
-
-      const consumer = singleton
-        .async()
-        .using(myDef)
-        .fn(async val => {
-          return val;
-        });
-
-      const cnt = container();
-
-      const val = await cnt.get(myDef);
-      const consumerVal = await cnt.get(consumer);
-
-      expect(factory).toHaveBeenCalledTimes(1);
-      expect(val).toEqual(consumerVal);
-      expect(valueAssigned).toEqual(val);
-    });
-
-    it(`creates eager definitions when dependency of eager definition is requested`, () => {
-      const eventEmitterD = singleton.fn(() => {
-        console.log('create:eventEmitterD');
-        return new EventEmitter<{ onMessage: [number] }>();
+        container();
+        expect(factory).not.toHaveBeenCalled();
       });
 
-      const consumer1D = singleton
-        .using(eventEmitterD)
-        .eager()
-        .fn(val => {
-          console.log('create:consumer1D');
-          const messages: number[] = [];
-          val.on('onMessage', value => messages.push(value));
-          return messages;
+      it(`creates eager definitions on referencing dependency creation`, async () => {
+        let valueAssigned = 0;
+
+        const consumerFactory = vi.fn(() => {
+          valueAssigned = Math.random();
+          return valueAssigned;
         });
 
-      const consumer2D = singleton
-        .using(eventEmitterD)
-        .eager()
-        .fn(val => {
-          console.log('create:consumer2D');
-          const messages: number[] = [];
-          val.on('onMessage', value => messages.push(value));
-          return messages;
+        const producer = singleton.fn(() => Math.random());
+        const consumer = singleton.using(producer).eager().fn(consumerFactory);
+
+        const cnt = container({
+          interceptor: new EagerDefinitionsInterceptor(),
         });
 
-      const producerD = singleton //
-        .using(eventEmitterD)
-        .fn(emitter => {
-          console.log('create:producerD');
-          return () => {
-            return emitter.emit('onMessage', Math.random());
-          };
+        const consumerVal = cnt.get(producer);
+        expect(consumerFactory).toHaveBeenCalledTimes(1);
+      });
+
+      it(`creates eager definitions when dependency of eager definition is requested`, () => {
+        const eventEmitterD = singleton //
+          .annotate({ name: 'eventEmitterD' })
+          .fn(() => {
+            return new EventEmitter<{ onMessage: [number] }>();
+          });
+
+        // add additional indirection level to test if it works with multiple levels
+        const eventEmitterWrapperD = singleton
+          .using(eventEmitterD)
+          .annotate({ name: 'eventEmitterWrapperD' })
+          .fn(e => e);
+
+        const consumer1D = singleton
+          .using(eventEmitterD)
+          .annotate({ name: 'consumer1D' })
+          .eager()
+          .fn(val => {
+            const messages: number[] = [];
+            val.on('onMessage', value => messages.push(value));
+            return messages;
+          });
+
+        const consumer2D = singleton
+          .using(eventEmitterWrapperD)
+          .annotate({ name: 'consumer2D' })
+          .eager()
+          .fn(val => {
+            const messages: number[] = [];
+            val.on('onMessage', value => messages.push(value));
+            return messages;
+          });
+
+        const produced: number[] = [];
+        const producerD = singleton //
+          .using(eventEmitterD)
+          .annotate({ name: 'producerD' })
+          .fn(emitter => {
+            return () => {
+              const value = Math.random();
+              produced.push(value);
+              return emitter.emit('onMessage', value);
+            };
+          });
+
+        const cnt = container({
+          interceptor: new EagerDefinitionsInterceptor(),
         });
 
-      const cnt = container();
+        const producer = cnt.get(producerD);
+        producer();
+        producer();
 
-      const producer = cnt.get(producerD);
-      producer();
-      producer();
+        const consumer1 = cnt.get(consumer1D);
+        const consumer2 = cnt.get(consumer2D);
 
-      const consumer1 = cnt.get(consumer1D);
-      const consumer2 = cnt.get(consumer2D);
+        expect(consumer1.length).toEqual(2);
+        expect(consumer2.length).toEqual(2);
 
-      expect(consumer1.length).toEqual(2);
-      expect(consumer2.length).toEqual(2);
+        expect(consumer1).toEqual(consumer2);
 
-      expect(consumer1).toEqual(consumer2);
+        expect(consumer1).toEqual(produced);
+        expect(consumer2).toEqual(produced);
+      });
+
+      it(`lazily creates eager definitions. Only when eager definition's dependency is created.`, async () => {
+        const aSpy = vi.fn(() => 1);
+        const a = singleton.fn(aSpy);
+
+        const bSpy = vi.fn(() => 2);
+        const b_a = singleton.using(a).fn(bSpy);
+
+        const cSpy = vi.fn(() => 3);
+        const c_b_a = singleton.using(b_a).fn(cSpy);
+
+        const dSpy = vi.fn(() => 4);
+        const d_c_b_a = singleton.using(c_b_a).eager().fn(dSpy);
+
+        const cnt = container({
+          interceptor: new EagerDefinitionsInterceptor(),
+        });
+        cnt.get(a);
+
+        expect(dSpy).toHaveBeenCalled();
+      });
+    });
+
+    describe(`async eager`, () => {
+      it(`creates eager definitions when dependency of eager definition is requested`, async () => {
+        const eventEmitterD = singleton //
+          .async()
+          .annotate({ name: 'eventEmitterD' })
+          .fn(() => {
+            return new EventEmitter<{ onMessage: [number] }>();
+          });
+
+        const eventEmitterWrapperD = singleton
+          .async()
+          .using(eventEmitterD)
+          .annotate({ name: 'eventEmitterWrapperD' })
+          .fn(e => e);
+
+        const consumer1D = singleton
+          .async()
+          .using(eventEmitterWrapperD)
+          .annotate({ name: 'consumer1D' })
+          .eager()
+          .fn(val => {
+            const messages: number[] = [];
+            val.on('onMessage', value => messages.push(value));
+            return messages;
+          });
+
+        const consumer2D = singleton
+          .async()
+          .using(eventEmitterWrapperD)
+          .annotate({ name: 'consumer2D' })
+          .eager()
+          .fn(val => {
+            const messages: number[] = [];
+            val.on('onMessage', value => messages.push(value));
+            return messages;
+          });
+
+        const produced: number[] = [];
+        const producerD = singleton
+          .async()
+          .using(eventEmitterD)
+          .annotate({ name: 'producerD' })
+          .fn(emitter => {
+            return () => {
+              const value = Math.random();
+              produced.push(value);
+              return emitter.emit('onMessage', value);
+            };
+          });
+
+        const cnt = container({
+          interceptor: new EagerDefinitionsInterceptor(),
+        });
+
+        const producer = await cnt.get(producerD);
+        producer();
+        producer();
+
+        const consumer1 = await cnt.get(consumer1D);
+        const consumer2 = await cnt.get(consumer2D);
+
+        expect(consumer1.length).toEqual(2);
+        expect(consumer2.length).toEqual(2);
+
+        expect(consumer1).toEqual(consumer2);
+
+        expect(consumer1).toEqual(produced);
+        expect(consumer2).toEqual(produced);
+      });
+
+      it(`lazily creates eager definitions. Only when eager definition's dependency is created.`, async () => {
+        const aSpy = vi.fn(() => Math.random());
+        const a = singleton.annotate({ name: 'a' }).async().fn(aSpy);
+
+        const bSpy = vi.fn(val => val);
+        const b_a = singleton.annotate({ name: 'b_a' }).async().using(a).fn(bSpy);
+
+        const cSpy = vi.fn(val => val);
+        const c_b_a = singleton.annotate({ name: 'c_b_a' }).async().using(b_a).fn(cSpy);
+
+        const dSpy = vi.fn(val => val);
+        const d_c_b_a = singleton.annotate({ name: 'd_c_b_a' }).async().using(c_b_a).eager().fn(dSpy);
+
+        const cnt = container({
+          interceptor: new EagerDefinitionsInterceptor(),
+        });
+
+        await cnt.get(a);
+
+        expect(dSpy).toHaveBeenCalled();
+      });
     });
   });
 });

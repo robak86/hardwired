@@ -10,9 +10,42 @@ import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInst
 import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
-import { getEagerDefinitions } from './EagerDefinitions.js';
 
 export type ContainerInterceptor = {
+  onRequestStart?(definition: AnyInstanceDefinition<any, any>, context: ContainerContext): void;
+
+  /**
+   * Called on container.get(definition) after the instance is created.
+   * Called only when the definition is sync.
+   * It's called with the instance that was created.
+   * The function should return the instance.
+   * @param definition
+   * @param context
+   * @param instance
+   */
+  onRequestEnd?<T>(definition: AnyInstanceDefinition<T, any>, context: ContainerContext, instance: T): T;
+
+  /**
+   * Called on container.get(definition) after the instance is created.
+   * Called only when the definition is async.
+   * It's called with the instance that was created.
+   * The function should return promise resolving to the instance.
+   * @param definition
+   * @param context
+   * @param instance
+   */
+  onAsyncRequestEnd?<T>(
+    definition: AsyncInstanceDefinition<T, any>,
+    context: ContainerContext,
+    instance: T,
+  ): Promise<T>;
+
+  /**
+   * Called when the container starts building the definition.
+   * @param definition
+   */
+  onDefinitionEnter?(definition: AnyInstanceDefinition<any, any>): void;
+
   interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
   interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any>, context: ContainerContext): Promise<T>;
 };
@@ -20,7 +53,7 @@ export type ContainerInterceptor = {
 export class ContainerContext implements InstancesBuilder {
   static empty(
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    interceptors: ContainerInterceptor = {},
+    interceptor: ContainerInterceptor = {},
   ) {
     const instancesEntries = InstancesDefinitionsRegistry.empty();
 
@@ -29,7 +62,7 @@ export class ContainerContext implements InstancesBuilder {
       instancesEntries,
       InstancesStore.create([]),
       strategiesRegistry,
-      interceptors,
+      interceptor,
       new ContextEvents(),
     );
   }
@@ -39,7 +72,6 @@ export class ContainerContext implements InstancesBuilder {
     globalOverrides: AnyInstanceDefinition<any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
-    eagerGroups: string[] = [],
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
@@ -60,25 +92,9 @@ export class ContainerContext implements InstancesBuilder {
     private readonly instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
     private readonly instancesCache: InstancesStore,
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    private readonly interceptors: ContainerInterceptor,
+    private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
-  ) {
-    this.createEager();
-  }
-
-  // TODO: this could be probably optimized, because for a new scope we don't need to re-instantiate singletons
-  // TODO: this can be massively optimized. We can create eager instances only when a dependency of eager instance is requested
-  private createEager() {
-    const definitions = getEagerDefinitions().definitions;
-    for (const definition of definitions) {
-      this.get(definition);
-    }
-
-    const asyncDefinitions = getEagerDefinitions().asyncDefinitions;
-    for (const definition of asyncDefinitions) {
-      this.get(definition);
-    }
-  }
+  ) {}
 
   addScopeOverride(definition: AnyInstanceDefinition<any, any>): void {
     if (this.instancesCache.hasInCurrentScope(definition.id)) {
@@ -94,7 +110,23 @@ export class ContainerContext implements InstancesBuilder {
   get<TValue, TExternals>(definition: AsyncInstanceDefinition<TValue, any>): Promise<TValue>;
   get<TValue, TExternals>(definition: AnyInstanceDefinition<TValue, any>): TValue | Promise<TValue> {
     this.events.onGet.emit({ containerId: this.id, definition });
-    return this.buildWithStrategy(definition);
+    console.log('get', definition.meta?.name);
+
+    this.interceptor.onRequestStart?.(definition, this);
+    const instance = this.buildWithStrategy(definition);
+
+    if (definition.resolution === Resolution.async) {
+      if (this.interceptor.onAsyncRequestEnd) {
+        return this.interceptor
+          .onAsyncRequestEnd(definition as AsyncInstanceDefinition<any, any>, this, instance)
+          .then(() => instance);
+      } else {
+        return instance;
+      }
+    } else {
+      this.interceptor.onRequestEnd?.(definition, this, instance);
+      return instance;
+    }
   }
 
   buildExact<T>(definition: InstanceDefinition<T, any>): T;
@@ -102,16 +134,19 @@ export class ContainerContext implements InstancesBuilder {
   buildExact<T>(definition: AnyInstanceDefinition<T, any>): T | Promise<T> {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
-    if (definition.resolution === Resolution.sync && this.interceptors.interceptSync) {
+    this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
+
+    if (patchedInstanceDef.resolution === Resolution.sync && this.interceptor.interceptSync) {
       // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
-      return this.interceptors.interceptSync(definition, this);
+      return this.interceptor.interceptSync(patchedInstanceDef, this);
     }
 
-    if (definition.resolution === Resolution.async && this.interceptors.interceptAsync) {
+    if (patchedInstanceDef.resolution === Resolution.async && this.interceptor.interceptAsync) {
       // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
-      return this.interceptors.interceptAsync?.(definition, this);
+      return this.interceptor.interceptAsync?.(patchedInstanceDef, this);
     }
 
+    console.log('buildExact', patchedInstanceDef.meta?.name);
     return patchedInstanceDef.create(this);
   }
 

@@ -6,7 +6,7 @@ import EventEmitter from 'node:events';
 import { container } from '../../container/Container.js';
 
 describe(`EagerDefinitions`, () => {
-  const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, false);
+  const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, false);
 
   beforeEach(() => {
     getEagerDefinitions().clear();

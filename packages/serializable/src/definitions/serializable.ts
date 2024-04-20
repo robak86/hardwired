@@ -24,6 +24,7 @@ export const serializable = <
     Resolution.sync,
     LifeTime.scoped,
     context => new cls(...(dependencies.map(context.buildWithStrategy) as TArgs)),
+    dependencies,
     {
       serializable: true,
     },

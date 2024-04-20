@@ -8,7 +8,7 @@ describe(`DefinitionBuilder`, () => {
     getEagerDefinitions().clear();
   });
 
-  const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, false);
+  const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, false);
 
   const dependencyD = singleton.fn(() => 123);
   const asyncDependencyD = singleton.async().fn(async () => 'someStr');

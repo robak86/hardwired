@@ -10,6 +10,7 @@ import { ContainerContext } from '../context/ContainerContext.js';
 import { Container } from '../container/Container.js';
 import { getEagerDefinitions } from '../context/EagerDefinitions.js';
 import { AsyncDefinitionBuilder } from './AsyncDefinitionBuilder.js';
+import { DefinitionAnnotation } from '../context/EagerDefinitionsInterceptor.js';
 
 export class DefinitionBuilder<
   TDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[],
@@ -19,17 +20,34 @@ export class DefinitionBuilder<
     private _deps: TDeps,
     private _lifeTime: TLifeTime,
     private _meta: object,
+    private _annotations: DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>[],
     private _eagerGroup: boolean,
   ) {
     assertValidDependency(this._lifeTime, this._deps);
   }
 
   async() {
-    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, this._eagerGroup);
+    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, [], this._eagerGroup);
   }
 
-  meta(meta: object) {
-    return new DefinitionBuilder(this._deps, this._lifeTime, { ...this._meta, ...meta }, this._eagerGroup);
+  annotate(metaOrAnnotator: object | DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>) {
+    if (typeof metaOrAnnotator === 'function') {
+      return new DefinitionBuilder(
+        this._deps,
+        this._lifeTime,
+        this._meta,
+        [...this._annotations, metaOrAnnotator as DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>],
+        this._eagerGroup,
+      );
+    }
+
+    return new DefinitionBuilder(
+      this._deps,
+      this._lifeTime,
+      { ...this._meta, ...metaOrAnnotator },
+      this._annotations,
+      this._eagerGroup,
+    );
   }
 
   using<TNewDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
@@ -39,12 +57,13 @@ export class DefinitionBuilder<
       [...this._deps, ...deps],
       this._lifeTime,
       this._meta,
+      this._annotations,
       this._eagerGroup,
     );
   }
 
   eager() {
-    return new DefinitionBuilder(this._deps, this._lifeTime, this._meta, true);
+    return new DefinitionBuilder(this._deps, this._lifeTime, this._meta, this._annotations, true);
   }
 
   define<TValue>(buildFn: (locator: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime>) => TValue) {
@@ -98,6 +117,6 @@ export class DefinitionBuilder<
 
 export function using<TLifeTime extends LifeTime>(strategy: TLifeTime) {
   return <TDeps extends InstanceDefinition<any, any>[]>(...deps: TDeps): DefinitionBuilder<TDeps, TLifeTime> => {
-    return new DefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, false);
+    return new DefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, [], false);
   };
 }
