@@ -10,45 +10,7 @@ import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInst
 import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
-
-export type ContainerInterceptor = {
-  onRequestStart?(definition: AnyInstanceDefinition<any, any>, context: ContainerContext): void;
-
-  /**
-   * Called on container.get(definition) after the instance is created.
-   * Called only when the definition is sync.
-   * It's called with the instance that was created.
-   * The function should return the instance.
-   * @param definition
-   * @param context
-   * @param instance
-   */
-  onRequestEnd?<T>(definition: AnyInstanceDefinition<T, any>, context: ContainerContext, instance: T): T;
-
-  /**
-   * Called on container.get(definition) after the instance is created.
-   * Called only when the definition is async.
-   * It's called with the instance that was created.
-   * The function should return promise resolving to the instance.
-   * @param definition
-   * @param context
-   * @param instance
-   */
-  onAsyncRequestEnd?<T>(
-    definition: AsyncInstanceDefinition<T, any>,
-    context: ContainerContext,
-    instance: T,
-  ): Promise<T>;
-
-  /**
-   * Called when the container starts building the definition.
-   * @param definition
-   */
-  onDefinitionEnter?(definition: AnyInstanceDefinition<any, any>): void;
-
-  interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
-  interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any>, context: ContainerContext): Promise<T>;
-};
+import { ContainerInterceptor } from './ContainerInterceptor.js';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(
@@ -117,9 +79,7 @@ export class ContainerContext implements InstancesBuilder {
 
     if (definition.resolution === Resolution.async) {
       if (this.interceptor.onAsyncRequestEnd) {
-        return this.interceptor
-          .onAsyncRequestEnd(definition as AsyncInstanceDefinition<any, any>, this, instance)
-          .then(() => instance);
+        return this.interceptor.onAsyncRequestEnd(definition, this, instance).then(() => instance);
       } else {
         return instance;
       }

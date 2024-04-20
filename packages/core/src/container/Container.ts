@@ -1,4 +1,4 @@
-import { ContainerContext, ContainerInterceptor } from '../context/ContainerContext.js';
+import { ContainerContext } from '../context/ContainerContext.js';
 import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
@@ -10,6 +10,7 @@ import { set } from '../patching/set.js';
 import { replace } from '../patching/replace.js';
 import { asyncFn } from '../definitions/async/asyncFn.js';
 import { ContextEvents } from '../events/ContextEvents.js';
+import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext) {}

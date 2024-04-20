@@ -8,7 +8,7 @@ import {
 import { IContainerScopes, InstanceCreationAware } from '../container/IContainer.js';
 import { ContainerContext } from '../context/ContainerContext.js';
 import { Container } from '../container/Container.js';
-import { getEagerDefinitions } from '../context/EagerDefinitions.js';
+
 import { AsyncDefinitionBuilder } from './AsyncDefinitionBuilder.js';
 import { DefinitionAnnotation } from '../context/EagerDefinitionsInterceptor.js';
 
@@ -21,33 +21,23 @@ export class DefinitionBuilder<
     private _lifeTime: TLifeTime,
     private _meta: object,
     private _annotations: DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>[],
-    private _eagerGroup: boolean,
   ) {
     assertValidDependency(this._lifeTime, this._deps);
   }
 
   async() {
-    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, [], this._eagerGroup);
+    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, []);
   }
 
   annotate(metaOrAnnotator: object | DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>) {
     if (typeof metaOrAnnotator === 'function') {
-      return new DefinitionBuilder(
-        this._deps,
-        this._lifeTime,
-        this._meta,
-        [...this._annotations, metaOrAnnotator as DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>],
-        this._eagerGroup,
-      );
+      return new DefinitionBuilder(this._deps, this._lifeTime, this._meta, [
+        ...this._annotations,
+        metaOrAnnotator as DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>,
+      ]);
     }
 
-    return new DefinitionBuilder(
-      this._deps,
-      this._lifeTime,
-      { ...this._meta, ...metaOrAnnotator },
-      this._annotations,
-      this._eagerGroup,
-    );
+    return new DefinitionBuilder(this._deps, this._lifeTime, { ...this._meta, ...metaOrAnnotator }, this._annotations);
   }
 
   using<TNewDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
@@ -58,12 +48,7 @@ export class DefinitionBuilder<
       this._lifeTime,
       this._meta,
       this._annotations,
-      this._eagerGroup,
     );
-  }
-
-  eager() {
-    return new DefinitionBuilder(this._deps, this._lifeTime, this._meta, this._annotations, true);
   }
 
   define<TValue>(buildFn: (locator: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime>) => TValue) {
@@ -76,9 +61,7 @@ export class DefinitionBuilder<
       this._meta,
     );
 
-    this.appendToEagerGroup(definition);
-
-    return definition;
+    return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
 
   class<TInstance>(cls: ClassType<TInstance, InstancesArray<TDeps>>) {
@@ -89,9 +72,7 @@ export class DefinitionBuilder<
       this._meta,
     );
 
-    this.appendToEagerGroup(definition);
-
-    return definition;
+    return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
 
   fn<TValue>(factory: (...args: InstancesArray<TDeps>) => TValue) {
@@ -104,19 +85,12 @@ export class DefinitionBuilder<
       this._meta,
     );
 
-    this.appendToEagerGroup(definition);
-    return definition;
-  }
-
-  private appendToEagerGroup<TValue>(definition: InstanceDefinition<TValue, TLifeTime>) {
-    if (this._eagerGroup) {
-      getEagerDefinitions().append(definition);
-    }
+    return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
 }
 
 export function using<TLifeTime extends LifeTime>(strategy: TLifeTime) {
   return <TDeps extends InstanceDefinition<any, any>[]>(...deps: TDeps): DefinitionBuilder<TDeps, TLifeTime> => {
-    return new DefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, [], false);
+    return new DefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, []);
   };
 }

@@ -2,18 +2,19 @@ import { scoped, singleton } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
 import { set } from '../../patching/set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
-import { ContainerContext, ContainerInterceptor } from '../../context/ContainerContext.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
-import { getEagerDefinitions } from '../../context/EagerDefinitions.js';
 import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import EventEmitter from 'node:events';
 import { EagerDefinitionsInterceptor } from '../../context/EagerDefinitionsInterceptor.js';
+import { EagerDefinitionsGroup } from '../../context/EagerDefinitions.js';
+import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -305,16 +306,19 @@ describe(`Container`, () => {
   });
 
   describe(`eager instantiation`, () => {
-    const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, false);
+    const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, []);
+
+    const eagerDefinitions = new EagerDefinitionsGroup();
+    const eagerInterceptor = new EagerDefinitionsInterceptor(true, eagerDefinitions);
 
     beforeEach(() => {
-      getEagerDefinitions().clear();
+      eagerDefinitions.clear();
     });
 
     describe(`sync eager`, () => {
       it(`doesn't creates eager definitions on container creation`, async () => {
         const factory = vi.fn(() => Math.random());
-        const myDef = singleton.eager().fn(factory);
+        const myDef = singleton.annotate(eagerInterceptor.eager).fn(factory);
 
         container();
         expect(factory).not.toHaveBeenCalled();
@@ -329,10 +333,10 @@ describe(`Container`, () => {
         });
 
         const producer = singleton.fn(() => Math.random());
-        const consumer = singleton.using(producer).eager().fn(consumerFactory);
+        const consumer = singleton.using(producer).annotate(eagerInterceptor.eager).fn(consumerFactory);
 
         const cnt = container({
-          interceptor: new EagerDefinitionsInterceptor(),
+          interceptor: eagerInterceptor,
         });
 
         const consumerVal = cnt.get(producer);
@@ -355,7 +359,7 @@ describe(`Container`, () => {
         const consumer1D = singleton
           .using(eventEmitterD)
           .annotate({ name: 'consumer1D' })
-          .eager()
+          .annotate(eagerInterceptor.eager)
           .fn(val => {
             const messages: number[] = [];
             val.on('onMessage', value => messages.push(value));
@@ -365,7 +369,7 @@ describe(`Container`, () => {
         const consumer2D = singleton
           .using(eventEmitterWrapperD)
           .annotate({ name: 'consumer2D' })
-          .eager()
+          .annotate(eagerInterceptor.eager)
           .fn(val => {
             const messages: number[] = [];
             val.on('onMessage', value => messages.push(value));
@@ -385,7 +389,7 @@ describe(`Container`, () => {
           });
 
         const cnt = container({
-          interceptor: new EagerDefinitionsInterceptor(),
+          interceptor: eagerInterceptor,
         });
 
         const producer = cnt.get(producerD);
@@ -415,10 +419,10 @@ describe(`Container`, () => {
         const c_b_a = singleton.using(b_a).fn(cSpy);
 
         const dSpy = vi.fn(() => 4);
-        const d_c_b_a = singleton.using(c_b_a).eager().fn(dSpy);
+        const d_c_b_a = singleton.using(c_b_a).annotate(eagerInterceptor.eager).fn(dSpy);
 
         const cnt = container({
-          interceptor: new EagerDefinitionsInterceptor(),
+          interceptor: eagerInterceptor,
         });
         cnt.get(a);
 
@@ -445,7 +449,7 @@ describe(`Container`, () => {
           .async()
           .using(eventEmitterWrapperD)
           .annotate({ name: 'consumer1D' })
-          .eager()
+          .annotate(eagerInterceptor.eager)
           .fn(val => {
             const messages: number[] = [];
             val.on('onMessage', value => messages.push(value));
@@ -456,7 +460,7 @@ describe(`Container`, () => {
           .async()
           .using(eventEmitterWrapperD)
           .annotate({ name: 'consumer2D' })
-          .eager()
+          .annotate(eagerInterceptor.eager)
           .fn(val => {
             const messages: number[] = [];
             val.on('onMessage', value => messages.push(value));
@@ -477,7 +481,7 @@ describe(`Container`, () => {
           });
 
         const cnt = container({
-          interceptor: new EagerDefinitionsInterceptor(),
+          interceptor: eagerInterceptor,
         });
 
         const producer = await cnt.get(producerD);
@@ -507,10 +511,15 @@ describe(`Container`, () => {
         const c_b_a = singleton.annotate({ name: 'c_b_a' }).async().using(b_a).fn(cSpy);
 
         const dSpy = vi.fn(val => val);
-        const d_c_b_a = singleton.annotate({ name: 'd_c_b_a' }).async().using(c_b_a).eager().fn(dSpy);
+        const d_c_b_a = singleton
+          .annotate({ name: 'd_c_b_a' })
+          .async()
+          .using(c_b_a)
+          .annotate(eagerInterceptor.eager)
+          .fn(dSpy);
 
         const cnt = container({
-          interceptor: new EagerDefinitionsInterceptor(),
+          interceptor: eagerInterceptor,
         });
 
         await cnt.get(a);

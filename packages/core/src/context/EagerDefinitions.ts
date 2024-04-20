@@ -1,7 +1,7 @@
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
-class EagerDefinitionsGroup {
+export class EagerDefinitionsGroup {
   private _definitions = new Map<string, InstanceDefinition<any, any>>();
   private _invertedDefinitions = new Map<string, InstanceDefinition<any, any>[]>();
 
@@ -66,5 +66,5 @@ class EagerDefinitionsGroup {
   }
 }
 
-const ___eagerDefinitions = new EagerDefinitionsGroup();
-export const getEagerDefinitions = () => ___eagerDefinitions;
+// const ___eagerDefinitions = new EagerDefinitionsGroup();
+// export const getEagerDefinitions = () => ___eagerDefinitions;

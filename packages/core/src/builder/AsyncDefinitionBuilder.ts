@@ -10,7 +10,6 @@ import {
   assertValidDependency,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { getEagerDefinitions } from '../context/EagerDefinitions.js';
 import { DefinitionAnnotation } from '../context/EagerDefinitionsInterceptor.js';
 
 export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any>[], TLifeTime extends LifeTime> {
@@ -19,23 +18,19 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
     private _lifeTime: TLifeTime,
     private _meta: object = {},
     private _annotations: DefinitionAnnotation<AnyInstanceDefinition<TLifeTime, any>>[],
-    private _eagerGroup: boolean,
   ) {
     assertValidDependency(this._lifeTime, this._deps);
   }
 
-  eager() {
-    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, this._annotations, true);
-  }
+  annotate(meta: object | AnyInstanceDefinition<TLifeTime, any>) {
+    if (typeof meta === 'function') {
+      return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, [
+        ...this._annotations,
+        meta as DefinitionAnnotation<AnyInstanceDefinition<TLifeTime, any>>,
+      ]);
+    }
 
-  annotate(meta: object) {
-    return new AsyncDefinitionBuilder(
-      this._deps,
-      this._lifeTime,
-      { ...this._meta, ...meta },
-      this._annotations,
-      this._eagerGroup,
-    );
+    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, { ...this._meta, ...meta }, this._annotations);
   }
 
   using<TNewDeps extends AnyInstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
@@ -46,7 +41,6 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
       this._lifeTime,
       this._meta,
       this._annotations,
-      this._eagerGroup,
     );
   }
 
@@ -62,9 +56,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
       meta: this._meta,
     });
 
-    this.appendToEagerGroup(definition);
-
-    return definition;
+    return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
 
   class<TInstance>(cls: ClassType<TInstance, InstancesArray<TDeps>>) {
@@ -80,9 +72,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
       meta: this._meta,
     });
 
-    this.appendToEagerGroup(definition);
-
-    return definition;
+    return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
 
   fn<TValue>(factory: (...args: InstancesArray<TDeps>) => TValue | Promise<TValue>) {
@@ -96,15 +86,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
       meta: this._meta,
     });
 
-    this.appendToEagerGroup(definition);
-
-    return definition;
-  }
-
-  private appendToEagerGroup<TValue>(definition: AsyncInstanceDefinition<TValue, TLifeTime>) {
-    if (this._eagerGroup) {
-      getEagerDefinitions().appendAsync(definition);
-    }
+    return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
 }
 
@@ -112,6 +94,6 @@ export function usingAsync<TLifeTime extends LifeTime>(strategy: TLifeTime) {
   return <TDeps extends AnyInstanceDefinition<any, any>[]>(
     ...deps: TDeps
   ): AsyncDefinitionBuilder<TDeps, TLifeTime> => {
-    return new AsyncDefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, [], false);
+    return new AsyncDefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, []);
   };
 }

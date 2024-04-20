@@ -1,27 +1,30 @@
-import { beforeEach } from 'vitest';
-import { getEagerDefinitions } from '../EagerDefinitions.js';
+import { EagerDefinitionsGroup } from '../EagerDefinitions.js';
 import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import EventEmitter from 'node:events';
 import { container } from '../../container/Container.js';
+import { EagerDefinitionsInterceptor } from '../EagerDefinitionsInterceptor.js';
 
 describe(`EagerDefinitions`, () => {
-  const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, false);
+  const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, []);
+
+  const eagerDefinitions = new EagerDefinitionsGroup();
+  const eagerInterceptor = new EagerDefinitionsInterceptor(true, eagerDefinitions);
 
   beforeEach(() => {
-    getEagerDefinitions().clear();
+    eagerDefinitions.clear();
   });
 
   it(`produces correct inverted dependencies`, async () => {
     const val1 = singleton.fn(() => 123);
 
     const consumer = singleton
-      .eager()
+      .annotate(eagerInterceptor.eager)
       .using(val1)
       .fn(val => val * 2);
 
-    expect(getEagerDefinitions().getInvertedDefinitions(val1.id)).toEqual([consumer]);
-    expect(getEagerDefinitions().getInvertedDefinitions(consumer.id)).toEqual([]);
+    expect(eagerDefinitions.getInvertedDefinitions(val1.id)).toEqual([consumer]);
+    expect(eagerDefinitions.getInvertedDefinitions(consumer.id)).toEqual([]);
   });
 
   it(`works`, async () => {
@@ -31,7 +34,7 @@ describe(`EagerDefinitions`, () => {
 
     const consumer1D = singleton
       .using(eventEmitterD)
-      .eager()
+      .annotate(eagerInterceptor.eager)
       .fn(val => {
         const messages: number[] = [];
         val.on('onMessage', value => messages.push(value));
@@ -40,7 +43,7 @@ describe(`EagerDefinitions`, () => {
 
     const consumer2D = singleton
       .using(eventEmitterD)
-      .eager()
+      .annotate(eagerInterceptor.eager)
       .fn(val => {
         const messages: number[] = [];
         val.on('onMessage', value => messages.push(value));
@@ -57,7 +60,7 @@ describe(`EagerDefinitions`, () => {
 
     container().get(producerD);
 
-    expect(getEagerDefinitions().getInvertedDefinitions(eventEmitterD.id)).toEqual([consumer1D, consumer2D]);
-    expect(getEagerDefinitions().getInvertedDefinitions(consumer1D.id)).toEqual([]);
+    expect(eagerDefinitions.getInvertedDefinitions(eventEmitterD.id)).toEqual([consumer1D, consumer2D]);
+    expect(eagerDefinitions.getInvertedDefinitions(consumer1D.id)).toEqual([]);
   });
 });
