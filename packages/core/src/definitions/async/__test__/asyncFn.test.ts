@@ -1,7 +1,5 @@
 import { implicit } from '../../sync/implicit.js';
 import { singleton } from '../../definitions.js';
-import { asyncFn } from '../asyncFn.js';
-import { LifeTime } from '../../abstract/LifeTime.js';
 import { describe, expect, it } from 'vitest';
 
 describe(`asyncFn`, () => {
@@ -16,7 +14,7 @@ describe(`asyncFn`, () => {
           it(`does not accept implicit definitions`, async () => {
             try {
               // @ts-expect-error request does not accept implicit definitions
-              const dep = asyncFn(LifeTime.singleton)(numberConsumer, implDef);
+              const dep = singleton.async().using(implDef).fn(numberConsumer);
             } catch (err) {
               // noop
             }
@@ -27,7 +25,7 @@ describe(`asyncFn`, () => {
           it(`does not accept implicit definitions`, async () => {
             const buildDef = () => {
               // @ts-expect-error singleton does not accept implicit definitions
-              asyncFn(LifeTime.singleton)(numberConsumer, implDef);
+              singleton.async().using(implDef).fn(numberConsumer);
             };
 
             expect(buildDef).toThrow('Cannot use scoped dependency for singleton definition.');

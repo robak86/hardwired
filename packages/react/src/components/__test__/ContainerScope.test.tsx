@@ -108,7 +108,7 @@ describe(`ContainerScope`, () => {
       let counter = 0;
 
       const baseD = scoped.fn(() => 0);
-      const valueD = scoped.fn(base => (counter += 1 + base), baseD);
+      const valueD = scoped.using(baseD).fn(base => (counter += 1 + base));
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
         const value = useDefinition(valueD);

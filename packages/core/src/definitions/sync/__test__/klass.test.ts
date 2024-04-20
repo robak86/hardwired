@@ -1,9 +1,8 @@
 import { value } from '../value.js';
-import { klass } from '../klass.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { singleton } from '../../definitions.js';
+import { scoped, singleton } from '../../definitions.js';
 import { describe, it, expect } from 'vitest';
 import { implicit } from '../implicit.js';
 
@@ -20,7 +19,7 @@ describe(`klass`, () => {
       it(`correctly picks external params from instances definitions provided as dependencies ex.1`, async () => {
         const numD = value(123);
         const objD = value('123');
-        const cls = klass(LifeTime.scoped)(TestClass, numD, objD);
+        const cls = scoped.using(numD, objD).class(TestClass);
 
         expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, LifeTime.scoped>>>(true);
       });
@@ -37,7 +36,7 @@ describe(`klass`, () => {
             it(`does not accept implicit definitions`, async () => {
               try {
                 // @ts-expect-error singleton does not accept implicit definitions
-                const dep = klass(LifeTime.singleton)(NumberConsumer, implDef);
+                const dep = singleton.using(implDef).class(NumberConsumer);
               } catch (e) {
                 // noop
               }
@@ -48,7 +47,7 @@ describe(`klass`, () => {
             it(`does not accept implicit definitions`, async () => {
               const buildDef = () => {
                 // @ts-expect-error singleton does not accept implicit definitions
-                klass(LifeTime.singleton)(NumberConsumer, implDef);
+                singleton.using(implDef).class(NumberConsumer);
               };
 
               expect(buildDef).toThrow('Cannot use scoped dependency for singleton definition.');

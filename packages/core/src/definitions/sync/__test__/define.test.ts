@@ -1,9 +1,8 @@
 import { implicit } from '../implicit.js';
-import { define } from '../define.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
-import { scoped, singleton } from '../../definitions.js';
+import { scoped, singleton, transient } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
@@ -15,14 +14,14 @@ describe(`define`, () => {
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
-      const definition = define(LifeTime.transient)(locator => null);
+      const definition = transient.define(locator => null);
       expectType<TypeOf<typeof definition, InstanceDefinition<null, LifeTime.transient>>>(true);
     });
   });
 
   describe(`instantiation`, () => {
     it(`correctly resolves externals`, async () => {
-      const definition = define(LifeTime.transient)(locator => {
+      const definition = transient.define(locator => {
         return [locator.get(ext1), locator.get(ext2)];
       });
 
@@ -35,7 +34,7 @@ describe(`define`, () => {
     it(`uses the same request scope for every get call`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = define(LifeTime.transient)(locator => {
+      const definition = transient.define(locator => {
         return [locator.get(value), locator.get(value)];
       });
       const result = container().get(definition);
@@ -47,7 +46,7 @@ describe(`define`, () => {
     it(`correctly uses transient lifetime`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = define(LifeTime.transient)(locator => {
+      const definition = transient.define(locator => {
         const scopedContainer = locator.checkoutScope();
         return [scopedContainer.get(value), scopedContainer.get(value)];
       });
@@ -64,7 +63,7 @@ describe(`define`, () => {
     it(`correctly uses singleton lifetime`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = define(LifeTime.singleton)(locator => {
+      const definition = singleton.define(locator => {
         return [locator.get(value), locator.get(value)];
       });
 

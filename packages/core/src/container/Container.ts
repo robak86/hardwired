@@ -7,8 +7,6 @@ import { IContainer } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { set } from '../patching/set.js';
-import { replace } from '../patching/replace.js';
-import { asyncFn } from '../definitions/async/asyncFn.js';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 
@@ -59,11 +57,6 @@ export class Container implements IContainer {
 
   provide<T>(def: InstanceDefinition<T, LifeTime.scoped>, instance: T): void {
     const override = set(def, instance);
-    return this.override(override);
-  }
-
-  provideAsync<T>(def: AnyInstanceDefinition<T, LifeTime.scoped>, instance: () => Promise<T>): void {
-    const override = replace(def, asyncFn(LifeTime.scoped)(instance)); // do not import definitions => circular dependencies
     return this.override(override);
   }
 
