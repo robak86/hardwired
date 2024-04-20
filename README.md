@@ -2,13 +2,13 @@
 
 ![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/robak86/hardwired/branch/master/graph/badge.svg?token=50RAYIVVTT)](https://codecov.io/gh/robak86/hardwired)
 
-A minimalistic, type-safe dependency injection (DI)/inversion of control (IoC) solution for TypeScript, featuring:
+**A minimalistic, type-safe dependency injection (DI)/inversion of control (IoC) solution for TypeScript, featuring:**
 
-- Type safety: All dependencies are checked at compile time.
-- No use of decorators, reflection or static properties containing the list of dependencies.
-- Designed for structural typing.
-- Simplifies mocking for integration tests.
-- Fully supports Node.js and browsers.
+- [x] Type safety: All dependencies are checked at compile time.
+- [x] No use of decorators, reflection or static properties containing the list of dependencies.
+- [x] Designed for structural typing.
+- [x] Simplifies mocking for integration tests.
+- [x] Fully supports Node.js and browsers.
 
 ## Table of Contents
 
@@ -24,8 +24,9 @@ A minimalistic, type-safe dependency injection (DI)/inversion of control (IoC) s
   - [Definition Types](#definition-types)
     - [Synchronous Definitions](#synchronous-definitions)
     - [Asynchronous Definitions](#asynchronous-definitions)
-  - [Overriding definitions](#overriding-definitions)
-    - [Available overrides](#available-overrides)
+  - [Overriding Definitions](#overriding-definitions)
+    - [Available Overrides](#available-overrides)
+    - [Override Scope](#override-scope)
   - [Implicit Definition](#implicit-definition)
 
 ## Installation
@@ -189,7 +190,7 @@ Definitions can be synchronous or asynchronous, supporting both sync and async d
 
 Additionally, the library provides a helper for creating definitions for static values.
 Using this kind of definition is useful when the static value needs to be replaced in tests
-without test runner's mocking capabilities.
+without using a test runner's mocking capabilities.
 
 - **`value`** - defines a static value
 
@@ -214,7 +215,7 @@ without test runner's mocking capabilities.
   import { Db } from 'some-db-client';
 
   const createDbConnection = async (): Promise<Db> => {
-    // create db connection asynchonously
+    // create db connection asynchronously
   };
 
   class UserRepository {
@@ -252,7 +253,7 @@ without test runner's mocking capabilities.
   // val1 is not eq to val2, because was created in other scope
   ```
 
-## Overriding definitions
+## Overriding Definitions
 
 For integration testing or specific runtime needs, definitions can be overridden in the container,
 allowing for flexibility such as mocking.
@@ -273,7 +274,7 @@ const randomGenerator = cnt.get(randomGeneratorDef);
 randomGenerator.seed === 1; // true
 ```
 
-### Available overrides
+### Available Overrides
 
 - **`set`** - it replaces original definition with a new static value
 - **`replace`** - it replaces original definition with new one. This enables switching lifespan of
@@ -316,7 +317,7 @@ randomGenerator.seed === 1; // true
     ) {}
 
     write(data) {
-      this.logger.info('Writting data');
+      this.logger.info('Writing data');
       this.writer.write(data);
       this.logger.info('Done');
     }
@@ -377,6 +378,36 @@ randomGenerator.seed === 1; // true
   expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
   ```
 
+### Override Scope
+
+Overrides can be provided during a scope creation. Then they apply only to the current scope
+
+```typescript
+import { scoped, container, set } from 'hardwired';
+
+const def = scoped.fn(() => Math.random());
+
+const cnt = container();
+
+cnt.get(def); // random value
+cnt.checkoutScope({ overrides: [set(def, 1)] }).get(def); // 1
+```
+
+Overrides can be provided also during container creation. Then the override is propagated to every child scope replacing scope's own overrides.
+
+```typescript
+import { scoped, container, set } from 'hardwired';
+
+const def = scoped.fn(() => Math.random());
+
+const cnt = container({
+  globalOverrides: set(def, 100),
+});
+
+cnt.get(def); // 100
+cnt.checkoutScope({ overrides: [set(def, 1)] }).get(def); // 100 because of globalOverrides
+```
+
 ## Implicit Definition
 
 Implicit definitions act as placeholders for values provided at runtime, useful for dynamic configurations
@@ -405,7 +436,7 @@ const httpServerD = singleton.using(appPortD).fn((port: number) => {
 The actual value for implicit placeholder needs to be provided when creating the container.
 
 ```typescript
-import { container } from 'hardwired';
+import { container, set } from 'hardwired';
 
 const cnt = container({ globalOverrides: [set(envD, { server: { port: 1234 } })] });
 cnt.get(httpServerD);
