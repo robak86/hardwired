@@ -2,102 +2,108 @@
 
 ![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/robak86/hardwired/branch/master/graph/badge.svg?token=50RAYIVVTT)](https://codecov.io/gh/robak86/hardwired)
 
-Minimalistic, type-safe DI/IoC solution for TypeScript.
+A minimalistic, type-safe dependency injection (DI)/inversion of control (IoC) solution for TypeScript, featuring:
 
-- [x] Type-safe, all dependencies checked at compile time
-- [x] No decorators, no reflection
-- [x] Designed for structural typing
-- [x] Enables easy mocking for integration tests
-- [x] Allows writing code that is completely decoupled from DI/IoC specific api - doesn't
-      pollute user code with decorators (combined with reflection) or static properties containing
-      the list of dependencies
-- [x] Works both on node.js and the browser
+- Type safety: All dependencies are checked at compile time.
+- No use of decorators, reflection or static properties containing the list of dependencies.
+- Designed for structural typing.
+- Simplifies mocking for integration tests.
+- Fully supports Node.js and browsers.
+
+## Table of Contents
+
+- [Hardwired](#hardwired)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [Using Yarn](#using-yarn)
+    - [Using npm](#using-npm)
+  - [Introduction](#introduction)
+  - [Quick Start](#quick-start)
+  - [Lifetimes of Definitions](#lifetimes-of-definitions)
+  - [Container Scopes](#container-scopes)
+  - [Definition Types](#definition-types)
+    - [Synchronous Definitions](#synchronous-definitions)
+    - [Asynchronous Definitions](#asynchronous-definitions)
+  - [Overriding definitions](#overriding-definitions)
+    - [Available overrides](#available-overrides)
+  - [Implicit Definition](#implicit-definition)
 
 ## Installation
 
-This library requires typescript >= 4.7
+This library requires TypeScript version 4.7 or higher.
 
-yarn
+### Using Yarn
 
-```
+```bash
 yarn add hardwired
 ```
 
-npm
+### Using npm
 
-```
+```bash
 npm install hardwired
 ```
 
-## Overview
+## Introduction
 
-The library uses two main concepts:
+Hardwired centers around two key concepts:
 
-- **Instance definition** – object that describes how instances should be created. It contains:
-  - the details about lifespan of an instance (`singleton` | `transient` | `scoped`)
-  - the references to other definitions that need to be injected during creation of a new instance
-  - an unique definition id
-- **Container** – creates and optionally stores (`singleton` or `scoped`) instances described
-  by `definition` lifetimes.
+- **Instance Definition**: Describes how instances should be created, specifying lifespan (`singleton`, `transient`, `scoped`) and dependencies.
+- **Container**: Manages instance creation based on the lifetimes defined in instance definitions. Can memoize instances where applicable (e.g., `singleton`, `scoped`).
 
-### Example
+## Quick Start
 
-1. Create definitions
+1. **Define Dependencies**:
+   Create and organize definitions in separate modules to keep the implementation decoupled from IoC details.
 
-```typescript
-// implementation.ts
-import { singleton } from 'hardwired';
+   ```typescript
+   // implementation.ts
+   import { singleton } from 'hardwired';
 
-export class LoggerConfiguration {
-  logLevel = 0;
-}
+   export class LoggerConfiguration {
+     logLevel = 0;
+   }
 
-export class Logger {
-  constructor(private configuration: LoggerConfiguration) {}
+   export class Logger {
+     constructor(private configuration: LoggerConfiguration) {}
 
-  log(message: string) {}
-}
+     log(message: string) {}
+   }
 
-// definitions.ts
-export const configurationDef = singleton.class(LoggerConfiguration);
-export const loggerDef = singleton.class(Logger, configurationDef);
-```
+   // definitions.ts
+   export const configurationDef = singleton.class(LoggerConfiguration);
+   export const loggerDef = singleton.using(configurationDef).class(Logger);
+   ```
 
-Definitions are implemented **in separate modules** (`ts` files)
-making the original implementation completely decoupled from IoC details.
-Container and definitions should be treated like an **additional layer** above implementation,
-which is responsible for wiring components together by creating instances,
-injecting dependencies and managing lifetime.
+2. **Create a Container**:
+   Instantiate a container to manage instances.
 
-2. Create a container
+   ```typescript
+   import { container } from 'hardwired';
 
-```typescript
-import { container } from 'hardwired';
+   const exampleContainer = container();
+   ```
 
-const exampleContainer = container();
-```
+3. **Retrieve Instances**:
+   Use the container to get instances as needed.
 
-3. Get an instance
+   ```typescript
+   const loggerInstance: Logger = exampleContainer.get(loggerDef); // returns an instance of Logger
+   ```
 
-```typescript
-const loggerInstance: Logger = exampleContainer.get(loggerDef); // returns an instance of Logger
-```
+## Lifetimes of Definitions
 
-## Definitions lifetimes
+Definitions are categorized by their lifetimes, affecting instance creation:
 
-The library provides the definitions grouped by lifetime:
+- **`transient`**: Creates a new instance on each retrieval.
+- **`singleton`**: Always reuses a single instance.
+- **`scoped`**: Similar to a singleton but confined to a specific scope.
 
-- **`transient`** always creates a new instance
-- **`singleton`** always uses single instance
-- **`scoped`** acts like singleton within a scope
+## Container Scopes
 
-## Container scope
-
-Each container instance has its own registry for holding instances of `singleton` and `scoped`
-definitions.
-New container's scope can be created using container's `checkoutScope` method.
-It returns a new instance of the container with clean registry for `scoped` dependencies and
-`singletons` registry inherited from the parent container.
+Each container manages its own instance registry, allowing for scoped lifetimes.
+A new scope can be created with the `checkoutScope` method,
+which inherits the singleton registry but starts with a clean scoped registry.
 
 ```typescript
 import { container, scoped, singleton } from 'hardwired';
@@ -110,214 +116,146 @@ const requestContainer = appContainer.checkoutScope();
 
 const val1 = appContainer.get(scopedRandomVal);
 const val2 = requestContainer.get(scopedRandomVal);
-// val1 is not equal to val2, because every container has it's own registry for scoped definitions
+// val1 !== val2, due to different scoped registries
 
 const singletonVal1 = appContainer.get(singletonRandomVal);
 const singletonVal2 = requestContainer.get(singletonRandomVal);
-// singletonVal1 is equal to singletonVal2, because parent and the child container share
-// registry for singleton instances
+// singletonVal1 === singletonVal2, shared singleton registry
 ```
 
-## Sync definitions
+## Definition Types
 
-Definitions, that are instantiated synchronously.
-They can reference only other sync definitions as dependencies.
+Definitions support the following types of instances:
+
+- **class**: Creates an instance of a class.
+- **fn**: Creates an instance using a factory function.
+- **define**: Low-level utility that accepts a factory function that has directly access to the container allowing using
+  it as a service locator.
+
+Definitions can be synchronous or asynchronous, supporting both sync and async dependencies accordingly.
+
+### Synchronous Definitions
+
+`[singleton|scoped|transient].[fn|class|define]()`: These are instantiated synchronously and allow only synchronous dependencies.
+
+- **`class`**
+
+  ```typescript
+  import { singleton, container } from 'hardwired';
+
+  class Logger {
+    info() {}
+  }
+
+  class Writer {
+    constructor(private logger: Logger) {}
+  }
+
+  const loggerDef = singleton.class(Logger);
+  const writerDef = singleton.using(loggerDef).class(Writer);
+  const writerInstance = container().get(writerDef); // creates instance of Writer
+  ```
+
+- **`fn`**
+
+  ```typescript
+  import { singleton, container, transient } from 'hardwired';
+
+  const aDef = transient.fn(() => 1);
+  const bDef = transient.fn(() => 2);
+  const cDef = singleton.using(aDef, bDef).fn((a, b) => a + b);
+  const c = container().get(cDef); // result equals to 3
+  ```
+
+- **`define`**
+
+  ```typescript
+  import { singleton, container, value, define } from 'hardwired';
+
+  const randomValD = scoped.fn(() => Math.random());
+
+  const myDef = singleton.define(container => {
+    const val1 = container.get(randomValD);
+    const val2 = container.withScope(childContainer => {
+      return childContainer.get(randomValD);
+    });
+
+    return [val1, val2];
+  });
+
+  const [val1, val2] = container().get(myDef);
+  // val1 is not eq to val2, because was created in the other scope
+  ```
+
+Additionally, the library provides a helper for creating definitions for static values.
+Using this kind of definition is useful when the static value needs to be replaced in tests
+without test runner's mocking capabilities.
 
 - **`value`** - defines a static value
 
-```typescript
-import { value, container } from 'hardwired';
+  ```typescript
+  import { value, container } from 'hardwired';
 
-const configDef = value({ port: 1234 });
-const cnt = container();
-const config = cnt.get(configDef); // { port: 1234 }
+  const configDef = value({ port: 1234 });
+  const cnt = container();
+  const config = cnt.get(configDef); // { port: 1234 }
 
-cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
-```
+  cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
+  ```
 
-- **`fn`** - takes as an arguments a factory function and other definitions.
-  Definitions are instantiated and injected into the factory function during definition 
-  instantiation.
+### Asynchronous Definitions
 
-```typescript
-import { singleton, container, transient } from 'hardwired';
+`[singleton|scoped|transient|.async().[fn|class|define]()` - These supports asynchronous dependencies and instantiation.
 
-const aDef = transient.fn(() => 1);
-const bDef = transient.fn(() => 2);
-const cDef = singleton.fn((a, b) => a + b, aDef, bDef);
-const c = container().get(cDef); // result equals to 3
-```
+- **`class`** - creates class instance accepting async dependencies
 
-- **`class`** - creates instance of a class.
+  ```typescript
+  import { singleton, container } from 'hardwired';
+  import { Db } from 'some-db-client';
 
-```typescript
-import { singleton, container } from 'hardwired';
-
-class Logger {
-  info() {}
-}
-
-class Writer {
-  constructor(private logger: Logger) {}
-}
-
-const loggerDef = singleton.class(Logger);
-const writerDef = singleton.class(Writer, loggerDef);
-const writerInstance = container().get(writerDef); // creates instance of Writer
-```
-
-- **`partial`** - creates partially applied function.
-
-```typescript
-import { singleton, container, value } from 'hardwired';
-
-const getUserDetailsUrl = (host: string, userId: string): string => {
-  // build url
-};
-
-const hostDef = value('example.com');
-const getUserDetailsUrlDef = singleton.partial(getUserDetailsUrl, hostDef);
-
-const cnt = container();
-const getUrl = cnt.get(getUserDetailsUrlDef); // (userId: string) => string
-const url = getUrl('someUserId');
-```
-
-If all arguments are provided, then `partial` returns function that takes no arguments
-
-```typescript
-import { singleton, container, value } from 'hardwired';
-
-const getUsersListUrl = (host: string): string => {
-  // build url
-};
-
-const hostDef = value('example.com');
-const getUsersListUrlDef = singleton.partial(getUsersListUrl, hostDef);
-
-const cnt = container();
-const getUrl = cnt.get(getUsersListUrlDef); // () => string
-const url = getUrl();
-```
-
-`partial` accepts nested functions (manually curried functions with fixed count of arguments)
-
-```typescript
-import { singleton, container, value } from 'hardwired';
-
-const getUserDetailsUrl =
-  (host: string) =>
-  (userId: string): string => {
-    // build url
+  const createDbConnection = async (): Promise<Db> => {
+    // create db connection asynchonously
   };
 
-const hostDef = value('example.com');
-const getUserDetailsUrlDef = singleton.partial(getUserDetailsUrl, hostDef);
+  class UserRepository {
+    constructor(private db: Db) {}
 
-const cnt = container();
-const getUrl = cnt.get(getUserDetailsUrlDef); // (userId: string) => string
-const url = getUrl('someUserId');
-```
-
-- **`define`** - low-level definition that provides access to the container
-
-```typescript
-import { singleton, container, value, define } from 'hardwired';
-
-const randomValD = scoped.fn(() => Math.random());
-
-const myDef = singleton.define(container => {
-  const val1 = container.get(randomValD);
-  const val2 = container.withScope(childContainer => {
-    return childContainer.get(randomValD);
-  });
-
-  return [val1, val2];
-});
-
-const [val1, val2] = container().get(myDef);
-// val1 is not eq to val2, because was created in other scope
-```
-
-## Asynchronous resolution
-
-Definitions returning instances of definitions asynchronously. They can reference both sync and
-async definitions as dependencies.
-
-- **`asyncClass`** - the same as `class` but accepts async dependencies
-
-```typescript
-import { singleton, container } from 'hardwired';
-import { Db } from 'some-db-client';
-
-const createDbConnection = async (): Promise<Db> => {
-  // create db connection asynchonously
-};
-
-class UserRepository {
-  constructor(private db: Db) {}
-
-  findUserById(userId: string): Promise<User> {
-    //...
+    findUserById(userId: string): Promise<User> {
+      //...
+    }
   }
-}
 
-const dbDef = singleton.asyncFn(createDbConnection);
-const userRepositoryDef = singleton.asyncClass(UserRepository, dbDef);
-const cnt = container();
-const userRepository: UserRepository = await cnt.get(userRepositoryDef);
-```
+  const dbDef = singleton.async().fn(createDbConnection);
+  const userRepositoryDef = singleton.async().using(dbDef).class(UserRepository);
+  const cnt = container();
+  const userRepository: UserRepository = await cnt.get(userRepositoryDef);
+  ```
 
-- **`asyncFn`** - the same as `fn` but accepts async dependencies
-- **`asyncPartial`** - the same as `partial` but accepts async dependencies
+- **`fn`** - the same as synchronous `fn` but accepts async dependencies
+- **`define`** - the same as synchronous `define` but accepts async function
 
-```typescript
-import { singleton, container } from 'hardwired';
+  ```typescript
+  import { singleton, container, value, define } from 'hardwired';
 
-const findUserById =
-  async (db: Db) =>
-  async (userId: string): Promise<User | undefined> => {
-    return db.users.findOne({ id: userId });
-  };
+  const randomValD = scoped.async().fn(async () => Math.random());
 
-const dbDef = singleton.fn((): Db => databaseInstance);
-const findUserByIdDef = singleton.asyncPartial(findUserById, dbDef);
+  const myDef = singleton.async().define(async container => {
+    const val1 = await container.get(randomValD);
+    const val2 = await container.withScope(childContainer => {
+      return childContainer.get(randomValD);
+    });
 
-const cnt = container();
-const findUserByIdBoundToDb = cnt.get(findUserByIdDef);
-// (userId: string) => Promise<User | undefined>
-const user = await findUserByIdBoundToDb('someUserId');
-```
-
-- **`asyncDefine`** - the same as `define` but accepts async function
-
-```typescript
-import { singleton, container, value, define } from 'hardwired';
-
-const randomValD = scoped.asyncFn(async () => Math.random());
-
-const myDef = singleton.asyncDefine(async container => {
-  const val1 = await container.get(randomValD);
-  const val2 = await container.withScope(childContainer => {
-    return childContainer.get(randomValD);
+    return [val1, val2];
   });
 
-  return [val1, val2];
-});
+  const [val1, val2] = await container().get(myDef);
+  // val1 is not eq to val2, because was created in other scope
+  ```
 
-const [val1, val2] = await container().get(myDef);
-// val1 is not eq to val2, because was created in other scope
-```
+## Overriding definitions
 
-### Overriding definitions
-
-Each instance definition can be overridden at the container level.
-This e.g. allows replacing deeply nested definitions with mocked instances for
-integration tests. Overriding is achieved by providing a patched
-definition to the container constructor or `checkoutScope` method. On each request
-(`.get` | `. getAll` | `. getAsyncAll`) container checks if it has
-overridden definition for the original one that was requested. If the overridden definition is found,
-then it is used instead of the original one.
+For integration testing or specific runtime needs, definitions can be overridden in the container,
+allowing for flexibility such as mocking.
 
 ```typescript
 import { singleton, container, set } from 'hardwired';
@@ -327,12 +265,9 @@ class RandomGenerator {
 }
 
 const randomSeedD = singleton.fn(() => Math.random());
-const randomGeneratorDef = singleton.class(RandomGenerator, randomSeedD);
+const randomGeneratorDef = singleton.using(randomSeedD).class(RandomGenerator);
 
 const cnt = container([set(randomSeedD, 1)]);
-//const cnt = container({overrides: [set(randomSeedD, 1)]});
-//const cnt = container({gloablOverrides: [set(randomSeedD, 1)]});
-//const cnt = container().checkoutScope({overrides:[set(randomSeedD, 1)] });
 
 const randomGenerator = cnt.get(randomGeneratorDef);
 randomGenerator.seed === 1; // true
@@ -341,110 +276,111 @@ randomGenerator.seed === 1; // true
 ### Available overrides
 
 - **`set`** - it replaces original definition with a new static value
-- **`replace`** - it replaces original definition with new one. This enables switching lifetime of
+- **`replace`** - it replaces original definition with new one. This enables switching lifespan of
   the definition
 
-```typescript
-import { singleton, container, replace, transient } from 'hardwired';
+  ```typescript
+  import { singleton, container, replace, transient } from 'hardwired';
 
-const mySingletonDef = singleton.fn(generateUniqueId);
+  const mySingletonDef = singleton.fn(generateUniqueId);
 
-// change lifetime for mySingletonDef to transient
-const mySingletonOverrideDef = replace(mySingletonDef, transient.fn(generateUniqueId));
-const cnt = container([mySingletonOverrideDef]);
+  // change lifetime for mySingletonDef to transient
+  const mySingletonOverrideDef = replace(mySingletonDef, transient.fn(generateUniqueId));
+  const cnt = container([mySingletonOverrideDef]);
 
-cnt.get(mySingletonDef) === cnt.get(mySingletonDef); // false
-// cnt uses now transient lifetime for mySingletonDef and calls generateUniqueId on each .get call
-```
+  cnt.get(mySingletonDef) === cnt.get(mySingletonDef); // false
+  // cnt uses now transient lifetime for mySingletonDef and calls generateUniqueId on each .get call
+  ```
 
 - **`decorate`** - it takes decorator function and returns decorated object
 
-```typescript
-import { singleton, container, decorate } from 'hardwired';
+  ```typescript
+  import { singleton, container, decorate } from 'hardwired';
 
-interface IWriter {
-  write(data);
-}
-
-class Writer implements IWriter {
-  write(data) {}
-}
-
-class Logger {
-  info(msg) {}
-}
-
-class LoggingWriter implements IWriter {
-  constructor(private writer, private logger: Logger) {}
-
-  write(data) {
-    this.logger.info('Writting data');
-    this.writer.write(data);
-    this.logger.info('Done');
+  interface IWriter {
+    write(data);
   }
-}
 
-const writerDef = singleton.class(Writer);
-const loggerDef = singleton.class(Logger);
+  class Writer implements IWriter {
+    write(data) {}
+  }
 
-const writerOverrideDef = decorate(
-  writerDef,
-  (originalWriter, logger) => new LoggingWriter(originalWriter, logger),
-  loggerDef, // inject extra dependency required by LoggingWriter
-);
+  class Logger {
+    info(msg) {}
+  }
 
-const cnt = container([writerOverrideDef]);
+  class LoggingWriter implements IWriter {
+    constructor(
+      private writer,
+      private logger: Logger,
+    ) {}
 
-cnt.get(writerDef); // returns instance of LoggingWriter
-```
+    write(data) {
+      this.logger.info('Writting data');
+      this.writer.write(data);
+      this.logger.info('Done');
+    }
+  }
+
+  const writerDef = singleton.class(Writer);
+  const loggerDef = singleton.class(Logger);
+
+  const writerOverrideDef = decorate(
+    writerDef,
+    (originalWriter, logger) => new LoggingWriter(originalWriter, logger),
+    loggerDef, // inject extra dependency required by LoggingWriter
+  );
+
+  const cnt = container([writerOverrideDef]);
+
+  cnt.get(writerDef); // returns instance of LoggingWriter
+  ```
 
 - **`apply`** - allows triggering side effects on original instance
 
-```typescript
-import { singleton, container, apply } from 'hardwired';
+  ```typescript
+  import { singleton, container, apply } from 'hardwired';
 
-class Writer {
-  write(data) {}
-}
-
-class WriteManager {
-  constructor(private writer: Writer) {}
-
-  storeDocument(document) {
-    this.writer.write(dataForDocument);
+  class Writer {
+    write(data) {}
   }
-}
 
-class StoreDocumentAction {
-  constructor(private writeManager: WriteManager) {}
+  class WriteManager {
+    constructor(private writer: Writer) {}
 
-  run() {
-    this.writeManager.storeDocument({ someData });
+    storeDocument(document) {
+      this.writer.write(dataForDocument);
+    }
   }
-}
 
-const writerDef = singleton.class(Writer);
-const writeManagerDef = singleton.class(WriteManager, writerDef);
-const storeDocumentActionDef = singleton.class(StoreDocumentAction, writeManagerDef);
+  class StoreDocumentAction {
+    constructor(private writeManager: WriteManager) {}
 
-const writerPatch = apply(writerDef, writerInstance => {
-  jest.spyOn(writerInstance, 'write');
-  // comparing to the decorator override, there is no need to return decorated value
-});
-const cnt = container([writerPatch]);
+    run() {
+      this.writeManager.storeDocument({ someData });
+    }
+  }
 
-const [spiedWriter, storeDocumentAction] = cnt.getAll(writerDef, storeDocumentActionDef);
-storeDocumentAction.run();
-// now we can do some assertions on spied write method
-expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
-```
+  const writerDef = singleton.class(Writer);
+  const writeManagerDef = singleton.using(writerDef).class(WriteManager);
+  const storeDocumentActionDef = singleton.using(writeManagerDef).class(StoreDocumentAction);
 
-### Implicit Definition
+  const writerPatch = apply(writerDef, writerInstance => {
+    jest.spyOn(writerInstance, 'write');
+    // comparing to the decorator override, there is no need to return decorated value
+  });
+  const cnt = container([writerPatch]);
 
-Sometimes there are cases where we don't know every parameter during the construction of
-definitions, e.g. application takes some input from the user. For such scenarios the library
-provides `implicit` definitions, which acts like a named placeholder for a value that will be
-provided at the runtime.
+  const [spiedWriter, storeDocumentAction] = cnt.getAll(writerDef, storeDocumentActionDef);
+  storeDocumentAction.run();
+  // now we can do some assertions on spied write method
+  expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
+  ```
+
+## Implicit Definition
+
+Implicit definitions act as placeholders for values provided at runtime, useful for dynamic configurations
+or objects that are not available at compile time.
 
 ```typescript
 import { external, singleton } from 'hardwired';
@@ -457,22 +393,20 @@ type EnvConfig = {
 };
 
 const envD = implicit<EnvConfig>('env');
-const appPortD = singleton.fn((config: EnvConfig) => config.server.port, envD);
-const httpServerD = singleton.fn((port: number) => {
+const appPortD = singleton.using(envD).fn((config: EnvConfig) => config.server.port);
+const httpServerD = singleton.using(appPortD).fn((port: number) => {
   const requestListener = (req, res) => {};
 
   const server = http.createServer(requestListener);
   return server.listen(port);
-}, appPortD);
+});
 ```
 
-To create the instance of an implicit definition, one needs to
-instantiate container/container scope with overrides for implicit definition.
+The actual value for implicit placeholder needs to be provided when creating the container.
 
 ```typescript
 import { container } from 'hardwired';
 
-const cnt = container({ scopeOverrides: [set(envD, { server: { port: 1234 } })] });
-// const cnt = container().checkoutScope({scopeOverrides: [set(envD, { server: { port: 1234 } })]});
+const cnt = container({ globalOverrides: [set(envD, { server: { port: 1234 } })] });
 cnt.get(httpServerD);
 ```
