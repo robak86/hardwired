@@ -10,7 +10,7 @@ import {
   assertValidDependency,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { DefinitionAnnotation } from '../context/EagerDefinitionsInterceptor.js';
+import { DefinitionAnnotation } from '../eager/EagerDefinitionsInterceptor.js';
 
 export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any>[], TLifeTime extends LifeTime> {
   constructor(

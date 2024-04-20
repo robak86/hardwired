@@ -1,9 +1,9 @@
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { Resolution } from '../definitions/abstract/Resolution.js';
-import { EagerDefinitionsGroup } from './EagerDefinitions.js';
-import { ContainerContext } from './ContainerContext.js';
-import { ContainerInterceptor } from './ContainerInterceptor.js';
+import { EagerDefinitions } from './EagerDefinitions.js';
+import { ContainerContext } from '../context/ContainerContext.js';
+import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 
 export type DefinitionAnnotation<TDef extends AnyInstanceDefinition<any, any>> = (definition: TDef) => TDef;
 
@@ -12,7 +12,7 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
 
   constructor(
     private _lazily: boolean = true,
-    private _definitions: EagerDefinitionsGroup = new EagerDefinitionsGroup(),
+    private _definitions: EagerDefinitions = new EagerDefinitions(),
   ) {}
 
   eager: DefinitionAnnotation<AnyInstanceDefinition<LifeTime.singleton | LifeTime.scoped, any>> = definition => {

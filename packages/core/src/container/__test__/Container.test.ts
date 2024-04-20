@@ -12,8 +12,8 @@ import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import EventEmitter from 'node:events';
-import { EagerDefinitionsInterceptor } from '../../context/EagerDefinitionsInterceptor.js';
-import { EagerDefinitionsGroup } from '../../context/EagerDefinitions.js';
+import { EagerDefinitionsInterceptor } from '../../eager/EagerDefinitionsInterceptor.js';
+import { EagerDefinitions } from '../../eager/EagerDefinitions.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 
 describe(`Container`, () => {
@@ -308,7 +308,7 @@ describe(`Container`, () => {
   describe(`eager instantiation`, () => {
     const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, []);
 
-    const eagerDefinitions = new EagerDefinitionsGroup();
+    const eagerDefinitions = new EagerDefinitions();
     const eagerInterceptor = new EagerDefinitionsInterceptor(true, eagerDefinitions);
 
     beforeEach(() => {

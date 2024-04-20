@@ -33,3 +33,6 @@ export * from './utils/ClassType.js';
 export { Resolution } from './definitions/abstract/Resolution.js';
 export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
 export { ContainerInterceptor } from './context/ContainerInterceptor.js';
+
+export { EagerDefinitions } from './eager/EagerDefinitions.js';
+export { EagerDefinitionsInterceptor, eager, eagerInterceptor } from './eager/EagerDefinitionsInterceptor.js';

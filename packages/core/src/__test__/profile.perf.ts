@@ -4,7 +4,7 @@ import { singleton, transient } from '../definitions/definitions.js';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import 'source-map-support/register';
 import Bench from 'tinybench';
-import { EagerDefinitionsInterceptor } from '../context/EagerDefinitionsInterceptor.js';
+import { EagerDefinitionsInterceptor } from '../eager/EagerDefinitionsInterceptor.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
 const eagerInterceptor = new EagerDefinitionsInterceptor();

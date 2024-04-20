@@ -1,4 +1,4 @@
-import { EagerDefinitionsGroup } from '../EagerDefinitions.js';
+import { EagerDefinitions } from '../EagerDefinitions.js';
 import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import EventEmitter from 'node:events';
@@ -8,7 +8,7 @@ import { EagerDefinitionsInterceptor } from '../EagerDefinitionsInterceptor.js';
 describe(`EagerDefinitions`, () => {
   const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, []);
 
-  const eagerDefinitions = new EagerDefinitionsGroup();
+  const eagerDefinitions = new EagerDefinitions();
   const eagerInterceptor = new EagerDefinitionsInterceptor(true, eagerDefinitions);
 
   beforeEach(() => {
