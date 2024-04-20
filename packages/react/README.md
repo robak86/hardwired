@@ -102,29 +102,29 @@ npm install hardwired hardwired-react mobx mobx-react
 2. Create components
 
    ```typescript jsx
-     import { useDefinition } from './useDefinition.js';
-     import { observer } from 'mobx-react';
+    import { useDefinition } from './useDefinition.js';
+    import { observer } from 'mobx-react';
 
-     export const Counter = observer(() => {
-       const state = useDefinition(counterStoreDef);
+    export const Counter = observer(() => {
+      const state = useDefinition(counterStoreDef);
 
-       return (
-         <h2>
-           Current value: <span data-testid={'counter-value'}>{state.value}</span>
-         </h2>
-       );
-     });
+      return (
+        <h2>
+          Current value: <span data-testid={'counter-value'}>{state.value}</span>
+        </h2>
+      );
+    });
 
-   export const CounterButtons = observer(() => {
-     const actions = useDefinition(counterActionsDef);
+    export const CounterButtons = observer(() => {
+      const actions = useDefinition(counterActionsDef);
 
-     return (
-       <>
-         <button onClick={actions.increment}>Increment</button>
-         <button onClick={actions.decrement}>Decrement</button>
-       </>
-     );
-   });
+      return (
+        <>
+          <button onClick={actions.increment}>Increment</button>
+          <button onClick={actions.decrement}>Decrement</button>
+        </>
+      );
+    });
    ```
 
 3. Wrap application with `ContainerProvider`
@@ -264,8 +264,8 @@ import { runInAction } from 'mobx';
 describe('CounterButtons', () => {
   function setup(initialValue: number) {
     const cnt = container([
-      set(counterInitialValueDef, initialValue), // initialValue will be used instead of the
-      // original defined by counterInitialValueDef
+      set(counterInitialValueDef, initialValue), 
+      // initialValue will be used instead of the original value defined by counterInitialValueDef
     ]);
 
     const result = render(
@@ -340,8 +340,8 @@ import { singleton, value } from 'hardwired';
 
 const counterInitialValueDef = value(0);
 const counterLabelValueDef = implicit<string>('label');
-const counterStoreDef = scoped.class(CounterStore, counterInitialValueDef, counterLabelValueDef);
-const counterActionsDef = scoped.class(CounterActions, counterStoreDef);
+const counterStoreDef = scoped.using(counterInitialValueDef, counterLabelValueDef).class(CounterStore);
+const counterActionsDef = scoped.using(counterStoreDef).class(CounterActions);
 ```
 
 Notice that the lifetime for counter store and counter actions was changed from `singleton` to
