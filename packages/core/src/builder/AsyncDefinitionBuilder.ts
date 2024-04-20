@@ -16,13 +16,18 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
   constructor(
     private _deps: TDeps,
     private _lifeTime: TLifeTime,
+    private _meta: object = {},
     private _eagerGroup: boolean,
   ) {
     assertValidDependency(this._lifeTime, this._deps);
   }
 
   eager() {
-    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, true);
+    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, true);
+  }
+
+  meta(meta: object) {
+    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, { ...this._meta, ...meta }, this._eagerGroup);
   }
 
   using<TNewDeps extends AnyInstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
@@ -31,6 +36,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
     return new AsyncDefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime>(
       [...this._deps, ...deps],
       this._lifeTime,
+      this._meta,
       this._eagerGroup,
     );
   }
@@ -44,6 +50,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
         return fn(new Container(context));
       },
       dependencies: this._deps,
+      meta: this._meta,
     });
 
     this.appendToEagerGroup(definition);
@@ -61,6 +68,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
         return new cls(...dependenciesInstance);
       },
       dependencies: this._deps,
+      meta: this._meta,
     });
 
     this.appendToEagerGroup(definition);
@@ -76,6 +84,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
         return factory(...(dependenciesInstance as InstancesArray<TDeps>));
       },
       dependencies: this._deps,
+      meta: this._meta,
     });
 
     this.appendToEagerGroup(definition);
@@ -94,6 +103,6 @@ export function usingAsync<TLifeTime extends LifeTime>(strategy: TLifeTime) {
   return <TDeps extends AnyInstanceDefinition<any, any>[]>(
     ...deps: TDeps
   ): AsyncDefinitionBuilder<TDeps, TLifeTime> => {
-    return new AsyncDefinitionBuilder<TDeps, TLifeTime>(deps, strategy, false);
+    return new AsyncDefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, false);
   };
 }

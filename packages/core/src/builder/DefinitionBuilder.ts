@@ -18,13 +18,18 @@ export class DefinitionBuilder<
   constructor(
     private _deps: TDeps,
     private _lifeTime: TLifeTime,
+    private _meta: object,
     private _eagerGroup: boolean,
   ) {
     assertValidDependency(this._lifeTime, this._deps);
   }
 
   async() {
-    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._eagerGroup);
+    return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, this._eagerGroup);
+  }
+
+  meta(meta: object) {
+    return new DefinitionBuilder(this._deps, this._lifeTime, { ...this._meta, ...meta }, this._eagerGroup);
   }
 
   using<TNewDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
@@ -33,12 +38,13 @@ export class DefinitionBuilder<
     return new DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime>(
       [...this._deps, ...deps],
       this._lifeTime,
+      this._meta,
       this._eagerGroup,
     );
   }
 
   eager() {
-    return new DefinitionBuilder(this._deps, this._lifeTime, true);
+    return new DefinitionBuilder(this._deps, this._lifeTime, this._meta, true);
   }
 
   define<TValue>(buildFn: (locator: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime>) => TValue) {
@@ -48,6 +54,7 @@ export class DefinitionBuilder<
         return buildFn(new Container(context)); // TODO: still unclear if we should create a new instance of Container
       },
       this._deps,
+      this._meta,
     );
 
     this.appendToEagerGroup(definition);
@@ -60,6 +67,7 @@ export class DefinitionBuilder<
       this._lifeTime,
       context => new cls(...(this._deps.map(context.buildWithStrategy) as InstancesArray<TDeps>)),
       this._deps,
+      this._meta,
     );
 
     this.appendToEagerGroup(definition);
@@ -74,6 +82,7 @@ export class DefinitionBuilder<
         return factory(...(this._deps.map(context.buildWithStrategy) as InstancesArray<TDeps>));
       },
       this._deps,
+      this._meta,
     );
 
     this.appendToEagerGroup(definition);
@@ -89,6 +98,6 @@ export class DefinitionBuilder<
 
 export function using<TLifeTime extends LifeTime>(strategy: TLifeTime) {
   return <TDeps extends InstanceDefinition<any, any>[]>(...deps: TDeps): DefinitionBuilder<TDeps, TLifeTime> => {
-    return new DefinitionBuilder<TDeps, TLifeTime>(deps, strategy, false);
+    return new DefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, false);
   };
 }
