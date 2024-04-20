@@ -9,9 +9,10 @@ export class InstanceDefinition<TInstance, TLifeTime extends LifeTime> {
   static create<TInstance, TLifeTime extends LifeTime>(
     strategy: TLifeTime,
     create: (context: ContainerContext) => TInstance,
+    dependencies: InstanceDefinition<any, any>[],
     meta: Record<string, any> = {},
   ) {
-    return new InstanceDefinition<TInstance, TLifeTime>(v4(), Resolution.sync, strategy, create, meta);
+    return new InstanceDefinition<TInstance, TLifeTime>(v4(), Resolution.sync, strategy, create, dependencies, meta);
   }
 
   constructor(
@@ -19,6 +20,7 @@ export class InstanceDefinition<TInstance, TLifeTime extends LifeTime> {
     readonly resolution: Resolution.sync,
     readonly strategy: TLifeTime,
     readonly create: (context: ContainerContext) => TInstance,
+    readonly dependencies: InstanceDefinition<any, any>[],
     readonly meta: Record<string, any>,
   ) {}
 }

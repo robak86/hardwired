@@ -13,6 +13,7 @@ export function implicit<T>(name: string, meta?: object): InstanceDefinition<T, 
         `Cannot instantiate implicit definition "${name}". Definition should be provided at the runtime, by creating new scope`,
       );
     },
+    [],
     meta ?? {},
   );
 }
@@ -27,5 +28,6 @@ export function implicitAsync<T>(name: string, meta?: object): AsyncInstanceDefi
       );
     },
     meta: meta ?? {},
+    dependencies: [],
   });
 }

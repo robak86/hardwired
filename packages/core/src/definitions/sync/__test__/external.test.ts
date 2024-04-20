@@ -28,8 +28,8 @@ describe(`implicit`, () => {
   const externalParams1D = implicit<Externals>('params1');
   const externalParams2D = implicit<OtherExternals>('params2');
 
-  const defUsingExternals1 = transient.class(ExternalsConsumer, externalParams1D, numD);
-  const defUsingBothExternals = transient.class(BothExternalsConsumer, externalParams1D, externalParams2D, numD);
+  const defUsingExternals1 = transient.using(externalParams1D, numD).class(ExternalsConsumer);
+  const defUsingBothExternals = transient.using(externalParams1D, externalParams2D, numD).class(BothExternalsConsumer);
 
   describe(`container.get`, () => {
     it(`returns correct instance`, async () => {

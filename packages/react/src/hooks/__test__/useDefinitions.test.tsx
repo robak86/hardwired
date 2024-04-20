@@ -28,8 +28,8 @@ describe(`useDefinitions`, () => {
 
     it(`returns correct types using externals`, async () => {
       const ext = implicit<boolean>('ext');
-      const val1Def = scoped.fn(b => 'someString', ext);
-      const val2Def = scoped.fn(b => 123, ext);
+      const val1Def = scoped.using(ext).fn(b => 'someString');
+      const val2Def = scoped.using(ext).fn(b => 123);
 
       const Component = () => {
         try {
@@ -128,8 +128,12 @@ describe(`useDefinitions`, () => {
   describe(`using externals`, () => {
     function setup() {
       const someExternalParam = implicit<string>('ext');
-      const val1Def = scoped.fn((ext: string) => `def:1,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
-      const val2Def = scoped.fn((ext: string) => `def:2,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
+      const val1Def = scoped
+        .using(someExternalParam)
+        .fn((ext: string) => `def:1,render:${checkoutRenderId()};value:${ext}`);
+      const val2Def = scoped
+        .using(someExternalParam)
+        .fn((ext: string) => `def:2,render:${checkoutRenderId()};value:${ext}`);
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);

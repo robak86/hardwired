@@ -31,7 +31,7 @@ export function provideLazy<T>(def: InstanceDefinition<T, LifeTime.scoped>, inst
 }
 
 export function provideAsync<T>(def: AnyInstanceDefinition<T, any>, instance: () => Promise<T>): void {
-  const override = replace(def, scoped.asyncFn(instance));
+  const override = replace(def, scoped.async().fn(instance));
 
   return useContainer().override(override);
 }

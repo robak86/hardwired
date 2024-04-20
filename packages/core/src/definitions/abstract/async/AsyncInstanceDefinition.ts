@@ -2,12 +2,14 @@ import { LifeTime } from '../LifeTime.js';
 import { Resolution } from '../Resolution.js';
 import { ContainerContext } from '../../../context/ContainerContext.js';
 import { v4 } from 'uuid';
+import { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
 
 export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime> = {
   readonly id: string;
   readonly strategy: TLifeTime;
   readonly resolution: Resolution.async;
   readonly create: (context: ContainerContext) => Promise<T>;
+  readonly dependencies: AnyInstanceDefinition<any, any>[];
   readonly meta?: Record<string, any>;
 };
 
@@ -16,10 +18,12 @@ export function asyncDefinition<TInstance, TLifeTime extends LifeTime>({
   strategy,
   create,
   meta,
+  dependencies,
 }: {
   id?: string;
   strategy: TLifeTime;
   create: (context: ContainerContext) => Promise<TInstance>;
+  dependencies: AnyInstanceDefinition<any, any>[];
   meta?: Record<string, any>;
 }): AsyncInstanceDefinition<TInstance, TLifeTime> {
   return {
@@ -27,6 +31,7 @@ export function asyncDefinition<TInstance, TLifeTime extends LifeTime>({
     strategy,
     create,
     resolution: Resolution.async,
+    dependencies,
     meta,
   };
 }

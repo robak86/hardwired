@@ -1,8 +1,9 @@
-import { singleton } from '../../definitions.js';
+import { scoped, singleton } from '../../definitions.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { fn } from '../fn.js';
+
 import { describe, expect, it } from 'vitest';
 import { implicit } from '../implicit.js';
+import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`fn`, () => {
   describe(`allowed dependencies life times`, () => {
@@ -11,10 +12,9 @@ describe(`fn`, () => {
     const implDef = implicit<number>('number');
 
     it(`is type-safe`, async () => {
-      const dep = fn(LifeTime.scoped)(val => {
-        // TODO: not typesafe
-        // expectType<TypeEqual<typeof val, number>>(true);
-      }, implDef);
+      const dep = scoped.using(implDef).fn(val => {
+        expectType<TypeEqual<typeof val, number>>(true);
+      });
     });
 
     describe(`singleton`, () => {
@@ -22,7 +22,7 @@ describe(`fn`, () => {
         it(`does not accept implicit definitions`, async () => {
           try {
             // @ts-expect-error request does not accept implicit definitions
-            const dep = fn(LifeTime.singleton)(numberConsumer, implDef);
+            const dep = singleton.using(implDef).fn(numberConsumer);
           } catch (err) {
             //noop
           }
@@ -33,7 +33,7 @@ describe(`fn`, () => {
         it(`does not accept implicit definitions`, async () => {
           const buildDef = () => {
             // @ts-expect-error singleton does not accept implicit definitions
-            fn(LifeTime.singleton)(numberConsumer, implDef);
+            singleton.using(implDef).fn(numberConsumer);
           };
 
           expect(buildDef).toThrow('Cannot use scoped dependency for singleton definition.');

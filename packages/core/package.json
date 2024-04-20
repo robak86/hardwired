@@ -1,6 +1,6 @@
 {
   "name": "hardwired",
-  "version": "0.8.5",
+  "version": "0.9.0",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@types/uuid": "^9.0.1",
-    "performance-now": "^2.1.0"
+    "tinybench": "^2.7.0"
   },
   "files": [
     "dist",

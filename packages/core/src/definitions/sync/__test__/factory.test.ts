@@ -72,8 +72,8 @@ describe(`factory`, () => {
       it(`cancels moves externals to IFactory params producing InstanceDefinition having void for TExternals`, async () => {
         const requestIdD = value('1');
         const dbConnectionD = singleton.class(DbConnection);
-        const loggerD = transient.class(Logger, requestD, requestIdD);
-        const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
+        const loggerD = transient.using(requestD, requestIdD).class(Logger);
+        const handlerD = transient.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
 
         const factoryD = factory(handlerD, requestD);
         expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient>>>(
@@ -86,9 +86,9 @@ describe(`factory`, () => {
       it(`injects working instance of factory`, async () => {
         const requestIdD = value('1');
         const dbConnectionD = singleton.class(DbConnection);
-        const loggerD = transient.class(Logger, requestD, requestIdD);
-        const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-        const routerD = transient.class(Router, factory(handlerD, requestD));
+        const loggerD = transient.using(requestD, requestIdD).class(Logger);
+        const handlerD = transient.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+        const routerD = transient.using(factory(handlerD, requestD)).class(Router);
 
         const cnt = container();
         const result = cnt.get(routerD);
@@ -102,9 +102,9 @@ describe(`factory`, () => {
       it(`allow overriding external params`, async () => {
         const requestIdD = value('1');
         const dbConnectionD = singleton.class(DbConnection);
-        const loggerD = transient.class(Logger, requestD, requestIdD);
-        const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-        const routerD = transient.class(Router, factory(handlerD, requestD));
+        const loggerD = transient.using(requestD, requestIdD).class(Logger);
+        const handlerD = transient.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+        const routerD = transient.using(factory(handlerD, requestD)).class(Router);
 
         const cnt = container([set(requestIdD, '2')]);
         const result = cnt.get(routerD);
@@ -119,9 +119,9 @@ describe(`factory`, () => {
         it(`creates new request scope for each IFactory .build call, ex. 1`, async () => {
           const requestIdD = scoped.fn(() => v4());
           const dbConnectionD = singleton.class(DbConnection);
-          const loggerD = transient.class(Logger, requestD, requestIdD);
-          const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = transient.class(Router, factory(handlerD, requestD));
+          const loggerD = transient.using(requestD, requestIdD).class(Logger);
+          const handlerD = transient.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+          const routerD = transient.using(factory(handlerD, requestD)).class(Router);
 
           const cnt = container();
           const result = cnt.get(routerD);
@@ -136,9 +136,9 @@ describe(`factory`, () => {
         it(`creates new request scope for each IFactory .build call, ex. 2`, async () => {
           const requestIdD = scoped.fn(() => v4());
           const dbConnectionD = singleton.class(DbConnection);
-          const loggerD = transient.class(Logger, requestD, requestIdD);
-          const handlerD = scoped.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = scoped.class(Router, factory(handlerD, requestD));
+          const loggerD = transient.using(requestD, requestIdD).class(Logger);
+          const handlerD = scoped.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+          const routerD = scoped.using(factory(handlerD, requestD)).class(Router);
 
           const cnt = container();
           const result = cnt.get(routerD);
@@ -153,9 +153,9 @@ describe(`factory`, () => {
         it(`supports global override`, async () => {
           const requestIdD = scoped.fn(() => v4());
           const dbConnectionD = singleton.class(DbConnection);
-          const loggerD = transient.class(Logger, requestD, requestIdD);
-          const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = transient.class(Router, factory(handlerD, requestD));
+          const loggerD = transient.using(requestD, requestIdD).class(Logger);
+          const handlerD = transient.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+          const routerD = transient.using(factory(handlerD, requestD)).class(Router);
 
           // TODO: providing requestId override as singleton will create memory leaks in current implementation, where
           //       singletons from child scopes are propagated to parent scopes
@@ -171,9 +171,9 @@ describe(`factory`, () => {
         it(`supports global override for factory params`, async () => {
           const requestIdD = scoped.fn(() => v4());
           const dbConnectionD = singleton.class(DbConnection);
-          const loggerD = transient.class(Logger, requestD, requestIdD);
-          const handlerD = transient.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = transient.class(Router, factory(handlerD, requestD));
+          const loggerD = transient.using(requestD, requestIdD).class(Logger);
+          const handlerD = transient.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+          const routerD = transient.using(factory(handlerD, requestD)).class(Router);
           const override = set(requestD, { requestObj: 'sss' });
 
           const cnt = container([override]);
@@ -186,9 +186,9 @@ describe(`factory`, () => {
         it(`propagates singletons created by factory to parent scope to make them reusable in next .build calls`, async () => {
           const requestIdD = scoped.fn(() => v4());
           const dbConnectionD = singleton.class(DbConnection);
-          const loggerD = transient.class(Logger, requestD, requestIdD);
-          const handlerD = scoped.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-          const routerD = scoped.class(Router, factory(handlerD, requestD));
+          const loggerD = transient.using(requestD, requestIdD).class(Logger);
+          const handlerD = scoped.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+          const routerD = scoped.using(factory(handlerD, requestD)).class(Router);
 
           const cnt = container();
           const result = cnt.get(routerD);
@@ -213,17 +213,17 @@ describe(`factory`, () => {
       const consumer1 = (ext1: Ext1, ext2: Ext2): [Ext1, Ext2] => [`consumer1${ext1}`, `consumer2${ext2}`];
 
       const consumer1Spy = vi.fn(consumer1);
-      const consumer1D = transient.partial(consumer1Spy, ext1, ext2);
+      const consumer1D = transient.using(ext1, ext2).fn(consumer1Spy);
 
       const consumer2 = (ext2: Ext2, ext1: Ext1): [Ext2, Ext1] => [`consumer2${ext2}`, `consumer1${ext1}`];
 
       const consumer2Spy = vi.fn(consumer2);
-      const consumer2D = transient.partial(consumer2Spy, ext2, ext1);
+      const consumer2D = transient.using(ext2, ext1).fn(consumer2Spy);
 
-      const combined = (consumer1: () => [Ext1, Ext2], consumer2: () => [Ext2, Ext1]): [Ext1, Ext2, Ext2, Ext1] => {
-        return [...consumer1(), ...consumer2()];
+      const combined = (consumer1: [Ext1, Ext2], consumer2: [Ext2, Ext1]): [Ext1, Ext2, Ext2, Ext1] => {
+        return [...consumer1, ...consumer2];
       };
-      const combinedD = transient.fn(combined, consumer1D, consumer2D);
+      const combinedD = transient.using(consumer1D, consumer2D).fn(combined);
 
       const compositionRoot = (
         factory: IFactory<[Ext1, Ext2, Ext2, Ext1], [string, string]>,
@@ -233,7 +233,7 @@ describe(`factory`, () => {
 
       const asFactory = factory(combinedD, ext1, ext2);
 
-      const compositionRootD = singleton.fn(compositionRoot, asFactory);
+      const compositionRootD = singleton.using(asFactory).fn(compositionRoot);
 
       const cnt = container();
       const result = cnt.get(compositionRootD);
@@ -295,11 +295,11 @@ describe(`factory`, () => {
     it(`creates correct composition root`, async () => {
       const requestIdD = scoped.fn(() => v4());
       const dbConnectionD = singleton.class(DbConnection);
-      const loggerD = transient.class(Logger, requestD, requestIdD);
-      const handlerD = scoped.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-      const routerD = scoped.class(Router, factory(handlerD, requestD));
-      const appModuleD = scoped.class(App, routerD, envConfigD);
-      const appsClusterD = singleton.class(AppsCluster, factory(appModuleD, envConfigD));
+      const loggerD = transient.using(requestD, requestIdD).class(Logger);
+      const handlerD = scoped.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+      const routerD = scoped.using(factory(handlerD, requestD)).class(Router);
+      const appModuleD = scoped.using(routerD, envConfigD).class(App);
+      const appsClusterD = singleton.using(factory(appModuleD, envConfigD)).class(AppsCluster);
 
       const cnt = container();
       const app = cnt.get(appsClusterD);
@@ -310,11 +310,11 @@ describe(`factory`, () => {
     it(`propagates singleton`, async () => {
       const requestIdD = scoped.fn(() => v4());
       const dbConnectionD = singleton.class(DbConnection);
-      const loggerD = transient.class(Logger, requestD, requestIdD);
-      const handlerD = scoped.class(Handler, requestD, loggerD, requestIdD, dbConnectionD);
-      const routerD = scoped.class(Router, factory(handlerD, requestD));
-      const appModuleD = scoped.class(App, routerD, envConfigD);
-      const appsClusterD = singleton.class(AppsCluster, factory(appModuleD, envConfigD));
+      const loggerD = transient.using(requestD, requestIdD).class(Logger);
+      const handlerD = scoped.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
+      const routerD = scoped.using(factory(handlerD, requestD)).class(Router);
+      const appModuleD = scoped.using(routerD, envConfigD).class(App);
+      const appsClusterD = singleton.using(factory(appModuleD, envConfigD)).class(AppsCluster);
 
       const cnt = container();
       const app = cnt.get(appsClusterD);

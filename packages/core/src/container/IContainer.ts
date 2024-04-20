@@ -21,7 +21,6 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
   withScope<TValue>(fn: (locator: IContainer<TAllowedLifeTime>) => TValue): TValue;
   override(definition: AnyInstanceDefinition<any, any>): void;
   provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped>, instance: T): void;
-  provideAsync<T>(def: AnyInstanceDefinition<T, LifeTime.scoped>, instance: () => Promise<T>): void;
   dispose(): void; // runs dispose method on every scoped/request instance created within this scope?
   // but what about singletons that were already propagated to parent scope?
 }

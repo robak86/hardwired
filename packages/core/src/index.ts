@@ -14,7 +14,7 @@ export * from './patching/apply.js';
 export * from './patching/set.js';
 export * from './patching/decorate.js';
 
-export { ContainerContext, ContainerInterceptor } from './context/ContainerContext.js';
+export { ContainerContext } from './context/ContainerContext.js';
 
 export { BuildStrategy } from './strategies/abstract/BuildStrategy.js';
 
@@ -32,3 +32,7 @@ export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
 export * from './utils/ClassType.js';
 export { Resolution } from './definitions/abstract/Resolution.js';
 export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
+export { ContainerInterceptor } from './context/ContainerInterceptor.js';
+
+export { EagerDefinitions } from './eager/EagerDefinitions.js';
+export { EagerDefinitionsInterceptor, eager, eagerInterceptor } from './eager/EagerDefinitionsInterceptor.js';

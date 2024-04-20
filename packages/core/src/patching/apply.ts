@@ -23,5 +23,6 @@ export const apply = <
 
       return decorated;
     },
+    dependencies: [...instance.dependencies, ...dependencies],
   };
 };

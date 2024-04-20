@@ -50,7 +50,7 @@ describe(`decorate`, () => {
   it(`allows using additional dependencies, ex2`, async () => {
     const a = value(1);
     const b = value(2);
-    const someValue = singleton.fn((a: number, b: number) => a + b, a, b);
+    const someValue = singleton.using(a, b).fn((a: number, b: number) => a + b);
 
     const mPatch = decorate(someValue, (val, b) => val * b, b);
 
@@ -78,7 +78,7 @@ describe(`decorate`, () => {
 
     it(`uses correct scope`, async () => {
       const source = scoped.fn(() => Math.random());
-      const a = scoped.fn((source: number) => source, source);
+      const a = scoped.using(source).fn((source: number) => source);
 
       const mPatch = decorate(a, a => a);
 

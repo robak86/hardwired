@@ -10,16 +10,12 @@ import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInst
 import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
-
-export type ContainerInterceptor = {
-  interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
-  interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any>, context: ContainerContext): Promise<T>;
-};
+import { ContainerInterceptor } from './ContainerInterceptor.js';
 
 export class ContainerContext implements InstancesBuilder {
   static empty(
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    interceptors: ContainerInterceptor = {},
+    interceptor: ContainerInterceptor = {},
   ) {
     const instancesEntries = InstancesDefinitionsRegistry.empty();
 
@@ -28,7 +24,7 @@ export class ContainerContext implements InstancesBuilder {
       instancesEntries,
       InstancesStore.create([]),
       strategiesRegistry,
-      interceptors,
+      interceptor,
       new ContextEvents(),
     );
   }
@@ -58,7 +54,7 @@ export class ContainerContext implements InstancesBuilder {
     private readonly instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
     private readonly instancesCache: InstancesStore,
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    private readonly interceptors: ContainerInterceptor,
+    private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {}
 
@@ -76,7 +72,21 @@ export class ContainerContext implements InstancesBuilder {
   get<TValue, TExternals>(definition: AsyncInstanceDefinition<TValue, any>): Promise<TValue>;
   get<TValue, TExternals>(definition: AnyInstanceDefinition<TValue, any>): TValue | Promise<TValue> {
     this.events.onGet.emit({ containerId: this.id, definition });
-    return this.buildWithStrategy(definition);
+
+    this.interceptor.onRequestStart?.(definition, this);
+
+    const instance = this.buildWithStrategy(definition);
+
+    if (definition.resolution === Resolution.async) {
+      if (this.interceptor.onAsyncRequestEnd) {
+        return this.interceptor.onAsyncRequestEnd(definition, this, instance).then(() => instance);
+      } else {
+        return instance;
+      }
+    } else {
+      this.interceptor.onRequestEnd?.(definition, this, instance);
+      return instance;
+    }
   }
 
   buildExact<T>(definition: InstanceDefinition<T, any>): T;
@@ -84,12 +94,16 @@ export class ContainerContext implements InstancesBuilder {
   buildExact<T>(definition: AnyInstanceDefinition<T, any>): T | Promise<T> {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
-    if (definition.resolution === Resolution.sync && this.interceptors.interceptSync) {
-      return this.interceptors.interceptSync(definition, this);
+    this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
+
+    if (patchedInstanceDef.resolution === Resolution.sync && this.interceptor.interceptSync) {
+      // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
+      return this.interceptor.interceptSync(patchedInstanceDef, this);
     }
 
-    if (definition.resolution === Resolution.async && this.interceptors.interceptAsync) {
-      return this.interceptors.interceptAsync?.(definition, this);
+    if (patchedInstanceDef.resolution === Resolution.async && this.interceptor.interceptAsync) {
+      // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
+      return this.interceptor.interceptAsync?.(patchedInstanceDef, this);
     }
 
     return patchedInstanceDef.create(this);
