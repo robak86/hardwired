@@ -116,6 +116,7 @@ bench
     eagerCnt.get(singletonWithEagerLeafD);
   });
 
-await bench.warmup();
-await bench.run();
-console.table(bench.table());
+bench
+  .warmup()
+  .then(_ => bench.run())
+  .then(_ => console.table(bench.table()));
