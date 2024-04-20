@@ -81,7 +81,7 @@ describe(`define`, () => {
         return [locator.get(value), locator.get(value)];
       });
 
-      const definitionConsumer = scoped.fn((def1, def2) => [def1, def2], definition, definition);
+      const definitionConsumer = scoped.using(definition, definition).fn((def1, def2) => [def1, def2]);
       const cnt = container();
 
       const result = cnt.get(definitionConsumer);

@@ -67,9 +67,9 @@ function buildTransient(times: number, depth: number, currentDepth = 0): Instanc
   return definitions;
 }
 
-const singletonD: any = singleton.fn((...args) => args, ...buildSingletonTree(4, 10, false));
-const transientD: any = transient.fn((...args) => args, ...buildTransient(3, 10));
-const singletonWithEagerLeafD: any = singleton.fn((...args) => args, ...buildSingletonTree(4, 10, true));
+const singletonD: any = singleton.using(...buildSingletonTree(4, 10, false)).fn((...args) => args);
+const transientD: any = transient.using(...buildTransient(3, 10)).fn((...args) => args);
+const singletonWithEagerLeafD: any = singleton.using(...buildSingletonTree(4, 10, true)).fn((...args) => args);
 
 // console.log('singletonD', countTreeDepsCount(singletonD));
 // console.log('transientD', countTreeDepsCount(transientD));

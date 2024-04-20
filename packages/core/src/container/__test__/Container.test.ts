@@ -62,13 +62,9 @@ describe(`Container`, () => {
         return 2;
       });
 
-      const aPlusB = singleton.fn(
-        function sum(a, b) {
-          return a + b;
-        },
-        a,
-        b,
-      );
+      const aPlusB = singleton.using(a, b).fn(function sum(a, b) {
+        return a + b;
+      });
 
       const aPatch = replace(
         a,
@@ -104,8 +100,8 @@ describe(`Container`, () => {
 
     it(`allows using external params`, async () => {
       const extD = implicit<BoxedValue<number>>('ext');
-      const multiplyBy2D = scoped.fn((val: BoxedValue<number>) => val.value * 2, extD);
-      const divideBy2D = scoped.fn((val: BoxedValue<number>) => val.value / 2, extD);
+      const multiplyBy2D = scoped.using(extD).fn((val: BoxedValue<number>) => val.value * 2);
+      const divideBy2D = scoped.using(extD).fn((val: BoxedValue<number>) => val.value / 2);
       const [val1, val2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
         .getAll([multiplyBy2D, divideBy2D]);
@@ -118,16 +114,12 @@ describe(`Container`, () => {
 
       let count = 0;
       const scopeSharedValD = scoped.fn(() => (count += 1));
-      const multiplyBy2D = scoped.fn(
-        (val: BoxedValue<number>, sharedVal: number) => ({ result: val.value * 2, shared: sharedVal }),
-        extD,
-        scopeSharedValD,
-      );
-      const divideBy2D = scoped.fn(
-        (val: BoxedValue<number>, sharedVal: number) => ({ result: val.value / 2, shared: sharedVal }),
-        extD,
-        scopeSharedValD,
-      );
+      const multiplyBy2D = scoped
+        .using(extD, scopeSharedValD)
+        .fn((val: BoxedValue<number>, sharedVal: number) => ({ result: val.value * 2, shared: sharedVal }));
+      const divideBy2D = scoped
+        .using(extD, scopeSharedValD)
+        .fn((val: BoxedValue<number>, sharedVal: number) => ({ result: val.value / 2, shared: sharedVal }));
 
       const [req1, req2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
@@ -141,8 +133,8 @@ describe(`Container`, () => {
 
   describe(`getAllAsync`, () => {
     it(`returns array of instances`, async () => {
-      const a = scoped.asyncFn(async () => 1);
-      const b = scoped.asyncFn(async () => 2);
+      const a = scoped.async().fn(async () => 1);
+      const b = scoped.async().fn(async () => 2);
 
       const c = container();
       const [aInstance, bInstance] = await c.getAllAsync([a, b]);
@@ -221,7 +213,7 @@ describe(`Container`, () => {
     describe(`async`, () => {
       describe(`no deps`, () => {
         it(`is called with created instance`, async () => {
-          const def = singleton.asyncFn(async () => 123);
+          const def = singleton.async().fn(async () => 123);
 
           const interceptAsyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
@@ -230,7 +222,7 @@ describe(`Container`, () => {
         });
 
         it(`works with sync factory`, async () => {
-          const def = singleton.asyncFn(() => 123);
+          const def = singleton.async().fn(() => 123);
 
           const interceptAsyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
@@ -239,7 +231,7 @@ describe(`Container`, () => {
         });
 
         it(`returns intercepted value`, async () => {
-          const def = singleton.asyncFn(() => 123);
+          const def = singleton.async().fn(() => 123);
 
           const interceptAsyncSpy = vi.fn(
             async <T>(def: AsyncInstanceDefinition<T, any>, ctx: ContainerContext): Promise<T> => 456 as T,
@@ -254,8 +246,11 @@ describe(`Container`, () => {
 
       describe(`with deps`, () => {
         it(`it calls interceptor on dependency definition`, async () => {
-          const def1 = singleton.asyncFn(async () => 123);
-          const def2 = singleton.asyncFn(async (n1: number) => n1 + 1000, def1);
+          const def1 = singleton.async().fn(async () => 123);
+          const def2 = singleton
+            .async()
+            .using(def1)
+            .fn(async (n1: number) => n1 + 1000);
 
           const interceptAsyncSpy = vi.fn(
             async <T>(def: AsyncInstanceDefinition<T, any>, ctx: ContainerContext): Promise<T> => {
@@ -282,7 +277,7 @@ describe(`Container`, () => {
 
       const k1 = singleton.fn(async () => (counter += 1));
       const k2 = singleton.fn(async () => (counter += 1));
-      const k3 = singleton.fn(async (k1, k2) => (await k1) + (await k2), k1, k2);
+      const k3 = singleton.using(k1, k2).fn(async (k1, k2) => (await k1) + (await k2));
 
       const c = container();
       const k3Instance = c.get(k3);

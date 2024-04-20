@@ -63,13 +63,9 @@ describe(`apply`, () => {
   it(`allows using additional dependencies, ex2`, async () => {
     const a = value(new BoxedValue(1));
     const b = value(new BoxedValue(2));
-    const someValue = singleton.fn(
-      (a: BoxedValue<number>, b: BoxedValue<number>) => {
-        return new BoxedValue(a.value + b.value);
-      },
-      a,
-      b,
-    );
+    const someValue = singleton.using(a, b).fn((a: BoxedValue<number>, b: BoxedValue<number>) => {
+      return new BoxedValue(a.value + b.value);
+    });
 
     const mPatch = apply(
       someValue,
@@ -103,7 +99,7 @@ describe(`apply`, () => {
 
     it(`preserves scope of the original resolver`, async () => {
       const source = scoped.fn(() => Math.random());
-      const a = scoped.fn(source => source, source);
+      const a = scoped.using(source).fn(source => source);
 
       const mPatch = apply(a, a => a);
 

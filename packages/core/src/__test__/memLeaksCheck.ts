@@ -23,8 +23,8 @@ class ConfigConsumer {
 }
 
 const config = implicit<ConfigData>('config');
-const d1 = transient.class(ConfigProvider, config);
-const d2 = scoped.class(ConfigConsumer, factory(d1, config));
+const d1 = transient.using(config).class(ConfigProvider);
+const d2 = scoped.using(factory(d1, config)).class(ConfigConsumer);
 
 const c = container();
 
