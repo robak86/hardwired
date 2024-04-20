@@ -43,7 +43,6 @@ export class EagerDefinitionsGroup {
   }
 
   appendAsync(definition: AnyInstanceDefinition<any, any>) {
-    console.log('appendAsyncEager', definition.meta?.name);
     if (this._asyncDefinitions.has(definition.id)) {
       return;
     }

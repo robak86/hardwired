@@ -30,8 +30,6 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
   };
 
   onDefinitionEnter(definition: AnyInstanceDefinition<any, any>) {
-    console.log('onDefinitionBuild', definition.meta?.name);
-
     if (definition.resolution === Resolution.sync) {
       this._eagerDefinitions.push(...this._definitions.getInvertedDefinitions(definition.id));
     }
@@ -42,16 +40,10 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
   }
 
   onRequestStart(definition: AnyInstanceDefinition<any, any>) {
-    console.log('onRequestStart', definition.meta?.name);
     this._eagerDefinitions = [];
   }
 
   onRequestEnd<T>(definition: AnyInstanceDefinition<T, any>, context: ContainerContext, instance: T): T {
-    console.log(
-      'onRequestEnd: eager deps to instantiate',
-      this._eagerDefinitions.map(d => d.meta?.name),
-    );
-
     for (const definition of this._eagerDefinitions) {
       context.buildWithStrategy(definition);
     }
@@ -64,11 +56,6 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
     context: ContainerContext,
     instance: T,
   ): Promise<T> {
-    console.log(
-      'onAsyncRequestEnd: eager deps to instantiate',
-      this._eagerDefinitions.map(d => d.meta?.name),
-    );
-
     for (const definition of this._eagerDefinitions) {
       await context.buildWithStrategy(definition);
     }

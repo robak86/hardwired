@@ -72,9 +72,9 @@ export class ContainerContext implements InstancesBuilder {
   get<TValue, TExternals>(definition: AsyncInstanceDefinition<TValue, any>): Promise<TValue>;
   get<TValue, TExternals>(definition: AnyInstanceDefinition<TValue, any>): TValue | Promise<TValue> {
     this.events.onGet.emit({ containerId: this.id, definition });
-    console.log('get', definition.meta?.name);
 
     this.interceptor.onRequestStart?.(definition, this);
+
     const instance = this.buildWithStrategy(definition);
 
     if (definition.resolution === Resolution.async) {
@@ -106,7 +106,6 @@ export class ContainerContext implements InstancesBuilder {
       return this.interceptor.interceptAsync?.(patchedInstanceDef, this);
     }
 
-    console.log('buildExact', patchedInstanceDef.meta?.name);
     return patchedInstanceDef.create(this);
   }
 
