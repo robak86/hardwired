@@ -71,10 +71,6 @@ const singletonD: any = singleton.using(...buildSingletonTree(4, 10, false)).fn(
 const transientD: any = transient.using(...buildTransient(3, 10)).fn((...args) => args);
 const singletonWithEagerLeafD: any = singleton.using(...buildSingletonTree(4, 10, true)).fn((...args) => args);
 
-// console.log('singletonD', countTreeDepsCount(singletonD));
-// console.log('transientD', countTreeDepsCount(transientD));
-// console.log('singletonWithEagerLeafD', countTreeDepsCount(singletonWithEagerLeafD));
-
 console.table([
   { 'Definition Name': 'singletonD', 'Total Dependencies Count': countTreeDepsCount(singletonD) },
   { 'Definition Name': 'transientD', 'Total Dependencies Count': countTreeDepsCount(transientD) },
