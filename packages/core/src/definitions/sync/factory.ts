@@ -9,9 +9,9 @@ import { set } from '../../patching/set.js';
 
 // prettier-ignore
 export type FactoryDefinition<TValue> =
-    | InstanceDefinition<TValue, LifeTime.singleton>
-    | InstanceDefinition<TValue, LifeTime.transient>
-    | InstanceDefinition<TValue, LifeTime.scoped>
+    | InstanceDefinition<TValue, LifeTime.singleton, any>
+    | InstanceDefinition<TValue, LifeTime.transient, any>
+    | InstanceDefinition<TValue, LifeTime.scoped, any>
 
 export type IFactory<TReturn, TParams extends any[]> = {
   build(...params: TParams): TReturn;
@@ -25,11 +25,11 @@ export type FactoryBuildFn = {
   >(
     definition: FactoryDefinition<TInstance>,
     ...dependencies: TDependencies
-  ): InstanceDefinition<IFactory<TInstance, InstancesArray<TDependencies>>, LifeTime.transient>;
+  ): InstanceDefinition<IFactory<TInstance, InstancesArray<TDependencies>>, LifeTime.transient, unknown>;
 };
 
 // export const factory: FactoryBuildFn = (definition: any, factoryMixingDef?: any): any => {
-export const factory: FactoryBuildFn = (definition: any, ...dependencies: InstanceDefinition<any, any>[]): any => {
+export const factory: FactoryBuildFn = (definition: any, ...dependencies: InstanceDefinition<any, any, any>[]): any => {
   return InstanceDefinition.create(
     LifeTime.transient,
     (context: ContainerContext): IFactory<any, any> => {

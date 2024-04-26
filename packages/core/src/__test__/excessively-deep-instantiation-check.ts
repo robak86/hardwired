@@ -1035,4 +1035,4 @@ const cnt = container();
 
 cnt.get(consumer1000);
 
-expectType<TypeOf<typeof consumer1000, InstanceDefinition<Consumer, LifeTime.transient>>>(true);
+expectType<TypeOf<typeof consumer1000, InstanceDefinition<Consumer, LifeTime.transient, unknown>>>(true);

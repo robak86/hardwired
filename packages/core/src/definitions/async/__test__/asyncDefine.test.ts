@@ -15,7 +15,7 @@ describe(`asyncDefine`, () => {
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
       const definition = transient.async().define(async locator => null);
-      expectType<TypeOf<typeof definition, AsyncInstanceDefinition<null, LifeTime.transient>>>(true);
+      expectType<TypeOf<typeof definition, AsyncInstanceDefinition<null, LifeTime.transient, unknown>>>(true);
     });
 
     it(`.get is typesafe`, async () => {

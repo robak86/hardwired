@@ -126,7 +126,7 @@ describe(`factory`, () => {
 
         const factoryD = asyncFactory(handlerD, requestD);
         expectType<
-          TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, LifeTime.transient>>
+          TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, LifeTime.transient, unknown>>
         >(true);
       });
     });

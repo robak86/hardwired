@@ -14,7 +14,7 @@ describe(`object`, () => {
     const someNumberD = value(1);
     const someStr = value('str');
     const composed = tuple(someNumberD, someStr);
-    expectType<TypeEqual<typeof composed, InstanceDefinition<[number, string], LifeTime.singleton>>>(true);
+    expectType<TypeEqual<typeof composed, InstanceDefinition<[number, string], LifeTime.singleton, unknown>>>(true);
   });
 
   it(`produces instance with correct type`, async () => {

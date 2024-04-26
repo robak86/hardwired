@@ -5,7 +5,7 @@ import { FC, PropsWithChildren } from 'react';
 
 export type ContainerScopeProps = {
   invalidateKeys?: ReadonlyArray<any>;
-  overrides?: InstanceDefinition<any, any>[];
+  overrides?: InstanceDefinition<any, any, any>[];
 };
 
 export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({

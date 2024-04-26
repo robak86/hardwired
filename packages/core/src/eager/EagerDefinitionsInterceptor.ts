@@ -5,17 +5,17 @@ import { EagerDefinitions } from './EagerDefinitions.js';
 import { ContainerContext } from '../context/ContainerContext.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 
-export type DefinitionAnnotation<TDef extends AnyInstanceDefinition<any, any>> = (definition: TDef) => TDef;
+export type DefinitionAnnotation<TDef extends AnyInstanceDefinition<any, any, any>> = (definition: TDef) => TDef;
 
 export class EagerDefinitionsInterceptor implements ContainerInterceptor {
-  private _eagerDefinitions: AnyInstanceDefinition<any, any>[] = [];
+  private _eagerDefinitions: AnyInstanceDefinition<any, any, any>[] = [];
 
   constructor(
     private _lazily: boolean = true,
     private _definitions: EagerDefinitions = new EagerDefinitions(),
   ) {}
 
-  eager: DefinitionAnnotation<AnyInstanceDefinition<LifeTime.singleton | LifeTime.scoped, any>> = definition => {
+  eager: DefinitionAnnotation<AnyInstanceDefinition<LifeTime.singleton | LifeTime.scoped, any, any>> = definition => {
     if (definition.strategy !== LifeTime.singleton && definition.strategy !== LifeTime.scoped) {
       throw new Error('Eager can be used only with singleton or scoped life time');
     }
@@ -29,7 +29,7 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
     return definition;
   };
 
-  onDefinitionEnter(definition: AnyInstanceDefinition<any, any>) {
+  onDefinitionEnter(definition: AnyInstanceDefinition<any, any, any>) {
     if (definition.resolution === Resolution.sync) {
       this._eagerDefinitions.push(...this._definitions.getInvertedDefinitions(definition.id));
     }
@@ -39,11 +39,11 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
     }
   }
 
-  onRequestStart(definition: AnyInstanceDefinition<any, any>) {
+  onRequestStart(definition: AnyInstanceDefinition<any, any, any>) {
     this._eagerDefinitions = [];
   }
 
-  onRequestEnd<T>(definition: AnyInstanceDefinition<T, any>, context: ContainerContext, instance: T): T {
+  onRequestEnd<T>(definition: AnyInstanceDefinition<T, any, any>, context: ContainerContext, instance: T): T {
     for (const definition of this._eagerDefinitions) {
       context.buildWithStrategy(definition);
     }
@@ -52,7 +52,7 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
   }
 
   async onAsyncRequestEnd<T>(
-    definition: AnyInstanceDefinition<T, any>,
+    definition: AnyInstanceDefinition<T, any, any>,
     context: ContainerContext,
     instance: T,
   ): Promise<T> {

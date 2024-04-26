@@ -6,7 +6,7 @@ import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsReg
 
 export class TransientStrategy extends BuildStrategy {
   build(
-    definition: InstanceDefinition<any, any>,
+    definition: InstanceDefinition<any, any, any>,
     instancesCache: InstancesStore,
     definitions: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

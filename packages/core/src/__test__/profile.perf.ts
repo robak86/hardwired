@@ -9,7 +9,7 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 
 const eagerInterceptor = new EagerDefinitionsInterceptor();
 
-const countTreeDepsCount = (definition: AnyInstanceDefinition<any, any>): number => {
+const countTreeDepsCount = (definition: AnyInstanceDefinition<any, any, any>): number => {
   if (definition.dependencies.length === 0) {
     return 1;
   }
@@ -22,7 +22,7 @@ function buildSingletonTree(
   depth: number,
   markEager: boolean,
   currentDepth = 0,
-): InstanceDefinition<number, any>[] {
+): InstanceDefinition<number, any, never>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -49,7 +49,7 @@ function buildSingletonTree(
   return definitions;
 }
 
-function buildTransient(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any>[] {
+function buildTransient(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any, never>[] {
   if (currentDepth > depth) {
     return [];
   }

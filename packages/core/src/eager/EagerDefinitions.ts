@@ -2,11 +2,11 @@ import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinit
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
 export class EagerDefinitions {
-  private _definitions = new Map<string, InstanceDefinition<any, any>>();
-  private _invertedDefinitions = new Map<string, InstanceDefinition<any, any>[]>();
+  private _definitions = new Map<string, InstanceDefinition<any, any, any>>();
+  private _invertedDefinitions = new Map<string, InstanceDefinition<any, any, any>[]>();
 
-  private _asyncDefinitions = new Map<string, AnyInstanceDefinition<any, any>>();
-  private _invertedAsyncDefinitions = new Map<string, AnyInstanceDefinition<any, any>[]>();
+  private _asyncDefinitions = new Map<string, AnyInstanceDefinition<any, any, any>>();
+  private _invertedAsyncDefinitions = new Map<string, AnyInstanceDefinition<any, any, any>[]>();
 
   get definitions() {
     return this._definitions.values();
@@ -25,7 +25,7 @@ export class EagerDefinitions {
     return this._invertedAsyncDefinitions.get(definitionId) ?? [];
   }
 
-  append(definition: InstanceDefinition<any, any>) {
+  append(definition: InstanceDefinition<any, any, any>) {
     if (this._definitions.has(definition.id)) {
       return;
     }
@@ -42,7 +42,7 @@ export class EagerDefinitions {
     });
   }
 
-  appendAsync(definition: AnyInstanceDefinition<any, any>) {
+  appendAsync(definition: AnyInstanceDefinition<any, any, any>) {
     if (this._asyncDefinitions.has(definition.id)) {
       return;
     }

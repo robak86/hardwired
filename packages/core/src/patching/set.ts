@@ -3,20 +3,20 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { InstanceDefinition, isInstanceDef } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { AsyncInstanceDefinition, isAsyncInstanceDef } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 
-export function set<T, TInstance, TLifeTime extends LifeTime>(
-  definition: InstanceDefinition<TInstance, TLifeTime>,
+export function set<T, TInstance, TLifeTime extends LifeTime, TMeta>(
+  definition: InstanceDefinition<TInstance, TLifeTime, TMeta>,
   newValue: TInstance,
-): InstanceDefinition<TInstance, TLifeTime>;
+): InstanceDefinition<TInstance, TLifeTime, TMeta>;
 
-export function set<T, TInstance, TLifeTime extends LifeTime>(
-  definition: AsyncInstanceDefinition<TInstance, TLifeTime>,
+export function set<T, TInstance, TLifeTime extends LifeTime, TMeta>(
+  definition: AsyncInstanceDefinition<TInstance, TLifeTime, TMeta>,
   newValue: TInstance,
-): AsyncInstanceDefinition<TInstance, TLifeTime>;
+): AsyncInstanceDefinition<TInstance, TLifeTime, TMeta>;
 
-export function set<T, TInstance, TLifeTime extends LifeTime>(
-  definition: AnyInstanceDefinition<TInstance, TLifeTime>,
+export function set<T, TInstance, TLifeTime extends LifeTime, TMeta>(
+  definition: AnyInstanceDefinition<TInstance, TLifeTime, TMeta>,
   newValue: TInstance,
-): AnyInstanceDefinition<TInstance, TLifeTime> {
+): AnyInstanceDefinition<TInstance, TLifeTime, TMeta> {
   if (!isInstanceDef(definition) && !isAsyncInstanceDef(definition)) {
     throw new Error(`Invalid definition provided.`);
   }

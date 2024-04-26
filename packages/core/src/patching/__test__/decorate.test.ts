@@ -104,7 +104,7 @@ describe(`decorate`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceDefinition<MyService, any>) {
+    function setup(instanceDef: InstanceDefinition<MyService, any, any>) {
       const mPatch = decorate(instanceDef, a => {
         vi.spyOn(a, 'callMe');
         return a;

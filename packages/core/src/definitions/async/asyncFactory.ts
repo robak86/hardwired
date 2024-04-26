@@ -19,14 +19,14 @@ export type AsyncFactoryBuildFn = {
     TLifeTime extends LifeTime,
     TDependencies extends InstanceDefinitionDependency<any, ValidDependenciesLifeTime<TLifeTime>>[],
   >(
-    definition: AnyInstanceDefinition<TInstance, TLifeTime>,
+    definition: AnyInstanceDefinition<TInstance, TLifeTime, any>,
     ...dependencies: TDependencies
-  ): InstanceDefinition<IAsyncFactory<TInstance, InstancesArray<TDependencies>>, LifeTime.transient>;
+  ): InstanceDefinition<IAsyncFactory<TInstance, InstancesArray<TDependencies>>, LifeTime.transient, unknown>;
 };
 
 export const asyncFactory: AsyncFactoryBuildFn = (
   definition: any,
-  ...dependencies: InstanceDefinition<any, any>[]
+  ...dependencies: InstanceDefinition<any, any, unknown>[]
 ): any => {
   return InstanceDefinition.create(
     LifeTime.transient,

@@ -3,7 +3,7 @@ import { InstanceDefinition } from './InstanceDefinition.js';
 import { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
 
 // prettier-ignore
-export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> = InstanceDefinition<TValue, ValidDependenciesLifeTime<TLifeTime>>
+export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> = InstanceDefinition<TValue, ValidDependenciesLifeTime<TLifeTime>, any>
 
 // prettier-ignore
 export type ValidDependenciesLifeTime<TLifeTime extends LifeTime> =
@@ -38,7 +38,7 @@ const validLifeTimes = {
   },
 } as const;
 
-export const assertValidDependency = (lifeTime: LifeTime, deps: AnyInstanceDefinition<any, LifeTime>[]) => {
+export const assertValidDependency = (lifeTime: LifeTime, deps: AnyInstanceDefinition<any, LifeTime, any>[]) => {
   for (const dependency of deps) {
     const isValid = validLifeTimes[lifeTime][dependency.strategy];
 

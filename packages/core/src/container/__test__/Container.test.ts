@@ -201,7 +201,9 @@ describe(`Container`, () => {
         it(`returns intercepted value`, async () => {
           const def = singleton.fn(() => 123);
 
-          const interceptSyncSpy = vi.fn(<T>(def: InstanceDefinition<T, any>, ctx: InstancesBuilder): T => 456 as T);
+          const interceptSyncSpy = vi.fn(
+            <T>(def: InstanceDefinition<T, any, any>, ctx: InstancesBuilder): T => 456 as T,
+          );
 
           const interceptor = { interceptSync: interceptSyncSpy } as ContainerInterceptor;
           const ctn = container({ interceptor });
@@ -234,7 +236,7 @@ describe(`Container`, () => {
           const def = singleton.async().fn(() => 123);
 
           const interceptAsyncSpy = vi.fn(
-            async <T>(def: AsyncInstanceDefinition<T, any>, ctx: ContainerContext): Promise<T> => 456 as T,
+            async <T>(def: AsyncInstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => 456 as T,
           );
 
           const interceptor = { interceptAsync: interceptAsyncSpy } as ContainerInterceptor;
@@ -253,7 +255,7 @@ describe(`Container`, () => {
             .fn(async (n1: number) => n1 + 1000);
 
           const interceptAsyncSpy = vi.fn(
-            async <T>(def: AsyncInstanceDefinition<T, any>, ctx: ContainerContext): Promise<T> => {
+            async <T>(def: AsyncInstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => {
               return def.create(ctx);
             },
           );
@@ -301,7 +303,7 @@ describe(`Container`, () => {
   });
 
   describe(`eager instantiation`, () => {
-    const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, []);
+    const singleton = new DefinitionBuilder<[], LifeTime.singleton, unknown>([], LifeTime.singleton, {}, []);
 
     const eagerDefinitions = new EagerDefinitions();
     const eagerInterceptor = new EagerDefinitionsInterceptor(true, eagerDefinitions);

@@ -16,7 +16,7 @@ export const serializable = <
   id: string,
   cls: ClassType<TInstance, TArgs>,
   ...dependencies: TDependencies
-): InstanceDefinition<TInstance, LifeTime.scoped> => {
+): InstanceDefinition<TInstance, LifeTime.scoped, unknown> => {
   assertValidDependency(LifeTime.scoped, dependencies);
 
   return new InstanceDefinition(

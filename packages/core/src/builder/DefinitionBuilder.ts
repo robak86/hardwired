@@ -13,14 +13,15 @@ import { AsyncDefinitionBuilder } from './AsyncDefinitionBuilder.js';
 import { DefinitionAnnotation } from '../eager/EagerDefinitionsInterceptor.js';
 
 export class DefinitionBuilder<
-  TDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  TDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>, any>[],
   TLifeTime extends LifeTime,
+  TMeta,
 > {
   constructor(
-    private _deps: TDeps,
-    private _lifeTime: TLifeTime,
-    private _meta: object,
-    private _annotations: DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>[],
+    protected _deps: TDeps,
+    protected _lifeTime: TLifeTime,
+    protected _meta: TMeta,
+    protected _annotations: DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>[],
   ) {
     assertValidDependency(this._lifeTime, this._deps);
   }
@@ -29,21 +30,29 @@ export class DefinitionBuilder<
     return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, []);
   }
 
-  annotate(metaOrAnnotator: object | DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>) {
+  annotate<TNewMeta extends Record<string, any>>(
+    metaOrAnnotator: TNewMeta | DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>,
+  ): DefinitionBuilder<TDeps, TLifeTime, TMeta & TNewMeta>;
+  annotate(
+    metaOrAnnotator: DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>,
+  ): DefinitionBuilder<TDeps, TLifeTime, TMeta>;
+  annotate<TNewMeta extends Record<string, any>>(
+    metaOrAnnotator: TNewMeta | DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>,
+  ) {
     if (typeof metaOrAnnotator === 'function') {
       return new DefinitionBuilder(this._deps, this._lifeTime, this._meta, [
         ...this._annotations,
-        metaOrAnnotator as DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>,
+        metaOrAnnotator as DefinitionAnnotation<InstanceDefinition<TLifeTime, any, TMeta>>,
       ]);
     }
 
     return new DefinitionBuilder(this._deps, this._lifeTime, { ...this._meta, ...metaOrAnnotator }, this._annotations);
   }
 
-  using<TNewDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
+  using<TNewDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>, any>[]>(
     ...deps: TNewDeps
-  ): DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime> {
-    return new DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime>(
+  ): DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime, TMeta> {
+    return new DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime, TMeta>(
       [...this._deps, ...deps],
       this._lifeTime,
       this._meta,
@@ -87,10 +96,4 @@ export class DefinitionBuilder<
 
     return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
-}
-
-export function using<TLifeTime extends LifeTime>(strategy: TLifeTime) {
-  return <TDeps extends InstanceDefinition<any, any>[]>(...deps: TDeps): DefinitionBuilder<TDeps, TLifeTime> => {
-    return new DefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, []);
-  };
 }

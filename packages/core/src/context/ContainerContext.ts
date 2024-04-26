@@ -30,8 +30,8 @@ export class ContainerContext implements InstancesBuilder {
   }
 
   static create(
-    scopeOverrides: AnyInstanceDefinition<any, any>[],
-    globalOverrides: AnyInstanceDefinition<any, any>[],
+    scopeOverrides: AnyInstanceDefinition<any, any, any>[],
+    globalOverrides: AnyInstanceDefinition<any, any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
   ): ContainerContext {
@@ -58,7 +58,7 @@ export class ContainerContext implements InstancesBuilder {
     public readonly events: ContextEvents,
   ) {}
 
-  addScopeOverride(definition: AnyInstanceDefinition<any, any>): void {
+  addScopeOverride(definition: AnyInstanceDefinition<any, any, any>): void {
     if (this.instancesCache.hasInCurrentScope(definition.id)) {
       throw new Error(
         `Cannot override definition. Instance for id=${definition.id} was already created in the current scope.`,
@@ -68,9 +68,9 @@ export class ContainerContext implements InstancesBuilder {
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
-  get<TValue, TExternals>(definition: InstanceDefinition<TValue, any>): TValue;
-  get<TValue, TExternals>(definition: AsyncInstanceDefinition<TValue, any>): Promise<TValue>;
-  get<TValue, TExternals>(definition: AnyInstanceDefinition<TValue, any>): TValue | Promise<TValue> {
+  get<TValue, TExternals>(definition: InstanceDefinition<TValue, any, any>): TValue;
+  get<TValue, TExternals>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  get<TValue, TExternals>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
     this.events.onGet.emit({ containerId: this.id, definition });
 
     this.interceptor.onRequestStart?.(definition, this);
@@ -89,9 +89,9 @@ export class ContainerContext implements InstancesBuilder {
     }
   }
 
-  buildExact<T>(definition: InstanceDefinition<T, any>): T;
-  buildExact<T>(definition: AsyncInstanceDefinition<T, any>): Promise<T>;
-  buildExact<T>(definition: AnyInstanceDefinition<T, any>): T | Promise<T> {
+  buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
+  buildExact<T>(definition: AsyncInstanceDefinition<T, any, any>): Promise<T>;
+  buildExact<T>(definition: AnyInstanceDefinition<T, any, any>): T | Promise<T> {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
@@ -109,7 +109,7 @@ export class ContainerContext implements InstancesBuilder {
     return patchedInstanceDef.create(this);
   }
 
-  buildWithStrategy = (definition: AnyInstanceDefinition<any, any>) => {
+  buildWithStrategy = (definition: AnyInstanceDefinition<any, any, any>) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 

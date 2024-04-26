@@ -76,9 +76,9 @@ describe(`factory`, () => {
         const handlerD = transient.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
 
         const factoryD = factory(handlerD, requestD);
-        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient>>>(
-          true,
-        );
+        expectType<
+          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient, unknown>>
+        >(true);
       });
     });
 
