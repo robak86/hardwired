@@ -97,19 +97,19 @@ const bench = new Bench({
 
 bench
   .add('no interceptor: singletonD', () => {
-    cnt.get(singletonD);
+    cnt.use(singletonD);
   })
   .add('no interceptor: transientD', () => {
-    cnt.get(transientD);
+    cnt.use(transientD);
   })
   .add('eager: singletonD', () => {
-    eagerCnt.get(singletonD);
+    eagerCnt.use(singletonD);
   })
   .add('eager: transientD', () => {
-    eagerCnt.get(transientD);
+    eagerCnt.use(transientD);
   })
   .add('eager with eager leafs: singletonD', () => {
-    eagerCnt.get(singletonWithEagerLeafD);
+    eagerCnt.use(singletonWithEagerLeafD);
   });
 
 bench

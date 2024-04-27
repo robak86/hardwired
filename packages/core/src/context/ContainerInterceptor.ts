@@ -7,7 +7,7 @@ export type ContainerInterceptor = {
   onRequestStart?(definition: AnyInstanceDefinition<any, any, any>, context: ContainerContext): void;
 
   /**
-   * Called on container.get(definition) after the instance is created.
+   * Called on container.use(definition) after the instance is created.
    * Called only when the definition is sync.
    * It's called with the instance that was created.
    * The function should return the instance.
@@ -18,7 +18,7 @@ export type ContainerInterceptor = {
   onRequestEnd?<T>(definition: AnyInstanceDefinition<T, any, any>, context: ContainerContext, instance: T): T;
 
   /**
-   * Called on container.get(definition) after the instance is created.
+   * Called on container.use(definition) after the instance is created.
    * Called only when the definition is async.
    * It's called with the instance that was created.
    * The function should return promise resolving to the instance.

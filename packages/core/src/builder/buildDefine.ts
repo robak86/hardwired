@@ -103,8 +103,11 @@ export const buildDefine = <
         });
 
         const contextWithExt = {
-          ...context,
           ...included,
+          use: context.buildWithStrategy,
+          getAll: () => {
+            throw new Error('Implement me!');
+          },
         };
 
         const defineFn = args.at(-1) as (cnt: InstanceCreationAware & InstancesRecord<TProvidedBindings>) => TInstance;
@@ -153,9 +156,9 @@ const myDef = def(async ({ use }) => {
   const a1 = use(valA);
   const b = await use(someSyncDef);
 
-  // const b = self.get(valB);
-  // const b = self.get(valB);
-  // const b = self.get(valB);
+  // const b = self.use(valB);
+  // const b = self.use(valB);
+  // const b = self.use(valB);
 
   return {
     // a: () => b

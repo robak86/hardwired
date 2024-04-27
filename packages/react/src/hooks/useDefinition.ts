@@ -12,5 +12,5 @@ export const useDefinition: UseDefinitionHook = definition => {
 
   const container = useContainer();
 
-  return container.get(definition);
+  return container.use(definition);
 };

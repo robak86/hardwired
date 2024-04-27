@@ -68,9 +68,9 @@ export class ContainerContext implements InstancesBuilder {
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
-  get<TValue, TExternals>(definition: InstanceDefinition<TValue, any, any>): TValue;
-  get<TValue, TExternals>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  get<TValue, TExternals>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
+  use<TValue, TExternals>(definition: InstanceDefinition<TValue, any, any>): TValue;
+  use<TValue, TExternals>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  use<TValue, TExternals>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
     this.events.onGet.emit({ containerId: this.id, definition });
 
     this.interceptor.onRequestStart?.(definition, this);

@@ -7,9 +7,9 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 import { ContextEvents } from '../events/ContextEvents.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  get<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  get<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  get<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+  use<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  use<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  use<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 
   getAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
     definitions: [...TDefinitions],

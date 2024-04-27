@@ -23,7 +23,7 @@ describe(`object`, () => {
     const someNumberD = value(1);
     const someStr = value('str');
     const composed = object({ num: someNumberD, str: someStr });
-    const result = container().get(composed);
+    const result = container().use(composed);
     expectType<TypeEqual<typeof result, { num: number; str: string }>>(true);
   });
 
@@ -33,7 +33,7 @@ describe(`object`, () => {
     const composed = object({ num: someNumberD, str: someStr });
     const patch = set(composed, { num: 123, str: 'replaced' });
 
-    const result = container([patch]).get(composed);
+    const result = container([patch]).use(composed);
     expect(result).toEqual({ num: 123, str: 'replaced' });
   });
 

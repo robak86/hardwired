@@ -36,7 +36,7 @@ describe(`implicit`, () => {
       const cnt = container();
       const result = cnt
         .checkoutScope({ overrides: [set(externalParams1D, { someExternalParam: 111 })] })
-        .get(defUsingExternals1);
+        .use(defUsingExternals1);
 
       expect(result.externals).toEqual({ someExternalParam: 111 });
       expect(result.otherNumDependency).toEqual('otherDependency');
@@ -51,7 +51,7 @@ describe(`implicit`, () => {
             set(externalParams2D, { otherExternalParam: 456 }),
           ],
         })
-        .get(defUsingBothExternals);
+        .use(defUsingBothExternals);
 
       expect(result.externals).toEqual({ someExternalParam: 111 });
       expect(result.externals2).toEqual({ otherExternalParam: 456 });

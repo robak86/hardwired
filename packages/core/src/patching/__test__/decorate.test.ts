@@ -14,15 +14,15 @@ describe(`decorate`, () => {
     const someValue = value(1);
 
     const c = container({ overrides: [decorate(someValue, val => val + 1)] });
-    expect(c.get(someValue)).toEqual(2);
+    expect(c.use(someValue)).toEqual(2);
   });
 
   it(`does not affect original module`, async () => {
     const someValue = value(1);
     const mPatch = decorate(someValue, val => val + 1);
 
-    expect(container().get(someValue)).toEqual(1);
-    expect(container({ overrides: [mPatch] }).get(someValue)).toEqual(2);
+    expect(container().use(someValue)).toEqual(1);
+    expect(container({ overrides: [mPatch] }).use(someValue)).toEqual(2);
   });
 
   it(`allows for multiple decorations`, async () => {
@@ -33,7 +33,7 @@ describe(`decorate`, () => {
     );
 
     const c = container({ overrides: [mPatch] });
-    expect(c.get(someValue)).toEqual(6);
+    expect(c.use(someValue)).toEqual(6);
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
@@ -44,7 +44,7 @@ describe(`decorate`, () => {
     const mPatch = decorate(someValue, (val, a: number, b: number) => val + a + b, a, b);
 
     const c = container({ overrides: [mPatch] });
-    expect(c.get(someValue)).toEqual(13);
+    expect(c.use(someValue)).toEqual(13);
   });
 
   it(`allows using additional dependencies, ex2`, async () => {
@@ -55,7 +55,7 @@ describe(`decorate`, () => {
     const mPatch = decorate(someValue, (val, b) => val * b, b);
 
     const c = container({ overrides: [mPatch] });
-    expect(c.get(someValue)).toEqual(6);
+    expect(c.use(someValue)).toEqual(6);
   });
 
   describe(`scopeOverrides`, () => {
@@ -64,7 +64,7 @@ describe(`decorate`, () => {
       const mPatch = decorate(a, a => a);
 
       const c = container({ overrides: [mPatch] });
-      expect(c.get(a)).toEqual(c.get(a));
+      expect(c.use(a)).toEqual(c.use(a));
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
@@ -73,7 +73,7 @@ describe(`decorate`, () => {
       const mPatch = decorate(a, a => a);
 
       const c = container({ overrides: [mPatch] });
-      expect(c.get(a)).not.toEqual(c.get(a));
+      expect(c.use(a)).not.toEqual(c.use(a));
     });
 
     it(`uses correct scope`, async () => {
@@ -85,8 +85,8 @@ describe(`decorate`, () => {
       const c = container({ overrides: [mPatch] });
       const obj1 = object({ source, a });
 
-      const req1 = c.get(obj1);
-      const req2 = c.get(obj1);
+      const req1 = c.use(obj1);
+      const req2 = c.use(obj1);
 
       expect(obj1.strategy).toEqual(LifeTime.scoped);
       expect(req1).toBe(req2);
@@ -96,8 +96,8 @@ describe(`decorate`, () => {
       const a = scoped.fn(() => Math.random());
 
       const c = container();
-      const obj1 = c.get(a);
-      const obj2 = c.get(a);
+      const obj1 = c.use(a);
+      const obj2 = c.use(a);
 
       expect(obj1).toBe(obj2);
     });
@@ -114,8 +114,8 @@ describe(`decorate`, () => {
 
       const scope1 = ContainerContext.create([], [mPatch]);
       const scope2 = scope1.checkoutScope({ overrides: [replaced] });
-      const instance1 = scope1.get(instanceDef);
-      const instance2 = scope2.get(instanceDef);
+      const instance1 = scope1.use(instanceDef);
+      const instance2 = scope2.use(instanceDef);
       return { instance1, instance2 };
     }
 

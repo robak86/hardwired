@@ -232,7 +232,7 @@ describe('CounterButtons', () => {
         const decrementBtn = result.getByRole('button', { name: /decrement/i });
         userEvent.click(decrementBtn);
       },
-      counterActions: cnt.get(counterActionsDef),
+      counterActions: cnt.use(counterActionsDef),
     };
   }
 
@@ -279,7 +279,7 @@ describe('CounterButtons', () => {
         return result.getByTestId('counter-value').text;
       },
       setCounterValue: (newValue: number) => {
-        const store = cnt.get(counterStoreDef);
+        const store = cnt.use(counterStoreDef);
         runInAction(() => {
           store.value = newValue;
         });

@@ -1033,6 +1033,6 @@ const consumer1000 = transient.using(a1, a2, val, consumer999).class(Consumer);
 
 const cnt = container();
 
-cnt.get(consumer1000);
+cnt.use(consumer1000);
 
 expectType<TypeOf<typeof consumer1000, InstanceDefinition<Consumer, LifeTime.transient, unknown>>>(true);

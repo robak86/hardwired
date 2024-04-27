@@ -25,7 +25,7 @@ describe(`intersection`, () => {
     const obj1 = singleton.fn(() => ({ a: 1 }));
     const obj2 = singleton.fn(() => ({ b: 2 }));
     const combined = intersection(obj1, obj2);
-    const result = container().get(combined);
+    const result = container().use(combined);
 
     expect(result).toEqual({ a: 1, b: 2 });
   });
@@ -37,7 +37,7 @@ describe(`intersection`, () => {
 
     const patch = set(combined, { a: 123, b: 456 });
 
-    const result = container([patch]).get(combined);
+    const result = container([patch]).use(combined);
     expect(result).toEqual({ a: 123, b: 456 });
   });
 

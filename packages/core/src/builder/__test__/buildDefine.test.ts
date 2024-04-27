@@ -25,7 +25,7 @@ describe(`buildDefine`, () => {
       const singleton = buildDefine({ lifeTime: LifeTime.singleton });
       const someDependency = singleton(() => 999);
       const someDef = singleton(({ use }) => use(someDependency) + 1);
-      expect(container().get(someDef)).toBe(1000);
+      expect(container().use(someDef)).toBe(1000);
     });
   });
 

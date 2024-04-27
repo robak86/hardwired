@@ -25,22 +25,22 @@ export class Container implements IContainer {
     return this.containerContext.events;
   }
 
-  get<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  get<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  get<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue {
-    return this.containerContext.get(instanceDefinition as any);
+  use<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  use<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  use<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue {
+    return this.containerContext.use(instanceDefinition as any);
   }
 
   getAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
     definitions: [...TDefinitions],
   ): InstancesArray<TDefinitions> {
-    return definitions.map(def => this.containerContext.get(def)) as any;
+    return definitions.map(def => this.containerContext.use(def)) as any;
   }
 
   getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
     definitions: [...TDefinitions],
   ): Promise<AsyncInstancesArray<TDefinitions>> {
-    return Promise.all(definitions.map(def => this.containerContext.get(def))) as any;
+    return Promise.all(definitions.map(def => this.containerContext.use(def))) as any;
   }
 
   checkoutScope(options: ContainerScopeOptions = {}): IContainer {
