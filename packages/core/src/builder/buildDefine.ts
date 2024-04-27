@@ -4,7 +4,6 @@ import {
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { value } from '../definitions/sync/value.js';
 import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
@@ -27,56 +26,17 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   ): InstancesArray<TDefinitions>;
 }
 
-// type InstanceDefineFn<TBindings extends Record<string, InstanceDefinition<any, any, any>>> = <TInstance>(
-//   callback: (this: InstancesRecord<TBindings>) => TInstance,
-// ) => InstanceDefinition<TInstance, LifeTime.singleton, unknown>;
-
-// type InstanceBuilders<TBindings extends Record<string, InstanceDefinition<any, any, any>>> = {
-//   singleton: InstanceDefineFn<TBindings>;
-//   scoped: InstanceDefineFn<TBindings>;
-//   transient: InstanceDefineFn<TBindings>;
-// };
-//
-// export const bind = <TBindings extends Record<string, InstanceDefinition<any, any, any>>>(params: TBindings) => {
-//   const singleton: InstanceDefineFn<TBindings> = () => {
-//     throw new Error('Implement me!');
-//   };
-//
-//   const transient: InstanceDefineFn<TBindings> = () => {
-//     throw new Error('Implement me!');
-//   };
-//
-//   const scoped: InstanceDefineFn<TBindings> = () => {
-//     throw new Error('Implement me!');
-//   };
-//
-//   return {
-//     singleton,
-//   };
-// };
-
-const valA = value('a');
-const valB = value(2);
-
-// const instances = bind({
-//   valA,
-//   valB,
-// }).singleton(function () {
-//   return this.valB;
-// });
-
 type CustomBind<
   TBuildIns extends Record<string, InstanceDefinition<any, any, any>>,
   TPreambleArgs extends any[],
   TMeta,
   TLifeTime,
 > = {
-  // meta?: TMeta;
   lifeTime?: TLifeTime;
   include?: TBuildIns;
   after?: <TInstance>(instance: TInstance, meta: TMeta) => TInstance;
   pre?: <TInstance>(def: AnyInstanceDefinition<TInstance, any, any>) => TInstance;
-  preArgs?: (...args: TPreambleArgs) => TMeta;
+  buildMeta?: (...args: TPreambleArgs) => TMeta;
 };
 
 export const buildDefine = <
@@ -88,10 +48,13 @@ export const buildDefine = <
   params: CustomBind<TProvidedBindings, TPreambleArgs, TMeta, TLifeTime>,
 ) => {
   return <TInstance>(
-    // defineFn: (cnt: InstanceCreationAware & InstancesRecord<TProvidedBindings>) => TInstance,
     ...args: [...TPreambleArgs, (cnt: InstanceCreationAware & InstancesRecord<TProvidedBindings>) => TInstance]
   ): InstanceDefinition<TInstance, TLifeTime, TMeta> => {
-    const definition = new InstanceDefinition<TInstance, TLifeTime, TMeta>(
+    const defineFn = args.at(-1) as (cnt: InstanceCreationAware & InstancesRecord<TProvidedBindings>) => TInstance;
+    const preambleArgs = args.slice(0, -1) as TPreambleArgs;
+    const meta = params.buildMeta?.(...preambleArgs) as TMeta;
+
+    return new InstanceDefinition<TInstance, TLifeTime, TMeta>(
       v4(),
       Resolution.sync,
       params.lifeTime ?? (LifeTime.singleton as any),
@@ -110,87 +73,12 @@ export const buildDefine = <
           },
         };
 
-        const defineFn = args.at(-1) as (cnt: InstanceCreationAware & InstancesRecord<TProvidedBindings>) => TInstance;
-
-        const preambleArgs = args.slice(0, -1) as TPreambleArgs;
-
         const instance = defineFn(contextWithExt);
 
-        return params.after ? params.after(instance, params.preArgs?.(...preambleArgs) as TMeta) : instance;
+        return params.after ? params.after(instance, meta) : instance;
       },
       [], // not usable for this kind of definitions
+      meta,
     );
-
-    return definition;
   };
 };
-
-const def = buildDefine({
-  // meta: {
-  //   label: 'myLabel' as const,
-  // },
-  lifeTime: LifeTime.transient,
-  include: {
-    valA,
-    valB,
-  },
-  pre: <TInstance>(def: AnyInstanceDefinition<TInstance, any, any>): TInstance => {
-    throw new Error('Implement me!');
-  },
-  after: <T>(instance: T) => {
-    // TODO: makeAutoObservable(instance);
-    return instance;
-  },
-});
-
-const someSyncDef = singleton.async().fn(async () => {
-  return 123;
-});
-
-const withMoreParams = (label: string) => {};
-
-// NO need for special builder for async definitions. Pass an async function
-// no need for thunks - as we always reference instance definitions inside the define function
-const myDef = def(async ({ use }) => {
-  const a = use(valA);
-  const a1 = use(valA);
-  const b = await use(someSyncDef);
-
-  // const b = self.use(valB);
-  // const b = self.use(valB);
-  // const b = self.use(valB);
-
-  return {
-    // a: () => b
-    doSomething: 123,
-  };
-});
-
-const otherDef = def(async ({ use }) => {
-  const dep = await use(myDef);
-});
-
-const action = buildDefine({
-  lifeTime: LifeTime.transient,
-  include: {
-    valA,
-    valB,
-  },
-  preArgs(label: string) {
-    return {
-      kind: 'action' as const,
-      label,
-    };
-  },
-  pre: <TInstance>(def: AnyInstanceDefinition<TInstance, any, any>): TInstance => {
-    throw new Error('Implement me!');
-  },
-  after: <T>(instance: T) => {
-    // TODO: makeAutoObservable(instance);
-    return instance;
-  },
-});
-
-const myAction = action('myLabel', async ({ use }) => {
-  return null;
-});
