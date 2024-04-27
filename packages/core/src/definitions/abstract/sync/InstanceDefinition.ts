@@ -30,6 +30,10 @@ export class InstanceDefinition<TInstance, TLifeTime extends LifeTime, TMeta> {
     readonly dependencies: InstanceDefinition<any, any, any>[],
     readonly meta?: TMeta,
   ) {}
+
+  use(): TInstance {
+    return this.create(ContainerContext.empty());
+  }
 }
 
 export const isInstanceDef = (val: any): val is InstanceDefinition<any, any, any> => {

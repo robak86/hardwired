@@ -24,5 +24,8 @@ export function decorate<
       return decorator(decorated, ...(decoratorDeps as any));
     },
     dependencies: [...instance.dependencies, ...dependencies],
+    use() {
+      throw new Error('Implement me!');
+    },
   };
 }
