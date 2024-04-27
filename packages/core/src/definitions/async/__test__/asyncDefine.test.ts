@@ -82,7 +82,7 @@ describe(`asyncDefine`, () => {
     it(`correctly uses singleton lifetime`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = singleton.async().define(async locator => {
+      const definition = singleton(async locator => {
         return [await locator.use(value), await locator.use(value)];
       });
 
@@ -113,7 +113,7 @@ describe(`asyncDefine`, () => {
 
   describe(`withNewRequestScope`, () => {
     it(`returns values using new request`, async () => {
-      const singletonD = singleton.fn(() => new BoxedValue(Math.random()));
+      const singletonD = singleton(() => new BoxedValue(Math.random()));
       const randomD = scoped.async().fn(async () => new BoxedValue(Math.random()));
 
       const exampleD = scoped.async().define(async locator => {

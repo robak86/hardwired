@@ -38,8 +38,8 @@ describe(`object`, () => {
   describe(`strategy`, () => {
     describe(`all instances have the same strategy`, () => {
       it(`uses strategy from record instance definitions`, async () => {
-        const someNumberD = singleton.fn(() => 1);
-        const someStr = singleton.fn(() => 'str');
+        const someNumberD = singleton(() => 1);
+        const someStr = singleton(() => 'str');
         const composed = tuple(someNumberD, someStr);
         expect(composed.strategy).toEqual(LifeTime.singleton);
       });
@@ -54,7 +54,7 @@ describe(`object`, () => {
 
     describe(`instances use different strategies`, () => {
       it(`uses singleton if any dependency is singleton`, async () => {
-        const someNumberD = singleton.fn(() => 1);
+        const someNumberD = singleton(() => 1);
         const someStr = scoped.fn(() => 'str');
         const composed = tuple(someNumberD, someStr);
         expect(composed.strategy).toEqual(LifeTime.transient);

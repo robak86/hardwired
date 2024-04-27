@@ -20,7 +20,7 @@ const countTreeDepsCount = (definition: AnyInstanceDefinition<any, any, any>): n
 function buildSingletonTree(
   times: number,
   depth: number,
-  markEager: boolean,
+
   currentDepth = 0,
 ): InstanceDefinition<number, any, never>[] {
   if (currentDepth > depth) {
@@ -30,20 +30,7 @@ function buildSingletonTree(
   const definitions: any[] = [];
 
   for (let i = 0; i < times; i++) {
-    if (markEager && currentDepth === depth) {
-      definitions.push(
-        singleton //
-          .using(...buildSingletonTree(times, depth, markEager, (currentDepth += 1)))
-          .annotate(eagerInterceptor.eager)
-          .fn((...args: any[]) => args),
-      );
-    } else {
-      definitions.push(
-        singleton //
-          .using(...buildSingletonTree(times, depth, markEager, (currentDepth += 1)))
-          .fn((...args: any[]) => args),
-      );
-    }
+    definitions.push(singleton(({ use }) => buildSingletonTree(times, depth, (currentDepth += 1)).map(use)));
   }
 
   return definitions;
@@ -67,9 +54,15 @@ function buildTransient(times: number, depth: number, currentDepth = 0): Instanc
   return definitions;
 }
 
-const singletonD: any = singleton.using(...buildSingletonTree(4, 10, false)).fn((...args) => args);
+const singletonD: any = singleton(({ use }) => {
+  const all = buildSingletonTree(4, 10).map(use);
+  return all;
+});
 const transientD: any = transient.using(...buildTransient(3, 10)).fn((...args) => args);
-const singletonWithEagerLeafD: any = singleton.using(...buildSingletonTree(4, 10, true)).fn((...args) => args);
+const singletonWithEagerLeafD: any = singleton(({ use }) => {
+  const all = buildSingletonTree(4, 10).map(use);
+  return all;
+});
 
 console.table([
   { 'Definition Name': 'singletonD', 'Total Dependencies Count': countTreeDepsCount(singletonD) },

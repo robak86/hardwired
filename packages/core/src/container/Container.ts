@@ -37,10 +37,10 @@ export class Container implements IContainer {
     return definitions.map(def => this.containerContext.use(def)) as any;
   }
 
-  getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
+  getAllAsync<TDefinitions extends AnyInstanceDefinition<any, any, any>[]>(
     definitions: [...TDefinitions],
-  ): Promise<AsyncInstancesArray<TDefinitions>> {
-    return Promise.all(definitions.map(def => this.containerContext.use(def))) as any;
+  ): Promise<InstancesArray<TDefinitions>> {
+    return Promise.all(definitions.map(async def => this.containerContext.use(def as any))) as any;
   }
 
   checkoutScope(options: ContainerScopeOptions = {}): IContainer {

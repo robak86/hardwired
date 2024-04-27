@@ -11,8 +11,8 @@ import { describe, it, expect, vi } from 'vitest';
 describe(`intersection`, () => {
   describe(`types`, () => {
     it(`produces correct type`, async () => {
-      const obj1 = singleton.fn(() => ({ a: 1 }));
-      const obj2 = singleton.fn(() => ({ b: 1 }));
+      const obj1 = singleton(() => ({ a: 1 }));
+      const obj2 = singleton(() => ({ b: 1 }));
       const combined = intersection(obj1, obj2);
 
       expectType<
@@ -22,8 +22,8 @@ describe(`intersection`, () => {
   });
 
   it(`produces correct value`, async () => {
-    const obj1 = singleton.fn(() => ({ a: 1 }));
-    const obj2 = singleton.fn(() => ({ b: 2 }));
+    const obj1 = singleton(() => ({ a: 1 }));
+    const obj2 = singleton(() => ({ b: 2 }));
     const combined = intersection(obj1, obj2);
     const result = container().use(combined);
 
@@ -31,8 +31,8 @@ describe(`intersection`, () => {
   });
 
   it(`can be replaced`, async () => {
-    const obj1 = singleton.fn(() => ({ a: 1 }));
-    const obj2 = singleton.fn(() => ({ b: 2 }));
+    const obj1 = singleton(() => ({ a: 1 }));
+    const obj2 = singleton(() => ({ b: 2 }));
     const combined = intersection(obj1, obj2);
 
     const patch = set(combined, { a: 123, b: 456 });
@@ -44,8 +44,8 @@ describe(`intersection`, () => {
   describe(`strategy`, () => {
     describe(`all instances have the same strategy`, () => {
       it(`uses strategy from record instance definitions`, async () => {
-        const someNumberD = singleton.fn(() => 1);
-        const someStr = singleton.fn(() => 'str');
+        const someNumberD = singleton(() => 1);
+        const someStr = singleton(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
         expect(combined.strategy).toEqual(LifeTime.singleton);
       });
@@ -60,7 +60,7 @@ describe(`intersection`, () => {
 
     describe(`instances use different strategies`, () => {
       it(`uses singleton strategy if any dependency instance is singleton`, async () => {
-        const someNumberD = singleton.fn(() => 1);
+        const someNumberD = singleton(() => 1);
         const someStr = scoped.fn(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
         expect(combined.strategy).toEqual(LifeTime.transient);

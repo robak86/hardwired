@@ -11,8 +11,8 @@ import { describe, expect, it, vi } from 'vitest';
 describe(`InstancesConsumer`, () => {
   describe(`nesting modules`, () => {
     function setup() {
-      const valDef = singleton.fn(() => 1);
-      const val2Def = singleton.using(valDef).fn(val => val + 10);
+      const valDef = singleton(() => 1);
+      const val2Def = singleton(c => c.use(valDef) + 10);
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => {
         return <div data-testid={testId}>{value}</div>;
@@ -53,8 +53,8 @@ describe(`InstancesConsumer`, () => {
 
   describe(`using modules array`, () => {
     function setup() {
-      const valDef = singleton.fn(() => 1);
-      const val2Def = singleton.using(valDef).fn(val => val + 10);
+      const valDef = singleton(() => 1);
+      const val2Def = singleton(c => c.use(valDef) + 10);
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => {
         return <div data-testid={testId}>{value}</div>;

@@ -14,8 +14,8 @@ import { FC } from 'react';
 
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
-    const val1Def = singleton.fn(() => 'val1');
-    const val2Def = singleton.fn(() => 'val2');
+    const val1Def = singleton(() => 'val1');
+    const val2Def = singleton(() => 'val2');
 
     function setup() {
       const Consumer = () => {

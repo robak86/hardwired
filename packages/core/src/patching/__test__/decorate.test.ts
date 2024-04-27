@@ -50,7 +50,7 @@ describe(`decorate`, () => {
   it(`allows using additional dependencies, ex2`, async () => {
     const a = value(1);
     const b = value(2);
-    const someValue = singleton.using(a, b).fn((a: number, b: number) => a + b);
+    const someValue = singleton(({ use }) => use(a) + use(b));
 
     const mPatch = decorate(someValue, (val, b) => val * b, b);
 
@@ -60,7 +60,7 @@ describe(`decorate`, () => {
 
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
-      const a = singleton.fn(() => Math.random());
+      const a = singleton(() => Math.random());
       const mPatch = decorate(a, a => a);
 
       const c = container({ overrides: [mPatch] });
@@ -125,7 +125,7 @@ describe(`decorate`, () => {
 
     describe(`apply on singleton definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(singleton.class(MyService));
+        const { instance1, instance2 } = setup(singleton(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

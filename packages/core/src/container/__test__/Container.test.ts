@@ -19,7 +19,7 @@ import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 describe(`Container`, () => {
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
-      const cDef = singleton.fn(() => 'cValue');
+      const cDef = singleton(() => 'cValue');
       const c = container();
       const cValue = c.use(cDef);
       expect(cValue).toEqual('cValue');
@@ -29,23 +29,23 @@ describe(`Container`, () => {
   describe(`.replace`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
-        const a = singleton.fn(() => 1);
+        const a = singleton(() => 1);
 
         const mPatch = replace(
           a,
-          singleton.fn(() => 2),
+          singleton(() => 2),
         );
 
         expect(container({ overrides: [mPatch] }).use(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
-        const a = singleton.fn(() => 1);
-        const b = singleton.fn(() => 'b');
+        const a = singleton(() => 1);
+        const b = singleton(() => 'b');
 
         const mPatch = replace(
           a,
-          singleton.fn(() => 2),
+          singleton(() => 2),
         );
         expect(container({ overrides: [mPatch] }).use(b)).toEqual('b');
       });
@@ -54,28 +54,28 @@ describe(`Container`, () => {
 
   describe(`overrides`, () => {
     it(`merges multiple modules patches originated from the same module`, async () => {
-      const a = singleton.fn(function a() {
+      const a = singleton(function a() {
         return 1;
       });
 
-      const b = singleton.fn(function b() {
+      const b = singleton(function b() {
         return 2;
       });
 
-      const aPlusB = singleton.using(a, b).fn(function sum(a, b) {
-        return a + b;
+      const aPlusB = singleton(function sum({ use }) {
+        return use(a) + use(b);
       });
 
       const aPatch = replace(
         a,
-        singleton.fn(function aReplace() {
+        singleton(function aReplace() {
           return 10;
         }),
       );
 
       const bPatch = replace(
         b,
-        singleton.fn(function bReplace() {
+        singleton(function bReplace() {
           return 20;
         }),
       );
@@ -146,7 +146,7 @@ describe(`Container`, () => {
   describe(`interceptors`, () => {
     describe(`interceptors for checkoutRequestScope`, () => {
       it(`does not inherit interceptors`, async () => {
-        const def = singleton.fn(() => 123);
+        const def = singleton(() => 123);
         const interceptSyncSpy = vi.fn();
         const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } }).checkoutScope();
         ctn.use(def);
@@ -154,7 +154,7 @@ describe(`Container`, () => {
       });
 
       it(`does not call parent interceptors`, async () => {
-        const def = singleton.fn(() => 123);
+        const def = singleton(() => 123);
         const interceptSyncParentSpy = vi.fn();
         const interceptSyncReqSpy = vi.fn();
 
@@ -170,7 +170,7 @@ describe(`Container`, () => {
     describe(`sync`, () => {
       describe(`no deps`, () => {
         it(`is called with created instance`, async () => {
-          const def = singleton.fn(() => 123);
+          const def = singleton(() => 123);
 
           const interceptSyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
@@ -179,7 +179,7 @@ describe(`Container`, () => {
         });
 
         it(`is called only once preserving singleton strategy`, async () => {
-          const def = singleton.fn(() => 123);
+          const def = singleton(() => 123);
 
           const interceptSyncSpy = vi.fn(val => val);
           const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
@@ -199,7 +199,7 @@ describe(`Container`, () => {
         });
 
         it(`returns intercepted value`, async () => {
-          const def = singleton.fn(() => 123);
+          const def = singleton(() => 123);
 
           const interceptSyncSpy = vi.fn(
             <T>(def: InstanceDefinition<T, any, any>, ctx: InstancesBuilder): T => 456 as T,
@@ -215,7 +215,7 @@ describe(`Container`, () => {
     describe(`async`, () => {
       describe(`no deps`, () => {
         it(`is called with created instance`, async () => {
-          const def = singleton.async().fn(async () => 123);
+          const def = singleton(async () => 123);
 
           const interceptAsyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
@@ -224,7 +224,7 @@ describe(`Container`, () => {
         });
 
         it(`works with sync factory`, async () => {
-          const def = singleton.async().fn(() => 123);
+          const def = singleton(() => 123);
 
           const interceptAsyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
@@ -233,7 +233,7 @@ describe(`Container`, () => {
         });
 
         it(`returns intercepted value`, async () => {
-          const def = singleton.async().fn(() => 123);
+          const def = singleton(() => 123);
 
           const interceptAsyncSpy = vi.fn(
             async <T>(def: AsyncInstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => 456 as T,
@@ -248,11 +248,8 @@ describe(`Container`, () => {
 
       describe(`with deps`, () => {
         it(`it calls interceptor on dependency definition`, async () => {
-          const def1 = singleton.async().fn(async () => 123);
-          const def2 = singleton
-            .async()
-            .using(def1)
-            .fn(async (n1: number) => n1 + 1000);
+          const def1 = singleton(async () => 123);
+          const def2 = singleton(async ({ use }) => (await use(def1)) + 1000);
 
           const interceptAsyncSpy = vi.fn(
             async <T>(def: AsyncInstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => {
@@ -277,9 +274,9 @@ describe(`Container`, () => {
     it(`properly resolves async definitions`, async () => {
       let counter = 0;
 
-      const k1 = singleton.fn(async () => (counter += 1));
-      const k2 = singleton.fn(async () => (counter += 1));
-      const k3 = singleton.using(k1, k2).fn(async (k1, k2) => (await k1) + (await k2));
+      const k1 = singleton(async () => (counter += 1));
+      const k2 = singleton(async () => (counter += 1));
+      const k3 = singleton(async ({ use }) => (await use(k1)) + (await use(k2)));
 
       const c = container();
       const k3Instance = c.use(k3);

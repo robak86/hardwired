@@ -23,7 +23,7 @@ describe(`SingletonStrategy`, () => {
     describe(`resolution`, () => {
       describe(`single module`, () => {
         const someValue = value('someString');
-        const a = singleton.using(someValue).class(TestClass);
+        const a = singleton(({ use }) => new TestClass(use(someValue)));
 
         it(`returns class instance`, async () => {
           const c = container();
@@ -58,11 +58,11 @@ describe(`SingletonStrategy`, () => {
         //   .build();
 
         const someValue = value('someValue');
-        const theSingleton = singleton.using(someValue).class(TestClass);
+        const theSingleton = singleton(({ use }) => new TestClass(use(someValue)));
 
-        const rootSingletonConsumer = singleton.using(theSingleton).class(TestClassConsumer);
-        const child1SingletonConsumer = singleton.using(theSingleton).class(TestClassConsumer);
-        const child2SingletonConsumer = singleton.using(theSingleton).class(TestClassConsumer);
+        const rootSingletonConsumer = singleton(({ use }) => new TestClassConsumer(use(theSingleton)));
+        const child1SingletonConsumer = singleton(({ use }) => new TestClassConsumer(use(theSingleton)));
+        const child2SingletonConsumer = singleton(({ use }) => new TestClassConsumer(use(theSingleton)));
 
         it(`reuses the same instance`, async () => {
           const c = container();
@@ -89,7 +89,7 @@ describe(`SingletonStrategy`, () => {
       describe(`multiple containers`, () => {
         it(`does not shares instances across multiple containers`, async () => {
           const someValue = value('someString');
-          const a = singleton.using(someValue).class(TestClass);
+          const a = singleton(({ use }) => new TestClass(use(someValue)));
 
           const c1 = container();
           const instanceFromC1 = c1.use(a);
@@ -132,7 +132,7 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
-        const a = singleton.fn(() => Math.random());
+        const a = singleton(() => Math.random());
 
         const parentC = ContainerContext.empty();
         const childC = parentC.checkoutScope({});
@@ -145,7 +145,7 @@ describe(`SingletonStrategy`, () => {
       it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
         const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
-        const a = singleton.fn(randomFactorySpy);
+        const a = singleton(randomFactorySpy);
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope();
@@ -166,7 +166,7 @@ describe(`SingletonStrategy`, () => {
       it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
         const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
-        const a = singleton.fn(randomFactorySpy);
+        const a = singleton(randomFactorySpy);
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope({ overrides: [set(a, 1)] });
@@ -188,7 +188,7 @@ describe(`SingletonStrategy`, () => {
 
     describe('global overrides', function () {
       it(`cannot be replaced by overrides`, async () => {
-        const k1 = singleton.fn(() => Math.random());
+        const k1 = singleton(() => Math.random());
         const invariantPatch = set(k1, 1);
         const childScopePatch = set(k1, 2);
 
@@ -200,8 +200,8 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`allows for overrides for other keys than ones changes invariants array`, async () => {
-        const k1 = singleton.fn(() => Math.random());
-        const k2 = singleton.fn(() => Math.random());
+        const k1 = singleton(() => Math.random());
+        const k2 = singleton(() => Math.random());
 
         const invariantPatch = set(k1, 1);
         const childScopePatch = set(k2, 2);
@@ -240,7 +240,7 @@ describe(`SingletonStrategy`, () => {
             value = Math.random();
           }
 
-          const asyncDef = singleton.async().class(NoArgsCls);
+          const asyncDef = singleton(async () => new NoArgsCls());
           const result = await container().use(asyncDef);
           expect(result).toBeInstanceOf(NoArgsCls);
         });
@@ -248,27 +248,33 @@ describe(`SingletonStrategy`, () => {
 
       describe(`dependencies`, () => {
         it(`returns correct value, ex.1`, async () => {
-          const asyncDep = singleton.async().fn(async () => 123);
-          const syncDep = singleton.fn(() => 'str');
-          const asyncDef = singleton.async().using(asyncDep, syncDep).class(TestClassArgs2);
+          const asyncDep = singleton(async () => 123);
+          const syncDep = singleton(() => 'str');
+          const asyncDef = singleton(async ({ use }) => {
+            return new TestClassArgs2(await use(asyncDep), await use(syncDep));
+          });
           const result = await container().use(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
 
         it(`returns correct value, ex.2`, async () => {
-          const asyncDep = singleton.async().fn(async () => 123);
-          const syncDep = singleton.async().fn(async () => 'str');
-          const asyncDef = singleton.async().using(asyncDep, syncDep).class(TestClassArgs2);
+          const asyncDep = singleton(async () => 123);
+          const syncDep = singleton(async () => 'str');
+          const asyncDef = singleton(async ({ use }) => {
+            return new TestClassArgs2(await use(asyncDep), await use(syncDep));
+          });
           const result = await container().use(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
 
         it(`returns correct value, ex.2`, async () => {
-          const asyncDep = singleton.fn(() => 123);
-          const syncDep = singleton.fn(() => 'str');
-          const asyncDef = singleton.using(asyncDep, syncDep).async().class(TestClassArgs2);
+          const asyncDep = singleton(() => 123);
+          const syncDep = singleton(() => 'str');
+          const asyncDef = singleton(async ({ use }) => {
+            return new TestClassArgs2(await use(asyncDep), await use(syncDep));
+          });
           const result = await container().use(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
@@ -279,7 +285,7 @@ describe(`SingletonStrategy`, () => {
     describe(`fn`, () => {
       describe(`no dependencies`, () => {
         it(`returns correct value`, async () => {
-          const asyncDef = singleton.async().fn(async () => 123);
+          const asyncDef = singleton(async () => 123);
           const result = await container().use(asyncDef);
           expect(result).toEqual(123);
         });
@@ -288,13 +294,12 @@ describe(`SingletonStrategy`, () => {
       describe(`dependencies`, () => {
         describe(`mixed async and sync dependencies`, () => {
           it(`returns correct value`, async () => {
-            const asyncDep = singleton.async().fn(async () => 123);
-            const syncDep = singleton.fn(() => 'str');
+            const asyncDep = singleton(async () => 123);
+            const syncDep = singleton(() => 'str');
 
-            const asyncDef = singleton
-              .async()
-              .using(asyncDep, syncDep)
-              .fn(async (a: number, b: string) => [a, b]);
+            const asyncDef = singleton(async ({ use }) => {
+              return [await use(asyncDep), await use(syncDep)];
+            });
             const result = await container().use(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
@@ -302,13 +307,12 @@ describe(`SingletonStrategy`, () => {
 
         describe(`only async dependencies`, () => {
           it(`returns correct value`, async () => {
-            const asyncDep = singleton.async().fn(async () => 123);
-            const syncDep = singleton.async().fn(async () => 'str');
+            const asyncDep = singleton(async () => 123);
+            const syncDep = singleton(async () => 'str');
 
-            const asyncDef = singleton
-              .async()
-              .using(asyncDep, syncDep)
-              .fn(async (a: number, b: string) => [a, b]);
+            const asyncDef = singleton(async ({ use }) => {
+              return [await use(asyncDep), await use(syncDep)];
+            });
             const result = await container().use(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
@@ -316,13 +320,12 @@ describe(`SingletonStrategy`, () => {
 
         describe(`only sync dependencies`, () => {
           it(`returns correct value`, async () => {
-            const asyncDep = singleton.fn(() => 123);
-            const syncDep = singleton.fn(() => 'str');
+            const asyncDep = singleton(() => 123);
+            const syncDep = singleton(() => 'str');
 
-            const asyncDef = singleton
-              .async()
-              .using(asyncDep, syncDep)
-              .fn(async (a: number, b: string) => [a, b]);
+            const asyncDef = singleton(async ({ use }) => {
+              return [await use(asyncDep), await use(syncDep)];
+            });
             const result = await container().use(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
@@ -331,15 +334,10 @@ describe(`SingletonStrategy`, () => {
 
       describe(`race condition`, () => {
         it(`does not create singleton duplicates`, async () => {
-          const slowSingleton = singleton.async().fn(() => resolveAfter(500, new BoxedValue(Math.random())));
-          const consumer1 = singleton
-            .async()
-            .using(slowSingleton)
-            .fn(async s => s);
-          const consumer2 = singleton
-            .async()
-            .using(slowSingleton)
-            .fn(async s => s);
+          const slowSingleton = singleton(() => resolveAfter(500, new BoxedValue(Math.random())));
+
+          const consumer1 = singleton(async ({ use }) => use(slowSingleton));
+          const consumer2 = singleton(async ({ use }) => use(slowSingleton));
           const ctn = container();
 
           const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
@@ -350,18 +348,13 @@ describe(`SingletonStrategy`, () => {
 
       describe(`global overrides`, () => {
         it(`returns correct instance`, async () => {
-          const slowSingleton = singleton.async().fn(() => resolveAfter(500, new BoxedValue(Math.random())));
-          const consumer1 = singleton
-            .async()
-            .using(slowSingleton)
-            .fn(async s => s);
-          const consumer2 = singleton
-            .async()
-            .using(slowSingleton)
-            .fn(async s => s);
+          const slowSingleton = singleton(() => resolveAfter(500, new BoxedValue(Math.random())));
+          const consumer1 = singleton(async ({ use }) => use(slowSingleton));
+          const consumer2 = singleton(async ({ use }) => use(slowSingleton));
+
           const patch = replace(
             slowSingleton,
-            singleton.async().fn(async () => new BoxedValue(123)),
+            singleton(async () => new BoxedValue(123)),
           );
 
           const ctn = container({ globalOverrides: [patch] });
@@ -374,15 +367,9 @@ describe(`SingletonStrategy`, () => {
 
     describe(`race condition`, () => {
       it(`does not create singleton duplicates`, async () => {
-        const slowSingleton = singleton.async().fn(() => resolveAfter(500, new BoxedValue(Math.random())));
-        const consumer1 = singleton
-          .async()
-          .using(slowSingleton)
-          .fn(async s => s);
-        const consumer2 = singleton
-          .async()
-          .using(slowSingleton)
-          .fn(async s => s);
+        const slowSingleton = singleton(() => resolveAfter(500, new BoxedValue(Math.random())));
+        const consumer1 = singleton(async ({ use }) => use(slowSingleton));
+        const consumer2 = singleton(async ({ use }) => use(slowSingleton));
         const ctn = container();
 
         const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
@@ -391,43 +378,29 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`does not create singleton duplicates, ex.2`, async () => {
-        const slowSingleton = singleton.async().fn(() => resolveAfter(500, new BoxedValue(Math.random())));
-        const beforeConsumer1 = singleton
-          .async()
-          .using(slowSingleton)
-          .fn(async s => resolveAfter(s.value, 10));
+        const slowSingleton = singleton(() => resolveAfter(500, new BoxedValue(Math.random())));
+        const beforeConsumer1 = singleton(async ({ use }) => {
+          return resolveAfter((await use(slowSingleton)).value, 10);
+        });
 
-        const beforeConsumer2 = singleton
-          .async()
-          .using(slowSingleton)
-          .fn(async s => resolveAfter(s.value, 10));
+        const beforeConsumer2 = singleton(async ({ use }) => {
+          return resolveAfter((await use(slowSingleton)).value, 10);
+        });
 
-        const beforeConsumer3 = singleton
-          .async()
-          .using(slowSingleton)
-          .fn(async s => resolveAfter(s.value, 10));
+        const beforeConsumer3 = singleton(async ({ use }) => {
+          return resolveAfter((await use(slowSingleton)).value, 10);
+        });
 
-        const consumer1 = singleton
-          .async()
-          .using(beforeConsumer1)
-          .fn(async s => s);
-
-        const consumer2 = singleton
-          .async()
-          .using(beforeConsumer2)
-          .fn(async s => s);
-
-        const consumer3 = singleton
-          .async()
-          .using(beforeConsumer3)
-          .fn(async s => s);
+        const consumer1 = singleton(async ({ use }) => use(beforeConsumer1));
+        const consumer2 = singleton(async ({ use }) => use(beforeConsumer2));
+        const consumer3 = singleton(async ({ use }) => use(beforeConsumer3));
 
         const ctn = container();
 
-        const [result1, result2, result3] = await ctn.getAllAsync([consumer1, consumer2, consumer3]);
+        const [result1, result2, result3] = ctn.getAll([consumer1, consumer2, consumer3]);
 
-        expect(result1).toBe(result2);
-        expect(result2).toBe(result3);
+        expect(await result1).toBe(await result2);
+        expect(await result2).toBe(await result3);
       });
     });
   });
