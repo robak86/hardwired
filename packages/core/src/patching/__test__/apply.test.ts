@@ -89,7 +89,7 @@ describe(`apply`, () => {
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
-      const someValue = transient.fn(() => Math.random());
+      const someValue = transient(() => Math.random());
 
       const mPatch = apply(someValue, a => a);
 
@@ -156,7 +156,7 @@ describe(`apply`, () => {
 
     describe(`apply on transients definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(transient.class(MyService));
+        const { instance1, instance2 } = setup(transient(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

@@ -14,14 +14,14 @@ describe(`define`, () => {
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
-      const definition = transient.define(locator => null);
+      const definition = transient(locator => null);
       expectType<TypeOf<typeof definition, InstanceDefinition<null, LifeTime.transient, any>>>(true);
     });
   });
 
   describe(`instantiation`, () => {
     it(`correctly resolves externals`, async () => {
-      const definition = transient.define(locator => {
+      const definition = transient(locator => {
         return [locator.use(ext1), locator.use(ext2)];
       });
 
@@ -34,7 +34,7 @@ describe(`define`, () => {
     it(`uses the same request scope for every get call`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = transient.define(locator => {
+      const definition = transient(locator => {
         return [locator.use(value), locator.use(value)];
       });
       const result = container().use(definition);
@@ -46,7 +46,7 @@ describe(`define`, () => {
     it(`correctly uses transient lifetime`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = transient.define(locator => {
+      const definition = transient(locator => {
         const scopedContainer = locator.checkoutScope();
         return [scopedContainer.use(value), scopedContainer.use(value)];
       });

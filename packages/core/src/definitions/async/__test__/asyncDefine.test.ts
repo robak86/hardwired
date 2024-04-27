@@ -7,6 +7,7 @@ import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefin
 import { describe, expect, it } from 'vitest';
 import { implicit } from '../../sync/implicit.js';
 import { set } from '../../../patching/set.js';
+import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 
 describe(`asyncDefine`, () => {
   const ext1 = implicit<number>('ext1');
@@ -14,8 +15,8 @@ describe(`asyncDefine`, () => {
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
-      const definition = transient.async().define(async locator => null);
-      expectType<TypeOf<typeof definition, AsyncInstanceDefinition<null, LifeTime.transient, unknown>>>(true);
+      const definition = transient(async locator => null);
+      expectType<TypeOf<typeof definition, InstanceDefinition<Promise<null>, LifeTime.transient, unknown>>>(true);
     });
 
     it(`.get is typesafe`, async () => {
@@ -23,7 +24,7 @@ describe(`asyncDefine`, () => {
       const usingBothExternals = scoped.using(ext1, ext2).fn((ext1, ext2) => [ext1, ext2]);
       const usingBothExternalsWithNotAllowed = scoped.using(ext1, ext2, ext3).fn((ext1, ext2, ext3) => [ext1, ext2]);
 
-      const definition = transient.async().define(async locator => {
+      const definition = transient(async locator => {
         const instance1 = locator.use(ext1);
         const instance2 = locator.use(ext2);
         const usingBoth = locator.use(usingBothExternals);
@@ -38,7 +39,7 @@ describe(`asyncDefine`, () => {
 
   describe(`instantiation`, () => {
     it(`correctly resolves externals`, async () => {
-      const definition = transient.async().define(async locator => {
+      const definition = transient(async locator => {
         return [locator.use(ext1), locator.use(ext2)];
       });
 
@@ -51,7 +52,7 @@ describe(`asyncDefine`, () => {
     it(`uses the same request scope for every get call`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = transient.async().define(async locator => {
+      const definition = transient(async locator => {
         return [await locator.use(value), await locator.use(value)];
       });
       const result = await container().use(definition);
@@ -63,7 +64,7 @@ describe(`asyncDefine`, () => {
     it(`passes container with the same scope`, async () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
-      const definition = transient.async().define(async locator => {
+      const definition = transient(async locator => {
         const scopedContainer = locator.checkoutScope();
         return [await scopedContainer.use(value), await scopedContainer.use(value)];
       });

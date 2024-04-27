@@ -45,9 +45,9 @@ function buildTransient(times: number, depth: number, currentDepth = 0): Instanc
 
   for (let i = 0; i < times; i++) {
     definitions.push(
-      transient //
-        .using(...buildTransient(times, depth, (currentDepth += 1)))
-        .fn((...args: any[]) => args),
+      transient(c => {
+        return buildTransient(times, depth, (currentDepth += 1)).map(c.use);
+      }),
     );
   }
 
@@ -55,10 +55,11 @@ function buildTransient(times: number, depth: number, currentDepth = 0): Instanc
 }
 
 const singletonD: any = singleton(({ use }) => {
-  const all = buildSingletonTree(4, 10).map(use);
-  return all;
+  return buildSingletonTree(4, 10).map(use);
 });
-const transientD: any = transient.using(...buildTransient(3, 10)).fn((...args) => args);
+const transientD: any = transient(c => {
+  return buildTransient(3, 10).map(c.use);
+});
 const singletonWithEagerLeafD: any = singleton(({ use }) => {
   const all = buildSingletonTree(4, 10).map(use);
   return all;

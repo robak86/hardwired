@@ -13,7 +13,7 @@ describe(`ClassTransientResolver`, () => {
     }
 
     const someValue = value('someString');
-    const a = transient.using(someValue).class(TestClass);
+    const a = transient(c => new TestClass(c.use(someValue)));
 
     it(`returns class instance`, async () => {
       const c = container();
@@ -41,8 +41,8 @@ describe(`ClassTransientResolver`, () => {
       constructor(public value: string) {}
     }
 
-    const someValue = transient.async().fn(async () => 'someString');
-    const a = transient.async().using(someValue).class(TestClass);
+    const someValue = transient(async () => 'someString');
+    const a = transient(async c => new TestClass(await c.use(someValue)));
 
     it(`returns class instance`, async () => {
       const c = container();

@@ -68,7 +68,7 @@ describe(`decorate`, () => {
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
-      const a = transient.fn(() => Math.random());
+      const a = transient(() => Math.random());
 
       const mPatch = decorate(a, a => a);
 
@@ -145,7 +145,7 @@ describe(`decorate`, () => {
 
     describe(`apply on transients definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(transient.class(MyService));
+        const { instance1, instance2 } = setup(transient(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
