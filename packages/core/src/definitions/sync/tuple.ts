@@ -12,13 +12,9 @@ export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
-  return InstanceDefinition.create(
-    strategy,
-    context => {
-      return definitions.map(def => {
-        return context.use(def);
-      }) as any;
-    },
-    definitions.flatMap(def => def.dependencies),
-  );
+  return InstanceDefinition.create(strategy, context => {
+    return definitions.map(def => {
+      return context.use(def);
+    }) as any;
+  });
 };

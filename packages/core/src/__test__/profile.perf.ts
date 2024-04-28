@@ -5,14 +5,6 @@ import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinit
 import 'source-map-support/register';
 import Bench from 'tinybench';
 
-const countTreeDepsCount = (definition: InstanceDefinition<any, any, any>): number => {
-  if (definition.dependencies.length === 0) {
-    return 1;
-  }
-
-  return definition.dependencies.reduce((acc, dep) => acc + countTreeDepsCount(dep), 1);
-};
-
 function buildSingletonTree(
   times: number,
   depth: number,
@@ -60,15 +52,6 @@ const singletonWithEagerLeafD: any = singleton(({ use }) => {
   const all = buildSingletonTree(4, 10).map(use);
   return all;
 });
-
-console.table([
-  { 'Definition Name': 'singletonD', 'Total Dependencies Count': countTreeDepsCount(singletonD) },
-  { 'Definition Name': 'transientD', 'Total Dependencies Count': countTreeDepsCount(transientD) },
-  {
-    'Definition Name': 'singletonWithEagerLeafD',
-    'Total Dependencies Count': countTreeDepsCount(singletonWithEagerLeafD),
-  },
-]);
 
 let cnt: Container;
 let eagerCnt: Container;

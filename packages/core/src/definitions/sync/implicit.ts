@@ -18,7 +18,7 @@ export function implicit<T, TMeta = unknown>(
         `Cannot instantiate implicit definition "${name}". Definition should be provided at the runtime, by creating new scope`,
       );
     },
-    [],
+
     {
       ...(meta ?? ({} as TMeta)),
       __implicit: true,

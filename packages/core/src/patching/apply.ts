@@ -24,7 +24,6 @@ export const apply = <
 
       return decorated;
     },
-    dependencies: [...instance.dependencies, ...dependencies],
     use: function () {
       throw new Error('Implement me!');
     },

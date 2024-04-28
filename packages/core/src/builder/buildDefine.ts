@@ -12,6 +12,7 @@ import {
 import { v4 } from 'uuid';
 import { Resolution } from '../definitions/abstract/Resolution.js';
 import { IContainerScopes } from '../container/IContainer.js';
+import { ContainerContext } from '../context/ContainerContext.js';
 
 // TODO:
 // we probably don't need Resolution enum
@@ -48,6 +49,20 @@ export type CustomBind<
   buildMeta?: (...args: TPreambleArgs) => TMeta;
 };
 
+export type DefineFn<
+  TLifeTime extends LifeTime,
+  TMeta,
+  TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
+  TPreambleArgs extends any[],
+> = <TInstance>(
+  ...args: [
+    ...TPreambleArgs,
+    (
+      cnt: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime> & InstancesRecord<TProvidedBindings>,
+    ) => TInstance,
+  ]
+) => InstanceDefinition<TInstance, TLifeTime, TMeta>;
+
 export const buildDefine = <
   TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
   TPreambleArgs extends any[],
@@ -55,7 +70,7 @@ export const buildDefine = <
   TLifeTime extends LifeTime,
 >(
   params: CustomBind<TProvidedBindings, TPreambleArgs, TMeta, TLifeTime>,
-) => {
+): DefineFn<TLifeTime, TMeta, TProvidedBindings, TPreambleArgs> => {
   return <TInstance>(
     ...args: [
       ...TPreambleArgs,
@@ -75,31 +90,40 @@ export const buildDefine = <
       Resolution.sync,
       params.lifeTime,
       context => {
-        const included = {} as any;
-
-        Object.entries(params.include ?? {}).forEach(([key, def]) => {
-          included[key] = context.use(def);
-        });
-
-        const contextWithExt = {
-          ...included,
-          use: (def: InstanceDefinition<TInstance, TLifeTime, TMeta>) => {
-            assertValidDependency(params.lifeTime, def);
-            return context.use(def);
-          },
-          useAll: context.useAll,
-          checkoutScope: context.checkoutScope,
-          withScope: context.withScope,
-          override: context.override,
-          provide: context.provide,
-        };
-
-        const instance = defineFn(contextWithExt);
+        const serviceLocator = buildContext(params.lifeTime, context, params.include);
+        const instance = defineFn(serviceLocator);
 
         return params.after ? params.after(instance, meta) : instance;
       },
-      [], // not usable for this kind of definitions
       meta,
     );
   };
 };
+
+export function buildContext<
+  TLifeTime extends LifeTime,
+  TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
+>(
+  lifeTime: LifeTime,
+  context: ContainerContext,
+  include?: TProvidedBindings,
+): InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime> & InstancesRecord<TProvidedBindings> {
+  const included = {} as any;
+
+  Object.entries(include ?? {}).forEach(([key, def]) => {
+    included[key] = context.use(def);
+  });
+
+  return {
+    ...included,
+    use: def => {
+      assertValidDependency(lifeTime, def);
+      return context.use(def);
+    },
+    useAll: context.useAll,
+    checkoutScope: context.checkoutScope,
+    withScope: context.withScope,
+    override: context.override,
+    provide: context.provide,
+  };
+}

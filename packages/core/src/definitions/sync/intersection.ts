@@ -22,16 +22,12 @@ export const intersection = <TDefinitions extends Array<InstanceDefinition<objec
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
-  return InstanceDefinition.create(
-    strategy,
-    context => {
-      return definitions.reduce((result, def) => {
-        return {
-          ...result,
-          ...context.use(def),
-        };
-      }, {}) as any;
-    },
-    definitions.flatMap(def => def.dependencies),
-  );
+  return InstanceDefinition.create(strategy, context => {
+    return definitions.reduce((result, def) => {
+      return {
+        ...result,
+        ...context.use(def),
+      };
+    }, {}) as any;
+  });
 };
