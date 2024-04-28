@@ -5,12 +5,7 @@ import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition.j
 import 'source-map-support/register';
 import Bench from 'tinybench';
 
-function buildSingletonTree(
-  times: number,
-  depth: number,
-
-  currentDepth = 0,
-): InstanceDefinition<number, any, never>[] {
+function buildSingletonTree(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any, never>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -18,13 +13,17 @@ function buildSingletonTree(
   const definitions: any[] = [];
 
   for (let i = 0; i < times; i++) {
-    definitions.push(singleton(({ use }) => buildSingletonTree(times, depth, (currentDepth += 1)).map(use)));
+    definitions.push(
+      singleton(c => {
+        return buildSingletonTree(times, depth, (currentDepth += 1)).map(c.use);
+      }),
+    );
   }
 
   return definitions;
 }
 
-function buildTransient(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any, never>[] {
+function buildTransientTree(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any, never>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -34,7 +33,7 @@ function buildTransient(times: number, depth: number, currentDepth = 0): Instanc
   for (let i = 0; i < times; i++) {
     definitions.push(
       transient(c => {
-        return buildTransient(times, depth, (currentDepth += 1)).map(c.use);
+        return buildTransientTree(times, depth, (currentDepth += 1)).map(c.use);
       }),
     );
   }
@@ -42,29 +41,23 @@ function buildTransient(times: number, depth: number, currentDepth = 0): Instanc
   return definitions;
 }
 
-const singletonD: any = singleton(({ use }) => {
-  return buildSingletonTree(4, 10).map(use);
+const singletonD: any = singleton(c => {
+  return buildSingletonTree(4, 10).map(c.use);
 });
 const transientD: any = transient(c => {
-  return buildTransient(3, 10).map(c.use);
-});
-const singletonWithEagerLeafD: any = singleton(({ use }) => {
-  const all = buildSingletonTree(4, 10).map(use);
-  return all;
+  return buildTransientTree(4, 10).map(c.use);
 });
 
 let cnt: Container;
-let eagerCnt: Container;
 
 const bench = new Bench({
   time: 100,
+  warmupTime: 100,
   setup: () => {
     cnt = container();
-    eagerCnt = container();
   },
   teardown: () => {
     cnt = container();
-    eagerCnt = container();
   },
 });
 
@@ -74,15 +67,6 @@ bench
   })
   .add('no interceptor: transientD', () => {
     cnt.use(transientD);
-  })
-  .add('eager: singletonD', () => {
-    eagerCnt.use(singletonD);
-  })
-  .add('eager: transientD', () => {
-    eagerCnt.use(transientD);
-  })
-  .add('eager with eager leafs: singletonD', () => {
-    eagerCnt.use(singletonWithEagerLeafD);
   });
 
 bench
