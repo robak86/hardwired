@@ -1,5 +1,5 @@
 import { ContainerContext } from '../context/ContainerContext.js';
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import { IContainer } from './IContainer.js';

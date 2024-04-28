@@ -1,4 +1,4 @@
-import { InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../abstract/InstanceDefinition.js';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime.js';
 
 export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>(

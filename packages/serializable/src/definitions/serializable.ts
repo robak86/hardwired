@@ -1,6 +1,4 @@
-import { buildDefine, LifeTime, DefineFn } from 'hardwired';
-
-type SerializableDefineFn = DefineFn<LifeTime.singleton, { id: string }, {}, [string]>;
+import { LifeTime, DefineFn } from 'hardwired';
 
 export const serializable: any = <TInstance>(...args: any[]) => {
   // return buildDefine({

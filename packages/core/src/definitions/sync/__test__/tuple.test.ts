@@ -1,7 +1,7 @@
 import { scoped, singleton } from '../../definitions.js';
 import { object } from '../object.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../../abstract/InstanceDefinition.js';
 import { container } from '../../../container/Container.js';
 import { set } from '../../../patching/set.js';
 import { value } from '../value.js';

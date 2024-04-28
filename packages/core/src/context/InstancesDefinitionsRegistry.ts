@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition.js';
 
 /**
  * This class represents a registry for storing definitions overrides for scope.

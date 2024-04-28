@@ -5,24 +5,25 @@ import { dispatcherD } from '../../dispatching/dispatcher.js';
 describe(`ActionBuilder`, () => {
   describe(`bind`, () => {
     it(`binds provided definitions`, async () => {
-      const dependency = value(123);
+      const dependencyDef = value(123);
 
-      const myAction = action<number, any>()
-        .bind({ dependency })
-        // .concurrencyGroup(input => input.toString())
-        .execute(async function (inputParam: number) {
-          this.dispatch({
+      const myAction = action<number, any>({
+        execute: async c => {
+          const dependency = c.use(dependencyDef);
+
+          c.dispatch({
             id: 1,
-            dependency: this.dependency,
-            inputParam,
+            dependency,
+            inputParam: c.input,
           });
 
-          this.dispatch({
+          c.dispatch({
             id: 2,
-            dependency: this.dependency,
-            inputParam,
+            dependency,
+            inputParam: c.input,
           });
-        });
+        },
+      });
 
       const [dispatcher, actionInstance] = container([
         apply(dispatcherD, dispatcher => {
@@ -49,14 +50,16 @@ describe(`ActionBuilder`, () => {
 
   describe(`dispatching error`, () => {
     it(`breaks evaluation of the action`, async () => {
-      const myAction = action<number, any>().execute(function (inputParam: number) {
-        this.abort({
-          message: 'someError',
-        });
-
-        this.dispatch({
-          id: 1,
-        });
+      const myAction = action<number, any>({
+        execute: async c => {
+          c.abort({
+            message: 'someError',
+          });
+          //
+          c.dispatch({
+            id: 1,
+          });
+        },
       });
 
       const [dispatcher, actionInstance] = container([

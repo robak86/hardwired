@@ -5,12 +5,12 @@ import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.
 
 import { InstancesBuilder } from './abstract/InstancesBuilder.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { v4 } from 'uuid';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { Omit } from 'utility-types';
 
-import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {

@@ -1,4 +1,4 @@
-import { implicit } from '../../sync/implicit.js';
+import { implicit } from '../implicit.js';
 import { singleton } from '../../definitions.js';
 import { describe, expect, it } from 'vitest';
 

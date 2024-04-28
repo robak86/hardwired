@@ -1,15 +1,19 @@
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 
 import { ContainerScopeOptions } from './Container.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 
 import { Omit } from 'utility-types';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  use<TValue>(instanceDefinition: InstanceDefinition<Promise<TValue>, any, any>): Promise<TValue>;
-  use<TValue>(instanceDefinition: InstanceDefinition<Promise<TValue> | TValue, any, any>): Promise<TValue> | TValue;
+  use<TValue>(instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>): TValue;
+  use<TValue>(
+    instanceDefinition: InstanceDefinition<Promise<TValue>, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): Promise<TValue>;
+  use<TValue>(
+    instanceDefinition: InstanceDefinition<Promise<TValue> | TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): Promise<TValue> | TValue;
 
   useAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
     ...definitions: [...TDefinitions]

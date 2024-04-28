@@ -1,7 +1,7 @@
 import { implicit } from '../implicit.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeOf } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../../abstract/InstanceDefinition.js';
 import { scoped, singleton, transient } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';

@@ -2,7 +2,7 @@ import { BuildStrategy } from './abstract/BuildStrategy.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry.js';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition.js';
 
 export class SingletonStrategy extends BuildStrategy {
   build(

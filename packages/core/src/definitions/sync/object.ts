@@ -1,4 +1,4 @@
-import { Instance, InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { Instance, InstanceDefinition } from '../abstract/InstanceDefinition.js';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime.js';
 
 // TODO: it could create a proxy object that would lazily build the instances

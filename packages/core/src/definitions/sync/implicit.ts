@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../abstract/InstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 
 type ImplicitDefinitionBrand = { __implicit: true };

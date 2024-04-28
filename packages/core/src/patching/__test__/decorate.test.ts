@@ -1,7 +1,7 @@
 import { set } from '../set.js';
 import { container } from '../../container/Container.js';
 import { scoped, singleton, transient } from '../../definitions/definitions.js';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
 import { object } from '../../definitions/sync/object.js';
 import { value } from '../../definitions/sync/value.js';

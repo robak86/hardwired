@@ -1,4 +1,4 @@
-import { InstanceDefinition, InstancesArray } from '../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../abstract/InstanceDefinition.js';
 import { derivedLifeTime, DerivedLifeTime } from '../utils/DerivedLifeTime.js';
 
 export type UnionToIntersection<Union> = (Union extends unknown ? (distributedUnion: Union) => void : never) extends (

@@ -1,5 +1,5 @@
-import { ContainerContext } from '../../../context/ContainerContext.js';
-import { LifeTime } from '../LifeTime.js';
+import { ContainerContext } from '../../context/ContainerContext.js';
+import { LifeTime } from './LifeTime.js';
 import { v4 } from 'uuid';
 
 export class InstanceDefinition<TInstance, TLifeTime extends LifeTime, TMeta> {

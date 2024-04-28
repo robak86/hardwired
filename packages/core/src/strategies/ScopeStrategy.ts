@@ -1,6 +1,6 @@
 import { BuildStrategy } from './abstract/BuildStrategy.js';
 import { InstancesStore } from '../context/InstancesStore.js';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition.js';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 

@@ -1,5 +1,5 @@
 import { HierarchicalStore } from './HierarchicalStore.js';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition.js';
 
 export class InstancesStore {
   static create(scopeOverrides: InstanceDefinition<any, any, any>[]): InstancesStore {

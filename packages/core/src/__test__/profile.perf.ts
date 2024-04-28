@@ -1,7 +1,7 @@
 import { Container, container } from '../container/Container.js';
 
 import { singleton, transient } from '../definitions/definitions.js';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition.js';
 import 'source-map-support/register';
 import Bench from 'tinybench';
 

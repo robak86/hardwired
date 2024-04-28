@@ -65,6 +65,5 @@ export class Dispatcher {
 }
 
 export const dispatcherD = singleton(context => {
-  // return new Dispatcher(context);
-  throw new Error('Implement me!');
+  return new Dispatcher(context);
 });

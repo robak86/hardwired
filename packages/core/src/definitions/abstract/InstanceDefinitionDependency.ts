@@ -1,4 +1,4 @@
-import { LifeTime } from '../LifeTime.js';
+import { LifeTime } from './LifeTime.js';
 import { InstanceDefinition } from './InstanceDefinition.js';
 
 // prettier-ignore

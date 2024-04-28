@@ -1,4 +1,4 @@
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../definitions/abstract/InstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 export const apply = <

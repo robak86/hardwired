@@ -2,7 +2,7 @@ import { container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { scoped, singleton, transient } from '../../definitions/definitions.js';
 import { set } from '../set.js';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../../definitions/abstract/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
 import { apply } from '../apply.js';
 import { object } from '../../definitions/sync/object.js';

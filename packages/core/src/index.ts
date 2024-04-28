@@ -4,8 +4,8 @@ export { container, Container } from './container/Container.js';
 export * from './strategies/SingletonStrategy.js';
 export * from './strategies/TransientStrategy.js';
 export * from './definitions/definitions.js';
-export * from './definitions/abstract/sync/InstanceDefinition.js';
-export * from './definitions/abstract/sync/InstanceDefinitionDependency.js';
+export * from './definitions/abstract/InstanceDefinition.js';
+export * from './definitions/abstract/InstanceDefinitionDependency.js';
 
 export * from './patching/replace.js';
 export * from './patching/apply.js';
@@ -25,6 +25,5 @@ export * from './definitions/sync/implicit.js';
 export * from './definitions/sync/intersection.js';
 export * from './definitions/abstract/LifeTime.js';
 export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
-export * from './utils/ClassType.js';
 export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
-export * from './builder/buildDefine.js';
+export * from './builder/buildContext.js';

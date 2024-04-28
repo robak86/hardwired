@@ -1,6 +1,6 @@
 import { value } from '../value.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition } from '../../abstract/InstanceDefinition.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { scoped, singleton } from '../../definitions.js';
 import { describe, expect, it } from 'vitest';
