@@ -6,7 +6,6 @@ import {
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import {
-  assertValidDependencies,
   assertValidDependency,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
@@ -36,7 +35,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   ): InstancesArray<TDefinitions>;
 }
 
-type CustomBind<
+export type CustomBind<
   TBuildIns extends Record<string, InstanceDefinition<any, any, any>>,
   TPreambleArgs extends any[],
   TMeta,

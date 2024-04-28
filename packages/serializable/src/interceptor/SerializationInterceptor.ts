@@ -1,7 +1,7 @@
-import { ContainerContext, ContainerInterceptor, InstanceDefinition } from 'hardwired';
+import { ContainerContext, InstanceDefinition } from 'hardwired';
 import { isSerializable } from '../abstract/Serializable.js';
 
-export class SerializationInterceptor implements ContainerInterceptor {
+export class SerializationInterceptor {
   private serializableInstances: Record<string, any> = {};
 
   constructor(private restoreFrom?: Record<string, any>) {}

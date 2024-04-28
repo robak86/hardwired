@@ -28,4 +28,4 @@ export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
 export * from './utils/ClassType.js';
 export { Resolution } from './definitions/abstract/Resolution.js';
 export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
-export { ContainerInterceptor } from './context/ContainerInterceptor.js';
+export * from './builder/buildDefine.js';

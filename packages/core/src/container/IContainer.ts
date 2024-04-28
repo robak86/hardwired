@@ -4,7 +4,6 @@ import { ContainerScopeOptions } from './Container.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
-import { ContextEvents } from '../events/ContextEvents.js';
 import { Omit } from 'utility-types';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
@@ -33,5 +32,4 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
     IContainerScopes<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;
-  readonly events: ContextEvents;
 }

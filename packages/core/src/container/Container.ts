@@ -6,8 +6,6 @@ import { IContainer } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { set } from '../patching/set.js';
-import { ContextEvents } from '../events/ContextEvents.js';
-import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext) {}
@@ -18,10 +16,6 @@ export class Container implements IContainer {
 
   get id() {
     return this.containerContext.id;
-  }
-
-  get events(): ContextEvents {
-    return this.containerContext.events;
   }
 
   use<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
@@ -72,7 +66,6 @@ export type ContainerOptions = {
 
 export type ContainerScopeOptions = {
   overrides?: InstanceDefinition<any, any, any>[];
-  interceptor?: ContainerInterceptor;
 };
 
 export function container(globalOverrides?: InstanceDefinition<any, any, any>[]): Container;
@@ -86,7 +79,6 @@ export function container(overridesOrOptions?: ContainerOptions | Array<Instance
         overridesOrOptions?.overrides ?? [],
         overridesOrOptions?.globalOverrides ?? [],
         defaultStrategiesRegistry,
-        overridesOrOptions?.interceptor,
       ),
     );
   }

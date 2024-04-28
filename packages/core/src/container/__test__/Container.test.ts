@@ -2,13 +2,9 @@ import { scoped, singleton } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
 import { set } from '../../patching/set.js';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
-import { ContainerContext } from '../../context/ContainerContext.js';
-import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
-import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 
 describe(`Container`, () => {
   describe(`.get`, () => {
@@ -134,133 +130,6 @@ describe(`Container`, () => {
       const [aInstance, bInstance] = await c.useAllAsync([a, b]);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
-    });
-  });
-
-  describe(`interceptors`, () => {
-    describe(`interceptors for checkoutRequestScope`, () => {
-      it(`does not inherit interceptors`, async () => {
-        const def = singleton(() => 123);
-        const interceptSyncSpy = vi.fn();
-        const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } }).checkoutScope();
-        ctn.use(def);
-        expect(interceptSyncSpy).not.toBeCalled();
-      });
-
-      it(`does not call parent interceptors`, async () => {
-        const def = singleton(() => 123);
-        const interceptSyncParentSpy = vi.fn();
-        const interceptSyncReqSpy = vi.fn();
-
-        const ctn = container({ interceptor: { interceptSync: interceptSyncParentSpy } }).checkoutScope({
-          interceptor: { interceptSync: interceptSyncReqSpy },
-        });
-        ctn.use(def);
-        expect(interceptSyncParentSpy).not.toBeCalled();
-        expect(interceptSyncReqSpy).toBeCalled();
-      });
-    });
-
-    describe(`sync`, () => {
-      describe(`no deps`, () => {
-        it(`is called with created instance`, async () => {
-          const def = singleton(() => 123);
-
-          const interceptSyncSpy = vi.fn();
-          const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
-          ctn.use(def);
-          expect(interceptSyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
-        });
-
-        it(`is called only once preserving singleton strategy`, async () => {
-          const def = singleton(() => 123);
-
-          const interceptSyncSpy = vi.fn(val => val);
-          const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
-          ctn.use(def);
-          ctn.use(def);
-          expect(interceptSyncSpy).toHaveBeenCalledTimes(1);
-        });
-
-        it(`is called multiple times preserving request strategy`, async () => {
-          const def = scoped(() => 123);
-
-          const interceptSyncSpy = vi.fn();
-          const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
-          ctn.use(def);
-          ctn.use(def);
-          expect(interceptSyncSpy).toHaveBeenCalledTimes(2);
-        });
-
-        it(`returns intercepted value`, async () => {
-          const def = singleton(() => 123);
-
-          const interceptSyncSpy = vi.fn(
-            <T>(def: InstanceDefinition<T, any, any>, ctx: InstancesBuilder): T => 456 as T,
-          );
-
-          const interceptor = { interceptSync: interceptSyncSpy } as ContainerInterceptor;
-          const ctn = container({ interceptor });
-
-          expect(ctn.use(def)).toEqual(456);
-        });
-      });
-    });
-    describe(`async`, () => {
-      describe(`no deps`, () => {
-        it(`is called with created instance`, async () => {
-          const def = singleton(async () => 123);
-
-          const interceptAsyncSpy = vi.fn();
-          const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
-          await ctn.use(def);
-          expect(interceptAsyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
-        });
-
-        it(`works with sync factory`, async () => {
-          const def = singleton(() => 123);
-
-          const interceptAsyncSpy = vi.fn();
-          const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
-          await ctn.use(def);
-          expect(interceptAsyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
-        });
-
-        it(`returns intercepted value`, async () => {
-          const def = singleton(() => 123);
-
-          const interceptAsyncSpy = vi.fn(
-            async <T>(def: InstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => 456 as T,
-          );
-
-          const interceptor = { interceptAsync: interceptAsyncSpy } as ContainerInterceptor;
-          const ctn = container({ interceptor });
-
-          expect(await ctn.use(def)).toEqual(456);
-        });
-      });
-
-      describe(`with deps`, () => {
-        it(`it calls interceptor on dependency definition`, async () => {
-          const def1 = singleton(async () => 123);
-          const def2 = singleton(async ({ use }) => (await use(def1)) + 1000);
-
-          const interceptAsyncSpy = vi.fn(
-            async <T>(def: InstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => {
-              return def.create(ctx);
-            },
-          );
-
-          const interceptor = { interceptAsync: interceptAsyncSpy } as ContainerInterceptor;
-          const ctn = container({ interceptor });
-
-          await ctn.use(def2);
-          expect(interceptAsyncSpy).toHaveBeenCalledTimes(2);
-
-          expect(interceptAsyncSpy.mock.calls[0]).toEqual([def2, expect.any(ContainerContext)]);
-          expect(interceptAsyncSpy.mock.calls[1]).toEqual([def1, expect.any(ContainerContext)]);
-        });
-      });
     });
   });
 

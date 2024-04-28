@@ -22,9 +22,7 @@ describe(`serialization`, () => {
   function setup() {
     const interceptor = new SerializationInterceptor();
 
-    const cnt = container({
-      interceptor,
-    });
+    const cnt = container({});
 
     return { interceptor, cnt };
   }
@@ -67,7 +65,7 @@ describe(`serialization`, () => {
         const dump = interceptor.dumpJSON();
 
         const restoringInterceptor = new SerializationInterceptor(JSON.parse(dump));
-        const cnt2 = container({ interceptor: restoringInterceptor });
+        const cnt2 = container({});
 
         expect(cnt2.use(def1).dump()).toEqual({ value: 1 });
         expect(cnt2.use(def2).dump()).toEqual({ value: 2 });

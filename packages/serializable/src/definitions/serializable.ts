@@ -1,32 +1,10 @@
-import {
-  assertValidDependencies,
-  ClassType,
-  InstanceDefinition,
-  InstanceDefinitionDependency,
-  LifeTime,
-  Resolution,
-} from 'hardwired';
-import { Serializable } from '../abstract/Serializable.js';
+import { buildDefine, LifeTime } from 'hardwired';
 
-export const serializable = <
-  TInstance extends Serializable<any>,
-  TArgs extends any[],
-  TDependencies extends { [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K], LifeTime.scoped> },
->(
-  id: string,
-  cls: ClassType<TInstance, TArgs>,
-  ...dependencies: TDependencies
-): InstanceDefinition<TInstance, LifeTime.scoped, unknown> => {
-  assertValidDependencies(LifeTime.scoped, dependencies);
-
-  return new InstanceDefinition(
-    id,
-    Resolution.sync,
-    LifeTime.scoped,
-    context => new cls(...(dependencies.map(context.use) as TArgs)),
-    dependencies,
-    {
-      serializable: true,
+export const serializable = (id: string) => {
+  return buildDefine({
+    lifeTime: LifeTime.singleton,
+    buildMeta: (id: string) => {
+      return { id };
     },
-  );
+  });
 };

@@ -6,11 +6,7 @@ import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.
 import { InstancesBuilder } from './abstract/InstancesBuilder.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
-
-import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
-import { ContextEvents } from '../events/ContextEvents.js';
-import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { Omit } from 'utility-types';
 
@@ -18,38 +14,20 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
-  static empty(
-    strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    interceptor: ContainerInterceptor = {},
-  ) {
+  static empty(strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry) {
     const instancesEntries = InstancesDefinitionsRegistry.empty();
 
-    return new ContainerContext(
-      null,
-      instancesEntries,
-      InstancesStore.create([]),
-      strategiesRegistry,
-      interceptor,
-      new ContextEvents(),
-    );
+    return new ContainerContext(null, instancesEntries, InstancesStore.create([]), strategiesRegistry);
   }
 
   static create(
     scopeOverrides: InstanceDefinition<any, any, any>[],
     globalOverrides: InstanceDefinition<any, any, any>[],
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    interceptors: ContainerInterceptor = {},
   ): ContainerContext {
     const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
 
-    return new ContainerContext(
-      null,
-      definitionsRegistry,
-      InstancesStore.create(scopeOverrides),
-      strategiesRegistry,
-      interceptors,
-      new ContextEvents(),
-    );
+    return new ContainerContext(null, definitionsRegistry, InstancesStore.create(scopeOverrides), strategiesRegistry);
   }
 
   public readonly id = v4();
@@ -59,8 +37,6 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     private readonly instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
     private readonly instancesCache: InstancesStore,
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    private readonly interceptor: ContainerInterceptor,
-    public readonly events: ContextEvents,
   ) {}
 
   use = (definition: InstanceDefinition<any, any, any>) => {
@@ -89,19 +65,6 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
   buildExact<T>(definition: InstanceDefinition<Promise<T>, any, any>): Promise<T>;
   buildExact<T>(definition: InstanceDefinition<Promise<T> | T, any, any>): T | Promise<T> {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-
-    this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
-
-    if (patchedInstanceDef.resolution === Resolution.sync && this.interceptor.interceptSync) {
-      // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
-      return this.interceptor.interceptSync(patchedInstanceDef, this);
-    }
-
-    if (patchedInstanceDef.resolution === Resolution.async && this.interceptor.interceptAsync) {
-      // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
-      return this.interceptor.interceptAsync?.(patchedInstanceDef, this);
-    }
-
     return patchedInstanceDef.create(this);
   }
 
@@ -112,18 +75,12 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
   checkoutScope = (options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext => {
     const { overrides = [] } = options;
 
-    const scopeContext = new ContainerContext(
+    return new ContainerContext(
       this.id,
       this.instancesDefinitionsRegistry.checkoutForScope(overrides),
       this.instancesCache.childScope(overrides),
       this.strategiesRegistry,
-      options.interceptor || {},
-      this.events,
     );
-
-    this.events.onScope.emit({ initiatorContainerId: this.id, scopeContainerId: scopeContext.id });
-
-    return scopeContext;
   };
 
   withScope<TValue>(fn: (locator: IServiceLocator<LifeTime>) => TValue): TValue {
