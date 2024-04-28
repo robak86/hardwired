@@ -63,58 +63,54 @@ export type DefineFn<
   ]
 ) => InstanceDefinition<TInstance, TLifeTime, TMeta>;
 
-export type DefineClbk<
-  TLifeTime extends LifeTime,
-  TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
-  TInstance,
-> = (
-  cnt: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime> & InstancesRecord<TProvidedBindings>,
+export type DefineClbk<TInstance, TLifeTime extends LifeTime, TProvidedBindings extends Record<string, any>> = (
+  cnt: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime> & TProvidedBindings,
 ) => TInstance;
-
-export const buildDefine = <
-  TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
-  TPreambleArgs extends any[],
-  TMeta,
-  TLifeTime extends LifeTime,
->(
-  params: CustomBind<TProvidedBindings, TPreambleArgs, TMeta, TLifeTime>,
-): DefineFn<TLifeTime, TMeta, TProvidedBindings, TPreambleArgs> => {
-  return <TInstance>(
-    ...args: [...TPreambleArgs, DefineClbk<TLifeTime, TProvidedBindings, TInstance>]
-  ): InstanceDefinition<TInstance, TLifeTime, TMeta> => {
-    const defineFn = args.at(-1) as (
-      cnt: InstanceCreationAware<TLifeTime> & InstancesRecord<TProvidedBindings>,
-    ) => TInstance;
-    const preambleArgs = args.slice(0, -1) as TPreambleArgs;
-    const meta = params.buildMeta?.(...preambleArgs) as TMeta;
-
-    return new InstanceDefinition<TInstance, TLifeTime, TMeta>(
-      v4(),
-      params.lifeTime,
-      context => {
-        const serviceLocator = buildContext(params.lifeTime, context, params.include);
-        const instance = defineFn(serviceLocator);
-        return params.after ? params.after(instance, meta) : instance;
-      },
-      meta,
-    );
-  };
-};
-
-export const withBindings = <
-  TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
-  TInstance,
-  TLifeTime extends LifeTime,
->(
-  lifeTime: TLifeTime,
-  bindings: TProvidedBindings,
-  defineFn: DefineClbk<TLifeTime, TProvidedBindings, TInstance>,
-) => {
-  return (context: ContainerContext): TInstance => {
-    const serviceLocator = buildContext(lifeTime, context, bindings);
-    return defineFn(serviceLocator);
-  };
-};
+//
+// export const buildDefine = <
+//   TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
+//   TPreambleArgs extends any[],
+//   TMeta,
+//   TLifeTime extends LifeTime,
+// >(
+//   params: CustomBind<TProvidedBindings, TPreambleArgs, TMeta, TLifeTime>,
+// ): DefineFn<TLifeTime, TMeta, TProvidedBindings, TPreambleArgs> => {
+//   return <TInstance>(
+//     ...args: [...TPreambleArgs, DefineClbk<TInstance, TLifeTime, TProvidedBindings>]
+//   ): InstanceDefinition<TInstance, TLifeTime, TMeta> => {
+//     const defineFn = args.at(-1) as (
+//       cnt: InstanceCreationAware<TLifeTime> & InstancesRecord<TProvidedBindings>,
+//     ) => TInstance;
+//     const preambleArgs = args.slice(0, -1) as TPreambleArgs;
+//     const meta = params.buildMeta?.(...preambleArgs) as TMeta;
+//
+//     return new InstanceDefinition<TInstance, TLifeTime, TMeta>(
+//       v4(),
+//       params.lifeTime,
+//       context => {
+//         const serviceLocator = buildContext(params.lifeTime, context, params.include);
+//         const instance = defineFn(serviceLocator);
+//         return params.after ? params.after(instance, meta) : instance;
+//       },
+//       meta,
+//     );
+//   };
+// };
+//
+// export const withBindings = <
+//   TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
+//   TInstance,
+//   TLifeTime extends LifeTime,
+// >(
+//   lifeTime: TLifeTime,
+//   bindings: TProvidedBindings,
+//   defineFn: DefineClbk<TInstance, TLifeTime, TProvidedBindings>,
+// ) => {
+//   return (context: ContainerContext): TInstance => {
+//     const serviceLocator = buildContext(lifeTime, context, bindings);
+//     return defineFn(serviceLocator);
+//   };
+// };
 
 export function buildContext<
   TLifeTime extends LifeTime,
