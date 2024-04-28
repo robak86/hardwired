@@ -10,7 +10,7 @@ import {
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import { v4 } from 'uuid';
-import { Resolution } from '../definitions/abstract/Resolution.js';
+
 import { IContainerScopes } from '../container/IContainer.js';
 import { ContainerContext } from '../context/ContainerContext.js';
 
@@ -31,8 +31,8 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     instanceDefinition: InstanceDefinition<Promise<TValue> | TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
   ): Promise<TValue> | TValue;
 
-  getAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
-    definitions: [...TDefinitions],
+  useAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
+    ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 }
 
@@ -63,6 +63,14 @@ export type DefineFn<
   ]
 ) => InstanceDefinition<TInstance, TLifeTime, TMeta>;
 
+export type DefineClbk<
+  TLifeTime extends LifeTime,
+  TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
+  TInstance,
+> = (
+  cnt: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime> & InstancesRecord<TProvidedBindings>,
+) => TInstance;
+
 export const buildDefine = <
   TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
   TPreambleArgs extends any[],
@@ -72,12 +80,7 @@ export const buildDefine = <
   params: CustomBind<TProvidedBindings, TPreambleArgs, TMeta, TLifeTime>,
 ): DefineFn<TLifeTime, TMeta, TProvidedBindings, TPreambleArgs> => {
   return <TInstance>(
-    ...args: [
-      ...TPreambleArgs,
-      (
-        cnt: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime> & InstancesRecord<TProvidedBindings>,
-      ) => TInstance,
-    ]
+    ...args: [...TPreambleArgs, DefineClbk<TLifeTime, TProvidedBindings, TInstance>]
   ): InstanceDefinition<TInstance, TLifeTime, TMeta> => {
     const defineFn = args.at(-1) as (
       cnt: InstanceCreationAware<TLifeTime> & InstancesRecord<TProvidedBindings>,
@@ -87,16 +90,29 @@ export const buildDefine = <
 
     return new InstanceDefinition<TInstance, TLifeTime, TMeta>(
       v4(),
-      Resolution.sync,
       params.lifeTime,
       context => {
         const serviceLocator = buildContext(params.lifeTime, context, params.include);
         const instance = defineFn(serviceLocator);
-
         return params.after ? params.after(instance, meta) : instance;
       },
       meta,
     );
+  };
+};
+
+export const withBindings = <
+  TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
+  TInstance,
+  TLifeTime extends LifeTime,
+>(
+  lifeTime: TLifeTime,
+  bindings: TProvidedBindings,
+  defineFn: DefineClbk<TLifeTime, TProvidedBindings, TInstance>,
+) => {
+  return (context: ContainerContext): TInstance => {
+    const serviceLocator = buildContext(lifeTime, context, bindings);
+    return defineFn(serviceLocator);
   };
 };
 

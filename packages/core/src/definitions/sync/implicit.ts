@@ -1,8 +1,6 @@
 import { InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 
-import { Resolution } from '../abstract/Resolution.js';
-
 type ImplicitDefinitionBrand = { __implicit: true };
 
 export function implicit<T, TMeta = unknown>(
@@ -11,7 +9,6 @@ export function implicit<T, TMeta = unknown>(
 ): InstanceDefinition<T, LifeTime.scoped, TMeta & ImplicitDefinitionBrand> {
   return new InstanceDefinition<T, LifeTime.scoped, TMeta & ImplicitDefinitionBrand>(
     name,
-    Resolution.sync,
     LifeTime.scoped,
     () => {
       throw new Error(

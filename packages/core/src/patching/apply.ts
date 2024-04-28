@@ -15,7 +15,6 @@ export const apply = <
   return {
     id: instance.id,
     strategy: instance.strategy,
-    resolution: instance.resolution,
     meta: instance.meta,
     create: context => {
       const decorated = instance.create(context);

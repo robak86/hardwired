@@ -26,6 +26,5 @@ export * from './definitions/sync/intersection.js';
 export * from './definitions/abstract/LifeTime.js';
 export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
 export * from './utils/ClassType.js';
-export { Resolution } from './definitions/abstract/Resolution.js';
 export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
 export * from './builder/buildDefine.js';

@@ -15,7 +15,6 @@ export function decorate<
   return {
     id: instance.id,
     strategy: instance.strategy,
-    resolution: instance.resolution,
     meta: {} as TMeta,
     create: context => {
       const decorated = instance.create(context);
