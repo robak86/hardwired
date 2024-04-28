@@ -88,7 +88,7 @@ describe(`inject`, () => {
 
   describe(`request`, () => {
     function setup() {
-      const valueA = scoped.fn(() => Math.random());
+      const valueA = scoped(() => Math.random());
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 

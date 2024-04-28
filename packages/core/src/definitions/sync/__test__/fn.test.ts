@@ -12,8 +12,9 @@ describe(`fn`, () => {
     const implDef = implicit<number>('number');
 
     it(`is type-safe`, async () => {
-      const dep = scoped.using(implDef).fn(val => {
-        expectType<TypeEqual<typeof val, number>>(true);
+      const dep = scoped(c => {
+        const v = c.use(implDef);
+        expectType<TypeEqual<typeof v, number>>(true);
       });
     });
 

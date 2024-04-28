@@ -8,7 +8,7 @@ import { container } from '../../container/Container.js';
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {
     it(`acts like singleton within current scope`, async () => {
-      const a = scoped.fn(() => Math.random());
+      const a = scoped(() => Math.random());
 
       const c = ContainerContext.empty();
       expect(c.use(a)).toEqual(c.use(a));
@@ -19,7 +19,7 @@ describe(`ScopeStrategy`, () => {
     });
 
     it(`returns new instance in new scope`, async () => {
-      const a = scoped.fn(() => Math.random());
+      const a = scoped(() => Math.random());
       const c = ContainerContext.empty();
 
       const childScope = c.checkoutScope();
@@ -34,15 +34,15 @@ describe(`ScopeStrategy`, () => {
         constructor(public value = Math.random()) {}
       }
 
-      const k1 = scoped.fn(() => new Boxed());
+      const k1 = scoped(() => new Boxed());
 
       const invariantPatch = replace(
         k1,
-        scoped.fn(() => new Boxed(1)),
+        scoped(() => new Boxed(1)),
       );
       const childScopePatch = replace(
         k1,
-        scoped.fn(() => new Boxed(1)),
+        scoped(() => new Boxed(1)),
       );
 
       const c = ContainerContext.create([], [invariantPatch]);
@@ -56,16 +56,16 @@ describe(`ScopeStrategy`, () => {
     });
 
     it(`allows for overrides other than specified in globalOverrides`, async () => {
-      const k1 = scoped.fn(() => Math.random());
-      const k2 = scoped.fn(() => Math.random());
+      const k1 = scoped(() => Math.random());
+      const k2 = scoped(() => Math.random());
 
       const invariantPatch = replace(
         k1,
-        scoped.fn(() => 1),
+        scoped(() => 1),
       );
       const childScopePatch = replace(
         k2,
-        scoped.fn(() => 2),
+        scoped(() => 2),
       );
 
       const c = ContainerContext.create([], [invariantPatch]);
@@ -79,28 +79,28 @@ describe(`ScopeStrategy`, () => {
 
   describe(`scope overrides`, () => {
     it(`replaces definitions for scoped scope`, async () => {
-      const a = scoped.fn(() => new BoxedValue(1));
+      const a = scoped(() => new BoxedValue(1));
 
       const c = ContainerContext.empty();
       expect(c.use(a).value).toEqual(1);
 
       const mPatch = replace(
         a,
-        scoped.fn(() => new BoxedValue(2)),
+        scoped(() => new BoxedValue(2)),
       );
       const childC = c.checkoutScope({ overrides: [mPatch] });
       expect(childC.use(a).value).toEqual(2);
     });
 
     it(`new scope inherits parent scope overrides`, async () => {
-      const a = scoped.fn(() => new BoxedValue(1));
+      const a = scoped(() => new BoxedValue(1));
 
       const root = ContainerContext.empty();
       expect(root.use(a).value).toEqual(1);
 
       const mPatch = replace(
         a,
-        scoped.fn(() => new BoxedValue(2)),
+        scoped(() => new BoxedValue(2)),
       );
       const childC = root.checkoutScope({ overrides: [mPatch] });
       expect(childC.use(a).value).toEqual(2);
@@ -116,7 +116,7 @@ describe(`ScopeStrategy`, () => {
     describe(`resolution`, () => {
       describe(`get`, () => {
         it(`uses the same scope for the request`, async () => {
-          const a = scoped.fn(() => Math.random());
+          const a = scoped(() => Math.random());
 
           const c = container();
           const req1 = c.use(a);
@@ -128,7 +128,7 @@ describe(`ScopeStrategy`, () => {
 
       describe(`childScope`, () => {
         it(`does not inherit any values from parent scope`, async () => {
-          const a = scoped.fn(() => Math.random());
+          const a = scoped(() => Math.random());
 
           const c = ContainerContext.empty();
           const req1 = c.use(a);
@@ -143,13 +143,13 @@ describe(`ScopeStrategy`, () => {
 
     describe(`scope overrides`, () => {
       it(`replaces definitions for request scope`, async () => {
-        const a = scoped.fn(() => 1);
+        const a = scoped(() => 1);
 
         const c = ContainerContext.empty();
 
         const mPatch = replace(
           a,
-          scoped.fn(() => 2),
+          scoped(() => 2),
         );
 
         const childC = c.checkoutScope({ overrides: [mPatch] });
@@ -161,15 +161,15 @@ describe(`ScopeStrategy`, () => {
 
     describe(`global overrides`, () => {
       it(`cannot be replaced by scope overrides`, async () => {
-        const k1 = scoped.fn(() => Math.random());
+        const k1 = scoped(() => Math.random());
 
         const invariantPatch = replace(
           k1,
-          scoped.fn(() => 1),
+          scoped(() => 1),
         );
         const childScopePatch = replace(
           k1,
-          scoped.fn(() => 2),
+          scoped(() => 2),
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
@@ -180,16 +180,16 @@ describe(`ScopeStrategy`, () => {
       });
 
       it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
-        const k1 = scoped.fn(() => Math.random());
-        const k2 = scoped.fn(() => Math.random());
+        const k1 = scoped(() => Math.random());
+        const k2 = scoped(() => Math.random());
 
         const invariantPatch = replace(
           k1,
-          scoped.fn(() => 1),
+          scoped(() => 1),
         );
         const childScopePatch = replace(
           k2,
-          scoped.fn(() => 2),
+          scoped(() => 2),
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
@@ -206,7 +206,7 @@ describe(`ScopeStrategy`, () => {
     describe(`resolution`, () => {
       describe(`get`, () => {
         it(`uses the same scope for each call`, async () => {
-          const a = scoped.async().fn(async () => Math.random());
+          const a = scoped(async () => Math.random());
 
           const c = container();
           const req1 = await c.use(a);
@@ -218,7 +218,7 @@ describe(`ScopeStrategy`, () => {
 
       describe(`asObject`, () => {
         it(`runs asObject each time with new request scope `, async () => {
-          const a = scoped.async().fn(async () => Math.random());
+          const a = scoped(async () => Math.random());
 
           const c = container();
           const req1 = await c.use(a);
@@ -230,7 +230,7 @@ describe(`ScopeStrategy`, () => {
 
       describe(`childScope`, () => {
         it(`does not inherit any values from parent scope`, async () => {
-          const a = scoped.async().fn(async () => Math.random());
+          const a = scoped(async () => Math.random());
 
           const c = ContainerContext.empty();
           const req1 = await c.use(a);
@@ -245,13 +245,13 @@ describe(`ScopeStrategy`, () => {
 
     describe(`scope overrides`, () => {
       it(`replaces definitions for request scope`, async () => {
-        const a = scoped.async().fn(async () => 1);
+        const a = scoped(async () => 1);
 
         const c = ContainerContext.empty();
 
         const mPatch = replace(
           a,
-          scoped.async().fn(async () => 2),
+          scoped(async () => 2),
         );
 
         const childC = c.checkoutScope({ overrides: [mPatch] });
@@ -263,15 +263,15 @@ describe(`ScopeStrategy`, () => {
 
     describe(`global overrides`, () => {
       it(`cannot be replaced by scope overrides`, async () => {
-        const k1 = scoped.async().fn(async () => Math.random());
+        const k1 = scoped(async () => Math.random());
 
         const invariantPatch = replace(
           k1,
-          scoped.async().fn(async () => 1),
+          scoped(async () => 1),
         );
         const childScopePatch = replace(
           k1,
-          scoped.async().fn(async () => 2),
+          scoped(async () => 2),
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
@@ -283,16 +283,16 @@ describe(`ScopeStrategy`, () => {
       });
 
       it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
-        const k1 = scoped.async().fn(async () => Math.random());
-        const k2 = scoped.async().fn(async () => Math.random());
+        const k1 = scoped(async () => Math.random());
+        const k2 = scoped(async () => Math.random());
 
         const invariantPatch = replace(
           k1,
-          scoped.async().fn(async () => 1),
+          scoped(async () => 1),
         );
         const childScopePatch = replace(
           k2,
-          scoped.async().fn(async () => 2),
+          scoped(async () => 2),
         );
 
         const c = ContainerContext.create([], [invariantPatch]);

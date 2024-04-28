@@ -116,7 +116,7 @@ export class ContainerContext implements InstancesBuilder {
     return strategy.build(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
   };
 
-  checkoutScope(options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext {
+  checkoutScope = (options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext => {
     const { overrides = [] } = options;
 
     const scopeContext = new ContainerContext(
@@ -131,5 +131,5 @@ export class ContainerContext implements InstancesBuilder {
     this.events.onScope.emit({ initiatorContainerId: this.id, scopeContainerId: scopeContext.id });
 
     return scopeContext;
-  }
+  };
 }

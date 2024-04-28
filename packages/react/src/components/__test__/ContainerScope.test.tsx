@@ -15,7 +15,7 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = scoped.fn(() => (counter += 1));
+      const valueD = scoped(() => (counter += 1));
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
         const value = useDefinition(valueD);
@@ -59,7 +59,7 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = scoped.fn(() => (counter += 1));
+      const valueD = scoped(() => (counter += 1));
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
         const value = useDefinition(valueD);
@@ -107,8 +107,8 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const baseD = scoped.fn(() => 0);
-      const valueD = scoped.using(baseD).fn(base => (counter += 1 + base));
+      const baseD = scoped(() => 0);
+      const valueD = scoped(c => (counter += 1 + c.use(baseD)));
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
         const value = useDefinition(valueD);

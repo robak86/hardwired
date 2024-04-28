@@ -43,7 +43,7 @@ describe(`useDefinition`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const clsDef = scoped.fn(checkoutRenderId);
+      const clsDef = scoped(checkoutRenderId);
 
       const Consumer = () => {
         const cls = useDefinition(clsDef);
@@ -98,7 +98,7 @@ describe(`useDefinition`, () => {
   describe(`using externals`, () => {
     function setup() {
       const someExternalParam = implicit<string>('ext');
-      const val1Def = scoped.using(someExternalParam).fn((ext: string) => `render:${checkoutRenderId()};value:${ext}`);
+      const val1Def = scoped(c => `render:${checkoutRenderId()};value:${c.use(someExternalParam)}`);
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);

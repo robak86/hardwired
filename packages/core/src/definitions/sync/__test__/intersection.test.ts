@@ -51,8 +51,8 @@ describe(`intersection`, () => {
       });
 
       it(`uses strategy from record instance definitions, ex.2`, async () => {
-        const someNumberD = scoped.fn(() => 1);
-        const someStr = scoped.fn(() => 'str');
+        const someNumberD = scoped(() => 1);
+        const someStr = scoped(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
         expect(combined.strategy).toEqual(LifeTime.scoped);
       });
@@ -61,7 +61,7 @@ describe(`intersection`, () => {
     describe(`instances use different strategies`, () => {
       it(`uses singleton strategy if any dependency instance is singleton`, async () => {
         const someNumberD = singleton(() => 1);
-        const someStr = scoped.fn(() => 'str');
+        const someStr = scoped(() => 'str');
         const combined = object({ num: someNumberD, str: someStr });
         expect(combined.strategy).toEqual(LifeTime.transient);
       });

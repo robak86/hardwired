@@ -77,8 +77,8 @@ describe(`decorate`, () => {
     });
 
     it(`uses correct scope`, async () => {
-      const source = scoped.fn(() => Math.random());
-      const a = scoped.using(source).fn((source: number) => source);
+      const source = scoped(() => Math.random());
+      const a = scoped(c => c.use(source));
 
       const mPatch = decorate(a, a => a);
 
@@ -93,7 +93,7 @@ describe(`decorate`, () => {
     });
 
     it(`caches produced object`, async () => {
-      const a = scoped.fn(() => Math.random());
+      const a = scoped(() => Math.random());
 
       const c = container();
       const obj1 = c.use(a);
@@ -135,7 +135,7 @@ describe(`decorate`, () => {
 
     describe(`apply on scoped definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(scoped.class(MyService));
+        const { instance1, instance2 } = setup(scoped(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
@@ -155,7 +155,7 @@ describe(`decorate`, () => {
 
     describe(`apply on request definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(scoped.class(MyService));
+        const { instance1, instance2 } = setup(scoped(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

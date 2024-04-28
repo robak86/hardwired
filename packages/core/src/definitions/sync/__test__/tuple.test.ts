@@ -45,8 +45,8 @@ describe(`object`, () => {
       });
 
       it(`uses strategy from record instance definitions, ex.2`, async () => {
-        const someNumberD = scoped.fn(() => 1);
-        const someStr = scoped.fn(() => 'str');
+        const someNumberD = scoped(() => 1);
+        const someStr = scoped(() => 'str');
         const composed = tuple(someNumberD, someStr);
         expect(composed.strategy).toEqual(LifeTime.scoped);
       });
@@ -55,7 +55,7 @@ describe(`object`, () => {
     describe(`instances use different strategies`, () => {
       it(`uses singleton if any dependency is singleton`, async () => {
         const someNumberD = singleton(() => 1);
-        const someStr = scoped.fn(() => 'str');
+        const someStr = scoped(() => 'str');
         const composed = tuple(someNumberD, someStr);
         expect(composed.strategy).toEqual(LifeTime.transient);
       });

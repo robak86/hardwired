@@ -89,8 +89,8 @@ describe(`Container`, () => {
 
   describe(`getAll`, () => {
     it(`returns array of instances`, async () => {
-      const a = scoped.fn(() => 1);
-      const b = scoped.fn(() => 2);
+      const a = scoped(() => 1);
+      const b = scoped(() => 2);
 
       const c = container();
       const [aInstance, bInstance] = c.getAll([a, b]);
@@ -100,8 +100,8 @@ describe(`Container`, () => {
 
     it(`allows using external params`, async () => {
       const extD = implicit<BoxedValue<number>>('ext');
-      const multiplyBy2D = scoped.using(extD).fn((val: BoxedValue<number>) => val.value * 2);
-      const divideBy2D = scoped.using(extD).fn((val: BoxedValue<number>) => val.value / 2);
+      const multiplyBy2D = scoped(c => c.use(extD).value * 2);
+      const divideBy2D = scoped(c => c.use(extD).value / 2);
       const [val1, val2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
         .getAll([multiplyBy2D, divideBy2D]);
@@ -113,13 +113,13 @@ describe(`Container`, () => {
       const extD = implicit<BoxedValue<number>>('ext');
 
       let count = 0;
-      const scopeSharedValD = scoped.fn(() => (count += 1));
-      const multiplyBy2D = scoped
-        .using(extD, scopeSharedValD)
-        .fn((val: BoxedValue<number>, sharedVal: number) => ({ result: val.value * 2, shared: sharedVal }));
-      const divideBy2D = scoped
-        .using(extD, scopeSharedValD)
-        .fn((val: BoxedValue<number>, sharedVal: number) => ({ result: val.value / 2, shared: sharedVal }));
+      const scopeSharedValD = scoped(() => (count += 1));
+      const multiplyBy2D = scoped(c => {
+        return { result: c.use(extD).value * 2, shared: c.use(scopeSharedValD) };
+      });
+      const divideBy2D = scoped(c => {
+        return { result: c.use(extD).value / 2, shared: c.use(scopeSharedValD) };
+      });
 
       const [req1, req2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
@@ -133,8 +133,8 @@ describe(`Container`, () => {
 
   describe(`getAllAsync`, () => {
     it(`returns array of instances`, async () => {
-      const a = scoped.async().fn(async () => 1);
-      const b = scoped.async().fn(async () => 2);
+      const a = scoped(async () => 1);
+      const b = scoped(async () => 2);
 
       const c = container();
       const [aInstance, bInstance] = await c.getAllAsync([a, b]);
@@ -189,7 +189,7 @@ describe(`Container`, () => {
         });
 
         it(`is called multiple times preserving request strategy`, async () => {
-          const def = scoped.fn(() => 123);
+          const def = scoped(() => 123);
 
           const interceptSyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
@@ -286,7 +286,7 @@ describe(`Container`, () => {
 
   describe(`.checkoutRequestScope`, () => {
     it(`returns clear request scope`, async () => {
-      const scopedVal = scoped.fn(() => new BoxedValue(Math.random()));
+      const scopedVal = scoped(() => new BoxedValue(Math.random()));
 
       const cnt = container();
       const reqCnt1 = cnt.checkoutScope();

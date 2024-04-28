@@ -98,8 +98,8 @@ describe(`apply`, () => {
     });
 
     it(`preserves scope of the original resolver`, async () => {
-      const source = scoped.fn(() => Math.random());
-      const a = scoped.using(source).fn(source => source);
+      const source = scoped(() => Math.random());
+      const a = scoped(c => c.use(source));
 
       const mPatch = apply(a, a => a);
 
@@ -146,7 +146,7 @@ describe(`apply`, () => {
 
     describe(`apply on scoped definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(scoped.class(MyService));
+        const { instance1, instance2 } = setup(scoped(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

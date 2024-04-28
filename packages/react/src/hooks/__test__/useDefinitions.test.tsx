@@ -16,8 +16,8 @@ import { FC } from 'react';
 describe(`useDefinitions`, () => {
   describe(`types`, () => {
     it(`returns correct types`, async () => {
-      const val1Def = scoped.fn(() => 'someString');
-      const val2Def = scoped.fn(() => 123);
+      const val1Def = scoped(() => 'someString');
+      const val2Def = scoped(() => 123);
 
       const Component = () => {
         const [val1, val2] = useDefinitions([val1Def, val2Def]);
@@ -28,8 +28,8 @@ describe(`useDefinitions`, () => {
 
     it(`returns correct types using externals`, async () => {
       const ext = implicit<boolean>('ext');
-      const val1Def = scoped.using(ext).fn(b => 'someString');
-      const val2Def = scoped.using(ext).fn(b => 123);
+      const val1Def = scoped(c => 'someString');
+      const val2Def = scoped(c => 123);
 
       const Component = () => {
         try {
@@ -73,7 +73,7 @@ describe(`useDefinitions`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const clsDef = scoped.fn(checkoutRenderId);
+      const clsDef = scoped(checkoutRenderId);
 
       const Consumer = () => {
         const [cls] = useDefinitions([clsDef]);
@@ -128,12 +128,12 @@ describe(`useDefinitions`, () => {
   describe(`using externals`, () => {
     function setup() {
       const someExternalParam = implicit<string>('ext');
-      const val1Def = scoped
-        .using(someExternalParam)
-        .fn((ext: string) => `def:1,render:${checkoutRenderId()};value:${ext}`);
-      const val2Def = scoped
-        .using(someExternalParam)
-        .fn((ext: string) => `def:2,render:${checkoutRenderId()};value:${ext}`);
+      const val1Def = scoped(c => {
+        return `def:1,render:${checkoutRenderId()};value:${c.use(someExternalParam)}`;
+      });
+      const val2Def = scoped(c => {
+        return `def:2,render:${checkoutRenderId()};value:${c.use(someExternalParam)}`;
+      });
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);

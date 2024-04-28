@@ -1,16 +1,17 @@
 import { LifeTime } from './abstract/LifeTime.js';
-import { DefinitionBuilder } from '../builder/DefinitionBuilder.js';
 import { buildDefine } from '../builder/buildDefine.js';
-
-// export const singleton = new DefinitionBuilder<[], LifeTime.singleton, unknown>([], LifeTime.singleton, {}, []);
 
 export const singleton = buildDefine({
   lifeTime: LifeTime.singleton,
+  include: {},
 });
 
 export const transient = buildDefine({
   lifeTime: LifeTime.transient,
+  include: {},
 });
 
-// export const transient = new DefinitionBuilder<[], LifeTime.transient, unknown>([], LifeTime.transient, {}, []);
-export const scoped = new DefinitionBuilder<[], LifeTime.scoped, unknown>([], LifeTime.scoped, {}, []);
+export const scoped = buildDefine({
+  lifeTime: LifeTime.scoped,
+  include: {},
+});

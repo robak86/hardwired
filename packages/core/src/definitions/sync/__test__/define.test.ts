@@ -32,7 +32,7 @@ describe(`define`, () => {
     });
 
     it(`uses the same request scope for every get call`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = scoped(() => new BoxedValue(Math.random()));
 
       const definition = transient(locator => {
         return [locator.use(value), locator.use(value)];
@@ -44,7 +44,7 @@ describe(`define`, () => {
     });
 
     it(`correctly uses transient lifetime`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = scoped(() => new BoxedValue(Math.random()));
 
       const definition = transient(locator => {
         const scopedContainer = locator.checkoutScope();
@@ -61,7 +61,7 @@ describe(`define`, () => {
     });
 
     it(`correctly uses singleton lifetime`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = scoped(() => new BoxedValue(Math.random()));
 
       const definition = singleton(locator => {
         return [locator.use(value), locator.use(value)];
@@ -74,13 +74,15 @@ describe(`define`, () => {
     });
 
     it(`correctly uses singleton lifetime`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = scoped(() => new BoxedValue(Math.random()));
 
-      const definition = scoped.using().define(locator => {
+      const definition = scoped(locator => {
         return [locator.use(value), locator.use(value)];
       });
 
-      const definitionConsumer = scoped.using(definition, definition).fn((def1, def2) => [def1, def2]);
+      const definitionConsumer = scoped(c => {
+        return [c.use(definition), c.use(definition)];
+      });
       const cnt = container();
 
       const result = cnt.use(definitionConsumer);
@@ -92,9 +94,9 @@ describe(`define`, () => {
   describe(`withNewRequestScope`, () => {
     it(`returns values using new request`, async () => {
       const singletonD = singleton(() => new BoxedValue(Math.random()));
-      const randomD = scoped.fn(() => new BoxedValue(Math.random()));
+      const randomD = scoped(() => new BoxedValue(Math.random()));
 
-      const exampleD = scoped.using().define(locator => {
+      const exampleD = scoped(locator => {
         const s1 = locator.use(singletonD);
         const r1 = locator.use(randomD);
         const r2 = locator.use(randomD);

@@ -27,8 +27,8 @@ describe(`withDependencies`, () => {
 
     const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 
-    const ageDef = scoped.fn(() => new BoxedValue(initialAge()));
-    const firstNameDef = scoped.fn(() => new BoxedValue(initialName()));
+    const ageDef = scoped(() => new BoxedValue(initialAge()));
+    const firstNameDef = scoped(() => new BoxedValue(initialName()));
 
     const WrappedComponent: FC<DummyComponentProps> = ({ age, firstName, testId }) => {
       return (

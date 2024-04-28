@@ -7,19 +7,28 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { singleton } from '../definitions/definitions.js';
 import { v4 } from 'uuid';
 import { Resolution } from '../definitions/abstract/Resolution.js';
+import { IContainerScopes } from '../container/IContainer.js';
 
 // TODO:
 // we probably don't need Resolution enum
 // we probably don't need AsyncDefinition
 // - strategies are synchronous. and with the new approach we can just use async functions
 
+// TODO- context provided to defineFn should be aware of the lifeTime of the instance, and should only allow using
+//  instances defined by ValidDependenciesLifeTime
+
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  use<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  use<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+  use<TValue, TExternals>(
+    instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): TValue;
+  use<TValue, TExternals>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): Promise<TValue>;
+  use<TValue, TExternals>(
+    instanceDefinition: AnyInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): Promise<TValue> | TValue;
 
   getAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
     definitions: [...TDefinitions],
@@ -48,9 +57,14 @@ export const buildDefine = <
   params: CustomBind<TProvidedBindings, TPreambleArgs, TMeta, TLifeTime>,
 ) => {
   return <TInstance>(
-    ...args: [...TPreambleArgs, (cnt: InstanceCreationAware & InstancesRecord<TProvidedBindings>) => TInstance]
+    ...args: [
+      ...TPreambleArgs,
+      (cnt: InstanceCreationAware & IContainerScopes & InstancesRecord<TProvidedBindings>) => TInstance,
+    ]
   ): InstanceDefinition<TInstance, TLifeTime, TMeta> => {
-    const defineFn = args.at(-1) as (cnt: InstanceCreationAware & InstancesRecord<TProvidedBindings>) => TInstance;
+    const defineFn = args.at(-1) as (
+      cnt: InstanceCreationAware<TLifeTime> & InstancesRecord<TProvidedBindings>,
+    ) => TInstance;
     const preambleArgs = args.slice(0, -1) as TPreambleArgs;
     const meta = params.buildMeta?.(...preambleArgs) as TMeta;
 
@@ -71,6 +85,8 @@ export const buildDefine = <
           getAll: () => {
             throw new Error('Implement me!');
           },
+          checkoutScope: context.checkoutScope,
+          // withScope: context.with
         };
 
         const instance = defineFn(contextWithExt);
