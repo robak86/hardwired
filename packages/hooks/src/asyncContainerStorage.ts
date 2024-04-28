@@ -1,4 +1,4 @@
-import { AnyInstanceDefinition, container, IContainer, LifeTime } from 'hardwired';
+import { InstanceDefinition, container, IContainer, LifeTime } from 'hardwired';
 import { AsyncLocalStorage } from './polyfill/async_hooks.js';
 import { isServer } from './utils/isServer.js';
 
@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-export type DefinitionOverride = AnyInstanceDefinition<any, LifeTime, any>;
+export type DefinitionOverride = InstanceDefinition<any, LifeTime, any>;
 
 const __storage = new AsyncLocalStorage<AsyncLocalStorageValue>();
 const __container = container();

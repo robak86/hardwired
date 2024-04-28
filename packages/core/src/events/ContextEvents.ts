@@ -1,5 +1,5 @@
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { SignalEmitter } from './SignalEmitter.js';
+import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 
 export type OnScopeSignal = {
   initiatorContainerId: string;
@@ -8,7 +8,7 @@ export type OnScopeSignal = {
 
 export type OnSyncGetSignal = {
   containerId: string;
-  definition: AnyInstanceDefinition<any, any, any>;
+  definition: InstanceDefinition<any, any, any>;
 };
 
 export class ContextEvents {

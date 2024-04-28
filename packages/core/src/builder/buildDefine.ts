@@ -4,9 +4,12 @@ import {
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+
+import {
+  assertValidDependencies,
+  assertValidDependency,
+  ValidDependenciesLifeTime,
+} from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import { v4 } from 'uuid';
 import { Resolution } from '../definitions/abstract/Resolution.js';
 import { IContainerScopes } from '../container/IContainer.js';
@@ -20,14 +23,12 @@ import { IContainerScopes } from '../container/IContainer.js';
 //  instances defined by ValidDependenciesLifeTime
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue, TExternals>(
-    instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
-  ): TValue;
-  use<TValue, TExternals>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  use<TValue>(instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>): TValue;
+  use<TValue>(
+    instanceDefinition: InstanceDefinition<Promise<TValue>, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
   ): Promise<TValue>;
-  use<TValue, TExternals>(
-    instanceDefinition: AnyInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  use<TValue>(
+    instanceDefinition: InstanceDefinition<Promise<TValue> | TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
   ): Promise<TValue> | TValue;
 
   getAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
@@ -41,10 +42,10 @@ type CustomBind<
   TMeta,
   TLifeTime,
 > = {
-  lifeTime?: TLifeTime;
+  lifeTime: TLifeTime;
   include?: TBuildIns;
   after?: <TInstance>(instance: TInstance, meta: TMeta) => TInstance;
-  pre?: <TInstance>(def: AnyInstanceDefinition<TInstance, any, any>) => TInstance;
+  pre?: <TInstance>(def: InstanceDefinition<TInstance, any, any>) => TInstance;
   buildMeta?: (...args: TPreambleArgs) => TMeta;
 };
 
@@ -52,14 +53,16 @@ export const buildDefine = <
   TProvidedBindings extends Record<string, InstanceDefinition<any, any, any>>,
   TPreambleArgs extends any[],
   TMeta,
-  TLifeTime extends LifeTime = LifeTime.singleton,
+  TLifeTime extends LifeTime,
 >(
   params: CustomBind<TProvidedBindings, TPreambleArgs, TMeta, TLifeTime>,
 ) => {
   return <TInstance>(
     ...args: [
       ...TPreambleArgs,
-      (cnt: InstanceCreationAware & IContainerScopes & InstancesRecord<TProvidedBindings>) => TInstance,
+      (
+        cnt: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime> & InstancesRecord<TProvidedBindings>,
+      ) => TInstance,
     ]
   ): InstanceDefinition<TInstance, TLifeTime, TMeta> => {
     const defineFn = args.at(-1) as (
@@ -71,7 +74,7 @@ export const buildDefine = <
     return new InstanceDefinition<TInstance, TLifeTime, TMeta>(
       v4(),
       Resolution.sync,
-      params.lifeTime ?? (LifeTime.singleton as any),
+      params.lifeTime,
       context => {
         const included = {} as any;
 
@@ -81,7 +84,10 @@ export const buildDefine = <
 
         const contextWithExt = {
           ...included,
-          use: context.buildWithStrategy,
+          use: (def: InstanceDefinition<TInstance, TLifeTime, TMeta>) => {
+            assertValidDependency(params.lifeTime, def);
+            return context.buildWithStrategy(def);
+          },
           getAll: () => {
             throw new Error('Implement me!');
           },

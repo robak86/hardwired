@@ -1,6 +1,5 @@
 import { LifeTime } from '../LifeTime.js';
 import { InstanceDefinition } from './InstanceDefinition.js';
-import { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
 
 // prettier-ignore
 export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> = InstanceDefinition<TValue, ValidDependenciesLifeTime<TLifeTime>, any>
@@ -38,12 +37,20 @@ const validLifeTimes = {
   },
 } as const;
 
-export const assertValidDependency = (lifeTime: LifeTime, deps: AnyInstanceDefinition<any, LifeTime, any>[]) => {
+export const assertValidDependencies = (lifeTime: LifeTime, deps: InstanceDefinition<any, LifeTime, any>[]) => {
   for (const dependency of deps) {
     const isValid = validLifeTimes[lifeTime][dependency.strategy];
 
     if (!isValid) {
       throw new Error(`Cannot use ${dependency.strategy} dependency for ${lifeTime} definition.`);
     }
+  }
+};
+
+export const assertValidDependency = (lifeTime: LifeTime, dep: InstanceDefinition<any, LifeTime, any>) => {
+  const isValid = validLifeTimes[lifeTime][dep.strategy];
+
+  if (!isValid) {
+    throw new Error(`Cannot use ${dep.strategy} dependency for ${lifeTime} definition.`);
   }
 };

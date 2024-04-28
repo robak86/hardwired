@@ -1,4 +1,4 @@
-import { AnyInstanceDefinition } from '../../definitions/abstract/AnyInstanceDefinition.js';
+import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 
 export interface InstancesBuilder {
   readonly id: string;
@@ -6,11 +6,11 @@ export interface InstancesBuilder {
    * Returns instance bypassing strategy
    * @param definition
    */
-  buildExact(definition: AnyInstanceDefinition<any, any, any>): any;
+  buildExact(definition: InstanceDefinition<any, any, any>): any;
 
   /**
    * Returns instance created using corresponding strategy (e.g. including singleton memoization)
    * @param definition
    */
-  buildWithStrategy(definition: AnyInstanceDefinition<any, any, any>): any;
+  buildWithStrategy(definition: InstanceDefinition<any, any, any>): any;
 }

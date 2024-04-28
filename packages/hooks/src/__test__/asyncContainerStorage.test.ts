@@ -52,7 +52,7 @@ describe(`withScope`, () => {
 
   describe(`overrides are not promoted to the parent container`, () => {
     it(`returns correct instance when operating on the root container`, async () => {
-      const valD = singleton.fn(() => 10);
+      const valD = singleton(() => 10);
 
       // first, get an instance from child container, to check if it won't be promoted to parent
       const overriddenVal = withScope([set(valD, 0)], () => {
@@ -67,7 +67,7 @@ describe(`withScope`, () => {
     });
 
     it(`returns correct instance when instantiating from local container`, async () => {
-      const valD = singleton.fn(() => 10);
+      const valD = singleton(() => 10);
 
       const [overriddenVal, originalVal] = withLocalContainer(() => {
         // first, get an instance from child container, to check if it won't be promoted to parent

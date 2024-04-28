@@ -1,7 +1,6 @@
 import { ContainerContext } from '../context/ContainerContext.js';
 import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import { IContainer } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
@@ -26,8 +25,10 @@ export class Container implements IContainer {
   }
 
   use<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  use<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  use<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue {
+  use<TValue, TExternals>(instanceDefinition: InstanceDefinition<Promise<TValue>, any, any>): Promise<TValue>;
+  use<TValue, TExternals>(
+    instanceDefinition: InstanceDefinition<Promise<TValue> | TValue, any, any>,
+  ): Promise<TValue> | TValue {
     return this.containerContext.use(instanceDefinition as any);
   }
 
@@ -37,7 +38,7 @@ export class Container implements IContainer {
     return definitions.map(def => this.containerContext.use(def)) as any;
   }
 
-  getAllAsync<TDefinitions extends AnyInstanceDefinition<any, any, any>[]>(
+  getAllAsync<TDefinitions extends InstanceDefinition<any, any, any>[]>(
     definitions: [...TDefinitions],
   ): Promise<InstancesArray<TDefinitions>> {
     return Promise.all(definitions.map(async def => this.containerContext.use(def as any))) as any;
@@ -51,7 +52,7 @@ export class Container implements IContainer {
     return fn(this.checkoutScope());
   }
 
-  override(definition: AnyInstanceDefinition<any, any, any>): void {
+  override(definition: InstanceDefinition<any, any, any>): void {
     this.containerContext.addScopeOverride(definition);
   }
 
@@ -66,19 +67,17 @@ export class Container implements IContainer {
 }
 
 export type ContainerOptions = {
-  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to descendant containers
+  globalOverrides?: InstanceDefinition<any, any, any>[]; // propagated to descendant containers
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: AnyInstanceDefinition<any, any, any>[];
+  overrides?: InstanceDefinition<any, any, any>[];
   interceptor?: ContainerInterceptor;
 };
 
-export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[]): Container;
+export function container(globalOverrides?: InstanceDefinition<any, any, any>[]): Container;
 export function container(options?: ContainerOptions): Container;
-export function container(
-  overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any, any>>,
-): Container {
+export function container(overridesOrOptions?: ContainerOptions | Array<InstanceDefinition<any, any, any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {

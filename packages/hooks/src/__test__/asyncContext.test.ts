@@ -7,7 +7,7 @@ import { withLocalContainer } from '../withLocalContainer.js';
 
 describe(`AsyncContext`, () => {
   it(`works`, async () => {
-    const someValue = scoped.fn(() => Math.random());
+    const someValue = scoped(() => Math.random());
 
     const result = await withLocalContainer(async () => {
       const collected: number[] = [];
@@ -32,7 +32,7 @@ describe(`AsyncContext`, () => {
   });
 
   it(`works with overrides`, async () => {
-    const someValue = scoped.fn(() => 1);
+    const someValue = scoped(() => 1);
 
     const result = await withLocalContainer(async () => {
       const collected: number[] = [];

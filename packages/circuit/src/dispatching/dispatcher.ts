@@ -1,4 +1,4 @@
-import { InstanceCreationAware, singleton } from 'hardwired';
+import { InstanceCreationAware, LifeTime, singleton } from 'hardwired';
 import {
   ActionArgumentsType,
   ActionReturnType,
@@ -13,7 +13,7 @@ export class Dispatcher {
   private _callbacks: { [actionId: string]: ((success: any) => void)[] } = {};
   private _history: { [actionId: string]: any } = {};
 
-  constructor(private context: InstanceCreationAware) {}
+  constructor(private context: InstanceCreationAware<LifeTime.singleton>) {}
 
   // TODO: this could cause memory leak if used with state with scoped lifetime
   subscribe(actionId: string, callback: (success: any) => void): void {
@@ -28,7 +28,7 @@ export class Dispatcher {
     this._callbacks[actionId].push(callback);
   }
 
-  bind(actionId: string): IDispatcherYields<any, any> {
+  bind(actionId: string, concurrencyGroup: string): IDispatcherYields<any, any> {
     const self = this;
 
     return {
@@ -56,7 +56,7 @@ export class Dispatcher {
     action: TActionDefinition,
     ...args: ActionArgumentsType<TActionDefinition>
   ): ActionReturnType<TActionDefinition> {
-    const actionInstance = this.context.get(action);
+    const actionInstance = this.context.use(action);
     return actionInstance(...args);
   }
 
@@ -64,6 +64,6 @@ export class Dispatcher {
   //  The method should return task ID, and allow cancelling it (or cancel() method)
 }
 
-export const dispatcherD = singleton.define(context => {
+export const dispatcherD = singleton(context => {
   return new Dispatcher(context);
 });

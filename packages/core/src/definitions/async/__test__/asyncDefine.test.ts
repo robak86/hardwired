@@ -3,7 +3,6 @@ import { expectType, TypeOf } from 'ts-expect';
 import { scoped, singleton, transient } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
-import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition.js';
 import { describe, expect, it } from 'vitest';
 import { implicit } from '../../sync/implicit.js';
 import { set } from '../../../patching/set.js';
@@ -81,7 +80,7 @@ describe(`asyncDefine`, () => {
     });
 
     it(`correctly uses singleton lifetime`, async () => {
-      const value = scoped(() => new BoxedValue(Math.random()));
+      const value = transient(() => new BoxedValue(Math.random()));
 
       const definition = singleton(async locator => {
         return [await locator.use(value), await locator.use(value)];

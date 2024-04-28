@@ -1,4 +1,4 @@
-import { AsyncInstanceDefinition, ContainerContext, ContainerInterceptor, InstanceDefinition } from 'hardwired';
+import { ContainerContext, ContainerInterceptor, InstanceDefinition } from 'hardwired';
 import { isSerializable } from '../abstract/Serializable.js';
 
 export class SerializationInterceptor implements ContainerInterceptor {
@@ -31,7 +31,7 @@ export class SerializationInterceptor implements ContainerInterceptor {
     }
   }
 
-  async interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any, any>, context: ContainerContext): Promise<T> {
+  async interceptAsync?<T>(definition: InstanceDefinition<T, any, any>, context: ContainerContext): Promise<T> {
     throw new Error('Implement me!');
   }
 

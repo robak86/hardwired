@@ -2,8 +2,6 @@ import { ContainerContext } from '../../../context/ContainerContext.js';
 import { LifeTime } from '../LifeTime.js';
 import { Resolution } from '../Resolution.js';
 import { v4 } from 'uuid';
-import type { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
-import type { AsyncInstanceDefinition } from '../async/AsyncInstanceDefinition.js';
 
 export class InstanceDefinition<TInstance, TLifeTime extends LifeTime, TMeta> {
   static create<TInstance, TLifeTime extends LifeTime, TMeta>(
@@ -24,7 +22,7 @@ export class InstanceDefinition<TInstance, TLifeTime extends LifeTime, TMeta> {
 
   constructor(
     readonly id: string,
-    readonly resolution: Resolution.sync,
+    readonly resolution: Resolution.sync | Resolution.async,
     readonly strategy: TLifeTime,
     readonly create: (context: ContainerContext) => TInstance,
     readonly dependencies: InstanceDefinition<any, any, any>[],
@@ -46,21 +44,19 @@ export const isInstanceDef = (val: any): val is InstanceDefinition<any, any, any
 };
 
 // prettier-ignore
-export type Instance<T extends AnyInstanceDefinition<any, any, any>> =
+export type Instance<T extends InstanceDefinition<any, any, any>> =
   T extends InstanceDefinition<infer T, any, any> ? T :
-  T extends AsyncInstanceDefinition<infer T, any, any>? T :
   unknown;
 
 // prettier-ignore
-export type InstanceMeta<T extends AnyInstanceDefinition<any, any, any>> =
+export type InstanceMeta<T extends InstanceDefinition<any, any, any>> =
   T extends InstanceDefinition<any, any, infer TMeta> ? TMeta :
-  T extends AsyncInstanceDefinition<any, any, infer TMeta>? TMeta :
   unknown;
 
-export type InstancesArray<T extends AnyInstanceDefinition<any, any, any>[]> = {
+export type InstancesArray<T extends InstanceDefinition<any, any, any>[]> = {
   [K in keyof T]: Instance<T[K]>;
 };
 
-export type InstancesRecord<T extends Record<string, AnyInstanceDefinition<any, any, any>>> = {
+export type InstancesRecord<T extends Record<string, InstanceDefinition<any, any, any>>> = {
   [K in keyof T]: Instance<T[K]>;
 };

@@ -61,7 +61,7 @@ describe(`define`, () => {
     });
 
     it(`correctly uses singleton lifetime`, async () => {
-      const value = scoped(() => new BoxedValue(Math.random()));
+      const value = transient(() => new BoxedValue(Math.random()));
 
       const definition = singleton(locator => {
         return [locator.use(value), locator.use(value)];

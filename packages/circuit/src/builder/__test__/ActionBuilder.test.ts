@@ -7,9 +7,10 @@ describe(`ActionBuilder`, () => {
     it(`binds provided definitions`, async () => {
       const dependency = value(123);
 
-      const myAction = action<any>()
+      const myAction = action<number, any>()
         .bind({ dependency })
-        .fn(async function (inputParam: number) {
+        // .concurrencyGroup(input => input.toString())
+        .execute(async function (inputParam: number) {
           this.dispatch({
             id: 1,
             dependency: this.dependency,
@@ -48,7 +49,7 @@ describe(`ActionBuilder`, () => {
 
   describe(`dispatching error`, () => {
     it(`breaks evaluation of the action`, async () => {
-      const myAction = action<any>().fn(function (inputParam: number) {
+      const myAction = action<number, any>().execute(function (inputParam: number) {
         this.abort({
           message: 'someError',
         });

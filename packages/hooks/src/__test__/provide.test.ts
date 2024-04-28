@@ -1,12 +1,12 @@
-import { implicit, implicitAsync } from 'hardwired';
-import { provide, provideAsync, use } from '../use.js';
+import { implicit } from 'hardwired';
+import { provide, provideLazy, use } from '../use.js';
 import { describe, expect, it } from 'vitest';
 import { withScope } from '../withScope.js';
 import { withLocalContainer } from '../withLocalContainer.js';
 
 describe(`provide`, () => {
   const impl = implicit<number>('someNumber');
-  const implAsync = implicitAsync<number>('someNumber');
+  const implAsync = implicit<Promise<number>>('someNumber');
 
   describe(`root container`, () => {
     it(`returns correct value`, async () => {
@@ -20,7 +20,7 @@ describe(`provide`, () => {
 
     it(`can be resolved with async`, async () => {
       const result = await withLocalContainer(async () => {
-        provideAsync(implAsync, async () => 123);
+        provideLazy(implAsync, async () => 123);
         return use(implAsync);
       });
 
@@ -29,7 +29,7 @@ describe(`provide`, () => {
 
     it(`returns correct async value`, async () => {
       const result = await withLocalContainer(async () => {
-        provideAsync(implAsync, async () => 123);
+        provideLazy(implAsync, async () => 123);
         return await use(implAsync);
       });
 

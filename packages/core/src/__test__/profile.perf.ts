@@ -4,12 +4,8 @@ import { singleton, transient } from '../definitions/definitions.js';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import 'source-map-support/register';
 import Bench from 'tinybench';
-import { EagerDefinitionsInterceptor } from '../eager/EagerDefinitionsInterceptor.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
-const eagerInterceptor = new EagerDefinitionsInterceptor();
-
-const countTreeDepsCount = (definition: AnyInstanceDefinition<any, any, any>): number => {
+const countTreeDepsCount = (definition: InstanceDefinition<any, any, any>): number => {
   if (definition.dependencies.length === 0) {
     return 1;
   }
@@ -81,11 +77,11 @@ const bench = new Bench({
   time: 100,
   setup: () => {
     cnt = container();
-    eagerCnt = container({ interceptor: eagerInterceptor });
+    eagerCnt = container();
   },
   teardown: () => {
     cnt = container();
-    eagerCnt = container({ interceptor: eagerInterceptor });
+    eagerCnt = container();
   },
 });
 

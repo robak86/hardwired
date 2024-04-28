@@ -6,8 +6,6 @@ export * from './strategies/TransientStrategy.js';
 export * from './definitions/definitions.js';
 export * from './definitions/abstract/sync/InstanceDefinition.js';
 export * from './definitions/abstract/sync/InstanceDefinitionDependency.js';
-export * from './definitions/abstract/async/AsyncInstanceDefinition.js';
-export * from './definitions/abstract/AnyInstanceDefinition.js';
 
 export * from './patching/replace.js';
 export * from './patching/apply.js';
@@ -31,14 +29,3 @@ export * from './utils/ClassType.js';
 export { Resolution } from './definitions/abstract/Resolution.js';
 export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
 export { ContainerInterceptor } from './context/ContainerInterceptor.js';
-
-export { EagerDefinitions } from './eager/EagerDefinitions.js';
-export {
-  EagerDefinitionsInterceptor,
-  eager,
-  eagerInterceptor,
-  DefinitionAnnotation,
-} from './eager/EagerDefinitionsInterceptor.js';
-
-export * from './builder/AsyncDefinitionBuilder.js';
-export * from './builder/DefinitionBuilder.js';

@@ -36,6 +36,7 @@ describe(`klass`, () => {
             it(`does not accept implicit definitions`, async () => {
               try {
                 const dep = singleton(c => {
+                  // @ts-expect-error singleton does not accept implicit definitions
                   return new NumberConsumer(c.use(implDef));
                 });
               } catch (e) {
@@ -48,7 +49,7 @@ describe(`klass`, () => {
             it(`does not accept implicit definitions`, async () => {
               const buildDef = () => {
                 // @ts-expect-error singleton does not accept implicit definitions
-                singleton.using(implDef).class(NumberConsumer);
+                singleton(c => c.use(implDef));
               };
 
               expect(buildDef).toThrow('Cannot use scoped dependency for singleton definition.');
