@@ -32,13 +32,13 @@ export class Container implements IContainer {
     return this.containerContext.use(instanceDefinition as any);
   }
 
-  getAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
-    definitions: [...TDefinitions],
+  useAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+    ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.containerContext.use(def)) as any;
   }
 
-  getAllAsync<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+  useAllAsync<TDefinitions extends InstanceDefinition<any, any, any>[]>(
     definitions: [...TDefinitions],
   ): Promise<InstancesArray<TDefinitions>> {
     return Promise.all(definitions.map(async def => this.containerContext.use(def as any))) as any;
@@ -53,7 +53,7 @@ export class Container implements IContainer {
   }
 
   override(definition: InstanceDefinition<any, any, any>): void {
-    this.containerContext.addScopeOverride(definition);
+    this.containerContext.override(definition);
   }
 
   provide<T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T): void {

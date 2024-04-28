@@ -397,7 +397,7 @@ describe(`SingletonStrategy`, () => {
 
         const ctn = container();
 
-        const [result1, result2, result3] = ctn.getAll([consumer1, consumer2, consumer3]);
+        const [result1, result2, result3] = ctn.useAll(consumer1, consumer2, consumer3);
 
         expect(await result1).toBe(await result2);
         expect(await result2).toBe(await result3);

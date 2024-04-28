@@ -79,20 +79,20 @@ export const buildDefine = <
         const included = {} as any;
 
         Object.entries(params.include ?? {}).forEach(([key, def]) => {
-          included[key] = context.buildWithStrategy(def);
+          included[key] = context.use(def);
         });
 
         const contextWithExt = {
           ...included,
           use: (def: InstanceDefinition<TInstance, TLifeTime, TMeta>) => {
             assertValidDependency(params.lifeTime, def);
-            return context.buildWithStrategy(def);
+            return context.use(def);
           },
-          getAll: () => {
-            throw new Error('Implement me!');
-          },
+          useAll: context.useAll,
           checkoutScope: context.checkoutScope,
-          // withScope: context.with
+          withScope: context.withScope,
+          override: context.override,
+          provide: context.provide,
         };
 
         const instance = defineFn(contextWithExt);

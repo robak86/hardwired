@@ -19,7 +19,7 @@ export function decorate<
     meta: {} as TMeta,
     create: context => {
       const decorated = instance.create(context);
-      const decoratorDeps = dependencies.map(d => context.buildWithStrategy(d));
+      const decoratorDeps = dependencies.map(d => context.use(d));
 
       return decorator(decorated, ...(decoratorDeps as any));
     },

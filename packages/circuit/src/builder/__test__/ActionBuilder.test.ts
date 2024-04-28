@@ -29,7 +29,7 @@ describe(`ActionBuilder`, () => {
           // vi.spyOn(dispatcher, 'dispatch');
           // vi.spyOn(dispatcher, 'abort');
         }),
-      ]).getAll([dispatcherD, myAction]);
+      ]).useAll(dispatcherD, myAction);
 
       await actionInstance(456);
       //
@@ -64,7 +64,7 @@ describe(`ActionBuilder`, () => {
           // vi.spyOn(dispatcher, 'dispatch');
           // vi.spyOn(dispatcher, 'abort');
         }),
-      ]).getAll([dispatcherD, myAction]);
+      ]).useAll(dispatcherD, myAction);
 
       actionInstance(456);
 

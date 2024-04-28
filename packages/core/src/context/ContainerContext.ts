@@ -5,14 +5,19 @@ import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.
 
 import { InstancesBuilder } from './abstract/InstancesBuilder.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 
 import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
+import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
+import { Omit } from 'utility-types';
 
-export class ContainerContext implements InstancesBuilder {
+import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+
+export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
   static empty(
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptor: ContainerInterceptor = {},
@@ -58,7 +63,20 @@ export class ContainerContext implements InstancesBuilder {
     public readonly events: ContextEvents,
   ) {}
 
-  addScopeOverride(definition: InstanceDefinition<any, any, any>): void {
+  use = (definition: InstanceDefinition<any, any, any>) => {
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+    const strategy = this.strategiesRegistry.get(definition.strategy);
+
+    return strategy.build(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
+  };
+
+  useAll = <TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<LifeTime>, any>[]>(
+    ...definitions: [...TDefinitions]
+  ): InstancesArray<TDefinitions> => {
+    return definitions.map(definition => this.use(definition)) as InstancesArray<TDefinitions>;
+  };
+
+  override(definition: InstanceDefinition<any, any, any>): void {
     if (this.instancesCache.hasInCurrentScope(definition.id)) {
       throw new Error(
         `Cannot override definition. Instance for id=${definition.id} was already created in the current scope.`,
@@ -67,30 +85,6 @@ export class ContainerContext implements InstancesBuilder {
 
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
-
-  use<TValue, TExternals>(definition: InstanceDefinition<TValue, any, any>): TValue;
-  use<TValue, TExternals>(definition: InstanceDefinition<Promise<TValue>, any, any>): Promise<TValue>;
-  use<TValue, TExternals>(
-    definition: InstanceDefinition<Promise<TValue> | TValue, any, any>,
-  ): TValue | Promise<TValue> {
-    this.events.onGet.emit({ containerId: this.id, definition });
-
-    this.interceptor.onRequestStart?.(definition, this);
-
-    const instance = this.buildWithStrategy(definition);
-
-    if (definition.resolution === Resolution.async) {
-      if (this.interceptor.onAsyncRequestEnd) {
-        return this.interceptor.onAsyncRequestEnd(definition, this, instance).then(() => instance);
-      } else {
-        return instance;
-      }
-    } else {
-      this.interceptor.onRequestEnd?.(definition, this, instance);
-      return instance;
-    }
-  }
-
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
   buildExact<T>(definition: InstanceDefinition<Promise<T>, any, any>): Promise<T>;
   buildExact<T>(definition: InstanceDefinition<Promise<T> | T, any, any>): T | Promise<T> {
@@ -111,12 +105,9 @@ export class ContainerContext implements InstancesBuilder {
     return patchedInstanceDef.create(this);
   }
 
-  buildWithStrategy = (definition: InstanceDefinition<any, any, any>) => {
-    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-    const strategy = this.strategiesRegistry.get(definition.strategy);
-
-    return strategy.build(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
-  };
+  provide<T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T) {
+    throw new Error('Implement me!');
+  }
 
   checkoutScope = (options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext => {
     const { overrides = [] } = options;
@@ -134,4 +125,10 @@ export class ContainerContext implements InstancesBuilder {
 
     return scopeContext;
   };
+
+  withScope<TValue>(fn: (locator: IServiceLocator<LifeTime>) => TValue): TValue {
+    const scopeContext = this.checkoutScope();
+
+    return fn(scopeContext);
+  }
 }

@@ -9,7 +9,7 @@ export const object = <T extends Record<keyof any, InstanceDefinition<any, any, 
     derivedLifeTime(Object.values(record).map(r => r.strategy)) as any,
     context => {
       return Object.keys(record).reduce((result, property) => {
-        result[property] = context.buildWithStrategy(record[property]);
+        result[property] = context.use(record[property]);
         return result;
       }, {} as any);
     },
