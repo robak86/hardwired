@@ -16,7 +16,7 @@ describe(`factory`, () => {
       const randomNumD = singleton.async().fn(async () => Math.random());
       const randomNumFactoryD = asyncFactory(randomNumD);
 
-      const factoryInstance = container().get(randomNumFactoryD);
+      const factoryInstance = container().use(randomNumFactoryD);
       expectType<TypeEqual<typeof factoryInstance, IFactory<Promise<number>, []>>>(true);
       expect(typeof (await factoryInstance.build())).toEqual('number');
     });
@@ -25,7 +25,7 @@ describe(`factory`, () => {
       const randomNumD = singleton.async().fn(async () => Math.random());
       const randomNumFactoryD = asyncFactory(randomNumD);
 
-      const factoryInstance = container().get(randomNumFactoryD);
+      const factoryInstance = container().use(randomNumFactoryD);
       expect(await factoryInstance.build()).toEqual(await factoryInstance.build());
     });
 
@@ -33,7 +33,7 @@ describe(`factory`, () => {
       const randomNumD = transient.async().fn(async () => Math.random());
       const randomNumFactoryD = asyncFactory(randomNumD);
 
-      const factoryInstance = container().get(randomNumFactoryD);
+      const factoryInstance = container().use(randomNumFactoryD);
       expect(await factoryInstance.build()).not.toEqual(await factoryInstance.build());
     });
   });
@@ -80,7 +80,7 @@ describe(`factory`, () => {
         .fn(compositionRoot);
 
       const cnt = container();
-      const result = await cnt.get(compositionRootD);
+      const result = await cnt.use(compositionRootD);
       expect(result).toEqual(['consumer1ext1', 'consumer2ext2', 'consumer2ext2', 'consumer1ext1']);
 
       expect(consumer1Spy).toHaveBeenCalledWith('ext1', 'ext2');
@@ -126,7 +126,7 @@ describe(`factory`, () => {
 
         const factoryD = asyncFactory(handlerD, requestD);
         expectType<
-          TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, LifeTime.transient>>
+          TypeEqual<typeof factoryD, InstanceDefinition<IAsyncFactory<Handler, [Request]>, LifeTime.transient, unknown>>
         >(true);
       });
     });
@@ -140,7 +140,7 @@ describe(`factory`, () => {
         const routerD = transient.async().using(asyncFactory(handlerD, requestD)).class(Router);
 
         const cnt = container();
-        const result = await cnt.get(routerD);
+        const result = await cnt.use(routerD);
         const externalsValue: Request = { requestObj: 'req' };
 
         const handler = await result.handlersFactory.build(externalsValue);
@@ -160,7 +160,7 @@ describe(`factory`, () => {
           const factoryD = asyncFactory(handlerD);
 
           const cnt = container();
-          const result = await cnt.get(routerD);
+          const result = await cnt.use(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
           const handler = await result.handlersFactory.build(externalsValue);
@@ -177,7 +177,7 @@ describe(`factory`, () => {
           const routerD = transient.async().using(asyncFactory(handlerD, requestD)).class(Router);
 
           const cnt = container();
-          const result = await cnt.get(routerD);
+          const result = await cnt.use(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
           const handlerInstance1 = await result.handlersFactory.build(externalsValue);
@@ -196,7 +196,7 @@ describe(`factory`, () => {
           // TODO: providing requestId override as singleton will create memory leaks in current implementation, where
           //       singletons from child scopes are propagated to parent scopes
           const cnt = container([set(requestIdD, 'overridden')]);
-          const result = await cnt.get(routerD);
+          const result = await cnt.use(routerD);
           const externalsValue: Request = { requestObj: 'req' };
           const handler = await result.handlersFactory.build(externalsValue);
 
@@ -212,7 +212,7 @@ describe(`factory`, () => {
           const routerD = transient.async().using(asyncFactory(handlerD, requestD)).class(Router);
 
           const cnt = container();
-          const result = await cnt.get(routerD);
+          const result = await cnt.use(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
           const handlerInstance1 = await result.handlersFactory.build(externalsValue);
@@ -284,7 +284,7 @@ describe(`factory`, () => {
       const appsClusterD = singleton.async().using(asyncFactory(appModuleD, envConfigD)).class(AppsCluster);
 
       const cnt = container();
-      const app = await cnt.get(appsClusterD);
+      const app = await cnt.use(appsClusterD);
       await app.mountApps();
 
       expect(app.app1?.envConfig.mountPoint).toEqual('/app1');
@@ -301,7 +301,7 @@ describe(`factory`, () => {
       const appsClusterD = singleton.async().using(asyncFactory(appModuleD, envConfigD)).class(AppsCluster);
 
       const cnt = container();
-      const app = await cnt.get(appsClusterD);
+      const app = await cnt.use(appsClusterD);
       await app.mountApps();
 
       expect(app.app1?.envConfig.mountPoint).toEqual('/app1');
@@ -332,7 +332,7 @@ describe(`factory`, () => {
       const appsClusterD = singleton.async().using(asyncFactory(appModuleD)).class(AppsCluster);
 
       const cnt = container();
-      const app = await cnt.get(appsClusterD);
+      const app = await cnt.use(appsClusterD);
       await app.mountApps();
 
       expect(app.app1?.envConfig.mountPoint).toEqual('/app1');

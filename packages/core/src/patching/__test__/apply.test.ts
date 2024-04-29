@@ -18,7 +18,7 @@ describe(`apply`, () => {
     const mPatch = apply(someValue, val => (val.value += 1));
 
     const c = container({ overrides: [mPatch] });
-    expect(c.get(someValue).value).toEqual(2);
+    expect(c.use(someValue).value).toEqual(2);
   });
 
   it(`does not affect original module`, async () => {
@@ -26,8 +26,8 @@ describe(`apply`, () => {
 
     const mPatch = apply(someValue, val => (val.value += 1));
 
-    expect(container().get(someValue).value).toEqual(1);
-    expect(container({ overrides: [mPatch] }).get(someValue).value).toEqual(2);
+    expect(container().use(someValue).value).toEqual(1);
+    expect(container({ overrides: [mPatch] }).use(someValue).value).toEqual(2);
   });
 
   it(`allows for multiple apply functions calls`, async () => {
@@ -39,7 +39,7 @@ describe(`apply`, () => {
     );
 
     const c = container({ overrides: [mPatch] });
-    expect(c.get(someValue).value).toEqual(6);
+    expect(c.use(someValue).value).toEqual(6);
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
@@ -57,7 +57,7 @@ describe(`apply`, () => {
     );
 
     const c = container({ overrides: [mPatch] });
-    expect(c.get(someValue)).toEqual(new BoxedValue(13));
+    expect(c.use(someValue)).toEqual(new BoxedValue(13));
   });
 
   it(`allows using additional dependencies, ex2`, async () => {
@@ -76,7 +76,7 @@ describe(`apply`, () => {
     );
 
     const c = container({ overrides: [mPatch] });
-    expect(c.get(someValue)).toEqual(new BoxedValue(6));
+    expect(c.use(someValue)).toEqual(new BoxedValue(6));
   });
 
   describe(`scopeOverrides`, () => {
@@ -85,7 +85,7 @@ describe(`apply`, () => {
       const mPatch = apply(someValue, a => a);
 
       const c = container({ overrides: [mPatch] });
-      expect(c.get(someValue)).toEqual(c.get(someValue));
+      expect(c.use(someValue)).toEqual(c.use(someValue));
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
@@ -94,7 +94,7 @@ describe(`apply`, () => {
       const mPatch = apply(someValue, a => a);
 
       const c = container({ overrides: [mPatch] });
-      expect(c.get(someValue)).not.toEqual(c.get(someValue));
+      expect(c.use(someValue)).not.toEqual(c.use(someValue));
     });
 
     it(`preserves scope of the original resolver`, async () => {
@@ -107,15 +107,15 @@ describe(`apply`, () => {
       const objDef = object({ a, source });
       expect(objDef.strategy).toEqual(LifeTime.scoped);
 
-      const req1 = c.get(objDef);
-      const req2 = c.get(objDef);
+      const req1 = c.use(objDef);
+      const req2 = c.use(objDef);
 
       expect(req1).toEqual(req2);
     });
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceDefinition<MyService, any>) {
+    function setup(instanceDef: InstanceDefinition<MyService, any, any>) {
       const mPatch = decorate(instanceDef, a => {
         vi.spyOn(a, 'callMe');
         return a;
@@ -125,8 +125,8 @@ describe(`apply`, () => {
 
       const scope1 = ContainerContext.create([], [mPatch]);
       const scope2 = scope1.checkoutScope({ overrides: [replaced] });
-      const instance1 = scope1.get(instanceDef);
-      const instance2 = scope2.get(instanceDef);
+      const instance1 = scope1.use(instanceDef);
+      const instance2 = scope2.use(instanceDef);
       return { instance1, instance2 };
     }
 

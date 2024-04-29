@@ -1,42 +1,52 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { IContainerScopes, InstanceCreationAware } from '../container/IContainer.js';
+import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { asyncDefinition, AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { ContainerContext } from '../context/ContainerContext.js';
 import { Container } from '../container/Container.js';
 import { ClassType } from '../utils/ClassType.js';
-import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 import {
-  assertValidDependency,
+  assertValidDependencies,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import { DefinitionAnnotation } from '../eager/EagerDefinitionsInterceptor.js';
 
-export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any>[], TLifeTime extends LifeTime> {
+export class AsyncDefinitionBuilder<
+  TDeps extends AnyInstanceDefinition<any, any, any>[],
+  TLifeTime extends LifeTime,
+  TMeta,
+> {
   constructor(
     private _deps: TDeps,
     private _lifeTime: TLifeTime,
-    private _meta: object = {},
-    private _annotations: DefinitionAnnotation<AnyInstanceDefinition<TLifeTime, any>>[],
+    private _meta: TMeta,
+    private _annotations: DefinitionAnnotation<AnyInstanceDefinition<TLifeTime, any, TMeta>>[],
   ) {
-    assertValidDependency(this._lifeTime, this._deps);
+    assertValidDependencies(this._lifeTime, this._deps);
   }
 
-  annotate(meta: object | AnyInstanceDefinition<TLifeTime, any>) {
+  annotate<TNewMeta extends Record<string, any>>(
+    meta: TNewMeta,
+  ): AsyncDefinitionBuilder<TDeps, TLifeTime, TMeta & TNewMeta>;
+  annotate(
+    meta: DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>,
+  ): AsyncDefinitionBuilder<TDeps, TLifeTime, TMeta>;
+  annotate(meta: object | AnyInstanceDefinition<TLifeTime, any, any>) {
     if (typeof meta === 'function') {
       return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, [
         ...this._annotations,
-        meta as DefinitionAnnotation<AnyInstanceDefinition<TLifeTime, any>>,
+        meta as DefinitionAnnotation<AnyInstanceDefinition<TLifeTime, any, TMeta>>,
       ]);
     }
 
     return new AsyncDefinitionBuilder(this._deps, this._lifeTime, { ...this._meta, ...meta }, this._annotations);
   }
 
-  using<TNewDeps extends AnyInstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
+  using<TNewDeps extends AnyInstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>, TMeta>[]>(
     ...deps: TNewDeps
-  ): AsyncDefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime> {
-    return new AsyncDefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime>(
+  ): AsyncDefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime, TMeta> {
+    return new AsyncDefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime, TMeta>(
       [...this._deps, ...deps],
       this._lifeTime,
       this._meta,
@@ -45,12 +55,12 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
   }
 
   define<TValue>(
-    fn: (locator: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime>) => TValue | Promise<TValue>,
-  ): AsyncInstanceDefinition<TValue, TLifeTime> {
+    fn: (locator: IServiceLocator<TLifeTime>) => TValue | Promise<TValue>,
+  ): AsyncInstanceDefinition<TValue, TLifeTime, TMeta> {
     const definition = asyncDefinition({
       strategy: this._lifeTime,
-      create: async (context: ContainerContext) => {
-        return fn(new Container(context));
+      create: async (context: IServiceLocator) => {
+        return fn(context);
       },
       dependencies: this._deps,
       meta: this._meta,
@@ -63,9 +73,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
     const definition = asyncDefinition({
       strategy: this._lifeTime,
       create: async context => {
-        const dependenciesInstance = (await Promise.all(
-          this._deps.map(context.buildWithStrategy),
-        )) as InstancesArray<TDeps>;
+        const dependenciesInstance = (await Promise.all(this._deps.map(context.use))) as InstancesArray<TDeps>;
         return new cls(...dependenciesInstance);
       },
       dependencies: this._deps,
@@ -79,7 +87,7 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
     const definition = asyncDefinition({
       strategy: this._lifeTime,
       create: async context => {
-        const dependenciesInstance = await Promise.all(this._deps.map(context.buildWithStrategy));
+        const dependenciesInstance = await Promise.all(this._deps.map(context.use));
         return factory(...(dependenciesInstance as InstancesArray<TDeps>));
       },
       dependencies: this._deps,
@@ -88,12 +96,4 @@ export class AsyncDefinitionBuilder<TDeps extends AnyInstanceDefinition<any, any
 
     return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
-}
-
-export function usingAsync<TLifeTime extends LifeTime>(strategy: TLifeTime) {
-  return <TDeps extends AnyInstanceDefinition<any, any>[]>(
-    ...deps: TDeps
-  ): AsyncDefinitionBuilder<TDeps, TLifeTime> => {
-    return new AsyncDefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, []);
-  };
 }

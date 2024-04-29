@@ -6,7 +6,7 @@ export class SerializationInterceptor implements ContainerInterceptor {
 
   constructor(private restoreFrom?: Record<string, any>) {}
 
-  interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T {
+  interceptSync?<T>(definition: InstanceDefinition<T, any, any>, context: ContainerContext): T {
     if (definition.meta.serializable) {
       const instance = definition.create(context);
       if (Object.prototype.hasOwnProperty.call(this.serializableInstances, definition.id)) {
@@ -31,7 +31,7 @@ export class SerializationInterceptor implements ContainerInterceptor {
     }
   }
 
-  async interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any>, context: ContainerContext): Promise<T> {
+  async interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any, any>, context: ContainerContext): Promise<T> {
     throw new Error('Implement me!');
   }
 

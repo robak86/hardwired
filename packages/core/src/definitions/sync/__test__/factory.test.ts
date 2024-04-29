@@ -17,7 +17,7 @@ describe(`factory`, () => {
       const randomNumD = singleton.fn(() => Math.random());
       const randomNumFactoryD = factory(randomNumD);
 
-      const factoryInstance = container().get(randomNumFactoryD);
+      const factoryInstance = container().use(randomNumFactoryD);
       expectType<TypeEqual<typeof factoryInstance, IFactory<number, []>>>(true);
       expect(typeof factoryInstance.build()).toEqual('number');
     });
@@ -26,7 +26,7 @@ describe(`factory`, () => {
       const randomNumD = singleton.fn(() => Math.random());
       const randomNumFactoryD = factory(randomNumD);
 
-      const factoryInstance = container().get(randomNumFactoryD);
+      const factoryInstance = container().use(randomNumFactoryD);
       expect(factoryInstance.build()).toEqual(factoryInstance.build());
     });
 
@@ -34,7 +34,7 @@ describe(`factory`, () => {
       const randomNumD = transient.fn(() => Math.random());
       const randomNumFactoryD = factory(randomNumD);
 
-      const factoryInstance = container().get(randomNumFactoryD);
+      const factoryInstance = container().use(randomNumFactoryD);
       expect(factoryInstance.build()).not.toEqual(factoryInstance.build());
     });
   });
@@ -76,9 +76,9 @@ describe(`factory`, () => {
         const handlerD = transient.using(requestD, loggerD, requestIdD, dbConnectionD).class(Handler);
 
         const factoryD = factory(handlerD, requestD);
-        expectType<TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient>>>(
-          true,
-        );
+        expectType<
+          TypeEqual<typeof factoryD, InstanceDefinition<IFactory<Handler, [Request]>, LifeTime.transient, unknown>>
+        >(true);
       });
     });
 
@@ -91,7 +91,7 @@ describe(`factory`, () => {
         const routerD = transient.using(factory(handlerD, requestD)).class(Router);
 
         const cnt = container();
-        const result = cnt.get(routerD);
+        const result = cnt.use(routerD);
         const externalsValue: Request = { requestObj: 'req' };
 
         expect(result.handlersFactory.build(externalsValue)).toBeInstanceOf(Handler);
@@ -107,7 +107,7 @@ describe(`factory`, () => {
         const routerD = transient.using(factory(handlerD, requestD)).class(Router);
 
         const cnt = container([set(requestIdD, '2')]);
-        const result = cnt.get(routerD);
+        const result = cnt.use(routerD);
         const externalsValue: Request = { requestObj: 'req' };
 
         expect(result.handlersFactory.build(externalsValue)).toBeInstanceOf(Handler);
@@ -124,7 +124,7 @@ describe(`factory`, () => {
           const routerD = transient.using(factory(handlerD, requestD)).class(Router);
 
           const cnt = container();
-          const result = cnt.get(routerD);
+          const result = cnt.use(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
           const handler = result.handlersFactory.build(externalsValue);
@@ -141,7 +141,7 @@ describe(`factory`, () => {
           const routerD = scoped.using(factory(handlerD, requestD)).class(Router);
 
           const cnt = container();
-          const result = cnt.get(routerD);
+          const result = cnt.use(routerD);
           const externalsValue: Request = { requestObj: 'req' };
 
           const handlerInstance1 = result.handlersFactory.build(externalsValue);
@@ -160,7 +160,7 @@ describe(`factory`, () => {
           // TODO: providing requestId override as singleton will create memory leaks in current implementation, where
           //       singletons from child scopes are propagated to parent scopes
           const cnt = container([set(requestIdD, 'overridden')]);
-          const result = cnt.get(routerD);
+          const result = cnt.use(routerD);
           const externalsValue: Request = { requestObj: 'req' };
           const handler = result.handlersFactory.build(externalsValue);
 
@@ -177,7 +177,7 @@ describe(`factory`, () => {
           const override = set(requestD, { requestObj: 'sss' });
 
           const cnt = container([override]);
-          const result = cnt.get(routerD);
+          const result = cnt.use(routerD);
           const handler = result.handlersFactory.build({ requestObj: 'req' });
 
           expect(handler.request).toEqual({ requestObj: 'sss' });
@@ -191,7 +191,7 @@ describe(`factory`, () => {
           const routerD = scoped.using(factory(handlerD, requestD)).class(Router);
 
           const cnt = container();
-          const result = cnt.get(routerD);
+          const result = cnt.use(routerD);
 
           const handlerInstance1 = result.handlersFactory.build({ requestObj: 'req' });
           const handlerInstance2 = result.handlersFactory.build({ requestObj: 'req' });
@@ -236,7 +236,7 @@ describe(`factory`, () => {
       const compositionRootD = singleton.using(asFactory).fn(compositionRoot);
 
       const cnt = container();
-      const result = cnt.get(compositionRootD);
+      const result = cnt.use(compositionRootD);
       expect(result).toEqual(['consumer1ext1', 'consumer2ext2', 'consumer2ext2', 'consumer1ext1']);
 
       expect(consumer1Spy).toHaveBeenCalledWith('ext1', 'ext2');
@@ -302,7 +302,7 @@ describe(`factory`, () => {
       const appsClusterD = singleton.using(factory(appModuleD, envConfigD)).class(AppsCluster);
 
       const cnt = container();
-      const app = cnt.get(appsClusterD);
+      const app = cnt.use(appsClusterD);
       expect(app.app1.envConfig.mountPoint).toEqual('/app1');
       expect(app.app2.envConfig.mountPoint).toEqual('/app2');
     });
@@ -317,7 +317,7 @@ describe(`factory`, () => {
       const appsClusterD = singleton.using(factory(appModuleD, envConfigD)).class(AppsCluster);
 
       const cnt = container();
-      const app = cnt.get(appsClusterD);
+      const app = cnt.use(appsClusterD);
       expect(app.app1.envConfig.mountPoint).toEqual('/app1');
       expect(app.app2.envConfig.mountPoint).toEqual('/app2');
 

@@ -7,15 +7,18 @@ export type UnionToIntersection<Union> = (Union extends unknown ? (distributedUn
   ? Intersection
   : never;
 
-export const intersection = <TDefinitions extends Array<InstanceDefinition<object, any>>, TMeta>(
+export const intersection = <TDefinitions extends Array<InstanceDefinition<object, any, any>>, TMeta>(
   ...definitions: TDefinitions
 ): InstanceDefinition<
   UnionToIntersection<InstancesArray<TDefinitions>[number]>,
   DerivedLifeTime<
     {
-      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<any, infer TLifeTime> ? TLifeTime : never;
+      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<any, infer TLifeTime, any>
+        ? TLifeTime
+        : never;
     }[number]
-  >
+  >,
+  unknown
 > => {
   const strategy = derivedLifeTime(definitions.map(def => def.strategy)) as any;
 
@@ -25,7 +28,7 @@ export const intersection = <TDefinitions extends Array<InstanceDefinition<objec
       return definitions.reduce((result, def) => {
         return {
           ...result,
-          ...context.buildWithStrategy(def),
+          ...context.use(def),
         };
       }, {}) as any;
     },

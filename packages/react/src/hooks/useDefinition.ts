@@ -2,7 +2,7 @@ import { InstanceDefinition, LifeTime, Resolution } from 'hardwired';
 import { useContainer } from '../context/ContainerContext.js';
 
 export type UseDefinitionHook = {
-  <TInstance, TExt>(factoryDefinition: InstanceDefinition<TInstance, LifeTime>): TInstance;
+  <TInstance>(factoryDefinition: InstanceDefinition<TInstance, LifeTime, any>): TInstance;
 };
 
 export const useDefinition: UseDefinitionHook = definition => {
@@ -12,5 +12,5 @@ export const useDefinition: UseDefinitionHook = definition => {
 
   const container = useContainer();
 
-  return container.get(definition);
+  return container.use(definition);
 };

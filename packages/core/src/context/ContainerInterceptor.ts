@@ -4,7 +4,7 @@ import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinit
 import { ContainerContext } from './ContainerContext.js';
 
 export type ContainerInterceptor = {
-  onRequestStart?(definition: AnyInstanceDefinition<any, any>, context: ContainerContext): void;
+  onRequestStart?(definition: AnyInstanceDefinition<any, any, any>, context: ContainerContext): void;
 
   /**
    * Called on container.get(definition) after the instance is created.
@@ -15,7 +15,7 @@ export type ContainerInterceptor = {
    * @param context
    * @param instance
    */
-  onRequestEnd?<T>(definition: AnyInstanceDefinition<T, any>, context: ContainerContext, instance: T): T;
+  onRequestEnd?<T>(definition: AnyInstanceDefinition<T, any, any>, context: ContainerContext, instance: T): T;
 
   /**
    * Called on container.get(definition) after the instance is created.
@@ -27,7 +27,7 @@ export type ContainerInterceptor = {
    * @param instance
    */
   onAsyncRequestEnd?<T>(
-    definition: AsyncInstanceDefinition<T, any>,
+    definition: AsyncInstanceDefinition<T, any, any>,
     context: ContainerContext,
     instance: T,
   ): Promise<T>;
@@ -36,8 +36,8 @@ export type ContainerInterceptor = {
    * Called when the container starts building the definition.
    * @param definition
    */
-  onDefinitionEnter?(definition: AnyInstanceDefinition<any, any>): void;
+  onDefinitionEnter?(definition: AnyInstanceDefinition<any, any, any>): void;
 
-  interceptSync?<T>(definition: InstanceDefinition<T, any>, context: ContainerContext): T;
-  interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any>, context: ContainerContext): Promise<T>;
+  interceptSync?<T>(definition: InstanceDefinition<T, any, any>, context: ContainerContext): T;
+  interceptAsync?<T>(definition: AsyncInstanceDefinition<T, any, any>, context: ContainerContext): Promise<T>;
 };

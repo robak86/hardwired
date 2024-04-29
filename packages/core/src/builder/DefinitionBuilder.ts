@@ -2,10 +2,10 @@ import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ClassType } from '../utils/ClassType.js';
 import {
-  assertValidDependency,
+  assertValidDependencies,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { IContainerScopes, InstanceCreationAware } from '../container/IContainer.js';
+import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { ContainerContext } from '../context/ContainerContext.js';
 import { Container } from '../container/Container.js';
 
@@ -13,37 +13,46 @@ import { AsyncDefinitionBuilder } from './AsyncDefinitionBuilder.js';
 import { DefinitionAnnotation } from '../eager/EagerDefinitionsInterceptor.js';
 
 export class DefinitionBuilder<
-  TDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  TDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>, any>[],
   TLifeTime extends LifeTime,
+  TMeta,
 > {
   constructor(
-    private _deps: TDeps,
-    private _lifeTime: TLifeTime,
-    private _meta: object,
-    private _annotations: DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>[],
+    protected _deps: TDeps,
+    protected _lifeTime: TLifeTime,
+    protected _meta: TMeta,
+    protected _annotations: DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>[],
   ) {
-    assertValidDependency(this._lifeTime, this._deps);
+    assertValidDependencies(this._lifeTime, this._deps);
   }
 
   async() {
     return new AsyncDefinitionBuilder(this._deps, this._lifeTime, this._meta, []);
   }
 
-  annotate(metaOrAnnotator: object | DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>) {
+  annotate<TNewMeta extends Record<string, any>>(
+    metaOrAnnotator: TNewMeta | DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>,
+  ): DefinitionBuilder<TDeps, TLifeTime, TMeta & TNewMeta>;
+  annotate(
+    metaOrAnnotator: DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>,
+  ): DefinitionBuilder<TDeps, TLifeTime, TMeta>;
+  annotate<TNewMeta extends Record<string, any>>(
+    metaOrAnnotator: TNewMeta | DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>,
+  ) {
     if (typeof metaOrAnnotator === 'function') {
       return new DefinitionBuilder(this._deps, this._lifeTime, this._meta, [
         ...this._annotations,
-        metaOrAnnotator as DefinitionAnnotation<InstanceDefinition<TLifeTime, any>>,
+        metaOrAnnotator as DefinitionAnnotation<InstanceDefinition<TLifeTime, any, TMeta>>,
       ]);
     }
 
     return new DefinitionBuilder(this._deps, this._lifeTime, { ...this._meta, ...metaOrAnnotator }, this._annotations);
   }
 
-  using<TNewDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
+  using<TNewDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>, any>[]>(
     ...deps: TNewDeps
-  ): DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime> {
-    return new DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime>(
+  ): DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime, TMeta> {
+    return new DefinitionBuilder<[...TDeps, ...TNewDeps], TLifeTime, TMeta>(
       [...this._deps, ...deps],
       this._lifeTime,
       this._meta,
@@ -51,11 +60,17 @@ export class DefinitionBuilder<
     );
   }
 
-  define<TValue>(buildFn: (locator: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime>) => TValue) {
+  define<TValue>(buildFn: (locator: IServiceLocator<TLifeTime>) => TValue) {
+    const definition = InstanceDefinition.create(this._lifeTime, buildFn, this._deps, this._meta);
+
+    return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
+  }
+
+  thunk<TValue>(buildFn: (locator: IServiceLocator<TLifeTime>) => TValue) {
     const definition = InstanceDefinition.create(
       this._lifeTime,
-      (context: ContainerContext) => {
-        return buildFn(new Container(context)); // TODO: still unclear if we should create a new instance of Container
+      (context: IServiceLocator) => {
+        return () => buildFn(context);
       },
       this._deps,
       this._meta,
@@ -67,7 +82,7 @@ export class DefinitionBuilder<
   class<TInstance>(cls: ClassType<TInstance, InstancesArray<TDeps>>) {
     const definition = InstanceDefinition.create(
       this._lifeTime,
-      context => new cls(...(this._deps.map(context.buildWithStrategy) as InstancesArray<TDeps>)),
+      context => new cls(...(this._deps.map(context.use) as InstancesArray<TDeps>)),
       this._deps,
       this._meta,
     );
@@ -79,7 +94,7 @@ export class DefinitionBuilder<
     const definition = InstanceDefinition.create(
       this._lifeTime,
       context => {
-        return factory(...(this._deps.map(context.buildWithStrategy) as InstancesArray<TDeps>));
+        return factory(...(this._deps.map(context.use) as InstancesArray<TDeps>));
       },
       this._deps,
       this._meta,
@@ -87,10 +102,4 @@ export class DefinitionBuilder<
 
     return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
   }
-}
-
-export function using<TLifeTime extends LifeTime>(strategy: TLifeTime) {
-  return <TDeps extends InstanceDefinition<any, any>[]>(...deps: TDeps): DefinitionBuilder<TDeps, TLifeTime> => {
-    return new DefinitionBuilder<TDeps, TLifeTime>(deps, strategy, {}, []);
-  };
 }

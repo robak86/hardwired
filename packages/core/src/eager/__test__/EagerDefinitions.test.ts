@@ -6,7 +6,7 @@ import { container } from '../../container/Container.js';
 import { EagerDefinitionsInterceptor } from '../EagerDefinitionsInterceptor.js';
 
 describe(`EagerDefinitions`, () => {
-  const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, []);
+  const singleton = new DefinitionBuilder<[], LifeTime.singleton, unknown>([], LifeTime.singleton, {}, []);
 
   const eagerDefinitions = new EagerDefinitions();
   const eagerInterceptor = new EagerDefinitionsInterceptor(true, eagerDefinitions);
@@ -58,7 +58,7 @@ describe(`EagerDefinitions`, () => {
         };
       });
 
-    container().get(producerD);
+    container().use(producerD);
 
     expect(eagerDefinitions.getInvertedDefinitions(eventEmitterD.id)).toEqual([consumer1D, consumer2D]);
     expect(eagerDefinitions.getInvertedDefinitions(consumer1D.id)).toEqual([]);

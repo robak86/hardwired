@@ -37,8 +37,8 @@ describe(`serialization`, () => {
         const def1 = serializable('someId', DummySerializable);
         const def2 = serializable('otherId', DummySerializable);
 
-        cnt.get(def1).restore({ value: 1 });
-        cnt.get(def2).restore({ value: 2 });
+        cnt.use(def1).restore({ value: 1 });
+        cnt.use(def2).restore({ value: 2 });
 
         const dump = interceptor.dumpJSON();
 
@@ -61,16 +61,16 @@ describe(`serialization`, () => {
         const def1 = serializable('someId', DummySerializable);
         const def2 = serializable('otherId', DummySerializable);
 
-        cnt.get(def1).restore({ value: 1 });
-        cnt.get(def2).restore({ value: 2 });
+        cnt.use(def1).restore({ value: 1 });
+        cnt.use(def2).restore({ value: 2 });
 
         const dump = interceptor.dumpJSON();
 
         const restoringInterceptor = new SerializationInterceptor(JSON.parse(dump));
         const cnt2 = container({ interceptor: restoringInterceptor });
 
-        expect(cnt2.get(def1).dump()).toEqual({ value: 1 });
-        expect(cnt2.get(def2).dump()).toEqual({ value: 2 });
+        expect(cnt2.use(def1).dump()).toEqual({ value: 1 });
+        expect(cnt2.use(def2).dump()).toEqual({ value: 2 });
       });
     });
   });

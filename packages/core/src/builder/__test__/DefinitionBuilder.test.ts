@@ -4,7 +4,7 @@ import { DefinitionBuilder } from '../DefinitionBuilder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 describe(`DefinitionBuilder`, () => {
-  const singleton = new DefinitionBuilder<[], LifeTime.singleton>([], LifeTime.singleton, {}, []);
+  const singleton = new DefinitionBuilder<[], LifeTime.singleton, unknown>([], LifeTime.singleton, {}, []);
 
   const dependencyD = singleton.fn(() => 123);
   const asyncDependencyD = singleton.async().fn(async () => 'someStr');

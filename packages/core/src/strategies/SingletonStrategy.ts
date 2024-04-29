@@ -6,7 +6,7 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 
 export class SingletonStrategy extends BuildStrategy {
   build(
-    definition: AnyInstanceDefinition<any, any>,
+    definition: AnyInstanceDefinition<any, any, any>,
     instancesCache: InstancesStore,
     definitionsRegistry: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

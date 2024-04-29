@@ -22,7 +22,8 @@
     "@typescript-eslint/no-namespace": 0,
     "@typescript-eslint/no-empty-function": 0,
     "@typescript-eslint/ban-types": 0,
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/no-this-alias": 0
   },
   "ignorePatterns": ["node_modules", "**/lib/**/*.js"]
 }

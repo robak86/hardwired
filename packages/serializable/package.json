@@ -1,6 +1,6 @@
 {
   "name": "hardwired-serializable",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
@@ -25,7 +25,10 @@
   "types": "./dist/cjs/index.d.ts",
   "dependencies": {},
   "peerDependencies": {
-    "hardwired": "0.9.0"
+    "hardwired": "0.9.1"
+  },
+  "devDependencies": {
+    "hardwired": "0.9.1"
   },
   "files": [
     "dist",

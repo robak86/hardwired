@@ -7,26 +7,28 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 import { ContextEvents } from '../events/ContextEvents.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  get<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any>): TValue;
-  get<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any>): Promise<TValue>;
-  get<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any>): Promise<TValue> | TValue;
+  use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  use<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  use<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 
-  getAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>>[]>(
-    definitions: [...TDefinitions],
+  useAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
+    ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 }
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
-  checkoutScope(options?: ContainerScopeOptions): IContainer<TAllowedLifeTime>;
-  withScope<TValue>(fn: (locator: IContainer<TAllowedLifeTime>) => TValue): TValue;
-  override(definition: AnyInstanceDefinition<any, any>): void;
-  provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped>, instance: T): void;
-  dispose(): void; // runs dispose method on every scoped/request instance created within this scope?
-  // but what about singletons that were already propagated to parent scope?
+  checkoutScope(options?: Omit<ContainerScopeOptions, 'globalOverrides'>): IContainer<TAllowedLifeTime>;
+  withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
+  override(definition: AnyInstanceDefinition<any, any, any>): void;
+  provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped, any>, instance: T): void;
 }
 
-export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
+export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
+    IContainerScopes<TAllowedLifeTime> {}
+
+export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
+  extends IServiceLocator<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;

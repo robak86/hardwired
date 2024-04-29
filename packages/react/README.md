@@ -169,7 +169,7 @@ describe('CounterAction', () => {
 
     // delegating instances construction to container
     it('increments counter state by 1', () => {
-      const [counterStore, counterStoreActions] = container().getAll(counterStoreDef, counterActionsDef);
+      const [counterStore, counterStoreActions] = container().useAll(counterStoreDef, counterActionsDef);
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(1);
     });
@@ -177,7 +177,7 @@ describe('CounterAction', () => {
     // delegating instances construction to container and overriding initial value for counter store
     it('increments counter state by 1', () => {
       const cnt = container([set(counterInitialValueDef, 10)]);
-      const [counterStore, counterStoreActions] = cnt.getAll(counterStoreDef, counterActionsDef);
+      const [counterStore, counterStoreActions] = cnt.useAll(counterStoreDef, counterActionsDef);
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(11);
     });
@@ -232,7 +232,7 @@ describe('CounterButtons', () => {
         const decrementBtn = result.getByRole('button', { name: /decrement/i });
         userEvent.click(decrementBtn);
       },
-      counterActions: cnt.get(counterActionsDef),
+      counterActions: cnt.use(counterActionsDef),
     };
   }
 
@@ -279,7 +279,7 @@ describe('CounterButtons', () => {
         return result.getByTestId('counter-value').text;
       },
       setCounterValue: (newValue: number) => {
-        const store = cnt.get(counterStoreDef);
+        const store = cnt.use(counterStoreDef);
         runInAction(() => {
           store.value = newValue;
         });

@@ -7,7 +7,11 @@
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true
   },
-  "references": [],
+  "references": [
+    {
+      "path": "../core/tsconfig.json"
+    }
+  ],
   "exclude": [
     "./dist"
   ],

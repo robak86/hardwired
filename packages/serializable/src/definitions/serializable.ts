@@ -1,5 +1,5 @@
 import {
-  assertValidDependency,
+  assertValidDependencies,
   ClassType,
   InstanceDefinition,
   InstanceDefinitionDependency,
@@ -16,14 +16,14 @@ export const serializable = <
   id: string,
   cls: ClassType<TInstance, TArgs>,
   ...dependencies: TDependencies
-): InstanceDefinition<TInstance, LifeTime.scoped> => {
-  assertValidDependency(LifeTime.scoped, dependencies);
+): InstanceDefinition<TInstance, LifeTime.scoped, unknown> => {
+  assertValidDependencies(LifeTime.scoped, dependencies);
 
   return new InstanceDefinition(
     id,
     Resolution.sync,
     LifeTime.scoped,
-    context => new cls(...(dependencies.map(context.buildWithStrategy) as TArgs)),
+    context => new cls(...(dependencies.map(context.use) as TArgs)),
     dependencies,
     {
       serializable: true,

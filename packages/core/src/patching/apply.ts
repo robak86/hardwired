@@ -6,19 +6,20 @@ export const apply = <
   TNextValue extends TInstance,
   TDecoratorDependencies extends any[],
   TLifeTime extends LifeTime,
+  TMeta,
 >(
-  instance: InstanceDefinition<TInstance, TLifeTime>,
+  instance: InstanceDefinition<TInstance, TLifeTime, TMeta>,
   applyFn: (prevValue: TInstance, ...decoratorDeps: TDecoratorDependencies) => void,
-  ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any> }
-): InstanceDefinition<TInstance, TLifeTime> => {
+  ...dependencies: { [K in keyof TDecoratorDependencies]: InstanceDefinition<TDecoratorDependencies[K], any, any> }
+): InstanceDefinition<TInstance, TLifeTime, TMeta> => {
   return {
     id: instance.id,
     strategy: instance.strategy,
     resolution: instance.resolution,
-    meta: {},
+    meta: instance.meta,
     create: context => {
       const decorated = instance.create(context);
-      const applyDeps = dependencies.map(context.buildWithStrategy);
+      const applyDeps = dependencies.map(context.use);
       applyFn(decorated, ...(applyDeps as any));
 
       return decorated;

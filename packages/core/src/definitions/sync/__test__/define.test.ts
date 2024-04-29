@@ -15,19 +15,19 @@ describe(`define`, () => {
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
       const definition = transient.define(locator => null);
-      expectType<TypeOf<typeof definition, InstanceDefinition<null, LifeTime.transient>>>(true);
+      expectType<TypeOf<typeof definition, InstanceDefinition<null, LifeTime.transient, any>>>(true);
     });
   });
 
   describe(`instantiation`, () => {
     it(`correctly resolves externals`, async () => {
       const definition = transient.define(locator => {
-        return [locator.get(ext1), locator.get(ext2)];
+        return [locator.use(ext1), locator.use(ext2)];
       });
 
       const result = container()
         .checkoutScope({ overrides: [set(ext1, 1), set(ext2, 'str')] })
-        .get(definition);
+        .use(definition);
       expect(result).toEqual([1, 'str']);
     });
 
@@ -35,9 +35,9 @@ describe(`define`, () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
       const definition = transient.define(locator => {
-        return [locator.get(value), locator.get(value)];
+        return [locator.use(value), locator.use(value)];
       });
-      const result = container().get(definition);
+      const result = container().use(definition);
 
       expect(result[0]).toBeInstanceOf(BoxedValue);
       expect(result[0]).toBe(result[1]);
@@ -48,13 +48,13 @@ describe(`define`, () => {
 
       const definition = transient.define(locator => {
         const scopedContainer = locator.checkoutScope();
-        return [scopedContainer.get(value), scopedContainer.get(value)];
+        return [scopedContainer.use(value), scopedContainer.use(value)];
       });
 
       const cnt = container();
 
-      const result1 = cnt.get(definition);
-      const result2 = cnt.get(definition);
+      const result1 = cnt.use(definition);
+      const result2 = cnt.use(definition);
 
       expect(result1[0]).not.toEqual(result2[0]);
       expect(result1[1]).not.toEqual(result2[1]);
@@ -64,11 +64,11 @@ describe(`define`, () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
       const definition = singleton.define(locator => {
-        return [locator.get(value), locator.get(value)];
+        return [locator.use(value), locator.use(value)];
       });
 
       const cnt = container();
-      const [result1, result2] = cnt.getAll([definition, definition]);
+      const [result1, result2] = cnt.useAll(definition, definition);
 
       expect(result1).toBe(result2);
     });
@@ -77,13 +77,13 @@ describe(`define`, () => {
       const value = scoped.fn(() => new BoxedValue(Math.random()));
 
       const definition = scoped.using().define(locator => {
-        return [locator.get(value), locator.get(value)];
+        return [locator.use(value), locator.use(value)];
       });
 
       const definitionConsumer = scoped.using(definition, definition).fn((def1, def2) => [def1, def2]);
       const cnt = container();
 
-      const result = cnt.get(definitionConsumer);
+      const result = cnt.use(definitionConsumer);
 
       expect(result[0]).toBe(result[1]);
     });
@@ -95,14 +95,14 @@ describe(`define`, () => {
       const randomD = scoped.fn(() => new BoxedValue(Math.random()));
 
       const exampleD = scoped.using().define(locator => {
-        const s1 = locator.get(singletonD);
-        const r1 = locator.get(randomD);
-        const r2 = locator.get(randomD);
+        const s1 = locator.use(singletonD);
+        const r1 = locator.use(randomD);
+        const r2 = locator.use(randomD);
 
         const req2 = locator.withScope(locator => {
-          const s1 = locator.get(singletonD);
-          const r1 = locator.get(randomD);
-          const r2 = locator.get(randomD);
+          const s1 = locator.use(singletonD);
+          const r1 = locator.use(randomD);
+          const r2 = locator.use(randomD);
 
           return [s1, r1, r2];
         });
@@ -113,7 +113,7 @@ describe(`define`, () => {
         };
       });
 
-      const result = container().get(exampleD);
+      const result = container().use(exampleD);
       expect(result.req1[0]).toEqual(result.req2[0]);
     });
   });

@@ -10,14 +10,14 @@ export type WithDependenciesConfigured<TDependencies extends object, TExternalPr
 };
 
 export function withDependencies<TDependencies extends Record<string, any>>(
-  definition: InstanceDefinition<TDependencies, any>,
+  definition: InstanceDefinition<TDependencies, any, any>,
 ): WithDependenciesConfigured<TDependencies> {
   return <TProps extends TDependencies>(
     WrappedComponent: ComponentType<TProps>,
   ): ComponentType<Diff<TProps, TDependencies>> => {
     const ContainerScopeHOC = ({ ...props }) => {
       const containerContext = useContainerContext();
-      const deps = containerContext.container?.get(definition);
+      const deps = containerContext.container?.use(definition);
 
       return <WrappedComponent {...(props as any)} {...deps} />;
     };

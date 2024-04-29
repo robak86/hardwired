@@ -21,7 +21,7 @@ describe(`klass`, () => {
         const objD = value('123');
         const cls = scoped.using(numD, objD).class(TestClass);
 
-        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, LifeTime.scoped>>>(true);
+        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, LifeTime.scoped, unknown>>>(true);
       });
 
       describe(`allowed dependencies life times`, () => {
