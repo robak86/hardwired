@@ -2,9 +2,13 @@ import { InstanceDefinition, InstancesArray } from '../definitions/abstract/Inst
 
 import { ContainerScopeOptions } from './Container.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
+import {
+  InstanceDefinitionDependency,
+  ValidDependenciesLifeTime,
+} from '../definitions/abstract/InstanceDefinitionDependency.js';
 
 import { Omit } from 'utility-types';
+import { ClassType } from '../utils/ClassType.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>): TValue;
@@ -14,6 +18,17 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   use<TValue>(
     instanceDefinition: InstanceDefinition<Promise<TValue> | TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
   ): Promise<TValue> | TValue;
+
+  build<
+    TInstance,
+    TArgs extends any[],
+    TDependencies extends {
+      [K in keyof TArgs]: InstanceDefinitionDependency<TArgs[K], ValidDependenciesLifeTime<TAllowedLifeTime>>;
+    },
+  >(
+    klass: ClassType<TInstance, TArgs>,
+    ...dependencies: TDependencies
+  ): TInstance;
 
   useAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
     ...definitions: [...TDefinitions]
