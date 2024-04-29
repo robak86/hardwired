@@ -3,6 +3,9 @@
   "files": [],
   "references": [
     {
+      "path": "packages/circuit/tsconfig.json"
+    },
+    {
       "path": "packages/core/tsconfig.json"
     },
     {
