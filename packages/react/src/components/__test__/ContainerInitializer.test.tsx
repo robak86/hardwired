@@ -8,7 +8,7 @@ import { expect } from 'vitest';
 
 describe(`ContainerInitializer`, () => {
   function setup() {
-    class NeedToBeInitialized {
+    class InitializeMe {
       value = 0;
 
       init() {
@@ -16,13 +16,13 @@ describe(`ContainerInitializer`, () => {
       }
     }
 
-    const needToBeInitialized = scoped.class(NeedToBeInitialized);
+    const initializeMe = scoped.class(InitializeMe);
     const initializer = scoped.thunk(c => {
-      c.use(needToBeInitialized).init();
+      c.use(initializeMe).init();
     });
 
     const ValueRenderer = ({ testId }: { testId: any }) => {
-      const value = useDefinition(needToBeInitialized);
+      const value = useDefinition(initializeMe);
 
       return <div data-testid={testId}>{value.value}</div>;
     };
