@@ -12,7 +12,7 @@ import {
 export function use<T>(def: InstanceDefinition<T, any, any>): T;
 export function use<T>(def: AsyncInstanceDefinition<T, any, any>): Promise<T>;
 export function use<T>(def: AnyInstanceDefinition<T, any, any>): Promise<T> | T {
-  return useContainer().get(def);
+  return useContainer().use(def);
 }
 
 export function useGlobalContainer() {

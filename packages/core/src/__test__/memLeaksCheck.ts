@@ -31,7 +31,7 @@ const c = container();
 const hd = new memwatch.HeapDiff();
 
 for (let i = 0; i < 100000000; i++) {
-  c.get(d2).configFactory.build({ data: 'someData' });
+  c.use(d2).configFactory.build({ data: 'someData' });
 
   if (i % 100 === 0) {
     console.log(i);

@@ -11,11 +11,11 @@ describe(`ScopeStrategy`, () => {
       const a = scoped.fn(() => Math.random());
 
       const c = ContainerContext.empty();
-      expect(c.get(a)).toEqual(c.get(a));
+      expect(c.use(a)).toEqual(c.use(a));
 
       const childScope = c.checkoutScope();
-      expect(childScope.get(a)).toEqual(childScope.get(a));
-      expect(c.get(a)).not.toEqual(childScope.get(a));
+      expect(childScope.use(a)).toEqual(childScope.use(a));
+      expect(c.use(a)).not.toEqual(childScope.use(a));
     });
 
     it(`returns new instance in new scope`, async () => {
@@ -23,8 +23,8 @@ describe(`ScopeStrategy`, () => {
       const c = ContainerContext.empty();
 
       const childScope = c.checkoutScope();
-      expect(childScope.get(a)).toEqual(childScope.get(a));
-      expect(c.get(a)).not.toEqual(childScope.get(a));
+      expect(childScope.use(a)).toEqual(childScope.use(a));
+      expect(c.use(a)).not.toEqual(childScope.use(a));
     });
   });
 
@@ -47,12 +47,12 @@ describe(`ScopeStrategy`, () => {
 
       const c = ContainerContext.create([], [invariantPatch]);
 
-      expect(c.get(k1).value).toEqual(1);
+      expect(c.use(k1).value).toEqual(1);
 
       const childScope = c.checkoutScope({ overrides: [childScopePatch] });
-      expect(childScope.get(k1).value).toEqual(1);
+      expect(childScope.use(k1).value).toEqual(1);
 
-      expect(c.get(k1)).toBe(childScope.get(k1));
+      expect(c.use(k1)).toBe(childScope.use(k1));
     });
 
     it(`allows for overrides other than specified in globalOverrides`, async () => {
@@ -69,11 +69,11 @@ describe(`ScopeStrategy`, () => {
       );
 
       const c = ContainerContext.create([], [invariantPatch]);
-      expect(c.get(k1)).toEqual(1);
+      expect(c.use(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ overrides: [childScopePatch] });
-      expect(childScope.get(k1)).toEqual(1);
-      expect(childScope.get(k2)).toEqual(2);
+      expect(childScope.use(k1)).toEqual(1);
+      expect(childScope.use(k2)).toEqual(2);
     });
   });
 
@@ -82,33 +82,33 @@ describe(`ScopeStrategy`, () => {
       const a = scoped.fn(() => new BoxedValue(1));
 
       const c = ContainerContext.empty();
-      expect(c.get(a).value).toEqual(1);
+      expect(c.use(a).value).toEqual(1);
 
       const mPatch = replace(
         a,
         scoped.fn(() => new BoxedValue(2)),
       );
       const childC = c.checkoutScope({ overrides: [mPatch] });
-      expect(childC.get(a).value).toEqual(2);
+      expect(childC.use(a).value).toEqual(2);
     });
 
     it(`new scope inherits parent scope overrides`, async () => {
       const a = scoped.fn(() => new BoxedValue(1));
 
       const root = ContainerContext.empty();
-      expect(root.get(a).value).toEqual(1);
+      expect(root.use(a).value).toEqual(1);
 
       const mPatch = replace(
         a,
         scoped.fn(() => new BoxedValue(2)),
       );
       const childC = root.checkoutScope({ overrides: [mPatch] });
-      expect(childC.get(a).value).toEqual(2);
+      expect(childC.use(a).value).toEqual(2);
 
       const grandChildC = childC.checkoutScope();
-      expect(grandChildC.get(a).value).toEqual(2);
+      expect(grandChildC.use(a).value).toEqual(2);
 
-      expect(childC.get(a)).not.toBe(grandChildC.get(a));
+      expect(childC.use(a)).not.toBe(grandChildC.use(a));
     });
   });
 
@@ -119,8 +119,8 @@ describe(`ScopeStrategy`, () => {
           const a = scoped.fn(() => Math.random());
 
           const c = container();
-          const req1 = c.get(a);
-          const req2 = c.get(a);
+          const req1 = c.use(a);
+          const req2 = c.use(a);
 
           expect(req1).toEqual(req2);
         });
@@ -131,10 +131,10 @@ describe(`ScopeStrategy`, () => {
           const a = scoped.fn(() => Math.random());
 
           const c = ContainerContext.empty();
-          const req1 = c.get(a);
+          const req1 = c.use(a);
 
           const childC = c.checkoutScope();
-          const req2 = childC.get(a);
+          const req2 = childC.use(a);
 
           expect(req1).not.toEqual(req2);
         });
@@ -154,8 +154,8 @@ describe(`ScopeStrategy`, () => {
 
         const childC = c.checkoutScope({ overrides: [mPatch] });
 
-        expect(c.get(a)).toEqual(1);
-        expect(childC.get(a)).toEqual(2);
+        expect(c.use(a)).toEqual(1);
+        expect(childC.use(a)).toEqual(2);
       });
     });
 
@@ -173,10 +173,10 @@ describe(`ScopeStrategy`, () => {
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
-        expect(c.get(k1)).toEqual(1);
+        expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ overrides: [childScopePatch] });
-        expect(childScope.get(k1)).toEqual(1);
+        expect(childScope.use(k1)).toEqual(1);
       });
 
       it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
@@ -193,11 +193,11 @@ describe(`ScopeStrategy`, () => {
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
-        expect(c.get(k1)).toEqual(1);
+        expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ overrides: [childScopePatch] });
-        expect(childScope.get(k1)).toEqual(1);
-        expect(childScope.get(k2)).toEqual(2);
+        expect(childScope.use(k1)).toEqual(1);
+        expect(childScope.use(k2)).toEqual(2);
       });
     });
   });
@@ -209,8 +209,8 @@ describe(`ScopeStrategy`, () => {
           const a = scoped.async().fn(async () => Math.random());
 
           const c = container();
-          const req1 = await c.get(a);
-          const req2 = await c.get(a);
+          const req1 = await c.use(a);
+          const req2 = await c.use(a);
 
           expect(req1).toEqual(req2);
         });
@@ -221,8 +221,8 @@ describe(`ScopeStrategy`, () => {
           const a = scoped.async().fn(async () => Math.random());
 
           const c = container();
-          const req1 = await c.get(a);
-          const req2 = await c.get(a);
+          const req1 = await c.use(a);
+          const req2 = await c.use(a);
 
           expect(req1).toEqual(req2);
         });
@@ -233,10 +233,10 @@ describe(`ScopeStrategy`, () => {
           const a = scoped.async().fn(async () => Math.random());
 
           const c = ContainerContext.empty();
-          const req1 = await c.get(a);
+          const req1 = await c.use(a);
 
           const childC = c.checkoutScope();
-          const req2 = childC.get(a);
+          const req2 = childC.use(a);
 
           expect(req1).not.toEqual(req2);
         });
@@ -256,8 +256,8 @@ describe(`ScopeStrategy`, () => {
 
         const childC = c.checkoutScope({ overrides: [mPatch] });
 
-        expect(await c.get(a)).toEqual(1);
-        expect(await childC.get(a)).toEqual(2);
+        expect(await c.use(a)).toEqual(1);
+        expect(await childC.use(a)).toEqual(2);
       });
     });
 
@@ -276,10 +276,10 @@ describe(`ScopeStrategy`, () => {
 
         const c = ContainerContext.create([], [invariantPatch]);
 
-        expect(await c.get(k1)).toEqual(1);
+        expect(await c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ overrides: [childScopePatch] });
-        expect(await childScope.get(k1)).toEqual(1);
+        expect(await childScope.use(k1)).toEqual(1);
       });
 
       it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
@@ -296,11 +296,11 @@ describe(`ScopeStrategy`, () => {
         );
 
         const c = ContainerContext.create([], [invariantPatch]);
-        expect(await c.get(k1)).toEqual(1);
+        expect(await c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ overrides: [childScopePatch] });
-        expect(await childScope.get(k1)).toEqual(1);
-        expect(await childScope.get(k2)).toEqual(2);
+        expect(await childScope.use(k1)).toEqual(1);
+        expect(await childScope.use(k2)).toEqual(2);
       });
     });
   });

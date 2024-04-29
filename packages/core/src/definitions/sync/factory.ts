@@ -46,7 +46,7 @@ export const factory: FactoryBuildFn = (definition: any, ...dependencies: Instan
           const scopedContext = context.checkoutScope({
             overrides: dependencies.map((dep, idx) => set(dep, params[idx])),
           });
-          return scopedContext.get(definition);
+          return scopedContext.use(definition);
         },
       };
     },

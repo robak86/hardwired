@@ -7,11 +7,11 @@ import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefini
 import { ContextEvents } from '../events/ContextEvents.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  get<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+  use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  use<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  use<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 
-  getAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
+  useAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 }

@@ -21,7 +21,7 @@ describe(`object`, () => {
     const someNumberD = value(1);
     const someStr = value('str');
     const composed = tuple(someNumberD, someStr);
-    const result = container().get(composed);
+    const result = container().use(composed);
     expect(result).toEqual([1, 'str']);
   });
 
@@ -31,7 +31,7 @@ describe(`object`, () => {
     const composed = tuple(someNumberD, someStr);
     const patch = set(composed, [123, 'replaced']);
 
-    const result = container([patch]).get(composed);
+    const result = container([patch]).use(composed);
     expect(result).toEqual([123, 'replaced']);
   });
 

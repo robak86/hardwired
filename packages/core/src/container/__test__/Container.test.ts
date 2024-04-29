@@ -21,7 +21,7 @@ describe(`Container`, () => {
     it(`returns correct value`, async () => {
       const cDef = singleton.fn(() => 'cValue');
       const c = container();
-      const cValue = c.get(cDef);
+      const cValue = c.use(cDef);
       expect(cValue).toEqual('cValue');
     });
   });
@@ -36,7 +36,7 @@ describe(`Container`, () => {
           singleton.fn(() => 2),
         );
 
-        expect(container({ overrides: [mPatch] }).get(a)).toEqual(2);
+        expect(container({ overrides: [mPatch] }).use(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
@@ -47,7 +47,7 @@ describe(`Container`, () => {
           a,
           singleton.fn(() => 2),
         );
-        expect(container({ overrides: [mPatch] }).get(b)).toEqual('b');
+        expect(container({ overrides: [mPatch] }).use(b)).toEqual('b');
       });
     });
   });
@@ -82,7 +82,7 @@ describe(`Container`, () => {
 
       const c = container([aPatch, bPatch]);
 
-      const actual = c.get(aPlusB);
+      const actual = c.use(aPlusB);
       expect(actual).toEqual(30);
     });
   });
@@ -93,7 +93,7 @@ describe(`Container`, () => {
       const b = scoped.fn(() => 2);
 
       const c = container();
-      const [aInstance, bInstance] = c.getAll(a, b);
+      const [aInstance, bInstance] = c.useAll(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -104,7 +104,7 @@ describe(`Container`, () => {
       const divideBy2D = scoped.using(extD).fn((val: BoxedValue<number>) => val.value / 2);
       const [val1, val2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
-        .getAll(multiplyBy2D, divideBy2D);
+        .useAll(multiplyBy2D, divideBy2D);
       expect(val1).toEqual(20);
       expect(val2).toEqual(5);
     });
@@ -123,7 +123,7 @@ describe(`Container`, () => {
 
       const [req1, req2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
-        .getAll(multiplyBy2D, divideBy2D);
+        .useAll(multiplyBy2D, divideBy2D);
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);
 
@@ -149,7 +149,7 @@ describe(`Container`, () => {
         const def = singleton.fn(() => 123);
         const interceptSyncSpy = vi.fn();
         const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } }).checkoutScope();
-        ctn.get(def);
+        ctn.use(def);
         expect(interceptSyncSpy).not.toBeCalled();
       });
 
@@ -161,7 +161,7 @@ describe(`Container`, () => {
         const ctn = container({ interceptor: { interceptSync: interceptSyncParentSpy } }).checkoutScope({
           interceptor: { interceptSync: interceptSyncReqSpy },
         });
-        ctn.get(def);
+        ctn.use(def);
         expect(interceptSyncParentSpy).not.toBeCalled();
         expect(interceptSyncReqSpy).toBeCalled();
       });
@@ -174,7 +174,7 @@ describe(`Container`, () => {
 
           const interceptSyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
-          ctn.get(def);
+          ctn.use(def);
           expect(interceptSyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
         });
 
@@ -183,8 +183,8 @@ describe(`Container`, () => {
 
           const interceptSyncSpy = vi.fn(val => val);
           const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
-          ctn.get(def);
-          ctn.get(def);
+          ctn.use(def);
+          ctn.use(def);
           expect(interceptSyncSpy).toHaveBeenCalledTimes(1);
         });
 
@@ -193,8 +193,8 @@ describe(`Container`, () => {
 
           const interceptSyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
-          ctn.get(def);
-          ctn.get(def);
+          ctn.use(def);
+          ctn.use(def);
           expect(interceptSyncSpy).toHaveBeenCalledTimes(2);
         });
 
@@ -208,7 +208,7 @@ describe(`Container`, () => {
           const interceptor = { interceptSync: interceptSyncSpy } as ContainerInterceptor;
           const ctn = container({ interceptor });
 
-          expect(ctn.get(def)).toEqual(456);
+          expect(ctn.use(def)).toEqual(456);
         });
       });
     });
@@ -219,7 +219,7 @@ describe(`Container`, () => {
 
           const interceptAsyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
-          await ctn.get(def);
+          await ctn.use(def);
           expect(interceptAsyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
         });
 
@@ -228,7 +228,7 @@ describe(`Container`, () => {
 
           const interceptAsyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
-          await ctn.get(def);
+          await ctn.use(def);
           expect(interceptAsyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
         });
 
@@ -242,7 +242,7 @@ describe(`Container`, () => {
           const interceptor = { interceptAsync: interceptAsyncSpy } as ContainerInterceptor;
           const ctn = container({ interceptor });
 
-          expect(await ctn.get(def)).toEqual(456);
+          expect(await ctn.use(def)).toEqual(456);
         });
       });
 
@@ -263,7 +263,7 @@ describe(`Container`, () => {
           const interceptor = { interceptAsync: interceptAsyncSpy } as ContainerInterceptor;
           const ctn = container({ interceptor });
 
-          await ctn.get(def2);
+          await ctn.use(def2);
           expect(interceptAsyncSpy).toHaveBeenCalledTimes(2);
 
           expect(interceptAsyncSpy.mock.calls[0]).toEqual([def2, expect.any(ContainerContext)]);
@@ -282,7 +282,7 @@ describe(`Container`, () => {
       const k3 = singleton.using(k1, k2).fn(async (k1, k2) => (await k1) + (await k2));
 
       const c = container();
-      const k3Instance = c.get(k3);
+      const k3Instance = c.use(k3);
       expect(await k3Instance).toEqual(3);
     });
   });
@@ -295,8 +295,8 @@ describe(`Container`, () => {
       const reqCnt1 = cnt.checkoutScope();
       const reqCnt2 = cnt.checkoutScope();
 
-      const result1 = reqCnt1.get(scopedVal);
-      const result2 = reqCnt2.get(scopedVal);
+      const result1 = reqCnt1.use(scopedVal);
+      const result2 = reqCnt2.use(scopedVal);
 
       expect(result1).not.toBe(result2);
     });
@@ -336,7 +336,7 @@ describe(`Container`, () => {
           interceptor: eagerInterceptor,
         });
 
-        const consumerVal = cnt.get(producer);
+        const consumerVal = cnt.use(producer);
         expect(consumerFactory).toHaveBeenCalledTimes(1);
       });
 
@@ -389,12 +389,12 @@ describe(`Container`, () => {
           interceptor: eagerInterceptor,
         });
 
-        const producer = cnt.get(producerD);
+        const producer = cnt.use(producerD);
         producer();
         producer();
 
-        const consumer1 = cnt.get(consumer1D);
-        const consumer2 = cnt.get(consumer2D);
+        const consumer1 = cnt.use(consumer1D);
+        const consumer2 = cnt.use(consumer2D);
 
         expect(consumer1.length).toEqual(2);
         expect(consumer2.length).toEqual(2);
@@ -421,7 +421,7 @@ describe(`Container`, () => {
         const cnt = container({
           interceptor: eagerInterceptor,
         });
-        cnt.get(a);
+        cnt.use(a);
 
         expect(dSpy).toHaveBeenCalled();
       });
@@ -481,12 +481,12 @@ describe(`Container`, () => {
           interceptor: eagerInterceptor,
         });
 
-        const producer = await cnt.get(producerD);
+        const producer = await cnt.use(producerD);
         producer();
         producer();
 
-        const consumer1 = await cnt.get(consumer1D);
-        const consumer2 = await cnt.get(consumer2D);
+        const consumer1 = await cnt.use(consumer1D);
+        const consumer2 = await cnt.use(consumer2D);
 
         expect(consumer1.length).toEqual(2);
         expect(consumer2.length).toEqual(2);
@@ -519,7 +519,7 @@ describe(`Container`, () => {
           interceptor: eagerInterceptor,
         });
 
-        await cnt.get(a);
+        await cnt.use(a);
 
         expect(dSpy).toHaveBeenCalled();
       });

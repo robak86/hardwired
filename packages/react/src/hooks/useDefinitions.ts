@@ -8,5 +8,5 @@ export type UseDefinitionsHook = {
 };
 
 export const useDefinitions: UseDefinitionsHook = (definitions: any) => {
-  return useContainer().getAll(definitions as any) as any;
+  return useContainer().useAll(definitions as any) as any;
 };

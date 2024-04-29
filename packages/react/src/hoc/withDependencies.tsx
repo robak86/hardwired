@@ -17,7 +17,7 @@ export function withDependencies<TDependencies extends Record<string, any>>(
   ): ComponentType<Diff<TProps, TDependencies>> => {
     const ContainerScopeHOC = ({ ...props }) => {
       const containerContext = useContainerContext();
-      const deps = containerContext.container?.get(definition);
+      const deps = containerContext.container?.use(definition);
 
       return <WrappedComponent {...(props as any)} {...deps} />;
     };

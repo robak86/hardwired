@@ -58,7 +58,7 @@ describe(`EagerDefinitions`, () => {
         };
       });
 
-    container().get(producerD);
+    container().use(producerD);
 
     expect(eagerDefinitions.getInvertedDefinitions(eventEmitterD.id)).toEqual([consumer1D, consumer2D]);
     expect(eagerDefinitions.getInvertedDefinitions(consumer1D.id)).toEqual([]);

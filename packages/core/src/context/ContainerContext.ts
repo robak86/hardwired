@@ -70,9 +70,9 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
-  get<TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
-  get<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  get<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
+  use<TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
+  use<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  use<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
     this.events.onGet.emit({ containerId: this.id, definition });
 
     this.interceptor.onRequestStart?.(definition, this);
@@ -91,10 +91,10 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     }
   }
 
-  getAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+  useAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
-    return definitions.map(def => this.get(def)) as any;
+    return definitions.map(def => this.useAll(def)) as any;
   }
 
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
