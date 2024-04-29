@@ -44,3 +44,4 @@ export {
 
 export * from './builder/AsyncDefinitionBuilder.js';
 export * from './builder/DefinitionBuilder.js';
+export { DefineFn, buildContext } from './builder/buildContext.js';
