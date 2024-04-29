@@ -93,7 +93,7 @@ describe(`Container`, () => {
       const b = scoped.fn(() => 2);
 
       const c = container();
-      const [aInstance, bInstance] = c.getAll([a, b]);
+      const [aInstance, bInstance] = c.getAll(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -104,7 +104,7 @@ describe(`Container`, () => {
       const divideBy2D = scoped.using(extD).fn((val: BoxedValue<number>) => val.value / 2);
       const [val1, val2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
-        .getAll([multiplyBy2D, divideBy2D]);
+        .getAll(multiplyBy2D, divideBy2D);
       expect(val1).toEqual(20);
       expect(val2).toEqual(5);
     });
@@ -123,7 +123,7 @@ describe(`Container`, () => {
 
       const [req1, req2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
-        .getAll([multiplyBy2D, divideBy2D]);
+        .getAll(multiplyBy2D, divideBy2D);
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);
 
@@ -137,7 +137,7 @@ describe(`Container`, () => {
       const b = scoped.async().fn(async () => 2);
 
       const c = container();
-      const [aInstance, bInstance] = await c.getAllAsync([a, b]);
+      const [aInstance, bInstance] = await c.getAllAsync(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });

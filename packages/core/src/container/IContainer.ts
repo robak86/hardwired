@@ -12,7 +12,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   get<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 
   getAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
-    definitions: [...TDefinitions],
+    ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 }
 

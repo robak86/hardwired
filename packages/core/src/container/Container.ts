@@ -32,13 +32,13 @@ export class Container implements IContainer {
   }
 
   getAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
-    definitions: [...TDefinitions],
+    ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.containerContext.get(def)) as any;
   }
 
   getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
-    definitions: [...TDefinitions],
+    ...definitions: [...TDefinitions]
   ): Promise<AsyncInstancesArray<TDefinitions>> {
     return Promise.all(definitions.map(def => this.containerContext.get(def))) as any;
   }
