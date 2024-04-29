@@ -89,7 +89,7 @@ Hardwired centers around two key concepts:
    Use the container to get instances as needed.
 
    ```typescript
-   const loggerInstance: Logger = exampleContainer.get(loggerDef); // returns an instance of Logger
+   const loggerInstance: Logger = exampleContainer.use(loggerDef); // returns an instance of Logger
    ```
 
 ## Lifetimes of Definitions
@@ -115,12 +115,12 @@ const singletonRandomVal = singleton.fn(() => Math.random());
 const appContainer = container();
 const requestContainer = appContainer.checkoutScope();
 
-const val1 = appContainer.get(scopedRandomVal);
-const val2 = requestContainer.get(scopedRandomVal);
+const val1 = appContainer.use(scopedRandomVal);
+const val2 = requestContainer.use(scopedRandomVal);
 // val1 !== val2, due to different scoped registries
 
-const singletonVal1 = appContainer.get(singletonRandomVal);
-const singletonVal2 = requestContainer.get(singletonRandomVal);
+const singletonVal1 = appContainer.use(singletonRandomVal);
+const singletonVal2 = requestContainer.use(singletonRandomVal);
 // singletonVal1 === singletonVal2, shared singleton registry
 ```
 
@@ -154,7 +154,7 @@ Definitions can be synchronous or asynchronous, supporting both sync and async d
 
   const loggerDef = singleton.class(Logger);
   const writerDef = singleton.using(loggerDef).class(Writer);
-  const writerInstance = container().get(writerDef); // creates instance of Writer
+  const writerInstance = container().use(writerDef); // creates instance of Writer
   ```
 
 - **`fn`**
@@ -165,7 +165,7 @@ Definitions can be synchronous or asynchronous, supporting both sync and async d
   const aDef = transient.fn(() => 1);
   const bDef = transient.fn(() => 2);
   const cDef = singleton.using(aDef, bDef).fn((a, b) => a + b);
-  const c = container().get(cDef); // result equals to 3
+  const c = container().use(cDef); // result equals to 3
   ```
 
 - **`define`**
@@ -176,15 +176,15 @@ Definitions can be synchronous or asynchronous, supporting both sync and async d
   const randomValD = scoped.fn(() => Math.random());
 
   const myDef = singleton.define(container => {
-    const val1 = container.get(randomValD);
+    const val1 = container.use(randomValD);
     const val2 = container.withScope(childContainer => {
-      return childContainer.get(randomValD);
+      return childContainer.use(randomValD);
     });
 
     return [val1, val2];
   });
 
-  const [val1, val2] = container().get(myDef);
+  const [val1, val2] = container().use(myDef);
   // val1 is not eq to val2, because was created in the other scope
   ```
 
@@ -199,9 +199,9 @@ without using a test runner's mocking capabilities.
 
   const configDef = value({ port: 1234 });
   const cnt = container();
-  const config = cnt.get(configDef); // { port: 1234 }
+  const config = cnt.use(configDef); // { port: 1234 }
 
-  cnt.get(configDef) === cnt.get(configDef); // true - returns the same instance
+  cnt.use(configDef) === cnt.use(configDef); // true - returns the same instance
   ```
 
 ### Asynchronous Definitions
@@ -229,7 +229,7 @@ without using a test runner's mocking capabilities.
   const dbDef = singleton.async().fn(createDbConnection);
   const userRepositoryDef = singleton.async().using(dbDef).class(UserRepository);
   const cnt = container();
-  const userRepository: UserRepository = await cnt.get(userRepositoryDef);
+  const userRepository: UserRepository = await cnt.use(userRepositoryDef);
   ```
 
 - **`fn`** - the same as synchronous `fn` but accepts async dependencies
@@ -241,15 +241,15 @@ without using a test runner's mocking capabilities.
   const randomValD = scoped.async().fn(async () => Math.random());
 
   const myDef = singleton.async().define(async container => {
-    const val1 = await container.get(randomValD);
+    const val1 = await container.use(randomValD);
     const val2 = await container.withScope(childContainer => {
-      return childContainer.get(randomValD);
+      return childContainer.use(randomValD);
     });
 
     return [val1, val2];
   });
 
-  const [val1, val2] = await container().get(myDef);
+  const [val1, val2] = await container().use(myDef);
   // val1 is not eq to val2, because was created in other scope
   ```
 
@@ -270,7 +270,7 @@ const randomGeneratorDef = singleton.using(randomSeedD).class(RandomGenerator);
 
 const cnt = container([set(randomSeedD, 1)]);
 
-const randomGenerator = cnt.get(randomGeneratorDef);
+const randomGenerator = cnt.use(randomGeneratorDef);
 randomGenerator.seed === 1; // true
 ```
 
@@ -289,8 +289,8 @@ randomGenerator.seed === 1; // true
   const mySingletonOverrideDef = replace(mySingletonDef, transient.fn(generateUniqueId));
   const cnt = container([mySingletonOverrideDef]);
 
-  cnt.get(mySingletonDef) === cnt.get(mySingletonDef); // false
-  // cnt uses now transient lifetime for mySingletonDef and calls generateUniqueId on each .get call
+  cnt.use(mySingletonDef) === cnt.use(mySingletonDef); // false
+  // cnt uses now transient lifetime for mySingletonDef and calls generateUniqueId on each .use call
   ```
 
 - **`decorate`** - it takes decorator function and returns decorated object
@@ -334,7 +334,7 @@ randomGenerator.seed === 1; // true
 
   const cnt = container([writerOverrideDef]);
 
-  cnt.get(writerDef); // returns instance of LoggingWriter
+  cnt.use(writerDef); // returns instance of LoggingWriter
   ```
 
 - **`apply`** - allows triggering side effects on original instance
@@ -372,7 +372,7 @@ randomGenerator.seed === 1; // true
   });
   const cnt = container([writerPatch]);
 
-  const [spiedWriter, storeDocumentAction] = cnt.getAll(writerDef, storeDocumentActionDef);
+  const [spiedWriter, storeDocumentAction] = cnt.useAll(writerDef, storeDocumentActionDef);
   storeDocumentAction.run();
   // now we can do some assertions on spied write method
   expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
@@ -389,8 +389,8 @@ const def = scoped.fn(() => Math.random());
 
 const cnt = container();
 
-cnt.get(def); // random value
-cnt.checkoutScope({ overrides: [set(def, 1)] }).get(def); // 1
+cnt.use(def); // random value
+cnt.checkoutScope({ overrides: [set(def, 1)] }).use(def); // 1
 ```
 
 Overrides can be provided also during container creation. Then the override is propagated to every child scope replacing scope's own overrides.
@@ -404,8 +404,8 @@ const cnt = container({
   globalOverrides: set(def, 100),
 });
 
-cnt.get(def); // 100
-cnt.checkoutScope({ overrides: [set(def, 1)] }).get(def); // 100 because of globalOverrides
+cnt.use(def); // 100
+cnt.checkoutScope({ overrides: [set(def, 1)] }).use(def); // 100 because of globalOverrides
 ```
 
 ## Implicit Definition
@@ -439,5 +439,5 @@ The actual value for implicit placeholder needs to be provided when creating the
 import { container, set } from 'hardwired';
 
 const cnt = container({ globalOverrides: [set(envD, { server: { port: 1234 } })] });
-cnt.get(httpServerD);
+cnt.use(httpServerD);
 ```
