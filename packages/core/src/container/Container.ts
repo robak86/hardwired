@@ -25,9 +25,9 @@ export class Container implements IContainer {
     return this.containerContext.events;
   }
 
-  get<TValue, TExternals>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  get<TValue, TExternals>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  get<TValue, TExternals>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue {
+  get<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  get<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  get<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue {
     return this.containerContext.get(instanceDefinition as any);
   }
 
@@ -52,16 +52,12 @@ export class Container implements IContainer {
   }
 
   override(definition: AnyInstanceDefinition<any, any, any>): void {
-    this.containerContext.addScopeOverride(definition);
+    this.containerContext.override(definition);
   }
 
   provide<T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T): void {
     const override = set(def, instance);
     return this.override(override);
-  }
-
-  dispose(): void {
-    throw new Error('Implement me!');
   }
 }
 
