@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-export type DefinitionOverride = AnyInstanceDefinition<any, LifeTime>;
+export type DefinitionOverride = AnyInstanceDefinition<any, LifeTime, any>;
 
 const __storage = new AsyncLocalStorage<AsyncLocalStorageValue>();
 const __container = container();
