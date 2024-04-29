@@ -38,12 +38,16 @@ const validLifeTimes = {
   },
 } as const;
 
-export const assertValidDependency = (lifeTime: LifeTime, deps: AnyInstanceDefinition<any, LifeTime, any>[]) => {
+export const assertValidDependencies = (lifeTime: LifeTime, deps: AnyInstanceDefinition<any, LifeTime, any>[]) => {
   for (const dependency of deps) {
-    const isValid = validLifeTimes[lifeTime][dependency.strategy];
+    assertValidDependency(lifeTime, dependency);
+  }
+};
 
-    if (!isValid) {
-      throw new Error(`Cannot use ${dependency.strategy} dependency for ${lifeTime} definition.`);
-    }
+export const assertValidDependency = (lifeTime: LifeTime, dep: AnyInstanceDefinition<any, LifeTime, any>) => {
+  const isValid = validLifeTimes[lifeTime][dep.strategy];
+
+  if (!isValid) {
+    throw new Error(`Cannot use ${dep.strategy} dependency for ${lifeTime} definition.`);
   }
 };

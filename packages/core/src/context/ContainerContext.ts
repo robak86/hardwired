@@ -124,7 +124,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     return strategy.build(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
   };
 
-  checkoutScope(options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext {
+  checkoutScope = (options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext => {
     const { overrides = [] } = options;
 
     const scopeContext = new ContainerContext(
@@ -139,15 +139,15 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     this.events.onScope.emit({ initiatorContainerId: this.id, scopeContainerId: scopeContext.id });
 
     return scopeContext;
-  }
+  };
 
-  withScope<TValue>(fn: (locator: IServiceLocator<LifeTime>) => TValue): TValue {
+  withScope = <TValue>(fn: (locator: IServiceLocator<LifeTime>) => TValue): TValue => {
     const scopeContext = this.checkoutScope();
 
     return fn(scopeContext);
-  }
+  };
 
-  provide<T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T) {
+  provide = <T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T) => {
     throw new Error('Implement me!');
-  }
+  };
 }

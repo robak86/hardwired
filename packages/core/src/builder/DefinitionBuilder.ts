@@ -2,7 +2,7 @@ import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ClassType } from '../utils/ClassType.js';
 import {
-  assertValidDependency,
+  assertValidDependencies,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
@@ -23,7 +23,7 @@ export class DefinitionBuilder<
     protected _meta: TMeta,
     protected _annotations: DefinitionAnnotation<InstanceDefinition<TLifeTime, any, any>>[],
   ) {
-    assertValidDependency(this._lifeTime, this._deps);
+    assertValidDependencies(this._lifeTime, this._deps);
   }
 
   async() {
@@ -61,10 +61,16 @@ export class DefinitionBuilder<
   }
 
   define<TValue>(buildFn: (locator: IServiceLocator<TLifeTime>) => TValue) {
+    const definition = InstanceDefinition.create(this._lifeTime, buildFn, this._deps, this._meta);
+
+    return this._annotations.reduce((def, annotation: any) => annotation(def), definition);
+  }
+
+  thunk<TValue>(buildFn: (locator: IServiceLocator<TLifeTime>) => TValue) {
     const definition = InstanceDefinition.create(
       this._lifeTime,
-      (context: ContainerContext) => {
-        return buildFn(new Container(context)); // TODO: still unclear if we should create a new instance of Container
+      (context: IServiceLocator) => {
+        return () => buildFn(context);
       },
       this._deps,
       this._meta,

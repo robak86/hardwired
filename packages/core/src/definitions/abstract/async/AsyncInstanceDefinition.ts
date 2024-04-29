@@ -1,14 +1,14 @@
 import { LifeTime } from '../LifeTime.js';
 import { Resolution } from '../Resolution.js';
-import { ContainerContext } from '../../../context/ContainerContext.js';
 import { v4 } from 'uuid';
 import { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
+import { IServiceLocator } from '../../../container/IContainer.js';
 
 export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime, TMeta> = {
   readonly id: string;
   readonly strategy: TLifeTime;
   readonly resolution: Resolution.async;
-  readonly create: (context: ContainerContext) => Promise<T>;
+  readonly create: (context: IServiceLocator) => Promise<T>;
   readonly dependencies: AnyInstanceDefinition<any, any, any>[];
   readonly meta?: TMeta;
 };
@@ -22,7 +22,7 @@ export function asyncDefinition<TInstance, TLifeTime extends LifeTime, TMeta>({
 }: {
   id?: string;
   strategy: TLifeTime;
-  create: (context: ContainerContext) => Promise<TInstance>;
+  create: (context: IServiceLocator) => Promise<TInstance>;
   dependencies: AnyInstanceDefinition<any, any, any>[];
   meta?: TMeta;
 }): AsyncInstanceDefinition<TInstance, TLifeTime, TMeta> {

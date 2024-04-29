@@ -1,5 +1,5 @@
 import {
-  assertValidDependency,
+  assertValidDependencies,
   ClassType,
   InstanceDefinition,
   InstanceDefinitionDependency,
@@ -17,7 +17,7 @@ export const serializable = <
   cls: ClassType<TInstance, TArgs>,
   ...dependencies: TDependencies
 ): InstanceDefinition<TInstance, LifeTime.scoped, unknown> => {
-  assertValidDependency(LifeTime.scoped, dependencies);
+  assertValidDependencies(LifeTime.scoped, dependencies);
 
   return new InstanceDefinition(
     id,

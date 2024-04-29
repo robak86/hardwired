@@ -7,7 +7,7 @@ import { Container } from '../container/Container.js';
 import { ClassType } from '../utils/ClassType.js';
 import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 import {
-  assertValidDependency,
+  assertValidDependencies,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import { DefinitionAnnotation } from '../eager/EagerDefinitionsInterceptor.js';
@@ -23,7 +23,7 @@ export class AsyncDefinitionBuilder<
     private _meta: TMeta,
     private _annotations: DefinitionAnnotation<AnyInstanceDefinition<TLifeTime, any, TMeta>>[],
   ) {
-    assertValidDependency(this._lifeTime, this._deps);
+    assertValidDependencies(this._lifeTime, this._deps);
   }
 
   annotate<TNewMeta extends Record<string, any>>(
@@ -59,8 +59,8 @@ export class AsyncDefinitionBuilder<
   ): AsyncInstanceDefinition<TValue, TLifeTime, TMeta> {
     const definition = asyncDefinition({
       strategy: this._lifeTime,
-      create: async (context: ContainerContext) => {
-        return fn(new Container(context));
+      create: async (context: IServiceLocator) => {
+        return fn(context);
       },
       dependencies: this._deps,
       meta: this._meta,

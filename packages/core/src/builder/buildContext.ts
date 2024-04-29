@@ -1,7 +1,6 @@
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
-import { ContainerContext } from '../context/ContainerContext.js';
 import { InstanceDefinition, InstancesRecord } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { assertValidDependency } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
@@ -17,23 +16,22 @@ export function buildContext<
   context: IServiceLocator<TLifeTime>,
   include?: TProvidedBindings,
 ): IServiceLocator<TLifeTime> & InstancesRecord<TProvidedBindings> {
-  throw new Error('Implement me!');
-  // const included = {} as any;
-  //
-  // Object.entries(include ?? {}).forEach(([key, def]) => {
-  //   included[key] = context.use(def);
-  // });
-  //
-  // return {
-  //   ...included,
-  //   use: def => {
-  //     assertValidDependency(lifeTime, def);
-  //     return context.use(def);
-  //   },
-  //   useAll: context.useAll,
-  //   checkoutScope: context.checkoutScope,
-  //   withScope: context.withScope,
-  //   override: context.override,
-  //   provide: context.provide,
-  // };
+  const included = {} as any;
+
+  Object.entries(include ?? {}).forEach(([key, def]) => {
+    included[key] = context.use(def);
+  });
+
+  return {
+    ...included,
+    use: def => {
+      assertValidDependency(lifeTime, def);
+      return context.use(def);
+    },
+    useAll: context.useAll,
+    checkoutScope: context.checkoutScope,
+    withScope: context.withScope,
+    override: context.override,
+    provide: context.provide,
+  };
 }
