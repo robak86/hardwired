@@ -1,4 +1,4 @@
-import { container as buildContainer, IContainer } from 'hardwired';
+import { container as buildContainer, IContainer, InstanceDefinition, LifeTime } from 'hardwired';
 import { ContainerContext, ContainerContextValue } from '../context/ContainerContext.js';
 import { FC, PropsWithChildren, useRef } from 'react';
 
