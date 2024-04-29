@@ -3,10 +3,10 @@ import { useContainer } from '../context/ContainerContext.js';
 
 export type UseDefinitionsHook = {
   <TDefinitions extends InstanceDefinition<any, any, any>[]>(
-    definitions: [...TDefinitions],
+    ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 };
 
-export const useDefinitions: UseDefinitionsHook = (definitions: any) => {
-  return useContainer().useAll(definitions as any) as any;
+export const useDefinitions: UseDefinitionsHook = (...definitions) => {
+  return useContainer().useAll(...definitions) as any;
 };

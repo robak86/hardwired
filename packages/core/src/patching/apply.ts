@@ -19,7 +19,7 @@ export const apply = <
     meta: instance.meta,
     create: context => {
       const decorated = instance.create(context);
-      const applyDeps = dependencies.map(context.buildWithStrategy);
+      const applyDeps = dependencies.map(context.use);
       applyFn(decorated, ...(applyDeps as any));
 
       return decorated;

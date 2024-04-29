@@ -20,7 +20,7 @@ describe(`useDefinitions`, () => {
       const val2Def = scoped.fn(() => 123);
 
       const Component = () => {
-        const [val1, val2] = useDefinitions([val1Def, val2Def]);
+        const [val1, val2] = useDefinitions(val1Def, val2Def);
         expectType<TypeEqual<typeof val1, string>>(true);
         expectType<TypeEqual<typeof val2, number>>(true);
       };
@@ -33,7 +33,7 @@ describe(`useDefinitions`, () => {
 
       const Component = () => {
         try {
-          const [val1, val2] = useDefinitions([val1Def, val2Def]);
+          const [val1, val2] = useDefinitions(val1Def, val2Def);
           expectType<TypeEqual<typeof val1, string>>(true);
           expectType<TypeEqual<typeof val2, number>>(true);
         } catch (e) {
@@ -49,7 +49,7 @@ describe(`useDefinitions`, () => {
 
     function setup() {
       const Consumer = () => {
-        const values = useDefinitions([val1Def, val2Def]);
+        const values = useDefinitions(val1Def, val2Def);
         return <DummyComponent value={values.join(',')} />;
       };
 
@@ -76,7 +76,7 @@ describe(`useDefinitions`, () => {
       const clsDef = scoped.fn(checkoutRenderId);
 
       const Consumer = () => {
-        const [cls] = useDefinitions([clsDef]);
+        const [cls] = useDefinitions(clsDef);
         return <DummyComponent value={cls} />;
       };
 
@@ -139,7 +139,7 @@ describe(`useDefinitions`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const values = useDefinitions([val1Def, val2Def]);
+        const values = useDefinitions(val1Def, val2Def);
         return <DummyComponent value={values.join('|')} />;
       };
 

@@ -16,7 +16,7 @@ export const tuple = <T extends Array<InstanceDefinition<any, any, any>>, TMeta>
     strategy,
     context => {
       return definitions.map(def => {
-        return context.buildWithStrategy(def);
+        return context.use(def);
       }) as any;
     },
     definitions.flatMap(def => def.dependencies),

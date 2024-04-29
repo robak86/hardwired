@@ -5,7 +5,7 @@ import {
   assertValidDependency,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { IContainerScopes, InstanceCreationAware } from '../container/IContainer.js';
+import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { ContainerContext } from '../context/ContainerContext.js';
 import { Container } from '../container/Container.js';
 
@@ -60,7 +60,7 @@ export class DefinitionBuilder<
     );
   }
 
-  define<TValue>(buildFn: (locator: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime>) => TValue) {
+  define<TValue>(buildFn: (locator: IServiceLocator<TLifeTime>) => TValue) {
     const definition = InstanceDefinition.create(
       this._lifeTime,
       (context: ContainerContext) => {
@@ -76,7 +76,7 @@ export class DefinitionBuilder<
   class<TInstance>(cls: ClassType<TInstance, InstancesArray<TDeps>>) {
     const definition = InstanceDefinition.create(
       this._lifeTime,
-      context => new cls(...(this._deps.map(context.buildWithStrategy) as InstancesArray<TDeps>)),
+      context => new cls(...(this._deps.map(context.use) as InstancesArray<TDeps>)),
       this._deps,
       this._meta,
     );
@@ -88,7 +88,7 @@ export class DefinitionBuilder<
     const definition = InstanceDefinition.create(
       this._lifeTime,
       context => {
-        return factory(...(this._deps.map(context.buildWithStrategy) as InstancesArray<TDeps>));
+        return factory(...(this._deps.map(context.use) as InstancesArray<TDeps>));
       },
       this._deps,
       this._meta,

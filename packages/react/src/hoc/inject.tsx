@@ -25,7 +25,7 @@ export const inject =
       });
 
       const definitionsForInject = definitionKeysForInject.map(key => definitions[key]);
-      const instances = useDefinitions(definitionsForInject);
+      const instances = useDefinitions(...definitionsForInject);
 
       const instancesObj: Record<string, any> = {};
       definitionKeysForInject.forEach((key, idx) => {

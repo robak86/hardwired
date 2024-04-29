@@ -28,7 +28,7 @@ export class Container implements IContainer {
   use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
   use<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
   use<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue {
-    return this.containerContext.use(instanceDefinition as any);
+    return this.containerContext.request(instanceDefinition as any);
   }
 
   useAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(

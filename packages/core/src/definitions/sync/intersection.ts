@@ -28,7 +28,7 @@ export const intersection = <TDefinitions extends Array<InstanceDefinition<objec
       return definitions.reduce((result, def) => {
         return {
           ...result,
-          ...context.buildWithStrategy(def),
+          ...context.use(def),
         };
       }, {}) as any;
     },

@@ -1,6 +1,6 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { IContainerScopes, InstanceCreationAware } from '../container/IContainer.js';
+import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { asyncDefinition, AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { ContainerContext } from '../context/ContainerContext.js';
 import { Container } from '../container/Container.js';
@@ -55,7 +55,7 @@ export class AsyncDefinitionBuilder<
   }
 
   define<TValue>(
-    fn: (locator: InstanceCreationAware<TLifeTime> & IContainerScopes<TLifeTime>) => TValue | Promise<TValue>,
+    fn: (locator: IServiceLocator<TLifeTime>) => TValue | Promise<TValue>,
   ): AsyncInstanceDefinition<TValue, TLifeTime, TMeta> {
     const definition = asyncDefinition({
       strategy: this._lifeTime,
@@ -73,9 +73,7 @@ export class AsyncDefinitionBuilder<
     const definition = asyncDefinition({
       strategy: this._lifeTime,
       create: async context => {
-        const dependenciesInstance = (await Promise.all(
-          this._deps.map(context.buildWithStrategy),
-        )) as InstancesArray<TDeps>;
+        const dependenciesInstance = (await Promise.all(this._deps.map(context.use))) as InstancesArray<TDeps>;
         return new cls(...dependenciesInstance);
       },
       dependencies: this._deps,
@@ -89,7 +87,7 @@ export class AsyncDefinitionBuilder<
     const definition = asyncDefinition({
       strategy: this._lifeTime,
       create: async context => {
-        const dependenciesInstance = await Promise.all(this._deps.map(context.buildWithStrategy));
+        const dependenciesInstance = await Promise.all(this._deps.map(context.use));
         return factory(...(dependenciesInstance as InstancesArray<TDeps>));
       },
       dependencies: this._deps,

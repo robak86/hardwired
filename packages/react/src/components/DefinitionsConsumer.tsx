@@ -10,7 +10,7 @@ export function DefinitionsConsumer<TInstances extends InstanceDefinition<any, a
   definitions,
   render,
 }: DefinitionsConsumerProps<[...TInstances]>) {
-  const moduleAsObject = useDefinitions(definitions as any);
+  const moduleAsObject = useDefinitions(...definitions);
 
   return render(...(moduleAsObject as any));
 }

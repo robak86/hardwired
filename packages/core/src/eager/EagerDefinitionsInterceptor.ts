@@ -45,7 +45,7 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
 
   onRequestEnd<T>(definition: AnyInstanceDefinition<T, any, any>, context: ContainerContext, instance: T): T {
     for (const definition of this._eagerDefinitions) {
-      context.buildWithStrategy(definition);
+      context.use(definition);
     }
 
     return instance;
@@ -57,7 +57,7 @@ export class EagerDefinitionsInterceptor implements ContainerInterceptor {
     instance: T,
   ): Promise<T> {
     for (const definition of this._eagerDefinitions) {
-      await context.buildWithStrategy(definition);
+      await context.use(definition);
     }
 
     return instance;
