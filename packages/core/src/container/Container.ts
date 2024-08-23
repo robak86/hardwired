@@ -9,6 +9,7 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { set } from '../patching/set.js';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
+import { FnDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext) {}
@@ -23,6 +24,10 @@ export class Container implements IContainer {
 
   get events(): ContextEvents {
     return this.containerContext.events;
+  }
+
+  call<TValue>(instanceDefinition: FnDefinition<TValue, any, any>): TValue {
+    return this.containerContext.request(instanceDefinition as any);
   }
 
   use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
