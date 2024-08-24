@@ -14,8 +14,19 @@ import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { BaseDefinition, IDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
+import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 
-export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
+export interface ContainerContext {
+  <TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
+  <TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  <TValue>(definition: BaseDefinition<TValue, any, any>): TValue;
+  <TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue>;
+}
+
+export class ContainerContext
+  extends ExtensibleFunction
+  implements InstancesBuilder, InstanceCreationAware, IContainerScopes
+{
   static empty(
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptor: ContainerInterceptor = {},
@@ -59,7 +70,11 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
-  ) {}
+  ) {
+    super((definition: AnyInstanceDefinition<any, any, any>) => {
+      return this.request(definition as any); // TODO: fix type
+    });
+  }
 
   override(definition: AnyInstanceDefinition<any, any, any>): void {
     if (this.instancesCache.hasInCurrentScope(definition.id)) {
@@ -104,7 +119,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     }
   }
 
-  useAll<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>>(
+  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;
@@ -113,9 +128,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
   buildExactFn<T>(definition: IDefinition<T, any, any>): T {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
-    return patchedInstanceDef.create((def: IDefinition<any, any, any>) => {
-      return this.requestCall(def);
-    });
+    return patchedInstanceDef.create(this);
   }
 
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;

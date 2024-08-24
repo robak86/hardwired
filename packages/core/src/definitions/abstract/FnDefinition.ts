@@ -5,6 +5,7 @@ import { container } from '../../container/Container.js';
 import { AsyncInstanceDefinition } from './async/AsyncInstanceDefinition.js';
 import { AnyInstanceDefinition } from './AnyInstanceDefinition.js';
 import { Resolution } from './Resolution.js';
+import { ExtensibleFunction } from '../../utils/ExtensibleFunction.js';
 
 export type IDefinition<T, TLifeTime extends LifeTime, TMeta> = {
   readonly id: string;
@@ -19,18 +20,10 @@ export function isBasedDefinition<T, TLifeTime extends LifeTime, TMeta>(
   return Object.prototype.hasOwnProperty.call(def, 'kind');
 }
 
-class ExtensibleFunction extends Function {
-  // @ts-expect-error
-  constructor(f) {
-    return Object.setPrototypeOf(f, new.target.prototype);
-  }
-}
-
 export interface BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta> extends ExtensibleFunction {
   (): TInstance;
 }
 
-//@ts-expect-error
 export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta> extends ExtensibleFunction {
   readonly kind = 'fn'; // TODO: used as a marker for isBasedDefinition. Remove after opting out from builder based api
   readonly dependencies: any[] = []; // TODO: only for compatibility reason. Remove after opting out from builder based api

@@ -13,7 +13,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   use<TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
   use<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 
-  useAll<
+  all<
     TDefinitions extends Array<
       | InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
       | BaseDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
@@ -34,9 +34,21 @@ export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime> {}
 
-export interface FnServiceLocator {
+export type FnServiceLocatorMethods<TAllowedLifeTime extends LifeTime = LifeTime> = {
+  withScope<TValue>(fn: (locator: FnServiceLocator) => TValue): TValue;
+  all<
+    TDefinitions extends Array<
+      | InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
+      | BaseDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
+    >,
+  >(
+    ...definitions: [...TDefinitions]
+  ): InstancesArray<TDefinitions>;
+};
+
+export type FnServiceLocator = FnServiceLocatorMethods & {
   <TValue>(instanceDefinition: IDefinition<TValue, any, any>): TValue;
-}
+};
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends IServiceLocator<TAllowedLifeTime>,

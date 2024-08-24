@@ -68,7 +68,7 @@ describe(`define`, () => {
       });
 
       const cnt = container();
-      const [result1, result2] = cnt.useAll(definition, definition);
+      const [result1, result2] = cnt.all(definition, definition);
 
       expect(result1).toBe(result2);
     });
