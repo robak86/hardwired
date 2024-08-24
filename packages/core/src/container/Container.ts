@@ -11,7 +11,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { Overrides, OverridesSet } from './Assignments.js';
+import { Overrides } from './Assignments.js';
 
 export interface Container extends UseFn {}
 
