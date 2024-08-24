@@ -11,6 +11,10 @@ export interface PatchSet {
   map<T>(callback: (definition: AnyInstanceDefinition<any, any, any>) => T): T[];
 }
 
+export const isPatchSet = (value: any): value is PatchSet => {
+  return typeof value === 'object' && typeof value.get === 'function';
+};
+
 export class Patch implements PatchSet {
   constructor(private overrides: Record<string, AnyInstanceDefinition<any, any, any>>) {}
 

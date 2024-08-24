@@ -3,7 +3,7 @@ import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { IContainer, IContainerScopes, IServiceLocator, UseFn } from './IContainer.js';
+import { IContainer, IContainerScopes, UseFn } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { set } from '../patching/set.js';
@@ -11,7 +11,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { Patch, Overrides } from './Patch.js';
+import { isPatchSet, Overrides, PatchSet } from './Patch.js';
 
 export interface Container extends UseFn {}
 
@@ -80,12 +80,14 @@ export type ContainerScopeOptions = {
   interceptor?: ContainerInterceptor;
 };
 
-export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[]): Container;
+export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[] | PatchSet): Container;
 export function container(options?: ContainerOptions): Container;
 export function container(
-  overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any, any>>,
+  overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any, any>> | PatchSet,
 ): Container {
   if (Array.isArray(overridesOrOptions)) {
+    return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
+  } else if (isPatchSet(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {
     return new Container(
