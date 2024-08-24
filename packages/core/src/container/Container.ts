@@ -9,7 +9,7 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { set } from '../patching/set.js';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
-import { FnDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseFnDefinition, FnDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext) {}
@@ -26,9 +26,8 @@ export class Container implements IContainer {
     return this.containerContext.events;
   }
 
-  call<TValue>(instanceDefinition: FnDefinition<TValue, any, any>): TValue {
-    return this.containerContext.request(instanceDefinition as any);
-  }
+  call = <TValue>(instanceDefinition: BaseFnDefinition<TValue, any, any>): TValue =>
+    this.containerContext.requestCall(instanceDefinition);
 
   use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
   use<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
@@ -41,6 +40,12 @@ export class Container implements IContainer {
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.containerContext.use(def)) as any;
   }
+
+  // callAsyncAll<TDefinitions extends FnDefinition<any, any, any>[]>(
+  //   ...definitions: [...TDefinitions]
+  // ): Promise<AsyncInstancesArray<TDefinitions>> {
+  //   return Promise.all(definitions.map(def => this.containerContext.requestCall(def))) as any;
+  // }
 
   getAllAsync<TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
     ...definitions: [...TDefinitions]
@@ -67,11 +72,11 @@ export class Container implements IContainer {
 }
 
 export type ContainerOptions = {
-  globalOverrides?: AnyInstanceDefinition<any, any, any>[]; // propagated to descendant containers
+  globalOverrides?: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>; // propagated to descendant containers
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: AnyInstanceDefinition<any, any, any>[];
+  overrides?: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>;
   interceptor?: ContainerInterceptor;
 };
 

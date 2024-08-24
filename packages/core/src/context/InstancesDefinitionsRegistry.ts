@@ -1,4 +1,5 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
+import { BaseFnDefinition, FnDefinition } from '../definitions/abstract/FnDefinition.js';
 
 /**
  * This class represents a registry for storing definitions overrides for scope.
@@ -9,8 +10,8 @@ export class InstancesDefinitionsRegistry {
   }
 
   static create(
-    scopeOverrides: AnyInstanceDefinition<any, any, any>[],
-    globalOverrides: AnyInstanceDefinition<any, any, any>[],
+    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>,
+    globalOverrides: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>,
   ): InstancesDefinitionsRegistry {
     const registry = InstancesDefinitionsRegistry.empty();
 
@@ -21,15 +22,21 @@ export class InstancesDefinitionsRegistry {
   }
 
   constructor(
-    private scopeOverrideDefinitionsById: Record<string, AnyInstanceDefinition<any, any, any>>,
-    private globalOverrideDefinitionsById: Record<string, AnyInstanceDefinition<any, any, any>>,
+    private scopeOverrideDefinitionsById: Record<
+      string,
+      AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>
+    >,
+    private globalOverrideDefinitionsById: Record<
+      string,
+      AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>
+    >,
   ) {}
 
-  addScopeOverride(definition: AnyInstanceDefinition<any, any, any>) {
+  addScopeOverride(definition: AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>) {
     this.updateScopeOverride(definition);
   }
 
-  checkoutForScope(scopeResolversOverrides: AnyInstanceDefinition<any, any, any>[]) {
+  checkoutForScope(scopeResolversOverrides: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>) {
     const newRegistry = new InstancesDefinitionsRegistry(
       { ...this.scopeOverrideDefinitionsById },
       this.globalOverrideDefinitionsById,
@@ -38,17 +45,17 @@ export class InstancesDefinitionsRegistry {
     return newRegistry;
   }
 
-  getInstanceDefinition(
-    instanceDefinition: AnyInstanceDefinition<any, any, any>,
-  ): AnyInstanceDefinition<any, any, any> {
+  getInstanceDefinition<T extends AnyInstanceDefinition<any, any, any> | BaseFnDefinition<any, any, any>>(
+    instanceDefinition: T,
+  ): T {
     const id = instanceDefinition.id;
 
     if (this.globalOverrideDefinitionsById[id]) {
-      return this.globalOverrideDefinitionsById[id];
+      return this.globalOverrideDefinitionsById[id] as T;
     }
 
     if (this.scopeOverrideDefinitionsById[id]) {
-      return this.scopeOverrideDefinitionsById[id];
+      return this.scopeOverrideDefinitionsById[id] as T;
     }
 
     return instanceDefinition;
@@ -62,24 +69,24 @@ export class InstancesDefinitionsRegistry {
     return !!this.scopeOverrideDefinitionsById[resolverId];
   }
 
-  private updateScopeOverride(resolver: AnyInstanceDefinition<any, any, any>) {
+  private updateScopeOverride(resolver: AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>) {
     this.scopeOverrideDefinitionsById[resolver.id] = resolver;
   }
 
-  private addGlobalOverrideResolver(resolver: AnyInstanceDefinition<any, any, any>) {
+  private addGlobalOverrideResolver(resolver: AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>) {
     if (this.globalOverrideDefinitionsById[resolver.id]) {
       throw new Error(`Invariant resolves cannot be updated after container creation`);
     }
     this.globalOverrideDefinitionsById[resolver.id] = resolver;
   }
 
-  private addGlobalOverrides(patches: AnyInstanceDefinition<any, any, any>[]) {
+  private addGlobalOverrides(patches: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>) {
     patches.forEach(patchedResolver => {
       this.addGlobalOverrideResolver(patchedResolver);
     });
   }
 
-  private addScopeOverrides(patches: AnyInstanceDefinition<any, any, any>[]) {
+  private addScopeOverrides(patches: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>) {
     patches.forEach(patchedResolver => {
       this.updateScopeOverride(patchedResolver);
     });

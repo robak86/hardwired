@@ -13,6 +13,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { BaseFnDefinition, FnDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
   static empty(
@@ -32,8 +33,8 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
   }
 
   static create(
-    scopeOverrides: AnyInstanceDefinition<any, any, any>[],
-    globalOverrides: AnyInstanceDefinition<any, any, any>[],
+    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>,
+    globalOverrides: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>,
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
   ): ContainerContext {
@@ -70,6 +71,13 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
+  requestCall<TValue>(definition: BaseFnDefinition<TValue, any, any>): TValue {
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+    const strategy = this.strategiesRegistry.get(definition.strategy);
+
+    return strategy.buildFn(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
+  }
+
   request<TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
   request<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
   request<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
@@ -95,6 +103,14 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;
+  }
+
+  buildExactFn<T>(definition: BaseFnDefinition<T, any, any>): T {
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+
+    return patchedInstanceDef.create((def: BaseFnDefinition<any, any, any>) => {
+      return this.requestCall(def);
+    });
   }
 
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;

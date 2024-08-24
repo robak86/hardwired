@@ -11,20 +11,3 @@ export const fn = {
   transient: fnDefinition(LifeTime.transient),
   scoped: fnDefinition(LifeTime.scoped),
 };
-
-const def1 = fn.singleton(use => {
-  return 123;
-});
-
-const asyncDef = fn.singleton(async use => {
-  return 123;
-});
-
-const def2 = fn.transient(async use => {
-  const a = use(def1);
-  const asyncDefResult = await use(asyncDef);
-
-  return a + 1 + asyncDefResult;
-});
-
-const value = await def2();
