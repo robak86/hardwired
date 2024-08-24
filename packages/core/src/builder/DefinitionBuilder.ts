@@ -5,9 +5,7 @@ import {
   assertValidDependencies,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
-import { ContainerContext } from '../context/ContainerContext.js';
-import { Container } from '../container/Container.js';
+import { IServiceLocator } from '../container/IContainer.js';
 
 import { AsyncDefinitionBuilder } from './AsyncDefinitionBuilder.js';
 import { DefinitionAnnotation } from './DefinitionAnnotations.js';

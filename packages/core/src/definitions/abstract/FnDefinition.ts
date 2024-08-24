@@ -44,33 +44,14 @@ export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta> extend
     return new PatchDefinition(this.id, this.strategy, this.create);
   }
 
-  // TODO: return richer type, that will be only accepted as overrides
-  // and split this like def.patch().replace();
-  patchReplace<TExtendedInstance extends TInstance, TLifeTime extends LifeTime>(
-    def: BaseDefinition<TExtendedInstance, TLifeTime, any>,
-  ): BaseDefinition<TExtendedInstance, TLifeTime, any> {
-    return new BaseDefinition(this.id, def.strategy, def.create);
-  }
-
-  defineDecorated<TExtendedInstance extends TInstance>(
-    decorateFn: (instance: TInstance) => TExtendedInstance,
-  ): BaseDefinition<TExtendedInstance, TLifeTime, any> {
-    return new BaseDefinition(v4(), this.strategy, (use: IServiceLocator): TExtendedInstance => {
-      const instance = use(this);
-      return decorateFn(instance);
-    });
-  }
-
-  defineApply(applyFn: (instance: TInstance) => void): BaseDefinition<TInstance, TLifeTime, any> {
-    return new BaseDefinition(v4(), this.strategy, (use: IServiceLocator) => {
-      const instance = use(this);
-      applyFn(instance);
-
-      return instance;
-    });
+  define(): DefineBuilder<TInstance, TLifeTime, TMeta> {
+    return new DefineBuilder(this.id, this.strategy, this.create);
   }
 }
 
+// TODO:
+//  make PatchDefinition incompatible with BaseDefinition so it cannot be used as overrides.
+//  overrides should accept some richer type than definition so one cannot accidentally override with a definition
 export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta> extends BaseDefinition<
   TInstance,
   TLifeTime,
@@ -102,6 +83,30 @@ export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta> exten
 
   set(newValue: TInstance): BaseDefinition<TInstance, TLifeTime, any> {
     return new BaseDefinition(this.id, this.strategy, () => newValue);
+  }
+}
+
+export class DefineBuilder<TInstance, TLifeTime extends LifeTime, TMeta> extends BaseDefinition<
+  TInstance,
+  TLifeTime,
+  TMeta
+> {
+  apply(applyFn: (instance: TInstance) => void): BaseDefinition<TInstance, TLifeTime, any> {
+    return new BaseDefinition(v4(), this.strategy, (use: IServiceLocator) => {
+      const instance = use(this);
+      applyFn(instance);
+
+      return instance;
+    });
+  }
+
+  decorate<TExtendedInstance extends TInstance>(
+    decorateFn: (instance: TInstance) => TExtendedInstance,
+  ): BaseDefinition<TExtendedInstance, TLifeTime, any> {
+    return new BaseDefinition(v4(), this.strategy, (use: IServiceLocator): TExtendedInstance => {
+      const instance = use(this);
+      return decorateFn(instance);
+    });
   }
 }
 
