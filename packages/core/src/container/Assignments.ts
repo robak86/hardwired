@@ -1,21 +1,29 @@
-import { BaseDefinition, fnDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { fn } from '../definitions/definitions.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
 export class Assignments {
-  constructor(private overrides: Record<string, BaseDefinition<any, any, any>>) {}
+  constructor(private overrides: Record<string, AnyInstanceDefinition<any, any, any>>) {}
 
-  // TODO: maybe should be optional
-  decorateAsync<TInstance, TExtendedInstance extends TInstance, TLifeTime extends LifeTime>(
-    def: BaseDefinition<Promise<TInstance>, TLifeTime, any>,
-    decorateFn: (instance: TInstance) => Promise<TExtendedInstance> | TExtendedInstance,
+  append(definition: AnyInstanceDefinition<any, any, any>): Assignments {
+    return new Assignments({
+      ...this.overrides,
+      [definition.id]: definition,
+    });
+  }
+
+  decorate<TInstance, TExtendedInstance extends TInstance, TLifeTime extends LifeTime>(
+    def: BaseDefinition<TInstance, TLifeTime, any>,
+    decorateFn: (instance: TInstance) => TExtendedInstance,
   ): Assignments {
-    const override: BaseDefinition<Promise<TExtendedInstance>, TLifeTime, any> = fnDefinition(def.strategy)(
-      async use => {
-        const instance = await use(def);
+    const override: BaseDefinition<TExtendedInstance, TLifeTime, any> = new BaseDefinition(
+      def.id,
+      def.strategy,
+      use => {
+        const instance = use(def);
         return decorateFn(instance);
       },
-      def.id,
     );
 
     return new Assignments({
@@ -24,14 +32,15 @@ export class Assignments {
     });
   }
 
-  decorate<TInstance, TExtendedInstance extends TInstance, TLifeTime extends LifeTime>(
+  set<TInstance, TLifeTime extends LifeTime>(
     def: BaseDefinition<TInstance, TLifeTime, any>,
-    decorateFn: (instance: TInstance) => TExtendedInstance,
+    newValue: TInstance,
   ): Assignments {
-    const override: BaseDefinition<TExtendedInstance, TLifeTime, any> = fnDefinition(def.strategy)(use => {
-      const instance = use(def);
-      return decorateFn(instance);
-    }, def.id);
+    const override: BaseDefinition<TInstance, TLifeTime, any> = new BaseDefinition(
+      def.id,
+      def.strategy,
+      () => newValue,
+    );
 
     return new Assignments({
       ...this.overrides,
@@ -39,7 +48,24 @@ export class Assignments {
     });
   }
 
-  get(definitionId: string): BaseDefinition<any, any, any> | undefined {
+  apply<TInstance, TLifeTime extends LifeTime>(
+    def: BaseDefinition<TInstance, TLifeTime, any>,
+    applyFn: (instance: TInstance) => void,
+  ): Assignments {
+    const override: BaseDefinition<TInstance, TLifeTime, any> = new BaseDefinition(def.id, def.strategy, use => {
+      const instance = use(def);
+      applyFn(instance);
+
+      return instance;
+    });
+
+    return new Assignments({
+      ...this.overrides,
+      [def.id]: override,
+    });
+  }
+
+  get(definitionId: string): AnyInstanceDefinition<any, any, any> | undefined {
     return this.overrides[definitionId];
   }
 }
@@ -55,16 +81,11 @@ const def = fn.singleton(() => {
 });
 
 assignments()
-  .decorateAsync(asyncDef, val => {
-    return 123;
-  })
-  .decorateAsync(asyncDef, async val => {
-    return 123;
-  })
   .decorate(asyncDef, val => {
     return val;
   })
   .decorate(asyncDef, async val => {
+    const asdf = await val;
     return 123;
   })
   .decorate(def, val => {

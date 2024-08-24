@@ -3,7 +3,7 @@ import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { UseFn, IContainer } from './IContainer.js';
+import { IContainer, UseFn } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { set } from '../patching/set.js';
