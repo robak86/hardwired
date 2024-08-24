@@ -40,3 +40,5 @@ export * from './builder/DefinitionBuilder.js';
 export { DefineFn, buildContext } from './builder/buildContext.js';
 export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
 export * from './definitions/abstract/AbstractServiceLocatorDecorator.js';
+
+export * from './container/Assignments.js';

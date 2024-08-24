@@ -10,6 +10,7 @@ import { ContainerContext } from '../../context/ContainerContext.js';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
+import { patch } from '../Assignments.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
@@ -79,14 +80,10 @@ describe(`Container`, () => {
   describe(`.replace`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
-        const a = singleton.fn(() => 1);
+        const a = fn.singleton(() => 1);
+        const overrides = patch().set(a, 2);
 
-        const mPatch = replace(
-          a,
-          singleton.fn(() => 2),
-        );
-
-        expect(container({ overrides: [mPatch] }).use(a)).toEqual(2);
+        expect(container({ overrides }).use(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {

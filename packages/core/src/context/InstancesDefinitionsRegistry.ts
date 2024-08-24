@@ -1,5 +1,6 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
+import { Overrides } from '../container/Assignments.js';
 
 /**
  * This class represents a registry for storing definitions overrides for scope.
@@ -9,10 +10,7 @@ export class InstancesDefinitionsRegistry {
     return new InstancesDefinitionsRegistry({}, {});
   }
 
-  static create(
-    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
-    globalOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
-  ): InstancesDefinitionsRegistry {
+  static create(scopeOverrides: Overrides, globalOverrides: Overrides): InstancesDefinitionsRegistry {
     const registry = InstancesDefinitionsRegistry.empty();
 
     registry.addScopeOverrides(scopeOverrides);
@@ -36,9 +34,7 @@ export class InstancesDefinitionsRegistry {
     this.updateScopeOverride(definition);
   }
 
-  checkoutForScope(
-    scopeResolversOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
-  ) {
+  checkoutForScope(scopeResolversOverrides: Overrides) {
     const newRegistry = new InstancesDefinitionsRegistry(
       { ...this.scopeOverrideDefinitionsById },
       this.globalOverrideDefinitionsById,
@@ -82,13 +78,13 @@ export class InstancesDefinitionsRegistry {
     this.globalOverrideDefinitionsById[resolver.id] = resolver;
   }
 
-  private addGlobalOverrides(patches: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>) {
+  private addGlobalOverrides(patches: Overrides) {
     patches.forEach(patchedResolver => {
       this.addGlobalOverrideResolver(patchedResolver);
     });
   }
 
-  private addScopeOverrides(patches: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>) {
+  private addScopeOverrides(patches: Overrides) {
     patches.forEach(patchedResolver => {
       this.updateScopeOverride(patchedResolver);
     });

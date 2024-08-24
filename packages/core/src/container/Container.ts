@@ -11,6 +11,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
+import { Overrides, OverridesSet } from './Assignments.js';
 
 export interface Container extends UseFn {}
 
@@ -65,11 +66,11 @@ export class Container extends ExtensibleFunction implements IContainer {
 }
 
 export type ContainerOptions = {
-  globalOverrides?: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>; // propagated to descendant containers
+  globalOverrides?: Overrides; // propagated to descendant containers
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>;
+  overrides?: Overrides;
   interceptor?: ContainerInterceptor;
 };
 

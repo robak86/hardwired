@@ -15,6 +15,7 @@ import { UseFn, IContainerScopes, InstanceCreationAware, IServiceLocator } from 
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { BaseDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
+import { Overrides } from '../container/Assignments.js';
 
 export interface ContainerContext {
   <TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
@@ -46,8 +47,8 @@ export class ContainerContext
   }
 
   static create(
-    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
-    globalOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
+    scopeOverrides: Overrides,
+    globalOverrides: Overrides,
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
   ): ContainerContext {
