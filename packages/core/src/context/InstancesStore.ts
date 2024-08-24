@@ -1,10 +1,10 @@
 import { HierarchicalStore } from './HierarchicalStore.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { BoundDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class InstancesStore {
   static create(
-    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BoundDefinition<any, any, any>>,
+    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
   ): InstancesStore {
     const ownKeys = scopeOverrides.map(def => def.id);
     return new InstancesStore(new HierarchicalStore(ownKeys), {}, {});
@@ -22,7 +22,7 @@ export class InstancesStore {
   ) {}
 
   childScope(
-    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BoundDefinition<any, any, any>>,
+    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
   ): InstancesStore {
     const scopeOverridesDefinitionIds = scopeOverrides.map(def => def.id);
 

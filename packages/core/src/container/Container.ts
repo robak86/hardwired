@@ -9,7 +9,7 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { set } from '../patching/set.js';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
-import { BaseDefinition, BoundDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class Container implements IContainer {
   constructor(protected readonly containerContext: ContainerContext) {}
@@ -64,11 +64,11 @@ export class Container implements IContainer {
 }
 
 export type ContainerOptions = {
-  globalOverrides?: Array<AnyInstanceDefinition<any, any, any> | BoundDefinition<any, any, any>>; // propagated to descendant containers
+  globalOverrides?: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>; // propagated to descendant containers
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: Array<AnyInstanceDefinition<any, any, any> | BoundDefinition<any, any, any>>;
+  overrides?: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>;
   interceptor?: ContainerInterceptor;
 };
 

@@ -13,12 +13,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import {
-  BaseDefinition,
-  IDefinition,
-  BoundDefinition,
-  isBasedDefinition,
-} from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition, IDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
   static empty(
@@ -38,8 +33,8 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
   }
 
   static create(
-    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BoundDefinition<any, any, any>>,
-    globalOverrides: Array<AnyInstanceDefinition<any, any, any> | BoundDefinition<any, any, any>>,
+    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
+    globalOverrides: Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>,
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
   ): ContainerContext {
@@ -125,7 +120,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
 
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
   buildExact<T>(definition: AsyncInstanceDefinition<T, any, any>): Promise<T>;
-  buildExact<T>(definition: BoundDefinition<T, any, any>): Promise<T>;
+  buildExact<T>(definition: BaseDefinition<T, any, any>): Promise<T>;
   buildExact<T>(definition: AnyInstanceDefinition<T, any, any>): T | Promise<T> {
     if (isBasedDefinition(definition)) {
       return this.buildExactFn(definition);
