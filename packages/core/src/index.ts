@@ -34,14 +34,6 @@ export { Resolution } from './definitions/abstract/Resolution.js';
 export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
 export { ContainerInterceptor } from './context/ContainerInterceptor.js';
 
-export { EagerDefinitions } from './eager/EagerDefinitions.js';
-export {
-  EagerDefinitionsInterceptor,
-  eager,
-  eagerInterceptor,
-  DefinitionAnnotation,
-} from './eager/EagerDefinitionsInterceptor.js';
-
 export * from './builder/AsyncDefinitionBuilder.js';
 export * from './builder/DefinitionBuilder.js';
 export { DefineFn, buildContext } from './builder/buildContext.js';

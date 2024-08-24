@@ -13,7 +13,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { BaseFnDefinition, FnDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseFnDefinition, FnDefinition, isFnBasedDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
   static empty(
@@ -80,7 +80,12 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
 
   request<TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
   request<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  request<TValue>(definition: FnDefinition<TValue, any, any>): Promise<TValue>;
   request<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
+    if (isFnBasedDefinition(definition)) {
+      return this.requestCall(definition);
+    }
+
     this.events.onGet.emit({ containerId: this.id, definition });
 
     this.interceptor.onRequestStart?.(definition, this);
@@ -115,7 +120,12 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
 
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
   buildExact<T>(definition: AsyncInstanceDefinition<T, any, any>): Promise<T>;
+  buildExact<T>(definition: FnDefinition<T, any, any>): Promise<T>;
   buildExact<T>(definition: AnyInstanceDefinition<T, any, any>): T | Promise<T> {
+    if (isFnBasedDefinition(definition)) {
+      return this.buildExactFn(definition);
+    }
+
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);

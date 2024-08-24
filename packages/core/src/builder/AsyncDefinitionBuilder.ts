@@ -1,16 +1,14 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
+import { IServiceLocator } from '../container/IContainer.js';
 import { asyncDefinition, AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
-import { ContainerContext } from '../context/ContainerContext.js';
-import { Container } from '../container/Container.js';
 import { ClassType } from '../utils/ClassType.js';
 import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 import {
   assertValidDependencies,
   ValidDependenciesLifeTime,
 } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { DefinitionAnnotation } from '../eager/EagerDefinitionsInterceptor.js';
+import { DefinitionAnnotation } from './DefinitionAnnotations.js';
 
 export class AsyncDefinitionBuilder<
   TDeps extends AnyInstanceDefinition<any, any, any>[],

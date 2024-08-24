@@ -4,10 +4,8 @@ import { singleton, transient } from '../definitions/definitions.js';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import 'source-map-support/register';
 import Bench from 'tinybench';
-import { EagerDefinitionsInterceptor } from '../eager/EagerDefinitionsInterceptor.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
-const eagerInterceptor = new EagerDefinitionsInterceptor();
+import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 
 const countTreeDepsCount = (definition: AnyInstanceDefinition<any, any, any>): number => {
   if (definition.dependencies.length === 0) {
@@ -34,7 +32,7 @@ function buildSingletonTree(
       definitions.push(
         singleton //
           .using(...buildSingletonTree(times, depth, markEager, (currentDepth += 1)))
-          .annotate(eagerInterceptor.eager)
+
           .fn((...args: any[]) => args),
       );
     } else {
@@ -81,17 +79,14 @@ console.table([
 ]);
 
 let cnt: Container;
-let eagerCnt: Container;
 
 const bench = new Bench({
   time: 100,
   setup: () => {
     cnt = container();
-    eagerCnt = container({ interceptor: eagerInterceptor });
   },
   teardown: () => {
     cnt = container();
-    eagerCnt = container({ interceptor: eagerInterceptor });
   },
 });
 
@@ -101,15 +96,6 @@ bench
   })
   .add('no interceptor: transientD', () => {
     cnt.use(transientD);
-  })
-  .add('eager: singletonD', () => {
-    eagerCnt.use(singletonD);
-  })
-  .add('eager: transientD', () => {
-    eagerCnt.use(transientD);
-  })
-  .add('eager with eager leafs: singletonD', () => {
-    eagerCnt.use(singletonWithEagerLeafD);
   });
 
 bench

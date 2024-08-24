@@ -10,7 +10,7 @@ import { ContainerContext } from '../context/ContainerContext.js';
 import { Container } from '../container/Container.js';
 
 import { AsyncDefinitionBuilder } from './AsyncDefinitionBuilder.js';
-import { DefinitionAnnotation } from '../eager/EagerDefinitionsInterceptor.js';
+import { DefinitionAnnotation } from './DefinitionAnnotations.js';
 
 export class DefinitionBuilder<
   TDeps extends InstanceDefinition<any, ValidDependenciesLifeTime<TLifeTime>, any>[],

@@ -3,6 +3,7 @@ import { FnServiceLocator } from '../../container/IContainer.js';
 import { v4 } from 'uuid';
 import { container } from '../../container/Container.js';
 import { AsyncInstanceDefinition } from './async/AsyncInstanceDefinition.js';
+import { AnyInstanceDefinition } from './AnyInstanceDefinition.js';
 
 export type BaseFnDefinition<T, TLifeTime extends LifeTime, TMeta> = {
   readonly id: string;
@@ -15,7 +16,16 @@ export type FnDefinition<T, TLifeTime extends LifeTime, TMeta> = BaseDefinition<
   (): T;
 };
 
+export function isFnBasedDefinition<T, TLifeTime extends LifeTime, TMeta>(
+  def: AnyInstanceDefinition<T, TLifeTime, TMeta>,
+): def is FnDefinition<T, TLifeTime, TMeta> {
+  return Object.prototype.hasOwnProperty.call(def, 'kind');
+}
+
 export class BaseDefinition<TInstance, TLifeTime extends LifeTime> {
+  readonly kind = 'fn' as const;
+  readonly dependencies: any[] = []; // TODO: only for compatibility reason. Remove after opting out from builder based api
+
   constructor(
     public readonly id: string,
     public readonly strategy: TLifeTime,
