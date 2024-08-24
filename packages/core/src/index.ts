@@ -42,3 +42,4 @@ export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
 export * from './definitions/abstract/AbstractServiceLocatorDecorator.js';
 
 export * from './container/Assignments.js';
+export * from './container/IContainer.js';
