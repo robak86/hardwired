@@ -5,14 +5,20 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { ContextEvents } from '../events/ContextEvents.js';
-import { BaseFnDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition, BaseFnDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
   use<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  use<TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
   use<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 
-  useAll<TDefinitions extends InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>[]>(
+  useAll<
+    TDefinitions extends Array<
+      | InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
+      | BaseDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
+    >,
+  >(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 }

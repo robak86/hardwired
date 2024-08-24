@@ -33,7 +33,7 @@ export class Container implements IContainer {
     return this.containerContext.request(instanceDefinition as any);
   }
 
-  useAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+  useAll<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.containerContext.use(def)) as any;

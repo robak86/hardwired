@@ -109,7 +109,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     }
   }
 
-  useAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+  useAll<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;

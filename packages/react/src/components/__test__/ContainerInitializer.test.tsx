@@ -1,4 +1,4 @@
-import { scoped } from 'hardwired';
+import { fn, scoped } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { ContainerInitializer } from '../ContainerInitializer.js';
@@ -16,7 +16,8 @@ describe(`ContainerInitializer`, () => {
       }
     }
 
-    const initializeMe = scoped.class(InitializeMe);
+    const initializeMe = fn.scoped(use => new InitializeMe());
+
     const initializer = scoped.thunk(c => {
       c.use(initializeMe).init();
     });

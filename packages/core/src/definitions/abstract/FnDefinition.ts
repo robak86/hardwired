@@ -4,6 +4,7 @@ import { v4 } from 'uuid';
 import { container } from '../../container/Container.js';
 import { AsyncInstanceDefinition } from './async/AsyncInstanceDefinition.js';
 import { AnyInstanceDefinition } from './AnyInstanceDefinition.js';
+import { Resolution } from './Resolution.js';
 
 export type BaseFnDefinition<T, TLifeTime extends LifeTime, TMeta> = {
   readonly id: string;
@@ -23,8 +24,8 @@ export function isFnBasedDefinition<T, TLifeTime extends LifeTime, TMeta>(
 }
 
 export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta> {
-  // readonly kind = 'fn' as const;
   readonly dependencies: any[] = []; // TODO: only for compatibility reason. Remove after opting out from builder based api
+  readonly resolution = Resolution.sync; // TODO: only for compatibility reason.
 
   constructor(
     public readonly id: string,
