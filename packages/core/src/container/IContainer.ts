@@ -30,14 +30,17 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
   provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped, any>, instance: T): void;
 }
 
-export interface ActsAsUseFn {
+export interface UseFn {
+  <TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
   <TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 }
 
 export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime>,
-    ActsAsUseFn {}
+    UseFn {}
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends IServiceLocator<TAllowedLifeTime>,

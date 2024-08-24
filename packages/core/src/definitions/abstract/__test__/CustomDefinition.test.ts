@@ -21,7 +21,7 @@ describe(`CustomDefinitions`, () => {
     return fn.scoped(use => () => factory(new GuardContext(use)));
   };
 
-  it('should work', () => {
+  it('returns correct instance', () => {
     const use = container();
 
     const myGuard = guard(context => {
@@ -31,6 +31,22 @@ describe(`CustomDefinitions`, () => {
     const result = use.withScope(scope => {
       scope.provide(bodyD, { body: '123' });
       const g = scope.use(myGuard);
+      return g();
+    });
+
+    expect(result).toBe('body: {"body":"123"}');
+  });
+
+  it(`works with destructuring`, async () => {
+    const use = container();
+
+    const myGuard = guard(context => {
+      return `body: ${JSON.stringify(context.body)}`;
+    });
+
+    const result = use.withScope(({ provide, use }) => {
+      provide(bodyD, { body: '123' });
+      const g = use(myGuard);
       return g();
     });
 

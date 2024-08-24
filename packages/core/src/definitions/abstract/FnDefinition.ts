@@ -7,13 +7,6 @@ import { Resolution } from './Resolution.js';
 import { ExtensibleFunction } from '../../utils/ExtensibleFunction.js';
 import { IServiceLocator } from '../../container/IContainer.js';
 
-// export type IDefinition<T, TLifeTime extends LifeTime, TMeta> = {
-//   readonly id: string;
-//   readonly strategy: TLifeTime;
-//   readonly create: (context: IServiceLocator) => T;
-//   readonly meta?: TMeta;
-// };
-
 export function isBasedDefinition<T, TLifeTime extends LifeTime, TMeta>(
   def: AnyInstanceDefinition<T, TLifeTime, TMeta>,
 ): def is BaseDefinition<T, TLifeTime, TMeta> {

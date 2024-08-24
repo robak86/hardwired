@@ -21,6 +21,17 @@ describe(`Container`, () => {
       expect(instance).toEqual(123);
     });
 
+    it(`works with destructuring`, async () => {
+      const use = container();
+      const someValue = fn.singleton(() => 1000);
+      const myDef = fn.singleton(({ use }) => {
+        return use(someValue) + 123;
+      });
+
+      const instance = use(myDef);
+      expect(instance).toEqual(1123);
+    });
+
     describe(`other methods`, () => {
       it(`provides use method`, async () => {
         const use = container();
@@ -79,13 +90,11 @@ describe(`Container`, () => {
       });
 
       it(`does not affect other definitions`, async () => {
-        const a = singleton.fn(() => 1);
-        const b = singleton.fn(() => 'b');
+        const a = fn.singleton(() => 1);
+        const b = fn.singleton(() => 'b');
 
-        const mPatch = replace(
-          a,
-          singleton.fn(() => 2),
-        );
+        const mPatch = a.patch().replace(fn.singleton(() => 2));
+
         expect(container({ overrides: [mPatch] }).use(b)).toEqual('b');
       });
     });
@@ -176,7 +185,7 @@ describe(`Container`, () => {
       const b = scoped.async().fn(async () => 2);
 
       const c = container();
-      const [aInstance, bInstance] = await c.getAllAsync(a, b);
+      const [aInstance, bInstance] = await c.allAsync(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });

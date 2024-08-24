@@ -11,7 +11,7 @@ import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
-import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
+import { UseFn, IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { BaseDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
@@ -23,12 +23,7 @@ export interface ContainerContext {
   <TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue>;
 }
 
-export interface ContainerContext {
-  <TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
-  <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
-}
+export interface ContainerContext extends UseFn {}
 
 export class ContainerContext
   extends ExtensibleFunction
