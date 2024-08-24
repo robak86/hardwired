@@ -13,7 +13,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { BaseDefinition, IDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 
 export interface ContainerContext {
@@ -21,6 +21,13 @@ export interface ContainerContext {
   <TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
   <TValue>(definition: BaseDefinition<TValue, any, any>): TValue;
   <TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue>;
+}
+
+export interface ContainerContext {
+  <TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 }
 
 export class ContainerContext
@@ -86,7 +93,7 @@ export class ContainerContext
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
-  private requestCall<TValue>(definition: IDefinition<TValue, any, any>): TValue {
+  private requestCall<TValue>(definition: BaseDefinition<TValue, any, any>): TValue {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
@@ -125,7 +132,7 @@ export class ContainerContext
     return definitions.map(def => this.use(def)) as any;
   }
 
-  buildExactFn<T>(definition: IDefinition<T, any, any>): T {
+  buildExactFn<T>(definition: BaseDefinition<T, any, any>): T {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     return patchedInstanceDef.create(this);

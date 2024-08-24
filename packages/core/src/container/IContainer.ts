@@ -5,7 +5,7 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { ContextEvents } from '../events/ContextEvents.js';
-import { BaseDefinition, IDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
@@ -30,25 +30,14 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
   provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped, any>, instance: T): void;
 }
 
+export interface ActsAsUseFn {
+  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
+}
+
 export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
-    IContainerScopes<TAllowedLifeTime> {}
-
-export type FnServiceLocatorMethods<TAllowedLifeTime extends LifeTime = LifeTime> = {
-  withScope<TValue>(fn: (locator: FnServiceLocator) => TValue): TValue;
-  all<
-    TDefinitions extends Array<
-      | InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
-      | BaseDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
-    >,
-  >(
-    ...definitions: [...TDefinitions]
-  ): InstancesArray<TDefinitions>;
-};
-
-export type FnServiceLocator = FnServiceLocatorMethods & {
-  <TValue>(instanceDefinition: IDefinition<TValue, any, any>): TValue;
-};
+    IContainerScopes<TAllowedLifeTime>,
+    ActsAsUseFn {}
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends IServiceLocator<TAllowedLifeTime>,

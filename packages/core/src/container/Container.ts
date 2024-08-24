@@ -10,9 +10,21 @@ import { set } from '../patching/set.js';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
+import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 
-export class Container implements IContainer {
-  constructor(protected readonly containerContext: ContainerContext) {}
+export interface Container {
+  <TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+}
+
+export class Container extends ExtensibleFunction implements IContainer {
+  constructor(protected readonly containerContext: ContainerContext) {
+    super((definition: AnyInstanceDefinition<any, any, any>) => {
+      return this.use(definition as any);
+    });
+  }
 
   get parentId() {
     return this.containerContext.parentId;

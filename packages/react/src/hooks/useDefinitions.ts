@@ -11,7 +11,7 @@ export type UseDefinitionsHook = {
  * @deprecated use "useAll" instead
  */
 export const useDefinitions: UseDefinitionsHook = (...definitions) => {
-  return useContainer().useAll(...definitions) as any;
+  return useContainer().all(...definitions) as any;
 };
 
 export const useAll = useDefinitions;

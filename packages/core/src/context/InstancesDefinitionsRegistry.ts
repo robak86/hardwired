@@ -1,5 +1,5 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { BaseDefinition, IDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 
 /**
  * This class represents a registry for storing definitions overrides for scope.
@@ -47,7 +47,7 @@ export class InstancesDefinitionsRegistry {
     return newRegistry;
   }
 
-  getInstanceDefinition<T extends AnyInstanceDefinition<any, any, any> | IDefinition<any, any, any>>(
+  getInstanceDefinition<T extends AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>(
     instanceDefinition: T,
   ): T {
     const id = instanceDefinition.id;

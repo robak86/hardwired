@@ -1,20 +1,61 @@
-import { scoped, singleton } from '../../definitions/definitions.js';
+import { fn, scoped, singleton } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
 import { set } from '../../patching/set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
-import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import EventEmitter from 'node:events';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 
 describe(`Container`, () => {
+  describe(`acts like a function`, () => {
+    it(`is callable like function`, async () => {
+      const use = container();
+      const myDef = fn.singleton(() => 123);
+
+      const instance = use(myDef);
+      expect(instance).toEqual(123);
+    });
+
+    describe(`other methods`, () => {
+      it(`provides use method`, async () => {
+        const use = container();
+
+        const myDef1 = fn.singleton(() => 123);
+
+        const val1 = use.use(myDef1);
+        expect(val1).toEqual(123);
+      });
+
+      it(`provides all method for creating multiple instances`, async () => {
+        const use = container();
+
+        const myDef1 = fn.singleton(() => 123);
+        const myDef2 = fn.singleton(() => 456);
+
+        const [val1, val2] = use.all(myDef1, myDef2);
+
+        expect(val1).toEqual(123);
+        expect(val2).toEqual(456);
+      });
+
+      it(`provides withScope method`, async () => {
+        const use = container();
+        const myDef = fn.scoped(() => Math.random());
+        const consumer = fn.singleton(use => {
+          return [use.withScope(use => use(myDef)), use.withScope(use => use(myDef))];
+        });
+
+        const [val1, val2] = use(consumer);
+        expect(val1).not.toBe(val2);
+      });
+    });
+  });
+
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
       const cDef = singleton.fn(() => 'cValue');
