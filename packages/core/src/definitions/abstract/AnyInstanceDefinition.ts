@@ -1,9 +1,9 @@
 import { InstanceDefinition } from './sync/InstanceDefinition.js';
 import { AsyncInstanceDefinition } from './async/AsyncInstanceDefinition.js';
 import { LifeTime } from './LifeTime.js';
-import { FnDefinition } from './FnDefinition.js';
+import { BaseDefinition, FnDefinition } from './FnDefinition.js';
 
 export type AnyInstanceDefinition<T, TLifeTime extends LifeTime, TMeta> =
   | InstanceDefinition<T, TLifeTime, TMeta>
   | AsyncInstanceDefinition<T, TLifeTime, TMeta>
-  | FnDefinition<T, TLifeTime, TMeta>;
+  | BaseDefinition<T, TLifeTime, TMeta>;

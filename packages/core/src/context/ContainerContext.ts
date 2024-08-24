@@ -13,7 +13,12 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { BaseFnDefinition, FnDefinition, isFnBasedDefinition } from '../definitions/abstract/FnDefinition.js';
+import {
+  BaseDefinition,
+  BaseFnDefinition,
+  FnDefinition,
+  isFnBasedDefinition,
+} from '../definitions/abstract/FnDefinition.js';
 
 export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
   static empty(
@@ -71,7 +76,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
-  requestCall<TValue>(definition: BaseFnDefinition<TValue, any, any>): TValue {
+  private requestCall<TValue>(definition: BaseFnDefinition<TValue, any, any>): TValue {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
@@ -80,7 +85,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
 
   request<TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
   request<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  request<TValue>(definition: FnDefinition<TValue, any, any>): Promise<TValue>;
+  request<TValue>(definition: BaseDefinition<TValue, any, any>): TValue;
   request<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
     if (isFnBasedDefinition(definition)) {
       return this.requestCall(definition);

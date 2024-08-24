@@ -12,18 +12,18 @@ export type BaseFnDefinition<T, TLifeTime extends LifeTime, TMeta> = {
   readonly meta?: TMeta;
 };
 
-export type FnDefinition<T, TLifeTime extends LifeTime, TMeta> = BaseDefinition<T, TLifeTime> & {
+export type FnDefinition<T, TLifeTime extends LifeTime, TMeta> = BaseDefinition<T, TLifeTime, TMeta> & {
   (): T;
 };
 
 export function isFnBasedDefinition<T, TLifeTime extends LifeTime, TMeta>(
   def: AnyInstanceDefinition<T, TLifeTime, TMeta>,
-): def is FnDefinition<T, TLifeTime, TMeta> {
+): def is BaseDefinition<T, TLifeTime, TMeta> {
   return Object.prototype.hasOwnProperty.call(def, 'kind');
 }
 
-export class BaseDefinition<TInstance, TLifeTime extends LifeTime> {
-  readonly kind = 'fn' as const;
+export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta> {
+  // readonly kind = 'fn' as const;
   readonly dependencies: any[] = []; // TODO: only for compatibility reason. Remove after opting out from builder based api
 
   constructor(
@@ -35,11 +35,11 @@ export class BaseDefinition<TInstance, TLifeTime extends LifeTime> {
   bounded() {
     return Object.assign(this, (): TInstance => {
       const cnt = container();
-      return cnt.call(this);
+      return cnt.use(this);
     });
   }
 
-  patch(): PatchDefinition<TInstance, TLifeTime> {
+  patch(): PatchDefinition<TInstance, TLifeTime, TMeta> {
     return new PatchDefinition(this.id, this.strategy, this.create);
   }
 
@@ -76,7 +76,11 @@ export type AsyncFnDefinitionsArray<T extends FnDefinition<any, any, any>[]> = {
     : never;
 };
 
-export class PatchDefinition<TInstance, TLifeTime extends LifeTime> extends BaseDefinition<TInstance, TLifeTime> {
+export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta> extends BaseDefinition<
+  TInstance,
+  TLifeTime,
+  TMeta
+> {
   replace<TExtendedInstance extends TInstance, TLifeTime extends LifeTime>(
     def: FnDefinition<TExtendedInstance, TLifeTime, any>,
   ): FnDefinition<TExtendedInstance, TLifeTime, any> {

@@ -4,7 +4,6 @@ import { v4 } from 'uuid';
 import { fn, singleton } from '../../definitions/definitions.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { replace } from '../../patching/replace.js';
 import { describe, expect, it, vi } from 'vitest';
 
 describe(`SingletonStrategy`, () => {
@@ -26,20 +25,20 @@ describe(`SingletonStrategy`, () => {
       describe(`single module`, () => {
         it(`returns class instance`, async () => {
           const c = container();
-          expect(c.call(leaf)).toHaveProperty('value');
-          expect(c.call(leaf)).toHaveProperty('id');
+          expect(c.use(leaf)).toHaveProperty('value');
+          expect(c.use(leaf)).toHaveProperty('id');
         });
 
         it(`constructs class with correct dependencies`, async () => {
           const c = container();
-          const instance = c.call(leaf);
+          const instance = c.use(leaf);
           expect(instance.value).toEqual('someString');
         });
 
         it(`caches class instance`, async () => {
           const c = container();
-          const instance = c.call(leaf);
-          const instance2 = c.call(leaf);
+          const instance = c.use(leaf);
+          const instance2 = c.use(leaf);
           expect(instance).toBe(instance2);
         });
       });
@@ -53,10 +52,10 @@ describe(`SingletonStrategy`, () => {
 
         it(`reuses the same instance`, async () => {
           const c = container();
-          const consumerFromRoot = c.call(rootSingletonConsumer);
-          const consumerFromChild1 = c.call(child1SingletonConsumer);
-          const consumerFromChild2 = c.call(child2SingletonConsumer);
-          const theSingletonInstance = c.call(theSingleton);
+          const consumerFromRoot = c.use(rootSingletonConsumer);
+          const consumerFromChild1 = c.use(child1SingletonConsumer);
+          const consumerFromChild2 = c.use(child2SingletonConsumer);
+          const theSingletonInstance = c.use(theSingleton);
           expect(consumerFromChild1.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromChild2.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromRoot.testClassInstance.id).toEqual(theSingletonInstance.id);
@@ -65,9 +64,9 @@ describe(`SingletonStrategy`, () => {
         it(`reuses the same instance for lazily loaded modules`, async () => {
           const c = container();
 
-          const consumerFromChild1 = c.call(child1SingletonConsumer);
-          const consumerFromChild2 = c.call(child2SingletonConsumer);
-          const theSingletonInstance = c.call(theSingleton);
+          const consumerFromChild1 = c.use(child1SingletonConsumer);
+          const consumerFromChild2 = c.use(child2SingletonConsumer);
+          const theSingletonInstance = c.use(theSingleton);
           expect(consumerFromChild1.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromChild2.testClassInstance.id).toEqual(theSingletonInstance.id);
         });
@@ -76,10 +75,10 @@ describe(`SingletonStrategy`, () => {
       describe(`multiple containers`, () => {
         it(`does not shares instances across multiple containers`, async () => {
           const c1 = container();
-          const instanceFromC1 = c1.call(leaf);
+          const instanceFromC1 = c1.use(leaf);
 
           const c2 = container();
-          const instanceFromC2 = c2.call(leaf);
+          const instanceFromC2 = c2.use(leaf);
           expect(instanceFromC1.id).not.toEqual(instanceFromC2.id);
         });
       });
@@ -108,9 +107,9 @@ describe(`SingletonStrategy`, () => {
         const level1 = root.checkoutScope({ overrides: [patchedA] });
         const level2 = level1.checkoutScope({});
 
-        expect(level1.requestCall(a)).toEqual(2);
-        expect(level2.requestCall(a)).toEqual(2);
-        expect(root.requestCall(a)).toEqual(1);
+        expect(level1.request(a)).toEqual(2);
+        expect(level2.request(a)).toEqual(2);
+        expect(root.request(a)).toEqual(1);
       });
 
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
@@ -175,10 +174,10 @@ describe(`SingletonStrategy`, () => {
         const childScopePatch = k1.patch().set(2);
 
         const c = ContainerContext.create([], [invariantPatch]);
-        expect(c.requestCall(k1)).toEqual(1);
+        expect(c.request(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ overrides: [childScopePatch] });
-        expect(childScope.requestCall(k1)).toEqual(1);
+        expect(childScope.request(k1)).toEqual(1);
       });
 
       it(`allows for overrides for other keys than ones changes invariants array`, async () => {
@@ -190,11 +189,11 @@ describe(`SingletonStrategy`, () => {
 
         const c = ContainerContext.create([invariantPatch], []);
 
-        expect(c.requestCall(k1)).toEqual(1);
+        expect(c.request(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ overrides: [childScopePatch] });
-        expect(childScope.requestCall(k1)).toEqual(1);
-        expect(childScope.requestCall(k2)).toEqual(2);
+        expect(childScope.request(k1)).toEqual(1);
+        expect(childScope.request(k2)).toEqual(2);
       });
     });
   });
@@ -235,7 +234,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDef = fn.singleton(async use => {
             return new TestClassArgs2(await use(asyncDep), await use(syncDep));
           });
-          const result = await container().call(asyncDef);
+          const result = await container().use(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -246,7 +245,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDef = fn.singleton(async use => {
             return new TestClassArgs2(await use(asyncDep), await use(syncDep));
           });
-          const result = await container().call(asyncDef);
+          const result = await container().use(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -257,7 +256,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDef = fn.singleton(async use => {
             return new TestClassArgs2(await use(asyncDep), await use(syncDep));
           });
-          const result = await container().call(asyncDef);
+          const result = await container().use(asyncDef);
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -268,7 +267,7 @@ describe(`SingletonStrategy`, () => {
       describe(`no dependencies`, () => {
         it(`returns correct value`, async () => {
           const asyncDef = fn.singleton(async () => 123);
-          const result = await container().call(asyncDef);
+          const result = await container().use(asyncDef);
           expect(result).toEqual(123);
         });
       });
@@ -282,7 +281,7 @@ describe(`SingletonStrategy`, () => {
             const asyncDef = fn.singleton(async use => {
               return [await use(asyncDep), use(syncDep)];
             });
-            const result = await container().call(asyncDef);
+            const result = await container().use(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -295,7 +294,7 @@ describe(`SingletonStrategy`, () => {
             const asyncDef = fn.singleton(async use => {
               return [await use(asyncDep), use(syncDep)];
             });
-            const result = await container().call(asyncDef);
+            const result = await container().use(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -308,7 +307,7 @@ describe(`SingletonStrategy`, () => {
             const asyncDef = fn.singleton(async use => {
               return [use(asyncDep), use(syncDep)];
             });
-            const result = await container().call(asyncDef);
+            const result = await container().use(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -328,7 +327,7 @@ describe(`SingletonStrategy`, () => {
 
           const ctn = container();
 
-          const [result1, result2] = await Promise.all([ctn.call(consumer1), ctn.call(consumer2)]);
+          const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
 
           expect(result1).toBe(result2);
         });
@@ -344,7 +343,7 @@ describe(`SingletonStrategy`, () => {
           const patch = slowSingleton.patch().replace(fn.singleton(async () => new BoxedValue(123)));
 
           const ctn = container({ globalOverrides: [patch] });
-          const [result1, result2] = await Promise.all([ctn.call(consumer1), ctn.call(consumer2)]);
+          const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
           expect(result1.value).toEqual(123);
           expect(result2.value).toEqual(123);
         });
@@ -360,7 +359,7 @@ describe(`SingletonStrategy`, () => {
 
         const ctn = container();
 
-        const [result1, result2] = await Promise.all([ctn.call(consumer1), ctn.call(consumer2)]);
+        const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
 
         expect(result1).toBe(result2);
       });
@@ -397,9 +396,9 @@ describe(`SingletonStrategy`, () => {
 
         const ctn = container();
 
-        const result1 = await ctn.call(consumer1);
-        const result2 = await ctn.call(consumer2);
-        const result3 = await ctn.call(consumer3);
+        const result1 = await ctn.use(consumer1);
+        const result2 = await ctn.use(consumer2);
+        const result3 = await ctn.use(consumer3);
 
         expect(result1).toBe(result2);
         expect(result2).toBe(result3);
