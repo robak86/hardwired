@@ -1,6 +1,6 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
-import { Overrides } from '../container/Assignments.js';
+import { Overrides } from '../container/Patch.js';
 
 /**
  * This class represents a registry for storing definitions overrides for scope.

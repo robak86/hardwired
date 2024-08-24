@@ -1,5 +1,5 @@
 import { HierarchicalStore } from './HierarchicalStore.js';
-import { Overrides } from '../container/Assignments.js';
+import { Overrides } from '../container/Patch.js';
 
 export class InstancesStore {
   static create(scopeOverrides: Overrides): InstancesStore {

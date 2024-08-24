@@ -1,24 +1,25 @@
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
+import { IServiceLocator } from './IContainer.js';
 
-export type Overrides = Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>> | OverridesSet;
+export type Overrides = Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>> | PatchSet;
 
-export interface OverridesSet {
+export interface PatchSet {
   get(definitionId: string): AnyInstanceDefinition<any, any, any> | undefined;
   forEach(callback: (definition: AnyInstanceDefinition<any, any, any>) => void): void;
   map<T>(callback: (definition: AnyInstanceDefinition<any, any, any>) => T): T[];
 }
 
-export class Assignments implements OverridesSet {
+export class Patch implements PatchSet {
   constructor(private overrides: Record<string, AnyInstanceDefinition<any, any, any>>) {}
 
-  append(definition: AnyInstanceDefinition<any, any, any>): Assignments {
+  append(definition: AnyInstanceDefinition<any, any, any>): Patch {
     if (this.overrides[definition.id]) {
       throw new Error(`Cannot append definition ${definition.id} because it is already overridden`);
     }
 
-    return new Assignments({
+    return new Patch({
       ...this.overrides,
       [definition.id]: definition,
     });
@@ -27,7 +28,7 @@ export class Assignments implements OverridesSet {
   decorate<TInstance, TExtendedInstance extends TInstance, TLifeTime extends LifeTime>(
     def: BaseDefinition<TInstance, TLifeTime, any>,
     decorateFn: (instance: TInstance) => TExtendedInstance,
-  ): Assignments {
+  ): Patch {
     if (this.overrides[def.id]) {
       throw new Error(`Cannot decorate definition ${def.id} because it is already overridden`);
     }
@@ -41,16 +42,23 @@ export class Assignments implements OverridesSet {
       },
     );
 
-    return new Assignments({
+    return new Patch({
       ...this.overrides,
       [def.id]: override,
     });
   }
 
+  define<TInstance, TLifeTime extends LifeTime, TMeta>(
+    definition: AnyInstanceDefinition<TInstance, TLifeTime, TMeta>,
+    create: (context: IServiceLocator) => TInstance,
+  ): Patch {
+    return this.append(new BaseDefinition(definition.id, definition.strategy, create));
+  }
+
   set<TInstance, TLifeTime extends LifeTime>(
     def: BaseDefinition<TInstance, TLifeTime, any>,
     newValue: TInstance,
-  ): Assignments {
+  ): Patch {
     if (this.overrides[def.id]) {
       throw new Error(`Cannot set definition ${def.id} because it is already overridden`);
     }
@@ -61,7 +69,7 @@ export class Assignments implements OverridesSet {
       () => newValue,
     );
 
-    return new Assignments({
+    return new Patch({
       ...this.overrides,
       [def.id]: override,
     });
@@ -70,7 +78,7 @@ export class Assignments implements OverridesSet {
   apply<TInstance, TLifeTime extends LifeTime>(
     def: BaseDefinition<TInstance, TLifeTime, any>,
     applyFn: (instance: TInstance) => void,
-  ): Assignments {
+  ): Patch {
     if (this.overrides[def.id]) {
       throw new Error(`Cannot apply definition ${def.id} because it is already overridden`);
     }
@@ -82,7 +90,7 @@ export class Assignments implements OverridesSet {
       return instance;
     });
 
-    return new Assignments({
+    return new Patch({
       ...this.overrides,
       [def.id]: override,
     });
@@ -101,4 +109,4 @@ export class Assignments implements OverridesSet {
   }
 }
 
-export const patch = () => new Assignments({});
+export const patch = () => new Patch({});

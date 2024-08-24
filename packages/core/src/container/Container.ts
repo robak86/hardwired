@@ -3,7 +3,7 @@ import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { IContainer, UseFn } from './IContainer.js';
+import { IContainer, IContainerScopes, IServiceLocator, UseFn } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { set } from '../patching/set.js';
@@ -11,7 +11,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { Overrides } from './Assignments.js';
+import { Patch, Overrides } from './Patch.js';
 
 export interface Container extends UseFn {}
 
@@ -53,7 +53,13 @@ export class Container extends ExtensibleFunction implements IContainer {
   checkoutScope = (options: ContainerScopeOptions = {}): IContainer =>
     new Container(this.containerContext.checkoutScope(options));
 
-  withScope = <TValue>(fn: (locator: IContainer) => TValue): TValue => fn(this.checkoutScope());
+  withScope: IContainerScopes['withScope'] = (fnOrOverrides, fn?: any) => {
+    if (typeof fnOrOverrides === 'function') {
+      return fnOrOverrides(this.checkoutScope());
+    } else {
+      return fn!(this.checkoutScope({ overrides: fnOrOverrides }));
+    }
+  };
 
   override = (definition: AnyInstanceDefinition<any, any, any>): void => {
     this.containerContext.override(definition);

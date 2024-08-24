@@ -15,7 +15,7 @@ import { UseFn, IContainerScopes, InstanceCreationAware, IServiceLocator } from 
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { BaseDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { Overrides } from '../container/Assignments.js';
+import { Overrides } from '../container/Patch.js';
 
 export interface ContainerContext {
   <TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
@@ -183,10 +183,12 @@ export class ContainerContext
     return scopeContext;
   };
 
-  withScope = <TValue>(fn: (locator: IServiceLocator<LifeTime>) => TValue): TValue => {
-    const scopeContext = this.checkoutScope();
-
-    return fn(scopeContext);
+  withScope: IContainerScopes['withScope'] = (fnOrOverrides, fn?: any) => {
+    if (typeof fnOrOverrides === 'function') {
+      return fnOrOverrides(this.checkoutScope());
+    } else {
+      return fn!(this.checkoutScope({ overrides: fnOrOverrides }));
+    }
   };
 
   provide = <T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T) => {

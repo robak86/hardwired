@@ -10,7 +10,7 @@ import { ContainerContext } from '../../context/ContainerContext.js';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
-import { patch } from '../Assignments.js';
+import { patch } from '../Patch.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
