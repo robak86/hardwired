@@ -15,9 +15,9 @@ import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../con
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import {
   BaseDefinition,
-  BaseFnDefinition,
-  FnDefinition,
-  isFnBasedDefinition,
+  IDefinition,
+  BoundDefinition,
+  isBasedDefinition,
 } from '../definitions/abstract/FnDefinition.js';
 
 export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
@@ -38,8 +38,8 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
   }
 
   static create(
-    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>,
-    globalOverrides: Array<AnyInstanceDefinition<any, any, any> | FnDefinition<any, any, any>>,
+    scopeOverrides: Array<AnyInstanceDefinition<any, any, any> | BoundDefinition<any, any, any>>,
+    globalOverrides: Array<AnyInstanceDefinition<any, any, any> | BoundDefinition<any, any, any>>,
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
   ): ContainerContext {
@@ -76,7 +76,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
-  private requestCall<TValue>(definition: BaseFnDefinition<TValue, any, any>): TValue {
+  private requestCall<TValue>(definition: IDefinition<TValue, any, any>): TValue {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
@@ -87,7 +87,7 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
   request<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
   request<TValue>(definition: BaseDefinition<TValue, any, any>): TValue;
   request<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
-    if (isFnBasedDefinition(definition)) {
+    if (isBasedDefinition(definition)) {
       return this.requestCall(definition);
     }
 
@@ -115,19 +115,19 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     return definitions.map(def => this.use(def)) as any;
   }
 
-  buildExactFn<T>(definition: BaseFnDefinition<T, any, any>): T {
+  buildExactFn<T>(definition: IDefinition<T, any, any>): T {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
-    return patchedInstanceDef.create((def: BaseFnDefinition<any, any, any>) => {
+    return patchedInstanceDef.create((def: IDefinition<any, any, any>) => {
       return this.requestCall(def);
     });
   }
 
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
   buildExact<T>(definition: AsyncInstanceDefinition<T, any, any>): Promise<T>;
-  buildExact<T>(definition: FnDefinition<T, any, any>): Promise<T>;
+  buildExact<T>(definition: BoundDefinition<T, any, any>): Promise<T>;
   buildExact<T>(definition: AnyInstanceDefinition<T, any, any>): T | Promise<T> {
-    if (isFnBasedDefinition(definition)) {
+    if (isBasedDefinition(definition)) {
       return this.buildExactFn(definition);
     }
 

@@ -5,7 +5,7 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { ContextEvents } from '../events/ContextEvents.js';
-import { BaseDefinition, BaseFnDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition, IDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
@@ -35,7 +35,7 @@ export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
     IContainerScopes<TAllowedLifeTime> {}
 
 export interface FnServiceLocator {
-  <TValue>(instanceDefinition: BaseFnDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: IDefinition<TValue, any, any>): TValue;
 }
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>

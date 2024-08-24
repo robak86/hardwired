@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
 import { ContainerProvider } from '../../components/ContainerProvider.js';
-import { useAll } from '../useDefinitions.js';
+import { useAll, useDefinitions } from '../useDefinitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
@@ -139,7 +139,7 @@ describe(`useDefinitions`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const values = useDefinitions(val1Def, val2Def);
+        const values = useAll(val1Def, val2Def);
         return <DummyComponent value={values.join('|')} />;
       };
 

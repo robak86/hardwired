@@ -1,5 +1,5 @@
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { FnDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BoundDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export const replace = <
   TInstance,
@@ -18,9 +18,9 @@ export const replace = <
 export const replaceFn = <
   TInstance,
   TNextInstance extends TInstance,
-  TNextInstanceDef extends FnDefinition<TInstance, any, any>,
+  TNextInstanceDef extends BoundDefinition<TInstance, any, any>,
 >(
-  instance: FnDefinition<TInstance, any, any>,
+  instance: BoundDefinition<TInstance, any, any>,
   newInstance: TNextInstanceDef,
 ): TNextInstanceDef => {
   return {

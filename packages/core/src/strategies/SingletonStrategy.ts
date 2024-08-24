@@ -3,7 +3,7 @@ import { InstancesStore } from '../context/InstancesStore.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { BaseFnDefinition } from '../definitions/abstract/FnDefinition.js';
+import { IDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class SingletonStrategy extends BuildStrategy {
   build(
@@ -26,7 +26,7 @@ export class SingletonStrategy extends BuildStrategy {
   }
 
   buildFn(
-    definition: BaseFnDefinition<any, any, any>,
+    definition: IDefinition<any, any, any>,
     instancesCache: InstancesStore,
     definitionsRegistry: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

@@ -3,7 +3,7 @@ import { InstancesStore } from '../context/InstancesStore.js';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry.js';
-import { BaseFnDefinition } from '../definitions/abstract/FnDefinition.js';
+import { IDefinition } from '../definitions/abstract/FnDefinition.js';
 
 export class TransientStrategy extends BuildStrategy {
   build(
@@ -24,7 +24,7 @@ export class TransientStrategy extends BuildStrategy {
   }
 
   buildFn(
-    definition: BaseFnDefinition<any, any, any>,
+    definition: IDefinition<any, any, any>,
     instancesCache: InstancesStore,
     definitions: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

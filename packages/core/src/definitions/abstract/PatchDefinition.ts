@@ -1,2 +1,2 @@
 import { LifeTime } from './LifeTime.js';
-import { BaseDefinition, FnDefinition } from './FnDefinition.js';
+import { BaseDefinition, BoundDefinition } from './FnDefinition.js';

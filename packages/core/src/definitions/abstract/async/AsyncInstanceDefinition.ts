@@ -3,7 +3,7 @@ import { Resolution } from '../Resolution.js';
 import { v4 } from 'uuid';
 import { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
 import { IServiceLocator } from '../../../container/IContainer.js';
-import { FnDefinition } from '../FnDefinition.js';
+import { BoundDefinition } from '../FnDefinition.js';
 
 export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime, TMeta> = {
   readonly id: string;
