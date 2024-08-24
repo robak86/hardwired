@@ -43,3 +43,4 @@ export * from './definitions/abstract/AbstractServiceLocatorDecorator.js';
 
 export * from './container/Patch.js';
 export * from './container/IContainer.js';
+export * from './container/Patch.js';
