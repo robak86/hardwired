@@ -28,7 +28,7 @@ export function buildContext<
       assertValidDependency(lifeTime, def);
       return context.use(def);
     },
-    useAll: context.useAll,
+    all: context.all,
     checkoutScope: context.checkoutScope,
     withScope: context.withScope,
     override: context.override,

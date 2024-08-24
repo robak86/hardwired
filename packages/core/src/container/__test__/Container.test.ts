@@ -1,22 +1,73 @@
-import { scoped, singleton } from '../../definitions/definitions.js';
+import { fn, scoped, singleton } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
 import { set } from '../../patching/set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
-import { DefinitionBuilder } from '../../builder/DefinitionBuilder.js';
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import EventEmitter from 'node:events';
-import { EagerDefinitionsInterceptor } from '../../eager/EagerDefinitionsInterceptor.js';
-import { EagerDefinitions } from '../../eager/EagerDefinitions.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
+import { patch } from '../Patch.js';
 
 describe(`Container`, () => {
+  describe(`acts like a function`, () => {
+    it(`is callable like function`, async () => {
+      const use = container();
+      const myDef = fn.singleton(() => 123);
+
+      const instance = use(myDef);
+      expect(instance).toEqual(123);
+    });
+
+    it(`works with destructuring`, async () => {
+      const use = container();
+      const someValue = fn.singleton(() => 1000);
+      const myDef = fn.singleton(({ use }) => {
+        return use(someValue) + 123;
+      });
+
+      const instance = use(myDef);
+      expect(instance).toEqual(1123);
+    });
+
+    describe(`other methods`, () => {
+      it(`provides use method`, async () => {
+        const use = container();
+
+        const myDef1 = fn.singleton(() => 123);
+
+        const val1 = use.use(myDef1);
+        expect(val1).toEqual(123);
+      });
+
+      it(`provides all method for creating multiple instances`, async () => {
+        const use = container();
+
+        const myDef1 = fn.singleton(() => 123);
+        const myDef2 = fn.singleton(() => 456);
+
+        const [val1, val2] = use.all(myDef1, myDef2);
+
+        expect(val1).toEqual(123);
+        expect(val2).toEqual(456);
+      });
+
+      it(`provides withScope method`, async () => {
+        const use = container();
+        const myDef = fn.scoped(() => Math.random());
+        const consumer = fn.singleton(use => {
+          return [use.withScope(use => use(myDef)), use.withScope(use => use(myDef))];
+        });
+
+        const [val1, val2] = use(consumer);
+        expect(val1).not.toBe(val2);
+      });
+    });
+  });
+
   describe(`.get`, () => {
     it(`returns correct value`, async () => {
       const cDef = singleton.fn(() => 'cValue');
@@ -29,24 +80,18 @@ describe(`Container`, () => {
   describe(`.replace`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
-        const a = singleton.fn(() => 1);
+        const a = fn.singleton(() => 1);
+        const overrides = patch().set(a, 2);
 
-        const mPatch = replace(
-          a,
-          singleton.fn(() => 2),
-        );
-
-        expect(container({ overrides: [mPatch] }).use(a)).toEqual(2);
+        expect(container({ overrides }).use(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
-        const a = singleton.fn(() => 1);
-        const b = singleton.fn(() => 'b');
+        const a = fn.singleton(() => 1);
+        const b = fn.singleton(() => 'b');
 
-        const mPatch = replace(
-          a,
-          singleton.fn(() => 2),
-        );
+        const mPatch = a.patch().replace(fn.singleton(() => 2));
+
         expect(container({ overrides: [mPatch] }).use(b)).toEqual('b');
       });
     });
@@ -93,7 +138,7 @@ describe(`Container`, () => {
       const b = scoped.fn(() => 2);
 
       const c = container();
-      const [aInstance, bInstance] = c.useAll(a, b);
+      const [aInstance, bInstance] = c.all(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -104,7 +149,7 @@ describe(`Container`, () => {
       const divideBy2D = scoped.using(extD).fn((val: BoxedValue<number>) => val.value / 2);
       const [val1, val2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
-        .useAll(multiplyBy2D, divideBy2D);
+        .all(multiplyBy2D, divideBy2D);
       expect(val1).toEqual(20);
       expect(val2).toEqual(5);
     });
@@ -123,7 +168,7 @@ describe(`Container`, () => {
 
       const [req1, req2] = container()
         .checkoutScope({ overrides: [set(extD, new BoxedValue(10))] })
-        .useAll(multiplyBy2D, divideBy2D);
+        .all(multiplyBy2D, divideBy2D);
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);
 
@@ -137,7 +182,7 @@ describe(`Container`, () => {
       const b = scoped.async().fn(async () => 2);
 
       const c = container();
-      const [aInstance, bInstance] = await c.getAllAsync(a, b);
+      const [aInstance, bInstance] = await c.allAsync(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -299,230 +344,6 @@ describe(`Container`, () => {
       const result2 = reqCnt2.use(scopedVal);
 
       expect(result1).not.toBe(result2);
-    });
-  });
-
-  describe(`eager instantiation`, () => {
-    const singleton = new DefinitionBuilder<[], LifeTime.singleton, unknown>([], LifeTime.singleton, {}, []);
-
-    const eagerDefinitions = new EagerDefinitions();
-    const eagerInterceptor = new EagerDefinitionsInterceptor(true, eagerDefinitions);
-
-    beforeEach(() => {
-      eagerDefinitions.clear();
-    });
-
-    describe(`sync eager`, () => {
-      it(`doesn't creates eager definitions on container creation`, async () => {
-        const factory = vi.fn(() => Math.random());
-        const myDef = singleton.annotate(eagerInterceptor.eager).fn(factory);
-
-        container();
-        expect(factory).not.toHaveBeenCalled();
-      });
-
-      it(`creates eager definitions on referencing dependency creation`, async () => {
-        let valueAssigned = 0;
-
-        const consumerFactory = vi.fn(() => {
-          valueAssigned = Math.random();
-          return valueAssigned;
-        });
-
-        const producer = singleton.fn(() => Math.random());
-        const consumer = singleton.using(producer).annotate(eagerInterceptor.eager).fn(consumerFactory);
-
-        const cnt = container({
-          interceptor: eagerInterceptor,
-        });
-
-        const consumerVal = cnt.use(producer);
-        expect(consumerFactory).toHaveBeenCalledTimes(1);
-      });
-
-      it(`creates eager definitions when dependency of eager definition is requested`, () => {
-        const eventEmitterD = singleton //
-          .annotate({ name: 'eventEmitterD' })
-          .fn(() => {
-            return new EventEmitter<{ onMessage: [number] }>();
-          });
-
-        // add additional indirection level to test if it works with multiple levels
-        const eventEmitterWrapperD = singleton
-          .using(eventEmitterD)
-          .annotate({ name: 'eventEmitterWrapperD' })
-          .fn(e => e);
-
-        const consumer1D = singleton
-          .using(eventEmitterD)
-          .annotate({ name: 'consumer1D' })
-          .annotate(eagerInterceptor.eager)
-          .fn(val => {
-            const messages: number[] = [];
-            val.on('onMessage', value => messages.push(value));
-            return messages;
-          });
-
-        const consumer2D = singleton
-          .using(eventEmitterWrapperD)
-          .annotate({ name: 'consumer2D' })
-          .annotate(eagerInterceptor.eager)
-          .fn(val => {
-            const messages: number[] = [];
-            val.on('onMessage', value => messages.push(value));
-            return messages;
-          });
-
-        const produced: number[] = [];
-        const producerD = singleton //
-          .using(eventEmitterD)
-          .annotate({ name: 'producerD' })
-          .fn(emitter => {
-            return () => {
-              const value = Math.random();
-              produced.push(value);
-              return emitter.emit('onMessage', value);
-            };
-          });
-
-        const cnt = container({
-          interceptor: eagerInterceptor,
-        });
-
-        const producer = cnt.use(producerD);
-        producer();
-        producer();
-
-        const consumer1 = cnt.use(consumer1D);
-        const consumer2 = cnt.use(consumer2D);
-
-        expect(consumer1.length).toEqual(2);
-        expect(consumer2.length).toEqual(2);
-
-        expect(consumer1).toEqual(consumer2);
-
-        expect(consumer1).toEqual(produced);
-        expect(consumer2).toEqual(produced);
-      });
-
-      it(`lazily creates eager definitions. Only when eager definition's dependency is created.`, async () => {
-        const aSpy = vi.fn(() => 1);
-        const a = singleton.fn(aSpy);
-
-        const bSpy = vi.fn(() => 2);
-        const b_a = singleton.using(a).fn(bSpy);
-
-        const cSpy = vi.fn(() => 3);
-        const c_b_a = singleton.using(b_a).fn(cSpy);
-
-        const dSpy = vi.fn(() => 4);
-        const d_c_b_a = singleton.using(c_b_a).annotate(eagerInterceptor.eager).fn(dSpy);
-
-        const cnt = container({
-          interceptor: eagerInterceptor,
-        });
-        cnt.use(a);
-
-        expect(dSpy).toHaveBeenCalled();
-      });
-    });
-
-    describe(`async eager`, () => {
-      it(`creates eager definitions when dependency of eager definition is requested`, async () => {
-        const eventEmitterD = singleton //
-          .async()
-          .annotate({ name: 'eventEmitterD' })
-          .fn(() => {
-            return new EventEmitter<{ onMessage: [number] }>();
-          });
-
-        const eventEmitterWrapperD = singleton
-          .async()
-          .using(eventEmitterD)
-          .annotate({ name: 'eventEmitterWrapperD' })
-          .fn(e => e);
-
-        const consumer1D = singleton
-          .async()
-          .using(eventEmitterWrapperD)
-          .annotate({ name: 'consumer1D' })
-          .annotate(eagerInterceptor.eager)
-          .fn(val => {
-            const messages: number[] = [];
-            val.on('onMessage', value => messages.push(value));
-            return messages;
-          });
-
-        const consumer2D = singleton
-          .async()
-          .using(eventEmitterWrapperD)
-          .annotate({ name: 'consumer2D' })
-          .annotate(eagerInterceptor.eager)
-          .fn(val => {
-            const messages: number[] = [];
-            val.on('onMessage', value => messages.push(value));
-            return messages;
-          });
-
-        const produced: number[] = [];
-        const producerD = singleton
-          .async()
-          .using(eventEmitterD)
-          .annotate({ name: 'producerD' })
-          .fn(emitter => {
-            return () => {
-              const value = Math.random();
-              produced.push(value);
-              return emitter.emit('onMessage', value);
-            };
-          });
-
-        const cnt = container({
-          interceptor: eagerInterceptor,
-        });
-
-        const producer = await cnt.use(producerD);
-        producer();
-        producer();
-
-        const consumer1 = await cnt.use(consumer1D);
-        const consumer2 = await cnt.use(consumer2D);
-
-        expect(consumer1.length).toEqual(2);
-        expect(consumer2.length).toEqual(2);
-
-        expect(consumer1).toEqual(consumer2);
-
-        expect(consumer1).toEqual(produced);
-        expect(consumer2).toEqual(produced);
-      });
-
-      it(`lazily creates eager definitions. Only when eager definition's dependency is created.`, async () => {
-        const aSpy = vi.fn(() => Math.random());
-        const a = singleton.annotate({ name: 'a' }).async().fn(aSpy);
-
-        const bSpy = vi.fn(val => val);
-        const b_a = singleton.annotate({ name: 'b_a' }).async().using(a).fn(bSpy);
-
-        const cSpy = vi.fn(val => val);
-        const c_b_a = singleton.annotate({ name: 'c_b_a' }).async().using(b_a).fn(cSpy);
-
-        const dSpy = vi.fn(val => val);
-        const d_c_b_a = singleton
-          .annotate({ name: 'd_c_b_a' })
-          .async()
-          .using(c_b_a)
-          .annotate(eagerInterceptor.eager)
-          .fn(dSpy);
-
-        const cnt = container({
-          interceptor: eagerInterceptor,
-        });
-
-        await cnt.use(a);
-
-        expect(dSpy).toHaveBeenCalled();
-      });
     });
   });
 });

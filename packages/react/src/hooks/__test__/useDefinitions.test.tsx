@@ -1,9 +1,9 @@
-import { container, implicit, scoped, set, singleton } from 'hardwired';
+import { container, fn, implicit, scoped, set } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
 import { ContainerProvider } from '../../components/ContainerProvider.js';
-import { useDefinitions } from '../useDefinitions.js';
+import { useAll, useDefinitions } from '../useDefinitions.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
@@ -16,11 +16,11 @@ import { FC } from 'react';
 describe(`useDefinitions`, () => {
   describe(`types`, () => {
     it(`returns correct types`, async () => {
-      const val1Def = scoped.fn(() => 'someString');
-      const val2Def = scoped.fn(() => 123);
+      const val1Def = fn.scoped(() => 'someString');
+      const val2Def = fn.scoped(() => 123);
 
       const Component = () => {
-        const [val1, val2] = useDefinitions(val1Def, val2Def);
+        const [val1, val2] = useAll(val1Def, val2Def);
         expectType<TypeEqual<typeof val1, string>>(true);
         expectType<TypeEqual<typeof val2, number>>(true);
       };
@@ -33,7 +33,7 @@ describe(`useDefinitions`, () => {
 
       const Component = () => {
         try {
-          const [val1, val2] = useDefinitions(val1Def, val2Def);
+          const [val1, val2] = useAll(val1Def, val2Def);
           expectType<TypeEqual<typeof val1, string>>(true);
           expectType<TypeEqual<typeof val2, number>>(true);
         } catch (e) {
@@ -44,12 +44,12 @@ describe(`useDefinitions`, () => {
   });
 
   describe(`instantiating dependencies`, () => {
-    const val1Def = singleton.fn(() => 'val1');
-    const val2Def = singleton.fn(() => 'val2');
+    const val1Def = fn.singleton(() => 'val1');
+    const val2Def = fn.singleton(() => 'val2');
 
     function setup() {
       const Consumer = () => {
-        const values = useDefinitions(val1Def, val2Def);
+        const values = useAll(val1Def, val2Def);
         return <DummyComponent value={values.join(',')} />;
       };
 
@@ -76,7 +76,7 @@ describe(`useDefinitions`, () => {
       const clsDef = scoped.fn(checkoutRenderId);
 
       const Consumer = () => {
-        const [cls] = useDefinitions(clsDef);
+        const [cls] = useAll(clsDef);
         return <DummyComponent value={cls} />;
       };
 
@@ -139,7 +139,7 @@ describe(`useDefinitions`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const values = useDefinitions(val1Def, val2Def);
+        const values = useAll(val1Def, val2Def);
         return <DummyComponent value={values.join('|')} />;
       };
 

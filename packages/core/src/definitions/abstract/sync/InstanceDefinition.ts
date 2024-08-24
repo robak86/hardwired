@@ -4,6 +4,7 @@ import { Resolution } from '../Resolution.js';
 import { v4 } from 'uuid';
 import type { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
 import type { AsyncInstanceDefinition } from '../async/AsyncInstanceDefinition.js';
+import { BaseDefinition } from '../FnDefinition.js';
 
 export class InstanceDefinition<TInstance, TLifeTime extends LifeTime, TMeta> {
   static create<TInstance, TLifeTime extends LifeTime, TMeta>(
@@ -45,6 +46,7 @@ export const isInstanceDef = (val: any): val is InstanceDefinition<any, any, any
 export type Instance<T extends AnyInstanceDefinition<any, any, any>> =
   T extends InstanceDefinition<infer T, any, any> ? T :
   T extends AsyncInstanceDefinition<infer T, any, any>? T :
+  T extends BaseDefinition<infer T, any, any> ? T :
   unknown;
 
 // prettier-ignore

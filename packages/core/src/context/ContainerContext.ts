@@ -11,10 +11,25 @@ import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
-import { IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
+import { UseFn, IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { BaseDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
+import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
+import { Overrides } from '../container/Patch.js';
 
-export class ContainerContext implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
+export interface ContainerContext {
+  <TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
+  <TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  <TValue>(definition: BaseDefinition<TValue, any, any>): TValue;
+  <TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue>;
+}
+
+export interface ContainerContext extends UseFn {}
+
+export class ContainerContext
+  extends ExtensibleFunction
+  implements InstancesBuilder, InstanceCreationAware, IContainerScopes
+{
   static empty(
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptor: ContainerInterceptor = {},
@@ -32,8 +47,8 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
   }
 
   static create(
-    scopeOverrides: AnyInstanceDefinition<any, any, any>[],
-    globalOverrides: AnyInstanceDefinition<any, any, any>[],
+    scopeOverrides: Overrides,
+    globalOverrides: Overrides,
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
   ): ContainerContext {
@@ -58,7 +73,11 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
-  ) {}
+  ) {
+    super((definition: AnyInstanceDefinition<any, any, any>) => {
+      return this.request(definition as any); // TODO: fix type
+    });
+  }
 
   override(definition: AnyInstanceDefinition<any, any, any>): void {
     if (this.instancesCache.hasInCurrentScope(definition.id)) {
@@ -70,9 +89,21 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
+  private requestCall<TValue>(definition: BaseDefinition<TValue, any, any>): TValue {
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+    const strategy = this.strategiesRegistry.get(definition.strategy);
+
+    return strategy.buildFn(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
+  }
+
   request<TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
   request<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  request<TValue>(definition: BaseDefinition<TValue, any, any>): TValue;
   request<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
+    if (isBasedDefinition(definition)) {
+      return this.requestCall(definition);
+    }
+
     this.events.onGet.emit({ containerId: this.id, definition });
 
     this.interceptor.onRequestStart?.(definition, this);
@@ -91,15 +122,26 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     }
   }
 
-  useAll<TDefinitions extends InstanceDefinition<any, any, any>[]>(
+  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;
   }
 
+  buildExactFn<T>(definition: BaseDefinition<T, any, any>): T {
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+
+    return patchedInstanceDef.create(this);
+  }
+
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
   buildExact<T>(definition: AsyncInstanceDefinition<T, any, any>): Promise<T>;
+  buildExact<T>(definition: BaseDefinition<T, any, any>): Promise<T>;
   buildExact<T>(definition: AnyInstanceDefinition<T, any, any>): T | Promise<T> {
+    if (isBasedDefinition(definition)) {
+      return this.buildExactFn(definition);
+    }
+
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
@@ -141,10 +183,12 @@ export class ContainerContext implements InstancesBuilder, InstanceCreationAware
     return scopeContext;
   };
 
-  withScope = <TValue>(fn: (locator: IServiceLocator<LifeTime>) => TValue): TValue => {
-    const scopeContext = this.checkoutScope();
-
-    return fn(scopeContext);
+  withScope: IContainerScopes['withScope'] = (fnOrOverrides, fn?: any) => {
+    if (typeof fnOrOverrides === 'function') {
+      return fnOrOverrides(this.checkoutScope());
+    } else {
+      return fn!(this.checkoutScope({ overrides: fnOrOverrides }));
+    }
   };
 
   provide = <T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T) => {

@@ -372,7 +372,7 @@ randomGenerator.seed === 1; // true
   });
   const cnt = container([writerPatch]);
 
-  const [spiedWriter, storeDocumentAction] = cnt.useAll(writerDef, storeDocumentActionDef);
+  const [spiedWriter, storeDocumentAction] = cnt.all(writerDef, storeDocumentActionDef);
   storeDocumentAction.run();
   // now we can do some assertions on spied write method
   expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);

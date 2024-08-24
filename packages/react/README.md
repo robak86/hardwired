@@ -169,7 +169,7 @@ describe('CounterAction', () => {
 
     // delegating instances construction to container
     it('increments counter state by 1', () => {
-      const [counterStore, counterStoreActions] = container().useAll(counterStoreDef, counterActionsDef);
+      const [counterStore, counterStoreActions] = container().all(counterStoreDef, counterActionsDef);
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(1);
     });
@@ -177,7 +177,7 @@ describe('CounterAction', () => {
     // delegating instances construction to container and overriding initial value for counter store
     it('increments counter state by 1', () => {
       const cnt = container([set(counterInitialValueDef, 10)]);
-      const [counterStore, counterStoreActions] = cnt.useAll(counterStoreDef, counterActionsDef);
+      const [counterStore, counterStoreActions] = cnt.all(counterStoreDef, counterActionsDef);
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(11);
     });

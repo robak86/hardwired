@@ -1,9 +1,9 @@
-import { container, implicit, scoped, set, singleton } from 'hardwired';
+import { container, fn, implicit, scoped, set } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
 import { ContainerProvider } from '../../components/ContainerProvider.js';
-import { useDefinition } from '../useDefinition.js';
+import { use } from '../useDefinition.js';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
 import { FC } from 'react';
@@ -14,12 +14,12 @@ import { FC } from 'react';
 
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
-    const val1Def = singleton.fn(() => 'val1');
-    const val2Def = singleton.fn(() => 'val2');
+    const val1Def = fn.singleton(() => 'val1');
+    const val2Def = fn.singleton(() => 'val2');
 
     function setup() {
       const Consumer = () => {
-        const val1 = useDefinition(val1Def);
+        const val1 = use(val1Def);
         return <DummyComponent value={val1} />;
       };
 
@@ -43,10 +43,10 @@ describe(`useDefinition`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const clsDef = scoped.fn(checkoutRenderId);
+      const clsDef = fn.scoped(checkoutRenderId);
 
       const Consumer = () => {
-        const cls = useDefinition(clsDef);
+        const cls = use(clsDef);
         return <DummyComponent value={cls} />;
       };
 
@@ -104,7 +104,7 @@ describe(`useDefinition`, () => {
       const checkoutRenderId = () => (counter += 1);
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
-        const val1 = useDefinition(val1Def);
+        const val1 = use(val1Def);
         return <DummyComponent value={val1} />;
       };
 
