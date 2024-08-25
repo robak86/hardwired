@@ -104,7 +104,7 @@ export class ContainerContext
     return definitions.map(def => this.use(def)) as any;
   }
 
-  buildExactFn<T>(definition: BaseDefinition<T, any, any, any>, ...args: any[]): T {
+  buildExact<T>(definition: BaseDefinition<T, any, any, any>, ...args: any[]): T {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);

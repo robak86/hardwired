@@ -16,12 +16,12 @@ export class ScopeStrategy extends BuildStrategy {
 
     if (resolvers.hasGlobalOverrideDefinition(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
-        return instancesBuilder.buildExactFn(definition, ...args);
+        return instancesBuilder.buildExact(definition, ...args);
       });
     }
 
     return instancesCache.upsertCurrentScope(id, () => {
-      return instancesBuilder.buildExactFn(definition, ...args);
+      return instancesBuilder.buildExact(definition, ...args);
     });
   }
 }

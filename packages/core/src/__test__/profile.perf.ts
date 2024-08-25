@@ -2,7 +2,7 @@ import { Container, container } from '../container/Container.js';
 
 import { fn } from '../definitions/definitions.js';
 
-import 'source-map-support/register';
+// import 'source-map-support/register';
 import Bench from 'tinybench';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 
@@ -42,12 +42,40 @@ function buildTransient(times: number, depth: number, currentDepth = 0): BaseDef
   return definitions;
 }
 
+function buildScoped(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, never, any>[] {
+  if (currentDepth > depth) {
+    return [];
+  }
+
+  const definitions: any[] = [];
+
+  for (let i = 0; i < times; i++) {
+    definitions.push(
+      fn.scoped(use => {
+        return use.all(...buildScoped(times, depth, (currentDepth += 1)));
+      }),
+    );
+  }
+
+  return definitions;
+}
+
+const singletonDefinitions = buildSingletonTree(3, 10);
+const transientDefinitions = buildTransient(3, 10);
+const scopedDefinitions = buildScoped(3, 10);
+
 const singletonD = fn.singleton(use => {
-  return use.all(...buildSingletonTree(4, 10));
+  return use.all(...singletonDefinitions);
 });
 
 const transientD = fn(use => {
-  return use.all(...buildTransient(3, 10));
+  return use.all(...transientDefinitions);
+});
+
+const scopedD = fn.scoped(use => {
+  return use.withScope(use => {
+    return use.all(...scopedDefinitions);
+  });
 });
 
 let cnt: Container;
@@ -63,11 +91,14 @@ const bench = new Bench({
 });
 
 bench
-  .add('no interceptor: singletonD', () => {
+  .add('singletonD', () => {
     cnt.use(singletonD);
   })
-  .add('no interceptor: transientD', () => {
+  .add('transientD', () => {
     cnt.use(transientD);
+  })
+  .add('scopedD', () => {
+    cnt.use(scopedD);
   });
 
 bench

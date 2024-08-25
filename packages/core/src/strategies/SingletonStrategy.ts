@@ -16,12 +16,12 @@ export class SingletonStrategy extends BuildStrategy {
 
     if (definitionsRegistry.hasGlobalOverrideDefinition(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
-        return instancesBuilder.buildExactFn(definition, ...args);
+        return instancesBuilder.buildExact(definition, ...args);
       });
     }
 
     return instancesCache.upsertGlobalScope(id, () => {
-      return instancesBuilder.buildExactFn(definition, ...args);
+      return instancesBuilder.buildExact(definition, ...args);
     });
   }
 }
