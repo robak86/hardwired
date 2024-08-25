@@ -1,5 +1,5 @@
 import { fn } from '../../definitions/definitions.js';
-import { container } from '../Container.js';
+import { container, use } from '../Container.js';
 
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it, vi } from 'vitest';
@@ -36,7 +36,7 @@ describe(`Container`, () => {
         const def = fn((use, userId: number) => {
           return userId;
         });
-        const value = def(123);
+        const value = use(def, 123);
         expect(value).toEqual(123);
       });
 

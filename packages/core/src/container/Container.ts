@@ -98,3 +98,10 @@ export function container(
     );
   }
 }
+
+export function use<TInstance, TArgs extends any[]>(
+  definition: BaseDefinition<TInstance, LifeTime, unknown, TArgs>,
+  ...args: TArgs
+) {
+  return container().use(definition, ...args);
+}

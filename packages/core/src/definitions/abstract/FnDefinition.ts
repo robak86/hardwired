@@ -1,34 +1,15 @@
 import { LifeTime } from './LifeTime.js';
 
 import { v4 } from 'uuid';
-import { container } from '../../container/Container.js';
-import { ExtensibleFunction } from '../../utils/ExtensibleFunction.js';
 import { IServiceLocator } from '../../container/IContainer.js';
 
-export interface BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs extends any[]>
-  extends ExtensibleFunction {
-  (...args: TArgs): TInstance;
-}
-
-export class BaseDefinition<
-  TInstance,
-  TLifeTime extends LifeTime,
-  TMeta,
-  TArgs extends any[],
-> extends ExtensibleFunction {
+export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs extends any[]> {
   constructor(
     public readonly id: string,
     public readonly strategy: TLifeTime,
     public readonly create: (context: IServiceLocator, ...args: TArgs) => TInstance,
     public readonly meta?: TMeta,
-  ) {
-    super((...args: TArgs) => {
-      const cnt = container();
-
-      console.log('WTF', args);
-      return cnt.use(this, ...args);
-    });
-  }
+  ) {}
 
   patch(): PatchDefinition<TInstance, TLifeTime, TMeta, TArgs> {
     return new PatchDefinition(this.id, this.strategy, this.create, this.meta);
