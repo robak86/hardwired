@@ -22,15 +22,15 @@ export class InstancesDefinitionsRegistry {
   constructor(
     private scopeOverrideDefinitionsById: Record<
       string,
-      AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>
+      AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>
     >,
     private globalOverrideDefinitionsById: Record<
       string,
-      AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>
+      AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>
     >,
   ) {}
 
-  addScopeOverride(definition: AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>) {
+  addScopeOverride(definition: AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>) {
     this.updateScopeOverride(definition);
   }
 
@@ -43,7 +43,7 @@ export class InstancesDefinitionsRegistry {
     return newRegistry;
   }
 
-  getInstanceDefinition<T extends AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>(
+  getInstanceDefinition<T extends AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>>(
     instanceDefinition: T,
   ): T {
     const id = instanceDefinition.id;
@@ -67,11 +67,13 @@ export class InstancesDefinitionsRegistry {
     return !!this.scopeOverrideDefinitionsById[resolverId];
   }
 
-  private updateScopeOverride(resolver: AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>) {
+  private updateScopeOverride(resolver: AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>) {
     this.scopeOverrideDefinitionsById[resolver.id] = resolver;
   }
 
-  private addGlobalOverrideResolver(resolver: AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>) {
+  private addGlobalOverrideResolver(
+    resolver: AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>,
+  ) {
     if (this.globalOverrideDefinitionsById[resolver.id]) {
       throw new Error(`Invariant resolves cannot be updated after container creation`);
     }

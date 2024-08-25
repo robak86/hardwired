@@ -26,7 +26,7 @@ export class SingletonStrategy extends BuildStrategy {
   }
 
   buildFn(
-    definition: BaseDefinition<any, any, any>,
+    definition: BaseDefinition<any, any, any, any>,
     instancesCache: InstancesStore,
     definitionsRegistry: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

@@ -11,18 +11,11 @@ import { Resolution } from '../definitions/abstract/Resolution.js';
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
-import { UseFn, IContainerScopes, InstanceCreationAware, IServiceLocator } from '../container/IContainer.js';
+import { IContainerScopes, InstanceCreationAware, UseFn } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { BaseDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { Overrides } from '../container/Patch.js';
-
-export interface ContainerContext {
-  <TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
-  <TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  <TValue>(definition: BaseDefinition<TValue, any, any>): TValue;
-  <TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue>;
-}
 
 export interface ContainerContext extends UseFn {}
 
@@ -89,7 +82,7 @@ export class ContainerContext
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
-  private requestCall<TValue>(definition: BaseDefinition<TValue, any, any>): TValue {
+  private requestCall<TValue>(definition: BaseDefinition<TValue, any, any, any>): TValue {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
@@ -98,7 +91,7 @@ export class ContainerContext
 
   request<TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
   request<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  request<TValue>(definition: BaseDefinition<TValue, any, any>): TValue;
+  request<TValue>(definition: BaseDefinition<TValue, any, any, any>): TValue;
   request<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
     if (isBasedDefinition(definition)) {
       return this.requestCall(definition);
@@ -122,13 +115,13 @@ export class ContainerContext
     }
   }
 
-  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>>(
+  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;
   }
 
-  buildExactFn<T>(definition: BaseDefinition<T, any, any>): T {
+  buildExactFn<T>(definition: BaseDefinition<T, any, any, any>): T {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     return patchedInstanceDef.create(this);
@@ -136,7 +129,7 @@ export class ContainerContext
 
   buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
   buildExact<T>(definition: AsyncInstanceDefinition<T, any, any>): Promise<T>;
-  buildExact<T>(definition: BaseDefinition<T, any, any>): Promise<T>;
+  buildExact<T>(definition: BaseDefinition<T, any, any, any>): Promise<T>;
   buildExact<T>(definition: AnyInstanceDefinition<T, any, any>): T | Promise<T> {
     if (isBasedDefinition(definition)) {
       return this.buildExactFn(definition);

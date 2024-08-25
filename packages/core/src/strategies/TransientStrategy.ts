@@ -24,7 +24,7 @@ export class TransientStrategy extends BuildStrategy {
   }
 
   buildFn(
-    definition: BaseDefinition<any, any, any>,
+    definition: BaseDefinition<any, any, any, any>,
     instancesCache: InstancesStore,
     definitions: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

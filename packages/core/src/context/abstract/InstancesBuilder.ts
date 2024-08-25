@@ -8,5 +8,5 @@ export interface InstancesBuilder {
    * @param definition
    */
   buildExact(definition: AnyInstanceDefinition<any, any, any>): any;
-  buildExactFn(definition: BaseDefinition<any, any, any>): any;
+  buildExactFn(definition: BaseDefinition<any, any, any, any>): any;
 }

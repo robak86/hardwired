@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 export type ContainerInitializerDefinition =
   | InstanceDefinition<() => void, LifeTime, any>
-  | BaseDefinition<() => void, LifeTime, any>;
+  | BaseDefinition<() => void, LifeTime, any, any>;
 
 export function useInitializers(...initializers: ContainerInitializerDefinition[]) {
   const initializerFns = useDefinitions(...initializers);

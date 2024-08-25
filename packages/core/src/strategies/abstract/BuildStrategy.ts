@@ -14,7 +14,7 @@ export abstract class BuildStrategy {
   ): any;
 
   abstract buildFn(
-    definition: BaseDefinition<any, any, any>,
+    definition: BaseDefinition<any, any, any, any>,
     instancesCache: InstancesStore,
     resolvers: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,

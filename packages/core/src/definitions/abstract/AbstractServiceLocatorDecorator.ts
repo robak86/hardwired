@@ -10,7 +10,7 @@ export interface AbstractServiceLocatorDecorator {
 
   <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
 
-  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any, any>): TValue;
 
   <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 }

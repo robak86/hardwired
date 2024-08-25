@@ -39,7 +39,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     return this.containerContext.events;
   }
 
-  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>>(
+  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.containerContext.use(def)) as any;

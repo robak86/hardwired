@@ -3,7 +3,7 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { IServiceLocator } from './IContainer.js';
 
-export type Overrides = Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any>> | PatchSet;
+export type Overrides = Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>> | PatchSet;
 
 export interface PatchSet {
   get(definitionId: string): AnyInstanceDefinition<any, any, any> | undefined;
@@ -29,15 +29,15 @@ export class Patch implements PatchSet {
     });
   }
 
-  decorate<TInstance, TExtendedInstance extends TInstance, TLifeTime extends LifeTime>(
-    def: BaseDefinition<TInstance, TLifeTime, any>,
+  decorate<TInstance, TExtendedInstance extends TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+    def: BaseDefinition<TInstance, TLifeTime, any, TArgs>,
     decorateFn: (instance: TInstance) => TExtendedInstance,
   ): Patch {
     if (this.overrides[def.id]) {
       throw new Error(`Cannot decorate definition ${def.id} because it is already overridden`);
     }
 
-    const override: BaseDefinition<TExtendedInstance, TLifeTime, any> = new BaseDefinition(
+    const override: BaseDefinition<TExtendedInstance, TLifeTime, any, TArgs> = new BaseDefinition(
       def.id,
       def.strategy,
       use => {
@@ -59,15 +59,15 @@ export class Patch implements PatchSet {
     return this.append(new BaseDefinition(definition.id, definition.strategy, create));
   }
 
-  set<TInstance, TLifeTime extends LifeTime>(
-    def: BaseDefinition<TInstance, TLifeTime, any>,
+  set<TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+    def: BaseDefinition<TInstance, TLifeTime, any, TArgs>,
     newValue: TInstance,
   ): Patch {
     if (this.overrides[def.id]) {
       throw new Error(`Cannot set definition ${def.id} because it is already overridden`);
     }
 
-    const override: BaseDefinition<TInstance, TLifeTime, any> = new BaseDefinition(
+    const override: BaseDefinition<TInstance, TLifeTime, any, TArgs> = new BaseDefinition(
       def.id,
       def.strategy,
       () => newValue,
@@ -79,15 +79,15 @@ export class Patch implements PatchSet {
     });
   }
 
-  apply<TInstance, TLifeTime extends LifeTime>(
-    def: BaseDefinition<TInstance, TLifeTime, any>,
+  apply<TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+    def: BaseDefinition<TInstance, TLifeTime, any, TArgs>,
     applyFn: (instance: TInstance) => void,
   ): Patch {
     if (this.overrides[def.id]) {
       throw new Error(`Cannot apply definition ${def.id} because it is already overridden`);
     }
 
-    const override: BaseDefinition<TInstance, TLifeTime, any> = new BaseDefinition(def.id, def.strategy, use => {
+    const override: BaseDefinition<TInstance, TLifeTime, any, TArgs> = new BaseDefinition(def.id, def.strategy, use => {
       const instance = use(def);
       applyFn(instance);
 

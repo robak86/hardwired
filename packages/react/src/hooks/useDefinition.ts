@@ -3,7 +3,7 @@ import { useContainer } from '../context/ContainerContext.js';
 
 export type UseDefinitionHook = {
   <TInstance>(
-    factoryDefinition: InstanceDefinition<TInstance, LifeTime, any> | BaseDefinition<TInstance, LifeTime, any>,
+    factoryDefinition: InstanceDefinition<TInstance, LifeTime, any> | BaseDefinition<TInstance, LifeTime, any, any>,
   ): TInstance;
 };
 

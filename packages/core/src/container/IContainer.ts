@@ -11,13 +11,13 @@ import { Patch } from './Patch.js';
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
   use<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  use<TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
+  use<TValue>(instanceDefinition: BaseDefinition<TValue, any, any, any>): TValue;
   use<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 
   all<
     TDefinitions extends Array<
       | InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
-      | BaseDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
+      | BaseDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any, any>
     >,
   >(
     ...definitions: [...TDefinitions]
@@ -38,7 +38,7 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
 export interface UseFn {
   <TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
   <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
+  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any, any>): TValue;
   <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
 }
 

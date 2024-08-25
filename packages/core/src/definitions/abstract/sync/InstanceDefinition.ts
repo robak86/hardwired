@@ -46,7 +46,7 @@ export const isInstanceDef = (val: any): val is InstanceDefinition<any, any, any
 export type Instance<T extends AnyInstanceDefinition<any, any, any>> =
   T extends InstanceDefinition<infer T, any, any> ? T :
   T extends AsyncInstanceDefinition<infer T, any, any>? T :
-  T extends BaseDefinition<infer T, any, any> ? T :
+  T extends BaseDefinition<infer T, any, any, any> ? T :
   unknown;
 
 // prettier-ignore
