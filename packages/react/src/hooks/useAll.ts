@@ -7,11 +7,6 @@ export type UseDefinitionsHook = {
   ): InstancesArray<TDefinitions>;
 };
 
-/**
- * @deprecated use "useAll" instead
- */
-export const useDefinitions: UseDefinitionsHook = (...definitions) => {
+export const useAll: UseDefinitionsHook = (...definitions) => {
   return useContainer().all(...definitions) as any;
 };
-
-export const useAll = useDefinitions;

@@ -1,7 +1,7 @@
 import { fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
-import { use } from '../../hooks/useDefinition.js';
+import { use } from '../../hooks/use.js';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { FC } from 'react';

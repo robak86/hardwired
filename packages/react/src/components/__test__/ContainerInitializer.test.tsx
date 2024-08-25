@@ -2,9 +2,10 @@ import { fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { ContainerInitializer } from '../ContainerInitializer.js';
-import { useDefinition } from '../../hooks/useDefinition.js';
+
 import { render } from '@testing-library/react';
 import { expect } from 'vitest';
+import { use } from '../../hooks/use.js';
 
 describe(`ContainerInitializer`, () => {
   function setup() {
@@ -23,7 +24,7 @@ describe(`ContainerInitializer`, () => {
     });
 
     const ValueRenderer = ({ testId }: { testId: any }) => {
-      const value = useDefinition(initializeMe);
+      const value = use(initializeMe);
 
       return <div data-testid={testId}>{value.value}</div>;
     };

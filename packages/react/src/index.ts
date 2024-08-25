@@ -12,8 +12,8 @@ export { ContainerInitializer } from './components/ContainerInitializer.js';
 export type { ContainerInitializerProps } from './components/ContainerInitializer.js';
 
 // hooks
-export { useDefinition } from './hooks/useDefinition.js';
-export { useDefinitions } from './hooks/useDefinitions.js';
+export { use } from './hooks/use.js';
+export { useAll } from './hooks/useAll.js';
 export { useContainer } from './context/ContainerContext.js';
 export * from './hooks/useInitializers.js';
 

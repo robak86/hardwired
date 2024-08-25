@@ -1,5 +1,5 @@
 import { Optional } from 'utility-types';
-import { useAll } from '../hooks/useDefinitions.js';
+import { useAll } from '../hooks/useAll.js';
 import { FC } from 'react';
 import { BaseDefinition } from 'hardwired';
 

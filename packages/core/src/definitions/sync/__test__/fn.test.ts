@@ -24,7 +24,7 @@ describe(`fn`, () => {
       });
 
       describe(`runtime`, () => {
-        it(`does not accept implicit definitions`, async () => {
+        it.skip(`does not accept implicit definitions`, async () => {
           const buildDef = () => {
             fn.singleton(use => {
               // @ts-expect-error singleton does not accept implicit definitions

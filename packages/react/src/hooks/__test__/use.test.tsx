@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
 import { ContainerProvider } from '../../components/ContainerProvider.js';
-import { use } from '../useDefinition.js';
+import { use } from '../use.js';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
 import { FC } from 'react';

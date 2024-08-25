@@ -2,10 +2,11 @@ import { container, fn } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies.js';
-import { useDefinition } from '../../hooks/useDefinition.js';
+
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
 import { FC, ReactElement } from 'react';
+import { use } from '../../hooks/use.js';
 
 /**
  * @vitest-environment happy-dom
@@ -41,8 +42,8 @@ describe(`withDependencies`, () => {
     };
 
     const ChildComponent = () => {
-      const age = useDefinition(ageDef);
-      const firstName = useDefinition(firstNameDef);
+      const age = use(ageDef);
+      const firstName = use(firstNameDef);
       return (
         <>
           <ValueRenderer testId={'ageFromChildComponent'} value={age.value} />

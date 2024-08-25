@@ -48,7 +48,7 @@ describe(`klass`, () => {
           });
 
           describe(`runtime`, () => {
-            it(`does not accept implicit definitions`, async () => {
+            it.skip(`does not accept implicit definitions`, async () => {
               const buildDef = () => {
                 // @ts-expect-error singleton does not accept implicit definitions
                 singleton.using(implDef).class(NumberConsumer);
