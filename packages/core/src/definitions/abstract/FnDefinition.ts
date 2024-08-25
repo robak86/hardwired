@@ -15,7 +15,7 @@ export function isBasedDefinition<T, TLifeTime extends LifeTime, TMeta>(
 
 export interface BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs extends any[]>
   extends ExtensibleFunction {
-  (): TInstance;
+  (...args: TArgs): TInstance;
 }
 
 export class BaseDefinition<
@@ -34,9 +34,9 @@ export class BaseDefinition<
     public readonly create: (context: IServiceLocator, ...args: TArgs) => TInstance,
     public readonly meta?: TMeta,
   ) {
-    super(() => {
+    super((...args: TArgs) => {
       const cnt = container();
-      return cnt.use(this);
+      return cnt.use(this, ...args);
     });
   }
 
@@ -69,7 +69,7 @@ export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs
       this.id,
       this.strategy,
       (use: IServiceLocator, ...args: TArgs) => {
-        const instance = use(this) as TInstance;
+        const instance = use(this, ...args) as TInstance;
         applyFn(instance, ...args);
 
         return instance;
@@ -85,7 +85,7 @@ export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs
       this.id,
       this.strategy,
       (use: IServiceLocator, ...args: TArgs): TExtendedInstance => {
-        const instance = use(this);
+        const instance = use(this, ...args);
         return decorateFn(instance as TInstance, ...args);
       },
       this.meta,
@@ -108,7 +108,7 @@ export class DefineBuilder<TInstance, TLifeTime extends LifeTime, TMeta, TArgs e
       v4(),
       this.strategy,
       (use: IServiceLocator, ...args: TArgs) => {
-        const instance = use(this) as TInstance;
+        const instance = use(this, ...args) as TInstance;
         applyFn(instance, ...args);
 
         return instance;
@@ -140,3 +140,10 @@ export const fnDefinition =
   ): BaseDefinition<TInstance, TLifeTime, TMeta, any> => {
     return new BaseDefinition(v4(), lifeTime, create, meta);
   };
+
+export function transientFn<TInstance, TLifeTime extends LifeTime, TMeta, TArgs extends any[]>(
+  create: (locator: IServiceLocator, ...args: TArgs) => TInstance,
+  meta?: TMeta,
+): BaseDefinition<TInstance, LifeTime.transient, TMeta, TArgs> {
+  return new BaseDefinition(v4(), LifeTime.transient, create, meta);
+}
