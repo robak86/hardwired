@@ -137,7 +137,7 @@ export const fnDefinition =
   <TInstance, TMeta>(
     create: (locator: IServiceLocator<TLifeTime>) => TInstance,
     meta?: TMeta,
-  ): BaseDefinition<TInstance, TLifeTime, TMeta, any> => {
+  ): BaseDefinition<TInstance, TLifeTime, TMeta, []> => {
     return new BaseDefinition(v4(), lifeTime, create, meta);
   };
 

@@ -1,5 +1,5 @@
 import { implicit } from '../../sync/implicit.js';
-import { fn, singleton } from '../../definitions.js';
+import { fn } from '../../definitions.js';
 import { describe, expect, it } from 'vitest';
 
 describe(`asyncFn`, () => {

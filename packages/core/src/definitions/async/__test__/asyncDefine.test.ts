@@ -1,6 +1,6 @@
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeOf } from 'ts-expect';
-import { fn, scoped, singleton, transient } from '../../definitions.js';
+import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
@@ -49,7 +49,7 @@ describe(`asyncDefine`, () => {
 
   describe(`instantiation`, () => {
     it(`correctly resolves externals`, async () => {
-      const definition = transient.async().define(async locator => {
+      const definition = fn(async locator => {
         return [locator.use(ext1), locator.use(ext2)];
       });
 
@@ -60,9 +60,9 @@ describe(`asyncDefine`, () => {
     });
 
     it(`uses the same request scope for every get call`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = fn.scoped(async () => new BoxedValue(Math.random()));
 
-      const definition = transient.async().define(async locator => {
+      const definition = fn(async locator => {
         return [await locator.use(value), await locator.use(value)];
       });
       const result = await container().use(definition);
@@ -72,9 +72,9 @@ describe(`asyncDefine`, () => {
     });
 
     it(`passes container with the same scope`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = fn.scoped(() => new BoxedValue(Math.random()));
 
-      const definition = transient.async().define(async locator => {
+      const definition = fn(async locator => {
         const scopedContainer = locator.checkoutScope();
         return [await scopedContainer.use(value), await scopedContainer.use(value)];
       });
@@ -124,18 +124,18 @@ describe(`asyncDefine`, () => {
 
   describe(`withNewRequestScope`, () => {
     it(`returns values using new request`, async () => {
-      const singletonD = fn.singleton(() => new BoxedValue(Math.random()));
-      const randomD = scoped.async().fn(async () => new BoxedValue(Math.random()));
+      const singletonD = fn.singleton(async () => new BoxedValue(Math.random()));
+      const randomD = fn.scoped(async () => new BoxedValue(Math.random()));
 
-      const exampleD = scoped.async().define(async locator => {
-        const s1 = await locator.use(singletonD);
-        const r1 = await locator.use(randomD);
-        const r2 = await locator.use(randomD);
+      const exampleD = fn.scoped(async use => {
+        const s1 = await use(singletonD);
+        const r1 = await use(randomD);
+        const r2 = await use(randomD);
 
-        const req2 = await locator.withScope(async locator => {
-          const s1 = await locator.use(singletonD);
-          const r1 = await locator.use(randomD);
-          const r2 = await locator.use(randomD);
+        const req2 = await use.withScope(async use => {
+          const s1 = await use(singletonD);
+          const r1 = await use(randomD);
+          const r2 = await use(randomD);
 
           return [s1, r1, r2];
         });

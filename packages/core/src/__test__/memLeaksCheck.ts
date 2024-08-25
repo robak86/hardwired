@@ -2,7 +2,7 @@ import { container } from '../container/Container.js';
 import u from 'util';
 
 import memwatch from '@airbnb/node-memwatch';
-import { scoped, transient } from '../definitions/definitions.js';
+import { fn } from '../definitions/definitions.js';
 
 import { implicit } from '../definitions/sync/implicit.js';
 
@@ -17,7 +17,10 @@ class ConfigProvider {
 type ConfigData = { data: string };
 
 const config = implicit<ConfigData>('config');
-const d1 = transient.using(config).class(ConfigProvider);
+
+const d1 = fn(use => {
+  return new ConfigProvider(use(config));
+});
 
 const c = container();
 

@@ -1,6 +1,6 @@
 import { container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { fn, scoped, singleton, transient } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/definitions.js';
 import { set } from '../set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
@@ -62,8 +62,9 @@ describe(`apply`, () => {
   it(`allows using additional dependencies, ex2`, async () => {
     const a = value(new BoxedValue(1));
     const b = value(new BoxedValue(2));
-    const someValue = singleton.using(a, b).fn((a: BoxedValue<number>, b: BoxedValue<number>) => {
-      return new BoxedValue(a.value + b.value);
+
+    const someValue = fn.singleton(use => {
+      return new BoxedValue(use(a).value + use(b).value);
     });
 
     const mPatch = apply(
@@ -88,7 +89,7 @@ describe(`apply`, () => {
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
-      const someValue = transient.fn(() => Math.random());
+      const someValue = fn(() => Math.random());
 
       const mPatch = apply(someValue, a => a);
 
@@ -97,8 +98,10 @@ describe(`apply`, () => {
     });
 
     it(`preserves scope of the original resolver`, async () => {
-      const source = scoped.fn(() => Math.random());
-      const a = scoped.using(source).fn(source => source);
+      const source = fn.scoped(() => Math.random());
+      const a = fn.scoped(use => {
+        return use(source);
+      });
 
       const mPatch = apply(a, a => a);
 

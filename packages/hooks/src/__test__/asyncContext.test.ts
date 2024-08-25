@@ -1,4 +1,4 @@
-import { fn, replace, scoped, value } from 'hardwired';
+import { fn, replace, value } from 'hardwired';
 
 import { use } from '../use.js';
 import { describe, expect, it } from 'vitest';

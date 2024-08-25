@@ -1,4 +1,4 @@
-import { container, fn, scoped } from 'hardwired';
+import { container, fn } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies.js';
@@ -27,8 +27,8 @@ describe(`withDependencies`, () => {
 
     const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 
-    const ageDef = scoped.fn(() => new BoxedValue(initialAge()));
-    const firstNameDef = scoped.fn(() => new BoxedValue(initialName()));
+    const ageDef = fn.scoped(() => new BoxedValue(initialAge()));
+    const firstNameDef = fn.scoped(() => new BoxedValue(initialName()));
 
     const WrappedComponent: FC<DummyComponentProps> = ({ age, firstName, testId }) => {
       return (

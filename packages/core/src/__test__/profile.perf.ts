@@ -1,6 +1,6 @@
 import { Container, container } from '../container/Container.js';
 
-import { singleton, transient } from '../definitions/definitions.js';
+import { fn } from '../definitions/definitions.js';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
 import 'source-map-support/register';
 import Bench from 'tinybench';
@@ -15,12 +15,7 @@ const countTreeDepsCount = (definition: AnyInstanceDefinition<any, any, any>): n
   return definition.dependencies.reduce((acc, dep) => acc + countTreeDepsCount(dep), 1);
 };
 
-function buildSingletonTree(
-  times: number,
-  depth: number,
-  markEager: boolean,
-  currentDepth = 0,
-): InstanceDefinition<number, any, never>[] {
+function buildSingletonTree(times: number, depth: number, currentDepth = 0): InstanceDefinition<number, any, never>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -28,20 +23,11 @@ function buildSingletonTree(
   const definitions: any[] = [];
 
   for (let i = 0; i < times; i++) {
-    if (markEager && currentDepth === depth) {
-      definitions.push(
-        singleton //
-          .using(...buildSingletonTree(times, depth, markEager, (currentDepth += 1)))
-
-          .fn((...args: any[]) => args),
-      );
-    } else {
-      definitions.push(
-        singleton //
-          .using(...buildSingletonTree(times, depth, markEager, (currentDepth += 1)))
-          .fn((...args: any[]) => args),
-      );
-    }
+    definitions.push(
+      fn.singleton(use => {
+        return use.all(...buildSingletonTree(times, depth, (currentDepth += 1)));
+      }),
+    );
   }
 
   return definitions;
@@ -56,18 +42,26 @@ function buildTransient(times: number, depth: number, currentDepth = 0): Instanc
 
   for (let i = 0; i < times; i++) {
     definitions.push(
-      transient //
-        .using(...buildTransient(times, depth, (currentDepth += 1)))
-        .fn((...args: any[]) => args),
+      fn(use => {
+        return use.all(...buildTransient(times, depth, (currentDepth += 1)));
+      }),
     );
   }
 
   return definitions;
 }
 
-const singletonD: any = singleton.using(...buildSingletonTree(4, 10, false)).fn((...args) => args);
-const transientD: any = transient.using(...buildTransient(3, 10)).fn((...args) => args);
-const singletonWithEagerLeafD: any = singleton.using(...buildSingletonTree(4, 10, true)).fn((...args) => args);
+const singletonD = fn.singleton(use => {
+  return use.all(...buildSingletonTree(4, 10));
+});
+
+const transientD = fn(use => {
+  return use.all(...buildTransient(3, 10));
+});
+
+const singletonWithEagerLeafD = fn.singleton(use => {
+  return use.all(...buildSingletonTree(4, 10));
+});
 
 console.table([
   { 'Definition Name': 'singletonD', 'Total Dependencies Count': countTreeDepsCount(singletonD) },

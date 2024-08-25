@@ -1,7 +1,7 @@
 import { implicit } from '../implicit.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeOf } from 'ts-expect';
-import { fn, singleton } from '../../definitions.js';
+import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
@@ -64,7 +64,7 @@ describe(`define`, () => {
     it(`correctly uses singleton lifetime`, async () => {
       const value = fn.singleton(() => new BoxedValue(Math.random()));
 
-      const definition = singleton.define(locator => {
+      const definition = fn.singleton(locator => {
         return [locator.use(value), locator.use(value)];
       });
 

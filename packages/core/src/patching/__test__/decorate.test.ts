@@ -1,6 +1,6 @@
 import { set } from '../set.js';
 import { container } from '../../container/Container.js';
-import { fn, scoped, singleton, transient } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/definitions.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
 
@@ -50,7 +50,10 @@ describe(`decorate`, () => {
   it(`allows using additional dependencies, ex2`, async () => {
     const a = value(1);
     const b = value(2);
-    const someValue = singleton.using(a, b).fn((a: number, b: number) => a + b);
+
+    const someValue = fn.singleton(use => {
+      return use(a) + use(b);
+    });
 
     const mPatch = decorate(someValue, (val, b) => val * b, b);
 
@@ -68,7 +71,7 @@ describe(`decorate`, () => {
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
-      const a = transient.fn(() => Math.random());
+      const a = fn(() => Math.random());
 
       const mPatch = decorate(a, a => a);
 
@@ -99,7 +102,7 @@ describe(`decorate`, () => {
     });
 
     it(`caches produced object`, async () => {
-      const a = scoped.fn(() => Math.random());
+      const a = fn(() => Math.random());
 
       const c = container();
       const obj1 = c.use(a);

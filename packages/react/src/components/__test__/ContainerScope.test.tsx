@@ -1,7 +1,7 @@
-import { scoped, set } from 'hardwired';
+import { fn, set } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
-import { useDefinition } from '../../hooks/useDefinition.js';
+import { use } from '../../hooks/useDefinition.js';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { FC } from 'react';
@@ -15,10 +15,10 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = scoped.fn(() => (counter += 1));
+      const valueD = fn.scoped(() => (counter += 1));
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
-        const value = useDefinition(valueD);
+        const value = use(valueD);
 
         return <div data-testid={testId}>{value}</div>;
       };
@@ -59,10 +59,10 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = scoped.fn(() => (counter += 1));
+      const valueD = fn.scoped(() => (counter += 1));
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
-        const value = useDefinition(valueD);
+        const value = use(valueD);
         return <div data-testid={testId}>{value}</div>;
       };
 
@@ -107,11 +107,15 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const baseD = scoped.fn(() => 0);
-      const valueD = scoped.using(baseD).fn(base => (counter += 1 + base));
+      const baseD = fn.scoped(() => 0);
+      const valueD = fn.scoped(use => {
+        const base = use(baseD);
+
+        return (counter += 1 + base);
+      });
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
-        const value = useDefinition(valueD);
+        const value = use(valueD);
 
         return <div data-testid={testId}>{value}</div>;
       };

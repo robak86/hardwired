@@ -1,4 +1,4 @@
-import { container, scoped, value } from 'hardwired';
+import { container, fn, value } from 'hardwired';
 import { inject } from '../inject.js';
 
 import { render } from '@testing-library/react';
@@ -88,7 +88,7 @@ describe(`inject`, () => {
 
   describe(`request`, () => {
     function setup() {
-      const valueA = scoped.fn(() => Math.random());
+      const valueA = fn.scoped(() => Math.random());
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 

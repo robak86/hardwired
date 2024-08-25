@@ -2,9 +2,10 @@ import { value } from '../value.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
-import { scoped, singleton } from '../../definitions.js';
+import { fn } from '../../definitions.js';
 import { describe, it, expect } from 'vitest';
 import { implicit } from '../implicit.js';
+import { BaseDefinition } from '../../abstract/FnDefinition.js';
 
 describe(`klass`, () => {
   describe(`external params`, () => {
@@ -19,9 +20,12 @@ describe(`klass`, () => {
       it(`correctly picks external params from instances definitions provided as dependencies ex.1`, async () => {
         const numD = value(123);
         const objD = value('123');
-        const cls = scoped.using(numD, objD).class(TestClass);
 
-        expectType<TypeEqual<typeof cls, InstanceDefinition<TestClass, LifeTime.scoped, unknown>>>(true);
+        const cls = fn.scoped(use => {
+          return new TestClass(use(numD), use(objD));
+        });
+
+        expectType<TypeEqual<typeof cls, BaseDefinition<TestClass, LifeTime.scoped, unknown, []>>>(true);
       });
 
       describe(`allowed dependencies life times`, () => {

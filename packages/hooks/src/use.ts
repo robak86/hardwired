@@ -2,10 +2,10 @@ import { useContainer } from './asyncContainerStorage.js';
 import {
   AnyInstanceDefinition,
   AsyncInstanceDefinition,
+  fn,
   InstanceDefinition,
   LifeTime,
   replace,
-  scoped,
   set,
 } from 'hardwired';
 
@@ -26,12 +26,13 @@ export function provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped, any>, 
 }
 
 export function provideLazy<T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: () => T): void {
-  const override = replace(def, scoped.fn(instance));
+  const override = replace(def, fn.scoped(instance));
   return useContainer().override(override);
 }
 
 export function provideAsync<T>(def: AnyInstanceDefinition<T, any, any>, instance: () => Promise<T>): void {
-  const override = replace(def, scoped.async().fn(instance));
-
-  return useContainer().override(override);
+  throw new Error('Implement me!');
+  // const override = replace(def, scoped.async().fn(instance));
+  //
+  // return useContainer().override(override);
 }

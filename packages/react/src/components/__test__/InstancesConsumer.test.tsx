@@ -1,4 +1,4 @@
-import { fn, singleton } from 'hardwired';
+import { fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { DefinitionsConsumer } from '../DefinitionsConsumer.js';
 import { render } from '@testing-library/react';
@@ -58,7 +58,10 @@ describe(`InstancesConsumer`, () => {
   describe(`using modules array`, () => {
     function setup() {
       const valDef = fn.singleton(() => 1);
-      const val2Def = singleton.using(valDef).fn(val => val + 10);
+      const val2Def = fn.singleton(use => {
+        const val = use(valDef);
+        return val + 10;
+      });
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => {
         return <div data-testid={testId}>{value}</div>;

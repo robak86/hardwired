@@ -1,6 +1,6 @@
 import { container } from '../../container/Container.js';
 import { v4 } from 'uuid';
-import { fn, transient } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/definitions.js';
 import { value } from '../../definitions/sync/value.js';
 import { describe, it, expect, vi } from 'vitest';
 

@@ -1,7 +1,7 @@
 import { container } from '../../container/Container.js';
 import { set } from '../../patching/set.js';
 import { v4 } from 'uuid';
-import { fn, singleton } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/definitions.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it, vi } from 'vitest';
@@ -221,7 +221,8 @@ describe(`SingletonStrategy`, () => {
             value = Math.random();
           }
 
-          const asyncDef = singleton.async().class(NoArgsCls);
+          const asyncDef = fn.singleton(async () => new NoArgsCls());
+
           const result = await container().use(asyncDef);
           expect(result).toBeInstanceOf(NoArgsCls);
         });

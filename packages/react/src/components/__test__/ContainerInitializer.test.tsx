@@ -1,4 +1,4 @@
-import { fn, scoped } from 'hardwired';
+import { fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { ContainerInitializer } from '../ContainerInitializer.js';
@@ -18,8 +18,8 @@ describe(`ContainerInitializer`, () => {
 
     const initializeMe = fn.scoped(use => new InitializeMe());
 
-    const initializer = scoped.thunk(c => {
-      c.use(initializeMe).init();
+    const initializer = fn.scoped(c => {
+      return () => c.use(initializeMe).init();
     });
 
     const ValueRenderer = ({ testId }: { testId: any }) => {

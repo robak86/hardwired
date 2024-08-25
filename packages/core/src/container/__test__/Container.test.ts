@@ -1,4 +1,4 @@
-import { fn, scoped, singleton } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { replace } from '../../patching/replace.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
@@ -133,8 +133,8 @@ describe(`Container`, () => {
 
   describe(`getAll`, () => {
     it(`returns array of instances`, async () => {
-      const a = scoped.fn(() => 1);
-      const b = scoped.fn(() => 2);
+      const a = fn.scoped(() => 1);
+      const b = fn.scoped(() => 2);
 
       const c = container();
       const [aInstance, bInstance] = c.all(a, b);
@@ -186,8 +186,8 @@ describe(`Container`, () => {
 
   describe(`getAllAsync`, () => {
     it(`returns array of instances`, async () => {
-      const a = scoped.async().fn(async () => 1);
-      const b = scoped.async().fn(async () => 2);
+      const a = fn.scoped(async () => 1);
+      const b = fn.scoped(async () => 2);
 
       const c = container();
       const [aInstance, bInstance] = await c.allAsync(a, b);
@@ -242,7 +242,7 @@ describe(`Container`, () => {
         });
 
         it(`is called multiple times preserving request strategy`, async () => {
-          const def = scoped.fn(() => 123);
+          const def = fn.scoped(() => 123);
 
           const interceptSyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptSync: interceptSyncSpy } });
@@ -268,7 +268,7 @@ describe(`Container`, () => {
     describe(`async`, () => {
       describe(`no deps`, () => {
         it(`is called with created instance`, async () => {
-          const def = singleton.async().fn(async () => 123);
+          const def = fn.scoped(async () => 123);
 
           const interceptAsyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
@@ -277,7 +277,7 @@ describe(`Container`, () => {
         });
 
         it(`works with sync factory`, async () => {
-          const def = singleton.async().fn(() => 123);
+          const def = fn.scoped(() => 123);
 
           const interceptAsyncSpy = vi.fn();
           const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
@@ -286,7 +286,7 @@ describe(`Container`, () => {
         });
 
         it(`returns intercepted value`, async () => {
-          const def = singleton.async().fn(() => 123);
+          const def = fn.scoped(() => 123);
 
           const interceptAsyncSpy = vi.fn(
             async <T>(def: AsyncInstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => 456 as T,
@@ -346,7 +346,7 @@ describe(`Container`, () => {
 
   describe(`.checkoutRequestScope`, () => {
     it(`returns clear request scope`, async () => {
-      const scopedVal = scoped.fn(() => new BoxedValue(Math.random()));
+      const scopedVal = fn.scoped(() => new BoxedValue(Math.random()));
 
       const cnt = container();
       const reqCnt1 = cnt.checkoutScope();

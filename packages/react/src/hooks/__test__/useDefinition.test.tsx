@@ -1,4 +1,4 @@
-import { container, fn, implicit, scoped, set } from 'hardwired';
+import { container, fn, implicit, set } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 

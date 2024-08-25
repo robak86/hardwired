@@ -1,4 +1,4 @@
-import { fn, singleton } from '../../definitions.js';
+import { fn } from '../../definitions.js';
 
 import { describe, expect, it } from 'vitest';
 import { implicit } from '../implicit.js';

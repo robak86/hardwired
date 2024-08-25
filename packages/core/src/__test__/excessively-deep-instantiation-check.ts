@@ -1,5 +1,3 @@
-import { transient } from '../definitions/definitions.js';
-
 import { value } from '../definitions/sync/value.js';
 import { expectType, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../definitions/abstract/sync/InstanceDefinition.js';
