@@ -103,7 +103,7 @@ describe(`apply`, () => {
         return use(source);
       });
 
-      const mPatch = apply(a, a => a);
+      const mPatch = a.patch().apply(a => a);
 
       const c = container({ overrides: [mPatch] });
 
