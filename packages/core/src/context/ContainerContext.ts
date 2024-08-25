@@ -65,8 +65,8 @@ export class ContainerContext
     private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {
-    super((definition: BaseDefinition<any, any, any, any>) => {
-      return this.request(definition as any); // TODO: fix type
+    super((definition: BaseDefinition<any, any, any, any>, ...args: any[]) => {
+      return this.request(definition as any, ...args); // TODO: fix type
     });
   }
 
@@ -92,19 +92,19 @@ export class ContainerContext
     this.events.onGet.emit({ containerId: this.id, definition });
     this.interceptor.onRequestStart?.(definition, this);
 
-    const instance = this.use(definition);
+    const instance = this.use(definition, ...args);
 
     this.interceptor.onRequestEnd?.(definition, this, instance);
     return instance;
   }
 
-  all<TDefinitions extends Array<BaseDefinition<any, any, any, any>>>(
+  all<TDefinitions extends Array<BaseDefinition<any, any, any, []>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;
   }
 
-  buildExactFn<T>(definition: BaseDefinition<T, any, any, any>): T {
+  buildExactFn<T>(definition: BaseDefinition<T, any, any, any>, ...args: any[]): T {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
@@ -114,7 +114,7 @@ export class ContainerContext
       return this.interceptor.interceptSync(patchedInstanceDef, this);
     }
 
-    return patchedInstanceDef.create(this);
+    return patchedInstanceDef.create(this, ...args);
   }
 
   use = (definition: BaseDefinition<any, any, any, any>, ...args: any[]) => {

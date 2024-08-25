@@ -24,6 +24,8 @@ export class BaseDefinition<
   ) {
     super((...args: TArgs) => {
       const cnt = container();
+
+      console.log('WTF', args);
       return cnt.use(this, ...args);
     });
   }

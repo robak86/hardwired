@@ -31,6 +31,46 @@ describe(`Container`, () => {
       expect(instance).toEqual(1123);
     });
 
+    describe(`additional arguments`, () => {
+      it(`accepts other arguments for transient definition and works with ad-hoc resolution`, async () => {
+        const def = fn((use, userId: number) => {
+          return userId;
+        });
+        const value = def(123);
+        expect(value).toEqual(123);
+      });
+
+      it(`works with container resolution`, async () => {
+        const def = fn((use, userId: number) => {
+          return userId;
+        });
+
+        const value = container().use(def, 123);
+        expect(value).toEqual(123);
+      });
+
+      it(`works with locator resolution`, async () => {
+        const def = fn((use, userId: number) => {
+          return userId;
+        });
+
+        const consumer = fn((use, userId) => {
+          return use(def, userId);
+        });
+
+        const value = container().use(consumer, 456);
+        expect(value).toEqual(456);
+      });
+
+      it(`allows passing arguments only to the transient definition`, async () => {
+        // @ts-expect-error
+        fn.singleton((use, userId: number) => userId);
+
+        // @ts-expect-error
+        fn.scoped((use, userId: number) => userId);
+      });
+    });
+
     describe(`other methods`, () => {
       it(`provides use method`, async () => {
         const use = container();

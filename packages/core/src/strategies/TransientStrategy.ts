@@ -10,15 +10,16 @@ export class TransientStrategy extends BuildStrategy {
     instancesCache: InstancesStore,
     definitions: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,
+    ...args: any[]
   ) {
     const id = definition.id;
 
     if (definitions.hasGlobalOverrideDefinition(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
-        return instancesBuilder.buildExactFn(definition);
+        return instancesBuilder.buildExactFn(definition, ...args);
       });
     }
 
-    return instancesBuilder.buildExactFn(definition);
+    return instancesBuilder.buildExactFn(definition, ...args);
   }
 }

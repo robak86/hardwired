@@ -10,17 +10,18 @@ export class ScopeStrategy extends BuildStrategy {
     instancesCache: InstancesStore,
     resolvers: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,
+    ...args: any[]
   ) {
     const id = definition.id;
 
     if (resolvers.hasGlobalOverrideDefinition(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
-        return instancesBuilder.buildExactFn(definition);
+        return instancesBuilder.buildExactFn(definition, ...args);
       });
     }
 
     return instancesCache.upsertCurrentScope(id, () => {
-      return instancesBuilder.buildExactFn(definition);
+      return instancesBuilder.buildExactFn(definition, ...args);
     });
   }
 }

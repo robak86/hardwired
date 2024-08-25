@@ -10,17 +10,18 @@ export class SingletonStrategy extends BuildStrategy {
     instancesCache: InstancesStore,
     definitionsRegistry: InstancesDefinitionsRegistry,
     instancesBuilder: InstancesBuilder,
+    ...args: any[]
   ) {
     const id = definition.id;
 
     if (definitionsRegistry.hasGlobalOverrideDefinition(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
-        return instancesBuilder.buildExactFn(definition);
+        return instancesBuilder.buildExactFn(definition, ...args);
       });
     }
 
     return instancesCache.upsertGlobalScope(id, () => {
-      return instancesBuilder.buildExactFn(definition);
+      return instancesBuilder.buildExactFn(definition, ...args);
     });
   }
 }
