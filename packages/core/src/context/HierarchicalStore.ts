@@ -2,7 +2,9 @@ export class HierarchicalStore {
   private ownEntries: Record<string, any> = {};
 
   constructor(
-    private ownDefinitionsIds: string[] = [], // ids of instance definitions that should not be inherited from parent, but stored in current HierarchicalStore
+    // ids of instance definitions that should not be inherited from parent,
+    // but stored in the current HierarchicalStore
+    private ownDefinitionsIds: string[] = [],
     private parent: HierarchicalStore | undefined = undefined,
   ) {}
 
