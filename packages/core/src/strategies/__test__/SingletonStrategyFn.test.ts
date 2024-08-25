@@ -1,5 +1,4 @@
 import { container } from '../../container/Container.js';
-import { set } from '../../patching/set.js';
 import { v4 } from 'uuid';
 import { fn } from '../../definitions/definitions.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
@@ -130,7 +129,7 @@ describe(`SingletonStrategy`, () => {
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope();
-        const level2 = level1.checkoutScope({ overrides: [set(a, 1)] });
+        const level2 = level1.checkoutScope({ overrides: [a.patch().set(1)] });
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.use(a); // important that level1 is called as first
@@ -150,8 +149,8 @@ describe(`SingletonStrategy`, () => {
         const a = fn.singleton(randomFactorySpy);
 
         const root = ContainerContext.empty();
-        const level1 = root.checkoutScope({ overrides: [set(a, 1)] });
-        const level2 = level1.checkoutScope({ overrides: [set(a, 2)] });
+        const level1 = root.checkoutScope({ overrides: [a.patch().set(1)] });
+        const level2 = level1.checkoutScope({ overrides: [a.patch().set(2)] });
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.use(a);

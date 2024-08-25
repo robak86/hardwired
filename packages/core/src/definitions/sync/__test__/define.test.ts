@@ -5,9 +5,7 @@ import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
-import { set } from '../../../patching/set.js';
 import { BaseDefinition } from '../../abstract/FnDefinition.js';
-import { IServiceLocator } from '../../../container/IContainer.js';
 
 describe(`define`, () => {
   const ext1 = implicit<number>('ext1');
@@ -27,7 +25,7 @@ describe(`define`, () => {
       });
 
       const result = container()
-        .checkoutScope({ overrides: [set(ext1, 1), set(ext2, 'str')] })
+        .checkoutScope({ overrides: [ext1.patch().set(1), ext2.patch().set('str')] })
         .use(definition);
       expect(result).toEqual([1, 'str']);
     });

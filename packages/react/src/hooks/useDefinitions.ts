@@ -1,8 +1,8 @@
-import { BaseDefinition, InstanceDefinition, InstancesArray } from 'hardwired';
+import { BaseDefinition, InstancesArray } from 'hardwired';
 import { useContainer } from '../context/ContainerContext.js';
 
 export type UseDefinitionsHook = {
-  <TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>>>(
+  <TDefinitions extends Array<BaseDefinition<any, any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 };

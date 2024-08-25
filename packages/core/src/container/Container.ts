@@ -1,16 +1,11 @@
 import { ContainerContext } from '../context/ContainerContext.js';
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import {
-  AsyncAllInstances,
-  AsyncInstanceDefinition,
-  AsyncInstancesArray,
-} from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+
+import { AsyncAllInstances } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import { IContainer, IContainerScopes, UseFn } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
-import { set } from '../patching/set.js';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
@@ -43,15 +38,13 @@ export class Container extends ExtensibleFunction implements IContainer {
     return this.containerContext.events;
   }
 
-  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>>>(
+  all<TDefinitions extends Array<BaseDefinition<any, any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.containerContext.use(def)) as any;
   }
 
-  allAsync = <
-    TDefinitions extends Array<AsyncInstanceDefinition<any, any, any> | BaseDefinition<Promise<any>, any, any, any>>,
-  >(
+  allAsync = <TDefinitions extends Array<BaseDefinition<Promise<any>, any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): Promise<AsyncAllInstances<TDefinitions>> =>
     Promise.all(definitions.map(def => this.containerContext.use(def))) as any;
@@ -67,12 +60,12 @@ export class Container extends ExtensibleFunction implements IContainer {
     }
   };
 
-  override = (definition: AnyInstanceDefinition<any, any, any>): void => {
+  override = (definition: BaseDefinition<any, any, any, any>): void => {
     this.containerContext.override(definition);
   };
 
-  provide = <T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T): void => {
-    const override = set(def, instance);
+  provide = <T>(def: BaseDefinition<T, LifeTime.scoped, any, any>, instance: T): void => {
+    const override = def.patch().set(instance);
     return this.override(override);
   };
 }
@@ -86,10 +79,10 @@ export type ContainerScopeOptions = {
   interceptor?: ContainerInterceptor;
 };
 
-export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[] | PatchSet): Container;
+export function container(globalOverrides?: BaseDefinition<any, any, any, any>[] | PatchSet): Container;
 export function container(options?: ContainerOptions): Container;
 export function container(
-  overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any, any>> | PatchSet,
+  overridesOrOptions?: ContainerOptions | Array<BaseDefinition<any, any, any, any>> | PatchSet,
 ): Container {
   if (Array.isArray(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));

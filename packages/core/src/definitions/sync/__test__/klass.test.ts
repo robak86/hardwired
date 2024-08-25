@@ -1,9 +1,9 @@
 import { value } from '../value.js';
 import { expectType, TypeEqual } from 'ts-expect';
-import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
+
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { fn } from '../../definitions.js';
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { implicit } from '../implicit.js';
 import { BaseDefinition } from '../../abstract/FnDefinition.js';
 

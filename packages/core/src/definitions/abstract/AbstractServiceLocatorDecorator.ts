@@ -1,24 +1,16 @@
 import { ExtensibleFunction } from '../../utils/ExtensibleFunction.js';
 import { IServiceLocator } from '../../container/IContainer.js';
-import { InstanceDefinition } from './sync/InstanceDefinition.js';
-import { AsyncInstanceDefinition } from './async/AsyncInstanceDefinition.js';
+
 import { BaseDefinition } from './FnDefinition.js';
-import { AnyInstanceDefinition } from './AnyInstanceDefinition.js';
+
 import { LifeTime } from './LifeTime.js';
 import { ValidDependenciesLifeTime } from './sync/InstanceDefinitionDependency.js';
 
 export interface AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTime> {
-  <TValue>(instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>): TValue;
-
-  <TValue>(
-    instanceDefinition: AsyncInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
-  ): Promise<TValue>;
-
-  <TValue>(instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any, any>): TValue;
-
-  <TValue>(
-    instanceDefinition: AnyInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
-  ): Promise<TValue> | TValue;
+  <TValue, TArgs extends any[]>(
+    instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any, TArgs>,
+    ...args: TArgs
+  ): TValue;
 }
 
 export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTime>

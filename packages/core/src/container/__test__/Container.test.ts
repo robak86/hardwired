@@ -4,11 +4,11 @@ import { container } from '../Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it, vi } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 import { patch } from '../Patch.js';
+import { BaseDefinition } from '../../definitions/abstract/FnDefinition.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
@@ -243,7 +243,7 @@ describe(`Container`, () => {
           const def = fn.singleton(() => 123);
 
           const interceptSyncSpy = vi.fn(
-            <T>(def: InstanceDefinition<T, any, any>, ctx: InstancesBuilder): T => 456 as T,
+            <T>(def: BaseDefinition<T, any, any, any>, ctx: InstancesBuilder): T => 456 as T,
           );
 
           const interceptor = { interceptSync: interceptSyncSpy } as ContainerInterceptor;

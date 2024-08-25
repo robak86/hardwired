@@ -2,18 +2,16 @@ import { InstancesStore } from './InstancesStore.js';
 import { ContainerScopeOptions } from '../container/Container.js';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
 import { InstancesBuilder } from './abstract/InstancesBuilder.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
-import { Resolution } from '../definitions/abstract/Resolution.js';
+import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, UseFn } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { BaseDefinition, isBasedDefinition } from '../definitions/abstract/FnDefinition.js';
+import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { Overrides } from '../container/Patch.js';
 
@@ -67,12 +65,12 @@ export class ContainerContext
     private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {
-    super((definition: AnyInstanceDefinition<any, any, any>) => {
+    super((definition: BaseDefinition<any, any, any, any>) => {
       return this.request(definition as any); // TODO: fix type
     });
   }
 
-  override(definition: AnyInstanceDefinition<any, any, any>): void {
+  override(definition: BaseDefinition<any, any, any, any>): void {
     if (this.instancesCache.hasInCurrentScope(definition.id)) {
       throw new Error(
         `Cannot override definition. Instance for id=${definition.id} was already created in the current scope.`,
@@ -89,73 +87,54 @@ export class ContainerContext
     return strategy.buildFn(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
   }
 
-  request<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  request<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
   request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, any, []>): TValue;
   request<TValue, TArgs extends any[]>(
     instanceDefinition: BaseDefinition<TValue, LifeTime.transient, any, TArgs>,
     ...args: TArgs
   ): TValue;
   request<TValue, TArgs extends []>(
-    definition: AnyInstanceDefinition<TValue, any, any>,
+    definition: BaseDefinition<TValue, any, any, any>,
     ...args: TArgs
   ): Promise<TValue> | TValue {
     this.events.onGet.emit({ containerId: this.id, definition });
-
     this.interceptor.onRequestStart?.(definition, this);
 
-    const instance = isBasedDefinition(definition) ? this.use(definition) : this.use(definition);
+    const instance = this.use(definition);
 
-    if (definition.resolution === Resolution.async) {
-      if (this.interceptor.onAsyncRequestEnd) {
-        return this.interceptor.onAsyncRequestEnd(definition, this, instance).then(() => instance);
-      } else {
-        return instance;
-      }
-    } else {
-      this.interceptor.onRequestEnd?.(definition, this, instance);
-      return instance;
-    }
+    this.interceptor.onRequestEnd?.(definition, this, instance);
+    return instance;
   }
 
-  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>>>(
+  all<TDefinitions extends Array<BaseDefinition<any, any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;
   }
 
+  // buildExactFn<T>(definition: BaseDefinition<T, any, any, any>): T {
+  //   const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+  //
+  //   return patchedInstanceDef.create(this);
+  // }
+
   buildExactFn<T>(definition: BaseDefinition<T, any, any, any>): T {
-    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-
-    return patchedInstanceDef.create(this);
-  }
-
-  buildExact<T>(definition: InstanceDefinition<T, any, any>): T;
-  buildExact<T>(definition: AsyncInstanceDefinition<T, any, any>): Promise<T>;
-  buildExact<T>(definition: BaseDefinition<T, any, any, any>): Promise<T>;
-  buildExact<T>(definition: AnyInstanceDefinition<T, any, any>): T | Promise<T> {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
 
-    if (patchedInstanceDef.resolution === Resolution.sync && this.interceptor.interceptSync) {
+    if (this.interceptor.interceptSync) {
       // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
       return this.interceptor.interceptSync(patchedInstanceDef, this);
     }
 
-    if (patchedInstanceDef.resolution === Resolution.async && this.interceptor.interceptAsync) {
-      // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
-      return this.interceptor.interceptAsync?.(patchedInstanceDef, this);
-    }
-
-    return isBasedDefinition(definition) ? this.buildExactFn(definition) : patchedInstanceDef.create(this);
+    return patchedInstanceDef.create(this);
   }
 
-  use = (definition: AnyInstanceDefinition<any, any, any>) => {
+  use = (definition: BaseDefinition<any, any, any, any>, ...args: any[]) => {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
-    return strategy.build(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
+    return strategy.buildFn(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this, ...args);
   };
 
   checkoutScope = (options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext => {
@@ -183,7 +162,7 @@ export class ContainerContext
     }
   };
 
-  provide = <T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T) => {
+  provide = <T>(def: BaseDefinition<T, LifeTime.scoped, any, any>, instance: T) => {
     throw new Error('Implement me!');
   };
 }

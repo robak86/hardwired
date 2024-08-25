@@ -1,14 +1,12 @@
 import { container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { fn } from '../../definitions/definitions.js';
-import { set } from '../set.js';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
-import { decorate } from '../decorate.js';
 
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { value } from '../../definitions/sync/value.js';
 import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import { BaseDefinition } from '../../definitions/abstract/FnDefinition.js';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
@@ -127,13 +125,13 @@ describe(`apply`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceDefinition<MyService, any, any>) {
-      const mPatch = decorate(instanceDef, a => {
+    function setup(instanceDef: BaseDefinition<MyService, any, any, any>) {
+      const mPatch = instanceDef.patch().apply((use, a) => {
         vi.spyOn(a, 'callMe');
         return a;
       });
 
-      const replaced = set(instanceDef, { callMe: () => {} });
+      const replaced = instanceDef.patch().set({ callMe: () => {} });
 
       const scope1 = ContainerContext.create([], [mPatch]);
       const scope2 = scope1.checkoutScope({ overrides: [replaced] });

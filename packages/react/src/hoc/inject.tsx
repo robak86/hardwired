@@ -1,14 +1,13 @@
-import { InstanceDefinition } from 'hardwired';
-
 import { Optional } from 'utility-types';
-import { useDefinitions } from '../hooks/useDefinitions.js';
+import { useAll } from '../hooks/useDefinitions.js';
 import { FC } from 'react';
+import { BaseDefinition } from 'hardwired';
 
 export const inject =
-  <TDefinitions extends Record<string, InstanceDefinition<any, any, any>>>(definitions: TDefinitions) =>
+  <TDefinitions extends Record<string, BaseDefinition<any, any, any, any>>>(definitions: TDefinitions) =>
   <
     TProps extends {
-      [K in keyof TDefinitions]: TDefinitions[K] extends InstanceDefinition<infer TInstance, any, any>
+      [K in keyof TDefinitions]: TDefinitions[K] extends BaseDefinition<infer TInstance, any, any, any>
         ? TInstance
         : never;
     },
@@ -25,7 +24,7 @@ export const inject =
       });
 
       const definitionsForInject = definitionKeysForInject.map(key => definitions[key]);
-      const instances = useDefinitions(...definitionsForInject);
+      const instances = useAll(...definitionsForInject);
 
       const instancesObj: Record<string, any> = {};
       definitionKeysForInject.forEach((key, idx) => {

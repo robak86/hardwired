@@ -1,4 +1,4 @@
-import { container, fn, implicit, set } from 'hardwired';
+import { container, fn, implicit } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
@@ -117,7 +117,7 @@ describe(`useDefinition`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (
           <ContainerProvider container={c}>
-            <ContainerScope invalidateKeys={[externalValue]} overrides={[set(someExternalParam, externalValue)]}>
+            <ContainerScope invalidateKeys={[externalValue]} overrides={[someExternalParam.patch().set(externalValue)]}>
               <Consumer externalValue={externalValue} />
             </ContainerScope>
           </ContainerProvider>

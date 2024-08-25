@@ -1,4 +1,4 @@
-import { fn, set } from 'hardwired';
+import { fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { use } from '../../hooks/useDefinition.js';
@@ -123,11 +123,11 @@ describe(`ContainerScope`, () => {
       const TestSubject = () => (
         <ContainerProvider>
           S1
-          <ContainerScope overrides={[set(baseD, 10)]}>
+          <ContainerScope overrides={[baseD.patch().set(10)]}>
             <ValueRenderer testId={'scope1'} />
           </ContainerScope>
           S2
-          <ContainerScope overrides={[set(baseD, 100)]}>
+          <ContainerScope overrides={[baseD.patch().set(100)]}>
             <ValueRenderer testId={'scope2'} />
           </ContainerScope>
         </ContainerProvider>

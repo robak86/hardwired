@@ -1,25 +1,27 @@
-import { set } from '../set.js';
 import { container } from '../../container/Container.js';
 import { fn } from '../../definitions/definitions.js';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
-import { decorate } from '../decorate.js';
 
 import { value } from '../../definitions/sync/value.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import { BaseDefinition } from '../../definitions/abstract/FnDefinition.js';
 
 describe(`decorate`, () => {
   it(`decorates original value`, async () => {
     const someValue = value(1);
 
-    const c = container({ overrides: [decorate(someValue, val => val + 1)] });
+    const c = container({ overrides: [someValue.patch().decorate((use, val) => val + 1)] });
+
     expect(c.use(someValue)).toEqual(2);
   });
 
   it(`does not affect original module`, async () => {
     const someValue = value(1);
-    const mPatch = decorate(someValue, val => val + 1);
+
+    const mPatch = someValue.patch().decorate((use, val) => {
+      return val + 1;
+    });
 
     expect(container().use(someValue)).toEqual(1);
     expect(container({ overrides: [mPatch] }).use(someValue)).toEqual(2);
@@ -27,11 +29,16 @@ describe(`decorate`, () => {
 
   it(`allows for multiple decorations`, async () => {
     const someValue = value(1);
-    const mPatch = decorate(
-      decorate(someValue, val => val + 1),
-      val => val * 3,
-    );
 
+    const mPatch = someValue
+      .patch()
+      .decorate((use, val) => {
+        return val + 1;
+      })
+      .patch()
+      .decorate((use, val) => {
+        return val * 3;
+      });
     const c = container({ overrides: [mPatch] });
     expect(c.use(someValue)).toEqual(6);
   });
@@ -41,7 +48,9 @@ describe(`decorate`, () => {
     const b = value(2);
     const someValue = value(10);
 
-    const mPatch = decorate(someValue, (val, a: number, b: number) => val + a + b, a, b);
+    const mPatch = someValue.patch().decorate((use, val) => {
+      return val + use(a) + use(b);
+    });
 
     const c = container({ overrides: [mPatch] });
     expect(c.use(someValue)).toEqual(13);
@@ -55,7 +64,9 @@ describe(`decorate`, () => {
       return use(a) + use(b);
     });
 
-    const mPatch = decorate(someValue, (val, b) => val * b, b);
+    const mPatch = someValue.patch().decorate((use, val) => {
+      return val * use(b);
+    });
 
     const c = container({ overrides: [mPatch] });
     expect(c.use(someValue)).toEqual(6);
@@ -64,7 +75,8 @@ describe(`decorate`, () => {
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
       const a = fn.singleton(() => Math.random());
-      const mPatch = decorate(a, a => a);
+
+      const mPatch = a.patch().decorate((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       expect(c.use(a)).toEqual(c.use(a));
@@ -73,7 +85,7 @@ describe(`decorate`, () => {
     it(`preserves transient scope of the original resolver`, async () => {
       const a = fn(() => Math.random());
 
-      const mPatch = decorate(a, a => a);
+      const mPatch = a.patch().decorate((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       expect(c.use(a)).not.toEqual(c.use(a));
@@ -86,7 +98,7 @@ describe(`decorate`, () => {
         return use(source);
       });
 
-      const mPatch = decorate(a, a => a);
+      const mPatch = a.patch().decorate((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       const obj1 = fn.scoped(use => ({
@@ -113,13 +125,13 @@ describe(`decorate`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceDefinition<MyService, any, any>) {
-      const mPatch = decorate(instanceDef, a => {
+    function setup(instanceDef: BaseDefinition<MyService, any, any, any>) {
+      const mPatch = instanceDef.patch().decorate((use, a) => {
         vi.spyOn(a, 'callMe');
         return a;
       });
 
-      const replaced = set(instanceDef, { callMe: () => {} });
+      const replaced = instanceDef.patch().set({ callMe: () => {} });
 
       const scope1 = ContainerContext.create([], [mPatch]);
       const scope2 = scope1.checkoutScope({ overrides: [replaced] });

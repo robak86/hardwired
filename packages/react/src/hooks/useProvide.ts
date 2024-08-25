@@ -1,6 +1,6 @@
-import { AnyInstanceDefinition, LifeTime } from 'hardwired';
+import { BaseDefinition, LifeTime } from 'hardwired';
 import { useContainer } from '../context/ContainerContext.js';
 
-export const useProvide = <T>(def: AnyInstanceDefinition<T, LifeTime.scoped, any>, instance: T) => {
+export const useProvide = <T>(def: BaseDefinition<T, LifeTime.scoped, any, any>, instance: T) => {
   useContainer().provide(def, instance);
 };

@@ -1,16 +1,16 @@
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
+
 import { IServiceLocator } from './IContainer.js';
 
-export type Overrides = Array<AnyInstanceDefinition<any, any, any> | BaseDefinition<any, any, any, any>> | PatchSet;
+export type Overrides = Array<BaseDefinition<any, any, any, any>> | PatchSet;
 
 export interface PatchSet {
-  get(definitionId: string): AnyInstanceDefinition<any, any, any> | undefined;
+  get(definitionId: string): BaseDefinition<any, any, any, any> | undefined;
 
-  forEach(callback: (definition: AnyInstanceDefinition<any, any, any>) => void): void;
+  forEach(callback: (definition: BaseDefinition<any, any, any, any>) => void): void;
 
-  map<T>(callback: (definition: AnyInstanceDefinition<any, any, any>) => T): T[];
+  map<T>(callback: (definition: BaseDefinition<any, any, any, any>) => T): T[];
 }
 
 export const isPatchSet = (value: any): value is PatchSet => {
@@ -18,9 +18,9 @@ export const isPatchSet = (value: any): value is PatchSet => {
 };
 
 export class Patch implements PatchSet {
-  constructor(private overrides: Record<string, AnyInstanceDefinition<any, any, any>>) {}
+  constructor(private overrides: Record<string, BaseDefinition<any, any, any, any>>) {}
 
-  append(definition: AnyInstanceDefinition<any, any, any>): Patch {
+  append(definition: BaseDefinition<any, any, any, any>): Patch {
     if (this.overrides[definition.id]) {
       throw new Error(`Cannot append definition ${definition.id} because it is already overridden`);
     }
@@ -43,7 +43,7 @@ export class Patch implements PatchSet {
       def.id,
       def.strategy,
       (use: IServiceLocator, ...args: TArgs) => {
-        const instance = use(def);
+        const instance = use(def, ...args);
         return decorateFn(instance as TExtendedInstance, ...args);
       },
     );
@@ -55,7 +55,7 @@ export class Patch implements PatchSet {
   }
 
   define<TInstance, TLifeTime extends LifeTime, TMeta>(
-    definition: AnyInstanceDefinition<TInstance, TLifeTime, TMeta>,
+    definition: BaseDefinition<TInstance, TLifeTime, TMeta, any>,
     create: (context: IServiceLocator) => TInstance,
   ): Patch {
     return this.append(new BaseDefinition(definition.id, definition.strategy, create));
@@ -94,7 +94,7 @@ export class Patch implements PatchSet {
       def.id,
       def.strategy,
       (use, ...args) => {
-        const instance = use(def) as TInstance;
+        const instance = use(def, ...args) as TInstance;
         applyFn(instance, ...args);
 
         return instance;
@@ -107,15 +107,15 @@ export class Patch implements PatchSet {
     });
   }
 
-  get(definitionId: string): AnyInstanceDefinition<any, any, any> | undefined {
+  get(definitionId: string): BaseDefinition<any, any, any, any> | undefined {
     return this.overrides[definitionId];
   }
 
-  forEach(callback: (definition: AnyInstanceDefinition<any, any, any>) => void) {
+  forEach(callback: (definition: BaseDefinition<any, any, any, any>) => void) {
     Object.values(this.overrides).forEach(callback);
   }
 
-  map<T>(callback: (definition: AnyInstanceDefinition<any, any, any>) => T): T[] {
+  map<T>(callback: (definition: BaseDefinition<any, any, any, any>) => T): T[] {
     return Object.values(this.overrides).map(callback);
   }
 }

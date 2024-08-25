@@ -2,16 +2,8 @@ import { LifeTime } from './LifeTime.js';
 
 import { v4 } from 'uuid';
 import { container } from '../../container/Container.js';
-import { AnyInstanceDefinition } from './AnyInstanceDefinition.js';
-import { Resolution } from './Resolution.js';
 import { ExtensibleFunction } from '../../utils/ExtensibleFunction.js';
 import { IServiceLocator } from '../../container/IContainer.js';
-
-export function isBasedDefinition<T, TLifeTime extends LifeTime, TMeta>(
-  def: AnyInstanceDefinition<T, TLifeTime, TMeta>,
-): def is BaseDefinition<T, TLifeTime, TMeta, any> {
-  return Object.prototype.hasOwnProperty.call(def, 'kind');
-}
 
 export interface BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs extends any[]>
   extends ExtensibleFunction {
@@ -24,10 +16,6 @@ export class BaseDefinition<
   TMeta,
   TArgs extends any[],
 > extends ExtensibleFunction {
-  readonly kind = 'fn'; // TODO: used as a marker for isBasedDefinition. Remove after opting out from builder based api
-  readonly dependencies: any[] = []; // TODO: only for compatibility reason. Remove after opting out from builder based api
-  readonly resolution = Resolution.sync; // TODO: only for compatibility reason.
-
   constructor(
     public readonly id: string,
     public readonly strategy: TLifeTime,
@@ -80,14 +68,14 @@ export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs
   }
 
   decorate<TExtendedInstance extends TInstance>(
-    decorateFn: (instance: TInstance, ...args: TArgs) => TExtendedInstance,
+    decorateFn: (use: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => TExtendedInstance,
   ): BaseDefinition<TExtendedInstance, TLifeTime, TMeta, TArgs> {
     return new BaseDefinition(
       this.id,
       this.strategy,
       (use: IServiceLocator, ...args: TArgs): TExtendedInstance => {
-        const instance = use(this, ...args);
-        return decorateFn(instance as TInstance, ...args);
+        const instance = this.create(use, ...args);
+        return decorateFn(use, instance as TInstance, ...args);
       },
       this.meta,
     );
@@ -125,7 +113,7 @@ export class DefineBuilder<TInstance, TLifeTime extends LifeTime, TMeta, TArgs e
       v4(),
       this.strategy,
       (use: IServiceLocator, ...args: TArgs): TExtendedInstance => {
-        const instance = use(this) as TInstance;
+        const instance = use(this, ...args) as TInstance;
         return decorateFn(instance, ...args);
       },
       this.meta,
