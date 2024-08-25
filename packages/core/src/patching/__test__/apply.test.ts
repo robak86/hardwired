@@ -4,7 +4,7 @@ import { fn } from '../../definitions/definitions.js';
 import { set } from '../set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
-import { apply } from '../apply.js';
+
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { value } from '../../definitions/sync/value.js';
 import { describe, expect, it, vi } from 'vitest';
@@ -14,7 +14,9 @@ describe(`apply`, () => {
   it(`applies function to original value`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = apply(someValue, val => (val.value += 1));
+    const mPatch = someValue.patch().apply((use, val) => {
+      return (val.value += 1);
+    });
 
     const c = container({ overrides: [mPatch] });
     expect(c.use(someValue).value).toEqual(2);
@@ -23,7 +25,7 @@ describe(`apply`, () => {
   it(`does not affect original module`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = apply(someValue, val => (val.value += 1));
+    const mPatch = someValue.patch().apply((_, val) => (val.value += 1));
 
     expect(container().use(someValue).value).toEqual(1);
     expect(container({ overrides: [mPatch] }).use(someValue).value).toEqual(2);
@@ -32,10 +34,11 @@ describe(`apply`, () => {
   it(`allows for multiple apply functions calls`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = apply(
-      apply(someValue, val => (val.value += 1)),
-      val => (val.value *= 3),
-    );
+    const mPatch = someValue
+      .patch()
+      .apply((_, val) => (val.value += 1))
+      .patch()
+      .apply((_, val) => (val.value *= 3));
 
     const c = container({ overrides: [mPatch] });
     expect(c.use(someValue).value).toEqual(6);
@@ -46,14 +49,20 @@ describe(`apply`, () => {
     const b = value(new BoxedValue(2));
     const someValue = value(new BoxedValue(10));
 
-    const mPatch = apply(
-      someValue,
-      (val, a, b) => {
-        val.value = val.value + a.value + b.value;
-      },
-      a,
-      b,
-    );
+    // const mPatch = apply(
+    //   someValue,
+    //   (val, a, b) => {
+    //     val.value = val.value + a.value + b.value;
+    //   },
+    //   a,
+    //   b,
+    // );
+    //
+    const mPatch = someValue.patch().apply((use, val) => {
+      const aVal = use(a);
+      const bVal = use(b);
+      val.value = val.value + aVal.value + bVal.value;
+    });
 
     const c = container({ overrides: [mPatch] });
     expect(c.use(someValue)).toEqual(new BoxedValue(13));
@@ -67,13 +76,9 @@ describe(`apply`, () => {
       return new BoxedValue(use(a).value + use(b).value);
     });
 
-    const mPatch = apply(
-      someValue,
-      (val, b) => {
-        val.value = val.value * b.value;
-      },
-      b,
-    );
+    const mPatch = someValue.patch().apply((use, val) => {
+      val.value = val.value * use(b).value;
+    });
 
     const c = container({ overrides: [mPatch] });
     expect(c.use(someValue)).toEqual(new BoxedValue(6));
@@ -82,7 +87,7 @@ describe(`apply`, () => {
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
       const someValue = fn.singleton(() => Math.random());
-      const mPatch = apply(someValue, a => a);
+      const mPatch = someValue.patch().apply((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       expect(c.use(someValue)).toEqual(c.use(someValue));
@@ -91,7 +96,7 @@ describe(`apply`, () => {
     it(`preserves transient scope of the original resolver`, async () => {
       const someValue = fn(() => Math.random());
 
-      const mPatch = apply(someValue, a => a);
+      const mPatch = someValue.patch().apply((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       expect(c.use(someValue)).not.toEqual(c.use(someValue));

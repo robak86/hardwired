@@ -26,8 +26,10 @@ describe(`fn`, () => {
       describe(`runtime`, () => {
         it(`does not accept implicit definitions`, async () => {
           const buildDef = () => {
-            // @ts-expect-error singleton does not accept implicit definitions
-            singleton.using(implDef).fn(numberConsumer);
+            fn.singleton(use => {
+              // @ts-expect-error singleton does not accept implicit definitions
+              use(implDef);
+            });
           };
 
           expect(buildDef).toThrow('Cannot use scoped dependency for singleton definition.');

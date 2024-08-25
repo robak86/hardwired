@@ -10,7 +10,6 @@ export * from './definitions/abstract/async/AsyncInstanceDefinition.js';
 export * from './definitions/abstract/AnyInstanceDefinition.js';
 
 export * from './patching/replace.js';
-export * from './patching/apply.js';
 export * from './patching/set.js';
 export * from './patching/decorate.js';
 

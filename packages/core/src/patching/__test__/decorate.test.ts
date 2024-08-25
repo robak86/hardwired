@@ -102,7 +102,7 @@ describe(`decorate`, () => {
     });
 
     it(`caches produced object`, async () => {
-      const a = fn(() => Math.random());
+      const a = fn.scoped(() => Math.random());
 
       const c = container();
       const obj1 = c.use(a);

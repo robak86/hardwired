@@ -64,14 +64,15 @@ export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs
     return new BaseDefinition(this.id, def.strategy, def.create, this.meta);
   }
 
-  apply(applyFn: (instance: TInstance, ...args: TArgs) => void): BaseDefinition<TInstance, TLifeTime, TMeta, TArgs> {
+  apply(
+    applyFn: (locator: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => void,
+  ): BaseDefinition<TInstance, TLifeTime, TMeta, TArgs> {
     return new BaseDefinition(
       this.id,
       this.strategy,
       (use: IServiceLocator, ...args: TArgs) => {
-        const instance = use(this, ...args) as TInstance;
-        applyFn(instance, ...args);
-
+        const instance = this.create(use, ...args);
+        applyFn(use, instance, ...args);
         return instance;
       },
       this.meta,

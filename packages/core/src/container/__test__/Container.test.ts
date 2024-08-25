@@ -265,66 +265,6 @@ describe(`Container`, () => {
         });
       });
     });
-    describe(`async`, () => {
-      describe(`no deps`, () => {
-        it(`is called with created instance`, async () => {
-          const def = fn.scoped(async () => 123);
-
-          const interceptAsyncSpy = vi.fn();
-          const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
-          await ctn.use(def);
-          expect(interceptAsyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
-        });
-
-        it(`works with sync factory`, async () => {
-          const def = fn.scoped(() => 123);
-
-          const interceptAsyncSpy = vi.fn();
-          const ctn = container({ interceptor: { interceptAsync: interceptAsyncSpy } });
-          await ctn.use(def);
-          expect(interceptAsyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
-        });
-
-        it(`returns intercepted value`, async () => {
-          const def = fn.scoped(() => 123);
-
-          const interceptAsyncSpy = vi.fn(
-            async <T>(def: AsyncInstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => 456 as T,
-          );
-
-          const interceptor = { interceptAsync: interceptAsyncSpy } as ContainerInterceptor;
-          const ctn = container({ interceptor });
-
-          expect(await ctn.use(def)).toEqual(456);
-        });
-      });
-
-      describe(`with deps`, () => {
-        // TODO: with new simplified definitions there is no distinction between sync and async definitions
-        it.skip(`it calls interceptor on dependency definition`, async () => {
-          const def1 = fn.singleton(async () => 123);
-          const def2 = fn.singleton(async use => {
-            const n1 = await use(def1);
-            return n1 + 1000;
-          });
-
-          const interceptAsyncSpy = vi.fn(
-            async <T>(def: AsyncInstanceDefinition<T, any, any>, ctx: ContainerContext): Promise<T> => {
-              return def.create(ctx);
-            },
-          );
-
-          const interceptor = { interceptAsync: interceptAsyncSpy } as ContainerInterceptor;
-          const ctn = container({ interceptor });
-
-          await ctn.use(def2);
-          expect(interceptAsyncSpy).toHaveBeenCalledTimes(2);
-
-          expect(interceptAsyncSpy.mock.calls[0]).toEqual([def2, expect.any(ContainerContext)]);
-          expect(interceptAsyncSpy.mock.calls[1]).toEqual([def1, expect.any(ContainerContext)]);
-        });
-      });
-    });
   });
 
   describe(`sync definition returning promise`, () => {

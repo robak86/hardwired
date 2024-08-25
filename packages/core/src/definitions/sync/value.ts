@@ -1,6 +1,7 @@
-import { InstanceDefinition } from '../abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../abstract/LifeTime.js';
+import { BaseDefinition } from '../abstract/FnDefinition.js';
+import { v4 } from 'uuid';
 
-export const value = <TValue>(value: TValue): InstanceDefinition<TValue, LifeTime.singleton, never> => {
-  return InstanceDefinition.create(LifeTime.singleton, () => value, []);
+export const value = <TValue>(value: TValue): BaseDefinition<TValue, LifeTime.singleton, never, []> => {
+  return new BaseDefinition(v4(), LifeTime.singleton, () => value);
 };
