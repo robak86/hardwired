@@ -9,7 +9,6 @@ export * from './definitions/abstract/sync/InstanceDefinitionDependency.js';
 export * from './definitions/abstract/async/AsyncInstanceDefinition.js';
 export * from './definitions/abstract/AnyInstanceDefinition.js';
 
-export * from './patching/replace.js';
 export * from './patching/set.js';
 export * from './patching/decorate.js';
 
@@ -28,7 +27,6 @@ export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
 export { ContainerInterceptor } from './context/ContainerInterceptor.js';
 
 export * from './definitions/abstract/FnDefinition.js';
-export { DefineFn, buildContext } from './builder/buildContext.js';
 export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
 export * from './definitions/abstract/AbstractServiceLocatorDecorator.js';
 

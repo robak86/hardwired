@@ -1,12 +1,11 @@
 import { fn } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
-import { replace } from '../../patching/replace.js';
+
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it, vi } from 'vitest';
 import { implicit } from '../../definitions/sync/implicit.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
-import { AsyncInstanceDefinition } from '../../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 import { patch } from '../Patch.js';
@@ -110,19 +109,8 @@ describe(`Container`, () => {
         return use(a) + use(b);
       });
 
-      const aPatch = replace(
-        a,
-        fn.singleton(function aReplace() {
-          return 10;
-        }),
-      );
-
-      const bPatch = replace(
-        b,
-        fn.singleton(function bReplace() {
-          return 20;
-        }),
-      );
+      const aPatch = a.patch().replace(fn.singleton(() => 10));
+      const bPatch = b.patch().replace(fn.singleton(() => 20));
 
       const c = container([aPatch, bPatch]);
 
