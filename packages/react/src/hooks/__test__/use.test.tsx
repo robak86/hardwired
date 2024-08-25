@@ -15,7 +15,6 @@ import { FC } from 'react';
 describe(`useDefinition`, () => {
   describe(`instantiating dependencies`, () => {
     const val1Def = fn.singleton(() => 'val1');
-    const val2Def = fn.singleton(() => 'val2');
 
     function setup() {
       const Consumer = () => {
@@ -74,7 +73,7 @@ describe(`useDefinition`, () => {
     }
 
     it(`reuses the same request instance for component rerender`, async () => {
-      const { TestSubject, c } = setup();
+      const { TestSubject } = setup();
       const result = render(<TestSubject />);
 
       const render1Consumer1Value = result.getByTestId('consumer1').textContent;

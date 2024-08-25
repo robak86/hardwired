@@ -54,10 +54,6 @@ export class InstancesDefinitionsRegistry {
     return !!this.globalOverrideDefinitionsById[resolverId];
   }
 
-  private hasScopeOverrideResolver(resolverId: string): boolean {
-    return !!this.scopeOverrideDefinitionsById[resolverId];
-  }
-
   private updateScopeOverride(resolver: BaseDefinition<any, any, any, any>) {
     this.scopeOverrideDefinitionsById[resolver.id] = resolver;
   }

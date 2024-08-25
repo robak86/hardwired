@@ -2,7 +2,7 @@ import { container } from '../../container/Container.js';
 import { v4 } from 'uuid';
 import { fn } from '../../definitions/definitions.js';
 import { value } from '../../definitions/sync/value.js';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe(`ClassTransientResolver`, () => {
   describe(`sync resolution`, () => {

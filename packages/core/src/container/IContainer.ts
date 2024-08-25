@@ -48,3 +48,11 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   readonly parentId: string | null;
   readonly events: ContextEvents;
 }
+
+// prettier-ignore
+export type AsyncAllItem<T extends BaseDefinition<Promise<any>, any, any, any>> =
+  T extends BaseDefinition<Promise<infer TInstance>, any, any, any> ? TInstance : never;
+
+export type AsyncAllInstances<T extends Array<BaseDefinition<Promise<any>, any, any, any>>> = {
+  [K in keyof T]: AsyncAllItem<T[K]>;
+};

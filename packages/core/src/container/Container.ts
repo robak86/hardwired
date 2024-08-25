@@ -1,9 +1,8 @@
 import { ContainerContext } from '../context/ContainerContext.js';
 import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 
-import { AsyncAllInstances } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { IContainer, IContainerScopes, UseFn } from './IContainer.js';
+import { AsyncAllInstances, IContainer, IContainerScopes, UseFn } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { ContextEvents } from '../events/ContextEvents.js';

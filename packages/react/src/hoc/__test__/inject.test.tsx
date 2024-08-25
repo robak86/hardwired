@@ -3,7 +3,7 @@ import { inject } from '../inject.js';
 
 import { render } from '@testing-library/react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 /**
  * @vitest-environment happy-dom

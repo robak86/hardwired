@@ -11,7 +11,9 @@ describe(`klass`, () => {
   describe(`external params`, () => {
     class TestClass {
       constructor(
+        // @ts-ignore
         private num: number,
+        // @ts-ignore
         private ext: string,
       ) {}
     }
@@ -30,6 +32,7 @@ describe(`klass`, () => {
 
       describe(`allowed dependencies life times`, () => {
         class NumberConsumer {
+          // @ts-ignore
           constructor(private value: number) {}
         }
 

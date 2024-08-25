@@ -5,8 +5,6 @@ import { implicit } from '../implicit.js';
 
 describe(`fn`, () => {
   describe(`allowed dependencies life times`, () => {
-    const numberConsumer = (val: number) => val;
-
     const implDef = implicit<number>('number');
 
     describe(`singleton`, () => {

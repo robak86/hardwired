@@ -6,7 +6,6 @@ export * from './strategies/TransientStrategy.js';
 export * from './definitions/definitions.js';
 export * from './definitions/abstract/sync/InstanceDefinition.js';
 export * from './definitions/abstract/sync/InstanceDefinitionDependency.js';
-export * from './definitions/abstract/async/AsyncInstanceDefinition.js';
 
 export { ContainerContext } from './context/ContainerContext.js';
 

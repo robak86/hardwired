@@ -50,10 +50,6 @@ const transientD = fn(use => {
   return use.all(...buildTransient(3, 10));
 });
 
-const singletonWithEagerLeafD = fn.singleton(use => {
-  return use.all(...buildSingletonTree(4, 10));
-});
-
 let cnt: Container;
 
 const bench = new Bench({

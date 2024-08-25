@@ -19,6 +19,7 @@ describe(`useDefinitions`, () => {
       const val1Def = fn.scoped(() => 'someString');
       const val2Def = fn.scoped(() => 123);
 
+      // @ts-ignore
       const Component = () => {
         const [val1, val2] = useAll(val1Def, val2Def);
         expectType<TypeEqual<typeof val1, string>>(true);
@@ -88,7 +89,7 @@ describe(`useDefinitions`, () => {
     }
 
     it(`reuses the same request instance for component rerender`, async () => {
-      const { TestSubject, c } = setup();
+      const { TestSubject } = setup();
       const result = render(<TestSubject />);
 
       const render1Consumer1Value = result.getByTestId('consumer1').textContent;

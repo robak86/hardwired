@@ -33,13 +33,17 @@ describe(`asyncDefine`, () => {
         return [use(ext1), use(ext2)];
       });
 
+      // @ts-ignore
       const definition = fn(async use => {
+        // @ts-ignore
         const instance1 = use(ext1);
+        // @ts-ignore
         const instance2 = use(ext2);
+        // @ts-ignore
         const usingBoth = use(usingBothExternals);
-
+        // @ts-ignore
         const usingBothNotAllowed = use(usingBothExternalsWithNotAllowed);
-
+        // @ts-ignore
         const instance3 = use(ext3);
         return null;
       });

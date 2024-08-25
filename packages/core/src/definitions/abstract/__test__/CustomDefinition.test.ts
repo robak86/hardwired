@@ -1,6 +1,6 @@
 import { AbstractServiceLocatorDecorator } from '../AbstractServiceLocatorDecorator.js';
 import { fn } from '../../definitions.js';
-import { IServiceLocator } from '../../../container/IContainer.js';
+
 import { implicit } from '../../sync/implicit.js';
 import { container } from '../../../container/Container.js';
 import { LifeTime } from '../LifeTime.js';

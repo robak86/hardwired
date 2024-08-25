@@ -5,8 +5,6 @@ import { describe, expect, it } from 'vitest';
 describe(`asyncFn`, () => {
   describe(`types`, () => {
     describe(`allowed dependencies life times`, () => {
-      const numberConsumer = async (val: number) => val;
-
       const implDef = implicit<number>('ext1');
 
       describe(`singleton`, () => {

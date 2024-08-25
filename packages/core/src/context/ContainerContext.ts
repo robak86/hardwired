@@ -80,13 +80,6 @@ export class ContainerContext
     this.instancesDefinitionsRegistry.addScopeOverride(definition);
   }
 
-  private requestCall<TValue>(definition: BaseDefinition<TValue, any, any, any>): TValue {
-    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-    const strategy = this.strategiesRegistry.get(definition.strategy);
-
-    return strategy.buildFn(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
-  }
-
   request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, any, []>): TValue;
   request<TValue, TArgs extends any[]>(
     instanceDefinition: BaseDefinition<TValue, LifeTime.transient, any, TArgs>,
@@ -110,12 +103,6 @@ export class ContainerContext
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;
   }
-
-  // buildExactFn<T>(definition: BaseDefinition<T, any, any, any>): T {
-  //   const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
-  //
-  //   return patchedInstanceDef.create(this);
-  // }
 
   buildExactFn<T>(definition: BaseDefinition<T, any, any, any>): T {
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
