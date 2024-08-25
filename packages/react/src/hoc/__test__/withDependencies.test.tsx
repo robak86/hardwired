@@ -1,10 +1,10 @@
-import { container, object, replace, scoped, set, singleton } from 'hardwired';
+import { container, fn, scoped } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies.js';
 import { useDefinition } from '../../hooks/useDefinition.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FC, ReactElement } from 'react';
 
 /**
@@ -51,10 +51,10 @@ describe(`withDependencies`, () => {
       );
     };
 
-    const dependenciesSelector = object({
-      age: ageDef,
-      firstName: firstNameDef,
-    });
+    const dependenciesSelector = fn(use => ({
+      age: use(ageDef),
+      firstName: use(firstNameDef),
+    }));
 
     return { WrappedComponent, dependenciesSelector, ageDef, firstNameDef };
   }

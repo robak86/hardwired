@@ -3,10 +3,10 @@ import { container } from '../../container/Container.js';
 import { fn, scoped, singleton, transient } from '../../definitions/definitions.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
-import { object } from '../../definitions/sync/object.js';
+
 import { value } from '../../definitions/sync/value.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 describe(`decorate`, () => {
@@ -77,13 +77,19 @@ describe(`decorate`, () => {
     });
 
     it(`uses correct scope`, async () => {
-      const source = scoped.fn(() => Math.random());
-      const a = scoped.using(source).fn((source: number) => source);
+      const source = fn.scoped(() => Math.random());
+
+      const a = fn.scoped(use => {
+        return use(source);
+      });
 
       const mPatch = decorate(a, a => a);
 
       const c = container({ overrides: [mPatch] });
-      const obj1 = object({ source, a });
+      const obj1 = fn.scoped(use => ({
+        a: use(a),
+        source: use(source),
+      }));
 
       const req1 = c.use(obj1);
       const req2 = c.use(obj1);

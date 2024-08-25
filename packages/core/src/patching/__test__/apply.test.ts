@@ -5,7 +5,6 @@ import { set } from '../set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
 import { apply } from '../apply.js';
-import { object } from '../../definitions/sync/object.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { value } from '../../definitions/sync/value.js';
 import { describe, expect, it, vi } from 'vitest';
@@ -104,7 +103,12 @@ describe(`apply`, () => {
       const mPatch = apply(a, a => a);
 
       const c = container({ overrides: [mPatch] });
-      const objDef = object({ a, source });
+
+      const objDef = fn.scoped(use => ({
+        a: use(a),
+        source: use(source),
+      }));
+
       expect(objDef.strategy).toEqual(LifeTime.scoped);
 
       const req1 = c.use(objDef);

@@ -18,13 +18,9 @@ export { ContainerContext } from './context/ContainerContext.js';
 
 export { BuildStrategy } from './strategies/abstract/BuildStrategy.js';
 
-export * from './definitions/sync/object.js';
-export * from './definitions/sync/tuple.js';
-
 export { value } from './definitions/sync/value.js';
 
 export * from './definitions/sync/implicit.js';
-export * from './definitions/sync/intersection.js';
 export * from './definitions/abstract/LifeTime.js';
 export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
 export * from './utils/ClassType.js';
