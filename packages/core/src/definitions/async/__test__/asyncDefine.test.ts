@@ -1,12 +1,12 @@
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeOf } from 'ts-expect';
-import { scoped, singleton, transient } from '../../definitions.js';
+import { fn, scoped, singleton, transient } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
-import { AsyncInstanceDefinition } from '../../abstract/async/AsyncInstanceDefinition.js';
 import { describe, expect, it } from 'vitest';
 import { implicit } from '../../sync/implicit.js';
 import { set } from '../../../patching/set.js';
+import { BaseDefinition } from '../../abstract/FnDefinition.js';
 
 describe(`asyncDefine`, () => {
   const ext1 = implicit<number>('ext1');
@@ -14,23 +14,34 @@ describe(`asyncDefine`, () => {
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
-      const definition = transient.async().define(async locator => null);
-      expectType<TypeOf<typeof definition, AsyncInstanceDefinition<null, LifeTime.transient, unknown>>>(true);
+      const definition = fn(async locator => null);
+      expectType<TypeOf<typeof definition, BaseDefinition<Promise<null>, LifeTime.transient, unknown, []>>>(true);
+    });
+
+    it(`accepts additional params`, async () => {
+      const definition = fn(async (use, userId: number) => null);
+      expectType<TypeOf<typeof definition, BaseDefinition<Promise<null>, LifeTime.transient, unknown, [number]>>>(true);
     });
 
     it(`.get is typesafe`, async () => {
       const ext3 = implicit<string>('ext3');
-      const usingBothExternals = scoped.using(ext1, ext2).fn((ext1, ext2) => [ext1, ext2]);
-      const usingBothExternalsWithNotAllowed = scoped.using(ext1, ext2, ext3).fn((ext1, ext2, ext3) => [ext1, ext2]);
 
-      const definition = transient.async().define(async locator => {
-        const instance1 = locator.use(ext1);
-        const instance2 = locator.use(ext2);
-        const usingBoth = locator.use(usingBothExternals);
+      const usingBothExternals = fn.scoped(use => {
+        return [use(ext1), use(ext2)];
+      });
 
-        const usingBothNotAllowed = locator.use(usingBothExternalsWithNotAllowed);
+      const usingBothExternalsWithNotAllowed = fn.scoped(use => {
+        return [use(ext1), use(ext2)];
+      });
 
-        const instance3 = locator.use(ext3);
+      const definition = fn(async use => {
+        const instance1 = use(ext1);
+        const instance2 = use(ext2);
+        const usingBoth = use(usingBothExternals);
+
+        const usingBothNotAllowed = use(usingBothExternalsWithNotAllowed);
+
+        const instance3 = use(ext3);
         return null;
       });
     });
@@ -80,9 +91,9 @@ describe(`asyncDefine`, () => {
     });
 
     it(`correctly uses singleton lifetime`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = fn.scoped(() => new BoxedValue(Math.random()));
 
-      const definition = singleton.async().define(async locator => {
+      const definition = fn.singleton(async locator => {
         return [await locator.use(value), await locator.use(value)];
       });
 
@@ -93,16 +104,16 @@ describe(`asyncDefine`, () => {
     });
 
     it(`correctly uses singleton lifetime`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = fn.scoped(() => new BoxedValue(Math.random()));
 
-      const definition = scoped.async().define(async locator => {
-        return [await locator.use(value), await locator.use(value)];
+      const definition = fn.scoped(async use => {
+        return [await use(value), await use(value)];
       });
 
-      const definitionConsumer = scoped
-        .async()
-        .using(definition, definition)
-        .fn(async (def1, def2) => [def1, def2]);
+      const definitionConsumer = fn.scoped(use => {
+        return [use(definition), use(definition)];
+      });
+
       const cnt = container();
 
       const result = await cnt.use(definitionConsumer);
@@ -113,7 +124,7 @@ describe(`asyncDefine`, () => {
 
   describe(`withNewRequestScope`, () => {
     it(`returns values using new request`, async () => {
-      const singletonD = singleton.fn(() => new BoxedValue(Math.random()));
+      const singletonD = fn.singleton(() => new BoxedValue(Math.random()));
       const randomD = scoped.async().fn(async () => new BoxedValue(Math.random()));
 
       const exampleD = scoped.async().define(async locator => {

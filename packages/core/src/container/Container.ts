@@ -1,7 +1,11 @@
 import { ContainerContext } from '../context/ContainerContext.js';
 import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+import {
+  AsyncAllInstances,
+  AsyncInstanceDefinition,
+  AsyncInstancesArray,
+} from '../definitions/abstract/async/AsyncInstanceDefinition.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import { IContainer, IContainerScopes, UseFn } from './IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
@@ -45,9 +49,11 @@ export class Container extends ExtensibleFunction implements IContainer {
     return definitions.map(def => this.containerContext.use(def)) as any;
   }
 
-  allAsync = <TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
+  allAsync = <
+    TDefinitions extends Array<AsyncInstanceDefinition<any, any, any> | BaseDefinition<Promise<any>, any, any, any>>,
+  >(
     ...definitions: [...TDefinitions]
-  ): Promise<AsyncInstancesArray<TDefinitions>> =>
+  ): Promise<AsyncAllInstances<TDefinitions>> =>
     Promise.all(definitions.map(def => this.containerContext.use(def))) as any;
 
   checkoutScope = (options: ContainerScopeOptions = {}): IContainer =>

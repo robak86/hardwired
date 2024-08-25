@@ -1,4 +1,4 @@
-import { scoped, singleton } from '../../definitions.js';
+import { fn, scoped, singleton } from '../../definitions.js';
 import { object } from '../object.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
@@ -40,8 +40,8 @@ describe(`object`, () => {
   describe(`strategy`, () => {
     describe(`all instances have the same strategy`, () => {
       it(`uses strategy from record instance definitions`, async () => {
-        const someNumberD = singleton.fn(() => 1);
-        const someStr = singleton.fn(() => 'str');
+        const someNumberD = fn.singleton(() => 1);
+        const someStr = fn.singleton(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
         expect(composed.strategy).toEqual(LifeTime.singleton);
       });
@@ -56,7 +56,7 @@ describe(`object`, () => {
 
     describe(`instances use different strategies`, () => {
       it(`uses singleton strategy if any dependency definition is a singleton`, async () => {
-        const someNumberD = singleton.fn(() => 1);
+        const someNumberD = fn.singleton(() => 1);
         const someStr = scoped.fn(() => 'str');
         const composed = object({ num: someNumberD, str: someStr });
         expect(composed.strategy).toEqual(LifeTime.transient);

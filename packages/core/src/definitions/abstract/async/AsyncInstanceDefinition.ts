@@ -3,6 +3,7 @@ import { Resolution } from '../Resolution.js';
 import { v4 } from 'uuid';
 import { AnyInstanceDefinition } from '../AnyInstanceDefinition.js';
 import { IServiceLocator } from '../../../container/IContainer.js';
+import { BaseDefinition } from '../FnDefinition.js';
 
 export type AsyncInstanceDefinition<T, TLifeTime extends LifeTime, TMeta> = {
   readonly id: string;
@@ -52,4 +53,15 @@ export type AsyncInstance<T extends AsyncInstanceDefinition<any, any, any>> =
 
 export type AsyncInstancesArray<T extends AsyncInstanceDefinition<any, any, any>[]> = {
   [K in keyof T]: AsyncInstance<T[K]>;
+};
+
+// prettier-ignore
+export type AsyncAllItem<T extends AsyncInstanceDefinition<any, any, any> | BaseDefinition<Promise<any>, any, any, any>> =
+  T extends AsyncInstanceDefinition<any, any, any> ? AsyncInstance<T> :
+  T extends BaseDefinition<Promise<infer TInstance>, any, any, any> ? TInstance : never;
+
+export type AsyncAllInstances<
+  T extends Array<AsyncInstanceDefinition<any, any, any> | BaseDefinition<Promise<any>, any, any, any>>,
+> = {
+  [K in keyof T]: AsyncAllItem<T[K]>;
 };

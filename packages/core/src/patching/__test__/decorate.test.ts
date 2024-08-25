@@ -1,6 +1,6 @@
 import { set } from '../set.js';
 import { container } from '../../container/Container.js';
-import { scoped, singleton, transient } from '../../definitions/definitions.js';
+import { fn, scoped, singleton, transient } from '../../definitions/definitions.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
 import { object } from '../../definitions/sync/object.js';
@@ -60,7 +60,7 @@ describe(`decorate`, () => {
 
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
-      const a = singleton.fn(() => Math.random());
+      const a = fn.singleton(() => Math.random());
       const mPatch = decorate(a, a => a);
 
       const c = container({ overrides: [mPatch] });
@@ -125,7 +125,7 @@ describe(`decorate`, () => {
 
     describe(`apply on singleton definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(singleton.class(MyService));
+        const { instance1, instance2 } = setup(fn.singleton(use => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
@@ -135,7 +135,7 @@ describe(`decorate`, () => {
 
     describe(`apply on scoped definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(scoped.class(MyService));
+        const { instance1, instance2 } = setup(fn.scoped(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
@@ -145,7 +145,7 @@ describe(`decorate`, () => {
 
     describe(`apply on transients definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(transient.class(MyService));
+        const { instance1, instance2 } = setup(fn(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
@@ -155,7 +155,7 @@ describe(`decorate`, () => {
 
     describe(`apply on request definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(scoped.class(MyService));
+        const { instance1, instance2 } = setup(fn.scoped(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

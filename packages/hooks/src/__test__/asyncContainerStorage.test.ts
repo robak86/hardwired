@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { useContainer } from '../asyncContainerStorage.js';
 import { withLocalContainer } from '../withLocalContainer.js';
 import { withScope } from '../withScope.js';
-import { set, singleton } from 'hardwired';
+import { fn, set } from 'hardwired';
 import { use } from '../use.js';
 
 describe(`useContainer`, () => {
@@ -52,7 +52,7 @@ describe(`withScope`, () => {
 
   describe(`overrides are not promoted to the parent container`, () => {
     it(`returns correct instance when operating on the root container`, async () => {
-      const valD = singleton.fn(() => 10);
+      const valD = fn.singleton(() => 10);
 
       // first, get an instance from child container, to check if it won't be promoted to parent
       const overriddenVal = withScope([set(valD, 0)], () => {
@@ -67,7 +67,7 @@ describe(`withScope`, () => {
     });
 
     it(`returns correct instance when instantiating from local container`, async () => {
-      const valD = singleton.fn(() => 10);
+      const valD = fn.singleton(() => 10);
 
       const [overriddenVal, originalVal] = withLocalContainer(() => {
         // first, get an instance from child container, to check if it won't be promoted to parent

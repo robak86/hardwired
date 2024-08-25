@@ -1,7 +1,7 @@
 import { container } from '../../container/Container.js';
 import { set } from '../../patching/set.js';
 import { v4 } from 'uuid';
-import { singleton } from '../../definitions/definitions.js';
+import { fn, singleton } from '../../definitions/definitions.js';
 import { value } from '../../definitions/sync/value.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
@@ -132,7 +132,7 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
-        const a = singleton.fn(() => Math.random());
+        const a = fn.singleton(() => Math.random());
 
         const parentC = ContainerContext.empty();
         const childC = parentC.checkoutScope({});
@@ -145,7 +145,7 @@ describe(`SingletonStrategy`, () => {
       it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
         const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
-        const a = singleton.fn(randomFactorySpy);
+        const a = fn.singleton(randomFactorySpy);
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope();
@@ -166,7 +166,7 @@ describe(`SingletonStrategy`, () => {
       it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
         const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
-        const a = singleton.fn(randomFactorySpy);
+        const a = fn.singleton(randomFactorySpy);
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope({ overrides: [set(a, 1)] });
@@ -188,7 +188,7 @@ describe(`SingletonStrategy`, () => {
 
     describe('global overrides', function () {
       it(`cannot be replaced by overrides`, async () => {
-        const k1 = singleton.fn(() => Math.random());
+        const k1 = fn.singleton(() => Math.random());
         const invariantPatch = set(k1, 1);
         const childScopePatch = set(k1, 2);
 
@@ -200,8 +200,8 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`allows for overrides for other keys than ones changes invariants array`, async () => {
-        const k1 = singleton.fn(() => Math.random());
-        const k2 = singleton.fn(() => Math.random());
+        const k1 = fn.singleton(() => Math.random());
+        const k2 = fn.singleton(() => Math.random());
 
         const invariantPatch = set(k1, 1);
         const childScopePatch = set(k2, 2);
@@ -249,7 +249,7 @@ describe(`SingletonStrategy`, () => {
       describe(`dependencies`, () => {
         it(`returns correct value, ex.1`, async () => {
           const asyncDep = singleton.async().fn(async () => 123);
-          const syncDep = singleton.fn(() => 'str');
+          const syncDep = fn.singleton(() => 'str');
           const asyncDef = singleton.async().using(asyncDep, syncDep).class(TestClassArgs2);
           const result = await container().use(asyncDef);
           expect(result.someString).toEqual('str');
@@ -266,8 +266,8 @@ describe(`SingletonStrategy`, () => {
         });
 
         it(`returns correct value, ex.2`, async () => {
-          const asyncDep = singleton.fn(() => 123);
-          const syncDep = singleton.fn(() => 'str');
+          const asyncDep = fn.singleton(() => 123);
+          const syncDep = fn.singleton(() => 'str');
           const asyncDef = singleton.using(asyncDep, syncDep).async().class(TestClassArgs2);
           const result = await container().use(asyncDef);
           expect(result.someString).toEqual('str');
@@ -288,13 +288,15 @@ describe(`SingletonStrategy`, () => {
       describe(`dependencies`, () => {
         describe(`mixed async and sync dependencies`, () => {
           it(`returns correct value`, async () => {
-            const asyncDep = singleton.async().fn(async () => 123);
-            const syncDep = singleton.fn(() => 'str');
+            const asyncDep = fn.singleton(async () => 123);
+            const syncDep = fn.singleton(() => 'str');
 
-            const asyncDef = singleton
-              .async()
-              .using(asyncDep, syncDep)
-              .fn(async (a: number, b: string) => [a, b]);
+            const asyncDef = fn.singleton(async () => {
+              const a = await asyncDep();
+              const b = syncDep();
+              return [a, b];
+            });
+
             const result = await container().use(asyncDef);
             expect(result).toEqual([123, 'str']);
           });
@@ -316,8 +318,8 @@ describe(`SingletonStrategy`, () => {
 
         describe(`only sync dependencies`, () => {
           it(`returns correct value`, async () => {
-            const asyncDep = singleton.fn(() => 123);
-            const syncDep = singleton.fn(() => 'str');
+            const asyncDep = fn.singleton(() => 123);
+            const syncDep = fn.singleton(() => 'str');
 
             const asyncDef = singleton
               .async()

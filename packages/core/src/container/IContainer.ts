@@ -9,10 +9,16 @@ import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { Patch } from './Patch.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  use<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  use<TValue>(instanceDefinition: BaseDefinition<TValue, any, any, any>): TValue;
-  use<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+  use<TValue>(instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>): TValue;
+  use<TValue>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): Promise<TValue>;
+  use<TValue>(
+    instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any, any>,
+  ): TValue;
+  use<TValue>(
+    instanceDefinition: AnyInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): Promise<TValue> | TValue;
 
   all<
     TDefinitions extends Array<

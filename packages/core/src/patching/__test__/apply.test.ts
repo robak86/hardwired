@@ -1,6 +1,6 @@
 import { container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { scoped, singleton, transient } from '../../definitions/definitions.js';
+import { fn, scoped, singleton, transient } from '../../definitions/definitions.js';
 import { set } from '../set.js';
 import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
 import { decorate } from '../decorate.js';
@@ -13,7 +13,7 @@ import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
-    const someValue = singleton.fn(() => new BoxedValue(1));
+    const someValue = fn.singleton(() => new BoxedValue(1));
 
     const mPatch = apply(someValue, val => (val.value += 1));
 
@@ -22,7 +22,7 @@ describe(`apply`, () => {
   });
 
   it(`does not affect original module`, async () => {
-    const someValue = singleton.fn(() => new BoxedValue(1));
+    const someValue = fn.singleton(() => new BoxedValue(1));
 
     const mPatch = apply(someValue, val => (val.value += 1));
 
@@ -31,7 +31,7 @@ describe(`apply`, () => {
   });
 
   it(`allows for multiple apply functions calls`, async () => {
-    const someValue = singleton.fn(() => new BoxedValue(1));
+    const someValue = fn.singleton(() => new BoxedValue(1));
 
     const mPatch = apply(
       apply(someValue, val => (val.value += 1)),
@@ -81,7 +81,7 @@ describe(`apply`, () => {
 
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
-      const someValue = singleton.fn(() => Math.random());
+      const someValue = fn.singleton(() => Math.random());
       const mPatch = apply(someValue, a => a);
 
       const c = container({ overrides: [mPatch] });
@@ -136,7 +136,7 @@ describe(`apply`, () => {
 
     describe(`apply on singleton definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(singleton.class(MyService));
+        const { instance1, instance2 } = setup(fn.singleton(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
@@ -146,7 +146,7 @@ describe(`apply`, () => {
 
     describe(`apply on scoped definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(scoped.class(MyService));
+        const { instance1, instance2 } = setup(fn.scoped(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
@@ -156,7 +156,7 @@ describe(`apply`, () => {
 
     describe(`apply on transients definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(transient.class(MyService));
+        const { instance1, instance2 } = setup(fn(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

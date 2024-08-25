@@ -100,15 +100,11 @@ export class ContainerContext
     definition: AnyInstanceDefinition<TValue, any, any>,
     ...args: TArgs
   ): Promise<TValue> | TValue {
-    if (isBasedDefinition(definition)) {
-      return this.requestCall(definition);
-    }
-
     this.events.onGet.emit({ containerId: this.id, definition });
 
     this.interceptor.onRequestStart?.(definition, this);
 
-    const instance = this.use(definition);
+    const instance = isBasedDefinition(definition) ? this.use(definition) : this.use(definition);
 
     if (definition.resolution === Resolution.async) {
       if (this.interceptor.onAsyncRequestEnd) {
@@ -138,10 +134,6 @@ export class ContainerContext
   buildExact<T>(definition: AsyncInstanceDefinition<T, any, any>): Promise<T>;
   buildExact<T>(definition: BaseDefinition<T, any, any, any>): Promise<T>;
   buildExact<T>(definition: AnyInstanceDefinition<T, any, any>): T | Promise<T> {
-    if (isBasedDefinition(definition)) {
-      return this.buildExactFn(definition);
-    }
-
     const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
@@ -156,7 +148,7 @@ export class ContainerContext
       return this.interceptor.interceptAsync?.(patchedInstanceDef, this);
     }
 
-    return patchedInstanceDef.create(this);
+    return isBasedDefinition(definition) ? this.buildExactFn(definition) : patchedInstanceDef.create(this);
   }
 
   use = (definition: AnyInstanceDefinition<any, any, any>) => {

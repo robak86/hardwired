@@ -113,7 +113,7 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
-        const a = singleton.fn(() => Math.random());
+        const a = fn.singleton(() => Math.random());
 
         const parentC = ContainerContext.empty();
         const childC = parentC.checkoutScope({});
@@ -126,7 +126,7 @@ describe(`SingletonStrategy`, () => {
       it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
         const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
-        const a = singleton.fn(randomFactorySpy);
+        const a = fn.singleton(randomFactorySpy);
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope();
@@ -147,7 +147,7 @@ describe(`SingletonStrategy`, () => {
       it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
         const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
-        const a = singleton.fn(randomFactorySpy);
+        const a = fn.singleton(randomFactorySpy);
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope({ overrides: [set(a, 1)] });

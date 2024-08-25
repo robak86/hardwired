@@ -2,7 +2,7 @@ import { implicit } from '../implicit.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeOf } from 'ts-expect';
 import { InstanceDefinition } from '../../abstract/sync/InstanceDefinition.js';
-import { scoped, singleton, transient } from '../../definitions.js';
+import { fn, scoped, singleton, transient } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
@@ -61,7 +61,7 @@ describe(`define`, () => {
     });
 
     it(`correctly uses singleton lifetime`, async () => {
-      const value = scoped.fn(() => new BoxedValue(Math.random()));
+      const value = fn.singleton(() => new BoxedValue(Math.random()));
 
       const definition = singleton.define(locator => {
         return [locator.use(value), locator.use(value)];
@@ -91,18 +91,18 @@ describe(`define`, () => {
 
   describe(`withNewRequestScope`, () => {
     it(`returns values using new request`, async () => {
-      const singletonD = singleton.fn(() => new BoxedValue(Math.random()));
-      const randomD = scoped.fn(() => new BoxedValue(Math.random()));
+      const singletonD = fn.singleton(() => new BoxedValue(Math.random()));
+      const randomD = fn.scoped(() => new BoxedValue(Math.random()));
 
-      const exampleD = scoped.using().define(locator => {
-        const s1 = locator.use(singletonD);
-        const r1 = locator.use(randomD);
-        const r2 = locator.use(randomD);
+      const exampleD = fn.scoped(use => {
+        const s1 = use(singletonD);
+        const r1 = use(randomD);
+        const r2 = use(randomD);
 
-        const req2 = locator.withScope(locator => {
-          const s1 = locator.use(singletonD);
-          const r1 = locator.use(randomD);
-          const r2 = locator.use(randomD);
+        const req2 = use.withScope(use => {
+          const s1 = use(singletonD);
+          const r1 = use(randomD);
+          const r2 = use(randomD);
 
           return [s1, r1, r2];
         });
