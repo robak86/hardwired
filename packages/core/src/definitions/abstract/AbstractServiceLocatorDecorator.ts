@@ -4,26 +4,35 @@ import { InstanceDefinition } from './sync/InstanceDefinition.js';
 import { AsyncInstanceDefinition } from './async/AsyncInstanceDefinition.js';
 import { BaseDefinition } from './FnDefinition.js';
 import { AnyInstanceDefinition } from './AnyInstanceDefinition.js';
+import { LifeTime } from './LifeTime.js';
+import { ValidDependenciesLifeTime } from './sync/InstanceDefinitionDependency.js';
 
-export interface AbstractServiceLocatorDecorator {
-  <TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+export interface AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTime> {
+  <TValue>(instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>): TValue;
 
-  <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  <TValue>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): Promise<TValue>;
 
-  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any, any>): TValue;
+  <TValue>(instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any, any>): TValue;
 
-  <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+  <TValue>(
+    instanceDefinition: AnyInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+  ): Promise<TValue> | TValue;
 }
 
-export abstract class AbstractServiceLocatorDecorator extends ExtensibleFunction implements IServiceLocator {
-  readonly use: IServiceLocator['use'];
-  readonly all: IServiceLocator['all'];
-  readonly checkoutScope: IServiceLocator['checkoutScope'];
-  readonly withScope: IServiceLocator['withScope'];
-  readonly override: IServiceLocator['override'];
-  readonly provide: IServiceLocator['provide'];
+export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTime>
+  extends ExtensibleFunction
+  implements IServiceLocator<TAllowedLifeTime>
+{
+  readonly use: IServiceLocator<TAllowedLifeTime>['use'];
+  readonly all: IServiceLocator<TAllowedLifeTime>['all'];
+  readonly checkoutScope: IServiceLocator<TAllowedLifeTime>['checkoutScope'];
+  readonly withScope: IServiceLocator<TAllowedLifeTime>['withScope'];
+  readonly override: IServiceLocator<TAllowedLifeTime>['override'];
+  readonly provide: IServiceLocator<TAllowedLifeTime>['provide'];
 
-  protected constructor(private readonly containerContext: IServiceLocator) {
+  constructor(private readonly containerContext: IServiceLocator<TAllowedLifeTime>) {
     super((definition: any) => {
       return this.containerContext(definition);
     });

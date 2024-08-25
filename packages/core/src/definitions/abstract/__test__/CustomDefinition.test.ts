@@ -3,15 +3,12 @@ import { fn } from '../../definitions.js';
 import { IServiceLocator } from '../../../container/IContainer.js';
 import { implicit } from '../../sync/implicit.js';
 import { container } from '../../../container/Container.js';
+import { LifeTime } from '../LifeTime.js';
 
 describe(`CustomDefinitions`, () => {
   const bodyD = implicit<any>('httpBody');
 
-  class GuardContext extends AbstractServiceLocatorDecorator {
-    constructor(locator: IServiceLocator) {
-      super(locator);
-    }
-
+  class GuardContext extends AbstractServiceLocatorDecorator<LifeTime.scoped> {
     get body() {
       return this.use(bodyD);
     }

@@ -1,6 +1,6 @@
 import { container } from '../../container/Container.js';
 import { v4 } from 'uuid';
-import { transient } from '../../definitions/definitions.js';
+import { fn, transient } from '../../definitions/definitions.js';
 import { value } from '../../definitions/sync/value.js';
 import { describe, it, expect, vi } from 'vitest';
 
@@ -13,7 +13,10 @@ describe(`ClassTransientResolver`, () => {
     }
 
     const someValue = value('someString');
-    const a = transient.using(someValue).class(TestClass);
+
+    const a = fn(use => {
+      return new TestClass(use(someValue));
+    });
 
     it(`returns class instance`, async () => {
       const c = container();
@@ -41,8 +44,10 @@ describe(`ClassTransientResolver`, () => {
       constructor(public value: string) {}
     }
 
-    const someValue = transient.async().fn(async () => 'someString');
-    const a = transient.async().using(someValue).class(TestClass);
+    const someValue = fn(async () => 'someString');
+    const a = fn(async use => {
+      return new TestClass(await use(someValue));
+    });
 
     it(`returns class instance`, async () => {
       const c = container();

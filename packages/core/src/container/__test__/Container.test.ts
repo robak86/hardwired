@@ -56,7 +56,7 @@ describe(`Container`, () => {
 
       it(`provides withScope method`, async () => {
         const use = container();
-        const myDef = fn.scoped(() => Math.random());
+        const myDef = fn.singleton(() => Math.random());
         const consumer = fn.singleton(use => {
           return [use.withScope(use => use(myDef)), use.withScope(use => use(myDef))];
         });

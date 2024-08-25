@@ -98,7 +98,11 @@ describe(`useDefinition`, () => {
   describe(`using externals`, () => {
     function setup() {
       const someExternalParam = implicit<string>('ext');
-      const val1Def = scoped.using(someExternalParam).fn((ext: string) => `render:${checkoutRenderId()};value:${ext}`);
+
+      const val1Def = fn.scoped(use => {
+        const ext = use(someExternalParam);
+        return `render:${checkoutRenderId()};value:${ext}`;
+      });
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);

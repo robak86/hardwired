@@ -6,7 +6,7 @@ import { container } from '../Container.js';
 describe(`Patch`, () => {
   it(`works with scope`, async () => {
     const handlerD = implicit<string>('handler');
-    const databaseD = fn.singleton(() => Math.random().toString());
+    const databaseD = fn.scoped(() => Math.random().toString());
 
     const overrides = patch().define(handlerD, () => Math.random().toString());
     const otherOverrides = patch()
@@ -63,7 +63,7 @@ describe(`Patch`, () => {
 
   it(`works as global override`, async () => {
     const handlerD = implicit<string>('handler');
-    const databaseD = fn.singleton(() => Math.random().toString());
+    const databaseD = fn.scoped(() => Math.random().toString());
 
     const overrides = patch().define(handlerD, () => Math.random().toString());
     const otherOverrides = patch()

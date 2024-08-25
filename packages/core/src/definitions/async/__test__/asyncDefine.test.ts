@@ -91,7 +91,7 @@ describe(`asyncDefine`, () => {
     });
 
     it(`correctly uses singleton lifetime`, async () => {
-      const value = fn.scoped(() => new BoxedValue(Math.random()));
+      const value = fn.singleton(() => new BoxedValue(Math.random()));
 
       const definition = fn.singleton(async locator => {
         return [await locator.use(value), await locator.use(value)];

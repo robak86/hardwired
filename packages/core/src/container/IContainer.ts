@@ -41,20 +41,25 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
   provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped, any>, instance: T): void;
 }
 
-export interface UseFn {
-  <TValue>(instanceDefinition: InstanceDefinition<TValue, any, []>): TValue;
-  <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, []>): Promise<TValue>;
+export interface UseFn<TAllowedLifeTime extends LifeTime = LifeTime> {
+  <TValue>(instanceDefinition: InstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>): TValue;
+  <TValue>(
+    instanceDefinition: AsyncInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>,
+  ): Promise<TValue>;
   <TValue, TArgs extends any[]>(
-    instanceDefinition: BaseDefinition<TValue, LifeTime, any, TArgs>,
+    instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any, TArgs>,
     ...args: TArgs
   ): TValue;
-  <TValue, TArgs extends []>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>, ...args: TArgs): TValue;
+  <TValue, TArgs extends []>(
+    instanceDefinition: AnyInstanceDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any>,
+    ...args: TArgs
+  ): TValue;
 }
 
 export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime>,
-    UseFn {}
+    UseFn<TAllowedLifeTime> {}
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends IServiceLocator<TAllowedLifeTime>,

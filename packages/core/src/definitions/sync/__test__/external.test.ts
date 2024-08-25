@@ -1,4 +1,4 @@
-import { transient } from '../../definitions.js';
+import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { value } from '../value.js';
 import { describe, expect, it } from 'vitest';
@@ -28,8 +28,18 @@ describe(`implicit`, () => {
   const externalParams1D = implicit<Externals>('params1');
   const externalParams2D = implicit<OtherExternals>('params2');
 
-  const defUsingExternals1 = transient.using(externalParams1D, numD).class(ExternalsConsumer);
-  const defUsingBothExternals = transient.using(externalParams1D, externalParams2D, numD).class(BothExternalsConsumer);
+  const defUsingExternals1 = fn(use => {
+    const externals = use(externalParams1D);
+    const otherNumDependency = use(numD);
+    return new ExternalsConsumer(externals, otherNumDependency);
+  });
+
+  const defUsingBothExternals = fn(use => {
+    const externals = use(externalParams1D);
+    const externals2 = use(externalParams2D);
+    const otherNumDependency = use(numD);
+    return new BothExternalsConsumer(externals, externals2, otherNumDependency);
+  });
 
   describe(`container.get`, () => {
     it(`returns correct instance`, async () => {

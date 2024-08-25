@@ -1,4 +1,4 @@
-import { replace, scoped, value } from 'hardwired';
+import { fn, replace, scoped, value } from 'hardwired';
 
 import { use } from '../use.js';
 import { describe, expect, it } from 'vitest';
@@ -7,7 +7,7 @@ import { withLocalContainer } from '../withLocalContainer.js';
 
 describe(`AsyncContext`, () => {
   it(`works`, async () => {
-    const someValue = scoped.fn(() => Math.random());
+    const someValue = fn.scoped(() => Math.random());
 
     const result = await withLocalContainer(async () => {
       const collected: number[] = [];
@@ -32,7 +32,7 @@ describe(`AsyncContext`, () => {
   });
 
   it(`works with overrides`, async () => {
-    const someValue = scoped.fn(() => 1);
+    const someValue = fn.scoped(() => 1);
 
     const result = await withLocalContainer(async () => {
       const collected: number[] = [];

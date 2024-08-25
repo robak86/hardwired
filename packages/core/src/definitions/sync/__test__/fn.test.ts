@@ -1,9 +1,7 @@
-import { scoped, singleton } from '../../definitions.js';
-import { LifeTime } from '../../abstract/LifeTime.js';
+import { fn, singleton } from '../../definitions.js';
 
 import { describe, expect, it } from 'vitest';
 import { implicit } from '../implicit.js';
-import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`fn`, () => {
   describe(`allowed dependencies life times`, () => {
@@ -11,18 +9,14 @@ describe(`fn`, () => {
 
     const implDef = implicit<number>('number');
 
-    it(`is type-safe`, async () => {
-      const dep = scoped.using(implDef).fn(val => {
-        expectType<TypeEqual<typeof val, number>>(true);
-      });
-    });
-
     describe(`singleton`, () => {
       describe(`compile-time`, () => {
         it(`does not accept implicit definitions`, async () => {
           try {
-            // @ts-expect-error request does not accept implicit definitions
-            const dep = singleton.using(implDef).fn(numberConsumer);
+            fn.singleton(use => {
+              // @ts-expect-error request does not accept implicit definitions
+              use(implDef);
+            });
           } catch (err) {
             //noop
           }

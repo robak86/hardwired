@@ -25,22 +25,6 @@ describe(`useDefinitions`, () => {
         expectType<TypeEqual<typeof val2, number>>(true);
       };
     });
-
-    it(`returns correct types using externals`, async () => {
-      const ext = implicit<boolean>('ext');
-      const val1Def = scoped.using(ext).fn(b => 'someString');
-      const val2Def = scoped.using(ext).fn(b => 123);
-
-      const Component = () => {
-        try {
-          const [val1, val2] = useAll(val1Def, val2Def);
-          expectType<TypeEqual<typeof val1, string>>(true);
-          expectType<TypeEqual<typeof val2, number>>(true);
-        } catch (e) {
-          // ext is not provided
-        }
-      };
-    });
   });
 
   describe(`instantiating dependencies`, () => {
@@ -128,12 +112,16 @@ describe(`useDefinitions`, () => {
   describe(`using externals`, () => {
     function setup() {
       const someExternalParam = implicit<string>('ext');
-      const val1Def = scoped
-        .using(someExternalParam)
-        .fn((ext: string) => `def:1,render:${checkoutRenderId()};value:${ext}`);
-      const val2Def = scoped
-        .using(someExternalParam)
-        .fn((ext: string) => `def:2,render:${checkoutRenderId()};value:${ext}`);
+
+      const val1Def = fn.scoped(use => {
+        const ext = use(someExternalParam);
+        return `def:1,render:${checkoutRenderId()};value:${ext}`;
+      });
+
+      const val2Def = fn.scoped(use => {
+        const ext = use(someExternalParam);
+        return `def:2,render:${checkoutRenderId()};value:${ext}`;
+      });
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
