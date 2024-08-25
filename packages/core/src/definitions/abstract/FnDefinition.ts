@@ -31,7 +31,7 @@ export class BaseDefinition<
   constructor(
     public readonly id: string,
     public readonly strategy: TLifeTime,
-    public readonly create: (context: IServiceLocator) => TInstance,
+    public readonly create: (context: IServiceLocator, ...args: TArgs) => TInstance,
     public readonly meta?: TMeta,
   ) {
     super(() => {
@@ -64,13 +64,13 @@ export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs
     return new BaseDefinition(this.id, def.strategy, def.create, this.meta);
   }
 
-  apply(applyFn: (instance: TInstance) => void): BaseDefinition<TInstance, TLifeTime, any, TArgs> {
+  apply(applyFn: (instance: TInstance, ...args: TArgs) => void): BaseDefinition<TInstance, TLifeTime, TMeta, TArgs> {
     return new BaseDefinition(
       this.id,
       this.strategy,
-      (use: IServiceLocator) => {
-        const instance = use(this);
-        applyFn(instance);
+      (use: IServiceLocator, ...args: TArgs) => {
+        const instance = use(this) as TInstance;
+        applyFn(instance, ...args);
 
         return instance;
       },
@@ -79,21 +79,21 @@ export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs
   }
 
   decorate<TExtendedInstance extends TInstance>(
-    decorateFn: (instance: TInstance) => TExtendedInstance,
-  ): BaseDefinition<TExtendedInstance, TLifeTime, any, TArgs> {
+    decorateFn: (instance: TInstance, ...args: TArgs) => TExtendedInstance,
+  ): BaseDefinition<TExtendedInstance, TLifeTime, TMeta, TArgs> {
     return new BaseDefinition(
       this.id,
       this.strategy,
-      (use: IServiceLocator): TExtendedInstance => {
+      (use: IServiceLocator, ...args: TArgs): TExtendedInstance => {
         const instance = use(this);
-        return decorateFn(instance);
+        return decorateFn(instance as TInstance, ...args);
       },
       this.meta,
     );
   }
 
-  set(newValue: TInstance): BaseDefinition<TInstance, TLifeTime, any, TArgs> {
-    return new BaseDefinition(this.id, this.strategy, () => newValue, this.meta);
+  set(newValue: TInstance): BaseDefinition<TInstance, TLifeTime, TMeta, TArgs> {
+    return new BaseDefinition<TInstance, TLifeTime, TMeta, TArgs>(this.id, this.strategy, () => newValue, this.meta);
   }
 }
 
@@ -103,13 +103,13 @@ export class DefineBuilder<TInstance, TLifeTime extends LifeTime, TMeta, TArgs e
   TMeta,
   TArgs
 > {
-  apply(applyFn: (instance: TInstance) => void): BaseDefinition<TInstance, TLifeTime, any, TArgs> {
+  apply(applyFn: (instance: TInstance, ...args: TArgs) => void): BaseDefinition<TInstance, TLifeTime, TMeta, TArgs> {
     return new BaseDefinition(
       v4(),
       this.strategy,
-      (use: IServiceLocator) => {
-        const instance = use(this);
-        applyFn(instance);
+      (use: IServiceLocator, ...args: TArgs) => {
+        const instance = use(this) as TInstance;
+        applyFn(instance, ...args);
 
         return instance;
       },
@@ -118,14 +118,14 @@ export class DefineBuilder<TInstance, TLifeTime extends LifeTime, TMeta, TArgs e
   }
 
   decorate<TExtendedInstance extends TInstance>(
-    decorateFn: (instance: TInstance) => TExtendedInstance,
-  ): BaseDefinition<TExtendedInstance, TLifeTime, any, TArgs> {
+    decorateFn: (instance: TInstance, ...args: TArgs) => TExtendedInstance,
+  ): BaseDefinition<TExtendedInstance, TLifeTime, TMeta, TArgs> {
     return new BaseDefinition(
       v4(),
       this.strategy,
-      (use: IServiceLocator): TExtendedInstance => {
-        const instance = use(this);
-        return decorateFn(instance);
+      (use: IServiceLocator, ...args: TArgs): TExtendedInstance => {
+        const instance = use(this) as TInstance;
+        return decorateFn(instance, ...args);
       },
       this.meta,
     );

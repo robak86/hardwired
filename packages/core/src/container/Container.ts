@@ -19,8 +19,8 @@ export class Container extends ExtensibleFunction implements IContainer {
   readonly use: UseFn;
 
   constructor(protected readonly containerContext: ContainerContext) {
-    const create: UseFn = definition => {
-      return this.containerContext.request(definition as any);
+    const create: UseFn = (definition: any, ...args: any[]) => {
+      return this.containerContext.request(definition, ...args) as any;
     };
 
     super(create);

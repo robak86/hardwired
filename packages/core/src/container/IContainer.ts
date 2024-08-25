@@ -38,8 +38,15 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
 export interface UseFn {
   <TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
   <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any, any>): TValue;
-  <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+  <TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, any, []>): TValue;
+  <TValue, TArgs extends any[]>(
+    instanceDefinition: BaseDefinition<TValue, LifeTime.transient, any, TArgs>,
+    ...args: TArgs
+  ): TValue;
+  <TValue, TArgs extends []>(
+    instanceDefinition: AnyInstanceDefinition<TValue, any, any>,
+    ...args: TArgs
+  ): Promise<TValue> | TValue;
 }
 
 export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>

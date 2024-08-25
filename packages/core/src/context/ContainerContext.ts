@@ -89,10 +89,17 @@ export class ContainerContext
     return strategy.buildFn(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this);
   }
 
-  request<TValue>(definition: InstanceDefinition<TValue, any, any>): TValue;
-  request<TValue>(definition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  request<TValue>(definition: BaseDefinition<TValue, any, any, any>): TValue;
-  request<TValue>(definition: AnyInstanceDefinition<TValue, any, any>): TValue | Promise<TValue> {
+  request<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
+  request<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
+  request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, any, []>): TValue;
+  request<TValue, TArgs extends any[]>(
+    instanceDefinition: BaseDefinition<TValue, LifeTime.transient, any, TArgs>,
+    ...args: TArgs
+  ): TValue;
+  request<TValue, TArgs extends []>(
+    definition: AnyInstanceDefinition<TValue, any, any>,
+    ...args: TArgs
+  ): Promise<TValue> | TValue {
     if (isBasedDefinition(definition)) {
       return this.requestCall(definition);
     }
