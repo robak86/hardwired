@@ -8,7 +8,7 @@ export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs 
     public readonly id: string,
     public readonly strategy: TLifeTime,
     public readonly create: (context: IServiceLocator, ...args: TArgs) => TInstance,
-    public readonly meta?: TMeta,
+    public readonly meta: TMeta = undefined as TMeta,
   ) {}
 
   patch(): PatchDefinition<TInstance, TLifeTime, TMeta, TArgs> {
@@ -58,7 +58,7 @@ export class PatchDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs
       this.strategy,
       (use: IServiceLocator, ...args: TArgs): TExtendedInstance => {
         const instance = this.create(use, ...args);
-        return decorateFn(use, instance as TInstance, ...args);
+        return decorateFn(use, instance, ...args);
       },
       this.meta,
     );
@@ -80,7 +80,7 @@ export class DefineBuilder<TInstance, TLifeTime extends LifeTime, TMeta, TArgs e
       v4(),
       this.strategy,
       (use: IServiceLocator, ...args: TArgs) => {
-        const instance = use(this, ...args) as TInstance;
+        const instance = use(this, ...args);
         applyFn(instance, ...args);
 
         return instance;
@@ -96,7 +96,7 @@ export class DefineBuilder<TInstance, TLifeTime extends LifeTime, TMeta, TArgs e
       v4(),
       this.strategy,
       (use: IServiceLocator, ...args: TArgs): TExtendedInstance => {
-        const instance = use(this, ...args) as TInstance;
+        const instance = use(this, ...args);
         return decorateFn(instance, ...args);
       },
       this.meta,
