@@ -119,3 +119,53 @@ export function transientFn<TInstance, TLifeTime extends LifeTime, TMeta, TArgs 
 ): BaseDefinition<TInstance, LifeTime.transient, TMeta, TArgs> {
   return new BaseDefinition(v4(), LifeTime.transient, create, meta);
 }
+
+type Middleware<T> = (locator: IServiceLocator, next: Factory<T>) => T;
+
+type Factory<T> = (locator: IServiceLocator) => T;
+
+type DefineFn = {
+  <T>(factory: (locator: IServiceLocator) => T): T;
+  <TMiddleware extends Middleware<ReturnType<TFactory>>, TFactory extends Factory<any>>(
+    middleware1: TMiddleware,
+    factory: TFactory,
+  ): ReturnType<TFactory>;
+
+  <
+    TMiddleware1 extends Middleware<ReturnType<TFactory>>,
+    TMiddleware2 extends Middleware<ReturnType<TFactory>>,
+    TFactory extends Factory<any>,
+  >(
+    middleware1: TMiddleware1,
+    middleware2: TMiddleware2,
+    factory: TFactory,
+  ): ReturnType<TFactory>;
+};
+
+declare const define: DefineFn;
+
+const myMiddleware = <TFactory extends Factory<any>>(
+  locator: IServiceLocator,
+  next: TFactory,
+): ReturnType<TFactory> => {
+  return next(locator);
+};
+
+const myConstrainedMiddleware = <TConstraint extends ReturnType<TFactory>, TFactory extends Factory<number>>(
+  locator: IServiceLocator,
+  next: TFactory,
+): TConstraint => {
+  return next(locator) as TConstraint;
+};
+
+const a = define(myMiddleware, use => {
+  return 123;
+});
+
+const b = define(myConstrainedMiddleware, use => {
+  return 123;
+});
+
+const asdf: number = a;
+
+console.log(asdf);
