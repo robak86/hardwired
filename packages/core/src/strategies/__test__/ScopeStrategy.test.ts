@@ -38,7 +38,7 @@ describe(`ScopeStrategy`, () => {
       const globalOverride = k1.bindTo(fn.scoped(() => new Boxed(1)));
       const childScopePatch = k1.bindTo(fn.scoped(() => new Boxed(2)));
 
-      const c = ContainerContext.create([], [globalOverride]);
+      const c = ContainerContext.create({ final: [globalOverride] });
 
       expect(c.request(k1).value).toEqual(1);
 
@@ -58,7 +58,7 @@ describe(`ScopeStrategy`, () => {
       const finalBinding = k1.bindTo(fn.scoped(() => new Boxed(1)));
       const scopeBinding = k1.bindTo(fn.scoped(() => new Boxed(2)));
 
-      const root = ContainerContext.create([], []);
+      const root = ContainerContext.create({});
       const child = root.checkoutScope({ final: [finalBinding] });
       const grandChild = child.checkoutScope({ scope: [scopeBinding] }); // scopeBinding is ignored because of finalBinding
 
@@ -74,7 +74,7 @@ describe(`ScopeStrategy`, () => {
       const parentBinding = k1.bindTo(fn.scoped(() => 1));
       const scopeBinding = k2.bindTo(fn.scoped(() => 2));
 
-      const c = ContainerContext.create([], [parentBinding]);
+      const c = ContainerContext.create({ final: [parentBinding] });
       expect(c.request(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scope: [scopeBinding] });
@@ -164,7 +164,7 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(() => 1));
         const childScopePatch = k1.bindTo(fn.scoped(() => 2));
 
-        const c = ContainerContext.create([], [invariantPatch]);
+        const c = ContainerContext.create({ final: [invariantPatch] });
         expect(c.request(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
@@ -175,13 +175,13 @@ describe(`ScopeStrategy`, () => {
         const k1 = fn.scoped(() => Math.random());
         const k2 = fn.scoped(() => Math.random());
 
-        const invariantPatch = k1.bindTo(fn.scoped(() => 1));
-        const childScopePatch = k2.bindTo(fn.scoped(() => 2));
+        const finalBinding = k1.bindTo(fn.scoped(() => 1));
+        const scopeBinding = k2.bindTo(fn.scoped(() => 2));
 
-        const c = ContainerContext.create([], [invariantPatch]);
+        const c = ContainerContext.create({ final: [finalBinding] });
         expect(c.request(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ scope: [childScopePatch] });
+        const childScope = c.checkoutScope({ scope: [scopeBinding] });
         expect(childScope.request(k1)).toEqual(1);
         expect(childScope.request(k2)).toEqual(2);
       });
@@ -250,7 +250,7 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
         const childScopePatch = k1.bindTo(fn.scoped(async () => 2));
 
-        const c = ContainerContext.create([], [invariantPatch]);
+        const c = ContainerContext.create({ final: [invariantPatch] });
 
         expect(await c.request(k1)).toEqual(1);
 
@@ -265,7 +265,7 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
         const childScopePatch = k2.bindTo(fn.scoped(async () => 2));
 
-        const c = ContainerContext.create([], [invariantPatch]);
+        const c = ContainerContext.create({ final: [invariantPatch] });
         expect(await c.request(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });

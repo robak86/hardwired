@@ -132,7 +132,7 @@ describe(`decorate`, () => {
 
       const replaced = instanceDef.bindValue({ callMe: () => {} });
 
-      const scope1 = ContainerContext.create([], [mPatch]);
+      const scope1 = ContainerContext.create({ final: [mPatch] });
       const scope2 = scope1.checkoutScope({ scope: [replaced] });
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);

@@ -75,21 +75,9 @@ export type ScopeOptions = {
   interceptor?: ContainerInterceptor;
 };
 
-export function container(globalOverrides?: BaseDefinition<any, any, any, any>[]): Container;
-export function container(options?: ScopeOptions): Container;
-export function container(overridesOrOptions?: ScopeOptions | Array<BaseDefinition<any, any, any, any>>): Container {
-  if (Array.isArray(overridesOrOptions)) {
-    return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
-  } else {
-    return new Container(
-      ContainerContext.create(
-        overridesOrOptions?.scope ?? [],
-        overridesOrOptions?.final ?? [],
-        defaultStrategiesRegistry,
-        overridesOrOptions?.interceptor,
-      ),
-    );
-  }
+// export function container(globalOverrides?: BaseDefinition<any, any, any, any>[]): Container;
+export function container(options: ScopeOptions = {}): Container {
+  return new Container(ContainerContext.create(options, defaultStrategiesRegistry));
 }
 
 export const root = container();

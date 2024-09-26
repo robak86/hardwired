@@ -12,7 +12,6 @@ import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, UseFn } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { Overrides } from '../container/Overrides.js';
 import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export interface ContainerContext extends UseFn {}
@@ -38,19 +37,17 @@ export class ContainerContext
   }
 
   static create(
-    scopeBindings: Overrides,
-    finalBindings: Overrides,
+    options: ScopeOptions,
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    interceptors: ContainerInterceptor = {},
   ): ContainerContext {
-    const definitionsRegistry = BindingsRegistry.create(scopeBindings, finalBindings);
+    const definitionsRegistry = BindingsRegistry.create(options);
 
     return new ContainerContext(
       null,
       definitionsRegistry,
-      InstancesStore.create(scopeBindings),
+      InstancesStore.create(options.scope ?? []),
       strategiesRegistry,
-      interceptors,
+      options.interceptor ?? {},
       new ContextEvents(),
     );
   }

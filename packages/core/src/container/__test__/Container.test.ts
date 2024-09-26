@@ -152,7 +152,7 @@ describe(`Container`, () => {
       const aPatch = a.bindTo(fn.singleton(() => 10));
       const bPatch = b.bindTo(fn.singleton(() => 20));
 
-      const c = container([aPatch, bPatch]);
+      const c = container({ final: [aPatch, bPatch] });
 
       const actual = c.use(aPlusB);
       expect(actual).toEqual(30);

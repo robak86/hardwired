@@ -172,7 +172,7 @@ describe(`SingletonStrategy`, () => {
         const invariantPatch = k1.bindValue(1);
         const childScopePatch = k1.bindValue(2);
 
-        const c = ContainerContext.create([], [invariantPatch]);
+        const c = ContainerContext.create({ final: [invariantPatch] });
         expect(c.request(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
@@ -186,7 +186,7 @@ describe(`SingletonStrategy`, () => {
         const invariantPatch = k1.bindValue(1);
         const childScopePatch = k2.bindValue(2);
 
-        const c = ContainerContext.create([invariantPatch], []);
+        const c = ContainerContext.create({ scope: [invariantPatch] });
 
         expect(c.request(k1)).toEqual(1);
 

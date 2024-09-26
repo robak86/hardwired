@@ -1,5 +1,6 @@
 import { Overrides } from '../container/Overrides.js';
 import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
+import { ScopeOptions } from '../container/Container.js';
 
 /**
  * This class represents a registry for storing definitions overrides for scope.
@@ -9,11 +10,11 @@ export class BindingsRegistry {
     return new BindingsRegistry({}, {});
   }
 
-  static create(scopeOverrides: Overrides, globalOverrides: Overrides): BindingsRegistry {
+  static create(options: Pick<ScopeOptions, 'scope' | 'final'>): BindingsRegistry {
     const registry = BindingsRegistry.empty();
 
-    registry.addScopeBindings(scopeOverrides);
-    registry.addFinalBindings(globalOverrides);
+    registry.addScopeBindings(options.scope ?? []);
+    registry.addFinalBindings(options.final ?? []);
 
     return registry;
   }
