@@ -17,6 +17,8 @@ export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends L
   extends ExtensibleFunction
   implements IServiceLocator<TAllowedLifeTime>
 {
+  readonly id: IServiceLocator<TAllowedLifeTime>['id'];
+  readonly parentId: IServiceLocator<TAllowedLifeTime>['parentId'];
   readonly use: IServiceLocator<TAllowedLifeTime>['use'];
   readonly all: IServiceLocator<TAllowedLifeTime>['all'];
   readonly checkoutScope: IServiceLocator<TAllowedLifeTime>['checkoutScope'];
@@ -29,6 +31,8 @@ export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends L
       return this.containerContext(definition);
     });
 
+    this.id = containerContext.id;
+    this.parentId = containerContext.parentId;
     this.use = containerContext.use;
     this.all = containerContext.all;
     this.checkoutScope = containerContext.checkoutScope;

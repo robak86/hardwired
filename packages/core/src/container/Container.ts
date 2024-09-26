@@ -99,11 +99,11 @@ export function container(
   }
 }
 
-const defaultContainer = container();
+export const root = container();
 
 export function use<TInstance, TArgs extends any[]>(
   definition: BaseDefinition<TInstance, LifeTime, unknown, TArgs>,
   ...args: TArgs
 ) {
-  return defaultContainer.use(definition, ...args);
+  return root.use(definition, ...args);
 }

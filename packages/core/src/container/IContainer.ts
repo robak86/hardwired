@@ -39,7 +39,10 @@ export interface UseFn<TAllowedLifeTime extends LifeTime = LifeTime> {
 export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime>,
-    UseFn<TAllowedLifeTime> {}
+    UseFn<TAllowedLifeTime> {
+  readonly id: string;
+  readonly parentId: string | null;
+}
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends IServiceLocator<TAllowedLifeTime>,
