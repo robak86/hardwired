@@ -1,5 +1,5 @@
 import { InstancesStore } from './InstancesStore.js';
-import { ContainerOptions } from '../container/Container.js';
+import { ScopeOptions } from '../container/Container.js';
 import { BindingsRegistry } from './BindingsRegistry.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { InstancesBuilder } from './abstract/InstancesBuilder.js';
@@ -124,7 +124,7 @@ export class ContainerContext
     return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
-  checkoutScope = (options: ContainerOptions = {}): ContainerContext => {
+  checkoutScope = (options: ScopeOptions = {}): ContainerContext => {
     const { scope = [], final = [] } = options;
 
     const scopeContext = new ContainerContext(

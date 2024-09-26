@@ -48,7 +48,7 @@ export class Container extends ExtensibleFunction implements IContainer {
   ): Promise<AsyncAllInstances<TDefinitions>> =>
     Promise.all(definitions.map(def => this.containerContext.use(def))) as any;
 
-  checkoutScope = (options: ContainerScopeOptions = {}): IContainer =>
+  checkoutScope = (options: ScopeOptions = {}): IContainer =>
     new Container(this.containerContext.checkoutScope(options));
 
   withScope: IContainerScopes['withScope'] = (fnOrOptions, fn?: any) => {
@@ -69,20 +69,15 @@ export class Container extends ExtensibleFunction implements IContainer {
   };
 }
 
-export type ContainerOptions = {
+export type ScopeOptions = {
   final?: Overrides; // propagated to descendant containers
-} & ContainerScopeOptions;
-
-export type ContainerScopeOptions = {
   scope?: Overrides;
   interceptor?: ContainerInterceptor;
 };
 
 export function container(globalOverrides?: BaseDefinition<any, any, any, any>[]): Container;
-export function container(options?: ContainerOptions): Container;
-export function container(
-  overridesOrOptions?: ContainerOptions | Array<BaseDefinition<any, any, any, any>>,
-): Container {
+export function container(options?: ScopeOptions): Container;
+export function container(overridesOrOptions?: ScopeOptions | Array<BaseDefinition<any, any, any, any>>): Container {
   if (Array.isArray(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {

@@ -1,5 +1,5 @@
 import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { ContainerOptions, ContainerScopeOptions } from './Container.js';
+import { ScopeOptions } from './Container.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
@@ -20,10 +20,10 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
   // TODO: not sure if this should be public
-  checkoutScope(options?: Omit<ContainerScopeOptions, 'globalOverrides'>): IContainer<TAllowedLifeTime>;
+  checkoutScope(options?: ScopeOptions): IContainer<TAllowedLifeTime>;
 
   withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
-  withScope<TValue>(options: ContainerOptions, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
+  withScope<TValue>(options: ScopeOptions, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
 
   override(definition: BaseDefinition<any, any, any, any>): void;
   provide<T>(def: BaseDefinition<T, LifeTime.scoped, any, any>, instance: T): void;
