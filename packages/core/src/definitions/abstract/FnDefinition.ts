@@ -20,30 +20,6 @@ export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TMeta, TArgs 
   }
 }
 
-export class BaseDefinitionWithMiddleware<
-  TInstance,
-  TLifeTime extends LifeTime,
-  TMeta,
-  TArgs extends any[],
-> extends BaseDefinition<TInstance, TLifeTime, TMeta, TArgs> {
-  constructor(
-    public readonly id: string,
-    public readonly strategy: TLifeTime,
-    public readonly create: (context: IServiceLocator, ...args: TArgs) => TInstance,
-    public readonly meta: TMeta = undefined as TMeta,
-  ) {
-    super(id, strategy, create, meta);
-  }
-
-  patch(): PatchDefinition<TInstance, TLifeTime, TMeta, TArgs> {
-    return new PatchDefinition(this.id, this.strategy, this.create, this.meta);
-  }
-
-  define(): DefineBuilder<TInstance, TLifeTime, TMeta, TArgs> {
-    return new DefineBuilder(this.id, this.strategy, this.create, this.meta);
-  }
-}
-
 // TODO:
 //  make PatchDefinition incompatible with BaseDefinition so it cannot be used as overrides.
 //  overrides should accept some richer type than definition so one cannot accidentally override with a definition

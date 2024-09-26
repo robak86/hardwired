@@ -28,7 +28,11 @@ function chainMiddlewares<T, TLifeTime extends LifeTime>(
 
 export type Factory<T, TArgs extends any[]> = (locator: IServiceLocator, ...args: TArgs) => T;
 
-type Middleware = <T, TArgs extends any[]>(locator: IServiceLocator, next: Factory<T, TArgs>, ...args: TArgs) => T;
+export type Middleware = <T, TArgs extends any[]>(
+  locator: IServiceLocator,
+  next: Factory<T, TArgs>,
+  ...args: TArgs
+) => T;
 
 export const combine = Object.assign(
   (...middleware: Middleware[]): DefineTransient => {
