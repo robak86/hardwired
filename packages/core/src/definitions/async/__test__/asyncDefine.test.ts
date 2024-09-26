@@ -5,7 +5,8 @@ import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
 import { implicit } from '../../sync/implicit.js';
-import { BaseDefinition } from '../../abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../../abstract/BaseDefinition.js';
 
 describe(`asyncDefine`, () => {
   const ext1 = implicit<number>('ext1');

@@ -1,5 +1,5 @@
-import { BaseDefinition } from './FnDefinition.js';
 import { IServiceLocator } from '../../container/IContainer.js';
+import { BaseDefinition } from './BaseDefinition.js';
 
 export interface IInterceptor {
   // TODO: needs to be also called for any child definitions

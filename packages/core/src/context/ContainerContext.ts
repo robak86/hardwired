@@ -11,9 +11,9 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
 import { IContainerScopes, InstanceCreationAware, UseFn } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { Overrides } from '../container/Patch.js';
+import { Overrides } from '../container/Overrides.js';
+import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export interface ContainerContext extends UseFn {}
 

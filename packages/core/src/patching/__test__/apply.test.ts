@@ -6,7 +6,8 @@ import { ContainerContext } from '../../context/ContainerContext.js';
 import { value } from '../../definitions/sync/value.js';
 import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { BaseDefinition } from '../../definitions/abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../../definitions/abstract/BaseDefinition.js';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {

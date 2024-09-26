@@ -1,7 +1,7 @@
 import { InstancesDefinitions } from './abstract/sync/InstanceDefinition.js';
 import { fn } from './definitions.js';
-import { BaseDefinition } from './abstract/FnDefinition.js';
 import { LifeTime } from './abstract/LifeTime.js';
+import { BaseDefinition } from './abstract/BaseDefinition.js';
 
 export type ClassType<TInstance, TConstructorArgs extends any[]> = {
   new (...args: TConstructorArgs): TInstance;

@@ -4,7 +4,8 @@ import { fn } from '../definitions/definitions.js';
 
 // import 'source-map-support/register';
 import Bench from 'tinybench';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 function buildSingletonTree(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, never, any>[] {
   if (currentDepth > depth) {

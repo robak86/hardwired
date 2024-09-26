@@ -2,7 +2,8 @@ import { BuildStrategy } from './abstract/BuildStrategy.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { InstancesDefinitionsRegistry } from '../context/InstancesDefinitionsRegistry.js';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export class TransientStrategy extends BuildStrategy {
   buildFn(

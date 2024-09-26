@@ -4,7 +4,8 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
 import { ContextEvents } from '../events/ContextEvents.js';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue, TArgs extends any[]>(

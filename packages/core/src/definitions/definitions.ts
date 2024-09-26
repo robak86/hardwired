@@ -1,7 +1,8 @@
 import { LifeTime } from './abstract/LifeTime.js';
 
-import { BaseDefinition, fnDefinition, transientFn } from './abstract/FnDefinition.js';
+import { fnDefinition, transientFn } from './abstract/FnDefinition.js';
 import { IServiceLocator } from '../container/IContainer.js';
+import { BaseDefinition } from './abstract/BaseDefinition.js';
 
 export type DefineTransient = {
   <TInstance, TMeta, TArgs extends any[]>(

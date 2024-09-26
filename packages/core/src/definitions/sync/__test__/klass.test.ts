@@ -5,7 +5,8 @@ import { LifeTime } from '../../abstract/LifeTime.js';
 import { fn } from '../../definitions.js';
 import { describe, expect, it } from 'vitest';
 import { implicit } from '../implicit.js';
-import { BaseDefinition } from '../../abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../../abstract/BaseDefinition.js';
 
 describe(`klass`, () => {
   describe(`external params`, () => {

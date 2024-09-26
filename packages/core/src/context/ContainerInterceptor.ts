@@ -1,5 +1,6 @@
 import { ContainerContext } from './ContainerContext.js';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export type ContainerInterceptor = {
   onRequestStart?(definition: BaseDefinition<any, any, any, any>, context: ContainerContext): void;

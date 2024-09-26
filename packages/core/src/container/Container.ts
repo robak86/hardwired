@@ -7,9 +7,9 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { Overrides } from './Patch.js';
+import { Overrides } from './Overrides.js';
+import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export interface Container extends UseFn {}
 

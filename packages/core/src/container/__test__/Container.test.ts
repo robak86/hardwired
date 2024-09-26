@@ -7,7 +7,8 @@ import { implicit } from '../../definitions/sync/implicit.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
-import { BaseDefinition } from '../../definitions/abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../../definitions/abstract/BaseDefinition.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {

@@ -5,7 +5,8 @@ import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
-import { BaseDefinition } from '../../abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../../abstract/BaseDefinition.js';
 
 describe(`define`, () => {
   const ext1 = implicit<number>('ext1');

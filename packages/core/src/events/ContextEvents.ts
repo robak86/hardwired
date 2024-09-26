@@ -1,5 +1,6 @@
 import { SignalEmitter } from './SignalEmitter.js';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export type OnScopeSignal = {
   initiatorContainerId: string;

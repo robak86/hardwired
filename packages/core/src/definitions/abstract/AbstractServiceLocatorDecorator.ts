@@ -1,10 +1,9 @@
 import { ExtensibleFunction } from '../../utils/ExtensibleFunction.js';
 import { IServiceLocator } from '../../container/IContainer.js';
 
-import { BaseDefinition } from './FnDefinition.js';
-
 import { LifeTime } from './LifeTime.js';
 import { ValidDependenciesLifeTime } from './sync/InstanceDefinitionDependency.js';
+import { BaseDefinition } from './BaseDefinition.js';
 
 export interface AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTime> {
   <TValue, TArgs extends any[]>(

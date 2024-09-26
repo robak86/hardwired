@@ -1,5 +1,5 @@
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
-import { Overrides } from '../container/Patch.js';
+import { Overrides } from '../container/Overrides.js';
+import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 /**
  * This class represents a registry for storing definitions overrides for scope.

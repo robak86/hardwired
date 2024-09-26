@@ -1,8 +1,8 @@
 import { IServiceLocator } from '../container/IContainer.js';
-import { BaseDefinition } from './abstract/FnDefinition.js';
 import { LifeTime } from './abstract/LifeTime.js';
 import { DefineScoped, DefineSingleton, DefineTransient } from './definitions.js';
 import { v4 } from 'uuid';
+import { BaseDefinition } from './abstract/BaseDefinition.js';
 
 function chainMiddlewares<T, TLifeTime extends LifeTime>(
   middlewares: Middleware[],

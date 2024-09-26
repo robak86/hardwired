@@ -1,4 +1,4 @@
-import { BaseDefinition } from '../../definitions/abstract/FnDefinition.js';
+import { BaseDefinition } from '../../definitions/abstract/BaseDefinition.js';
 
 export interface InstancesBuilder {
   readonly id: string;

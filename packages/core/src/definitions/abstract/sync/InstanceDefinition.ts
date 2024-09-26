@@ -1,4 +1,4 @@
-import { BaseDefinition } from '../FnDefinition.js';
+import { BaseDefinition } from '../BaseDefinition.js';
 
 // prettier-ignore
 export type Instance<T extends BaseDefinition<any, any, any, any>> =

@@ -1,5 +1,6 @@
 import { LifeTime } from '../abstract/LifeTime.js';
-import { BaseDefinition } from '../abstract/FnDefinition.js';
+
+import { BaseDefinition } from '../abstract/BaseDefinition.js';
 
 // TODO: maybe this should be transient by default!!
 export function implicit<T, TMeta = unknown>(
