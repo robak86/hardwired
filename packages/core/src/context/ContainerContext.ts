@@ -1,5 +1,5 @@
 import { InstancesStore } from './InstancesStore.js';
-import { ContainerScopeOptions } from '../container/Container.js';
+import { ContainerOptions } from '../container/Container.js';
 import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { InstancesBuilder } from './abstract/InstancesBuilder.js';
@@ -105,7 +105,7 @@ export class ContainerContext
   }
 
   buildExact<T>(definition: BaseDefinition<T, any, any, any>, ...args: any[]): T {
-    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
 
@@ -118,18 +118,18 @@ export class ContainerContext
   }
 
   use = (definition: BaseDefinition<any, any, any, any>, ...args: any[]) => {
-    const patchedInstanceDef = this.instancesDefinitionsRegistry.getInstanceDefinition(definition);
+    const patchedInstanceDef = this.instancesDefinitionsRegistry.getDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
     return strategy.buildFn(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this, ...args);
   };
 
-  checkoutScope = (options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext => {
-    const { scope = [] } = options;
+  checkoutScope = (options: ContainerOptions = {}): ContainerContext => {
+    const { scope = [], final = [] } = options;
 
     const scopeContext = new ContainerContext(
       this.id,
-      this.instancesDefinitionsRegistry.checkoutForScope(scope),
+      this.instancesDefinitionsRegistry.checkoutForScope(scope, final),
       this.instancesCache.childScope(scope),
       this.strategiesRegistry,
       options.interceptor || {},

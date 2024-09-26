@@ -15,7 +15,7 @@ export class SingletonStrategy extends BuildStrategy {
   ) {
     const id = definition.id;
 
-    if (definitionsRegistry.hasGlobalOverrideDefinition(id)) {
+    if (definitionsRegistry.hasFinalBinding(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
         return instancesBuilder.buildExact(definition, ...args);
       });

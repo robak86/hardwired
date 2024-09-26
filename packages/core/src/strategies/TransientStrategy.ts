@@ -15,7 +15,7 @@ export class TransientStrategy extends BuildStrategy {
   ) {
     const id = definition.id;
 
-    if (definitions.hasGlobalOverrideDefinition(id)) {
+    if (definitions.hasFinalBinding(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
         return instancesBuilder.buildExact(definition, ...args);
       });

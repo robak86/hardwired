@@ -12,68 +12,69 @@ export class InstancesDefinitionsRegistry {
   static create(scopeOverrides: Overrides, globalOverrides: Overrides): InstancesDefinitionsRegistry {
     const registry = InstancesDefinitionsRegistry.empty();
 
-    registry.addScopeOverrides(scopeOverrides);
-    registry.addGlobalOverrides(globalOverrides);
+    registry.addScopeBindings(scopeOverrides);
+    registry.addFinalBindings(globalOverrides);
 
     return registry;
   }
 
   constructor(
-    private scopeOverrideDefinitionsById: Record<string, BaseDefinition<any, any, any, any>>,
-    private globalOverrideDefinitionsById: Record<string, BaseDefinition<any, any, any, any>>,
+    private scopeBindingsById: Record<string, BaseDefinition<any, any, any, any>>,
+    private finalBindingsById: Record<string, BaseDefinition<any, any, any, any>>,
   ) {}
 
   addScopeOverride(definition: BaseDefinition<any, any, any, any>) {
-    this.updateScopeOverride(definition);
+    this.updateScopeBinding(definition);
   }
 
-  checkoutForScope(scopeResolversOverrides: Overrides) {
+  checkoutForScope(scopeBindings: Overrides, finalBindings: Overrides): InstancesDefinitionsRegistry {
     const newRegistry = new InstancesDefinitionsRegistry(
-      { ...this.scopeOverrideDefinitionsById }, // TODO: experiment with proxy object instead of cloning?
-      this.globalOverrideDefinitionsById,
+      { ...this.scopeBindingsById }, // TODO: experiment with proxy object instead of cloning?
+      { ...this.finalBindingsById },
     );
-    newRegistry.addScopeOverrides(scopeResolversOverrides);
+    newRegistry.addScopeBindings(scopeBindings);
+    newRegistry.addFinalBindings(finalBindings);
     return newRegistry;
   }
 
-  getInstanceDefinition<T extends BaseDefinition<any, any, any, any>>(instanceDefinition: T): T {
-    const id = instanceDefinition.id;
+  getDefinition<T extends BaseDefinition<any, any, any, any>>(definition: T): T {
+    const id = definition.id;
 
-    if (this.globalOverrideDefinitionsById[id]) {
-      return this.globalOverrideDefinitionsById[id] as T;
+    if (this.finalBindingsById[id]) {
+      return this.finalBindingsById[id] as T;
     }
 
-    if (this.scopeOverrideDefinitionsById[id]) {
-      return this.scopeOverrideDefinitionsById[id] as T;
+    if (this.scopeBindingsById[id]) {
+      return this.scopeBindingsById[id] as T;
     }
 
-    return instanceDefinition;
+    return definition;
   }
 
-  hasGlobalOverrideDefinition(resolverId: string): boolean {
-    return !!this.globalOverrideDefinitionsById[resolverId];
+  hasFinalBinding(definitionId: string): boolean {
+    return !!this.finalBindingsById[definitionId];
   }
 
-  private updateScopeOverride(resolver: BaseDefinition<any, any, any, any>) {
-    this.scopeOverrideDefinitionsById[resolver.id] = resolver;
+  private updateScopeBinding(definition: BaseDefinition<any, any, any, any>) {
+    this.scopeBindingsById[definition.id] = definition;
   }
 
-  private addGlobalOverrideResolver(resolver: BaseDefinition<any, any, any, any>) {
-    if (this.globalOverrideDefinitionsById[resolver.id]) {
-      throw new Error(`Invariant resolves cannot be updated after container creation`);
+  private addFinalBinding(definition: BaseDefinition<any, any, any, any>) {
+    if (this.finalBindingsById[definition.id]) {
+      throw new Error(`Final binding with id ${definition.id} was already set. Cannot override it.`);
     }
-    this.globalOverrideDefinitionsById[resolver.id] = resolver;
+    this.finalBindingsById[definition.id] = definition;
   }
 
-  private addGlobalOverrides(patches: Overrides) {
+  private addFinalBindings(patches: Overrides) {
     patches.forEach(patchedResolver => {
-      this.addGlobalOverrideResolver(patchedResolver);
+      this.addFinalBinding(patchedResolver);
     });
   }
 
-  private addScopeOverrides(patches: Overrides) {
+  private addScopeBindings(patches: Overrides) {
     patches.forEach(patchedResolver => {
-      this.updateScopeOverride(patchedResolver);
+      this.updateScopeBinding(patchedResolver);
     });
   }
 }

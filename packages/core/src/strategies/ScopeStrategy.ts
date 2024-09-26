@@ -15,7 +15,7 @@ export class ScopeStrategy extends BuildStrategy {
   ) {
     const id = definition.id;
 
-    if (resolvers.hasGlobalOverrideDefinition(id)) {
+    if (resolvers.hasFinalBinding(id)) {
       return instancesCache.upsertGlobalOverrideScope(id, () => {
         return instancesBuilder.buildExact(definition, ...args);
       });
