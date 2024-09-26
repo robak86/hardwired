@@ -6,7 +6,7 @@ import { v4 } from 'uuid';
 
 function chainMiddlewares<T, TLifeTime extends LifeTime>(
   middlewares: Middleware[],
-  next: Factory<T, any[]>,
+  next: CreateFn<T, any[]>,
   lifeTime: TLifeTime,
 ): BaseDefinition<T, TLifeTime, any, any> {
   return new BaseDefinition(
@@ -26,11 +26,11 @@ function chainMiddlewares<T, TLifeTime extends LifeTime>(
   );
 }
 
-export type Factory<T, TArgs extends any[]> = (locator: IServiceLocator, ...args: TArgs) => T;
+export type CreateFn<TInstance, TArgs extends any[]> = (locator: IServiceLocator, ...args: TArgs) => TInstance;
 
 export type Middleware = <T, TArgs extends any[]>(
   locator: IServiceLocator,
-  next: Factory<T, TArgs>,
+  next: CreateFn<T, TArgs>,
   ...args: TArgs
 ) => T;
 

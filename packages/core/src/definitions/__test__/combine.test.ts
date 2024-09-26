@@ -1,6 +1,6 @@
 import { describe, vi } from 'vitest';
 import { IServiceLocator } from '../../container/IContainer.js';
-import { combine, Factory } from '../combine.js';
+import { combine, CreateFn } from '../combine.js';
 import { fn } from '../definitions.js';
 import { root } from '../../container/Container.js';
 
@@ -10,7 +10,7 @@ describe(`combine`, () => {
 
     constructor() {}
 
-    middleware = <T, TArgs extends any[]>(locator: IServiceLocator, next: Factory<T, TArgs>, ...args: TArgs): T => {
+    middleware = <T, TArgs extends any[]>(locator: IServiceLocator, next: CreateFn<T, TArgs>, ...args: TArgs): T => {
       return locator.withScope(use => {
         this.containerIds.push(use.id);
         return next(use, ...args);
@@ -21,7 +21,7 @@ describe(`combine`, () => {
   function setup() {
     const passthrough = <T, TArgs extends any[]>(
       locator: IServiceLocator,
-      next: Factory<T, TArgs>,
+      next: CreateFn<T, TArgs>,
       ...args: TArgs
     ): T => {
       return next(locator, ...args);
