@@ -7,7 +7,7 @@ import Bench from 'tinybench';
 
 import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
-function buildSingletonTree(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, never, any>[] {
+function buildSingletonTree(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, any>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -25,7 +25,7 @@ function buildSingletonTree(times: number, depth: number, currentDepth = 0): Bas
   return definitions;
 }
 
-function buildTransient(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, never, any>[] {
+function buildTransient(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, any>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -43,7 +43,7 @@ function buildTransient(times: number, depth: number, currentDepth = 0): BaseDef
   return definitions;
 }
 
-function buildScoped(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, never, any>[] {
+function buildScoped(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, any>[] {
   if (currentDepth > depth) {
     return [];
   }

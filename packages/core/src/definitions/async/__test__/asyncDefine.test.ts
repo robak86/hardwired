@@ -15,12 +15,12 @@ describe(`asyncDefine`, () => {
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
       const definition = fn(async locator => null);
-      expectType<TypeOf<typeof definition, BaseDefinition<Promise<null>, LifeTime.transient, unknown, []>>>(true);
+      expectType<TypeOf<typeof definition, BaseDefinition<Promise<null>, LifeTime.transient, []>>>(true);
     });
 
     it(`accepts additional params`, async () => {
       const definition = fn(async (use, userId: number) => null);
-      expectType<TypeOf<typeof definition, BaseDefinition<Promise<null>, LifeTime.transient, unknown, [number]>>>(true);
+      expectType<TypeOf<typeof definition, BaseDefinition<Promise<null>, LifeTime.transient, [number]>>>(true);
     });
 
     it(`.get is typesafe`, async () => {

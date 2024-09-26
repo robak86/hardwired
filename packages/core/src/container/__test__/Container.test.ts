@@ -284,9 +284,7 @@ describe(`Container`, () => {
         it(`returns intercepted value`, async () => {
           const def = fn.singleton(() => 123);
 
-          const interceptSyncSpy = vi.fn(
-            <T>(def: BaseDefinition<T, any, any, any>, ctx: InstancesBuilder): T => 456 as T,
-          );
+          const interceptSyncSpy = vi.fn(<T>(def: BaseDefinition<T, any, any>, ctx: InstancesBuilder): T => 456 as T);
 
           const interceptor = { interceptSync: interceptSyncSpy } as ContainerInterceptor;
           const ctn = container.new({ interceptor });

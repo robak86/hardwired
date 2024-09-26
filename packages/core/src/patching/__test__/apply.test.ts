@@ -122,7 +122,7 @@ describe(`apply`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: BaseDefinition<MyService, any, any, any>) {
+    function setup(instanceDef: BaseDefinition<MyService, any, any>) {
       const mPatch = instanceDef.configure((use, a) => {
         vi.spyOn(a, 'callMe');
         return a;

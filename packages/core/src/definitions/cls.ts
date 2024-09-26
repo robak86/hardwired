@@ -11,7 +11,7 @@ export const cls = {
   transient: <TInstance, TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
     deps: InstancesDefinitions<TConstructorArgs>,
-  ): BaseDefinition<TInstance, LifeTime.transient, any, []> => {
+  ): BaseDefinition<TInstance, LifeTime.transient, []> => {
     return fn(use => {
       return new klass(...(deps.map(dep => use(dep)) as TConstructorArgs));
     });
@@ -19,7 +19,7 @@ export const cls = {
   scoped: <TInstance, TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
     deps: InstancesDefinitions<TConstructorArgs>,
-  ): BaseDefinition<TInstance, LifeTime.scoped, any, []> => {
+  ): BaseDefinition<TInstance, LifeTime.scoped, []> => {
     return fn.scoped(use => {
       return new klass(...(deps.map(dep => use(dep)) as TConstructorArgs));
     });
@@ -27,7 +27,7 @@ export const cls = {
   singleton: <TInstance, TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
     deps: InstancesDefinitions<TConstructorArgs>,
-  ): BaseDefinition<TInstance, LifeTime.singleton, any, []> => {
+  ): BaseDefinition<TInstance, LifeTime.singleton, []> => {
     return fn.singleton(use => {
       return new klass(...(deps.map(dep => use(dep)) as TConstructorArgs));
     });

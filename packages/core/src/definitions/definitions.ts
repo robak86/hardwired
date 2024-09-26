@@ -5,24 +5,21 @@ import { IServiceLocator } from '../container/IContainer.js';
 import { BaseDefinition } from './abstract/BaseDefinition.js';
 
 export type DefineTransient = {
-  <TInstance, TMeta, TArgs extends any[]>(
+  <TInstance, TArgs extends any[]>(
     create: (locator: IServiceLocator<LifeTime.transient>, ...args: TArgs) => TInstance,
-    meta?: TMeta,
-  ): BaseDefinition<TInstance, LifeTime.transient, TMeta, TArgs>;
+  ): BaseDefinition<TInstance, LifeTime.transient, TArgs>;
 };
 
 export type DefineScoped = {
-  <TInstance, TMeta>(
+  <TInstance>(
     create: (locator: IServiceLocator<LifeTime.scoped>) => TInstance,
-    meta?: TMeta,
-  ): BaseDefinition<TInstance, LifeTime.scoped, TMeta, []>;
+  ): BaseDefinition<TInstance, LifeTime.scoped, []>;
 };
 
 export type DefineSingleton = {
-  <TInstance, TMeta>(
+  <TInstance>(
     create: (locator: IServiceLocator<LifeTime.singleton>) => TInstance,
-    meta?: TMeta,
-  ): BaseDefinition<TInstance, LifeTime.singleton, TMeta, []>;
+  ): BaseDefinition<TInstance, LifeTime.singleton, []>;
 };
 
 export type DefineFn = DefineTransient & {

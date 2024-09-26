@@ -4,12 +4,10 @@ import { FC } from 'react';
 import { BaseDefinition } from 'hardwired';
 
 export const inject =
-  <TDefinitions extends Record<string, BaseDefinition<any, any, any, any>>>(definitions: TDefinitions) =>
+  <TDefinitions extends Record<string, BaseDefinition<any, any, any>>>(definitions: TDefinitions) =>
   <
     TProps extends {
-      [K in keyof TDefinitions]: TDefinitions[K] extends BaseDefinition<infer TInstance, any, any, any>
-        ? TInstance
-        : never;
+      [K in keyof TDefinitions]: TDefinitions[K] extends BaseDefinition<infer TInstance, any, any> ? TInstance : never;
     },
   >(
     Component: FC<TProps>,

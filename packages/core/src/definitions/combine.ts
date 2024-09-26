@@ -8,22 +8,17 @@ function chainMiddlewares<T, TLifeTime extends LifeTime>(
   middlewares: Middleware[],
   next: CreateFn<T, any[]>,
   lifeTime: TLifeTime,
-): BaseDefinition<T, TLifeTime, any, any> {
-  return new BaseDefinition(
-    v4(),
-    lifeTime,
-    (use: IServiceLocator, ...args: any[]): T => {
-      let nextHandler = next;
-      for (let i = middlewares.length - 1; i >= 0; i--) {
-        const currentMiddleware = middlewares[i];
-        const currentNextHandler = nextHandler;
-        nextHandler = (use: IServiceLocator, ...args: any[]) => currentMiddleware(use, currentNextHandler, ...args);
-      }
+): BaseDefinition<T, TLifeTime, any> {
+  return new BaseDefinition(v4(), lifeTime, (use: IServiceLocator, ...args: any[]): T => {
+    let nextHandler = next;
+    for (let i = middlewares.length - 1; i >= 0; i--) {
+      const currentMiddleware = middlewares[i];
+      const currentNextHandler = nextHandler;
+      nextHandler = (use: IServiceLocator, ...args: any[]) => currentMiddleware(use, currentNextHandler, ...args);
+    }
 
-      return nextHandler(use, ...args);
-    },
-    {},
-  );
+    return nextHandler(use, ...args);
+  });
 }
 
 export type CreateFn<TInstance, TArgs extends any[]> = (locator: IServiceLocator, ...args: TArgs) => TInstance;
@@ -36,27 +31,24 @@ export type Middleware = <T, TArgs extends any[]>(
 
 export const combine = Object.assign(
   (...middleware: Middleware[]): DefineTransient => {
-    return <TInstance, TMeta, TArgs extends any[]>(
+    return <TInstance, TArgs extends any[]>(
       create: (locator: IServiceLocator<LifeTime.transient>, ...args: TArgs) => TInstance,
-      meta?: TMeta,
-    ): BaseDefinition<TInstance, LifeTime.transient, TMeta, TArgs> => {
+    ): BaseDefinition<TInstance, LifeTime.transient, TArgs> => {
       return chainMiddlewares(middleware, create, LifeTime.transient);
     };
   },
   {
     singleton(...middleware: Middleware[]): DefineSingleton {
-      return <TInstance, TMeta>(
+      return <TInstance>(
         create: (locator: IServiceLocator<LifeTime.singleton>) => TInstance,
-        meta?: TMeta,
-      ): BaseDefinition<TInstance, LifeTime.singleton, TMeta, []> => {
+      ): BaseDefinition<TInstance, LifeTime.singleton, []> => {
         return chainMiddlewares(middleware, create, LifeTime.singleton);
       };
     },
     scoped(...middleware: Middleware[]): DefineScoped {
-      return <TInstance, TMeta>(
+      return <TInstance>(
         create: (locator: IServiceLocator<LifeTime.scoped>) => TInstance,
-        meta?: TMeta,
-      ): BaseDefinition<TInstance, LifeTime.scoped, TMeta, []> => {
+      ): BaseDefinition<TInstance, LifeTime.scoped, []> => {
         return chainMiddlewares(middleware, create, LifeTime.scoped);
       };
     },

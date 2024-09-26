@@ -15,7 +15,7 @@ describe(`define`, () => {
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
       const definition = fn(locator => null);
-      expectType<TypeOf<typeof definition, BaseDefinition<null, LifeTime.transient, any, []>>>(true);
+      expectType<TypeOf<typeof definition, BaseDefinition<null, LifeTime.transient, []>>>(true);
     });
   });
 

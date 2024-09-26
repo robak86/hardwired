@@ -7,7 +7,7 @@ import { BaseDefinition } from './BaseDefinition.js';
 
 export interface AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTime> {
   <TValue, TArgs extends any[]>(
-    instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, any, TArgs>,
+    instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs
   ): TValue;
 }

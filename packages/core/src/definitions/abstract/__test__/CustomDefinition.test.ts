@@ -15,7 +15,7 @@ describe(`CustomDefinitions`, () => {
   }
 
   const guard = <T>(factory: (context: GuardContext) => T) => {
-    return fn.scoped(use => () => factory(new GuardContext(use)), { customMetaProperty: 123 });
+    return fn.scoped(use => () => factory(new GuardContext(use)));
   };
 
   it('returns correct instance', () => {
@@ -24,8 +24,6 @@ describe(`CustomDefinitions`, () => {
     const myGuard = guard(context => {
       return `body: ${JSON.stringify(context.body)}`;
     });
-
-    expect(myGuard.meta?.customMetaProperty).toEqual(123);
 
     const result = use.withScope(scope => {
       scope.provide(bodyD, { body: '123' });

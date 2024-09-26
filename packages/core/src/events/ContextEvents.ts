@@ -9,7 +9,7 @@ export type OnScopeSignal = {
 
 export type OnSyncGetSignal = {
   containerId: string;
-  definition: BaseDefinition<any, any, any, any>;
+  definition: BaseDefinition<any, any, any>;
 };
 
 export class ContextEvents {

@@ -5,7 +5,7 @@ import { BaseDefinition } from 'hardwired';
 
 export type ContainerScopeProps = {
   invalidateKeys?: ReadonlyArray<any>;
-  overrides?: BaseDefinition<any, any, any, any>[];
+  overrides?: BaseDefinition<any, any, any>[];
 };
 
 export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({

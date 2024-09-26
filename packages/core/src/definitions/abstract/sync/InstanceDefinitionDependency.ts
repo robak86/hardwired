@@ -5,7 +5,6 @@ import { BaseDefinition } from '../BaseDefinition.js';
 export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> = BaseDefinition<
   TValue,
   ValidDependenciesLifeTime<TLifeTime>,
-  any,
   any
 >;
 
@@ -42,13 +41,13 @@ const validLifeTimes = {
   },
 } as const;
 
-export const assertValidDependencies = (lifeTime: LifeTime, deps: BaseDefinition<any, LifeTime, any, any>[]) => {
+export const assertValidDependencies = (lifeTime: LifeTime, deps: BaseDefinition<any, LifeTime, any>[]) => {
   for (const dependency of deps) {
     assertValidDependency(lifeTime, dependency);
   }
 };
 
-export const assertValidDependency = (lifeTime: LifeTime, dep: BaseDefinition<any, LifeTime, any, any>) => {
+export const assertValidDependency = (lifeTime: LifeTime, dep: BaseDefinition<any, LifeTime, any>) => {
   const isValid = validLifeTimes[lifeTime][dep.strategy];
 
   if (!isValid) {

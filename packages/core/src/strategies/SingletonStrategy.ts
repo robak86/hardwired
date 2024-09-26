@@ -7,7 +7,7 @@ import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export class SingletonStrategy extends BuildStrategy {
   buildFn(
-    definition: BaseDefinition<any, any, any, any>,
+    definition: BaseDefinition<any, any, any>,
     instancesStore: InstancesStore,
     bindingsRegistry: BindingsRegistry,
     instancesBuilder: InstancesBuilder,

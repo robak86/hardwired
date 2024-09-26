@@ -28,7 +28,7 @@ describe(`klass`, () => {
           return new TestClass(use(numD), use(objD));
         });
 
-        expectType<TypeEqual<typeof cls, BaseDefinition<TestClass, LifeTime.scoped, unknown, []>>>(true);
+        expectType<TypeEqual<typeof cls, BaseDefinition<TestClass, LifeTime.scoped, []>>>(true);
       });
 
       describe(`allowed dependencies life times`, () => {

@@ -3,7 +3,7 @@ import { ContainerContext } from './ContainerContext.js';
 import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 
 export type ContainerInterceptor = {
-  onRequestStart?(definition: BaseDefinition<any, any, any, any>, context: ContainerContext): void;
+  onRequestStart?(definition: BaseDefinition<any, any, any>, context: ContainerContext): void;
 
   /**
    * Called on container.get(definition) after the instance is created.
@@ -14,7 +14,7 @@ export type ContainerInterceptor = {
    * @param context
    * @param instance
    */
-  onRequestEnd?<T>(definition: BaseDefinition<T, any, any, any>, context: ContainerContext, instance: T): T;
+  onRequestEnd?<T>(definition: BaseDefinition<T, any, any>, context: ContainerContext, instance: T): T;
 
   /**
    * Called on container.get(definition) after the instance is created.
@@ -30,6 +30,6 @@ export type ContainerInterceptor = {
    * Called when the container starts building the definition.
    * @param definition
    */
-  onDefinitionEnter?(definition: BaseDefinition<any, any, any, any>): void;
-  interceptSync?<T>(definition: BaseDefinition<T, any, any, any>, context: ContainerContext): T;
+  onDefinitionEnter?(definition: BaseDefinition<any, any, any>): void;
+  interceptSync?<T>(definition: BaseDefinition<T, any, any>, context: ContainerContext): T;
 };

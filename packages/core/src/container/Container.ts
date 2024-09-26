@@ -41,13 +41,13 @@ export class Container extends ExtensibleFunction implements IContainer {
     return this.containerContext.events;
   }
 
-  all<TDefinitions extends Array<BaseDefinition<any, any, any, any>>>(
+  all<TDefinitions extends Array<BaseDefinition<any, any, any>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.containerContext.use(def)) as any;
   }
 
-  allAsync = <TDefinitions extends Array<BaseDefinition<Promise<any>, any, any, any>>>(
+  allAsync = <TDefinitions extends Array<BaseDefinition<Promise<any>, any, any>>>(
     ...definitions: [...TDefinitions]
   ): Promise<AsyncAllInstances<TDefinitions>> =>
     Promise.all(definitions.map(def => this.containerContext.use(def))) as any;
@@ -63,11 +63,11 @@ export class Container extends ExtensibleFunction implements IContainer {
     }
   };
 
-  override = (definition: BaseDefinition<any, any, any, any>): void => {
+  override = (definition: BaseDefinition<any, any, any>): void => {
     this.containerContext.override(definition);
   };
 
-  provide = <T>(def: BaseDefinition<T, LifeTime.scoped, any, any>, instance: T): void => {
+  provide = <T>(def: BaseDefinition<T, LifeTime.scoped, any>, instance: T): void => {
     const override = def.bindValue(instance);
     return this.override(override);
   };

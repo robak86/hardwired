@@ -62,12 +62,12 @@ export class ContainerContext
     private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {
-    super((definition: BaseDefinition<any, any, any, any>, ...args: any[]) => {
+    super((definition: BaseDefinition<any, any, any>, ...args: any[]) => {
       return this.request(definition as any, ...args); // TODO: fix type
     });
   }
 
-  override(definition: BaseDefinition<any, any, any, any>): void {
+  override(definition: BaseDefinition<any, any, any>): void {
     if (this.instancesStore.hasInCurrentScope(definition.id)) {
       throw new Error(
         `Cannot override definition. Instance for id=${definition.id} was already created in the current scope.`,
@@ -77,13 +77,13 @@ export class ContainerContext
     this.bindingsRegistry.addScopeOverride(definition);
   }
 
-  request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, any, []>): TValue;
+  request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue;
   request<TValue, TArgs extends any[]>(
-    instanceDefinition: BaseDefinition<TValue, LifeTime.transient, any, TArgs>,
+    instanceDefinition: BaseDefinition<TValue, LifeTime.transient, TArgs>,
     ...args: TArgs
   ): TValue;
   request<TValue, TArgs extends []>(
-    definition: BaseDefinition<TValue, any, any, any>,
+    definition: BaseDefinition<TValue, any, any>,
     ...args: TArgs
   ): Promise<TValue> | TValue {
     this.events.onGet.emit({ containerId: this.id, definition });
@@ -95,13 +95,13 @@ export class ContainerContext
     return instance;
   }
 
-  all<TDefinitions extends Array<BaseDefinition<any, any, any, []>>>(
+  all<TDefinitions extends Array<BaseDefinition<any, any, []>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> {
     return definitions.map(def => this.use(def)) as any;
   }
 
-  buildExact<T>(definition: BaseDefinition<T, any, any, any>, ...args: any[]): T {
+  buildExact<T>(definition: BaseDefinition<T, any, any>, ...args: any[]): T {
     const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
@@ -114,7 +114,7 @@ export class ContainerContext
     return patchedInstanceDef.create(this, ...args);
   }
 
-  use = (definition: BaseDefinition<any, any, any, any>, ...args: any[]) => {
+  use = (definition: BaseDefinition<any, any, any>, ...args: any[]) => {
     const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
@@ -146,7 +146,7 @@ export class ContainerContext
     }
   };
 
-  provide = <T>(def: BaseDefinition<T, LifeTime.scoped, any, any>, instance: T) => {
+  provide = <T>(def: BaseDefinition<T, LifeTime.scoped, any>, instance: T) => {
     throw new Error('Implement me!');
   };
 }
