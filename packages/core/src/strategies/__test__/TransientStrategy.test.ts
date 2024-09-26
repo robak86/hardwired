@@ -19,18 +19,18 @@ describe(`ClassTransientResolver`, () => {
     });
 
     it(`returns class instance`, async () => {
-      const c = container();
+      const c = container.new();
       expect(c.use(a)).toBeInstanceOf(TestClass);
     });
 
     it(`constructs class with correct dependencies`, async () => {
-      const c = container();
+      const c = container.new();
       const instance = c.use(a);
       expect(instance.value).toEqual('someString');
     });
 
     it(`caches class instance`, async () => {
-      const c = container();
+      const c = container.new();
       const instance = c.use(a);
       const instance2 = c.use(a);
       expect(instance).not.toBe(instance2);
@@ -50,18 +50,18 @@ describe(`ClassTransientResolver`, () => {
     });
 
     it(`returns class instance`, async () => {
-      const c = container();
+      const c = container.new();
       expect(await c.use(a)).toBeInstanceOf(TestClass);
     });
 
     it(`constructs class with correct dependencies`, async () => {
-      const c = container();
+      const c = container.new();
       const instance = await c.use(a);
       expect(instance.value).toEqual('someString');
     });
 
     it(`caches class instance`, async () => {
-      const c = container();
+      const c = container.new();
       const instance = await c.use(a);
       const instance2 = await c.use(a);
       expect(instance).not.toBe(instance2);

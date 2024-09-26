@@ -19,7 +19,7 @@ describe(`CustomDefinitions`, () => {
   };
 
   it('returns correct instance', () => {
-    const use = container();
+    const use = container.new();
 
     const myGuard = guard(context => {
       return `body: ${JSON.stringify(context.body)}`;
@@ -37,7 +37,7 @@ describe(`CustomDefinitions`, () => {
   });
 
   it(`works with destructuring`, async () => {
-    const use = container();
+    const use = container.new();
 
     const myGuard = guard(context => {
       return `body: ${JSON.stringify(context.body)}`;

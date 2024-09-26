@@ -82,7 +82,7 @@ Hardwired centers around two key concepts:
    ```typescript
    import { container } from 'hardwired';
 
-   const exampleContainer = container();
+   const exampleContainer = container.new();
    ```
 
 3. **Retrieve Instances**:
@@ -112,7 +112,7 @@ import { container, scoped, singleton } from 'hardwired';
 const scopedRandomVal = scoped.fn(() => Math.random());
 const singletonRandomVal = singleton.fn(() => Math.random());
 
-const appContainer = container();
+const appContainer = container.new();
 const requestContainer = appContainer.checkoutScope();
 
 const val1 = appContainer.use(scopedRandomVal);
@@ -154,7 +154,7 @@ Definitions can be synchronous or asynchronous, supporting both sync and async d
 
   const loggerDef = singleton.class(Logger);
   const writerDef = singleton.using(loggerDef).class(Writer);
-  const writerInstance = container().use(writerDef); // creates instance of Writer
+  const writerInstance = container.new().use(writerDef); // creates instance of Writer
   ```
 
 - **`fn`**
@@ -165,7 +165,7 @@ Definitions can be synchronous or asynchronous, supporting both sync and async d
   const aDef = transient.fn(() => 1);
   const bDef = transient.fn(() => 2);
   const cDef = singleton.using(aDef, bDef).fn((a, b) => a + b);
-  const c = container().use(cDef); // result equals to 3
+  const c = container.new().use(cDef); // result equals to 3
   ```
 
 - **`define`**
@@ -184,7 +184,7 @@ Definitions can be synchronous or asynchronous, supporting both sync and async d
     return [val1, val2];
   });
 
-  const [val1, val2] = container().use(myDef);
+  const [val1, val2] = container.new().use(myDef);
   // val1 is not eq to val2, because was created in the other scope
   ```
 
@@ -198,7 +198,7 @@ without using a test runner's mocking capabilities.
   import { value, container } from 'hardwired';
 
   const configDef = value({ port: 1234 });
-  const cnt = container();
+  const cnt = container.new();
   const config = cnt.use(configDef); // { port: 1234 }
 
   cnt.use(configDef) === cnt.use(configDef); // true - returns the same instance
@@ -228,7 +228,7 @@ without using a test runner's mocking capabilities.
 
   const dbDef = singleton.async().fn(createDbConnection);
   const userRepositoryDef = singleton.async().using(dbDef).class(UserRepository);
-  const cnt = container();
+  const cnt = container.new();
   const userRepository: UserRepository = await cnt.use(userRepositoryDef);
   ```
 
@@ -249,7 +249,7 @@ without using a test runner's mocking capabilities.
     return [val1, val2];
   });
 
-  const [val1, val2] = await container().use(myDef);
+  const [val1, val2] = await container.new().use(myDef);
   // val1 is not eq to val2, because was created in other scope
   ```
 
@@ -387,7 +387,7 @@ import { scoped, container, set } from 'hardwired';
 
 const def = scoped.fn(() => Math.random());
 
-const cnt = container();
+const cnt = container.new();
 
 cnt.use(def); // random value
 cnt.checkoutScope({ overrides: [set(def, 1)] }).use(def); // 1
@@ -400,7 +400,7 @@ import { scoped, container, set } from 'hardwired';
 
 const def = scoped.fn(() => Math.random());
 
-const cnt = container({
+const cnt = container.new({
   globalOverrides: set(def, 100),
 });
 
@@ -438,6 +438,6 @@ The actual value for unbound placeholder needs to be provided when creating the 
 ```typescript
 import { container, set } from 'hardwired';
 
-const cnt = container({ globalOverrides: [set(envD, { server: { port: 1234 } })] });
+const cnt = container.new({ globalOverrides: [set(envD, { server: { port: 1234 } })] });
 cnt.use(httpServerD);
 ```

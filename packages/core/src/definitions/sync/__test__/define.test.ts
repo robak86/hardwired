@@ -25,7 +25,8 @@ describe(`define`, () => {
         return [locator.use(ext1), locator.use(ext2)];
       });
 
-      const result = container()
+      const result = container
+        .new()
         .checkoutScope({ scope: [ext1.bindValue(1), ext2.bindValue('str')] })
         .use(definition);
       expect(result).toEqual([1, 'str']);
@@ -37,7 +38,7 @@ describe(`define`, () => {
       const definition = fn(locator => {
         return [locator.use(value), locator.use(value)];
       });
-      const result = container().use(definition);
+      const result = container.new().use(definition);
 
       expect(result[0]).toBeInstanceOf(BoxedValue);
       expect(result[0]).toBe(result[1]);
@@ -51,7 +52,7 @@ describe(`define`, () => {
         return [scopedContainer.use(value), scopedContainer.use(value)];
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result1 = cnt.use(definition);
       const result2 = cnt.use(definition);
@@ -67,7 +68,7 @@ describe(`define`, () => {
         return [locator.use(value), locator.use(value)];
       });
 
-      const cnt = container();
+      const cnt = container.new();
       const [result1, result2] = cnt.all(definition, definition);
 
       expect(result1).toBe(result2);
@@ -84,7 +85,7 @@ describe(`define`, () => {
         return [use(definition), use(definition)];
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result = cnt.use(definitionConsumer);
 
@@ -116,7 +117,7 @@ describe(`define`, () => {
         };
       });
 
-      const result = container().use(exampleD);
+      const result = container.new().use(exampleD);
       expect(result.req1[0]).toEqual(result.req2[0]);
     });
   });

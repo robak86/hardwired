@@ -17,7 +17,7 @@ describe(`apply`, () => {
       return (val.value += 1);
     });
 
-    const c = container({ scope: [mPatch] });
+    const c = container.new({ scope: [mPatch] });
     expect(c.use(someValue).value).toEqual(2);
   });
 
@@ -26,8 +26,8 @@ describe(`apply`, () => {
 
     const mPatch = someValue.configure((_, val) => (val.value += 1));
 
-    expect(container().use(someValue).value).toEqual(1);
-    expect(container({ scope: [mPatch] }).use(someValue).value).toEqual(2);
+    expect(container.new().use(someValue).value).toEqual(1);
+    expect(container.new({ scope: [mPatch] }).use(someValue).value).toEqual(2);
   });
 
   it(`allows for multiple apply functions calls`, async () => {
@@ -35,7 +35,7 @@ describe(`apply`, () => {
 
     const mPatch = someValue.configure((_, val) => (val.value += 1)).configure((_, val) => (val.value *= 3));
 
-    const c = container({ scope: [mPatch] });
+    const c = container.new({ scope: [mPatch] });
     expect(c.use(someValue).value).toEqual(6);
   });
 
@@ -59,7 +59,7 @@ describe(`apply`, () => {
       val.value = val.value + aVal.value + bVal.value;
     });
 
-    const c = container({ scope: [mPatch] });
+    const c = container.new({ scope: [mPatch] });
     expect(c.use(someValue)).toEqual(new BoxedValue(13));
   });
 
@@ -75,7 +75,7 @@ describe(`apply`, () => {
       val.value = val.value * use(b).value;
     });
 
-    const c = container({ scope: [mPatch] });
+    const c = container.new({ scope: [mPatch] });
     expect(c.use(someValue)).toEqual(new BoxedValue(6));
   });
 
@@ -84,7 +84,7 @@ describe(`apply`, () => {
       const someValue = fn.singleton(() => Math.random());
       const mPatch = someValue.configure((use, a) => a);
 
-      const c = container({ scope: [mPatch] });
+      const c = container.new({ scope: [mPatch] });
       expect(c.use(someValue)).toEqual(c.use(someValue));
     });
 
@@ -93,7 +93,7 @@ describe(`apply`, () => {
 
       const mPatch = someValue.configure((use, a) => a);
 
-      const c = container({ scope: [mPatch] });
+      const c = container.new({ scope: [mPatch] });
       expect(c.use(someValue)).not.toEqual(c.use(someValue));
     });
 
@@ -105,7 +105,7 @@ describe(`apply`, () => {
 
       const mPatch = a.configure(a => a);
 
-      const c = container({ scope: [mPatch] });
+      const c = container.new({ scope: [mPatch] });
 
       const objDef = fn.scoped(use => ({
         a: use(a),

@@ -42,7 +42,7 @@ describe(`unbound`, () => {
 
   describe(`container.get`, () => {
     it(`returns correct instance`, async () => {
-      const cnt = container();
+      const cnt = container.new();
       const result = cnt
         .checkoutScope({ scope: [externalParams1D.bindValue({ someExternalParam: 111 })] })
         .use(defUsingExternals1);
@@ -52,7 +52,7 @@ describe(`unbound`, () => {
     });
 
     it(`merges external params`, async () => {
-      const cnt = container();
+      const cnt = container.new();
       const result = cnt
         .checkoutScope({
           scope: [

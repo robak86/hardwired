@@ -25,6 +25,10 @@ export class Container extends ExtensibleFunction implements IContainer {
     this.use = create;
   }
 
+  new(options: ScopeOptions = {}): Container {
+    return new Container(ContainerContext.create(options, defaultStrategiesRegistry));
+  }
+
   get parentId() {
     return this.containerContext.parentId;
   }
@@ -75,16 +79,4 @@ export type ScopeOptions = {
   interceptor?: ContainerInterceptor;
 };
 
-// export function container(globalOverrides?: BaseDefinition<any, any, any, any>[]): Container;
-export function container(options: ScopeOptions = {}): Container {
-  return new Container(ContainerContext.create(options, defaultStrategiesRegistry));
-}
-
-export const root = container();
-
-export function use<TInstance, TArgs extends any[]>(
-  definition: BaseDefinition<TInstance, LifeTime, unknown, TArgs>,
-  ...args: TArgs
-) {
-  return root.use(definition, ...args);
-}
+export const container = new Container(ContainerContext.create({}, defaultStrategiesRegistry));

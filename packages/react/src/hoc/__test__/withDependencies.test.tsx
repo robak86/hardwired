@@ -60,7 +60,7 @@ describe(`withDependencies`, () => {
     return { WrappedComponent, dependenciesSelector, ageDef, firstNameDef };
   }
 
-  function renderWithContainer(element: ReactElement, cnt = container()) {
+  function renderWithContainer(element: ReactElement, cnt = container.new()) {
     const result = render(<ContainerProvider container={cnt}>{element}</ContainerProvider>);
     return {
       result,

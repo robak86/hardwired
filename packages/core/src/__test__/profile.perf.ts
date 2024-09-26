@@ -84,10 +84,10 @@ let cnt: Container;
 const bench = new Bench({
   time: 100,
   setup: () => {
-    cnt = container();
+    cnt = container.new();
   },
   teardown: () => {
-    cnt = container();
+    cnt = container.new();
   },
 });
 

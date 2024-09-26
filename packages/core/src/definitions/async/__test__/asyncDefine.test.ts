@@ -57,7 +57,8 @@ describe(`asyncDefine`, () => {
         return [locator.use(ext1), locator.use(ext2)];
       });
 
-      const result = await container()
+      const result = await container
+        .new()
         .checkoutScope({ scope: [ext1.bindValue(1), ext2.bindValue('str')] })
         .use(definition);
       expect(result).toEqual([1, 'str']);
@@ -69,7 +70,7 @@ describe(`asyncDefine`, () => {
       const definition = fn(async locator => {
         return [await locator.use(value), await locator.use(value)];
       });
-      const result = await container().use(definition);
+      const result = await container.new().use(definition);
 
       expect(result[0]).toBeInstanceOf(BoxedValue);
       expect(result[0]).toBe(result[1]);
@@ -83,7 +84,7 @@ describe(`asyncDefine`, () => {
         return [await scopedContainer.use(value), await scopedContainer.use(value)];
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result0 = await cnt.use(value);
       const result1 = await cnt.use(definition);
@@ -101,7 +102,7 @@ describe(`asyncDefine`, () => {
         return [await locator.use(value), await locator.use(value)];
       });
 
-      const cnt = container();
+      const cnt = container.new();
       const [result1, result2] = await cnt.allAsync(definition, definition);
 
       expect(result1).toBe(result2);
@@ -118,7 +119,7 @@ describe(`asyncDefine`, () => {
         return [use(definition), use(definition)];
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result = await cnt.use(definitionConsumer);
 
@@ -150,7 +151,7 @@ describe(`asyncDefine`, () => {
         };
       });
 
-      const result = await container().use(exampleD);
+      const result = await container.new().use(exampleD);
       expect(result.req1[0]).toEqual(result.req2[0]);
     });
   });

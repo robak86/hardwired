@@ -17,7 +17,7 @@ import { inspect } from 'node:util';
 //   return new ConfigProvider(use(config));
 // });
 //
-// const c = container();
+// const c = container.new();
 
 const hd = new memwatch.HeapDiff();
 

@@ -119,7 +119,7 @@ describe(`ScopeStrategy`, () => {
         it(`uses the same scope for the request`, async () => {
           const a = fn.scoped(() => Math.random());
 
-          const c = container();
+          const c = container.new();
           const req1 = c.use(a);
           const req2 = c.use(a);
 
@@ -194,7 +194,7 @@ describe(`ScopeStrategy`, () => {
         it(`uses the same scope for each call`, async () => {
           const a = fn.scoped(async () => Math.random());
 
-          const c = container();
+          const c = container.new();
           const req1 = await c.use(a);
           const req2 = await c.use(a);
 
@@ -206,7 +206,7 @@ describe(`ScopeStrategy`, () => {
         it(`runs asObject each time with new request scope `, async () => {
           const a = fn.scoped(async () => Math.random());
 
-          const c = container();
+          const c = container.new();
           const req1 = await c.use(a);
           const req2 = await c.use(a);
 

@@ -38,7 +38,7 @@ describe(`useDefinitions`, () => {
         return <DummyComponent value={values.join(',')} />;
       };
 
-      const c = container();
+      const c = container.new();
 
       return render(
         <ContainerProvider container={c}>
@@ -65,7 +65,7 @@ describe(`useDefinitions`, () => {
         return <DummyComponent value={cls} />;
       };
 
-      const c = container();
+      const c = container.new();
 
       const TestSubject = () => {
         return (
@@ -132,7 +132,7 @@ describe(`useDefinitions`, () => {
         return <DummyComponent value={values.join('|')} />;
       };
 
-      const c = container();
+      const c = container.new();
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (

@@ -22,7 +22,7 @@ describe(`useDefinition`, () => {
         return <DummyComponent value={val1} />;
       };
 
-      const c = container();
+      const c = container.new();
 
       return render(
         <ContainerProvider container={c}>
@@ -49,7 +49,7 @@ describe(`useDefinition`, () => {
         return <DummyComponent value={cls} />;
       };
 
-      const c = container();
+      const c = container.new();
 
       const TestSubject = () => {
         return (
@@ -111,7 +111,7 @@ describe(`useDefinition`, () => {
         return <DummyComponent value={val1} />;
       };
 
-      const c = container();
+      const c = container.new();
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (

@@ -26,7 +26,7 @@ describe(`inject`, () => {
         );
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result = render(
         <ContainerProvider container={cnt}>
@@ -64,7 +64,7 @@ describe(`inject`, () => {
         );
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result = render(
         <ContainerProvider container={cnt}>
@@ -101,7 +101,7 @@ describe(`inject`, () => {
         );
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result = render(
         <ContainerProvider container={cnt}>

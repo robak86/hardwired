@@ -169,7 +169,7 @@ describe('CounterAction', () => {
 
     // delegating instances construction to container
     it('increments counter state by 1', () => {
-      const [counterStore, counterStoreActions] = container().all(counterStoreDef, counterActionsDef);
+      const [counterStore, counterStoreActions] = container.new().all(counterStoreDef, counterActionsDef);
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(1);
     });
