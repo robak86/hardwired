@@ -1,4 +1,4 @@
-import { implicit } from '../implicit.js';
+import { unbound } from '../unbound.js';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { expectType, TypeOf } from 'ts-expect';
 import { fn } from '../../definitions.js';
@@ -9,8 +9,8 @@ import { describe, expect, it } from 'vitest';
 import { BaseDefinition } from '../../abstract/BaseDefinition.js';
 
 describe(`define`, () => {
-  const ext1 = implicit<number>('ext1');
-  const ext2 = implicit<string>('ext2');
+  const ext1 = unbound<number>('ext1');
+  const ext2 = unbound<string>('ext2');
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {

@@ -27,7 +27,7 @@
   - [Overriding Definitions](#overriding-definitions)
     - [Available Overrides](#available-overrides)
     - [Override Scope](#override-scope)
-  - [Implicit Definition](#implicit-definition)
+  - [unbound Definition](#unbound-definition)
 
 ## Installation
 
@@ -408,9 +408,9 @@ cnt.use(def); // 100
 cnt.checkoutScope({ overrides: [set(def, 1)] }).use(def); // 100 because of globalOverrides
 ```
 
-## Implicit Definition
+## unbound Definition
 
-Implicit definitions act as placeholders for values provided at runtime, useful for dynamic configurations
+unbound definitions act as placeholders for values provided at runtime, useful for dynamic configurations
 or objects that are not available at compile time.
 
 ```typescript
@@ -423,7 +423,7 @@ type EnvConfig = {
   };
 };
 
-const envD = implicit<EnvConfig>('env');
+const envD = unbound<EnvConfig>('env');
 const appPortD = singleton.using(envD).fn((config: EnvConfig) => config.server.port);
 const httpServerD = singleton.using(appPortD).fn((port: number) => {
   const requestListener = (req, res) => {};
@@ -433,7 +433,7 @@ const httpServerD = singleton.using(appPortD).fn((port: number) => {
 });
 ```
 
-The actual value for implicit placeholder needs to be provided when creating the container.
+The actual value for unbound placeholder needs to be provided when creating the container.
 
 ```typescript
 import { container, set } from 'hardwired';

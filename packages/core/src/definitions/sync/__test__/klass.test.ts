@@ -4,7 +4,7 @@ import { expectType, TypeEqual } from 'ts-expect';
 import { LifeTime } from '../../abstract/LifeTime.js';
 import { fn } from '../../definitions.js';
 import { describe, expect, it } from 'vitest';
-import { implicit } from '../implicit.js';
+import { unbound } from '../unbound.js';
 
 import { BaseDefinition } from '../../abstract/BaseDefinition.js';
 
@@ -37,13 +37,13 @@ describe(`klass`, () => {
           constructor(private value: number) {}
         }
 
-        const implDef = implicit<number>('number');
+        const implDef = unbound<number>('number');
 
         describe(`singleton`, () => {
           describe(`compile-time`, () => {
-            it(`does not accept implicit definitions`, async () => {
+            it(`does not accept unbound definitions`, async () => {
               try {
-                // @ts-expect-error singleton does not accept implicit definitions
+                // @ts-expect-error singleton does not accept unbound definitions
                 const dep = singleton.using(implDef).class(NumberConsumer);
               } catch (e) {
                 // noop
@@ -52,9 +52,9 @@ describe(`klass`, () => {
           });
 
           describe(`runtime`, () => {
-            it.skip(`does not accept implicit definitions`, async () => {
+            it.skip(`does not accept unbound definitions`, async () => {
               const buildDef = () => {
-                // @ts-expect-error singleton does not accept implicit definitions
+                // @ts-expect-error singleton does not accept unbound definitions
                 singleton.using(implDef).class(NumberConsumer);
               };
 

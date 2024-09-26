@@ -11,7 +11,7 @@ import { inspect } from 'node:util';
 //
 // type ConfigData = { data: string };
 //
-// const config = implicit<ConfigData>('config');
+// const config = unbound<ConfigData>('config');
 //
 // const d1 = fn(use => {
 //   return new ConfigProvider(use(config));

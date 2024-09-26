@@ -13,7 +13,7 @@ export { BuildStrategy } from './strategies/abstract/BuildStrategy.js';
 
 export { value } from './definitions/sync/value.js';
 
-export * from './definitions/sync/implicit.js';
+export * from './definitions/sync/unbound.js';
 export * from './definitions/abstract/LifeTime.js';
 export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
 

@@ -13,7 +13,7 @@ Integration for [Hardwired](https://github.com/robak86/hardwired) and [React](ht
   - [Testing](#testing)
     - [State](#state)
     - [Components](#components)
-    - [Implicit Dependencies](#implicit-dependencies)
+    - [unbound Dependencies](#unbound-dependencies)
     - [Considerations](#considerations)
     - [Mapping Definition Life Time to the React Components Rendering](#mapping-definition-life-time-to-the-react-components-rendering)
 
@@ -300,10 +300,10 @@ describe('CounterButtons', () => {
 });
 ```
 
-### Implicit Dependencies
+### unbound Dependencies
 
 There are cases, where some objects injected into the component need to be parametrized. (e.g. using
-props). For such scenarios hardwired provides `implicit` definitions, for which the values can
+props). For such scenarios hardwired provides `unbound` definitions, for which the values can
 be provided at runtime. The following example would enable
 adding multiple labeled instances of counters from the getting-started section.
 
@@ -339,7 +339,7 @@ class CounterActions {
 import { singleton, value } from 'hardwired';
 
 const counterInitialValueDef = value(0);
-const counterLabelValueDef = implicit<string>('label');
+const counterLabelValueDef = unbound<string>('label');
 const counterStoreDef = scoped.using(counterInitialValueDef, counterLabelValueDef).class(CounterStore);
 const counterActionsDef = scoped.using(counterStoreDef).class(CounterActions);
 ```

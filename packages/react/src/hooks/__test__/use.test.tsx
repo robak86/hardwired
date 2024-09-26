@@ -1,4 +1,4 @@
-import { container, fn, implicit } from 'hardwired';
+import { container, fn, unbound } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
@@ -96,7 +96,7 @@ describe(`useDefinition`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = implicit<string>('ext');
+      const someExternalParam = unbound<string>('ext');
 
       const val1Def = fn.scoped(use => {
         const ext = use(someExternalParam);

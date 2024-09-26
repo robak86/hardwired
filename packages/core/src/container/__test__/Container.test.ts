@@ -3,7 +3,7 @@ import { container, use } from '../Container.js';
 
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it, vi } from 'vitest';
-import { implicit } from '../../definitions/sync/implicit.js';
+import { unbound } from '../../definitions/sync/unbound.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
@@ -171,7 +171,7 @@ describe(`Container`, () => {
     });
 
     it(`allows using external params`, async () => {
-      const extD = implicit<BoxedValue<number>>('ext');
+      const extD = unbound<BoxedValue<number>>('ext');
 
       const multiplyBy2D = fn.scoped(use => use(extD).value * 2);
       const divideBy2D = fn.scoped(use => use(extD).value / 2);
@@ -185,7 +185,7 @@ describe(`Container`, () => {
     });
 
     it(`allows using external params ex.2`, async () => {
-      const extD = implicit<BoxedValue<number>>('ext');
+      const extD = unbound<BoxedValue<number>>('ext');
 
       let count = 0;
       const scopeSharedValD = fn.scoped(() => (count += 1));

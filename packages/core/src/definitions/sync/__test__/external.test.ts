@@ -2,9 +2,9 @@ import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { value } from '../value.js';
 import { describe, expect, it } from 'vitest';
-import { implicit } from '../implicit.js';
+import { unbound } from '../unbound.js';
 
-describe(`implicit`, () => {
+describe(`unbound`, () => {
   type Externals = { someExternalParam: number };
   type OtherExternals = { otherExternalParam: number };
 
@@ -24,8 +24,8 @@ describe(`implicit`, () => {
   }
 
   const numD = value('otherDependency');
-  const externalParams1D = implicit<Externals>('params1');
-  const externalParams2D = implicit<OtherExternals>('params2');
+  const externalParams1D = unbound<Externals>('params1');
+  const externalParams2D = unbound<OtherExternals>('params2');
 
   const defUsingExternals1 = fn(use => {
     const externals = use(externalParams1D);
