@@ -2,442 +2,531 @@
 
 ![build status](https://github.com/robak86/hardwired/workflows/CI/badge.svg?branch=master) [![codecov](https://codecov.io/gh/robak86/hardwired/branch/master/graph/badge.svg?token=50RAYIVVTT)](https://codecov.io/gh/robak86/hardwired)
 
-**A minimalistic, type-safe dependency injection (DI)/inversion of control (IoC) solution for TypeScript, featuring:**
+**Hardwired** is a lightweight, functional, and type-safe dependency injection (DI) and inversion of control (IoC) library for TypeScript.
 
-- [x] Type safety: All dependencies are checked at compile time.
-- [x] No use of decorators, reflection or static properties containing the list of dependencies.
-- [x] Designed for structural typing.
-- [x] Simplifies mocking for integration tests.
-- [x] Fully supports Node.js and browsers.
+- [x] **Type Safety**: All dependencies are checked at compile time.
+- [x] **No Decorators or Reflection**: Simplifies your codebase.
+- [x] **Designed for structural typing**: No need for explicitly using interfaces
+- [x] **Functional Approach**: Inspired by React hooks, without its limitations.
+- [x] **Easy Testing and Mocking**: Simplifies integration tests.
+- [x] **Universal Support**: Works seamlessly on every JavaScript runtime and browsers
 
 ## Table of Contents
 
 - [Hardwired](#hardwired)
   - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-    - [Using Yarn](#using-yarn)
-    - [Using npm](#using-npm)
   - [Introduction](#introduction)
+  - [Installation](#installation)
   - [Quick Start](#quick-start)
-  - [Lifetimes of Definitions](#lifetimes-of-definitions)
-  - [Container Scopes](#container-scopes)
-  - [Definition Types](#definition-types)
-    - [Synchronous Definitions](#synchronous-definitions)
-    - [Asynchronous Definitions](#asynchronous-definitions)
-  - [Overriding Definitions](#overriding-definitions)
-    - [Available Overrides](#available-overrides)
-    - [Override Scope](#override-scope)
-  - [unbound Definition](#unbound-definition)
-
-## Installation
-
-This library requires TypeScript version 4.7 or higher.
-
-### Using Yarn
-
-```bash
-yarn add hardwired
-```
-
-### Using npm
-
-```bash
-npm install hardwired
-```
+  - [Core Concepts](#core-concepts)
+    - [Dependency Injection (DI)](#dependency-injection-di)
+    - [Inversion of Control (IoC)](#inversion-of-control-ioc)
+    - [Definitions](#definitions)
+    - [Container](#container)
+    - [Lifetimes](#lifetimes)
+    - [Scopes](#scopes)
+  - [Creating Definitions](#creating-definitions)
+    - [Function-Based Definitions](#function-based-definitions)
+      - [Singleton Definition](#singleton-definition)
+      - [Value helper](#value-helper)
+      - [Scoped Definition](#scoped-definition)
+      - [Transient Definition](#transient-definition)
+      - [Using Dependencies](#using-dependencies)
+  - [Class Definitions](#class-definitions)
+  - [Using the Container](#using-the-container)
+    - [Using the Global Container](#using-the-global-container)
+    - [Creating a New Container](#creating-a-new-container)
+    - [Using Scoped Containers](#using-scoped-containers)
+  - [Overriding definitions](#overriding-definitions)
+    - [Binding Types](#binding-types)
+    - [Examples](#examples)
+      - [Overriding with a Value](#overriding-with-a-value)
+      - [Decorating an Instance](#decorating-an-instance)
+      - [Configuring an Instance](#configuring-an-instance)
+      - [Redefining a Definition](#redefining-a-definition)
+      - [Binding to Another Definition](#binding-to-another-definition)
+  - [Unbound Definitions](#unbound-definitions)
+    - [Defining an Unbound Placeholder](#defining-an-unbound-placeholder)
+    - [Providing a Value](#providing-a-value)
+    - [Using with Scopes](#using-with-scopes)
+    - [Using with Interfaces](#using-with-interfaces)
+  - [Accepting Arguments in Definitions](#accepting-arguments-in-definitions)
+    - [Notes](#notes)
 
 ## Introduction
 
-Hardwired centers around two key concepts:
+As applications grow in complexity, managing dependencies becomes a crucial aspect of software development. **Hardwired** aims to simplify this process by providing a functional and type-safe approach to dependency injection (DI) and inversion of control (IoC) in TypeScript.
 
-- **Instance Definition**: Describes how instances should be created, specifying lifespan (`singleton`, `transient`, `scoped`) and dependencies.
-- **Container**: Manages instance creation based on the lifetimes defined in instance definitions. Can memoize instances where applicable (e.g., `singleton`, `scoped`).
+This guide will introduce you to the concepts of DI and IoC, explain why they are important, and show you how Hardwired can help you manage dependencies effectively.
+
+## Installation
+
+Depending on the package manager
+
+```bash
+bun add hardwired
+yarn add hardwired
+npm install hardwired
+```
 
 ## Quick Start
 
-1. **Define Dependencies**:
-   Create and organize definitions in separate modules to keep the implementation decoupled from IoC details.
-
-   ```typescript
-   // implementation.ts
-   import { singleton } from 'hardwired';
-
-   export class LoggerConfiguration {
-     logLevel = 0;
-   }
-
-   export class Logger {
-     constructor(private configuration: LoggerConfiguration) {}
-
-     log(message: string) {}
-   }
-
-   // definitions.ts
-   export const configurationDef = singleton.class(LoggerConfiguration);
-   export const loggerDef = singleton.using(configurationDef).class(Logger);
-   ```
-
-2. **Create a Container**:
-   Instantiate a container to manage instances.
-
-   ```typescript
-   import { container } from 'hardwired';
-
-   const exampleContainer = container.new();
-   ```
-
-3. **Retrieve Instances**:
-   Use the container to get instances as needed.
-
-   ```typescript
-   const loggerInstance: Logger = exampleContainer.use(loggerDef); // returns an instance of Logger
-   ```
-
-## Lifetimes of Definitions
-
-Definitions are categorized by their lifetimes, affecting instance creation:
-
-- **`transient`**: Creates a new instance on each retrieval.
-- **`singleton`**: Always reuses a single instance.
-- **`scoped`**: Similar to a singleton but confined to a specific scope.
-
-## Container Scopes
-
-Each container manages its own instance registry, allowing for scoped lifetimes.
-A new scope can be created with the `checkoutScope` method,
-which inherits the singleton registry but starts with a clean scoped registry.
+Let's start with a simple example to demonstrate how Hardwired works.
 
 ```typescript
-import { container, scoped, singleton } from 'hardwired';
+import { fn, container } from 'hardwired';
 
-const scopedRandomVal = scoped.fn(() => Math.random());
-const singletonRandomVal = singleton.fn(() => Math.random());
+// Define a singleton dependency
+const randomNumber = fn.singleton(() => Math.random());
 
-const appContainer = container.new();
-const requestContainer = appContainer.checkoutScope();
+// Use the container to retrieve the dependency
+const number = container.use(randomNumber);
 
-const val1 = appContainer.use(scopedRandomVal);
-const val2 = requestContainer.use(scopedRandomVal);
-// val1 !== val2, due to different scoped registries
-
-const singletonVal1 = appContainer.use(singletonRandomVal);
-const singletonVal2 = requestContainer.use(singletonRandomVal);
-// singletonVal1 === singletonVal2, shared singleton registry
+console.log(number); // e.g., 0.123456789
 ```
 
-## Definition Types
+In this example, we:
 
-Definitions support the following types of instances:
+- Defined a singleton dependency `randomNumber` that generates a random number.
+- Retrieved the dependency from the container using `container.use`.
+- Logged the number to the console.
 
-- **class**: Creates an instance of a class.
-- **fn**: Creates an instance using a factory function.
-- **define**: Low-level utility that accepts a factory function that has directly access to the container allowing using
-  it as a service locator.
+## Core Concepts
 
-Definitions can be synchronous or asynchronous, supporting both sync and async dependencies accordingly.
+### Dependency Injection (DI)
 
-### Synchronous Definitions
+**Dependency Injection** is a design pattern that allows an object or function to receive its dependencies from an external source rather than creating them itself. This promotes loose coupling and makes code more modular, testable, and maintainable.
 
-`[singleton|scoped|transient].[fn|class|define]()`: These are instantiated synchronously and allow only synchronous dependencies.
+Instead of hardcoding dependencies within components, you inject them from the outside. This makes it easier to manage and replace dependencies, especially during testing or when scaling applications.
 
-- **`class`**
+### Inversion of Control (IoC)
 
-  ```typescript
-  import { singleton, container } from 'hardwired';
+**Inversion of Control** is a principle where the control flow of a program is inverted compared to traditional programming. In the context of DI, IoC means that the framework (Hardwired) is responsible for instantiating and providing dependencies, rather than your code manually creating them.
 
-  class Logger {
-    info() {}
-  }
+By using IoC, you delegate the responsibility of constructing the dependency graph to the framework. The framework instantiates all the dependencies and returns the entire graph, allowing you to focus on defining how components interact without worrying about instantiation details.
 
-  class Writer {
-    constructor(private logger: Logger) {}
-  }
+### Definitions
 
-  const loggerDef = singleton.class(Logger);
-  const writerDef = singleton.using(loggerDef).class(Writer);
-  const writerInstance = container.new().use(writerDef); // creates instance of Writer
-  ```
+A **Definition** in Hardwired is an object that describes how to create an instance of a dependency. It includes information about the dependency's lifetime (singleton, scoped, transient) and how it should be instantiated.
 
-- **`fn`**
+Definitions are the building blocks of your dependency graph. They can depend on other definitions, allowing you to model complex relationships between components.
 
-  ```typescript
-  import { singleton, container, transient } from 'hardwired';
+### Container
 
-  const aDef = transient.fn(() => 1);
-  const bDef = transient.fn(() => 2);
-  const cDef = singleton.using(aDef, bDef).fn((a, b) => a + b);
-  const c = container.new().use(cDef); // result equals to 3
-  ```
+The **Container** is responsible for managing and providing instances of your definitions. It acts as a factory that knows how to create and supply all the dependencies your application requires.
 
-- **`define`**
+When you request a dependency from the container, it uses the definitions to construct the entire dependency graph, ensuring that all dependencies are properly instantiated and injected.
 
-  ```typescript
-  import { singleton, container, value, define } from 'hardwired';
+### Lifetimes
 
-  const randomValD = scoped.fn(() => Math.random());
+Definitions can have different lifetimes, which determine how instances are managed:
 
-  const myDef = singleton.define(container => {
-    const val1 = container.use(randomValD);
-    const val2 = container.withScope(childContainer => {
-      return childContainer.use(randomValD);
-    });
+**Singleton**: A single instance is created and reused throughout the application's lifetime.
+**Scoped**: A new instance is created for each scope.
+**Transient**: A new instance is created every time it's requested.
 
-    return [val1, val2];
-  });
+Understanding lifetimes is important for controlling resource usage and ensuring that components behave as expected.
 
-  const [val1, val2] = container.new().use(myDef);
-  // val1 is not eq to val2, because was created in the other scope
-  ```
+### Scopes
 
-Additionally, the library provides a helper for creating definitions for static values.
-Using this kind of definition is useful when the static value needs to be replaced in tests
-without using a test runner's mocking capabilities.
+Scopes in **Hardwired** allow you to create isolated environments where certain dependencies can have different instances or configurations. Scopes are useful when you need to manage per-request data, such as in web applications where each request should have its own set of instances for certain dependencies.
 
-- **`value`** - defines a static value
+A scoped container inherits all the definitions and instances from its parent container but provides:
 
-  ```typescript
-  import { value, container } from 'hardwired';
+- **Isolation**: Scoped dependencies are created anew within the scope and are not shared outside of it.
+- **Overriding**: You can override definitions within a scope without affecting the parent container or other scopes.
+- **Lifecycle Management**: Scoped dependencies are managed independently, allowing you to control their creation and disposal within the scope.
 
-  const configDef = value({ port: 1234 });
-  const cnt = container.new();
-  const config = cnt.use(configDef); // { port: 1234 }
+By utilizing scopes, you can ensure that specific components are instantiated fresh within a particular context while still reusing singleton dependencies from the parent container.
 
-  cnt.use(configDef) === cnt.use(configDef); // true - returns the same instance
-  ```
+For example, in a web server handling multiple requests concurrently, you can use scopes to ensure that each request has its own instances of certain dependencies (like request-specific data) without interfering with other requests.
 
-### Asynchronous Definitions
+## Creating Definitions
 
-`[singleton|scoped|transient|.async().[fn|class|define]()` - These supports asynchronous dependencies and instantiation.
+### Function-Based Definitions
 
-- **`class`** - creates class instance accepting async dependencies
+Function-based definitions allow you to define dependencies using functions. This is useful for simple values or when you prefer a functional style.
 
-  ```typescript
-  import { singleton, container } from 'hardwired';
-  import { Db } from 'some-db-client';
+#### Singleton Definition
 
-  const createDbConnection = async (): Promise<Db> => {
-    // create db connection asynchronously
-  };
-
-  class UserRepository {
-    constructor(private db: Db) {}
-
-    findUserById(userId: string): Promise<User> {
-      //...
-    }
-  }
-
-  const dbDef = singleton.async().fn(createDbConnection);
-  const userRepositoryDef = singleton.async().using(dbDef).class(UserRepository);
-  const cnt = container.new();
-  const userRepository: UserRepository = await cnt.use(userRepositoryDef);
-  ```
-
-- **`fn`** - the same as synchronous `fn` but accepts async dependencies
-- **`define`** - the same as synchronous `define` but accepts async function
-
-  ```typescript
-  import { singleton, container, value, define } from 'hardwired';
-
-  const randomValD = scoped.async().fn(async () => Math.random());
-
-  const myDef = singleton.async().define(async container => {
-    const val1 = await container.use(randomValD);
-    const val2 = await container.withScope(childContainer => {
-      return childContainer.use(randomValD);
-    });
-
-    return [val1, val2];
-  });
-
-  const [val1, val2] = await container.new().use(myDef);
-  // val1 is not eq to val2, because was created in other scope
-  ```
-
-## Overriding Definitions
-
-For integration testing or specific runtime needs, definitions can be overridden in the container,
-allowing for flexibility such as mocking.
+Creates a single shared instance.
 
 ```typescript
-import { singleton, container, set } from 'hardwired';
+import { fn } from 'hardwired';
 
-class RandomGenerator {
-  constructor(public seed: number) {}
+const config = fn.singleton(() => ({
+  apiUrl: 'https://api.example.com',
+}));
+```
+
+#### Value helper
+
+For static values you can use `value` helper.
+
+```typescript
+import { value } from 'hardwired';
+
+const config = value({
+  apiUrl: 'https://api.example.com',
+});
+```
+
+#### Scoped Definition
+
+Creates a new instance for each scope.
+
+```typescript
+import { fn } from 'hardwired';
+
+const requestId = fn.scoped(() => generateUniqueId());
+```
+
+#### Transient Definition
+
+Creates a new instance every time it's requested.
+
+```typescript
+import { fn } from 'hardwired';
+
+const randomValue = fn(() => Math.random());
+```
+
+#### Using Dependencies
+
+You can use other definitions within a definition using the use function.
+
+```typescript
+import { fn } from 'hardwired';
+
+const apiUrl = fn.singleton(() => 'https://api.example.com');
+
+const apiClient = fn.singleton(use => {
+  const url = use(apiUrl);
+  return new ApiClient(url);
+});
+```
+
+In this example:
+
+- We defined `apiUrl` as a singleton.
+- We used `apiUrl` within `apiClient` by calling `use(apiUrl)`.
+- The `apiClient` definition doesn't need to know any details on how the `apiUrl` is created
+
+## Class Definitions
+
+If you prefer working with classes, Hardwired allows you to define how to instantiate classes with their dependencies.
+
+```typescript
+import { cls, fn } from 'hardwired';
+
+const apiUrl = fn.singleton(() => 'https://api.example.com');
+
+class ApiClient {
+  static instance = cls.singleton(this, apiUrl);
+
+  constructor(private apiUrl: string) {}
+
+  fetchData() {
+    // Use this.apiUrl to fetch data
+  }
 }
 
-const randomSeedD = singleton.fn(() => Math.random());
-const randomGeneratorDef = singleton.using(randomSeedD).class(RandomGenerator);
-
-const cnt = container([set(randomSeedD, 1)]);
-
-const randomGenerator = cnt.use(randomGeneratorDef);
-randomGenerator.seed === 1; // true
+const client = container.use(ApiClient.instance);
 ```
 
-### Available Overrides
+In this example:
 
-- **`set`** - it replaces original definition with a new static value
-- **`replace`** - it replaces original definition with new one. This enables switching lifespan of
-  the definition
+- We defined `ApiClient.instance` using `cls.singleton`. The `instance` static property is a definition object similar as object returned by `fn(() => ...)`
+- The class depends on apiUrl, which is injected when instantiated.
 
-  ```typescript
-  import { singleton, container, replace, transient } from 'hardwired';
+## Using the Container
 
-  const mySingletonDef = singleton.fn(generateUniqueId);
+The container is used to retrieve instances based on your definitions.
 
-  // change lifetime for mySingletonDef to transient
-  const mySingletonOverrideDef = replace(mySingletonDef, transient.fn(generateUniqueId));
-  const cnt = container([mySingletonOverrideDef]);
+### Using the Global Container
 
-  cnt.use(mySingletonDef) === cnt.use(mySingletonDef); // false
-  // cnt uses now transient lifetime for mySingletonDef and calls generateUniqueId on each .use call
-  ```
-
-- **`decorate`** - it takes decorator function and returns decorated object
-
-  ```typescript
-  import { singleton, container, decorate } from 'hardwired';
-
-  interface IWriter {
-    write(data);
-  }
-
-  class Writer implements IWriter {
-    write(data) {}
-  }
-
-  class Logger {
-    info(msg) {}
-  }
-
-  class LoggingWriter implements IWriter {
-    constructor(
-      private writer,
-      private logger: Logger,
-    ) {}
-
-    write(data) {
-      this.logger.info('Writing data');
-      this.writer.write(data);
-      this.logger.info('Done');
-    }
-  }
-
-  const writerDef = singleton.class(Writer);
-  const loggerDef = singleton.class(Logger);
-
-  const writerOverrideDef = decorate(
-    writerDef,
-    (originalWriter, logger) => new LoggingWriter(originalWriter, logger),
-    loggerDef, // inject extra dependency required by LoggingWriter
-  );
-
-  const cnt = container([writerOverrideDef]);
-
-  cnt.use(writerDef); // returns instance of LoggingWriter
-  ```
-
-- **`apply`** - allows triggering side effects on original instance
-
-  ```typescript
-  import { singleton, container, apply } from 'hardwired';
-
-  class Writer {
-    write(data) {}
-  }
-
-  class WriteManager {
-    constructor(private writer: Writer) {}
-
-    storeDocument(document) {
-      this.writer.write(dataForDocument);
-    }
-  }
-
-  class StoreDocumentAction {
-    constructor(private writeManager: WriteManager) {}
-
-    run() {
-      this.writeManager.storeDocument({ someData });
-    }
-  }
-
-  const writerDef = singleton.class(Writer);
-  const writeManagerDef = singleton.using(writerDef).class(WriteManager);
-  const storeDocumentActionDef = singleton.using(writeManagerDef).class(StoreDocumentAction);
-
-  const writerPatch = apply(writerDef, writerInstance => {
-    jest.spyOn(writerInstance, 'write');
-    // comparing to the decorator override, there is no need to return decorated value
-  });
-  const cnt = container([writerPatch]);
-
-  const [spiedWriter, storeDocumentAction] = cnt.all(writerDef, storeDocumentActionDef);
-  storeDocumentAction.run();
-  // now we can do some assertions on spied write method
-  expect(spiedWriter.write).toHaveBeenCalledWith(/*...*/);
-  ```
-
-### Override Scope
-
-Overrides can be provided during a scope creation. Then they apply only to the current scope
+You can use the global container directly:
 
 ```typescript
-import { scoped, container, set } from 'hardwired';
+import { container } from 'hardwired';
 
-const def = scoped.fn(() => Math.random());
-
-const cnt = container.new();
-
-cnt.use(def); // random value
-cnt.checkoutScope({ overrides: [set(def, 1)] }).use(def); // 1
+const client = container.use(ApiClient.instance);
 ```
 
-Overrides can be provided also during container creation. Then the override is propagated to every child scope replacing scope's own overrides.
+### Creating a New Container
+
+For more control or isolation, you can create a new container:
 
 ```typescript
-import { scoped, container, set } from 'hardwired';
+import { container } from 'hardwired';
 
-const def = scoped.fn(() => Math.random());
+const myContainer = container.new();
 
-const cnt = container.new({
-  globalOverrides: set(def, 100),
-});
-
-cnt.use(def); // 100
-cnt.checkoutScope({ overrides: [set(def, 1)] }).use(def); // 100 because of globalOverrides
+const client = myContainer.use(ApiClient.instance);
 ```
 
-## unbound Definition
+### Using Scoped Containers
 
-unbound definitions act as placeholders for values provided at runtime, useful for dynamic configurations
-or objects that are not available at compile time.
+You can create a scoped container, which inherits from its parent but can have its own scoped instances.
 
 ```typescript
-import { external, singleton } from 'hardwired';
-import http from 'http';
+const scopedContainer = container.checkoutScope();
 
-type EnvConfig = {
-  server: {
-    port: number;
-  };
-};
+const requestId = scopedContainer.use(requestIdDefinition);
+```
 
-const envD = unbound<EnvConfig>('env');
-const appPortD = singleton.using(envD).fn((config: EnvConfig) => config.server.port);
-const httpServerD = singleton.using(appPortD).fn((port: number) => {
-  const requestListener = (req, res) => {};
+Also, it's possible to get scoped container using the loan pattern
 
-  const server = http.createServer(requestListener);
-  return server.listen(port);
+```typescript
+const requestId = container.withScope(use => {
+  // use is scoped container here
+  return use(requestIdDefinition);
 });
 ```
 
-The actual value for unbound placeholder needs to be provided when creating the container.
+## Overriding definitions
+
+Bindings and overrides allow you to modify definitions when creating a new container or scope. This is particularly useful for testing or when you need to change behavior without altering the original definitions.
+
+### Binding Types
+
+All bindings and overrides are applied to definitions. Since definitions describe how to create instances, bindings modify these instructions. The main types of bindings are:
+
+- `bindValue(value)`: Replaces a definition with a static value.
+- `bindTo(otherDefinition)`: Redirects a definition to another one.
+- `decorateWith(decoratorFn)`: Wraps the original instance with additional functionality.
+- `configure(configureFn)`: Modifies the instance after it's created.
+- `redefine(factoryFn)`: Completely redefines how the instance is created.
+
+### Examples
+
+#### Overriding with a Value
 
 ```typescript
-import { container, set } from 'hardwired';
+import { fn, container } from 'hardwired';
 
-const cnt = container.new({ globalOverrides: [set(envD, { server: { port: 1234 } })] });
-cnt.use(httpServerD);
+const apiUrl = fn.singleton(() => 'https://api.example.com');
+
+class ApiClient {
+  static instance = cls.singleton(this, apiUrl);
+
+  constructor(private apiUrl: string) {}
+
+  fetchData() {
+    // Use this.apiUrl to fetch data
+  }
+}
+
+const myContainer = container.new({
+  scope: [apiUrl.bindValue('https://staging-api.example.com')],
+});
+
+// ApiClient uses now 'https://staging-api.example.com'
+const client = myContainer.use(ApiClient.instance);
 ```
+
+#### Decorating an Instance
+
+```typescript
+import { fn, container, cls } from 'hardwired';
+
+class Logger {
+  static instance = cls(this);
+
+  log(message: string) {
+    console.log(message);
+  }
+}
+
+const myContainer = container.new({
+  scope: [
+    Logger.instance.decorateWith((use, originalLogger) => {
+      return {
+        log: (message: string) => {
+          originalLogger.log(`[Enhanced] ${message}`);
+        },
+      };
+    }),
+  ],
+});
+
+const loggerInstance = myContainer.use(Logger.instance);
+loggerInstance.log('Hello'); // Outputs: [Enhanced] Hello
+```
+
+#### Configuring an Instance
+
+```typescript
+import { fn, container } from 'hardwired';
+
+const serverConfig = fn.singleton(() => ({ port: 3000 }));
+
+const myContainer = container.new({
+  scope: [
+    serverConfig.configure((use, config) => {
+      config.port = 4000;
+    }),
+  ],
+});
+
+const config = myContainer.use(serverConfig); // { port: 4000 }
+```
+
+#### Redefining a Definition
+
+```typescript
+import { fn, container } from 'hardwired';
+
+const originalDefinition = fn(() => ({ value: 1 }));
+
+const myContainer = container.new({
+  scope: [originalDefinition.redefine(use => ({ value: 5 }))],
+});
+
+const instance = myContainer.use(originalDefinition); // { value: 5 }
+```
+
+#### Binding to Another Definition
+
+```typescript
+import { fn, container } from 'hardwired';
+
+const originalDefinition = fn(() => ({ value: 1 }));
+const alternativeDefinition = fn(() => ({ value: 2 }));
+
+const myContainer = container.new({
+  scope: [originalDefinition.bindTo(alternativeDefinition)],
+});
+
+const instance = myContainer.use(originalDefinition); // { value: 2 }
+```
+
+## Unbound Definitions
+
+Unbound definitions are placeholders for values that will be provided at runtime, such as configuration data or environment variables.
+
+### Defining an Unbound Placeholder
+
+```typescript
+import { unbound } from 'hardwired';
+
+const config = unbound<{ apiUrl: string }>('config');
+```
+
+### Providing a Value
+
+You must provide a value for unbound definitions when creating a container or scope:
+
+```typescript
+import { container } from 'hardwired';
+
+const myContainer = container.new({
+  scope: [
+    config.bindValue({
+      apiUrl: 'https://api.example.com',
+    }),
+  ],
+});
+
+const configValue = myContainer.use(config); // { apiUrl: 'https://api.example.com' }
+```
+
+### Using with Scopes
+
+```typescript
+import { container } from 'hardwired';
+
+container.withScope(
+  {
+    scope: [
+      config.bindValue({
+        apiUrl: 'https://api.example.com',
+      }),
+    ],
+  },
+  use => {
+    const configValue = use(config);
+    // Use configValue within this scope
+  },
+);
+```
+
+If you try to use an unbound definition without providing a value, Hardwired will throw an error at runtime, alerting you that the dependency is missing.
+
+### Using with Interfaces
+
+By using unbound definitions, you can decouple the interface from the actual implementation and select the target implementation while creating container or the scope.
+
+```typescript
+import { unbound, cls } from 'hardwired';
+
+const logger = unbound<ILogger>('interface');
+
+interface ILogger {
+  info(msg: string);
+}
+
+class DevLogger implements ILogger {
+  static instance = cls.scoped(this);
+}
+
+class ProductionLogger implements ILogger {
+  static instance = cls.scoped(this);
+}
+
+const myApp = fn(use => {
+  const log = use(logger);
+  // log has the ILogger type. myApp doesn't know anything about
+  // the implementation details of the logger
+
+  log.info('Hell, world');
+});
+
+const prodContainer = container.checkoutScope({
+  scope: [logger.bindTo(ProductionLogger.instance)],
+});
+
+const devContainer = container.checkoutScope({
+  scope: [logger.bindTo(DevLogger.instance)],
+});
+
+const prodApp = prodContainer.use(myApp);
+const devApp = devContainer.use(myApp);
+```
+
+## Accepting Arguments in Definitions
+
+Transient definitions can accept additional arguments when being instantiated. This allows you to create definitions that require runtime parameters.
+
+```typescript
+import { fn, container } from 'hardwired';
+
+const definition = fn((use, arg1: number, arg2: string) => {
+  return { arg1, arg2 };
+});
+
+// Using the definition with arguments
+const instance = container.use(definition, 1, '2');
+console.log(instance); // { arg1: 1, arg2: '2' }
+
+// Using within another definition
+const otherDefinition = fn(use => {
+  const value = use(definition, 1, '2');
+  // Use value within this definition
+  return value;
+});
+
+const result = container.use(otherDefinition);
+console.log(result); // { arg1: 1, arg2: '2' }
+```
+
+In this example:
+
+- `definition` is a transient definition that accepts two arguments, `arg1` and `arg2`.
+- When using the definition, we pass the arguments directly.
+- You can also use the definition within another definition, passing the arguments as needed.
+
+### Notes
+
+Only transient definitions can accept additional arguments.
+Singleton and scoped definitions do not accept arguments because their instances are managed based on their lifetime and cannot vary per request.
