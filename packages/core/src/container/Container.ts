@@ -9,7 +9,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { isPatchSet, Overrides, PatchSet } from './Patch.js';
+import { Overrides } from './Patch.js';
 
 export interface Container extends UseFn {}
 
@@ -78,14 +78,12 @@ export type ContainerScopeOptions = {
   interceptor?: ContainerInterceptor;
 };
 
-export function container(globalOverrides?: BaseDefinition<any, any, any, any>[] | PatchSet): Container;
+export function container(globalOverrides?: BaseDefinition<any, any, any, any>[]): Container;
 export function container(options?: ContainerOptions): Container;
 export function container(
-  overridesOrOptions?: ContainerOptions | Array<BaseDefinition<any, any, any, any>> | PatchSet,
+  overridesOrOptions?: ContainerOptions | Array<BaseDefinition<any, any, any, any>>,
 ): Container {
   if (Array.isArray(overridesOrOptions)) {
-    return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
-  } else if (isPatchSet(overridesOrOptions)) {
     return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
   } else {
     return new Container(

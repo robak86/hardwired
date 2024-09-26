@@ -5,7 +5,6 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 
 import { ContextEvents } from '../events/ContextEvents.js';
 import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
-import { Patch } from './Patch.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue, TArgs extends any[]>(
@@ -23,7 +22,10 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
   checkoutScope(options?: Omit<ContainerScopeOptions, 'globalOverrides'>): IContainer<TAllowedLifeTime>;
 
   withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
-  withScope<TValue>(overrides: Patch, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
+  withScope<TValue>(
+    overrides: BaseDefinition<any, any, any, any>[],
+    fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue,
+  ): TValue;
 
   override(definition: BaseDefinition<any, any, any, any>): void;
   provide<T>(def: BaseDefinition<T, LifeTime.scoped, any, any>, instance: T): void;

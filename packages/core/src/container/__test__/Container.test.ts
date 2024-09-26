@@ -7,7 +7,6 @@ import { implicit } from '../../definitions/sync/implicit.js';
 import { ContainerContext } from '../../context/ContainerContext.js';
 import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
-import { patch } from '../Patch.js';
 import { BaseDefinition } from '../../definitions/abstract/FnDefinition.js';
 
 describe(`Container`, () => {
@@ -119,7 +118,7 @@ describe(`Container`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
         const a = fn.singleton(() => 1);
-        const overrides = patch().set(a, 2);
+        const overrides = [a.bindValue(2)];
 
         expect(container({ overrides }).use(a)).toEqual(2);
       });
