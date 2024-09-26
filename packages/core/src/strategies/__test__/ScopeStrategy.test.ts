@@ -35,8 +35,8 @@ describe(`ScopeStrategy`, () => {
 
       const k1 = fn.scoped(() => new Boxed());
 
-      const globalOverride = k1.patch().replace(fn.scoped(() => new Boxed(1)));
-      const childScopePatch = k1.patch().replace(fn.scoped(() => new Boxed(2)));
+      const globalOverride = k1.bindTo(fn.scoped(() => new Boxed(1)));
+      const childScopePatch = k1.bindTo(fn.scoped(() => new Boxed(2)));
 
       const c = ContainerContext.create([], [globalOverride]);
 
@@ -52,8 +52,8 @@ describe(`ScopeStrategy`, () => {
       const k1 = fn.scoped(() => Math.random());
       const k2 = fn.scoped(() => Math.random());
 
-      const invariantPatch = k1.patch().replace(fn.scoped(() => 1));
-      const childScopePatch = k2.patch().replace(fn.scoped(() => 2));
+      const invariantPatch = k1.bindTo(fn.scoped(() => 1));
+      const childScopePatch = k2.bindTo(fn.scoped(() => 2));
 
       const c = ContainerContext.create([], [invariantPatch]);
       expect(c.request(k1)).toEqual(1);
@@ -72,7 +72,7 @@ describe(`ScopeStrategy`, () => {
 
       expect(c.request(a).value).toEqual(1);
 
-      const mPatch = a.patch().replace(fn.scoped(() => new BoxedValue(2)));
+      const mPatch = a.bindTo(fn.scoped(() => new BoxedValue(2)));
       const childC = c.checkoutScope({ overrides: [mPatch] });
       expect(childC.request(a).value).toEqual(2);
     });
@@ -83,7 +83,7 @@ describe(`ScopeStrategy`, () => {
       const root = ContainerContext.empty();
       expect(root.request(a).value).toEqual(1);
 
-      const mPatch = a.patch().replace(fn.scoped(() => new BoxedValue(2)));
+      const mPatch = a.bindTo(fn.scoped(() => new BoxedValue(2)));
       const childC = root.checkoutScope({ overrides: [mPatch] });
       expect(childC.request(a).value).toEqual(2);
 
@@ -129,7 +129,7 @@ describe(`ScopeStrategy`, () => {
 
         const c = ContainerContext.empty();
 
-        const mPatch = a.patch().replace(fn.scoped(() => 2));
+        const mPatch = a.bindTo(fn.scoped(() => 2));
 
         const childC = c.checkoutScope({ overrides: [mPatch] });
 
@@ -142,8 +142,8 @@ describe(`ScopeStrategy`, () => {
       it(`cannot be replaced by scope overrides`, async () => {
         const k1 = fn.scoped(() => Math.random());
 
-        const invariantPatch = k1.patch().replace(fn.scoped(() => 1));
-        const childScopePatch = k1.patch().replace(fn.scoped(() => 2));
+        const invariantPatch = k1.bindTo(fn.scoped(() => 1));
+        const childScopePatch = k1.bindTo(fn.scoped(() => 2));
 
         const c = ContainerContext.create([], [invariantPatch]);
         expect(c.request(k1)).toEqual(1);
@@ -156,8 +156,8 @@ describe(`ScopeStrategy`, () => {
         const k1 = fn.scoped(() => Math.random());
         const k2 = fn.scoped(() => Math.random());
 
-        const invariantPatch = k1.patch().replace(fn.scoped(() => 1));
-        const childScopePatch = k2.patch().replace(fn.scoped(() => 2));
+        const invariantPatch = k1.bindTo(fn.scoped(() => 1));
+        const childScopePatch = k2.bindTo(fn.scoped(() => 2));
 
         const c = ContainerContext.create([], [invariantPatch]);
         expect(c.request(k1)).toEqual(1);
@@ -216,7 +216,7 @@ describe(`ScopeStrategy`, () => {
 
         const c = ContainerContext.empty();
 
-        const mPatch = a.patch().replace(fn.scoped(async () => 2));
+        const mPatch = a.bindTo(fn.scoped(async () => 2));
         const childC = c.checkoutScope({ overrides: [mPatch] });
 
         expect(await c.request(a)).toEqual(1);
@@ -228,8 +228,8 @@ describe(`ScopeStrategy`, () => {
       it(`cannot be replaced by scope overrides`, async () => {
         const k1 = fn.scoped(async () => Math.random());
 
-        const invariantPatch = k1.patch().replace(fn.scoped(async () => 1));
-        const childScopePatch = k1.patch().replace(fn.scoped(async () => 2));
+        const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
+        const childScopePatch = k1.bindTo(fn.scoped(async () => 2));
 
         const c = ContainerContext.create([], [invariantPatch]);
 
@@ -243,8 +243,8 @@ describe(`ScopeStrategy`, () => {
         const k1 = fn.scoped(async () => Math.random());
         const k2 = fn.scoped(async () => Math.random());
 
-        const invariantPatch = k1.patch().replace(fn.scoped(async () => 1));
-        const childScopePatch = k2.patch().replace(fn.scoped(async () => 2));
+        const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
+        const childScopePatch = k2.bindTo(fn.scoped(async () => 2));
 
         const c = ContainerContext.create([], [invariantPatch]);
         expect(await c.request(k1)).toEqual(1);

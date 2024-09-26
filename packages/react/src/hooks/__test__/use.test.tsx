@@ -116,7 +116,7 @@ describe(`useDefinition`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         return (
           <ContainerProvider container={c}>
-            <ContainerScope invalidateKeys={[externalValue]} overrides={[someExternalParam.patch().set(externalValue)]}>
+            <ContainerScope invalidateKeys={[externalValue]} overrides={[someExternalParam.bindValue(externalValue)]}>
               <Consumer externalValue={externalValue} />
             </ContainerScope>
           </ContainerProvider>

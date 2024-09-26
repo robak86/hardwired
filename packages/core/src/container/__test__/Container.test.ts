@@ -128,7 +128,7 @@ describe(`Container`, () => {
         const a = fn.singleton(() => 1);
         const b = fn.singleton(() => 'b');
 
-        const mPatch = a.patch().replace(fn.singleton(() => 2));
+        const mPatch = a.bindTo(fn.singleton(() => 2));
 
         expect(container({ overrides: [mPatch] }).use(b)).toEqual('b');
       });
@@ -149,8 +149,8 @@ describe(`Container`, () => {
         return use(a) + use(b);
       });
 
-      const aPatch = a.patch().replace(fn.singleton(() => 10));
-      const bPatch = b.patch().replace(fn.singleton(() => 20));
+      const aPatch = a.bindTo(fn.singleton(() => 10));
+      const bPatch = b.bindTo(fn.singleton(() => 20));
 
       const c = container([aPatch, bPatch]);
 
@@ -177,7 +177,7 @@ describe(`Container`, () => {
       const divideBy2D = fn.scoped(use => use(extD).value / 2);
 
       const [val1, val2] = container()
-        .checkoutScope({ overrides: [extD.patch().set(new BoxedValue(10))] })
+        .checkoutScope({ overrides: [extD.bindValue(new BoxedValue(10))] })
         .all(multiplyBy2D, divideBy2D);
 
       expect(val1).toEqual(20);
@@ -203,7 +203,7 @@ describe(`Container`, () => {
       });
 
       const [req1, req2] = container()
-        .checkoutScope({ overrides: [extD.patch().set(new BoxedValue(10))] })
+        .checkoutScope({ overrides: [extD.bindValue(new BoxedValue(10))] })
         .all(multiplyBy2D, divideBy2D);
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);

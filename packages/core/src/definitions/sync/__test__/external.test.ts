@@ -44,7 +44,7 @@ describe(`implicit`, () => {
     it(`returns correct instance`, async () => {
       const cnt = container();
       const result = cnt
-        .checkoutScope({ overrides: [externalParams1D.patch().set({ someExternalParam: 111 })] })
+        .checkoutScope({ overrides: [externalParams1D.bindValue({ someExternalParam: 111 })] })
         .use(defUsingExternals1);
 
       expect(result.externals).toEqual({ someExternalParam: 111 });
@@ -56,8 +56,8 @@ describe(`implicit`, () => {
       const result = cnt
         .checkoutScope({
           overrides: [
-            externalParams1D.patch().set({ someExternalParam: 111 }),
-            externalParams2D.patch().set({ otherExternalParam: 456 }),
+            externalParams1D.bindValue({ someExternalParam: 111 }),
+            externalParams2D.bindValue({ otherExternalParam: 456 }),
           ],
         })
         .use(defUsingBothExternals);

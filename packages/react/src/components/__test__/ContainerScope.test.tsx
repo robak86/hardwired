@@ -123,11 +123,11 @@ describe(`ContainerScope`, () => {
       const TestSubject = () => (
         <ContainerProvider>
           S1
-          <ContainerScope overrides={[baseD.patch().set(10)]}>
+          <ContainerScope overrides={[baseD.bindValue(10)]}>
             <ValueRenderer testId={'scope1'} />
           </ContainerScope>
           S2
-          <ContainerScope overrides={[baseD.patch().set(100)]}>
+          <ContainerScope overrides={[baseD.bindValue(100)]}>
             <ValueRenderer testId={'scope2'} />
           </ContainerScope>
         </ContainerProvider>

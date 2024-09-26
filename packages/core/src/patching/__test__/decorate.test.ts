@@ -11,7 +11,7 @@ describe(`decorate`, () => {
   it(`decorates original value`, async () => {
     const someValue = value(1);
 
-    const c = container({ overrides: [someValue.patch().decorate((use, val) => val + 1)] });
+    const c = container({ overrides: [someValue.decorateWith((use, val) => val + 1)] });
 
     expect(c.use(someValue)).toEqual(2);
   });
@@ -19,7 +19,7 @@ describe(`decorate`, () => {
   it(`does not affect original module`, async () => {
     const someValue = value(1);
 
-    const mPatch = someValue.patch().decorate((use, val) => {
+    const mPatch = someValue.decorateWith((use, val) => {
       return val + 1;
     });
 
@@ -31,12 +31,10 @@ describe(`decorate`, () => {
     const someValue = value(1);
 
     const mPatch = someValue
-      .patch()
-      .decorate((use, val) => {
+      .decorateWith((use, val) => {
         return val + 1;
       })
-      .patch()
-      .decorate((use, val) => {
+      .decorateWith((use, val) => {
         return val * 3;
       });
     const c = container({ overrides: [mPatch] });
@@ -48,7 +46,7 @@ describe(`decorate`, () => {
     const b = value(2);
     const someValue = value(10);
 
-    const mPatch = someValue.patch().decorate((use, val) => {
+    const mPatch = someValue.decorateWith((use, val) => {
       return val + use(a) + use(b);
     });
 
@@ -64,7 +62,7 @@ describe(`decorate`, () => {
       return use(a) + use(b);
     });
 
-    const mPatch = someValue.patch().decorate((use, val) => {
+    const mPatch = someValue.decorateWith((use, val) => {
       return val * use(b);
     });
 
@@ -76,7 +74,7 @@ describe(`decorate`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
       const a = fn.singleton(() => Math.random());
 
-      const mPatch = a.patch().decorate((use, a) => a);
+      const mPatch = a.decorateWith((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       expect(c.use(a)).toEqual(c.use(a));
@@ -85,7 +83,7 @@ describe(`decorate`, () => {
     it(`preserves transient scope of the original resolver`, async () => {
       const a = fn(() => Math.random());
 
-      const mPatch = a.patch().decorate((use, a) => a);
+      const mPatch = a.decorateWith((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       expect(c.use(a)).not.toEqual(c.use(a));
@@ -98,7 +96,7 @@ describe(`decorate`, () => {
         return use(source);
       });
 
-      const mPatch = a.patch().decorate((use, a) => a);
+      const mPatch = a.decorateWith((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       const obj1 = fn.scoped(use => ({
@@ -126,12 +124,12 @@ describe(`decorate`, () => {
 
   describe(`globalOverrides`, () => {
     function setup(instanceDef: BaseDefinition<MyService, any, any, any>) {
-      const mPatch = instanceDef.patch().decorate((use, a) => {
+      const mPatch = instanceDef.decorateWith((use, a) => {
         vi.spyOn(a, 'callMe');
         return a;
       });
 
-      const replaced = instanceDef.patch().set({ callMe: () => {} });
+      const replaced = instanceDef.bindValue({ callMe: () => {} });
 
       const scope1 = ContainerContext.create([], [mPatch]);
       const scope2 = scope1.checkoutScope({ overrides: [replaced] });

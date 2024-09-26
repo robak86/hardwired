@@ -64,7 +64,7 @@ export class Container extends ExtensibleFunction implements IContainer {
   };
 
   provide = <T>(def: BaseDefinition<T, LifeTime.scoped, any, any>, instance: T): void => {
-    const override = def.patch().set(instance);
+    const override = def.bindValue(instance);
     return this.override(override);
   };
 }

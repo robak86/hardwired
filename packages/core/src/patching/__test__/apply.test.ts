@@ -12,7 +12,7 @@ describe(`apply`, () => {
   it(`applies function to original value`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = someValue.patch().apply((use, val) => {
+    const mPatch = someValue.configure((use, val) => {
       return (val.value += 1);
     });
 
@@ -23,7 +23,7 @@ describe(`apply`, () => {
   it(`does not affect original module`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = someValue.patch().apply((_, val) => (val.value += 1));
+    const mPatch = someValue.configure((_, val) => (val.value += 1));
 
     expect(container().use(someValue).value).toEqual(1);
     expect(container({ overrides: [mPatch] }).use(someValue).value).toEqual(2);
@@ -32,11 +32,7 @@ describe(`apply`, () => {
   it(`allows for multiple apply functions calls`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = someValue
-      .patch()
-      .apply((_, val) => (val.value += 1))
-      .patch()
-      .apply((_, val) => (val.value *= 3));
+    const mPatch = someValue.configure((_, val) => (val.value += 1)).configure((_, val) => (val.value *= 3));
 
     const c = container({ overrides: [mPatch] });
     expect(c.use(someValue).value).toEqual(6);
@@ -56,7 +52,7 @@ describe(`apply`, () => {
     //   b,
     // );
     //
-    const mPatch = someValue.patch().apply((use, val) => {
+    const mPatch = someValue.configure((use, val) => {
       const aVal = use(a);
       const bVal = use(b);
       val.value = val.value + aVal.value + bVal.value;
@@ -74,7 +70,7 @@ describe(`apply`, () => {
       return new BoxedValue(use(a).value + use(b).value);
     });
 
-    const mPatch = someValue.patch().apply((use, val) => {
+    const mPatch = someValue.configure((use, val) => {
       val.value = val.value * use(b).value;
     });
 
@@ -85,7 +81,7 @@ describe(`apply`, () => {
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
       const someValue = fn.singleton(() => Math.random());
-      const mPatch = someValue.patch().apply((use, a) => a);
+      const mPatch = someValue.configure((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       expect(c.use(someValue)).toEqual(c.use(someValue));
@@ -94,7 +90,7 @@ describe(`apply`, () => {
     it(`preserves transient scope of the original resolver`, async () => {
       const someValue = fn(() => Math.random());
 
-      const mPatch = someValue.patch().apply((use, a) => a);
+      const mPatch = someValue.configure((use, a) => a);
 
       const c = container({ overrides: [mPatch] });
       expect(c.use(someValue)).not.toEqual(c.use(someValue));
@@ -106,7 +102,7 @@ describe(`apply`, () => {
         return use(source);
       });
 
-      const mPatch = a.patch().apply(a => a);
+      const mPatch = a.configure(a => a);
 
       const c = container({ overrides: [mPatch] });
 
@@ -126,12 +122,12 @@ describe(`apply`, () => {
 
   describe(`globalOverrides`, () => {
     function setup(instanceDef: BaseDefinition<MyService, any, any, any>) {
-      const mPatch = instanceDef.patch().apply((use, a) => {
+      const mPatch = instanceDef.configure((use, a) => {
         vi.spyOn(a, 'callMe');
         return a;
       });
 
-      const replaced = instanceDef.patch().set({ callMe: () => {} });
+      const replaced = instanceDef.bindValue({ callMe: () => {} });
 
       const scope1 = ContainerContext.create([], [mPatch]);
       const scope2 = scope1.checkoutScope({ overrides: [replaced] });

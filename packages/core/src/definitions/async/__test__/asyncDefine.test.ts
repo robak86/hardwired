@@ -57,7 +57,7 @@ describe(`asyncDefine`, () => {
       });
 
       const result = await container()
-        .checkoutScope({ overrides: [ext1.patch().set(1), ext2.patch().set('str')] })
+        .checkoutScope({ overrides: [ext1.bindValue(1), ext2.bindValue('str')] })
         .use(definition);
       expect(result).toEqual([1, 'str']);
     });

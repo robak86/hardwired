@@ -101,7 +101,7 @@ describe(`SingletonStrategy`, () => {
 
         const root = ContainerContext.empty();
 
-        const patchedA = a.patch().set(2);
+        const patchedA = a.bindValue(2);
 
         const level1 = root.checkoutScope({ overrides: [patchedA] });
         const level2 = level1.checkoutScope({});
@@ -129,7 +129,7 @@ describe(`SingletonStrategy`, () => {
 
         const root = ContainerContext.empty();
         const level1 = root.checkoutScope();
-        const level2 = level1.checkoutScope({ overrides: [a.patch().set(1)] });
+        const level2 = level1.checkoutScope({ overrides: [a.bindValue(1)] });
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.use(a); // important that level1 is called as first
@@ -149,8 +149,8 @@ describe(`SingletonStrategy`, () => {
         const a = fn.singleton(randomFactorySpy);
 
         const root = ContainerContext.empty();
-        const level1 = root.checkoutScope({ overrides: [a.patch().set(1)] });
-        const level2 = level1.checkoutScope({ overrides: [a.patch().set(2)] });
+        const level1 = root.checkoutScope({ overrides: [a.bindValue(1)] });
+        const level2 = level1.checkoutScope({ overrides: [a.bindValue(2)] });
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.use(a);
@@ -169,8 +169,8 @@ describe(`SingletonStrategy`, () => {
     describe('global overrides', function () {
       it(`cannot be replaced by overrides`, async () => {
         const k1 = fn.singleton(() => Math.random());
-        const invariantPatch = k1.patch().set(1);
-        const childScopePatch = k1.patch().set(2);
+        const invariantPatch = k1.bindValue(1);
+        const childScopePatch = k1.bindValue(2);
 
         const c = ContainerContext.create([], [invariantPatch]);
         expect(c.request(k1)).toEqual(1);
@@ -183,8 +183,8 @@ describe(`SingletonStrategy`, () => {
         const k1 = fn.singleton(() => Math.random());
         const k2 = fn.singleton(() => Math.random());
 
-        const invariantPatch = k1.patch().set(1);
-        const childScopePatch = k2.patch().set(2);
+        const invariantPatch = k1.bindValue(1);
+        const childScopePatch = k2.bindValue(2);
 
         const c = ContainerContext.create([invariantPatch], []);
 
@@ -340,7 +340,7 @@ describe(`SingletonStrategy`, () => {
           const consumer1 = fn.singleton(async use => use(slowSingleton));
           const consumer2 = fn.singleton(async use => use(slowSingleton));
 
-          const patch = slowSingleton.patch().replace(fn.singleton(async () => new BoxedValue(123)));
+          const patch = slowSingleton.bindTo(fn.singleton(async () => new BoxedValue(123)));
 
           const ctn = container({ globalOverrides: [patch] });
           const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
