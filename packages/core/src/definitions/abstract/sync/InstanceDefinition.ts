@@ -14,6 +14,10 @@ export type InstancesArray<T extends BaseDefinition<any, any, any, any>[]> = {
   [K in keyof T]: Instance<T[K]>;
 };
 
+export type InstancesDefinitions<T extends any[]> = {
+  [K in keyof T]: BaseDefinition<T[K], any, any, any>;
+};
+
 export type InstancesRecord<T extends Record<string, BaseDefinition<any, any, any, any>>> = {
   [K in keyof T]: Instance<T[K]>;
 };
