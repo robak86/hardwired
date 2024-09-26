@@ -12,7 +12,7 @@ describe(`decorate`, () => {
   it(`decorates original value`, async () => {
     const someValue = value(1);
 
-    const c = container({ overrides: [someValue.decorateWith((use, val) => val + 1)] });
+    const c = container({ scope: [someValue.decorateWith((use, val) => val + 1)] });
 
     expect(c.use(someValue)).toEqual(2);
   });
@@ -25,7 +25,7 @@ describe(`decorate`, () => {
     });
 
     expect(container().use(someValue)).toEqual(1);
-    expect(container({ overrides: [mPatch] }).use(someValue)).toEqual(2);
+    expect(container({ scope: [mPatch] }).use(someValue)).toEqual(2);
   });
 
   it(`allows for multiple decorations`, async () => {
@@ -38,7 +38,7 @@ describe(`decorate`, () => {
       .decorateWith((use, val) => {
         return val * 3;
       });
-    const c = container({ overrides: [mPatch] });
+    const c = container({ scope: [mPatch] });
     expect(c.use(someValue)).toEqual(6);
   });
 
@@ -51,7 +51,7 @@ describe(`decorate`, () => {
       return val + use(a) + use(b);
     });
 
-    const c = container({ overrides: [mPatch] });
+    const c = container({ scope: [mPatch] });
     expect(c.use(someValue)).toEqual(13);
   });
 
@@ -67,7 +67,7 @@ describe(`decorate`, () => {
       return val * use(b);
     });
 
-    const c = container({ overrides: [mPatch] });
+    const c = container({ scope: [mPatch] });
     expect(c.use(someValue)).toEqual(6);
   });
 
@@ -77,7 +77,7 @@ describe(`decorate`, () => {
 
       const mPatch = a.decorateWith((use, a) => a);
 
-      const c = container({ overrides: [mPatch] });
+      const c = container({ scope: [mPatch] });
       expect(c.use(a)).toEqual(c.use(a));
     });
 
@@ -86,7 +86,7 @@ describe(`decorate`, () => {
 
       const mPatch = a.decorateWith((use, a) => a);
 
-      const c = container({ overrides: [mPatch] });
+      const c = container({ scope: [mPatch] });
       expect(c.use(a)).not.toEqual(c.use(a));
     });
 
@@ -99,7 +99,7 @@ describe(`decorate`, () => {
 
       const mPatch = a.decorateWith((use, a) => a);
 
-      const c = container({ overrides: [mPatch] });
+      const c = container({ scope: [mPatch] });
       const obj1 = fn.scoped(use => ({
         a: use(a),
         source: use(source),
@@ -133,7 +133,7 @@ describe(`decorate`, () => {
       const replaced = instanceDef.bindValue({ callMe: () => {} });
 
       const scope1 = ContainerContext.create([], [mPatch]);
-      const scope2 = scope1.checkoutScope({ overrides: [replaced] });
+      const scope2 = scope1.checkoutScope({ scope: [replaced] });
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);
       return { instance1, instance2 };

@@ -51,11 +51,11 @@ export class Container extends ExtensibleFunction implements IContainer {
   checkoutScope = (options: ContainerScopeOptions = {}): IContainer =>
     new Container(this.containerContext.checkoutScope(options));
 
-  withScope: IContainerScopes['withScope'] = (fnOrOverrides, fn?: any) => {
-    if (typeof fnOrOverrides === 'function') {
-      return fnOrOverrides(this.checkoutScope());
+  withScope: IContainerScopes['withScope'] = (fnOrOptions, fn?: any) => {
+    if (typeof fnOrOptions === 'function') {
+      return fnOrOptions(this.checkoutScope());
     } else {
-      return fn!(this.checkoutScope({ overrides: fnOrOverrides }));
+      return fn!(this.checkoutScope(fnOrOptions));
     }
   };
 
@@ -70,11 +70,11 @@ export class Container extends ExtensibleFunction implements IContainer {
 }
 
 export type ContainerOptions = {
-  globalOverrides?: Overrides; // propagated to descendant containers
+  final?: Overrides; // propagated to descendant containers
 } & ContainerScopeOptions;
 
 export type ContainerScopeOptions = {
-  overrides?: Overrides;
+  scope?: Overrides;
   interceptor?: ContainerInterceptor;
 };
 
@@ -88,8 +88,8 @@ export function container(
   } else {
     return new Container(
       ContainerContext.create(
-        overridesOrOptions?.overrides ?? [],
-        overridesOrOptions?.globalOverrides ?? [],
+        overridesOrOptions?.scope ?? [],
+        overridesOrOptions?.final ?? [],
         defaultStrategiesRegistry,
         overridesOrOptions?.interceptor,
       ),

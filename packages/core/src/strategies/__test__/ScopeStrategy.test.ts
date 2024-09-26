@@ -27,7 +27,7 @@ describe(`ScopeStrategy`, () => {
     });
   });
 
-  describe(`global overrides`, () => {
+  describe(`final overrides`, () => {
     it(`cannot be replaced by scope overrides if parent scope was created with global override`, async () => {
       class Boxed {
         constructor(public value = Math.random()) {}
@@ -42,7 +42,7 @@ describe(`ScopeStrategy`, () => {
 
       expect(c.request(k1).value).toEqual(1);
 
-      const childScope = c.checkoutScope({ overrides: [childScopePatch] });
+      const childScope = c.checkoutScope({ scope: [childScopePatch] });
       expect(childScope.request(k1).value).toEqual(1);
 
       expect(c.request(k1)).toBe(childScope.request(k1));
@@ -58,7 +58,7 @@ describe(`ScopeStrategy`, () => {
       const c = ContainerContext.create([], [invariantPatch]);
       expect(c.request(k1)).toEqual(1);
 
-      const childScope = c.checkoutScope({ overrides: [childScopePatch] });
+      const childScope = c.checkoutScope({ scope: [childScopePatch] });
       expect(childScope.request(k1)).toEqual(1);
       expect(childScope.request(k2)).toEqual(2);
     });
@@ -73,7 +73,7 @@ describe(`ScopeStrategy`, () => {
       expect(c.request(a).value).toEqual(1);
 
       const mPatch = a.bindTo(fn.scoped(() => new BoxedValue(2)));
-      const childC = c.checkoutScope({ overrides: [mPatch] });
+      const childC = c.checkoutScope({ scope: [mPatch] });
       expect(childC.request(a).value).toEqual(2);
     });
 
@@ -84,7 +84,7 @@ describe(`ScopeStrategy`, () => {
       expect(root.request(a).value).toEqual(1);
 
       const mPatch = a.bindTo(fn.scoped(() => new BoxedValue(2)));
-      const childC = root.checkoutScope({ overrides: [mPatch] });
+      const childC = root.checkoutScope({ scope: [mPatch] });
       expect(childC.request(a).value).toEqual(2);
 
       const grandChildC = childC.checkoutScope();
@@ -131,7 +131,7 @@ describe(`ScopeStrategy`, () => {
 
         const mPatch = a.bindTo(fn.scoped(() => 2));
 
-        const childC = c.checkoutScope({ overrides: [mPatch] });
+        const childC = c.checkoutScope({ scope: [mPatch] });
 
         expect(c.request(a)).toEqual(1);
         expect(childC.request(a)).toEqual(2);
@@ -148,7 +148,7 @@ describe(`ScopeStrategy`, () => {
         const c = ContainerContext.create([], [invariantPatch]);
         expect(c.request(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ overrides: [childScopePatch] });
+        const childScope = c.checkoutScope({ scope: [childScopePatch] });
         expect(childScope.request(k1)).toEqual(1);
       });
 
@@ -162,7 +162,7 @@ describe(`ScopeStrategy`, () => {
         const c = ContainerContext.create([], [invariantPatch]);
         expect(c.request(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ overrides: [childScopePatch] });
+        const childScope = c.checkoutScope({ scope: [childScopePatch] });
         expect(childScope.request(k1)).toEqual(1);
         expect(childScope.request(k2)).toEqual(2);
       });
@@ -217,7 +217,7 @@ describe(`ScopeStrategy`, () => {
         const c = ContainerContext.empty();
 
         const mPatch = a.bindTo(fn.scoped(async () => 2));
-        const childC = c.checkoutScope({ overrides: [mPatch] });
+        const childC = c.checkoutScope({ scope: [mPatch] });
 
         expect(await c.request(a)).toEqual(1);
         expect(await childC.request(a)).toEqual(2);
@@ -235,7 +235,7 @@ describe(`ScopeStrategy`, () => {
 
         expect(await c.request(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ overrides: [childScopePatch] });
+        const childScope = c.checkoutScope({ scope: [childScopePatch] });
         expect(await childScope.request(k1)).toEqual(1);
       });
 
@@ -249,7 +249,7 @@ describe(`ScopeStrategy`, () => {
         const c = ContainerContext.create([], [invariantPatch]);
         expect(await c.request(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ overrides: [childScopePatch] });
+        const childScope = c.checkoutScope({ scope: [childScopePatch] });
         expect(await childScope.request(k1)).toEqual(1);
         expect(await childScope.request(k2)).toEqual(2);
       });

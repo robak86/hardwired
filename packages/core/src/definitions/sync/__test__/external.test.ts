@@ -44,7 +44,7 @@ describe(`unbound`, () => {
     it(`returns correct instance`, async () => {
       const cnt = container();
       const result = cnt
-        .checkoutScope({ overrides: [externalParams1D.bindValue({ someExternalParam: 111 })] })
+        .checkoutScope({ scope: [externalParams1D.bindValue({ someExternalParam: 111 })] })
         .use(defUsingExternals1);
 
       expect(result.externals).toEqual({ someExternalParam: 111 });
@@ -55,7 +55,7 @@ describe(`unbound`, () => {
       const cnt = container();
       const result = cnt
         .checkoutScope({
-          overrides: [
+          scope: [
             externalParams1D.bindValue({ someExternalParam: 111 }),
             externalParams2D.bindValue({ otherExternalParam: 456 }),
           ],

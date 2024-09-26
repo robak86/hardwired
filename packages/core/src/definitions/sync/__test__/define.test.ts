@@ -26,7 +26,7 @@ describe(`define`, () => {
       });
 
       const result = container()
-        .checkoutScope({ overrides: [ext1.bindValue(1), ext2.bindValue('str')] })
+        .checkoutScope({ scope: [ext1.bindValue(1), ext2.bindValue('str')] })
         .use(definition);
       expect(result).toEqual([1, 'str']);
     });

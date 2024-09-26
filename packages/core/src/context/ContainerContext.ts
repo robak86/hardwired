@@ -125,12 +125,12 @@ export class ContainerContext
   };
 
   checkoutScope = (options: Omit<ContainerScopeOptions, 'globalOverrides'> = {}): ContainerContext => {
-    const { overrides = [] } = options;
+    const { scope = [] } = options;
 
     const scopeContext = new ContainerContext(
       this.id,
-      this.instancesDefinitionsRegistry.checkoutForScope(overrides),
-      this.instancesCache.childScope(overrides),
+      this.instancesDefinitionsRegistry.checkoutForScope(scope),
+      this.instancesCache.childScope(scope),
       this.strategiesRegistry,
       options.interceptor || {},
       this.events,
@@ -141,11 +141,11 @@ export class ContainerContext
     return scopeContext;
   };
 
-  withScope: IContainerScopes['withScope'] = (fnOrOverrides, fn?: any) => {
-    if (typeof fnOrOverrides === 'function') {
-      return fnOrOverrides(this.checkoutScope());
+  withScope: IContainerScopes['withScope'] = (fnOrOptions, fn?: any) => {
+    if (typeof fnOrOptions === 'function') {
+      return fnOrOptions(this.checkoutScope());
     } else {
-      return fn!(this.checkoutScope({ overrides: fnOrOverrides }));
+      return fn!(this.checkoutScope(fnOrOptions));
     }
   };
 
