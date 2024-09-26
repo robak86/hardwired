@@ -29,7 +29,7 @@ export class InstancesDefinitionsRegistry {
 
   checkoutForScope(scopeResolversOverrides: Overrides) {
     const newRegistry = new InstancesDefinitionsRegistry(
-      { ...this.scopeOverrideDefinitionsById },
+      { ...this.scopeOverrideDefinitionsById }, // TODO: experiment with proxy object instead of cloning?
       this.globalOverrideDefinitionsById,
     );
     newRegistry.addScopeOverrides(scopeResolversOverrides);
