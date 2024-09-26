@@ -29,3 +29,4 @@ export * from './container/IContainer.js';
 export * from './container/Patch.js';
 
 export { Middleware, combine, CreateFn } from './definitions/combine.js';
+export { cls, ClassType } from './definitions/cls.js';
