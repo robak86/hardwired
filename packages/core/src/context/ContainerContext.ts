@@ -1,6 +1,6 @@
 import { InstancesStore } from './InstancesStore.js';
 import { ContainerOptions } from '../container/Container.js';
-import { InstancesDefinitionsRegistry } from './InstancesDefinitionsRegistry.js';
+import { BindingsRegistry } from './BindingsRegistry.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { InstancesBuilder } from './abstract/InstancesBuilder.js';
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
@@ -25,7 +25,7 @@ export class ContainerContext
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptor: ContainerInterceptor = {},
   ) {
-    const instancesEntries = InstancesDefinitionsRegistry.empty();
+    const instancesEntries = BindingsRegistry.empty();
 
     return new ContainerContext(
       null,
@@ -38,17 +38,17 @@ export class ContainerContext
   }
 
   static create(
-    scopeOverrides: Overrides,
-    globalOverrides: Overrides,
+    scopeBindings: Overrides,
+    finalBindings: Overrides,
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     interceptors: ContainerInterceptor = {},
   ): ContainerContext {
-    const definitionsRegistry = InstancesDefinitionsRegistry.create(scopeOverrides, globalOverrides);
+    const definitionsRegistry = BindingsRegistry.create(scopeBindings, finalBindings);
 
     return new ContainerContext(
       null,
       definitionsRegistry,
-      InstancesStore.create(scopeOverrides),
+      InstancesStore.create(scopeBindings),
       strategiesRegistry,
       interceptors,
       new ContextEvents(),
@@ -59,8 +59,8 @@ export class ContainerContext
 
   constructor(
     public readonly parentId: string | null,
-    private readonly instancesDefinitionsRegistry: InstancesDefinitionsRegistry,
-    private readonly instancesCache: InstancesStore,
+    private readonly bindingsRegistry: BindingsRegistry,
+    private readonly instancesStore: InstancesStore,
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
@@ -71,13 +71,13 @@ export class ContainerContext
   }
 
   override(definition: BaseDefinition<any, any, any, any>): void {
-    if (this.instancesCache.hasInCurrentScope(definition.id)) {
+    if (this.instancesStore.hasInCurrentScope(definition.id)) {
       throw new Error(
         `Cannot override definition. Instance for id=${definition.id} was already created in the current scope.`,
       );
     }
 
-    this.instancesDefinitionsRegistry.addScopeOverride(definition);
+    this.bindingsRegistry.addScopeOverride(definition);
   }
 
   request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, any, []>): TValue;
@@ -105,7 +105,7 @@ export class ContainerContext
   }
 
   buildExact<T>(definition: BaseDefinition<T, any, any, any>, ...args: any[]): T {
-    const patchedInstanceDef = this.instancesDefinitionsRegistry.getDefinition(definition);
+    const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
 
@@ -118,10 +118,10 @@ export class ContainerContext
   }
 
   use = (definition: BaseDefinition<any, any, any, any>, ...args: any[]) => {
-    const patchedInstanceDef = this.instancesDefinitionsRegistry.getDefinition(definition);
+    const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
-    return strategy.buildFn(patchedInstanceDef, this.instancesCache, this.instancesDefinitionsRegistry, this, ...args);
+    return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
   checkoutScope = (options: ContainerOptions = {}): ContainerContext => {
@@ -129,8 +129,8 @@ export class ContainerContext
 
     const scopeContext = new ContainerContext(
       this.id,
-      this.instancesDefinitionsRegistry.checkoutForScope(scope, final),
-      this.instancesCache.childScope(scope),
+      this.bindingsRegistry.checkoutForScope(scope, final),
+      this.instancesStore.childScope(scope),
       this.strategiesRegistry,
       options.interceptor || {},
       this.events,

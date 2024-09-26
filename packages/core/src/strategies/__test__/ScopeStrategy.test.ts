@@ -48,17 +48,36 @@ describe(`ScopeStrategy`, () => {
       expect(c.request(k1)).toBe(childScope.request(k1));
     });
 
-    it(`allows for overrides other than specified in globalOverrides`, async () => {
+    it(`is possible to set final from child scope`, async () => {
+      class Boxed {
+        constructor(public value = Math.random()) {}
+      }
+
+      const k1 = fn.scoped(() => new Boxed());
+
+      const finalBinding = k1.bindTo(fn.scoped(() => new Boxed(1)));
+      const scopeBinding = k1.bindTo(fn.scoped(() => new Boxed(2)));
+
+      const root = ContainerContext.create([], []);
+      const child = root.checkoutScope({ final: [finalBinding] });
+      const grandChild = child.checkoutScope({ scope: [scopeBinding] }); // scopeBinding is ignored because of finalBinding
+
+      expect(root.request(k1).value).toEqual(root.request(k1).value);
+      expect(child.request(k1).value).toEqual(1);
+      expect(grandChild.request(k1).value).toEqual(1);
+    });
+
+    it(`allows for overrides other than specified in final bindings`, async () => {
       const k1 = fn.scoped(() => Math.random());
       const k2 = fn.scoped(() => Math.random());
 
-      const invariantPatch = k1.bindTo(fn.scoped(() => 1));
-      const childScopePatch = k2.bindTo(fn.scoped(() => 2));
+      const parentBinding = k1.bindTo(fn.scoped(() => 1));
+      const scopeBinding = k2.bindTo(fn.scoped(() => 2));
 
-      const c = ContainerContext.create([], [invariantPatch]);
+      const c = ContainerContext.create([], [parentBinding]);
       expect(c.request(k1)).toEqual(1);
 
-      const childScope = c.checkoutScope({ scope: [childScopePatch] });
+      const childScope = c.checkoutScope({ scope: [scopeBinding] });
       expect(childScope.request(k1)).toEqual(1);
       expect(childScope.request(k2)).toEqual(2);
     });

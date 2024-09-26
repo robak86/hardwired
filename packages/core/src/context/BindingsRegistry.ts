@@ -4,13 +4,13 @@ import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
 /**
  * This class represents a registry for storing definitions overrides for scope.
  */
-export class InstancesDefinitionsRegistry {
-  static empty(): InstancesDefinitionsRegistry {
-    return new InstancesDefinitionsRegistry({}, {});
+export class BindingsRegistry {
+  static empty(): BindingsRegistry {
+    return new BindingsRegistry({}, {});
   }
 
-  static create(scopeOverrides: Overrides, globalOverrides: Overrides): InstancesDefinitionsRegistry {
-    const registry = InstancesDefinitionsRegistry.empty();
+  static create(scopeOverrides: Overrides, globalOverrides: Overrides): BindingsRegistry {
+    const registry = BindingsRegistry.empty();
 
     registry.addScopeBindings(scopeOverrides);
     registry.addFinalBindings(globalOverrides);
@@ -27,8 +27,8 @@ export class InstancesDefinitionsRegistry {
     this.updateScopeBinding(definition);
   }
 
-  checkoutForScope(scopeBindings: Overrides, finalBindings: Overrides): InstancesDefinitionsRegistry {
-    const newRegistry = new InstancesDefinitionsRegistry(
+  checkoutForScope(scopeBindings: Overrides, finalBindings: Overrides): BindingsRegistry {
+    const newRegistry = new BindingsRegistry(
       { ...this.scopeBindingsById }, // TODO: experiment with proxy object instead of cloning?
       { ...this.finalBindingsById },
     );
