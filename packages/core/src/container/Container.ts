@@ -4,7 +4,7 @@ import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrat
 import { AsyncAllInstances, IContainer, IContainerScopes, InstanceCreationAware, UseFn } from './IContainer.js';
 
 import { ContextEvents } from '../events/ContextEvents.js';
-import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
+
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { Overrides } from './Overrides.js';
 import { Definition } from '../definitions/abstract/Definition.js';
@@ -33,7 +33,6 @@ class Container
     private readonly bindingsRegistry: BindingsRegistry,
     private readonly instancesStore: InstancesStore,
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {
     super((definition: Definition<any, any, any>, ...args: any[]) => {
@@ -52,7 +51,6 @@ class Container
       definitionsRegistry,
       InstancesStore.create(options.scope ?? []),
       defaultStrategiesRegistry,
-      options.interceptor ?? {},
       new ContextEvents(),
     );
   }
@@ -88,7 +86,6 @@ class Container
       this.bindingsRegistry.checkoutForScope(scope, final),
       this.instancesStore.childScope(scope),
       this.strategiesRegistry,
-      options.interceptor || {},
       this.events,
     );
 
@@ -109,7 +106,6 @@ class Container
 export type ScopeOptions = {
   final?: Overrides; // propagated to descendant containers
   scope?: Overrides;
-  interceptor?: ContainerInterceptor;
 };
 
 export const container = new Container(
@@ -117,6 +113,5 @@ export const container = new Container(
   BindingsRegistry.empty(),
   InstancesStore.create([]),
   defaultStrategiesRegistry,
-  {},
   new ContextEvents(),
 );
