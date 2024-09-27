@@ -6,7 +6,7 @@ import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
 import { unbound } from '../../sync/unbound.js';
 
-import { BaseDefinition } from '../../abstract/BaseDefinition.js';
+import { Definition } from '../../abstract/Definition.js';
 
 describe(`asyncDefine`, () => {
   const ext1 = unbound<number>('ext1');
@@ -15,12 +15,12 @@ describe(`asyncDefine`, () => {
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
       const definition = fn(async locator => null);
-      expectType<TypeOf<typeof definition, BaseDefinition<Promise<null>, LifeTime.transient, []>>>(true);
+      expectType<TypeOf<typeof definition, Definition<Promise<null>, LifeTime.transient, []>>>(true);
     });
 
     it(`accepts additional params`, async () => {
       const definition = fn(async (use, userId: number) => null);
-      expectType<TypeOf<typeof definition, BaseDefinition<Promise<null>, LifeTime.transient, [number]>>>(true);
+      expectType<TypeOf<typeof definition, Definition<Promise<null>, LifeTime.transient, [number]>>>(true);
     });
 
     it(`.get is typesafe`, async () => {

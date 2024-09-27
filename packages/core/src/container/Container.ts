@@ -7,7 +7,7 @@ import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { Overrides } from './Overrides.js';
-import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
+import { Definition } from '../definitions/abstract/Definition.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
@@ -31,7 +31,7 @@ class Container
     private readonly interceptor: ContainerInterceptor,
     public readonly events: ContextEvents,
   ) {
-    super((definition: BaseDefinition<any, any, any>, ...args: any[]) => {
+    super((definition: Definition<any, any, any>, ...args: any[]) => {
       return this.use(definition as any, ...args); // TODO: fix type
     });
   }
@@ -49,7 +49,7 @@ class Container
     );
   }
 
-  buildExact<T>(definition: BaseDefinition<T, any, any>, ...args: any[]): T {
+  buildExact<T>(definition: Definition<T, any, any>, ...args: any[]): T {
     const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
 
     this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
@@ -62,13 +62,13 @@ class Container
     return patchedInstanceDef.create(this, ...args);
   }
 
-  all = <TDefinitions extends Array<BaseDefinition<any, any, []>>>(
+  all = <TDefinitions extends Array<Definition<any, any, []>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> => {
     return definitions.map(def => this.use(def)) as InstancesArray<TDefinitions>;
   };
 
-  allAsync = <TDefinitions extends Array<BaseDefinition<Promise<any>, any, []>>>(
+  allAsync = <TDefinitions extends Array<Definition<Promise<any>, any, []>>>(
     ...definitions: [...TDefinitions]
   ): Promise<AsyncAllInstances<TDefinitions>> => {
     return Promise.all(definitions.map(def => this.use(def)) as AsyncAllInstances<TDefinitions>);

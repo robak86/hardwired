@@ -1,7 +1,7 @@
-import { BaseDefinition } from '../../definitions/abstract/BaseDefinition.js';
+import { Definition } from '../../definitions/abstract/Definition.js';
 
 export interface InstancesBuilder {
   readonly id: string;
 
-  buildExact(definition: BaseDefinition<any, any, any>, ...args: any[]): any;
+  buildExact(definition: Definition<any, any, any>, ...args: any[]): any;
 }

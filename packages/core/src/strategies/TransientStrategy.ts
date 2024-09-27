@@ -3,11 +3,11 @@ import { InstancesStore } from '../context/InstancesStore.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 
-import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
+import { Definition } from '../definitions/abstract/Definition.js';
 
 export class TransientStrategy extends BuildStrategy {
   buildFn(
-    definition: BaseDefinition<any, any, any>,
+    definition: Definition<any, any, any>,
     instancesStore: InstancesStore,
     bindingsRegistry: BindingsRegistry,
     instancesBuilder: InstancesBuilder,

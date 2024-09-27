@@ -1,5 +1,5 @@
 import { Overrides } from '../container/Overrides.js';
-import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
+import { Definition } from '../definitions/abstract/Definition.js';
 import { ScopeOptions } from '../container/Container.js';
 
 /**
@@ -20,11 +20,11 @@ export class BindingsRegistry {
   }
 
   constructor(
-    private scopeBindingsById: Record<string, BaseDefinition<any, any, any>>,
-    private finalBindingsById: Record<string, BaseDefinition<any, any, any>>,
+    private scopeBindingsById: Record<string, Definition<any, any, any>>,
+    private finalBindingsById: Record<string, Definition<any, any, any>>,
   ) {}
 
-  addScopeOverride(definition: BaseDefinition<any, any, any>) {
+  addScopeOverride(definition: Definition<any, any, any>) {
     this.updateScopeBinding(definition);
   }
 
@@ -38,7 +38,7 @@ export class BindingsRegistry {
     return newRegistry;
   }
 
-  getDefinition<T extends BaseDefinition<any, any, any>>(definition: T): T {
+  getDefinition<T extends Definition<any, any, any>>(definition: T): T {
     const id = definition.id;
 
     if (this.finalBindingsById[id]) {
@@ -56,11 +56,11 @@ export class BindingsRegistry {
     return !!this.finalBindingsById[definitionId];
   }
 
-  private updateScopeBinding(definition: BaseDefinition<any, any, any>) {
+  private updateScopeBinding(definition: Definition<any, any, any>) {
     this.scopeBindingsById[definition.id] = definition;
   }
 
-  private addFinalBinding(definition: BaseDefinition<any, any, any>) {
+  private addFinalBinding(definition: Definition<any, any, any>) {
     if (this.finalBindingsById[definition.id]) {
       throw new Error(`Final binding with id ${definition.id} was already set. Cannot override it.`);
     }

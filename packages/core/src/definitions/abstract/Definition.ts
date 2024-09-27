@@ -1,7 +1,7 @@
 import { LifeTime } from './LifeTime.js';
 import { IServiceLocator } from '../../container/IContainer.js';
 
-export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
+export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
   constructor(
     public readonly id: string,
     public readonly strategy: TLifeTime,
@@ -10,8 +10,8 @@ export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TArgs extends
 
   configure(
     configureFn: (locator: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => void,
-  ): BaseDefinition<TInstance, TLifeTime, TArgs> {
-    return new BaseDefinition(this.id, this.strategy, (use: IServiceLocator, ...args: TArgs) => {
+  ): Definition<TInstance, TLifeTime, TArgs> {
+    return new Definition(this.id, this.strategy, (use: IServiceLocator, ...args: TArgs) => {
       const instance = this.create(use, ...args);
       configureFn(use, instance, ...args);
       return instance;
@@ -20,24 +20,24 @@ export class BaseDefinition<TInstance, TLifeTime extends LifeTime, TArgs extends
 
   decorateWith<TExtendedInstance extends TInstance>(
     decorateFn: (use: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => TExtendedInstance,
-  ): BaseDefinition<TInstance, TLifeTime, TArgs> {
-    return new BaseDefinition(this.id, this.strategy, (use: IServiceLocator, ...args: TArgs): TInstance => {
+  ): Definition<TInstance, TLifeTime, TArgs> {
+    return new Definition(this.id, this.strategy, (use: IServiceLocator, ...args: TArgs): TInstance => {
       const instance = this.create(use, ...args);
       return decorateFn(use, instance, ...args);
     });
   }
 
-  bindTo(definition: BaseDefinition<TInstance, TLifeTime, TArgs>): BaseDefinition<TInstance, TLifeTime, TArgs> {
-    return new BaseDefinition(this.id, definition.strategy, definition.create);
+  bindTo(definition: Definition<TInstance, TLifeTime, TArgs>): Definition<TInstance, TLifeTime, TArgs> {
+    return new Definition(this.id, definition.strategy, definition.create);
   }
 
-  bindValue(value: TInstance): BaseDefinition<TInstance, TLifeTime, TArgs> {
-    return new BaseDefinition(this.id, this.strategy, (use, ...args) => value);
+  bindValue(value: TInstance): Definition<TInstance, TLifeTime, TArgs> {
+    return new Definition(this.id, this.strategy, (use, ...args) => value);
   }
 
   redefine(
     newCreate: (locator: IServiceLocator<TLifeTime>, ...args: TArgs) => TInstance,
-  ): BaseDefinition<TInstance, TLifeTime, TArgs> {
-    return new BaseDefinition(this.id, this.strategy, newCreate);
+  ): Definition<TInstance, TLifeTime, TArgs> {
+    return new Definition(this.id, this.strategy, newCreate);
   }
 }

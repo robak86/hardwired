@@ -6,7 +6,7 @@ import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
 
-import { BaseDefinition } from '../../abstract/BaseDefinition.js';
+import { Definition } from '../../abstract/Definition.js';
 
 describe(`define`, () => {
   const ext1 = unbound<number>('ext1');
@@ -15,7 +15,7 @@ describe(`define`, () => {
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
       const definition = fn(locator => null);
-      expectType<TypeOf<typeof definition, BaseDefinition<null, LifeTime.transient, []>>>(true);
+      expectType<TypeOf<typeof definition, Definition<null, LifeTime.transient, []>>>(true);
     });
   });
 

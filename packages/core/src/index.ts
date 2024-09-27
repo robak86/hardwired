@@ -28,4 +28,4 @@ export * from './container/Overrides.js';
 
 export { Middleware, combine, CreateFn } from './definitions/combine.js';
 export { cls, ClassType } from './definitions/cls.js';
-export { BaseDefinition } from './definitions/abstract/BaseDefinition.js';
+export { Definition } from './definitions/abstract/Definition.js';

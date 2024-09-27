@@ -3,11 +3,11 @@ import { IServiceLocator } from '../../container/IContainer.js';
 
 import { LifeTime } from './LifeTime.js';
 import { ValidDependenciesLifeTime } from './sync/InstanceDefinitionDependency.js';
-import { BaseDefinition } from './BaseDefinition.js';
+import { Definition } from './Definition.js';
 
 export interface AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTime> {
   <TValue, TArgs extends any[]>(
-    instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs
   ): TValue;
 }

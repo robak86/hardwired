@@ -1,13 +1,13 @@
 import { Optional } from 'utility-types';
 import { useAll } from '../hooks/useAll.js';
 import { FC } from 'react';
-import { BaseDefinition } from 'hardwired';
+import { Definition } from 'hardwired';
 
 export const inject =
-  <TDefinitions extends Record<string, BaseDefinition<any, any, any>>>(definitions: TDefinitions) =>
+  <TDefinitions extends Record<string, Definition<any, any, any>>>(definitions: TDefinitions) =>
   <
     TProps extends {
-      [K in keyof TDefinitions]: TDefinitions[K] extends BaseDefinition<infer TInstance, any, any> ? TInstance : never;
+      [K in keyof TDefinitions]: TDefinitions[K] extends Definition<infer TInstance, any, any> ? TInstance : never;
     },
   >(
     Component: FC<TProps>,

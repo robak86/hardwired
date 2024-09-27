@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { unbound } from '../../definitions/sync/unbound.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 
-import { BaseDefinition } from '../../definitions/abstract/BaseDefinition.js';
+import { Definition } from '../../definitions/abstract/Definition.js';
 import { IContainer } from '../IContainer.js';
 
 describe(`Container`, () => {
@@ -283,7 +283,7 @@ describe(`Container`, () => {
         it(`returns intercepted value`, async () => {
           const def = fn.singleton(() => 123);
 
-          const interceptSyncSpy = vi.fn(<T>(def: BaseDefinition<T, any, any>, ctx: IContainer): T => 456 as T);
+          const interceptSyncSpy = vi.fn(<T>(def: Definition<T, any, any>, ctx: IContainer): T => 456 as T);
 
           const interceptor = { interceptSync: interceptSyncSpy } as ContainerInterceptor;
           const ctn = container.new({ interceptor });

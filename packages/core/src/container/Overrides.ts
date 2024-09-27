@@ -1,3 +1,3 @@
-import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
+import { Definition } from '../definitions/abstract/Definition.js';
 
-export type Overrides = Array<BaseDefinition<any, any, any>>;
+export type Overrides = Array<Definition<any, any, any>>;

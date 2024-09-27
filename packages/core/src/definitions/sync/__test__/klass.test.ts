@@ -6,7 +6,7 @@ import { fn } from '../../definitions.js';
 import { describe, expect, it } from 'vitest';
 import { unbound } from '../unbound.js';
 
-import { BaseDefinition } from '../../abstract/BaseDefinition.js';
+import { Definition } from '../../abstract/Definition.js';
 
 describe(`klass`, () => {
   describe(`external params`, () => {
@@ -28,7 +28,7 @@ describe(`klass`, () => {
           return new TestClass(use(numD), use(objD));
         });
 
-        expectType<TypeEqual<typeof cls, BaseDefinition<TestClass, LifeTime.scoped, []>>>(true);
+        expectType<TypeEqual<typeof cls, Definition<TestClass, LifeTime.scoped, []>>>(true);
       });
 
       describe(`allowed dependencies life times`, () => {

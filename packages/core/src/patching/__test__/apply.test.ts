@@ -6,7 +6,7 @@ import { value } from '../../definitions/sync/value.js';
 import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
-import { BaseDefinition } from '../../definitions/abstract/BaseDefinition.js';
+import { Definition } from '../../definitions/abstract/Definition.js';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
@@ -121,7 +121,7 @@ describe(`apply`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: BaseDefinition<MyService, any, any>) {
+    function setup(instanceDef: Definition<MyService, any, any>) {
       const mPatch = instanceDef.configure((use, a) => {
         vi.spyOn(a, 'callMe');
         return a;

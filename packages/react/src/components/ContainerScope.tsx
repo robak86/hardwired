@@ -1,11 +1,11 @@
 import { ContainerContext, useContainer } from '../context/ContainerContext.js';
 import { useMemoized } from '../utils/useMemoized.js';
 import { FC, PropsWithChildren } from 'react';
-import { BaseDefinition } from 'hardwired';
+import { Definition } from 'hardwired';
 
 export type ContainerScopeProps = {
   invalidateKeys?: ReadonlyArray<any>;
-  overrides?: BaseDefinition<any, any, any>[];
+  overrides?: Definition<any, any, any>[];
 };
 
 export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({

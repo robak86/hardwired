@@ -5,19 +5,19 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 
 import { ContextEvents } from '../events/ContextEvents.js';
 
-import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
+import { Definition } from '../definitions/abstract/Definition.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue, TArgs extends any[]>(
-    instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs
   ): TValue;
 
-  all<TDefinitions extends Array<BaseDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
+  all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 
-  allAsync<TDefinitions extends Array<BaseDefinition<Promise<any>, any, []>>>(
+  allAsync<TDefinitions extends Array<Definition<Promise<any>, any, []>>>(
     ...definitions: [...TDefinitions]
   ): Promise<AsyncAllInstances<TDefinitions>>;
 }
@@ -32,7 +32,7 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
 
 export interface UseFn<TAllowedLifeTime extends LifeTime> {
   <TValue, TArgs extends any[]>(
-    instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs
   ): TValue;
 }
@@ -54,9 +54,9 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
 }
 
 // prettier-ignore
-export type AsyncAllItem<T extends BaseDefinition<Promise<any>, any, any>> =
-  T extends BaseDefinition<Promise<infer TInstance>, any, any> ? TInstance : never;
+export type AsyncAllItem<T extends Definition<Promise<any>, any, any>> =
+  T extends Definition<Promise<infer TInstance>, any, any> ? TInstance : never;
 
-export type AsyncAllInstances<T extends Array<BaseDefinition<Promise<any>, any, any>>> = {
+export type AsyncAllInstances<T extends Array<Definition<Promise<any>, any, any>>> = {
   [K in keyof T]: AsyncAllItem<T[K]>;
 };
