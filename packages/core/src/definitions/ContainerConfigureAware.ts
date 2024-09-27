@@ -13,18 +13,12 @@ export function containerConfiguratorToOptions(optionsOrFunction?: ContainerConf
     const binder = new ContainerConfigureBinder();
     optionsOrFunction(binder);
 
-    return {
-      scope: binder.scopeDefinitions,
-      final: binder.frozenDefinitions,
-    };
+    return binder;
   } else if (optionsOrFunction instanceof ContainerConfiguration) {
     const binder = new ContainerConfigureBinder();
     optionsOrFunction.apply(binder);
 
-    return {
-      scope: binder.scopeDefinitions,
-      final: binder.frozenDefinitions,
-    };
+    return binder;
   } else {
     return optionsOrFunction ?? {};
   }
@@ -40,7 +34,7 @@ export interface ContainerConfigureAware {
   ): Binder<TInstance, TLifeTime, TArgs>;
 }
 
-export class ContainerConfigureBinder implements ContainerConfigureAware {
+export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeOptions {
   private _scopeDefinitions: Definition<any, any, any>[] = [];
   private _frozenDefinitions: Definition<any, any, any>[] = [];
 

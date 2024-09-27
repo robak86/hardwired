@@ -10,11 +10,11 @@ export class BindingsRegistry {
     return new BindingsRegistry({}, {});
   }
 
-  static create(options: Pick<ScopeOptions, 'scope' | 'final'>): BindingsRegistry {
+  static create(options: Pick<ScopeOptions, 'scopeDefinitions' | 'frozenDefinitions'>): BindingsRegistry {
     const registry = BindingsRegistry.empty();
 
-    registry.addScopeBindings(options.scope ?? []);
-    registry.addFinalBindings(options.final ?? []);
+    registry.addScopeBindings(options.scopeDefinitions ?? []);
+    registry.addFinalBindings(options.frozenDefinitions ?? []);
 
     return registry;
   }

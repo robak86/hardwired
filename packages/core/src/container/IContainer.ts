@@ -6,12 +6,7 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 import { ContextEvents } from '../events/ContextEvents.js';
 
 import { Definition } from '../definitions/abstract/Definition.js';
-import {
-  ContainerConfiguration,
-  ContainerConfigureCallback,
-  ScopeConfiguration,
-  ScopeConfigureCallback,
-} from './ContainerConfiguration.js';
+import { ScopeConfiguration, ScopeConfigureCallback } from './ContainerConfiguration.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue, TArgs extends any[]>(

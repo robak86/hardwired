@@ -59,7 +59,7 @@ describe(`asyncDefine`, () => {
 
       const result = await container
         .new()
-        .checkoutScope({ scope: [ext1.bindValue(1), ext2.bindValue('str')] })
+        .checkoutScope({ scopeDefinitions: [ext1.bindValue(1), ext2.bindValue('str')] })
         .use(definition);
       expect(result).toEqual([1, 'str']);
     });

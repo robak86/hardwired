@@ -14,14 +14,9 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { v4 } from 'uuid';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import {
-  ContainerConfiguration,
-  ContainerConfigureCallback,
-  ScopeConfiguration,
-  ScopeConfigureCallback,
-} from './ContainerConfiguration.js';
-import { containerConfiguratorToOptions, ContainerConfigureBinder } from '../definitions/ContainerConfigureAware.js';
-import { scopeConfiguratorToOptions, ScopeConfigureBinder } from '../definitions/ScopeConfigureAware.js';
+import { ContainerConfiguration, ContainerConfigureCallback } from './ContainerConfiguration.js';
+import { containerConfiguratorToOptions } from '../definitions/ContainerConfigureAware.js';
+import { scopeConfiguratorToOptions } from '../definitions/ScopeConfigureAware.js';
 
 interface Container extends UseFn<LifeTime> {}
 
@@ -51,7 +46,7 @@ class Container
     return new Container(
       null,
       definitionsRegistry,
-      InstancesStore.create(options.scope ?? []),
+      InstancesStore.create(options.scopeDefinitions ?? []),
       defaultStrategiesRegistry,
       new ContextEvents(),
     );
@@ -90,8 +85,8 @@ class Container
 
     const scopeContext = new Container(
       this.id,
-      this.bindingsRegistry.checkoutForScope(options.scope, options.final),
-      this.instancesStore.childScope(options.scope),
+      this.bindingsRegistry.checkoutForScope(options.scopeDefinitions ?? [], options.frozenDefinitions ?? []),
+      this.instancesStore.childScope(options.scopeDefinitions ?? []),
       this.strategiesRegistry,
       this.events,
     );
@@ -108,33 +103,11 @@ class Container
       return fn!(this.checkoutScope(fnOrOptions));
     }
   };
-
-  private _applyContainerConfiguration(config: ContainerConfiguration) {
-    const binder = new ContainerConfigureBinder();
-    config.apply(binder);
-  }
-
-  private _applyContainerConfigurationCallback(callback: ContainerConfigureCallback) {
-    const binder = new ContainerConfigureBinder();
-    callback(binder);
-
-    throw new Error('Implement me!');
-  }
-
-  private _applyScopeConfiguration(config: ScopeConfiguration, parentContainer: IContainer) {
-    const binder = new ScopeConfigureBinder();
-    config.apply(binder, parentContainer);
-  }
-
-  private _applyScopeConfigurationCallback(callback: ScopeConfigureCallback, parentContainer: IContainer) {
-    const binder = new ScopeConfigureBinder();
-    callback(binder, parentContainer);
-  }
 }
 
 export type ScopeOptions = {
-  final?: Overrides; // propagated to descendant containers
-  scope?: Overrides;
+  frozenDefinitions?: Overrides; // propagated to descendant containers
+  scopeDefinitions?: Overrides;
 };
 
 export const once = new Container(

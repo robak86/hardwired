@@ -10,25 +10,19 @@ export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scope
 export type ContainerConfigurator = ScopeOptions | ScopeConfigureCallback | ScopeConfiguration;
 
 export function scopeConfiguratorToOptions(
-  optionsOrFunction: ContainerConfigurator,
+  optionsOrFunction: ContainerConfigurator | undefined,
   parentContainer: IContainer,
 ): ScopeOptions {
   if (optionsOrFunction instanceof Function) {
     const binder = new ScopeConfigureBinder();
     optionsOrFunction(binder, parentContainer);
 
-    return {
-      scope: binder.scopeDefinitions,
-      final: [],
-    };
+    return binder;
   } else if (optionsOrFunction instanceof ScopeConfiguration) {
     const binder = new ScopeConfigureBinder();
     optionsOrFunction.apply(binder, parentContainer);
 
-    return {
-      scope: binder.scopeDefinitions,
-      final: [],
-    };
+    return binder;
   } else {
     return optionsOrFunction ?? {};
   }
@@ -40,7 +34,7 @@ export interface ScopeConfigureAware {
   ): Binder<TInstance, TLifeTime, TArgs>;
 }
 
-export class ScopeConfigureBinder implements ScopeConfigureAware {
+export class ScopeConfigureBinder implements ScopeConfigureAware, ScopeOptions {
   private _scopeDefinitions: Definition<any, any, any>[] = [];
 
   constructor() {}

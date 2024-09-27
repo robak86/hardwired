@@ -11,7 +11,7 @@ describe(`decorate`, () => {
   it(`decorates original value`, async () => {
     const someValue = value(1);
 
-    const c = container.new({ scope: [someValue.decorateWith((use, val) => val + 1)] });
+    const c = container.new({ scopeDefinitions: [someValue.decorateWith((use, val) => val + 1)] });
 
     expect(c.use(someValue)).toEqual(2);
   });
@@ -24,7 +24,7 @@ describe(`decorate`, () => {
     });
 
     expect(container.new().use(someValue)).toEqual(1);
-    expect(container.new({ scope: [mPatch] }).use(someValue)).toEqual(2);
+    expect(container.new({ scopeDefinitions: [mPatch] }).use(someValue)).toEqual(2);
   });
 
   it(`allows for multiple decorations`, async () => {
@@ -37,7 +37,7 @@ describe(`decorate`, () => {
       .decorateWith((use, val) => {
         return val * 3;
       });
-    const c = container.new({ scope: [mPatch] });
+    const c = container.new({ scopeDefinitions: [mPatch] });
     expect(c.use(someValue)).toEqual(6);
   });
 
@@ -50,7 +50,7 @@ describe(`decorate`, () => {
       return val + use(a) + use(b);
     });
 
-    const c = container.new({ scope: [mPatch] });
+    const c = container.new({ scopeDefinitions: [mPatch] });
     expect(c.use(someValue)).toEqual(13);
   });
 
@@ -66,7 +66,7 @@ describe(`decorate`, () => {
       return val * use(b);
     });
 
-    const c = container.new({ scope: [mPatch] });
+    const c = container.new({ scopeDefinitions: [mPatch] });
     expect(c.use(someValue)).toEqual(6);
   });
 
@@ -76,7 +76,7 @@ describe(`decorate`, () => {
 
       const mPatch = a.decorateWith((use, a) => a);
 
-      const c = container.new({ scope: [mPatch] });
+      const c = container.new({ scopeDefinitions: [mPatch] });
       expect(c.use(a)).toEqual(c.use(a));
     });
 
@@ -85,7 +85,7 @@ describe(`decorate`, () => {
 
       const mPatch = a.decorateWith((use, a) => a);
 
-      const c = container.new({ scope: [mPatch] });
+      const c = container.new({ scopeDefinitions: [mPatch] });
       expect(c.use(a)).not.toEqual(c.use(a));
     });
 
@@ -98,7 +98,7 @@ describe(`decorate`, () => {
 
       const mPatch = a.decorateWith((use, a) => a);
 
-      const c = container.new({ scope: [mPatch] });
+      const c = container.new({ scopeDefinitions: [mPatch] });
       const obj1 = fn.scoped(use => ({
         a: use(a),
         source: use(source),
@@ -131,8 +131,8 @@ describe(`decorate`, () => {
 
       const replaced = instanceDef.bindValue({ callMe: () => {} });
 
-      const scope1 = container.new({ final: [mPatch] });
-      const scope2 = scope1.checkoutScope({ scope: [replaced] });
+      const scope1 = container.new({ frozenDefinitions: [mPatch] });
+      const scope2 = scope1.checkoutScope({ scopeDefinitions: [replaced] });
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);
       return { instance1, instance2 };

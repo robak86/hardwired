@@ -15,7 +15,7 @@ export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({
 }) => {
   const container = useContainer();
   const getScopedContainer = useMemoized(() => {
-    return container.checkoutScope({ scope: overrides }).checkoutScope();
+    return container.checkoutScope({ scopeDefinitions: overrides }).checkoutScope();
   });
 
   // eslint-disable-next-line react/no-children-prop

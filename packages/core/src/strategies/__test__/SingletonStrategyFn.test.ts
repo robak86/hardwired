@@ -103,7 +103,7 @@ describe(`SingletonStrategy`, () => {
 
         const patchedA = a.bindValue(2);
 
-        const level1 = root.checkoutScope({ scope: [patchedA] });
+        const level1 = root.checkoutScope({ scopeDefinitions: [patchedA] });
         const level2 = level1.checkoutScope({});
 
         expect(level1.use(a)).toEqual(2);
@@ -129,7 +129,7 @@ describe(`SingletonStrategy`, () => {
 
         const root = container.new();
         const level1 = root.checkoutScope();
-        const level2 = level1.checkoutScope({ scope: [a.bindValue(1)] });
+        const level2 = level1.checkoutScope({ scopeDefinitions: [a.bindValue(1)] });
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.use(a); // important that level1 is called as first
@@ -149,8 +149,8 @@ describe(`SingletonStrategy`, () => {
         const a = fn.singleton(randomFactorySpy);
 
         const root = container.new();
-        const level1 = root.checkoutScope({ scope: [a.bindValue(1)] });
-        const level2 = level1.checkoutScope({ scope: [a.bindValue(2)] });
+        const level1 = root.checkoutScope({ scopeDefinitions: [a.bindValue(1)] });
+        const level2 = level1.checkoutScope({ scopeDefinitions: [a.bindValue(2)] });
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.use(a);
@@ -178,7 +178,7 @@ describe(`SingletonStrategy`, () => {
 
         expect(c.use(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ scope: [childScopePatch] });
+        const childScope = c.checkoutScope({ scopeDefinitions: [childScopePatch] });
         expect(childScope.use(k1)).toEqual(1);
       });
 
@@ -195,7 +195,7 @@ describe(`SingletonStrategy`, () => {
 
         expect(c.use(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ scope: [childScopePatch] });
+        const childScope = c.checkoutScope({ scopeDefinitions: [childScopePatch] });
         expect(childScope.use(k1)).toEqual(1);
         expect(childScope.use(k2)).toEqual(2);
       });

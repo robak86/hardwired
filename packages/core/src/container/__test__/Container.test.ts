@@ -116,7 +116,7 @@ describe(`Container`, () => {
         const a = fn.singleton(() => 1);
         const overrides = [a.bindValue(2)];
 
-        expect(container.new({ scope: overrides }).use(a)).toEqual(2);
+        expect(container.new({ scopeDefinitions: overrides }).use(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
@@ -125,7 +125,7 @@ describe(`Container`, () => {
 
         const mPatch = a.bindTo(fn.singleton(() => 2));
 
-        expect(container.new({ scope: [mPatch] }).use(b)).toEqual('b');
+        expect(container.new({ scopeDefinitions: [mPatch] }).use(b)).toEqual('b');
       });
     });
   });
@@ -147,7 +147,7 @@ describe(`Container`, () => {
       const aPatch = a.bindTo(fn.singleton(() => 10));
       const bPatch = b.bindTo(fn.singleton(() => 20));
 
-      const c = container.new({ final: [aPatch, bPatch] });
+      const c = container.new({ frozenDefinitions: [aPatch, bPatch] });
 
       const actual = c.use(aPlusB);
       expect(actual).toEqual(30);
@@ -173,7 +173,7 @@ describe(`Container`, () => {
 
       const [val1, val2] = container
         .new()
-        .checkoutScope({ scope: [extD.bindValue(new BoxedValue(10))] })
+        .checkoutScope({ scopeDefinitions: [extD.bindValue(new BoxedValue(10))] })
         .all(multiplyBy2D, divideBy2D);
 
       expect(val1).toEqual(20);
@@ -200,7 +200,7 @@ describe(`Container`, () => {
 
       const [req1, req2] = container
         .new()
-        .checkoutScope({ scope: [extD.bindValue(new BoxedValue(10))] })
+        .checkoutScope({ scopeDefinitions: [extD.bindValue(new BoxedValue(10))] })
         .all(multiplyBy2D, divideBy2D);
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);
