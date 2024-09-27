@@ -80,6 +80,21 @@ describe(`ScopeStrategy`, () => {
       expect(childScope.use(k1)).toEqual(1);
       expect(childScope.use(k2)).toEqual(2);
     });
+
+    describe(`child scope sets final overrides for singleton`, () => {
+      it(`creates own copy of singleton available for the scope`, async () => {
+        const a = fn.singleton(() => 0);
+
+        const root = container.new();
+        const childScope = root.checkoutScope({ final: [a.bindValue(1)] });
+
+        // cannot redefine final scopes
+        expect(() => childScope.checkoutScope({ final: [a.bindValue(2)] })).toThrow('Cannot override it');
+
+        expect(root.use(a)).toEqual(0);
+        expect(childScope.use(a)).toEqual(1);
+      });
+    });
   });
 
   describe(`scope overrides`, () => {
