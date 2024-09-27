@@ -1,4 +1,4 @@
-import { Container, container } from '../container/Container.js';
+import { container } from '../container/Container.js';
 
 import { fn } from '../definitions/definitions.js';
 
@@ -6,6 +6,7 @@ import { fn } from '../definitions/definitions.js';
 import Bench from 'tinybench';
 
 import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
+import { IContainer } from '../container/IContainer.js';
 
 function buildSingletonTree(times: number, depth: number, currentDepth = 0): BaseDefinition<number, any, any>[] {
   if (currentDepth > depth) {
@@ -79,7 +80,7 @@ const scopedD = fn.scoped(use => {
   });
 });
 
-let cnt: Container;
+let cnt: IContainer;
 
 const bench = new Bench({
   time: 100,

@@ -1,8 +1,7 @@
-import { container } from '../../container/Container.js';
+import { Container, container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { fn } from '../../definitions/definitions.js';
 
-import { ContainerContext } from '../../context/ContainerContext.js';
 import { value } from '../../definitions/sync/value.js';
 import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
@@ -130,7 +129,7 @@ describe(`apply`, () => {
 
       const replaced = instanceDef.bindValue({ callMe: () => {} });
 
-      const scope1 = ContainerContext.create({ final: [mPatch] });
+      const scope1 = Container.create({ final: [mPatch] });
       const scope2 = scope1.checkoutScope({ scope: [replaced] });
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);

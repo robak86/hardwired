@@ -7,8 +7,6 @@ export * from './definitions/definitions.js';
 export * from './definitions/abstract/sync/InstanceDefinition.js';
 export * from './definitions/abstract/sync/InstanceDefinitionDependency.js';
 
-export { ContainerContext } from './context/ContainerContext.js';
-
 export { BuildStrategy } from './strategies/abstract/BuildStrategy.js';
 
 export { value } from './definitions/sync/value.js';

@@ -1,14 +1,13 @@
 import { fn } from '../../definitions/definitions.js';
-import { container } from '../Container.js';
+import { Container, container } from '../Container.js';
 
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it, vi } from 'vitest';
 import { unbound } from '../../definitions/sync/unbound.js';
-import { ContainerContext } from '../../context/ContainerContext.js';
-import { InstancesBuilder } from '../../context/abstract/InstancesBuilder.js';
 import { ContainerInterceptor } from '../../context/ContainerInterceptor.js';
 
 import { BaseDefinition } from '../../definitions/abstract/BaseDefinition.js';
+import { IContainer } from '../IContainer.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
@@ -258,7 +257,7 @@ describe(`Container`, () => {
           const interceptSyncSpy = vi.fn();
           const ctn = container.new({ interceptor: { interceptSync: interceptSyncSpy } });
           ctn.use(def);
-          expect(interceptSyncSpy).toBeCalledWith(def, expect.any(ContainerContext));
+          expect(interceptSyncSpy).toBeCalledWith(def, expect.any(Container));
         });
 
         it(`is called only once preserving singleton strategy`, async () => {
@@ -284,7 +283,7 @@ describe(`Container`, () => {
         it(`returns intercepted value`, async () => {
           const def = fn.singleton(() => 123);
 
-          const interceptSyncSpy = vi.fn(<T>(def: BaseDefinition<T, any, any>, ctx: InstancesBuilder): T => 456 as T);
+          const interceptSyncSpy = vi.fn(<T>(def: BaseDefinition<T, any, any>, ctx: IContainer): T => 456 as T);
 
           const interceptor = { interceptSync: interceptSyncSpy } as ContainerInterceptor;
           const ctn = container.new({ interceptor });

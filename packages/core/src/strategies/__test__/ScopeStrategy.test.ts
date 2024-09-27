@@ -1,29 +1,28 @@
 import { fn } from '../../definitions/definitions.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { ContainerContext } from '../../context/ContainerContext.js';
 import { describe, expect, it } from 'vitest';
-import { container } from '../../container/Container.js';
+import { Container, container } from '../../container/Container.js';
 
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {
     it(`acts like singleton within current scope`, async () => {
       const a = fn.scoped(() => Math.random());
 
-      const c = ContainerContext.empty();
-      expect(c.request(a)).toEqual(c.request(a));
+      const c = Container.empty();
+      expect(c.use(a)).toEqual(c.use(a));
 
       const childScope = c.checkoutScope();
-      expect(childScope.request(a)).toEqual(childScope.request(a));
-      expect(c.request(a)).not.toEqual(childScope.request(a));
+      expect(childScope.use(a)).toEqual(childScope.use(a));
+      expect(c.use(a)).not.toEqual(childScope.use(a));
     });
 
     it(`returns new instance in new scope`, async () => {
       const a = fn.scoped(() => Math.random());
-      const c = ContainerContext.empty();
+      const c = Container.empty();
 
       const childScope = c.checkoutScope();
-      expect(childScope.request(a)).toEqual(childScope.request(a));
-      expect(c.request(a)).not.toEqual(childScope.request(a));
+      expect(childScope.use(a)).toEqual(childScope.use(a));
+      expect(c.use(a)).not.toEqual(childScope.use(a));
     });
   });
 
@@ -38,14 +37,14 @@ describe(`ScopeStrategy`, () => {
       const globalOverride = k1.bindTo(fn.scoped(() => new Boxed(1)));
       const childScopePatch = k1.bindTo(fn.scoped(() => new Boxed(2)));
 
-      const c = ContainerContext.create({ final: [globalOverride] });
+      const c = Container.create({ final: [globalOverride] });
 
-      expect(c.request(k1).value).toEqual(1);
+      expect(c.use(k1).value).toEqual(1);
 
       const childScope = c.checkoutScope({ scope: [childScopePatch] });
-      expect(childScope.request(k1).value).toEqual(1);
+      expect(childScope.use(k1).value).toEqual(1);
 
-      expect(c.request(k1)).toBe(childScope.request(k1));
+      expect(c.use(k1)).toBe(childScope.use(k1));
     });
 
     it(`is possible to set final from child scope`, async () => {
@@ -58,13 +57,13 @@ describe(`ScopeStrategy`, () => {
       const finalBinding = k1.bindTo(fn.scoped(() => new Boxed(1)));
       const scopeBinding = k1.bindTo(fn.scoped(() => new Boxed(2)));
 
-      const root = ContainerContext.create({});
+      const root = Container.create({});
       const child = root.checkoutScope({ final: [finalBinding] });
       const grandChild = child.checkoutScope({ scope: [scopeBinding] }); // scopeBinding is ignored because of finalBinding
 
-      expect(root.request(k1).value).toEqual(root.request(k1).value);
-      expect(child.request(k1).value).toEqual(1);
-      expect(grandChild.request(k1).value).toEqual(1);
+      expect(root.use(k1).value).toEqual(root.use(k1).value);
+      expect(child.use(k1).value).toEqual(1);
+      expect(grandChild.use(k1).value).toEqual(1);
     });
 
     it(`allows for overrides other than specified in final bindings`, async () => {
@@ -74,12 +73,12 @@ describe(`ScopeStrategy`, () => {
       const parentBinding = k1.bindTo(fn.scoped(() => 1));
       const scopeBinding = k2.bindTo(fn.scoped(() => 2));
 
-      const c = ContainerContext.create({ final: [parentBinding] });
-      expect(c.request(k1)).toEqual(1);
+      const c = Container.create({ final: [parentBinding] });
+      expect(c.use(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scope: [scopeBinding] });
-      expect(childScope.request(k1)).toEqual(1);
-      expect(childScope.request(k2)).toEqual(2);
+      expect(childScope.use(k1)).toEqual(1);
+      expect(childScope.use(k2)).toEqual(2);
     });
   });
 
@@ -87,29 +86,29 @@ describe(`ScopeStrategy`, () => {
     it(`replaces definitions for scoped scope`, async () => {
       const a = fn.scoped(() => new BoxedValue(1));
 
-      const c = ContainerContext.empty();
+      const c = Container.empty();
 
-      expect(c.request(a).value).toEqual(1);
+      expect(c.use(a).value).toEqual(1);
 
       const mPatch = a.bindTo(fn.scoped(() => new BoxedValue(2)));
       const childC = c.checkoutScope({ scope: [mPatch] });
-      expect(childC.request(a).value).toEqual(2);
+      expect(childC.use(a).value).toEqual(2);
     });
 
     it(`new scope inherits parent scope overrides`, async () => {
       const a = fn.scoped(() => new BoxedValue(1));
 
-      const root = ContainerContext.empty();
-      expect(root.request(a).value).toEqual(1);
+      const root = Container.empty();
+      expect(root.use(a).value).toEqual(1);
 
       const mPatch = a.bindTo(fn.scoped(() => new BoxedValue(2)));
       const childC = root.checkoutScope({ scope: [mPatch] });
-      expect(childC.request(a).value).toEqual(2);
+      expect(childC.use(a).value).toEqual(2);
 
       const grandChildC = childC.checkoutScope();
-      expect(grandChildC.request(a).value).toEqual(2);
+      expect(grandChildC.use(a).value).toEqual(2);
 
-      expect(childC.request(a)).not.toBe(grandChildC.request(a));
+      expect(childC.use(a)).not.toBe(grandChildC.use(a));
     });
   });
 
@@ -131,11 +130,11 @@ describe(`ScopeStrategy`, () => {
         it(`does not inherit any values from parent scope`, async () => {
           const a = fn.scoped(() => Math.random());
 
-          const c = ContainerContext.empty();
-          const req1 = c.request(a);
+          const c = Container.empty();
+          const req1 = c.use(a);
 
           const childC = c.checkoutScope();
-          const req2 = childC.request(a);
+          const req2 = childC.use(a);
 
           expect(req1).not.toEqual(req2);
         });
@@ -146,14 +145,14 @@ describe(`ScopeStrategy`, () => {
       it(`replaces definitions for request scope`, async () => {
         const a = fn.scoped(() => 1);
 
-        const c = ContainerContext.empty();
+        const c = Container.empty();
 
         const mPatch = a.bindTo(fn.scoped(() => 2));
 
         const childC = c.checkoutScope({ scope: [mPatch] });
 
-        expect(c.request(a)).toEqual(1);
-        expect(childC.request(a)).toEqual(2);
+        expect(c.use(a)).toEqual(1);
+        expect(childC.use(a)).toEqual(2);
       });
     });
 
@@ -164,11 +163,11 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(() => 1));
         const childScopePatch = k1.bindTo(fn.scoped(() => 2));
 
-        const c = ContainerContext.create({ final: [invariantPatch] });
-        expect(c.request(k1)).toEqual(1);
+        const c = Container.create({ final: [invariantPatch] });
+        expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
-        expect(childScope.request(k1)).toEqual(1);
+        expect(childScope.use(k1)).toEqual(1);
       });
 
       it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
@@ -178,12 +177,12 @@ describe(`ScopeStrategy`, () => {
         const finalBinding = k1.bindTo(fn.scoped(() => 1));
         const scopeBinding = k2.bindTo(fn.scoped(() => 2));
 
-        const c = ContainerContext.create({ final: [finalBinding] });
-        expect(c.request(k1)).toEqual(1);
+        const c = Container.create({ final: [finalBinding] });
+        expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [scopeBinding] });
-        expect(childScope.request(k1)).toEqual(1);
-        expect(childScope.request(k2)).toEqual(2);
+        expect(childScope.use(k1)).toEqual(1);
+        expect(childScope.use(k2)).toEqual(2);
       });
     });
   });
@@ -218,11 +217,11 @@ describe(`ScopeStrategy`, () => {
         it(`does not inherit any values from parent scope`, async () => {
           const a = fn.scoped(async () => Math.random());
 
-          const c = ContainerContext.empty();
-          const req1 = await c.request(a);
+          const c = Container.empty();
+          const req1 = await c.use(a);
 
           const childC = c.checkoutScope();
-          const req2 = childC.request(a);
+          const req2 = childC.use(a);
 
           expect(req1).not.toEqual(req2);
         });
@@ -233,13 +232,13 @@ describe(`ScopeStrategy`, () => {
       it(`replaces definitions for request scope`, async () => {
         const a = fn.scoped(async () => 1);
 
-        const c = ContainerContext.empty();
+        const c = Container.empty();
 
         const mPatch = a.bindTo(fn.scoped(async () => 2));
         const childC = c.checkoutScope({ scope: [mPatch] });
 
-        expect(await c.request(a)).toEqual(1);
-        expect(await childC.request(a)).toEqual(2);
+        expect(await c.use(a)).toEqual(1);
+        expect(await childC.use(a)).toEqual(2);
       });
     });
 
@@ -250,12 +249,12 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
         const childScopePatch = k1.bindTo(fn.scoped(async () => 2));
 
-        const c = ContainerContext.create({ final: [invariantPatch] });
+        const c = Container.create({ final: [invariantPatch] });
 
-        expect(await c.request(k1)).toEqual(1);
+        expect(await c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
-        expect(await childScope.request(k1)).toEqual(1);
+        expect(await childScope.use(k1)).toEqual(1);
       });
 
       it(`allows for overrides for other keys than ones specified in global overrides`, async () => {
@@ -265,12 +264,12 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
         const childScopePatch = k2.bindTo(fn.scoped(async () => 2));
 
-        const c = ContainerContext.create({ final: [invariantPatch] });
-        expect(await c.request(k1)).toEqual(1);
+        const c = Container.create({ final: [invariantPatch] });
+        expect(await c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
-        expect(await childScope.request(k1)).toEqual(1);
-        expect(await childScope.request(k2)).toEqual(2);
+        expect(await childScope.use(k1)).toEqual(1);
+        expect(await childScope.use(k2)).toEqual(2);
       });
     });
   });

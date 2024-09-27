@@ -1,7 +1,7 @@
-import { container } from '../../container/Container.js';
+import { Container, container } from '../../container/Container.js';
 import { v4 } from 'uuid';
 import { fn } from '../../definitions/definitions.js';
-import { ContainerContext } from '../../context/ContainerContext.js';
+
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -87,7 +87,7 @@ describe(`SingletonStrategy`, () => {
       it(`replaces definitions for singleton scope`, async () => {
         // const a = fn.singleton(() => 1);
         //
-        // const c = ContainerContext.empty();
+        // const c = Container.empty();
         //
         // const patchedA = set(a, 2);
         // const childC = c.checkoutScope({ overrides: [patchedA] });
@@ -99,22 +99,22 @@ describe(`SingletonStrategy`, () => {
       it(`inherits singleton instance from parent scope`, async () => {
         const a = fn.singleton(() => 1);
 
-        const root = ContainerContext.empty();
+        const root = Container.empty();
 
         const patchedA = a.bindValue(2);
 
         const level1 = root.checkoutScope({ scope: [patchedA] });
         const level2 = level1.checkoutScope({});
 
-        expect(level1.request(a)).toEqual(2);
-        expect(level2.request(a)).toEqual(2);
-        expect(root.request(a)).toEqual(1);
+        expect(level1.use(a)).toEqual(2);
+        expect(level2.use(a)).toEqual(2);
+        expect(root.use(a)).toEqual(1);
       });
 
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
         const a = fn.singleton(() => Math.random());
 
-        const parentC = ContainerContext.empty();
+        const parentC = Container.empty();
         const childC = parentC.checkoutScope({});
 
         const req1 = childC.use(a); // important that childC is called as first
@@ -127,7 +127,7 @@ describe(`SingletonStrategy`, () => {
 
         const a = fn.singleton(randomFactorySpy);
 
-        const root = ContainerContext.empty();
+        const root = Container.empty();
         const level1 = root.checkoutScope();
         const level2 = level1.checkoutScope({ scope: [a.bindValue(1)] });
         const level3 = level2.checkoutScope();
@@ -148,7 +148,7 @@ describe(`SingletonStrategy`, () => {
 
         const a = fn.singleton(randomFactorySpy);
 
-        const root = ContainerContext.empty();
+        const root = Container.empty();
         const level1 = root.checkoutScope({ scope: [a.bindValue(1)] });
         const level2 = level1.checkoutScope({ scope: [a.bindValue(2)] });
         const level3 = level2.checkoutScope();
@@ -172,11 +172,11 @@ describe(`SingletonStrategy`, () => {
         const invariantPatch = k1.bindValue(1);
         const childScopePatch = k1.bindValue(2);
 
-        const c = ContainerContext.create({ final: [invariantPatch] });
-        expect(c.request(k1)).toEqual(1);
+        const c = Container.create({ final: [invariantPatch] });
+        expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
-        expect(childScope.request(k1)).toEqual(1);
+        expect(childScope.use(k1)).toEqual(1);
       });
 
       it(`allows for overrides for other keys than ones changes invariants array`, async () => {
@@ -186,13 +186,13 @@ describe(`SingletonStrategy`, () => {
         const invariantPatch = k1.bindValue(1);
         const childScopePatch = k2.bindValue(2);
 
-        const c = ContainerContext.create({ scope: [invariantPatch] });
+        const c = Container.create({ scope: [invariantPatch] });
 
-        expect(c.request(k1)).toEqual(1);
+        expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
-        expect(childScope.request(k1)).toEqual(1);
-        expect(childScope.request(k2)).toEqual(2);
+        expect(childScope.use(k1)).toEqual(1);
+        expect(childScope.use(k2)).toEqual(2);
       });
     });
   });
