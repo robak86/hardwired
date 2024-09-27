@@ -1,6 +1,7 @@
 import { LifeTime } from './abstract/LifeTime.js';
 import { Definition } from './abstract/Definition.js';
 import { IServiceLocator } from '../container/IContainer.js';
+import { ParentContainer } from '../container/ContainerConfiguration.js';
 
 export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
   constructor(
@@ -49,6 +50,14 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
 
   toRedefined(create: (locator: IServiceLocator<TLifeTime>, ...args: TArgs) => TInstance): void {
     const newDefinition = new Definition(this._definition.id, this._definition.strategy, create);
+    this._definitions.push(newDefinition);
+  }
+
+  // TODO: this doesn't make sens if the definition is singleton. No need to inherit as singletons are always global
+  toInheritedFrom(container: ParentContainer) {
+    const newDefinition = new Definition(this._definition.id, LifeTime.transient, (_, ...args: TArgs) => {
+      return container.use(this._definition, ...args);
+    });
     this._definitions.push(newDefinition);
   }
 }

@@ -24,11 +24,11 @@ export function containerConfiguratorToOptions(optionsOrFunction?: ContainerConf
 export interface ContainerConfigureAware {
   bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
-  ): Binder<TInstance, TLifeTime, TArgs>;
+  ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 
   freeze<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
-  ): Binder<TInstance, TLifeTime, TArgs>;
+  ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 }
 
 export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeOptions {
