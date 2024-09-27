@@ -1,14 +1,7 @@
 import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import {
-  AsyncAllInstances,
-  IContainer,
-  IContainerScopes,
-  InstanceCreationAware,
-  IServiceLocator,
-  UseFn,
-} from './IContainer.js';
+import { AsyncAllInstances, IContainer, IContainerScopes, InstanceCreationAware, UseFn } from './IContainer.js';
 
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
@@ -21,7 +14,8 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { v4 } from 'uuid';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ContainerConfigureAware } from './abstract/ContainerConfigureAware.js';
+import { ContainerConfigureAware, ScopeConfigureAware } from './abstract/ScopeConfigureAware.js';
+import { ScopeConfigurationDSL } from './ScopeConfigurationDSL.js';
 
 interface Container extends UseFn<LifeTime> {}
 
@@ -30,6 +24,9 @@ class Container
   implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IContainer, ContainerConfigureAware
 {
   public readonly id = v4();
+
+  public readonly scope: ScopeConfigureAware;
+  public readonly final: ScopeConfigureAware;
 
   constructor(
     public readonly parentId: string | null,
@@ -42,6 +39,9 @@ class Container
     super((definition: Definition<any, any, any>, ...args: any[]) => {
       return this.use(definition as any, ...args); // TODO: fix type
     });
+
+    this.scope = new ScopeConfigurationDSL(this.bindingsRegistry);
+    this.final = new ScopeConfigurationDSL(this.bindingsRegistry);
   }
 
   new(options: ScopeOptions = {}): IContainer {
@@ -70,6 +70,13 @@ class Container
     return patchedInstanceDef.create(this, ...args);
   }
 
+  use: UseFn<LifeTime> = (definition, ...args) => {
+    const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
+    const strategy = this.strategiesRegistry.get(definition.strategy);
+
+    return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
+  };
+
   all = <TDefinitions extends Array<Definition<any, any, []>>>(
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions> => {
@@ -80,13 +87,6 @@ class Container
     ...definitions: [...TDefinitions]
   ): Promise<AsyncAllInstances<TDefinitions>> => {
     return Promise.all(definitions.map(def => this.use(def)) as AsyncAllInstances<TDefinitions>);
-  };
-
-  use: UseFn<LifeTime> = (definition, ...args) => {
-    const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
-    const strategy = this.strategiesRegistry.get(definition.strategy);
-
-    return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
   checkoutScope: IContainerScopes['checkoutScope'] = (options = {}): IContainer => {
@@ -112,59 +112,6 @@ class Container
     } else {
       return fn!(this.checkoutScope(fnOrOptions));
     }
-  };
-
-  configure = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
-    configureFn: (locator: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => void,
-  ): void => {
-    const newDefinition = new Definition(definition.id, definition.strategy, (use: IServiceLocator, ...args: TArgs) => {
-      const instance = definition.create(use, ...args);
-      configureFn(use, instance, ...args);
-      return instance;
-    });
-
-    this.bindingsRegistry.addScopeBinding(newDefinition);
-  };
-
-  decorateWith = <TInstance, TLifeTime extends LifeTime, TArgs extends any[], TExtendedInstance extends TInstance>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
-    decorateFn: (use: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => TExtendedInstance,
-  ): void => {
-    const newDefinition = new Definition(
-      definition.id,
-      definition.strategy,
-      (use: IServiceLocator, ...args: TArgs): TInstance => {
-        const instance = definition.create(use, ...args);
-        return decorateFn(use, instance, ...args);
-      },
-    );
-
-    this.bindingsRegistry.addScopeBinding(newDefinition);
-  };
-
-  bindTo = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
-    otherDefinition: Definition<TInstance, TLifeTime, TArgs>,
-  ): void => {
-    const newDefinition = new Definition(definition.id, otherDefinition.strategy, otherDefinition.create);
-    this.bindingsRegistry.addScopeBinding(newDefinition);
-  };
-
-  bindValue = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
-    value: TInstance,
-  ): void => {
-    const newDefinition = new Definition(definition.id, definition.strategy, (use, ...args) => value);
-    this.bindingsRegistry.addScopeBinding(newDefinition);
-  };
-
-  redefine = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
-    newCreate: (locator: IServiceLocator<TLifeTime>, ...args: TArgs) => TInstance,
-  ): void => {
-    const newDefinition = new Definition(definition.id, definition.strategy, newCreate);
-    this.bindingsRegistry.addScopeBinding(newDefinition);
   };
 }
 

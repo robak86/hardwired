@@ -32,10 +32,15 @@ export type RedefineMethod = <TInstance, TLifeTime extends LifeTime, TArgs exten
   newCreate: (locator: IServiceLocator<TLifeTime>, ...args: TArgs) => TInstance,
 ) => void;
 
-export interface ContainerConfigureAware {
+export interface ScopeConfigureAware {
   configure: ConfigureMethod;
   decorateWith: DecorateWithMethod;
   bindTo: BindToMethod;
   bindValue: BindValueMethod;
   redefine: RedefineMethod;
+}
+
+export interface ContainerConfigureAware {
+  scope: ScopeConfigureAware;
+  final: ScopeConfigureAware;
 }
