@@ -24,9 +24,6 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
 
   withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
   withScope<TValue>(options: ScopeOptions, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
-
-  override(definition: BaseDefinition<any, any, any>): void;
-  provide<T>(def: BaseDefinition<T, LifeTime.scoped, any>, instance: T): void;
 }
 
 export interface UseFn<TAllowedLifeTime extends LifeTime = LifeTime> {

@@ -22,8 +22,6 @@ export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends L
   readonly all: IServiceLocator<TAllowedLifeTime>['all'];
   readonly checkoutScope: IServiceLocator<TAllowedLifeTime>['checkoutScope'];
   readonly withScope: IServiceLocator<TAllowedLifeTime>['withScope'];
-  readonly override: IServiceLocator<TAllowedLifeTime>['override'];
-  readonly provide: IServiceLocator<TAllowedLifeTime>['provide'];
 
   constructor(private readonly containerContext: IServiceLocator<TAllowedLifeTime>) {
     super((definition: any) => {
@@ -36,7 +34,5 @@ export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends L
     this.all = containerContext.all;
     this.checkoutScope = containerContext.checkoutScope;
     this.withScope = containerContext.withScope;
-    this.override = containerContext.override;
-    this.provide = containerContext.provide;
   }
 }

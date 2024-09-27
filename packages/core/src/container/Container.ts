@@ -3,7 +3,6 @@ import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.
 
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import { AsyncAllInstances, IContainer, IContainerScopes, UseFn } from './IContainer.js';
-import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
@@ -61,15 +60,8 @@ export class Container extends ExtensibleFunction implements IContainer {
     } else {
       return fn!(this.checkoutScope(fnOrOptions));
     }
-  };
 
-  override = (definition: BaseDefinition<any, any, any>): void => {
-    this.containerContext.override(definition);
-  };
-
-  provide = <T>(def: BaseDefinition<T, LifeTime.scoped, any>, instance: T): void => {
-    const override = def.bindValue(instance);
-    return this.override(override);
+    // return this.containerContext.withScope(fnOrOptions, fn);
   };
 }
 

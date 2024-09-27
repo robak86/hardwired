@@ -9,7 +9,7 @@ import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.
 import { v4 } from 'uuid';
 import { ContextEvents } from '../events/ContextEvents.js';
 import { ContainerInterceptor } from './ContainerInterceptor.js';
-import { IContainerScopes, InstanceCreationAware, UseFn } from '../container/IContainer.js';
+import { IContainer, IContainerScopes, InstanceCreationAware, UseFn } from '../container/IContainer.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { BaseDefinition } from '../definitions/abstract/BaseDefinition.js';
@@ -18,7 +18,7 @@ export interface ContainerContext extends UseFn {}
 
 export class ContainerContext
   extends ExtensibleFunction
-  implements InstancesBuilder, InstanceCreationAware, IContainerScopes
+  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IContainer
 {
   static empty(
     strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
