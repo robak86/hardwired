@@ -21,35 +21,6 @@ class Container
   extends ExtensibleFunction
   implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IContainer
 {
-  static empty(
-    strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    interceptor: ContainerInterceptor = {},
-  ) {
-    const instancesEntries = BindingsRegistry.empty();
-
-    return new Container(
-      null,
-      instancesEntries,
-      InstancesStore.create([]),
-      strategiesRegistry,
-      interceptor,
-      new ContextEvents(),
-    );
-  }
-
-  static create(options: ScopeOptions, strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry): Container {
-    const definitionsRegistry = BindingsRegistry.create(options);
-
-    return new Container(
-      null,
-      definitionsRegistry,
-      InstancesStore.create(options.scope ?? []),
-      strategiesRegistry,
-      options.interceptor ?? {},
-      new ContextEvents(),
-    );
-  }
-
   public readonly id = v4();
 
   constructor(
@@ -66,26 +37,17 @@ class Container
   }
 
   new(options: ScopeOptions = {}): IContainer {
-    return Container.create(options, defaultStrategiesRegistry);
-  }
+    const definitionsRegistry = BindingsRegistry.create(options);
 
-  // request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue;
-  // request<TValue, TArgs extends any[]>(
-  //   instanceDefinition: BaseDefinition<TValue, LifeTime.transient, TArgs>,
-  //   ...args: TArgs
-  // ): TValue;
-  // request<TValue, TArgs extends []>(
-  //   definition: BaseDefinition<TValue, any, any>,
-  //   ...args: TArgs
-  // ): Promise<TValue> | TValue {
-  //   this.events.onGet.emit({ containerId: this.id, definition });
-  //   this.interceptor.onRequestStart?.(definition, this);
-  //
-  //   const instance = this.use(definition, ...args);
-  //
-  //   this.interceptor.onRequestEnd?.(definition, this, instance);
-  //   return instance;
-  // }
+    return new Container(
+      null,
+      definitionsRegistry,
+      InstancesStore.create(options.scope ?? []),
+      defaultStrategiesRegistry,
+      options.interceptor ?? {},
+      new ContextEvents(),
+    );
+  }
 
   buildExact<T>(definition: BaseDefinition<T, any, any>, ...args: any[]): T {
     const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
@@ -151,4 +113,11 @@ export type ScopeOptions = {
   interceptor?: ContainerInterceptor;
 };
 
-export const container = Container.empty();
+export const container = new Container(
+  null,
+  BindingsRegistry.empty(),
+  InstancesStore.create([]),
+  defaultStrategiesRegistry,
+  {},
+  new ContextEvents(),
+);
