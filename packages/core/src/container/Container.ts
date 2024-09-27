@@ -68,14 +68,19 @@ class Container
 
   all = <TDefinitions extends Array<Definition<any, any, []>>>(
     ...definitions: [...TDefinitions]
-  ): InstancesArray<TDefinitions> => {
-    return definitions.map(def => this.use(def)) as InstancesArray<TDefinitions>;
-  };
+  ): TDefinitions extends Array<Definition<Promise<any>, any, []>>
+    ? Promise<AsyncAllInstances<TDefinitions>>
+    : InstancesArray<TDefinitions> => {
+    // return definitions.map(def => this.use(def)) as InstancesArray<TDefinitions>;
 
-  allAsync = <TDefinitions extends Array<Definition<Promise<any>, any, []>>>(
-    ...definitions: [...TDefinitions]
-  ): Promise<AsyncAllInstances<TDefinitions>> => {
-    return Promise.all(definitions.map(def => this.use(def)) as AsyncAllInstances<TDefinitions>);
+    const results = definitions.map(def => this.use(def));
+
+    // Check if the first element is a promise to decide whether to wrap in Promise.all
+    if (results.some(result => result instanceof Promise)) {
+      return Promise.all(results) as any;
+    }
+
+    return results as any;
   };
 
   checkoutScope: IContainerScopes['checkoutScope'] = (options = {}): IContainer => {

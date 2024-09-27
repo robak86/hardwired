@@ -15,11 +15,9 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
     ...definitions: [...TDefinitions]
-  ): InstancesArray<TDefinitions>;
-
-  allAsync<TDefinitions extends Array<Definition<Promise<any>, any, []>>>(
-    ...definitions: [...TDefinitions]
-  ): Promise<AsyncAllInstances<TDefinitions>>;
+  ): TDefinitions extends Array<Definition<Promise<any>, any, []>>
+    ? Promise<AsyncAllInstances<TDefinitions>>
+    : InstancesArray<TDefinitions>;
 }
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {

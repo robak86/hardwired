@@ -103,7 +103,7 @@ describe(`asyncDefine`, () => {
       });
 
       const cnt = container.new();
-      const [result1, result2] = await cnt.allAsync(definition, definition);
+      const [result1, result2] = await cnt.all(definition, definition);
 
       expect(result1).toBe(result2);
     });

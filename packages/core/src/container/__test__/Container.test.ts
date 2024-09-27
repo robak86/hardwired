@@ -215,7 +215,7 @@ describe(`Container`, () => {
       const b = fn.scoped(async () => 2);
 
       const c = container.new();
-      const [aInstance, bInstance] = await c.allAsync(a, b);
+      const [aInstance, bInstance] = await c.all(a, b);
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
