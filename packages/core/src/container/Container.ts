@@ -46,7 +46,7 @@ class Container
     return new Container(
       null,
       definitionsRegistry,
-      InstancesStore.create(options.scopeDefinitions ?? []),
+      InstancesStore.create(),
       defaultStrategiesRegistry,
       new ContextEvents(),
     );
@@ -86,7 +86,7 @@ class Container
     const scopeContext = new Container(
       this.id,
       this.bindingsRegistry.checkoutForScope(options.scopeDefinitions ?? [], options.frozenDefinitions ?? []),
-      this.instancesStore.childScope(options.scopeDefinitions ?? []),
+      this.instancesStore.childScope(),
       this.strategiesRegistry,
       this.events,
     );
@@ -113,7 +113,7 @@ export type ScopeOptions = {
 export const once = new Container(
   null,
   BindingsRegistry.empty(),
-  InstancesStore.create([]),
+  InstancesStore.create(),
   defaultStrategiesRegistry,
   new ContextEvents(),
 ).use;
@@ -121,7 +121,7 @@ export const once = new Container(
 export const container = new Container(
   null,
   BindingsRegistry.empty(),
-  InstancesStore.create([]),
+  InstancesStore.create(),
   defaultStrategiesRegistry,
   new ContextEvents(),
 );

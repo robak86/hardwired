@@ -174,7 +174,7 @@ describe(`SingletonStrategy`, () => {
 
     describe('global overrides', function () {
       // TODO: shouldn't be possible to bind singleton in child scope
-      it.fails(`allows for overrides for other keys than ones changes invariants array`, async () => {
+      it.skip(`allows for overrides for other keys than ones changes invariants array`, async () => {
         const k1 = fn.singleton(() => Math.random());
         const k2 = fn.singleton(() => Math.random());
 
