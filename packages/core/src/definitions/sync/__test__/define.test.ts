@@ -49,7 +49,7 @@ describe(`define`, () => {
 
       const definition = fn(locator => {
         const scopedContainer = locator.checkoutScope();
-        return [scopedContainer.use(value), scopedContainer.use(value)];
+        return [scopedContainer(value), scopedContainer(value)];
       });
 
       const cnt = container.new();

@@ -113,6 +113,14 @@ export type ScopeOptions = {
   scope?: Overrides;
 };
 
+export const once = new Container(
+  null,
+  BindingsRegistry.empty(),
+  InstancesStore.create([]),
+  defaultStrategiesRegistry,
+  new ContextEvents(),
+).use;
+
 export const container = new Container(
   null,
   BindingsRegistry.empty(),

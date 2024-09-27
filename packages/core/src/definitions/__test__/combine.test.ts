@@ -2,7 +2,7 @@ import { describe, vi } from 'vitest';
 import { IServiceLocator } from '../../container/IContainer.js';
 import { combine, CreateFn } from '../combine.js';
 import { fn } from '../definitions.js';
-import { container } from '../../container/Container.js';
+import { once } from '../../container/Container.js';
 
 describe(`combine`, () => {
   class CreatingScopes {
@@ -42,7 +42,7 @@ describe(`combine`, () => {
       const define = combine();
 
       const defWithMiddleware = define(() => 123);
-      expect(container.use(defWithMiddleware)).toBe(123);
+      expect(once(defWithMiddleware)).toBe(123);
     });
   });
 
@@ -52,7 +52,7 @@ describe(`combine`, () => {
       const define = combine(passthrough);
 
       const defWithMiddleware = define(() => 123);
-      expect(container.use(defWithMiddleware)).toBe(123);
+      expect(once(defWithMiddleware)).toBe(123);
       expect(passthrough).toHaveBeenCalledTimes(1);
     });
 
@@ -61,7 +61,7 @@ describe(`combine`, () => {
       const define = combine(passthrough, passthrough, passthrough);
 
       const defWithMiddleware = define(() => 123);
-      expect(container.use(defWithMiddleware)).toBe(123);
+      expect(once(defWithMiddleware)).toBe(123);
       expect(passthrough).toHaveBeenCalledTimes(3);
     });
 
@@ -73,8 +73,8 @@ describe(`combine`, () => {
 
       const withMiddleware = define((use, arg1: number, arg2: string) => [arg1, arg2]);
 
-      expect(container.use(withMiddleware, 123, '123')).toEqual([123, '123']);
-      expect(container.use(withoutMiddleware, 123, '123')).toEqual([123, '123']);
+      expect(once(withMiddleware, 123, '123')).toEqual([123, '123']);
+      expect(once(withoutMiddleware, 123, '123')).toEqual([123, '123']);
     });
   });
 
@@ -86,8 +86,8 @@ describe(`combine`, () => {
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));
 
-      const req1Value = container.use(defWithMiddleware);
-      const req2Value = container.use(defWithMiddleware);
+      const req1Value = once(defWithMiddleware);
+      const req2Value = once(defWithMiddleware);
 
       expect(req1Value).not.toEqual(req2Value);
     });
@@ -99,8 +99,8 @@ describe(`combine`, () => {
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));
 
-      const req1Value = container.use(defWithMiddleware);
-      const req2Value = container.use(defWithMiddleware);
+      const req1Value = once(defWithMiddleware);
+      const req2Value = once(defWithMiddleware);
 
       expect(req1Value).not.toEqual(req2Value);
     });
@@ -112,7 +112,7 @@ describe(`combine`, () => {
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));
 
-      container.use(defWithMiddleware);
+      once(defWithMiddleware);
 
       expect(createdContainersIds.length).toBe(3);
       expect(createdContainersIds[0]).not.toEqual(createdContainersIds[1]);

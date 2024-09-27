@@ -81,7 +81,7 @@ describe(`asyncDefine`, () => {
 
       const definition = fn(async locator => {
         const scopedContainer = locator.checkoutScope();
-        return [await scopedContainer.use(value), await scopedContainer.use(value)];
+        return [await scopedContainer(value), await scopedContainer(value)];
       });
 
       const cnt = container.new();
