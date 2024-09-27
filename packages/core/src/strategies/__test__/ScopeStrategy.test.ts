@@ -1,14 +1,14 @@
 import { fn } from '../../definitions/definitions.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
-import { Container, container } from '../../container/Container.js';
+import { container } from '../../container/Container.js';
 
 describe(`ScopeStrategy`, () => {
   describe(`resolution`, () => {
     it(`acts like singleton within current scope`, async () => {
       const a = fn.scoped(() => Math.random());
 
-      const c = Container.empty();
+      const c = container.new();
       expect(c.use(a)).toEqual(c.use(a));
 
       const childScope = c.checkoutScope();
@@ -18,7 +18,7 @@ describe(`ScopeStrategy`, () => {
 
     it(`returns new instance in new scope`, async () => {
       const a = fn.scoped(() => Math.random());
-      const c = Container.empty();
+      const c = container.new();
 
       const childScope = c.checkoutScope();
       expect(childScope.use(a)).toEqual(childScope.use(a));
@@ -37,7 +37,7 @@ describe(`ScopeStrategy`, () => {
       const globalOverride = k1.bindTo(fn.scoped(() => new Boxed(1)));
       const childScopePatch = k1.bindTo(fn.scoped(() => new Boxed(2)));
 
-      const c = Container.create({ final: [globalOverride] });
+      const c = container.new({ final: [globalOverride] });
 
       expect(c.use(k1).value).toEqual(1);
 
@@ -57,7 +57,7 @@ describe(`ScopeStrategy`, () => {
       const finalBinding = k1.bindTo(fn.scoped(() => new Boxed(1)));
       const scopeBinding = k1.bindTo(fn.scoped(() => new Boxed(2)));
 
-      const root = Container.create({});
+      const root = container.new({});
       const child = root.checkoutScope({ final: [finalBinding] });
       const grandChild = child.checkoutScope({ scope: [scopeBinding] }); // scopeBinding is ignored because of finalBinding
 
@@ -73,7 +73,7 @@ describe(`ScopeStrategy`, () => {
       const parentBinding = k1.bindTo(fn.scoped(() => 1));
       const scopeBinding = k2.bindTo(fn.scoped(() => 2));
 
-      const c = Container.create({ final: [parentBinding] });
+      const c = container.new({ final: [parentBinding] });
       expect(c.use(k1)).toEqual(1);
 
       const childScope = c.checkoutScope({ scope: [scopeBinding] });
@@ -86,7 +86,7 @@ describe(`ScopeStrategy`, () => {
     it(`replaces definitions for scoped scope`, async () => {
       const a = fn.scoped(() => new BoxedValue(1));
 
-      const c = Container.empty();
+      const c = container.new();
 
       expect(c.use(a).value).toEqual(1);
 
@@ -98,7 +98,7 @@ describe(`ScopeStrategy`, () => {
     it(`new scope inherits parent scope overrides`, async () => {
       const a = fn.scoped(() => new BoxedValue(1));
 
-      const root = Container.empty();
+      const root = container.new();
       expect(root.use(a).value).toEqual(1);
 
       const mPatch = a.bindTo(fn.scoped(() => new BoxedValue(2)));
@@ -130,7 +130,7 @@ describe(`ScopeStrategy`, () => {
         it(`does not inherit any values from parent scope`, async () => {
           const a = fn.scoped(() => Math.random());
 
-          const c = Container.empty();
+          const c = container.new();
           const req1 = c.use(a);
 
           const childC = c.checkoutScope();
@@ -145,7 +145,7 @@ describe(`ScopeStrategy`, () => {
       it(`replaces definitions for request scope`, async () => {
         const a = fn.scoped(() => 1);
 
-        const c = Container.empty();
+        const c = container.new();
 
         const mPatch = a.bindTo(fn.scoped(() => 2));
 
@@ -163,7 +163,7 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(() => 1));
         const childScopePatch = k1.bindTo(fn.scoped(() => 2));
 
-        const c = Container.create({ final: [invariantPatch] });
+        const c = container.new({ final: [invariantPatch] });
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
@@ -177,7 +177,7 @@ describe(`ScopeStrategy`, () => {
         const finalBinding = k1.bindTo(fn.scoped(() => 1));
         const scopeBinding = k2.bindTo(fn.scoped(() => 2));
 
-        const c = Container.create({ final: [finalBinding] });
+        const c = container.new({ final: [finalBinding] });
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [scopeBinding] });
@@ -217,7 +217,7 @@ describe(`ScopeStrategy`, () => {
         it(`does not inherit any values from parent scope`, async () => {
           const a = fn.scoped(async () => Math.random());
 
-          const c = Container.empty();
+          const c = container.new();
           const req1 = await c.use(a);
 
           const childC = c.checkoutScope();
@@ -232,7 +232,7 @@ describe(`ScopeStrategy`, () => {
       it(`replaces definitions for request scope`, async () => {
         const a = fn.scoped(async () => 1);
 
-        const c = Container.empty();
+        const c = container.new();
 
         const mPatch = a.bindTo(fn.scoped(async () => 2));
         const childC = c.checkoutScope({ scope: [mPatch] });
@@ -249,7 +249,7 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
         const childScopePatch = k1.bindTo(fn.scoped(async () => 2));
 
-        const c = Container.create({ final: [invariantPatch] });
+        const c = container.new({ final: [invariantPatch] });
 
         expect(await c.use(k1)).toEqual(1);
 
@@ -264,7 +264,7 @@ describe(`ScopeStrategy`, () => {
         const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
         const childScopePatch = k2.bindTo(fn.scoped(async () => 2));
 
-        const c = Container.create({ final: [invariantPatch] });
+        const c = container.new({ final: [invariantPatch] });
         expect(await c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });

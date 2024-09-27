@@ -1,5 +1,5 @@
 export type { IContainer, InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
-export { container, Container } from './container/Container.js';
+export { container } from './container/Container.js';
 
 export * from './strategies/SingletonStrategy.js';
 export * from './strategies/TransientStrategy.js';

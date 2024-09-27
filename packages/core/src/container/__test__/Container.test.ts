@@ -1,5 +1,5 @@
 import { fn } from '../../definitions/definitions.js';
-import { Container, container } from '../Container.js';
+import { container } from '../Container.js';
 
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it, vi } from 'vitest';
@@ -257,7 +257,7 @@ describe(`Container`, () => {
           const interceptSyncSpy = vi.fn();
           const ctn = container.new({ interceptor: { interceptSync: interceptSyncSpy } });
           ctn.use(def);
-          expect(interceptSyncSpy).toBeCalledWith(def, expect.any(Container));
+          expect(interceptSyncSpy).toBeCalledWith(def, ctn);
         });
 
         it(`is called only once preserving singleton strategy`, async () => {

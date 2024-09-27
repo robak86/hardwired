@@ -1,4 +1,4 @@
-import { Container, container } from '../../container/Container.js';
+import { container } from '../../container/Container.js';
 import { fn } from '../../definitions/definitions.js';
 
 import { value } from '../../definitions/sync/value.js';
@@ -131,7 +131,7 @@ describe(`decorate`, () => {
 
       const replaced = instanceDef.bindValue({ callMe: () => {} });
 
-      const scope1 = Container.create({ final: [mPatch] });
+      const scope1 = container.new({ final: [mPatch] });
       const scope2 = scope1.checkoutScope({ scope: [replaced] });
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);

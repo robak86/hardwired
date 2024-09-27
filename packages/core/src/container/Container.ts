@@ -15,9 +15,9 @@ import { InstancesStore } from '../context/InstancesStore.js';
 import { v4 } from 'uuid';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
-export interface Container extends UseFn<LifeTime> {}
+interface Container extends UseFn<LifeTime> {}
 
-export class Container
+class Container
   extends ExtensibleFunction
   implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IContainer
 {
