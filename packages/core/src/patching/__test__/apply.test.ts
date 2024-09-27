@@ -7,14 +7,18 @@ import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 import { Definition } from '../../definitions/abstract/Definition.js';
+import { configureContainer } from '../../container/ContainerConfiguration.js';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const c = container.new(c => {
+    const config = configureContainer(c => {
       c.bind(someValue).toConfigured((_, val) => (val.value += 1));
     });
+
+    const c = container.new(config);
+
     expect(c.use(someValue).value).toEqual(2);
   });
 
