@@ -96,19 +96,17 @@ describe(`SingletonStrategy`, () => {
         // expect(c.use(a)).toEqual(1);
       });
 
-      it(`inherits singleton instance from parent scope`, async () => {
+      it(`it's not allowed to bind singleton definitions for child scopes`, async () => {
         const a = fn.singleton(() => 1);
 
         const root = container.new();
 
-        const patchedA = a.bindValue(2);
-
-        const level1 = root.checkoutScope({ scopeDefinitions: [patchedA] });
-        const level2 = level1.checkoutScope({});
-
-        expect(level1.use(a)).toEqual(2);
-        expect(level2.use(a)).toEqual(2);
-        expect(root.use(a)).toEqual(1);
+        expect(() =>
+          root.checkoutScope(c => {
+            // @ts-expect-error - should not be possible to override singleton
+            c.bind(a).toValue(2);
+          }),
+        ).toThrowError();
       });
 
       it(`propagates singletons created in child scope to parent scope (if not replaced with patches)`, async () => {
@@ -122,67 +120,61 @@ describe(`SingletonStrategy`, () => {
         expect(req1).toEqual(req2);
       });
 
-      it(`propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`, async () => {
-        const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
+      // TODO: this test is not correct, it should be possible to override singleton in child scope
+      //       There is chance that I can get better performance by removing hierarchical store
+      it.fails(
+        `propagates singletons created in descendent scope to first ascendant scope which does not overrides definition`,
+        async () => {
+          const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
-        const a = fn.singleton(randomFactorySpy);
+          const a = fn.singleton(randomFactorySpy);
 
-        const root = container.new();
-        const level1 = root.checkoutScope();
-        const level2 = level1.checkoutScope({ scopeDefinitions: [a.bindValue(1)] });
-        const level3 = level2.checkoutScope();
+          const root = container.new();
+          const level1 = root.checkoutScope();
+          const level2 = level1.checkoutScope({ scopeDefinitions: [a.bindValue(1)] });
+          const level3 = level2.checkoutScope();
 
-        const level3Call = level3.use(a); // important that level1 is called as first
-        const level2Call = level2.use(a);
-        const level1Call = level1.use(a);
-        const rootCall = root.use(a);
+          const level3Call = level3.use(a); // important that level1 is called as first
+          const level2Call = level2.use(a);
+          const level1Call = level1.use(a);
+          const rootCall = root.use(a);
 
-        expect(level1Call).toEqual(rootCall);
-        expect(level2Call).toEqual(1);
-        expect(level3Call).toEqual(1);
-        expect(randomFactorySpy).toHaveBeenCalledTimes(1);
-      });
+          expect(level1Call).toEqual(rootCall);
+          expect(level2Call).toEqual(1);
+          expect(level3Call).toEqual(1);
+          expect(randomFactorySpy).toHaveBeenCalledTimes(1);
+        },
+      );
 
-      it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
-        const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
+      it.fails(
+        `does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`,
+        async () => {
+          const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
 
-        const a = fn.singleton(randomFactorySpy);
+          const a = fn.singleton(randomFactorySpy);
 
-        const root = container.new();
-        const level1 = root.checkoutScope({ scopeDefinitions: [a.bindValue(1)] });
-        const level2 = level1.checkoutScope({ scopeDefinitions: [a.bindValue(2)] });
-        const level3 = level2.checkoutScope();
+          const root = container.new();
+          const level1 = root.checkoutScope({ scopeDefinitions: [a.bindValue(1)] });
+          const level2 = level1.checkoutScope({ scopeDefinitions: [a.bindValue(2)] });
+          const level3 = level2.checkoutScope();
 
-        const level3Call = level3.use(a);
-        const level2Call = level2.use(a);
-        const level1Call = level1.use(a);
-        const rootCall = root.use(a);
+          const level3Call = level3.use(a);
+          const level2Call = level2.use(a);
+          const level1Call = level1.use(a);
+          const rootCall = root.use(a);
 
-        expect(level3Call).toEqual(level2Call);
-        expect(level2Call).toEqual(2);
-        expect(level1Call).toEqual(1);
-        expect(rootCall).not.toEqual(level3);
-        expect(randomFactorySpy).toHaveBeenCalledTimes(1);
-      });
+          expect(level3Call).toEqual(level2Call);
+          expect(level2Call).toEqual(2);
+          expect(level1Call).toEqual(1);
+          expect(rootCall).not.toEqual(level3);
+          expect(randomFactorySpy).toHaveBeenCalledTimes(1);
+        },
+      );
     });
 
     describe('global overrides', function () {
-      it(`cannot be replaced by overrides`, async () => {
-        const k1 = fn.singleton(() => Math.random());
-        const invariantPatch = k1.bindValue(1);
-        const childScopePatch = k1.bindValue(2);
-
-        const c = container.new(container => {
-          container.freeze(invariantPatch).toValue(1);
-        });
-
-        expect(c.use(k1)).toEqual(1);
-
-        const childScope = c.checkoutScope({ scopeDefinitions: [childScopePatch] });
-        expect(childScope.use(k1)).toEqual(1);
-      });
-
-      it(`allows for overrides for other keys than ones changes invariants array`, async () => {
+      // TODO: shouldn't be possible to bind singleton in child scope
+      it.fails(`allows for overrides for other keys than ones changes invariants array`, async () => {
         const k1 = fn.singleton(() => Math.random());
         const k2 = fn.singleton(() => Math.random());
 

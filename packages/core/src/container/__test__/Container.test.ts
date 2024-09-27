@@ -178,7 +178,9 @@ describe(`Container`, () => {
 
       const [val1, val2] = container
         .new()
-        .checkoutScope({ scopeDefinitions: [extD.bindValue(new BoxedValue(10))] })
+        .checkoutScope(c => {
+          c.bind(extD).toValue(new BoxedValue(10));
+        })
         .all(multiplyBy2D, divideBy2D);
 
       expect(val1).toEqual(20);
@@ -205,7 +207,9 @@ describe(`Container`, () => {
 
       const [req1, req2] = container
         .new()
-        .checkoutScope({ scopeDefinitions: [extD.bindValue(new BoxedValue(10))] })
+        .checkoutScope(c => {
+          c.bind(extD).toValue(new BoxedValue(10));
+        })
         .all(multiplyBy2D, divideBy2D);
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);

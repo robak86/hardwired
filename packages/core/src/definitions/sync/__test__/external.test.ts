@@ -44,7 +44,9 @@ describe(`unbound`, () => {
     it(`returns correct instance`, async () => {
       const cnt = container.new();
       const result = cnt
-        .checkoutScope({ scopeDefinitions: [externalParams1D.bindValue({ someExternalParam: 111 })] })
+        .checkoutScope(c => {
+          c.bind(externalParams1D).toValue({ someExternalParam: 111 });
+        })
         .use(defUsingExternals1);
 
       expect(result.externals).toEqual({ someExternalParam: 111 });
@@ -54,11 +56,9 @@ describe(`unbound`, () => {
     it(`merges external params`, async () => {
       const cnt = container.new();
       const result = cnt
-        .checkoutScope({
-          scopeDefinitions: [
-            externalParams1D.bindValue({ someExternalParam: 111 }),
-            externalParams2D.bindValue({ otherExternalParam: 456 }),
-          ],
+        .checkoutScope(c => {
+          c.bind(externalParams1D).toValue({ someExternalParam: 111 });
+          c.bind(externalParams2D).toValue({ otherExternalParam: 456 });
         })
         .use(defUsingBothExternals);
 

@@ -123,7 +123,7 @@ describe(`apply`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: Definition<MyService, any, any>) {
+    function setup(instanceDef: Definition<MyService, LifeTime.scoped | LifeTime.transient, any>) {
       const scope1 = container.new(c => {
         c.freeze(instanceDef).toConfigured((use, a) => {
           vi.spyOn(a, 'callMe');
@@ -143,16 +143,6 @@ describe(`apply`, () => {
     class MyService {
       callMe(...args: any[]) {}
     }
-
-    describe(`apply on singleton definition`, () => {
-      it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(fn.singleton(() => new MyService()));
-        instance1.callMe(1, 2);
-
-        expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
-        expect(instance1).toBe(instance2);
-      });
-    });
 
     describe(`apply on scoped definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {

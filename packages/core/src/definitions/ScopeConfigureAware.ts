@@ -42,6 +42,10 @@ export class ScopeConfigureBinder implements ScopeConfigureAware, ScopeOptions {
   bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
+    if ((definition.strategy as LifeTime) === LifeTime.singleton) {
+      throw new Error(`Binding singletons in for child scopes is not allowed.`);
+    }
+
     return new Binder(definition, this._scopeDefinitions);
   }
 

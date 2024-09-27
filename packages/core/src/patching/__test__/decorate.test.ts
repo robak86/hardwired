@@ -140,16 +140,6 @@ describe(`decorate`, () => {
       callMe(...args: any[]) {}
     }
 
-    describe(`apply on singleton definition`, () => {
-      it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(fn.singleton(use => new MyService()));
-        instance1.callMe(1, 2);
-
-        expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
-        expect(instance1).toBe(instance2);
-      });
-    });
-
     describe(`apply on scoped definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
         const { instance1, instance2 } = setup(fn.scoped(() => new MyService()));

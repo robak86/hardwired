@@ -27,7 +27,10 @@ describe(`define`, () => {
 
       const result = container
         .new()
-        .checkoutScope({ scopeDefinitions: [ext1.bindValue(1), ext2.bindValue('str')] })
+        .checkoutScope(c => {
+          c.bind(ext1).toValue(1);
+          c.bind(ext2).toValue('str');
+        })
         .use(definition);
       expect(result).toEqual([1, 'str']);
     });
