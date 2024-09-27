@@ -7,7 +7,8 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 export class ScopeConfigurationDSL implements ScopeConfigureAware {
   constructor(private bindingsRegistry: BindingsRegistry) {}
 
-  configure = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+  // Configuring singletons shouldn't be possible
+  configure = <TInstance, TLifeTime extends LifeTime.transient | LifeTime.scoped, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
     configureFn: (locator: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => void,
   ): void => {
