@@ -112,7 +112,7 @@ export type ScopeOptions = {
 
 export const once = new Container(
   null,
-  BindingsRegistry.empty(),
+  BindingsRegistry.create(),
   InstancesStore.create(),
   defaultStrategiesRegistry,
   new ContextEvents(),
@@ -120,7 +120,7 @@ export const once = new Container(
 
 export const container = new Container(
   null,
-  BindingsRegistry.empty(),
+  BindingsRegistry.create(),
   InstancesStore.create(),
   defaultStrategiesRegistry,
   new ContextEvents(),

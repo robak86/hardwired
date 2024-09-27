@@ -1,4 +1,4 @@
-import { configureScope, container, fn, unbound } from 'hardwired';
+import { container, fn, unbound } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 

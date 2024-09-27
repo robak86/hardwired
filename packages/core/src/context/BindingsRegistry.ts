@@ -6,15 +6,11 @@ import { ScopeOptions } from '../container/Container.js';
  * This class represents a registry for storing definitions overrides for scope.
  */
 export class BindingsRegistry {
-  static empty(): BindingsRegistry {
-    return new BindingsRegistry({}, {});
-  }
+  static create(options?: Pick<ScopeOptions, 'scopeDefinitions' | 'frozenDefinitions'>): BindingsRegistry {
+    const registry = new BindingsRegistry({}, {});
 
-  static create(options: Pick<ScopeOptions, 'scopeDefinitions' | 'frozenDefinitions'>): BindingsRegistry {
-    const registry = BindingsRegistry.empty();
-
-    registry.addScopeBindings(options.scopeDefinitions ?? []);
-    registry.addFinalBindings(options.frozenDefinitions ?? []);
+    registry.addScopeBindings(options?.scopeDefinitions ?? []);
+    registry.addFinalBindings(options?.frozenDefinitions ?? []);
 
     return registry;
   }
