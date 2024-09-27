@@ -17,7 +17,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     ...definitions: [...TDefinitions]
   ): InstancesArray<TDefinitions>;
 
-  allAsync<TDefinitions extends Array<BaseDefinition<Promise<any>, any, any>>>(
+  allAsync<TDefinitions extends Array<BaseDefinition<Promise<any>, any, []>>>(
     ...definitions: [...TDefinitions]
   ): Promise<AsyncAllInstances<TDefinitions>>;
 }
@@ -30,7 +30,7 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
   withScope<TValue>(options: ScopeOptions, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
 }
 
-export interface UseFn<TAllowedLifeTime extends LifeTime = LifeTime> {
+export interface UseFn<TAllowedLifeTime extends LifeTime> {
   <TValue, TArgs extends any[]>(
     instanceDefinition: BaseDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs

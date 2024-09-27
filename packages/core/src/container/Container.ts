@@ -15,7 +15,7 @@ import { InstancesStore } from '../context/InstancesStore.js';
 import { v4 } from 'uuid';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 
-export interface Container extends UseFn {}
+export interface Container extends UseFn<LifeTime> {}
 
 export class Container
   extends ExtensibleFunction
@@ -61,7 +61,7 @@ export class Container
     public readonly events: ContextEvents,
   ) {
     super((definition: BaseDefinition<any, any, any>, ...args: any[]) => {
-      return this.request(definition as any, ...args); // TODO: fix type
+      return this.use(definition as any, ...args); // TODO: fix type
     });
   }
 
@@ -69,33 +69,23 @@ export class Container
     return Container.create(options, defaultStrategiesRegistry);
   }
 
-  request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue;
-  request<TValue, TArgs extends any[]>(
-    instanceDefinition: BaseDefinition<TValue, LifeTime.transient, TArgs>,
-    ...args: TArgs
-  ): TValue;
-  request<TValue, TArgs extends []>(
-    definition: BaseDefinition<TValue, any, any>,
-    ...args: TArgs
-  ): Promise<TValue> | TValue {
-    this.events.onGet.emit({ containerId: this.id, definition });
-    this.interceptor.onRequestStart?.(definition, this);
-
-    const instance = this.use(definition, ...args);
-
-    this.interceptor.onRequestEnd?.(definition, this, instance);
-    return instance;
-  }
-
-  all<TDefinitions extends Array<BaseDefinition<any, any, []>>>(
-    ...definitions: [...TDefinitions]
-  ): InstancesArray<TDefinitions> {
-    return definitions.map(def => this.use(def)) as any;
-  }
-
-  allAsync = <TDefinitions extends Array<BaseDefinition<Promise<any>, any, any>>>(
-    ...definitions: [...TDefinitions]
-  ): Promise<AsyncAllInstances<TDefinitions>> => Promise.all(definitions.map(def => this.use(def))) as any;
+  // request<TValue>(instanceDefinition: BaseDefinition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue;
+  // request<TValue, TArgs extends any[]>(
+  //   instanceDefinition: BaseDefinition<TValue, LifeTime.transient, TArgs>,
+  //   ...args: TArgs
+  // ): TValue;
+  // request<TValue, TArgs extends []>(
+  //   definition: BaseDefinition<TValue, any, any>,
+  //   ...args: TArgs
+  // ): Promise<TValue> | TValue {
+  //   this.events.onGet.emit({ containerId: this.id, definition });
+  //   this.interceptor.onRequestStart?.(definition, this);
+  //
+  //   const instance = this.use(definition, ...args);
+  //
+  //   this.interceptor.onRequestEnd?.(definition, this, instance);
+  //   return instance;
+  // }
 
   buildExact<T>(definition: BaseDefinition<T, any, any>, ...args: any[]): T {
     const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
@@ -110,14 +100,26 @@ export class Container
     return patchedInstanceDef.create(this, ...args);
   }
 
-  use = (definition: BaseDefinition<any, any, any>, ...args: any[]) => {
+  all = <TDefinitions extends Array<BaseDefinition<any, any, []>>>(
+    ...definitions: [...TDefinitions]
+  ): InstancesArray<TDefinitions> => {
+    return definitions.map(def => this.use(def)) as InstancesArray<TDefinitions>;
+  };
+
+  allAsync = <TDefinitions extends Array<BaseDefinition<Promise<any>, any, []>>>(
+    ...definitions: [...TDefinitions]
+  ): Promise<AsyncAllInstances<TDefinitions>> => {
+    return Promise.all(definitions.map(def => this.use(def)) as AsyncAllInstances<TDefinitions>);
+  };
+
+  use: UseFn<LifeTime> = (definition, ...args) => {
     const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
     const strategy = this.strategiesRegistry.get(definition.strategy);
 
     return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
-  checkoutScope = (options: ScopeOptions = {}): IContainer => {
+  checkoutScope: IContainerScopes['checkoutScope'] = (options = {}): IContainer => {
     const { scope = [], final = [] } = options;
 
     const scopeContext = new Container(
