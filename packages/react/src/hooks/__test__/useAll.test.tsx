@@ -1,4 +1,4 @@
-import { container, fn, unbound } from 'hardwired';
+import { configureScope, container, fn, unbound } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
@@ -135,9 +135,13 @@ describe(`useDefinitions`, () => {
       const c = container.new();
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
+        const config = configureScope(scope => {
+          scope.bind(someExternalParam).toValue(externalValue);
+        });
+
         return (
           <ContainerProvider container={c}>
-            <ContainerScope overrides={[someExternalParam.bindValue(externalValue)]} invalidateKeys={[externalValue]}>
+            <ContainerScope config={config} invalidateKeys={[externalValue]}>
               <h1>{externalValue}</h1>
               <Consumer externalValue={externalValue} />
             </ContainerScope>

@@ -1,4 +1,4 @@
-import { container, fn, unbound } from 'hardwired';
+import { configureScope, container, fn, unbound } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
@@ -114,9 +114,14 @@ describe(`useDefinition`, () => {
       const c = container.new();
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
+        const config = configureScope(scope => {
+          scope.bind(someExternalParam).toValue(externalValue);
+        });
+
+        // TODO: invalidateKeys should be based on the keys from the config
         return (
           <ContainerProvider container={c}>
-            <ContainerScope invalidateKeys={[externalValue]} overrides={[someExternalParam.bindValue(externalValue)]}>
+            <ContainerScope invalidateKeys={[externalValue]} config={config}>
               <Consumer externalValue={externalValue} />
             </ContainerScope>
           </ContainerProvider>

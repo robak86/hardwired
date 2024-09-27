@@ -1,21 +1,21 @@
 import { ContainerContext, useContainer } from '../context/ContainerContext.js';
 import { useMemoized } from '../utils/useMemoized.js';
 import { FC, PropsWithChildren } from 'react';
-import { Definition } from 'hardwired';
+import { ScopeConfiguration } from 'hardwired';
 
 export type ContainerScopeProps = {
   invalidateKeys?: ReadonlyArray<any>;
-  overrides?: Definition<any, any, any>[];
+  config?: ScopeConfiguration;
 };
 
 export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({
   children,
   invalidateKeys = [],
-  overrides = [],
+  config,
 }) => {
   const container = useContainer();
   const getScopedContainer = useMemoized(() => {
-    return container.checkoutScope({ scopeDefinitions: overrides }).checkoutScope();
+    return container.checkoutScope(config).checkoutScope();
   });
 
   // eslint-disable-next-line react/no-children-prop

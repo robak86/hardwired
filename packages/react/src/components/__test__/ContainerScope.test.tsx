@@ -1,4 +1,4 @@
-import { fn } from 'hardwired';
+import { configureScope, fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { use } from '../../hooks/use.js';
@@ -120,14 +120,22 @@ describe(`ContainerScope`, () => {
         return <div data-testid={testId}>{value}</div>;
       };
 
+      const scope1Config = configureScope(scope => {
+        scope.bind(baseD).toValue(10);
+      });
+
+      const scope2Config = configureScope(scope => {
+        scope.bind(baseD).toValue(100);
+      });
+
       const TestSubject = () => (
         <ContainerProvider>
           S1
-          <ContainerScope overrides={[baseD.bindValue(10)]}>
+          <ContainerScope config={scope1Config}>
             <ValueRenderer testId={'scope1'} />
           </ContainerScope>
           S2
-          <ContainerScope overrides={[baseD.bindValue(100)]}>
+          <ContainerScope config={scope2Config}>
             <ValueRenderer testId={'scope2'} />
           </ContainerScope>
         </ContainerProvider>
