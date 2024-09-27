@@ -7,7 +7,7 @@ import { ScopeOptions } from '../container/Container.js';
  */
 export class BindingsRegistry {
   static create(options?: Pick<ScopeOptions, 'scopeDefinitions' | 'frozenDefinitions'>): BindingsRegistry {
-    const registry = new BindingsRegistry({}, {});
+    const registry = new BindingsRegistry(new Map(), new Map());
 
     registry.addScopeBindings(options?.scopeDefinitions ?? []);
     registry.addFinalBindings(options?.frozenDefinitions ?? []);
@@ -16,8 +16,8 @@ export class BindingsRegistry {
   }
 
   constructor(
-    private scopeBindingsById: Record<string, Definition<any, any, any>>,
-    private finalBindingsById: Record<string, Definition<any, any, any>>,
+    private scopeBindingsById: Map<symbol, Definition<any, any, any>>,
+    private finalBindingsById: Map<symbol, Definition<any, any, any>>,
   ) {}
 
   clone() {
@@ -26,8 +26,8 @@ export class BindingsRegistry {
 
   checkoutForScope(scopeBindings: Overrides, finalBindings: Overrides): BindingsRegistry {
     const newRegistry = new BindingsRegistry(
-      { ...this.scopeBindingsById }, // TODO: experiment with proxy object instead of cloning?
-      { ...this.finalBindingsById },
+      new Map(this.scopeBindingsById), // TODO: experiment with proxy object instead of cloning?
+      new Map(this.finalBindingsById),
     );
     newRegistry.addScopeBindings(scopeBindings);
     newRegistry.addFinalBindings(finalBindings);
@@ -37,19 +37,19 @@ export class BindingsRegistry {
   getDefinition<T extends Definition<any, any, any>>(definition: T): T {
     const id = definition.id;
 
-    if (this.finalBindingsById[id]) {
-      return this.finalBindingsById[id] as T;
+    if (this.finalBindingsById.has(id)) {
+      return this.finalBindingsById.get(id) as T;
     }
 
-    if (this.scopeBindingsById[id]) {
-      return this.scopeBindingsById[id] as T;
+    if (this.scopeBindingsById.has(id)) {
+      return this.scopeBindingsById.get(id) as T;
     }
 
     return definition;
   }
 
-  hasFinalBinding(definitionId: string): boolean {
-    return !!this.finalBindingsById[definitionId];
+  hasFinalBinding(definitionId: symbol): boolean {
+    return !!this.finalBindingsById.has(definitionId);
   }
 
   addScopeBinding = (definition: Definition<any, any, any>) => {
@@ -57,14 +57,14 @@ export class BindingsRegistry {
   };
 
   addFinalBinding = (definition: Definition<any, any, any>) => {
-    if (this.finalBindingsById[definition.id]) {
-      throw new Error(`Final binding with id ${definition.id} was already set. Cannot override it.`);
+    if (this.finalBindingsById.has(definition.id)) {
+      throw new Error(`Final binding was already set. Cannot override it.`);
     }
-    this.finalBindingsById[definition.id] = definition;
+    this.finalBindingsById.set(definition.id, definition);
   };
 
   private updateScopeBinding(definition: Definition<any, any, any>) {
-    this.scopeBindingsById[definition.id] = definition;
+    this.scopeBindingsById.set(definition.id, definition);
   }
 
   private addFinalBindings(patches: Overrides) {

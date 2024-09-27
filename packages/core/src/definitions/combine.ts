@@ -1,7 +1,6 @@
 import { IServiceLocator } from '../container/IContainer.js';
 import { LifeTime } from './abstract/LifeTime.js';
 import { DefineScoped, DefineSingleton, DefineTransient } from './definitions.js';
-import { v4 } from 'uuid';
 import { Definition } from './abstract/Definition.js';
 
 function chainMiddlewares<T, TLifeTime extends LifeTime>(
@@ -9,7 +8,7 @@ function chainMiddlewares<T, TLifeTime extends LifeTime>(
   next: CreateFn<T, any[]>,
   lifeTime: TLifeTime,
 ): Definition<T, TLifeTime, any> {
-  return new Definition(v4(), lifeTime, (use: IServiceLocator, ...args: any[]): T => {
+  return new Definition(Symbol(), lifeTime, (use: IServiceLocator, ...args: any[]): T => {
     let nextHandler = next;
     for (let i = middlewares.length - 1; i >= 0; i--) {
       const currentMiddleware = middlewares[i];

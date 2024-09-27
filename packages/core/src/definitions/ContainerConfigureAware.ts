@@ -35,18 +35,18 @@ export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeO
   private _scopeDefinitions: Definition<any, any, any>[] = [];
   private _frozenDefinitions: Definition<any, any, any>[] = [];
 
-  private _scopeDefinitionsById: Record<string, true> = {};
-  private _frozenDefinitionsById: Record<string, true> = {};
+  private _scopeDefinitionsById: Map<symbol, true> = new Map();
+  private _frozenDefinitionsById: Map<symbol, true> = new Map();
 
   constructor() {}
 
   bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
-    if (this._scopeDefinitionsById[definition.id]) {
-      throw new Error(`Definition with id ${definition.id} is already bounded.`);
+    if (this._scopeDefinitionsById.has(definition.id)) {
+      throw new Error(`Definition is already bounded.`);
     } else {
-      this._scopeDefinitionsById[definition.id] = true;
+      this._scopeDefinitionsById.set(definition.id, true);
     }
 
     return new Binder(definition, this._scopeDefinitions);
@@ -55,10 +55,10 @@ export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeO
   freeze<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
-    if (this._frozenDefinitionsById[definition.id]) {
-      throw new Error(`Definition with id ${definition.id} is already frozen.`);
+    if (this._frozenDefinitionsById.has(definition.id)) {
+      throw new Error(`Definition is already frozen.`);
     } else {
-      this._frozenDefinitionsById[definition.id] = true;
+      this._frozenDefinitionsById.set(definition.id, true);
     }
 
     return new Binder(definition, this._frozenDefinitions);
