@@ -114,18 +114,23 @@ describe(`Container`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
         const a = fn.singleton(() => 1);
-        const overrides = [a.bindValue(2)];
 
-        expect(container.new({ scopeDefinitions: overrides }).use(a)).toEqual(2);
+        const cnt = container.new(c => {
+          c.bind(a).toValue(2);
+        });
+
+        expect(cnt.use(a)).toEqual(2);
       });
 
       it(`does not affect other definitions`, async () => {
         const a = fn.singleton(() => 1);
         const b = fn.singleton(() => 'b');
 
-        const mPatch = a.bindTo(fn.singleton(() => 2));
+        const cnt = container.new(c => {
+          c.bind(a).to(fn.singleton(() => 2));
+        });
 
-        expect(container.new({ scopeDefinitions: [mPatch] }).use(b)).toEqual('b');
+        expect(cnt.use(b)).toEqual('b');
       });
     });
   });
@@ -144,10 +149,10 @@ describe(`Container`, () => {
         return use(a) + use(b);
       });
 
-      const aPatch = a.bindTo(fn.singleton(() => 10));
-      const bPatch = b.bindTo(fn.singleton(() => 20));
-
-      const c = container.new({ frozenDefinitions: [aPatch, bPatch] });
+      const c = container.new(c => {
+        c.freeze(a).to(fn.singleton(() => 10));
+        c.freeze(b).to(fn.singleton(() => 20));
+      });
 
       const actual = c.use(aPlusB);
       expect(actual).toEqual(30);

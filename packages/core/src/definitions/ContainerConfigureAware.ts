@@ -38,17 +38,32 @@ export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeO
   private _scopeDefinitions: Definition<any, any, any>[] = [];
   private _frozenDefinitions: Definition<any, any, any>[] = [];
 
+  private _scopeDefinitionsById: Record<string, true> = {};
+  private _frozenDefinitionsById: Record<string, true> = {};
+
   constructor() {}
 
   bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
+    if (this._scopeDefinitionsById[definition.id]) {
+      throw new Error(`Definition with id ${definition.id} is already bounded.`);
+    } else {
+      this._scopeDefinitionsById[definition.id] = true;
+    }
+
     return new Binder(definition, this._scopeDefinitions);
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
+    if (this._frozenDefinitionsById[definition.id]) {
+      throw new Error(`Definition with id ${definition.id} is already frozen.`);
+    } else {
+      this._frozenDefinitionsById[definition.id] = true;
+    }
+
     return new Binder(definition, this._frozenDefinitions);
   }
 

@@ -11,7 +11,9 @@ describe(`decorate`, () => {
   it(`decorates original value`, async () => {
     const someValue = value(1);
 
-    const c = container.new({ scopeDefinitions: [someValue.decorateWith((use, val) => val + 1)] });
+    const c = container.new(c => {
+      c.bind(someValue).toDecorated((_, val) => val + 1);
+    });
 
     expect(c.use(someValue)).toEqual(2);
   });
@@ -19,26 +21,13 @@ describe(`decorate`, () => {
   it(`does not affect original module`, async () => {
     const someValue = value(1);
 
-    const mPatch = someValue.decorateWith((use, val) => {
-      return val + 1;
+    expect(container.new().use(someValue)).toEqual(1);
+
+    const cnt = container.new(c => {
+      c.bind(someValue).toDecorated((_, val) => val + 1);
     });
 
-    expect(container.new().use(someValue)).toEqual(1);
-    expect(container.new({ scopeDefinitions: [mPatch] }).use(someValue)).toEqual(2);
-  });
-
-  it(`allows for multiple decorations`, async () => {
-    const someValue = value(1);
-
-    const mPatch = someValue
-      .decorateWith((use, val) => {
-        return val + 1;
-      })
-      .decorateWith((use, val) => {
-        return val * 3;
-      });
-    const c = container.new({ scopeDefinitions: [mPatch] });
-    expect(c.use(someValue)).toEqual(6);
+    expect(cnt.use(someValue)).toEqual(2);
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
@@ -46,11 +35,14 @@ describe(`decorate`, () => {
     const b = value(2);
     const someValue = value(10);
 
-    const mPatch = someValue.decorateWith((use, val) => {
-      return val + use(a) + use(b);
+    const c = container.new(c => {
+      c.bind(someValue).toDecorated((use, val) => {
+        const aVal = use(a);
+        const bVal = use(b);
+        return val + aVal + bVal;
+      });
     });
 
-    const c = container.new({ scopeDefinitions: [mPatch] });
     expect(c.use(someValue)).toEqual(13);
   });
 
@@ -62,11 +54,12 @@ describe(`decorate`, () => {
       return use(a) + use(b);
     });
 
-    const mPatch = someValue.decorateWith((use, val) => {
-      return val * use(b);
+    const c = container.new(c => {
+      c.bind(someValue).toDecorated((use, val) => {
+        return val * use(b);
+      });
     });
 
-    const c = container.new({ scopeDefinitions: [mPatch] });
     expect(c.use(someValue)).toEqual(6);
   });
 
@@ -74,18 +67,20 @@ describe(`decorate`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
       const a = fn.singleton(() => Math.random());
 
-      const mPatch = a.decorateWith((use, a) => a);
+      const c = container.new(c => {
+        c.bind(a).toDecorated((use, a) => a);
+      });
 
-      const c = container.new({ scopeDefinitions: [mPatch] });
       expect(c.use(a)).toEqual(c.use(a));
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
       const a = fn(() => Math.random());
 
-      const mPatch = a.decorateWith((use, a) => a);
+      const c = container.new(c => {
+        c.bind(a).toDecorated((use, a) => a);
+      });
 
-      const c = container.new({ scopeDefinitions: [mPatch] });
       expect(c.use(a)).not.toEqual(c.use(a));
     });
 
@@ -96,9 +91,10 @@ describe(`decorate`, () => {
         return use(source);
       });
 
-      const mPatch = a.decorateWith((use, a) => a);
+      const c = container.new(c => {
+        c.bind(a).toDecorated((use, a) => a);
+      });
 
-      const c = container.new({ scopeDefinitions: [mPatch] });
       const obj1 = fn.scoped(use => ({
         a: use(a),
         source: use(source),
@@ -124,15 +120,17 @@ describe(`decorate`, () => {
 
   describe(`globalOverrides`, () => {
     function setup(instanceDef: Definition<MyService, any, any>) {
-      const mPatch = instanceDef.decorateWith((use, a) => {
-        vi.spyOn(a, 'callMe');
-        return a;
+      const scope1 = container.new(c => {
+        c.freeze(instanceDef).toConfigured((use, a) => {
+          vi.spyOn(a, 'callMe');
+          return a;
+        });
       });
 
-      const replaced = instanceDef.bindValue({ callMe: () => {} });
+      const scope2 = scope1.checkoutScope(scope => {
+        scope.bind(instanceDef).toValue({ callMe: () => {} });
+      });
 
-      const scope1 = container.new({ frozenDefinitions: [mPatch] });
-      const scope2 = scope1.checkoutScope({ scopeDefinitions: [replaced] });
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);
       return { instance1, instance2 };

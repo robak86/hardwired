@@ -12,30 +12,32 @@ describe(`apply`, () => {
   it(`applies function to original value`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = someValue.configure((use, val) => {
-      return (val.value += 1);
+    const c = container.new(c => {
+      c.bind(someValue).toConfigured((_, val) => (val.value += 1));
     });
-
-    const c = container.new({ scopeDefinitions: [mPatch] });
     expect(c.use(someValue).value).toEqual(2);
   });
 
   it(`does not affect original module`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = someValue.configure((_, val) => (val.value += 1));
-
     expect(container.new().use(someValue).value).toEqual(1);
-    expect(container.new({ scopeDefinitions: [mPatch] }).use(someValue).value).toEqual(2);
+
+    const cnt = container.new(c => {
+      c.bind(someValue).toConfigured((_, val) => (val.value += 1));
+    });
+    expect(cnt.use(someValue).value).toEqual(2);
   });
 
-  it(`allows for multiple apply functions calls`, async () => {
+  it(`throws for multiple bind for the same definition`, async () => {
     const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = someValue.configure((_, val) => (val.value += 1)).configure((_, val) => (val.value *= 3));
-
-    const c = container.new({ scopeDefinitions: [mPatch] });
-    expect(c.use(someValue).value).toEqual(6);
+    expect(() => {
+      container.new(c => {
+        c.bind(someValue).toConfigured((_, val) => (val.value += 1));
+        c.bind(someValue).toConfigured((_, val) => (val.value *= 3));
+      });
+    }).toThrowError();
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
@@ -43,22 +45,14 @@ describe(`apply`, () => {
     const b = value(new BoxedValue(2));
     const someValue = value(new BoxedValue(10));
 
-    // const mPatch = apply(
-    //   someValue,
-    //   (val, a, b) => {
-    //     val.value = val.value + a.value + b.value;
-    //   },
-    //   a,
-    //   b,
-    // );
-    //
-    const mPatch = someValue.configure((use, val) => {
-      const aVal = use(a);
-      const bVal = use(b);
-      val.value = val.value + aVal.value + bVal.value;
+    const c = container.new(c => {
+      c.bind(someValue).toConfigured((use, val) => {
+        const aVal = use(a);
+        const bVal = use(b);
+        val.value = val.value + aVal.value + bVal.value;
+      });
     });
 
-    const c = container.new({ scopeDefinitions: [mPatch] });
     expect(c.use(someValue)).toEqual(new BoxedValue(13));
   });
 
@@ -70,29 +64,33 @@ describe(`apply`, () => {
       return new BoxedValue(use(a).value + use(b).value);
     });
 
-    const mPatch = someValue.configure((use, val) => {
-      val.value = val.value * use(b).value;
+    const c = container.new(c => {
+      c.bind(someValue).toConfigured((use, val) => {
+        val.value = val.value * use(b).value;
+      });
     });
 
-    const c = container.new({ scopeDefinitions: [mPatch] });
     expect(c.use(someValue)).toEqual(new BoxedValue(6));
   });
 
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
       const someValue = fn.singleton(() => Math.random());
-      const mPatch = someValue.configure((use, a) => a);
 
-      const c = container.new({ scopeDefinitions: [mPatch] });
+      const c = container.new(c => {
+        c.bind(someValue).toConfigured((use, a) => a);
+      });
+
       expect(c.use(someValue)).toEqual(c.use(someValue));
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
       const someValue = fn(() => Math.random());
 
-      const mPatch = someValue.configure((use, a) => a);
+      const c = container.new(c => {
+        c.bind(someValue).toConfigured((use, a) => a);
+      });
 
-      const c = container.new({ scopeDefinitions: [mPatch] });
       expect(c.use(someValue)).not.toEqual(c.use(someValue));
     });
 
@@ -102,9 +100,9 @@ describe(`apply`, () => {
         return use(source);
       });
 
-      const mPatch = a.configure(a => a);
-
-      const c = container.new({ scopeDefinitions: [mPatch] });
+      const c = container.new(c => {
+        c.bind(a).toConfigured((use, a) => a);
+      });
 
       const objDef = fn.scoped(use => ({
         a: use(a),
@@ -122,15 +120,17 @@ describe(`apply`, () => {
 
   describe(`globalOverrides`, () => {
     function setup(instanceDef: Definition<MyService, any, any>) {
-      const mPatch = instanceDef.configure((use, a) => {
-        vi.spyOn(a, 'callMe');
-        return a;
+      const scope1 = container.new(c => {
+        c.freeze(instanceDef).toConfigured((use, a) => {
+          vi.spyOn(a, 'callMe');
+          return a;
+        });
       });
 
-      const replaced = instanceDef.bindValue({ callMe: () => {} });
+      const scope2 = scope1.checkoutScope(scope => {
+        scope.bind(instanceDef).toValue({ callMe: () => {} });
+      });
 
-      const scope1 = container.new({ frozenDefinitions: [mPatch] });
-      const scope2 = scope1.checkoutScope({ scopeDefinitions: [replaced] });
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);
       return { instance1, instance2 };

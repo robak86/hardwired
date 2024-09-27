@@ -34,14 +34,16 @@ describe(`ScopeStrategy`, () => {
 
       const k1 = fn.scoped(() => new Boxed());
 
-      const globalOverride = k1.bindTo(fn.scoped(() => new Boxed(1)));
-      const childScopePatch = k1.bindTo(fn.scoped(() => new Boxed(2)));
-
-      const c = container.new({ frozenDefinitions: [globalOverride] });
+      const c = container.new(c => {
+        c.freeze(k1).to(fn.scoped(() => new Boxed(1)));
+      });
 
       expect(c.use(k1).value).toEqual(1);
 
-      const childScope = c.checkoutScope({ scopeDefinitions: [childScopePatch] });
+      const childScope = c.checkoutScope(c => {
+        c.bind(k1).to(fn.scoped(() => new Boxed(2)));
+      });
+
       expect(childScope.use(k1).value).toEqual(1);
 
       expect(c.use(k1)).toBe(childScope.use(k1));
@@ -70,13 +72,16 @@ describe(`ScopeStrategy`, () => {
       const k1 = fn.scoped(() => Math.random());
       const k2 = fn.scoped(() => Math.random());
 
-      const parentBinding = k1.bindTo(fn.scoped(() => 1));
-      const scopeBinding = k2.bindTo(fn.scoped(() => 2));
+      const c = container.new(c => {
+        c.freeze(k1).to(fn.scoped(() => 1));
+      });
 
-      const c = container.new({ frozenDefinitions: [parentBinding] });
       expect(c.use(k1)).toEqual(1);
 
-      const childScope = c.checkoutScope({ scopeDefinitions: [scopeBinding] });
+      const childScope = c.checkoutScope(scope => {
+        scope.bind(k2).to(fn.scoped(() => 2));
+      });
+
       expect(childScope.use(k1)).toEqual(1);
       expect(childScope.use(k2)).toEqual(2);
     });
@@ -190,13 +195,16 @@ describe(`ScopeStrategy`, () => {
       it(`cannot be replaced by scope overrides`, async () => {
         const k1 = fn.scoped(() => Math.random());
 
-        const invariantPatch = k1.bindTo(fn.scoped(() => 1));
-        const childScopePatch = k1.bindTo(fn.scoped(() => 2));
+        const c = container.new(c => {
+          c.freeze(k1).to(fn.scoped(() => 1));
+        });
 
-        const c = container.new({ frozenDefinitions: [invariantPatch] });
         expect(c.use(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ scopeDefinitions: [childScopePatch] });
+        const childScope = c.checkoutScope(c => {
+          c.bind(k1).to(fn.scoped(() => 2));
+        });
+
         expect(childScope.use(k1)).toEqual(1);
       });
 
@@ -204,13 +212,16 @@ describe(`ScopeStrategy`, () => {
         const k1 = fn.scoped(() => Math.random());
         const k2 = fn.scoped(() => Math.random());
 
-        const finalBinding = k1.bindTo(fn.scoped(() => 1));
-        const scopeBinding = k2.bindTo(fn.scoped(() => 2));
+        const c = container.new(c => {
+          c.freeze(k1).to(fn.scoped(() => 1));
+        });
 
-        const c = container.new({ frozenDefinitions: [finalBinding] });
         expect(c.use(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ scopeDefinitions: [scopeBinding] });
+        const childScope = c.checkoutScope(c => {
+          c.bind(k2).to(fn.scoped(() => 2));
+        });
+
         expect(childScope.use(k1)).toEqual(1);
         expect(childScope.use(k2)).toEqual(2);
       });
@@ -276,14 +287,15 @@ describe(`ScopeStrategy`, () => {
       it(`cannot be replaced by scope overrides`, async () => {
         const k1 = fn.scoped(async () => Math.random());
 
-        const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
-        const childScopePatch = k1.bindTo(fn.scoped(async () => 2));
-
-        const c = container.new({ frozenDefinitions: [invariantPatch] });
+        const c = container.new(c => {
+          c.freeze(k1).to(fn.scoped(async () => 1));
+        });
 
         expect(await c.use(k1)).toEqual(1);
 
-        const childScope = c.checkoutScope({ scopeDefinitions: [childScopePatch] });
+        const childScope = c.checkoutScope(c => {
+          c.bind(k1).to(fn.scoped(async () => 2));
+        });
         expect(await childScope.use(k1)).toEqual(1);
       });
 
