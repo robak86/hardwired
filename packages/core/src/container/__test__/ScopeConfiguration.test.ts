@@ -28,8 +28,12 @@ describe('ScopeConfiguration', () => {
     describe(`inheritFrom`, () => {
       it(`is not available for the container configuration`, async () => {
         container.new(c => {
-          // @ts-expect-error - inheritFrom is not available for the container configuration
-          c.bind(fn.scoped(() => 1)).toInheritedFrom(null);
+          try {
+            // @ts-expect-error - inheritFrom is not available for the container configuration
+            c.bind(fn.scoped(() => 1)).toInheritedFrom(null);
+          } catch (e) {
+            // noop
+          }
         });
       });
 
