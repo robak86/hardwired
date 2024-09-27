@@ -95,6 +95,21 @@ describe(`ScopeStrategy`, () => {
         expect(childScope.use(a)).toEqual(1);
       });
     });
+
+    describe(`setting final override in child scope`, () => {
+      it(`should make the instance inherited by other child scopes`, async () => {
+        const a = fn.singleton(() => 0);
+
+        const root = container.new();
+
+        const childScope = root.checkoutScope({ final: [a.redefine(use => Math.random())] });
+        const grandChildScope = childScope.checkoutScope();
+
+        expect(root.use(a)).toEqual(0);
+        expect(childScope.use(a)).not.toEqual(0);
+        expect(grandChildScope.use(a)).toEqual(childScope.use(a));
+      });
+    });
   });
 
   describe(`scope overrides`, () => {
@@ -276,10 +291,16 @@ describe(`ScopeStrategy`, () => {
         const k1 = fn.scoped(async () => Math.random());
         const k2 = fn.scoped(async () => Math.random());
 
-        const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
+        // const invariantPatch = k1.bindTo(fn.scoped(async () => 1));
         const childScopePatch = k2.bindTo(fn.scoped(async () => 2));
 
-        const c = container.new({ final: [invariantPatch] });
+        // const c = container.new({ final: [invariantPatch] });
+
+        const c = container.new(container => {
+          container.freeze(k1).to(fn.scoped(async () => 1));
+          container.freeze(k2).to(fn.scoped(async () => 2));
+        });
+
         expect(await c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });

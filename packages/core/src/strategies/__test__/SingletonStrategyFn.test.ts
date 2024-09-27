@@ -172,7 +172,10 @@ describe(`SingletonStrategy`, () => {
         const invariantPatch = k1.bindValue(1);
         const childScopePatch = k1.bindValue(2);
 
-        const c = container.new({ final: [invariantPatch] });
+        const c = container.new(container => {
+          container.freeze(invariantPatch).toValue(1);
+        });
+
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope({ scope: [childScopePatch] });
@@ -186,7 +189,9 @@ describe(`SingletonStrategy`, () => {
         const invariantPatch = k1.bindValue(1);
         const childScopePatch = k2.bindValue(2);
 
-        const c = container.new({ scope: [invariantPatch] });
+        const c = container.new(container => {
+          container.freeze(invariantPatch).toValue(1);
+        });
 
         expect(c.use(k1)).toEqual(1);
 
@@ -340,9 +345,10 @@ describe(`SingletonStrategy`, () => {
           const consumer1 = fn.singleton(async use => use(slowSingleton));
           const consumer2 = fn.singleton(async use => use(slowSingleton));
 
-          const patch = slowSingleton.bindTo(fn.singleton(async () => new BoxedValue(123)));
+          const ctn = container.new(container => {
+            container.freeze(slowSingleton).to(fn.singleton(async () => new BoxedValue(123)));
+          });
 
-          const ctn = container.new({ final: [patch] });
           const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
           expect(result1.value).toEqual(123);
           expect(result2.value).toEqual(123);

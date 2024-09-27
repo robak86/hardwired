@@ -6,6 +6,12 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 import { ContextEvents } from '../events/ContextEvents.js';
 
 import { Definition } from '../definitions/abstract/Definition.js';
+import {
+  ContainerConfiguration,
+  ContainerConfigureCallback,
+  ScopeConfiguration,
+  ScopeConfigureCallback,
+} from './ContainerConfiguration.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue, TArgs extends any[]>(
@@ -22,7 +28,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
   // TODO: not sure if this should be public
-  checkoutScope(options?: ScopeOptions): IContainer<TAllowedLifeTime>;
+  checkoutScope(options?: ScopeOptions | ScopeConfigureCallback | ScopeConfiguration): IContainer<TAllowedLifeTime>;
 
   withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
   withScope<TValue>(options: ScopeOptions, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;

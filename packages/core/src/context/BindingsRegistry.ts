@@ -24,8 +24,8 @@ export class BindingsRegistry {
     private finalBindingsById: Record<string, Definition<any, any, any>>,
   ) {}
 
-  addScopeBinding(definition: Definition<any, any, any>) {
-    this.updateScopeBinding(definition);
+  clone() {
+    return new BindingsRegistry({ ...this.scopeBindingsById }, { ...this.finalBindingsById });
   }
 
   checkoutForScope(scopeBindings: Overrides, finalBindings: Overrides): BindingsRegistry {
@@ -56,12 +56,16 @@ export class BindingsRegistry {
     return !!this.finalBindingsById[definitionId];
   }
 
-  addFinalBinding(definition: Definition<any, any, any>) {
+  addScopeBinding = (definition: Definition<any, any, any>) => {
+    this.updateScopeBinding(definition);
+  };
+
+  addFinalBinding = (definition: Definition<any, any, any>) => {
     if (this.finalBindingsById[definition.id]) {
       throw new Error(`Final binding with id ${definition.id} was already set. Cannot override it.`);
     }
     this.finalBindingsById[definition.id] = definition;
-  }
+  };
 
   private updateScopeBinding(definition: Definition<any, any, any>) {
     this.scopeBindingsById[definition.id] = definition;

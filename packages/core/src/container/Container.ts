@@ -14,19 +14,22 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { v4 } from 'uuid';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ContainerConfigureAware, ScopeConfigureAware } from './abstract/ScopeConfigureAware.js';
-import { ScopeConfigurationDSL } from './ScopeConfigurationDSL.js';
+import {
+  ContainerConfiguration,
+  ContainerConfigureCallback,
+  ScopeConfiguration,
+  ScopeConfigureCallback,
+} from './ContainerConfiguration.js';
+import { containerConfiguratorToOptions, ContainerConfigureBinder } from '../definitions/ContainerConfigureAware.js';
+import { scopeConfiguratorToOptions, ScopeConfigureBinder } from '../definitions/ScopeConfigureAware.js';
 
 interface Container extends UseFn<LifeTime> {}
 
 class Container
   extends ExtensibleFunction
-  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IContainer, ContainerConfigureAware
+  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IContainer
 {
   public readonly id = v4();
-
-  public readonly scope: ScopeConfigureAware;
-  public readonly final: ScopeConfigureAware;
 
   constructor(
     public readonly parentId: string | null,
@@ -38,12 +41,11 @@ class Container
     super((definition: Definition<any, any, any>, ...args: any[]) => {
       return this.use(definition as any, ...args); // TODO: fix type
     });
-
-    this.scope = new ScopeConfigurationDSL(this.bindingsRegistry);
-    this.final = new ScopeConfigurationDSL(this.bindingsRegistry);
   }
 
-  new(options: ScopeOptions = {}): IContainer {
+  new(optionsOrFunction?: ScopeOptions | ContainerConfigureCallback | ContainerConfiguration): IContainer {
+    const options = containerConfiguratorToOptions(optionsOrFunction);
+
     const definitionsRegistry = BindingsRegistry.create(options);
 
     return new Container(
@@ -83,13 +85,13 @@ class Container
     return results as any;
   };
 
-  checkoutScope: IContainerScopes['checkoutScope'] = (options = {}): IContainer => {
-    const { scope = [], final = [] } = options;
+  checkoutScope: IContainerScopes['checkoutScope'] = (optionsOrConfiguration): IContainer => {
+    const options = scopeConfiguratorToOptions(optionsOrConfiguration, this);
 
     const scopeContext = new Container(
       this.id,
-      this.bindingsRegistry.checkoutForScope(scope, final),
-      this.instancesStore.childScope(scope),
+      this.bindingsRegistry.checkoutForScope(options.scope, options.final),
+      this.instancesStore.childScope(options.scope),
       this.strategiesRegistry,
       this.events,
     );
@@ -106,6 +108,28 @@ class Container
       return fn!(this.checkoutScope(fnOrOptions));
     }
   };
+
+  private _applyContainerConfiguration(config: ContainerConfiguration) {
+    const binder = new ContainerConfigureBinder();
+    config.apply(binder);
+  }
+
+  private _applyContainerConfigurationCallback(callback: ContainerConfigureCallback) {
+    const binder = new ContainerConfigureBinder();
+    callback(binder);
+
+    throw new Error('Implement me!');
+  }
+
+  private _applyScopeConfiguration(config: ScopeConfiguration, parentContainer: IContainer) {
+    const binder = new ScopeConfigureBinder();
+    config.apply(binder, parentContainer);
+  }
+
+  private _applyScopeConfigurationCallback(callback: ScopeConfigureCallback, parentContainer: IContainer) {
+    const binder = new ScopeConfigureBinder();
+    callback(binder, parentContainer);
+  }
 }
 
 export type ScopeOptions = {
