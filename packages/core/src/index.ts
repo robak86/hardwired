@@ -1,3 +1,6 @@
+export { ScopeConfigureAware } from './definitions/ScopeConfigureAware.js';
+export { ContainerConfigureAware } from './definitions/ContainerConfigureAware.js';
+
 export type { IContainer, InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
 export { container } from './container/Container.js';
 

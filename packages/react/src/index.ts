@@ -21,3 +21,5 @@ export * from './hooks/useInitializers.js';
 export { withDependencies } from './hoc/withDependencies.js';
 export type { WithDependenciesConfigured } from './hoc/withDependencies.js';
 export * from './hoc/inject.js';
+
+export * from './hooks/useScopeConfig.js';

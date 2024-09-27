@@ -1,10 +1,11 @@
-import { configureScope, fn } from 'hardwired';
+import { fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { use } from '../../hooks/use.js';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { FC } from 'react';
+import { useScopeConfig } from '../../hooks/useScopeConfig.js';
 
 /**
  * @vitest-environment happy-dom
@@ -120,11 +121,11 @@ describe(`ContainerScope`, () => {
         return <div data-testid={testId}>{value}</div>;
       };
 
-      const scope1Config = configureScope(scope => {
+      const scope1Config = useScopeConfig(scope => {
         scope.bind(baseD).toValue(10);
       });
 
-      const scope2Config = configureScope(scope => {
+      const scope2Config = useScopeConfig(scope => {
         scope.bind(baseD).toValue(100);
       });
 

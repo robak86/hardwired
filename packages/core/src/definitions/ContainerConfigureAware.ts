@@ -15,10 +15,7 @@ export function containerConfiguratorToOptions(optionsOrFunction?: ContainerConf
 
     return binder;
   } else if (optionsOrFunction instanceof ContainerConfiguration) {
-    const binder = new ContainerConfigureBinder();
-    optionsOrFunction.apply(binder);
-
-    return binder;
+    return optionsOrFunction.apply();
   } else {
     return optionsOrFunction ?? {};
   }

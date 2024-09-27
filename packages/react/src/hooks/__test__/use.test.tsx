@@ -7,6 +7,7 @@ import { use } from '../use.js';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
 import { FC } from 'react';
+import { useScopeConfig } from '../useScopeConfig.js';
 
 /**
  * @vitest-environment happy-dom
@@ -114,9 +115,12 @@ describe(`useDefinition`, () => {
       const c = container.new();
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
-        const config = configureScope(scope => {
-          scope.bind(someExternalParam).toValue(externalValue);
-        });
+        const config = useScopeConfig(
+          scope => {
+            scope.bind(someExternalParam).toValue(externalValue);
+          },
+          [externalValue],
+        );
 
         // TODO: invalidateKeys should be based on the keys from the config
         return (

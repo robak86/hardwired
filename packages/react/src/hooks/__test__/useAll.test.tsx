@@ -1,4 +1,4 @@
-import { configureScope, container, fn, unbound } from 'hardwired';
+import { container, fn, unbound } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
@@ -8,6 +8,7 @@ import { expectType, TypeEqual } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
 import { FC } from 'react';
+import { useScopeConfig } from '../useScopeConfig.js';
 
 /**
  * @vitest-environment happy-dom
@@ -135,9 +136,12 @@ describe(`useDefinitions`, () => {
       const c = container.new();
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
-        const config = configureScope(scope => {
-          scope.bind(someExternalParam).toValue(externalValue);
-        });
+        const config = useScopeConfig(
+          scope => {
+            scope.bind(someExternalParam).toValue(externalValue);
+          },
+          [externalValue],
+        );
 
         return (
           <ContainerProvider container={c}>

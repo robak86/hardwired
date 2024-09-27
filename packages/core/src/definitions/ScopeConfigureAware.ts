@@ -19,10 +19,7 @@ export function scopeConfiguratorToOptions(
 
     return binder;
   } else if (optionsOrFunction instanceof ScopeConfiguration) {
-    const binder = new ScopeConfigureBinder();
-    optionsOrFunction.apply(binder, parentContainer);
-
-    return binder;
+    return optionsOrFunction.apply(parentContainer);
   } else {
     return optionsOrFunction ?? {};
   }

@@ -4,7 +4,7 @@ import { FC, PropsWithChildren } from 'react';
 import { ScopeConfiguration } from 'hardwired';
 
 export type ContainerScopeProps = {
-  invalidateKeys?: ReadonlyArray<any>;
+  invalidateKeys?: ReadonlyArray<any>; // TODO: feels redundant. Most likely scope should be invalidated only by comparing config references
   config?: ScopeConfiguration;
 };
 
@@ -18,6 +18,9 @@ export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({
     return container.checkoutScope(config).checkoutScope();
   });
 
-  // eslint-disable-next-line react/no-children-prop
-  return <ContainerContext.Provider value={{ container: getScopedContainer(invalidateKeys) }} children={children} />;
+  return (
+    <ContainerContext.Provider value={{ container: getScopedContainer([config, ...invalidateKeys]) }}>
+      {children}
+    </ContainerContext.Provider>
+  );
 };
