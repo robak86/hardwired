@@ -58,16 +58,7 @@ class Container
   }
 
   buildExact<T>(definition: Definition<T, any, any>, ...args: any[]): T {
-    const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
-
-    this.interceptor.onDefinitionEnter?.(patchedInstanceDef);
-
-    if (this.interceptor.interceptSync) {
-      // TODO: this doesn't make any sense as the value from previous interceptor might be completely ignored
-      return this.interceptor.interceptSync(patchedInstanceDef, this);
-    }
-
-    return patchedInstanceDef.create(this, ...args);
+    return definition.create(this, ...args);
   }
 
   use: UseFn<LifeTime> = (definition, ...args) => {
