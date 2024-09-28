@@ -78,7 +78,7 @@ bun add hardwired hardwired-react mobx mobx-react
    }
 
    export class CounterActions {
-     static instance = cls.singleton(this, CounterStore.instance);
+     static instance = cls.singleton(this, [CounterStore.instance]);
 
      constructor(private store: CounterStore) {
        makeAutoObservable(this);
@@ -316,7 +316,7 @@ const initialValue = value(0);
 const label = unbound<string>();
 
 class CounterStore {
-  static instance = cls.scoped(this, initialValue, label);
+  static instance = cls.scoped(this, [initialValue, label]);
 
   constructor(
     public value: number,
@@ -327,7 +327,7 @@ class CounterStore {
 }
 
 class CounterActions {
-  static instance = cls.scoped(this, CounterStore.instance);
+  static instance = cls.scoped(this, [CounterStore.instance]);
 
   constructor(private store: CounterStore) {
     makeAutoObservable(this);

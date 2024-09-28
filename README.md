@@ -261,7 +261,7 @@ import { cls, fn } from 'hardwired';
 const apiUrl = fn.singleton(() => 'https://api.example.com');
 
 class ApiClient {
-  static instance = cls.singleton(this, apiUrl);
+  static instance = cls.singleton(this, [apiUrl]);
 
   constructor(private apiUrl: string) {}
 
@@ -642,7 +642,7 @@ class FsLoggerTransport implements ITransport {
 }
 
 class ProductionLogger implements ILogger {
-  static instance = cls.singleton(this, transport);
+  static instance = cls.singleton(this, [transport]);
 
   constructor(fsTransport: ITransport) {}
 }

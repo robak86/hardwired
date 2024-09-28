@@ -9,7 +9,7 @@ describe(`cls`, () => {
   class MyClass {
     static asTransient = cls.transient(this, [num, str]);
     static asSingleton = cls.singleton(this, [num, str]);
-    static asScoped = cls.scoped(this, [num, str]);
+    static asScoped = cls.scoped(this, () => [num, str]);
 
     readonly value = Math.random();
 
