@@ -76,6 +76,13 @@ class Container
     return results as any;
   };
 
+  deferred =
+    <TInstance, TArgs extends any[]>(
+      factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
+    ): ((...args: TArgs) => TInstance) =>
+    (...args: TArgs) =>
+      this.use(factoryDefinition, ...args);
+
   checkoutScope: IContainerScopes['checkoutScope'] = (optionsOrConfiguration): IContainer => {
     const options = scopeConfiguratorToOptions(optionsOrConfiguration, this);
 

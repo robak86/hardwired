@@ -57,6 +57,17 @@ describe(`Container`, () => {
         expect(value).toEqual(456);
       });
 
+      it(`works with deferred`, async () => {
+        const removeUser = fn((use, userId: number) => {
+          return userId;
+        });
+
+        const remove = container.new().deferred(removeUser);
+        expect(remove).toBeInstanceOf(Function);
+
+        expect(remove(123)).toEqual(123);
+      });
+
       it(`allows passing arguments only to the transient definition`, async () => {
         // @ts-expect-error
         fn.singleton((use, userId: number) => userId);
