@@ -4,6 +4,7 @@ import { Binder } from './Binder.js';
 import { ScopeOptions } from '../container/Container.js';
 import { ParentContainer, ScopeConfiguration, ScopeConfigureCallback } from '../container/ContainerConfiguration.js';
 import { IContainer } from '../container/IContainer.js';
+import { emptyContainerOptions, InitFn } from './ContainerConfigureAware.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
@@ -21,7 +22,7 @@ export function scopeConfiguratorToOptions(
   } else if (optionsOrFunction instanceof ScopeConfiguration) {
     return optionsOrFunction.apply(parentContainer);
   } else {
-    return {};
+    return emptyContainerOptions;
   }
 }
 
@@ -29,12 +30,21 @@ export interface ScopeConfigureAware {
   bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
+
+  init(initializer: InitFn): void;
 }
 
 export class ScopeConfigureBinder implements ScopeConfigureAware, ScopeOptions {
   private _scopeDefinitions: Definition<any, any, any>[] = [];
 
+  readonly frozenDefinitions: Definition<any, any, any>[] = [];
+  readonly initializers: InitFn[] = [];
+
   constructor(private _parentContainer: ParentContainer) {}
+
+  init(initializer: InitFn): void {
+    this.initializers.push(initializer);
+  }
 
   bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,

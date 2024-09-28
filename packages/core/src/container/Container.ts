@@ -9,7 +9,7 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { containerConfiguratorToOptions } from '../definitions/ContainerConfigureAware.js';
+import { containerConfiguratorToOptions, InitFn } from '../definitions/ContainerConfigureAware.js';
 import { scopeConfiguratorToOptions } from '../definitions/ScopeConfigureAware.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
@@ -44,7 +44,11 @@ class Container
 
     const definitionsRegistry = BindingsRegistry.create(options);
 
-    return new Container(null, definitionsRegistry, InstancesStore.create(), defaultStrategiesRegistry);
+    const cnt = new Container(null, definitionsRegistry, InstancesStore.create(), defaultStrategiesRegistry);
+
+    options.initializers.forEach(init => init(cnt.use));
+
+    return cnt;
   }
 
   buildExact<T>(definition: Definition<T, any, any>, ...args: any[]): T {
@@ -75,12 +79,16 @@ class Container
   checkoutScope: IContainerScopes['checkoutScope'] = (optionsOrConfiguration): IContainer => {
     const options = scopeConfiguratorToOptions(optionsOrConfiguration, this);
 
-    return new Container(
+    const cnt = new Container(
       this.id,
-      this.bindingsRegistry.checkoutForScope(options.scopeDefinitions ?? [], options.frozenDefinitions ?? []),
+      this.bindingsRegistry.checkoutForScope(options.scopeDefinitions, options.frozenDefinitions),
       this.instancesStore.childScope(),
       this.strategiesRegistry,
     );
+
+    options.initializers.forEach(init => init(cnt.use));
+
+    return cnt;
   };
 
   withScope: IContainerScopes['withScope'] = (fnOrOptions, fn?: any) => {
@@ -93,8 +101,9 @@ class Container
 }
 
 export type ScopeOptions = {
-  frozenDefinitions?: Array<Definition<any, any, any>>; // propagated to descendant containers
-  scopeDefinitions?: Array<Definition<any, any, any>>;
+  readonly frozenDefinitions: readonly Definition<any, any, any>[];
+  readonly scopeDefinitions: readonly Definition<any, any, any>[];
+  readonly initializers: readonly InitFn[];
 };
 
 export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)

@@ -3,10 +3,19 @@ import { Definition } from './abstract/Definition.js';
 import { Binder } from './Binder.js';
 import { ContainerConfiguration, ContainerConfigureCallback } from '../container/ContainerConfiguration.js';
 import { ScopeOptions } from '../container/Container.js';
+import { UseFn } from '../container/IContainer.js';
+
+export const emptyContainerOptions: ScopeOptions = Object.freeze({
+  scopeDefinitions: Object.freeze([]),
+  frozenDefinitions: Object.freeze([]),
+  initializers: Object.freeze([]),
+});
 
 export type ContainerConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 
 export type ContainerConfigurator = ContainerConfigureCallback | ContainerConfiguration;
+
+export type InitFn = (container: UseFn<any>) => void;
 
 export function containerConfiguratorToOptions(optionsOrFunction?: ContainerConfigurator): ScopeOptions {
   if (optionsOrFunction instanceof Function) {
@@ -17,7 +26,7 @@ export function containerConfiguratorToOptions(optionsOrFunction?: ContainerConf
   } else if (optionsOrFunction instanceof ContainerConfiguration) {
     return optionsOrFunction.apply();
   } else {
-    return optionsOrFunction ?? {};
+    return emptyContainerOptions;
   }
 }
 
@@ -29,16 +38,23 @@ export interface ContainerConfigureAware {
   freeze<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
+
+  init(initializer: InitFn): void;
 }
 
 export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeOptions {
   private _scopeDefinitions: Definition<any, any, any>[] = [];
   private _frozenDefinitions: Definition<any, any, any>[] = [];
+  private _initializers: InitFn[] = [];
 
   private _scopeDefinitionsById: Map<symbol, true> = new Map();
   private _frozenDefinitionsById: Map<symbol, true> = new Map();
 
   constructor() {}
+
+  init(initializer: InitFn): void {
+    this._initializers.push(initializer);
+  }
 
   bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
@@ -70,5 +86,9 @@ export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeO
 
   get frozenDefinitions() {
     return this._frozenDefinitions;
+  }
+
+  get initializers() {
+    return this._initializers;
   }
 }

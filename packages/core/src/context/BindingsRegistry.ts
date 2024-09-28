@@ -24,8 +24,8 @@ export class BindingsRegistry {
   }
 
   checkoutForScope(
-    scopeBindings: Array<Definition<any, any, any>>,
-    finalBindings: Array<Definition<any, any, any>>,
+    scopeBindings: readonly Definition<any, any, any>[],
+    finalBindings: readonly Definition<any, any, any>[],
   ): BindingsRegistry {
     const newRegistry = new BindingsRegistry(
       new Map(this.scopeBindingsById), // TODO: experiment with proxy object instead of cloning?
@@ -65,13 +65,13 @@ export class BindingsRegistry {
     this.scopeBindingsById.set(definition.id, definition);
   }
 
-  private addFinalBindings(patches: Array<Definition<any, any, any>>) {
+  private addFinalBindings(patches: readonly Definition<any, any, any>[]) {
     patches.forEach(patchedResolver => {
       this.addFinalBinding(patchedResolver);
     });
   }
 
-  private addScopeBindings(patches: Array<Definition<any, any, any>>) {
+  private addScopeBindings(patches: readonly Definition<any, any, any>[]) {
     patches.forEach(patchedResolver => {
       this.updateScopeBinding(patchedResolver);
     });

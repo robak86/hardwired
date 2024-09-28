@@ -1,6 +1,7 @@
 import { describe } from 'vitest';
 import { fn } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe('ScopeConfiguration', () => {
   describe('using parent container', () => {
@@ -23,6 +24,21 @@ describe('ScopeConfiguration', () => {
       const rootInstance2 = root.use(compositionRoot);
 
       expect(rootInstance1).toEqual(rootInstance2);
+    });
+
+    describe(`init`, () => {
+      it(`runs init functions on passing the newly created container`, async () => {
+        const dep = fn.scoped(() => new BoxedValue(Math.random()));
+        const root = container.new();
+
+        const childContainer = root.checkoutScope((scope, use) => {
+          scope.init(use => {
+            use(dep).value = 1;
+          });
+        });
+
+        expect(childContainer.use(dep).value).toEqual(1);
+      });
     });
 
     describe(`inheritFrom`, () => {
