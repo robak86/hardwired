@@ -120,6 +120,14 @@ export const once = new Container(
   new ContextEvents(),
 ).use;
 
+export const all = new Container(
+  null,
+  BindingsRegistry.create(),
+  InstancesStore.create(),
+  defaultStrategiesRegistry,
+  new ContextEvents(),
+).all;
+
 export const container = new Container(
   null,
   BindingsRegistry.create(),
