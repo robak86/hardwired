@@ -1,5 +1,4 @@
 import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { ScopeOptions } from './Container.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
@@ -23,10 +22,10 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
   // TODO: not sure if this should be public
-  checkoutScope(options?: ScopeOptions | ScopeConfigureCallback | ScopeConfiguration): IContainer<TAllowedLifeTime>;
+  checkoutScope(options?: ScopeConfigureCallback | ScopeConfiguration): IContainer<TAllowedLifeTime>;
 
   withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
-  withScope<TValue>(options: ScopeOptions, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
+  withScope<TValue>(options: ScopeConfiguration, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
 }
 
 export interface UseFn<TAllowedLifeTime extends LifeTime> {

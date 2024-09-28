@@ -6,7 +6,7 @@ import { ScopeOptions } from '../container/Container.js';
 
 export type ContainerConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 
-export type ContainerConfigurator = ScopeOptions | ContainerConfigureCallback | ContainerConfiguration;
+export type ContainerConfigurator = ContainerConfigureCallback | ContainerConfiguration;
 
 export function containerConfiguratorToOptions(optionsOrFunction?: ContainerConfigurator): ScopeOptions {
   if (optionsOrFunction instanceof Function) {

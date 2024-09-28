@@ -7,7 +7,7 @@ import { IContainer } from '../container/IContainer.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
-export type ContainerConfigurator = ScopeOptions | ScopeConfigureCallback | ScopeConfiguration;
+export type ContainerConfigurator = ScopeConfigureCallback | ScopeConfiguration;
 
 export function scopeConfiguratorToOptions(
   optionsOrFunction: ContainerConfigurator | undefined,

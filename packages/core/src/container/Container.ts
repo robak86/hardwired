@@ -38,7 +38,7 @@ class Container
     });
   }
 
-  new(optionsOrFunction?: ScopeOptions | ContainerConfigureCallback | ContainerConfiguration): IContainer {
+  new(optionsOrFunction?: ContainerConfigureCallback | ContainerConfiguration): IContainer {
     const options = containerConfiguratorToOptions(optionsOrFunction);
 
     const definitionsRegistry = BindingsRegistry.create(options);

@@ -113,7 +113,7 @@ describe(`SingletonStrategy`, () => {
         const a = fn.singleton(() => Math.random());
 
         const parentC = container.new();
-        const childC = parentC.checkoutScope({});
+        const childC = parentC.checkoutScope();
 
         const req1 = childC.use(a); // important that childC is called as first
         const req2 = parentC.use(a);
@@ -127,7 +127,7 @@ describe(`SingletonStrategy`, () => {
           c.freeze(a).toValue(1);
         });
 
-        const childC = parentC.checkoutScope({});
+        const childC = parentC.checkoutScope();
 
         const req1 = childC.use(a);
         const req2 = parentC.use(a);
@@ -144,7 +144,7 @@ describe(`SingletonStrategy`, () => {
           c.freeze(a).toValue(1);
         });
 
-        const childC = parentC.checkoutScope({});
+        const childC = parentC.checkoutScope();
 
         const req1 = childC.use(consumer);
         const req2 = parentC.use(consumer);
