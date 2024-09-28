@@ -219,7 +219,7 @@ Definitions created with `fn` also accept async functions. In such cases, the in
 ```typescript
 import { fn, once } from 'hardwired';
 
-const bootConfig = fn.transient(async use => {
+const bootConfig = fn.singleton(async use => {
   const response = await fetch('https://api.example.com');
   return response.json();
 });
@@ -277,6 +277,7 @@ In this example:
 
 - We defined `ApiClient.instance` using `cls.singleton`. The `instance` static property is a definition object similar to the object returned by `fn(() => ...)`.
 - The class depends on `apiUrl`, which is injected when instantiated. `cls` is type-safe and checks if dependencies passed after the `this` argument correspond to the constructor signature.
+- The name of the static property is arbitrary and can be any valid JavaScript identifier. Additionally, class may have multiple static properties that define different ways of creating the instance.
 
 ## Using the Container
 
@@ -294,9 +295,9 @@ const client = container.use(ApiClient.instance);
 
 #### Using a Temporal Container
 
-Hardwired provides a helpers for quickly instantiating a single definition using a temporal container.
+Hardwired provides helpers for quickly instantiating definitions using a temporal container.
 
-- `once` - returns a single instance
+- `once` - returns a single instance using temporal container. The container is created on every `once` call and destroyed after.
 
   ```typescript
   import { once } from 'hardwired';
@@ -307,7 +308,7 @@ Hardwired provides a helpers for quickly instantiating a single definition using
   const val2 = once(randomValue); // val2 !== val1
   ```
 
-- `all` - returns multiple instances fetched from the same temporal container
+- `all` - returns multiple instances fetched from the same temporal container.
 
   ```typescript
   import { all } from 'hardwired';
@@ -361,7 +362,7 @@ const id2 = container.withScope(use => {
 
 ### Creating Child Scopes from the Definitions
 
-The `use` argument passed to the factory function `fn(use => ...)` is actually an instance of a container. This powerful feature allows the definitions to execute code in complete isolation, enabling the sharing of scoped definitions within the scope.
+The `use` argument passed to the factory function `fn(use => ...)` is actually an instance of a container. This powerful feature allows the definitions to execute code in complete isolation while enabling the sharing of scoped definitions within the scope.
 
 ```typescript
 const db = fn.singleton(() => {
@@ -380,12 +381,15 @@ const command = fn.scoped(use => {
   const _db = use(db);
   const _logger = use(logger);
 
-  _logger.log('Hello World'); // this will print message having unique requestId for every request
+  _logger.log('Hello World');
+  // This will print a message having unique requestId for every request [requestId:unique-id-for-the-request] Hello World
+  // The command doesn't need to know anything about the details of how it's done nor pass manually the id to the logger
 });
 
 const handler1 = fn.transient(async (use, req:Request) => {
    const _command = use(command);
 
+  _logger.log('Hello World'); // the same id will be printed as was printed in from the command
   return new Response('handler1 response')
 })
 
@@ -484,7 +488,7 @@ const scopeConfig = configureScope(scope => {
   // all the following bindings make the "definition" return the Boxed object with value 1;
   scope.bind(definition).to(otherDefinition);
   scope.bind(definition).toValue(new Boxed(1));
-  scope.bind(definition).toDecorated((use, originalValue) => new Boxed(originalValue.value));
+  scope.bind(definition).toDecorated((use, originalValue) => new Boxed(1));
   scope.bind(definition).toConfigured((use, originalValue) => {
     originalValue.value = 1;
   });
@@ -515,7 +519,7 @@ const rootConfig = configureContainer(container => {
   // in the container configuration we can also bind singletons
   container.bind(definition).to(otherDefinition);
   container.bind(definition).toValue(new Boxed(1));
-  container.bind(definition).toDecorated((use, originalValue) => new Boxed(originalValue.value));
+  container.bind(definition).toDecorated((use, originalValue) => new Boxed(1));
   container.bind(definition).toConfigured((use, originalValue) => {
     originalValue.value = 1;
   });
@@ -603,7 +607,7 @@ container.withScope(scopeConfig, use => {
 
 If you try to use an unbound definition without providing a value, Hardwired will throw an error at runtime, alerting you that the dependency is missing.
 
-This the one of two situations when the library cannot check dependencies correctness at the compile-time.
+This is one of the two situations when the library cannot check dependencies correctness at the compile-time:
 
 - missing value for a unbound definition
 - circular references in the definitions
@@ -640,7 +644,7 @@ class FsLoggerTransport implements ITransport {
 class ProductionLogger implements ILogger {
   static instance = cls.singleton(this, transport);
 
-  constructor(fsTransport: FsLoggerTransport) {}
+  constructor(fsTransport: ITransport) {}
 }
 
 const myApp = fn(use => {
