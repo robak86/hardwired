@@ -59,9 +59,9 @@ bun add hardwired hardwired-react mobx mobx-react
 
 ## Getting started
 
-1. Create the model layer. For this example we use more OOP style
+1. Create the model layer.
 
-> These examples use OOP, but Hardwired also provide support for [functional](#functional-api) programming style.
+> These examples use OOP, but Hardwired also provides support for [functional](#functional-api) programming style.
 
 ```typescript
 import { makeAutoObservable } from 'mobx';
@@ -166,7 +166,7 @@ describe('CounterAction', () => {
 
     // delegating instances construction to the container
     it('increments counter state by 1', () => {
-      const [counterStore, counterStoreActions] = all(counterStoreDef, counterActionsDef);
+      const [counterStore, counterStoreActions] = all(CounterStore.instance, CounterActions.instance);
 
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(1);
@@ -178,7 +178,7 @@ describe('CounterAction', () => {
       const cnt = container.new(container => {
         container.bind(initialValue).toValue(10);
       });
-      const [counterStore, counterStoreActions] = cnt.all(counterStoreDef, counterActionsDef);
+      const [counterStore, counterStoreActions] = cnt.all(CounterStore.instance, CounterActions.instance);
 
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(11);
@@ -206,9 +206,9 @@ describe('CounterButtons', () => {
   function setup() {
 
     const cnt = container(container => {
-      container.bind(CounterActions.instance).toConfigured((_, store) => {
-        vi.spyOn(counterActionsInstance, 'increment');
-        vi.spyOn(counterActionsInstance, 'decrement');
+      container.bind(CounterActions.instance).toConfigured((_, counterActions) => {
+        vi.spyOn(counterActions, 'increment');
+        vi.spyOn(counterActions, 'decrement');
       })
     })
 
@@ -407,13 +407,13 @@ export const App = () => {
 
 Using an IoC (Inversion of Control) container for such a simple scenario might seem like overkill, especially when the component structure is straightforward. For instance, one could simply pass a label as a prop to `<LabeledCounter/>`, which then forwards it to `<CounterLabel/>`. This simple approach allows for rendering two instances of the component with different labels.
 
-However, the example demonstrates a key advantage of using an IoC container: it eliminates the need for parent components to be aware of the specific properties required by deeper or more distant components in the tree. This is particularly relevant for [container](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0) components, which are typically more complex than dummy/presentational components because they manage all the dependencies needed by their child components. By offloading this complexity to an IoC container, we simplify top-level components, allowing them to focus solely on composing their children without getting involved in the intricacies of their implementations. This approach aligns with treating React components primarily as a view layer, akin to the MVC pattern, and facilitates the separation of business logic into plain classes, simplifying object creation and encapsulation.
+However, the example demonstrates a key advantage of using an IoC container: it eliminates the need for parent components to be aware of the specific dependencies required by deeper or more distant components in the tree (and they don't need to **prop-drill** them). This is particularly relevant for [container](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0) components, which are typically more complex than dummy/presentational components because they manage all the dependencies needed by their child components. By offloading this complexity to an IoC container, we simplify top-level components, allowing them to focus solely on composing their children without getting involved in the intricacies of their implementations. This approach aligns with treating React components primarily as a view layer, akin to the MVC pattern, and facilitates the separation of business logic into plain objects (or functions [using functional style](#functional-api)), simplifying object creation and encapsulation.
 
 Unfortunately, this method has its drawbacks. Retrieving dependencies with `use` introduces an additional layer of indirection compared to direct prop passing. The dependencies managed by `use` form a hierarchy (a directed acyclic graph) that does not usually align 1:1 with the component hierarchy. This flexibility can be advantageous, particularly when sharing data across many components, but it can also obscure the flow of data and dependencies through the component structure.
 
-Furthermore, using `use` ties components more closely to the Hardwired library, which can be restrictive. Where possible, using simpler 'dummy' components as the leaves nodes in the component tree is preferable.
+Furthermore, using `use` ties components more closely to the Hardwired library, which can be restrictive. Where possible, using simpler **dummy/presentational components** as the leaves nodes in the component tree is **preferable**.
 
-The ease of injecting dependencies can also lead to excessive interconnections among components and instances retrieved from the container. This can potentially make the code harder to understand. This complexity can be mitigated by enforcing strict controls over the mutability of injected objects. Typically, injecting read-only objects into multiple components does not lead to issues. However, uncontrolled mutability with side effects that are accessible to multiple consumers can introduce significant unpredictability and complexity.
+The ease of injecting dependencies can also lead to excessive coupling between components and instances retrieved from the container. This can potentially make the code harder to understand. This complexity can be mitigated by enforcing **strict controls over the mutability** of injected objects. Typically, injecting read-only objects into multiple components does not lead to issues. However, **uncontrolled mutability** with side effects that are **accessible to multiple consumers** can introduce significant unpredictability and complexity.
 
 ### Mapping Definition Life Time to the React Components Rendering
 
