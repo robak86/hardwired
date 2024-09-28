@@ -506,7 +506,7 @@ const myApp = fn(use => {
 });
 
 const prodContainer = container.new(container => {
-  container.bind(transport).to(FsLoggerTransport.instance); 
+  container.bind(transport).to(FsLoggerTransport.instance);
   container.bind(logger).to(ProductionLogger.instance);
 });
 
@@ -552,3 +552,15 @@ In this example:
 - `definition` is a transient definition that accepts two arguments, `arg1` and `arg2`.
 - When using the definition, we pass the arguments directly.
 - You can also use the definition within another definition, passing the arguments as needed.
+
+The arguments can be also passed using `once` helper
+
+```typescript
+import { fn, once } from 'hardwired';
+
+const definition = fn((use, arg1: number, arg2: string) => {
+  return { arg1, arg2 };
+});
+
+const instance = once(definition, 1, '2');
+```
