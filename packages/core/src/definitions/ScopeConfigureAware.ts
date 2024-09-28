@@ -31,7 +31,7 @@ export interface ScopeConfigureAware {
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 
-  init(initializer: InitFn): void;
+  onInit(initializer: InitFn): void;
 }
 
 export class ScopeConfigureBinder implements ScopeConfigureAware, ScopeOptions {
@@ -42,7 +42,7 @@ export class ScopeConfigureBinder implements ScopeConfigureAware, ScopeOptions {
 
   constructor(private _parentContainer: ParentContainer) {}
 
-  init(initializer: InitFn): void {
+  onInit(initializer: InitFn): void {
     this.initializers.push(initializer);
   }
 

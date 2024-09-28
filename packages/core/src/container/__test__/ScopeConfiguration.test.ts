@@ -32,7 +32,7 @@ describe('ScopeConfiguration', () => {
         const root = container.new();
 
         const childContainer = root.checkoutScope((scope, use) => {
-          scope.init(use => {
+          scope.onInit(use => {
             use(dep).value = 1;
           });
         });
