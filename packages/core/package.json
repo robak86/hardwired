@@ -24,11 +24,11 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "dependencies": {
-    "uuid": "^9.0.0"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@types/uuid": "^9.0.1",
-    "tinybench": "^2.7.0"
+    "@types/uuid": "^10.0.0",
+    "tinybench": "^2.9.0"
   },
   "files": [
     "dist",
