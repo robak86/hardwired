@@ -13,7 +13,7 @@ import { useScopeConfig } from '../useScopeConfig.js';
  * @vitest-environment happy-dom
  */
 
-describe(`useDefinition`, () => {
+describe(`use`, () => {
   describe(`instantiating dependencies`, () => {
     const val1Def = fn.singleton(() => 'val1');
 
