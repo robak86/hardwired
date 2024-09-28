@@ -122,7 +122,6 @@ describe(`use`, () => {
           [externalValue],
         );
 
-        // TODO: invalidateKeys should be based on the keys from the config
         return (
           <ContainerProvider container={c}>
             <ContainerScope invalidateKeys={[externalValue]} config={config}>
