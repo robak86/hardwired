@@ -66,15 +66,3 @@ jobs:
         with:
           token: ${{ secrets.NPM_TOKEN }}
           package: packages/react/package.json
-
-      - name: Publish hooks addon
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: packages/hooks/package.json
-
-      - name: Publish serializable addon
-        uses: JS-DevTools/npm-publish@v3
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: packages/serializable/package.json
