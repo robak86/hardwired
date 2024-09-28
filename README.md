@@ -5,12 +5,14 @@
 **Hardwired** is an opinionated, lightweight, functional, and type-safe dependency injection (DI) and inversion of control (IoC) library for TypeScript.
 
 - [x] **Type Safety**: All dependencies are checked at compile time.
-- [x] **No Decorators or Reflection**: Simplifies your codebase.
-- [x] **Leverages Lazy Evaluation**: Instances are created only when they are requested.
-- [x] **Designed for structural typing**: No need for explicitly using interfaces.
-- [x] **Functional Approach**: Inspired by React hooks and Service Locator pattern/anti-pattern without their limitations.
-- [x] **Easy Testing and Mocking**: Simplifies integration tests.
-- [x] **Universal Support**: Works seamlessly on every JavaScript runtime and browsers
+- [x] **No Unsafe Bindings**: No need to manually bind dependencies using strings or symbols and manually providing corresponding types.
+- [x] **No Decorators or Reflection**
+- [x] **Lazy Evaluation**: Instances are created only when they are requested.
+- [x] **Designed for structural typing**: Allows polymorphism without requiring interfaces and doesn't require a lot of type annotations.
+- [x] **Functional Approach**: Inspired by React hooks and the Service Locator pattern, but avoids their limitations.
+- [x] **Compact API**: Focused on code readability.
+- [x] **Easy Testing and Mocking**: Allows selectively mocking any dependency in complex dependency graphs, which is especially useful for integration tests.
+- [x] **Universal Support**: Works seamlessly on every JavaScript runtime and browser.
 
 ## Table of Contents
 
@@ -628,23 +630,27 @@ interface ILogger {
 const transport = unbound<ITransport>('transport');
 
 interface ITransport {
-  write(msg: string){}
+  write(msg: string);
 }
 
 class DevLogger implements ILogger {
   static instance = cls.singleton(this);
+
+  info(){}
 }
 
 class FsLoggerTransport implements ITransport {
   static instance = cls.singleton(this);
 
-  write() {}
+  write(){}
 }
 
 class ProductionLogger implements ILogger {
   static instance = cls.singleton(this, [transport]);
 
   constructor(fsTransport: ITransport) {}
+  
+  info(){}
 }
 
 const myApp = fn(use => {
