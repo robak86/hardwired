@@ -3,64 +3,9 @@ import { container } from '../container/Container.js';
 import { fn } from '../definitions/definitions.js';
 
 // import 'source-map-support/register';
-import Bench from 'tinybench';
-
-import { Definition } from '../definitions/abstract/Definition.js';
+import { Bench } from 'tinybench';
 import { IContainer } from '../container/IContainer.js';
-
-function buildSingletonTree(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
-  if (currentDepth > depth) {
-    return [];
-  }
-
-  const definitions: any[] = [];
-
-  for (let i = 0; i < times; i++) {
-    definitions.push(
-      fn.singleton(use => {
-        return use.all(...buildSingletonTree(times, depth, (currentDepth += 1)));
-      }),
-    );
-  }
-
-  return definitions;
-}
-
-function buildTransient(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
-  if (currentDepth > depth) {
-    return [];
-  }
-
-  const definitions: any[] = [];
-
-  for (let i = 0; i < times; i++) {
-    definitions.push(
-      fn(use => {
-        return use.all(...buildTransient(times, depth, (currentDepth += 1)));
-      }),
-    );
-  }
-
-  return definitions;
-}
-
-function buildScoped(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
-  if (currentDepth > depth) {
-    return [];
-  }
-
-  const definitions: any[] = [];
-
-  for (let i = 0; i < times; i++) {
-    definitions.push(
-      fn.scoped(use => {
-        return use.all(...buildScoped(times, depth, (currentDepth += 1)));
-      }),
-    );
-  }
-
-  return definitions;
-}
+import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
 
 const singletonDefinitions = buildSingletonTree(3, 10);
 const transientDefinitions = buildTransient(3, 10);
