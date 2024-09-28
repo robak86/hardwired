@@ -15,13 +15,13 @@ export function scopeConfiguratorToOptions(
 ): ScopeOptions {
   if (optionsOrFunction instanceof Function) {
     const binder = new ScopeConfigureBinder();
-    optionsOrFunction(binder, parentContainer);
 
+    optionsOrFunction(binder, parentContainer);
     return binder;
   } else if (optionsOrFunction instanceof ScopeConfiguration) {
     return optionsOrFunction.apply(parentContainer);
   } else {
-    return optionsOrFunction ?? {};
+    return {};
   }
 }
 

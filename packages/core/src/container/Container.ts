@@ -5,18 +5,18 @@ import { AsyncAllInstances, IContainer, IContainerScopes, InstanceCreationAware,
 
 import { ContextEvents } from '../events/ContextEvents.js';
 
-import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { Overrides } from './Overrides.js';
-import { Definition } from '../definitions/abstract/Definition.js';
+import { v4 } from 'uuid';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
-import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
-import { v4 } from 'uuid';
+import { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ContainerConfiguration, ContainerConfigureCallback } from './ContainerConfiguration.js';
 import { containerConfiguratorToOptions } from '../definitions/ContainerConfigureAware.js';
 import { scopeConfiguratorToOptions } from '../definitions/ScopeConfigureAware.js';
+import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
+import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
+import { ContainerConfiguration, ContainerConfigureCallback } from './ContainerConfiguration.js';
+import { Overrides } from './Overrides.js';
 
 interface Container extends UseFn<LifeTime> {}
 
@@ -33,9 +33,14 @@ class Container
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
     public readonly events: ContextEvents,
   ) {
-    super((definition: Definition<any, any, any>, ...args: any[]) => {
-      return this.use(definition as any, ...args); // TODO: fix type
-    });
+    super(
+      <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+        definition: Definition<TInstance, TLifeTime, TArgs>,
+        ...args: TArgs
+      ) => {
+        return this.use(definition, ...args);
+      },
+    );
   }
 
   new(optionsOrFunction?: ContainerConfigureCallback | ContainerConfiguration): IContainer {
@@ -68,11 +73,8 @@ class Container
   ): TDefinitions extends Array<Definition<Promise<any>, any, []>>
     ? Promise<AsyncAllInstances<TDefinitions>>
     : InstancesArray<TDefinitions> => {
-    // return definitions.map(def => this.use(def)) as InstancesArray<TDefinitions>;
-
     const results = definitions.map(def => this.use(def));
 
-    // Check if the first element is a promise to decide whether to wrap in Promise.all
     if (results.some(result => result instanceof Promise)) {
       return Promise.all(results) as any;
     }
