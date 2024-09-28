@@ -20,7 +20,7 @@ export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends L
   readonly parentId: IServiceLocator<TAllowedLifeTime>['parentId'];
   readonly use: IServiceLocator<TAllowedLifeTime>['use'];
   readonly all: IServiceLocator<TAllowedLifeTime>['all'];
-  readonly deferred: IServiceLocator<TAllowedLifeTime>['deferred'];
+  readonly defer: IServiceLocator<TAllowedLifeTime>['defer'];
   readonly checkoutScope: IServiceLocator<TAllowedLifeTime>['checkoutScope'];
   readonly withScope: IServiceLocator<TAllowedLifeTime>['withScope'];
 
@@ -36,6 +36,6 @@ export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends L
     this.all = containerContext.all;
     this.checkoutScope = containerContext.checkoutScope;
     this.withScope = containerContext.withScope;
-    this.deferred = containerContext.deferred;
+    this.defer = containerContext.defer;
   }
 }

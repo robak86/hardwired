@@ -62,7 +62,7 @@ describe(`Container`, () => {
           return userId;
         });
 
-        const remove = container.new().deferred(removeUser);
+        const remove = container.new().defer(removeUser);
         expect(remove).toBeInstanceOf(Function);
 
         expect(remove(123)).toEqual(123);

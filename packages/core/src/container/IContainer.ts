@@ -11,7 +11,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     ...args: TArgs
   ): TValue;
 
-  deferred<TInstance, TArgs extends any[]>(
+  defer<TInstance, TArgs extends any[]>(
     factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
   ): (...args: TArgs) => TInstance;
 

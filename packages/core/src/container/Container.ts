@@ -76,7 +76,7 @@ class Container
     return results as any;
   };
 
-  deferred =
+  defer =
     <TInstance, TArgs extends any[]>(
       factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
     ): ((...args: TArgs) => TInstance) =>
