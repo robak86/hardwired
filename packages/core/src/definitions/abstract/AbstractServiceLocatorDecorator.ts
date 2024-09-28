@@ -1,5 +1,5 @@
 import { ExtensibleFunction } from '../../utils/ExtensibleFunction.js';
-import { IServiceLocator } from '../../container/IContainer.js';
+import { IContainer } from '../../container/IContainer.js';
 
 import { LifeTime } from './LifeTime.js';
 import { ValidDependenciesLifeTime } from './sync/InstanceDefinitionDependency.js';
@@ -14,17 +14,17 @@ export interface AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTi
 
 export abstract class AbstractServiceLocatorDecorator<TAllowedLifeTime extends LifeTime>
   extends ExtensibleFunction
-  implements IServiceLocator<TAllowedLifeTime>
+  implements IContainer<TAllowedLifeTime>
 {
-  readonly id: IServiceLocator<TAllowedLifeTime>['id'];
-  readonly parentId: IServiceLocator<TAllowedLifeTime>['parentId'];
-  readonly use: IServiceLocator<TAllowedLifeTime>['use'];
-  readonly all: IServiceLocator<TAllowedLifeTime>['all'];
-  readonly defer: IServiceLocator<TAllowedLifeTime>['defer'];
-  readonly checkoutScope: IServiceLocator<TAllowedLifeTime>['checkoutScope'];
-  readonly withScope: IServiceLocator<TAllowedLifeTime>['withScope'];
+  readonly id: IContainer<TAllowedLifeTime>['id'];
+  readonly parentId: IContainer<TAllowedLifeTime>['parentId'];
+  readonly use: IContainer<TAllowedLifeTime>['use'];
+  readonly all: IContainer<TAllowedLifeTime>['all'];
+  readonly defer: IContainer<TAllowedLifeTime>['defer'];
+  readonly checkoutScope: IContainer<TAllowedLifeTime>['checkoutScope'];
+  readonly withScope: IContainer<TAllowedLifeTime>['withScope'];
 
-  constructor(private readonly containerContext: IServiceLocator<TAllowedLifeTime>) {
+  constructor(private readonly containerContext: IContainer<TAllowedLifeTime>) {
     super((definition: any) => {
       return this.containerContext(definition);
     });

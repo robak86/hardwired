@@ -4,8 +4,9 @@ import { fn } from '../definitions/definitions.js';
 
 // import 'source-map-support/register';
 import { Bench } from 'tinybench';
-import { IContainer } from '../container/IContainer.js';
+
 import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
+import { IContainer } from '../container/IContainer.js';
 
 const singletonDefinitions = buildSingletonTree(3, 10);
 const transientDefinitions = buildTransient(3, 10);

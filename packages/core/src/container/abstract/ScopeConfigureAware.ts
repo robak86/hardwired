@@ -1,6 +1,6 @@
 import { Definition } from '../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { IServiceLocator } from '../IContainer.js';
+import { IContainer } from '../IContainer.js';
 
 export type ConfigureMethod<TAllowedLifeTime extends LifeTime> = <
   TInstance,
@@ -8,7 +8,7 @@ export type ConfigureMethod<TAllowedLifeTime extends LifeTime> = <
   TArgs extends any[],
 >(
   definition: Definition<TInstance, TLifeTime, TArgs>,
-  configureFn: (locator: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => void,
+  configureFn: (locator: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => void,
 ) => void;
 
 export type DecorateWithMethod<TAllowedLifeTime extends LifeTime> = <
@@ -18,7 +18,7 @@ export type DecorateWithMethod<TAllowedLifeTime extends LifeTime> = <
   TExtendedInstance extends TInstance,
 >(
   definition: Definition<TInstance, TLifeTime, TArgs>,
-  decorateFn: (use: IServiceLocator<TLifeTime>, instance: TInstance, ...args: TArgs) => TExtendedInstance,
+  decorateFn: (use: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => TExtendedInstance,
 ) => void;
 
 export type BindToMethod<TAllowedLifeTime extends LifeTime> = <
@@ -45,7 +45,7 @@ export type RedefineMethod<TAllowedLifeTime extends LifeTime> = <
   TArgs extends any[],
 >(
   definition: Definition<TInstance, TLifeTime, TArgs>,
-  newCreate: (locator: IServiceLocator<TLifeTime>, ...args: TArgs) => TInstance,
+  newCreate: (locator: IContainer<TLifeTime>, ...args: TArgs) => TInstance,
 ) => void;
 
 export interface ConfigureAware<TAllowedLifeTime extends LifeTime> {

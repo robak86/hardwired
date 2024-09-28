@@ -1,7 +1,7 @@
 import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { AsyncAllInstances, IContainer, IContainerScopes, InstanceCreationAware, UseFn } from './IContainer.js';
+import { AsyncAllInstances, IContainerScopes, InstanceCreationAware, IContainer, UseFn } from './IContainer.js';
 
 import { v4 } from 'uuid';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
@@ -17,10 +17,7 @@ import { ContainerConfiguration, ContainerConfigureCallback } from './ContainerC
 
 interface Container extends UseFn<LifeTime> {}
 
-class Container
-  extends ExtensibleFunction
-  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IContainer
-{
+class Container extends ExtensibleFunction implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
   public readonly id = v4();
 
   constructor(

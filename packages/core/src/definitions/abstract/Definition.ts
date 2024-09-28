@@ -1,11 +1,11 @@
 import { LifeTime } from './LifeTime.js';
-import { IServiceLocator } from '../../container/IContainer.js';
+import { IContainer } from '../../container/IContainer.js';
 
 export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
-    public readonly create: (context: IServiceLocator, ...args: TArgs) => TInstance,
+    public readonly create: (context: IContainer, ...args: TArgs) => TInstance,
   ) {}
 
   get name() {

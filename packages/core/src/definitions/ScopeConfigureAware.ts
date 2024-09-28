@@ -3,8 +3,9 @@ import { LifeTime } from './abstract/LifeTime.js';
 import { Binder } from './Binder.js';
 import { ScopeOptions } from '../container/Container.js';
 import { ParentContainer, ScopeConfiguration, ScopeConfigureCallback } from '../container/ContainerConfiguration.js';
-import { IContainer } from '../container/IContainer.js';
+
 import { emptyContainerOptions, InitFn } from './ContainerConfigureAware.js';
+import { IContainer } from '../container/IContainer.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 

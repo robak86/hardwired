@@ -25,8 +25,8 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
   checkoutScope(options?: ScopeConfigureCallback | ScopeConfiguration): IContainer<TAllowedLifeTime>;
 
-  withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
-  withScope<TValue>(options: ScopeConfiguration, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
+  withScope<TValue>(fn: (locator: IContainer<TAllowedLifeTime>) => TValue): TValue;
+  withScope<TValue>(options: ScopeConfiguration, fn: (locator: IContainer<TAllowedLifeTime>) => TValue): TValue;
 }
 
 export interface UseFn<TAllowedLifeTime extends LifeTime> {
@@ -36,17 +36,10 @@ export interface UseFn<TAllowedLifeTime extends LifeTime> {
   ): TValue;
 }
 
-export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
+export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime>,
     UseFn<TAllowedLifeTime> {
-  readonly id: string;
-  readonly parentId: string | null;
-}
-
-export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
-  extends IServiceLocator<TAllowedLifeTime>,
-    IContainerScopes<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;
 }
