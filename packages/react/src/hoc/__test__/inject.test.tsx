@@ -1,9 +1,9 @@
-import { container, scoped, value } from 'hardwired';
+import { container, fn, value } from 'hardwired';
 import { inject } from '../inject.js';
 
 import { render } from '@testing-library/react';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 /**
  * @vitest-environment happy-dom
@@ -26,7 +26,7 @@ describe(`inject`, () => {
         );
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result = render(
         <ContainerProvider container={cnt}>
@@ -64,7 +64,7 @@ describe(`inject`, () => {
         );
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result = render(
         <ContainerProvider container={cnt}>
@@ -88,7 +88,7 @@ describe(`inject`, () => {
 
   describe(`request`, () => {
     function setup() {
-      const valueA = scoped.fn(() => Math.random());
+      const valueA = fn.scoped(() => Math.random());
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 
@@ -101,7 +101,7 @@ describe(`inject`, () => {
         );
       });
 
-      const cnt = container();
+      const cnt = container.new();
 
       const result = render(
         <ContainerProvider container={cnt}>

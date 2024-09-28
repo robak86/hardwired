@@ -12,12 +12,15 @@ export { ContainerInitializer } from './components/ContainerInitializer.js';
 export type { ContainerInitializerProps } from './components/ContainerInitializer.js';
 
 // hooks
-export { useDefinition } from './hooks/useDefinition.js';
-export { useDefinitions } from './hooks/useDefinitions.js';
 export { useContainer } from './context/ContainerContext.js';
+export { use } from './hooks/use.js';
+export { useAll } from './hooks/useAll.js';
+export { useDeferred } from './hooks/useDeferred.js';
 export * from './hooks/useInitializers.js';
 
 // HOC
+export * from './hoc/inject.js';
 export { withDependencies } from './hoc/withDependencies.js';
 export type { WithDependenciesConfigured } from './hoc/withDependencies.js';
-export * from './hoc/inject.js';
+
+export * from './hooks/useScopeConfig.js';

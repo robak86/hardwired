@@ -1,11 +1,12 @@
-import { container, object, replace, scoped, set, singleton } from 'hardwired';
+import { container, fn } from 'hardwired';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { render, within } from '@testing-library/react';
 import { withDependencies } from '../withDependencies.js';
-import { useDefinition } from '../../hooks/useDefinition.js';
+
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FC, ReactElement } from 'react';
+import { use } from '../../hooks/use.js';
 
 /**
  * @vitest-environment happy-dom
@@ -27,8 +28,8 @@ describe(`withDependencies`, () => {
 
     const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
 
-    const ageDef = scoped.fn(() => new BoxedValue(initialAge()));
-    const firstNameDef = scoped.fn(() => new BoxedValue(initialName()));
+    const ageDef = fn.scoped(() => new BoxedValue(initialAge()));
+    const firstNameDef = fn.scoped(() => new BoxedValue(initialName()));
 
     const WrappedComponent: FC<DummyComponentProps> = ({ age, firstName, testId }) => {
       return (
@@ -41,8 +42,8 @@ describe(`withDependencies`, () => {
     };
 
     const ChildComponent = () => {
-      const age = useDefinition(ageDef);
-      const firstName = useDefinition(firstNameDef);
+      const age = use(ageDef);
+      const firstName = use(firstNameDef);
       return (
         <>
           <ValueRenderer testId={'ageFromChildComponent'} value={age.value} />
@@ -51,15 +52,15 @@ describe(`withDependencies`, () => {
       );
     };
 
-    const dependenciesSelector = object({
-      age: ageDef,
-      firstName: firstNameDef,
-    });
+    const dependenciesSelector = fn(use => ({
+      age: use(ageDef),
+      firstName: use(firstNameDef),
+    }));
 
     return { WrappedComponent, dependenciesSelector, ageDef, firstNameDef };
   }
 
-  function renderWithContainer(element: ReactElement, cnt = container()) {
+  function renderWithContainer(element: ReactElement, cnt = container.new()) {
     const result = render(<ContainerProvider container={cnt}>{element}</ContainerProvider>);
     return {
       result,

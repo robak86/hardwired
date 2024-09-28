@@ -1,4 +1,4 @@
-import { container as buildContainer, IContainer, InstanceDefinition, LifeTime } from 'hardwired';
+import { container as defaultContainer, IContainer } from 'hardwired';
 import { ContainerContext, ContainerContextValue } from '../context/ContainerContext.js';
 import { FC, PropsWithChildren, useRef } from 'react';
 
@@ -11,7 +11,7 @@ export const ContainerProvider: FC<ContainerProviderProps & PropsWithChildren> =
 
   if (!containerInstance.current) {
     containerInstance.current = {
-      container: container || buildContainer(),
+      container: container || defaultContainer,
     };
   }
 

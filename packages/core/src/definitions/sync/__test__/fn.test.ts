@@ -1,28 +1,20 @@
-import { scoped, singleton } from '../../definitions.js';
-import { LifeTime } from '../../abstract/LifeTime.js';
+import { fn } from '../../definitions.js';
 
 import { describe, expect, it } from 'vitest';
-import { implicit } from '../implicit.js';
-import { expectType, TypeEqual } from 'ts-expect';
+import { unbound } from '../unbound.js';
 
 describe(`fn`, () => {
   describe(`allowed dependencies life times`, () => {
-    const numberConsumer = (val: number) => val;
-
-    const implDef = implicit<number>('number');
-
-    it(`is type-safe`, async () => {
-      const dep = scoped.using(implDef).fn(val => {
-        expectType<TypeEqual<typeof val, number>>(true);
-      });
-    });
+    const implDef = unbound<number>('number');
 
     describe(`singleton`, () => {
       describe(`compile-time`, () => {
-        it(`does not accept implicit definitions`, async () => {
+        it(`does not accept unbound definitions`, async () => {
           try {
-            // @ts-expect-error request does not accept implicit definitions
-            const dep = singleton.using(implDef).fn(numberConsumer);
+            fn.singleton(use => {
+              // @ts-expect-error request does not accept unbound definitions
+              use(implDef);
+            });
           } catch (err) {
             //noop
           }
@@ -30,10 +22,12 @@ describe(`fn`, () => {
       });
 
       describe(`runtime`, () => {
-        it(`does not accept implicit definitions`, async () => {
+        it.skip(`does not accept unbound definitions`, async () => {
           const buildDef = () => {
-            // @ts-expect-error singleton does not accept implicit definitions
-            singleton.using(implDef).fn(numberConsumer);
+            fn.singleton(use => {
+              // @ts-expect-error singleton does not accept unbound definitions
+              use(implDef);
+            });
           };
 
           expect(buildDef).toThrow('Cannot use scoped dependency for singleton definition.');

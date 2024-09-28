@@ -1,63 +1,53 @@
-import { HierarchicalStore } from './HierarchicalStore.js';
-import { Overrides } from '../container/Patch.js';
-
 export class InstancesStore {
-  static create(scopeOverrides: Overrides): InstancesStore {
-    const ownKeys = scopeOverrides.map(def => def.id);
-    return new InstancesStore(new HierarchicalStore(ownKeys), {}, {});
+  static create(): InstancesStore {
+    return new InstancesStore(new Map(), new Map(), new Map());
   }
 
   /**
-   * @param hierarchicalScope
+   * @param globalScope
    * @param currentScope
    * @param globalOverridesScope
    */
   constructor(
-    private hierarchicalScope: HierarchicalStore,
-    private currentScope: Record<string, any>,
-    private globalOverridesScope: Record<string, any>,
+    private globalScope: Map<symbol, any>,
+    private currentScope: Map<symbol, any>,
+    private globalOverridesScope: Map<symbol, any>,
   ) {}
 
-  childScope(scopeOverrides: Overrides): InstancesStore {
-    const scopeOverridesDefinitionIds = scopeOverrides.map(def => def.id);
-
-    return new InstancesStore(
-      this.hierarchicalScope.checkoutChild(scopeOverridesDefinitionIds),
-      {},
-      this.globalOverridesScope,
-    );
+  childScope(): InstancesStore {
+    return new InstancesStore(this.globalScope, new Map(), this.globalOverridesScope);
   }
 
-  hasInCurrentScope(id: string): boolean {
-    return this.currentScope[id];
+  hasInCurrentScope(id: symbol): boolean {
+    return this.currentScope.has(id);
   }
 
-  upsertGlobalOverrideScope<T>(uuid: string, build: () => T) {
-    if (this.globalOverridesScope[uuid]) {
-      return this.globalOverridesScope[uuid];
+  upsertGlobalOverrideScope<T>(uuid: symbol, build: () => T) {
+    if (this.globalOverridesScope.has(uuid)) {
+      return this.globalOverridesScope.get(uuid);
     } else {
       const instance = build();
-      this.globalOverridesScope[uuid] = instance;
+      this.globalOverridesScope.set(uuid, instance);
       return instance;
     }
   }
 
-  upsertCurrentScope<T>(uuid: string, build: () => T) {
-    if (this.currentScope[uuid]) {
-      return this.currentScope[uuid];
+  upsertCurrentScope<T>(uuid: symbol, build: () => T) {
+    if (this.currentScope.has(uuid)) {
+      return this.currentScope.get(uuid);
     } else {
       const instance = build();
-      this.currentScope[uuid] = instance;
+      this.currentScope.set(uuid, instance);
       return instance;
     }
   }
 
-  upsertGlobalScope<T>(uuid: string, build: () => T) {
-    if (this.hierarchicalScope.has(uuid)) {
-      return this.hierarchicalScope.get(uuid);
+  upsertGlobalScope<T>(uuid: symbol, build: () => T) {
+    if (this.globalScope.has(uuid)) {
+      return this.globalScope.get(uuid);
     } else {
       const instance = build();
-      this.hierarchicalScope.set(uuid, instance);
+      this.globalScope.set(uuid, instance);
       return instance;
     }
   }

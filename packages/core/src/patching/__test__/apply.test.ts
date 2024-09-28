@@ -1,45 +1,47 @@
 import { container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { scoped, singleton, transient } from '../../definitions/definitions.js';
-import { set } from '../set.js';
-import { InstanceDefinition } from '../../definitions/abstract/sync/InstanceDefinition.js';
-import { decorate } from '../decorate.js';
-import { apply } from '../apply.js';
-import { object } from '../../definitions/sync/object.js';
-import { ContainerContext } from '../../context/ContainerContext.js';
+import { fn } from '../../definitions/definitions.js';
+
 import { value } from '../../definitions/sync/value.js';
 import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
+import { Definition } from '../../definitions/abstract/Definition.js';
+import { configureContainer } from '../../container/ContainerConfiguration.js';
+
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
-    const someValue = singleton.fn(() => new BoxedValue(1));
+    const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = apply(someValue, val => (val.value += 1));
+    const config = configureContainer(c => {
+      c.bind(someValue).toConfigured((_, val) => (val.value += 1));
+    });
 
-    const c = container({ overrides: [mPatch] });
+    const c = container.new(config);
+
     expect(c.use(someValue).value).toEqual(2);
   });
 
   it(`does not affect original module`, async () => {
-    const someValue = singleton.fn(() => new BoxedValue(1));
+    const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = apply(someValue, val => (val.value += 1));
+    expect(container.new().use(someValue).value).toEqual(1);
 
-    expect(container().use(someValue).value).toEqual(1);
-    expect(container({ overrides: [mPatch] }).use(someValue).value).toEqual(2);
+    const cnt = container.new(c => {
+      c.bind(someValue).toConfigured((_, val) => (val.value += 1));
+    });
+    expect(cnt.use(someValue).value).toEqual(2);
   });
 
-  it(`allows for multiple apply functions calls`, async () => {
-    const someValue = singleton.fn(() => new BoxedValue(1));
+  it(`throws for multiple bind for the same definition`, async () => {
+    const someValue = fn.singleton(() => new BoxedValue(1));
 
-    const mPatch = apply(
-      apply(someValue, val => (val.value += 1)),
-      val => (val.value *= 3),
-    );
-
-    const c = container({ overrides: [mPatch] });
-    expect(c.use(someValue).value).toEqual(6);
+    expect(() => {
+      container.new(c => {
+        c.bind(someValue).toConfigured((_, val) => (val.value += 1));
+        c.bind(someValue).toConfigured((_, val) => (val.value *= 3));
+      });
+    }).toThrowError();
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
@@ -47,64 +49,70 @@ describe(`apply`, () => {
     const b = value(new BoxedValue(2));
     const someValue = value(new BoxedValue(10));
 
-    const mPatch = apply(
-      someValue,
-      (val, a, b) => {
-        val.value = val.value + a.value + b.value;
-      },
-      a,
-      b,
-    );
+    const c = container.new(c => {
+      c.bind(someValue).toConfigured((use, val) => {
+        const aVal = use(a);
+        const bVal = use(b);
+        val.value = val.value + aVal.value + bVal.value;
+      });
+    });
 
-    const c = container({ overrides: [mPatch] });
     expect(c.use(someValue)).toEqual(new BoxedValue(13));
   });
 
   it(`allows using additional dependencies, ex2`, async () => {
     const a = value(new BoxedValue(1));
     const b = value(new BoxedValue(2));
-    const someValue = singleton.using(a, b).fn((a: BoxedValue<number>, b: BoxedValue<number>) => {
-      return new BoxedValue(a.value + b.value);
+
+    const someValue = fn.singleton(use => {
+      return new BoxedValue(use(a).value + use(b).value);
     });
 
-    const mPatch = apply(
-      someValue,
-      (val, b) => {
-        val.value = val.value * b.value;
-      },
-      b,
-    );
+    const c = container.new(c => {
+      c.bind(someValue).toConfigured((use, val) => {
+        val.value = val.value * use(b).value;
+      });
+    });
 
-    const c = container({ overrides: [mPatch] });
     expect(c.use(someValue)).toEqual(new BoxedValue(6));
   });
 
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
-      const someValue = singleton.fn(() => Math.random());
-      const mPatch = apply(someValue, a => a);
+      const someValue = fn.singleton(() => Math.random());
 
-      const c = container({ overrides: [mPatch] });
+      const c = container.new(c => {
+        c.bind(someValue).toConfigured((use, a) => a);
+      });
+
       expect(c.use(someValue)).toEqual(c.use(someValue));
     });
 
     it(`preserves transient scope of the original resolver`, async () => {
-      const someValue = transient.fn(() => Math.random());
+      const someValue = fn(() => Math.random());
 
-      const mPatch = apply(someValue, a => a);
+      const c = container.new(c => {
+        c.bind(someValue).toConfigured((use, a) => a);
+      });
 
-      const c = container({ overrides: [mPatch] });
       expect(c.use(someValue)).not.toEqual(c.use(someValue));
     });
 
     it(`preserves scope of the original resolver`, async () => {
-      const source = scoped.fn(() => Math.random());
-      const a = scoped.using(source).fn(source => source);
+      const source = fn.scoped(() => Math.random());
+      const a = fn.scoped(use => {
+        return use(source);
+      });
 
-      const mPatch = apply(a, a => a);
+      const c = container.new(c => {
+        c.bind(a).toConfigured((use, a) => a);
+      });
 
-      const c = container({ overrides: [mPatch] });
-      const objDef = object({ a, source });
+      const objDef = fn.scoped(use => ({
+        a: use(a),
+        source: use(source),
+      }));
+
       expect(objDef.strategy).toEqual(LifeTime.scoped);
 
       const req1 = c.use(objDef);
@@ -115,16 +123,18 @@ describe(`apply`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: InstanceDefinition<MyService, any, any>) {
-      const mPatch = decorate(instanceDef, a => {
-        vi.spyOn(a, 'callMe');
-        return a;
+    function setup(instanceDef: Definition<MyService, LifeTime.scoped | LifeTime.transient, any>) {
+      const scope1 = container.new(c => {
+        c.freeze(instanceDef).toConfigured((use, a) => {
+          vi.spyOn(a, 'callMe');
+          return a;
+        });
       });
 
-      const replaced = set(instanceDef, { callMe: () => {} });
+      const scope2 = scope1.checkoutScope(scope => {
+        scope.bind(instanceDef).toValue({ callMe: () => {} });
+      });
 
-      const scope1 = ContainerContext.create([], [mPatch]);
-      const scope2 = scope1.checkoutScope({ overrides: [replaced] });
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);
       return { instance1, instance2 };
@@ -134,19 +144,9 @@ describe(`apply`, () => {
       callMe(...args: any[]) {}
     }
 
-    describe(`apply on singleton definition`, () => {
-      it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(singleton.class(MyService));
-        instance1.callMe(1, 2);
-
-        expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
-        expect(instance1).toBe(instance2);
-      });
-    });
-
     describe(`apply on scoped definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(scoped.class(MyService));
+        const { instance1, instance2 } = setup(fn.scoped(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
@@ -156,7 +156,7 @@ describe(`apply`, () => {
 
     describe(`apply on transients definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
-        const { instance1, instance2 } = setup(transient.class(MyService));
+        const { instance1, instance2 } = setup(fn(() => new MyService()));
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

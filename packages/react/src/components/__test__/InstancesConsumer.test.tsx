@@ -1,8 +1,8 @@
-import { singleton } from 'hardwired';
+import { fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { DefinitionsConsumer } from '../DefinitionsConsumer.js';
 import { render } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 /**
  * @vitest-environment happy-dom
@@ -11,8 +11,12 @@ import { describe, expect, it, vi } from 'vitest';
 describe(`InstancesConsumer`, () => {
   describe(`nesting modules`, () => {
     function setup() {
-      const valDef = singleton.fn(() => 1);
-      const val2Def = singleton.using(valDef).fn(val => val + 10);
+      const valDef = fn.singleton(() => 1);
+
+      const val2Def = fn.singleton(use => {
+        const val = use(valDef);
+        return val + 10;
+      });
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => {
         return <div data-testid={testId}>{value}</div>;
@@ -53,8 +57,11 @@ describe(`InstancesConsumer`, () => {
 
   describe(`using modules array`, () => {
     function setup() {
-      const valDef = singleton.fn(() => 1);
-      const val2Def = singleton.using(valDef).fn(val => val + 10);
+      const valDef = fn.singleton(() => 1);
+      const val2Def = fn.singleton(use => {
+        const val = use(valDef);
+        return val + 10;
+      });
 
       const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => {
         return <div data-testid={testId}>{value}</div>;

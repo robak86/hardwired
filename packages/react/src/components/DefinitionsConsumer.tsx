@@ -1,16 +1,16 @@
-import { InstanceDefinition, InstancesArray } from 'hardwired';
-import { useDefinitions } from '../hooks/useDefinitions.js';
+import { Definition, InstancesArray } from 'hardwired';
+import { useAll } from '../hooks/useAll.js';
 
-export type DefinitionsConsumerProps<TInstanceDefinitions extends InstanceDefinition<any, any, any>[]> = {
+export type DefinitionsConsumerProps<TInstanceDefinitions extends Definition<any, any, any>[]> = {
   definitions: TInstanceDefinitions;
   render: (...moduleAsObject: InstancesArray<TInstanceDefinitions>) => React.ReactElement;
 };
 
-export function DefinitionsConsumer<TInstances extends InstanceDefinition<any, any, any>[]>({
+export function DefinitionsConsumer<TInstances extends Definition<any, any, any>[]>({
   definitions,
   render,
 }: DefinitionsConsumerProps<[...TInstances]>) {
-  const moduleAsObject = useDefinitions(...definitions);
+  const moduleAsObject = useAll(...definitions);
 
   return render(...(moduleAsObject as any));
 }

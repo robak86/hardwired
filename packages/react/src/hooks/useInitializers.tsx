@@ -1,13 +1,12 @@
-import { BaseDefinition, InstanceDefinition, LifeTime } from 'hardwired';
-import { useDefinitions } from './useDefinitions.js';
-import { useEffect } from 'react';
+import { Definition, LifeTime } from 'hardwired';
 
-export type ContainerInitializerDefinition =
-  | InstanceDefinition<() => void, LifeTime, any>
-  | BaseDefinition<() => void, LifeTime, any>;
+import { useEffect } from 'react';
+import { useAll } from './useAll.js';
+
+export type ContainerInitializerDefinition = Definition<() => void, LifeTime, any>;
 
 export function useInitializers(...initializers: ContainerInitializerDefinition[]) {
-  const initializerFns = useDefinitions(...initializers);
+  const initializerFns = useAll(...initializers);
 
   useEffect(() => {
     initializerFns.forEach(initializer => {

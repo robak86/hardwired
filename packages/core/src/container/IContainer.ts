@@ -1,56 +1,53 @@
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { AsyncInstanceDefinition } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
-import { ContainerScopeOptions } from './Container.js';
+import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { ContextEvents } from '../events/ContextEvents.js';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
-import { Patch } from './Patch.js';
+
+import { Definition } from '../definitions/abstract/Definition.js';
+import { ScopeConfiguration, ScopeConfigureCallback } from './ContainerConfiguration.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  use<TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  use<TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
-  use<TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+  use<TValue, TArgs extends any[]>(
+    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue;
 
-  all<
-    TDefinitions extends Array<
-      | InstanceDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
-      | BaseDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, any>
-    >,
-  >(
+  defer<TInstance, TArgs extends any[]>(
+    factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
+  ): (...args: TArgs) => TInstance;
+
+  all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
     ...definitions: [...TDefinitions]
-  ): InstancesArray<TDefinitions>;
+  ): TDefinitions extends Array<Definition<Promise<any>, any, []>>
+    ? Promise<AsyncAllInstances<TDefinitions>>
+    : InstancesArray<TDefinitions>;
 }
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
-  // TODO: not sure if this should be public
-  checkoutScope(options?: Omit<ContainerScopeOptions, 'globalOverrides'>): IContainer<TAllowedLifeTime>;
+  checkoutScope(options?: ScopeConfigureCallback | ScopeConfiguration): IContainer<TAllowedLifeTime>;
 
-  withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
-  withScope<TValue>(overrides: Patch, fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
-
-  override(definition: AnyInstanceDefinition<any, any, any>): void;
-  provide<T>(def: AnyInstanceDefinition<T, LifeTime.scoped, any>, instance: T): void;
+  withScope<TValue>(fn: (locator: IContainer<TAllowedLifeTime>) => TValue): TValue;
+  withScope<TValue>(options: ScopeConfiguration, fn: (locator: IContainer<TAllowedLifeTime>) => TValue): TValue;
 }
 
-export interface UseFn {
-  <TValue>(instanceDefinition: InstanceDefinition<TValue, any, any>): TValue;
-  <TValue>(instanceDefinition: AsyncInstanceDefinition<TValue, any, any>): Promise<TValue>;
-  <TValue>(instanceDefinition: BaseDefinition<TValue, any, any>): TValue;
-  <TValue>(instanceDefinition: AnyInstanceDefinition<TValue, any, any>): Promise<TValue> | TValue;
+export interface UseFn<TAllowedLifeTime extends LifeTime> {
+  <TValue, TArgs extends any[]>(
+    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue;
 }
-
-export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
-  extends InstanceCreationAware<TAllowedLifeTime>,
-    IContainerScopes<TAllowedLifeTime>,
-    UseFn {}
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
-  extends IServiceLocator<TAllowedLifeTime>,
-    IContainerScopes<TAllowedLifeTime> {
+  extends InstanceCreationAware<TAllowedLifeTime>,
+    IContainerScopes<TAllowedLifeTime>,
+    UseFn<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;
-  readonly events: ContextEvents;
 }
+
+// prettier-ignore
+export type AsyncAllItem<T extends Definition<Promise<any>, any, any>> =
+  T extends Definition<Promise<infer TInstance>, any, any> ? TInstance : never;
+
+export type AsyncAllInstances<T extends Array<Definition<Promise<any>, any, any>>> = {
+  [K in keyof T]: AsyncAllItem<T[K]>;
+};

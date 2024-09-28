@@ -1,102 +1,124 @@
-import { ContainerContext } from '../context/ContainerContext.js';
-import { InstanceDefinition, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { AnyInstanceDefinition } from '../definitions/abstract/AnyInstanceDefinition.js';
-import { AsyncInstanceDefinition, AsyncInstancesArray } from '../definitions/abstract/async/AsyncInstanceDefinition.js';
+import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { IContainer, IContainerScopes, UseFn } from './IContainer.js';
+import { AsyncAllInstances, IContainerScopes, InstanceCreationAware, IContainer, UseFn } from './IContainer.js';
+
+import { v4 } from 'uuid';
+import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
+import { BindingsRegistry } from '../context/BindingsRegistry.js';
+import { InstancesStore } from '../context/InstancesStore.js';
+import { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-
-import { set } from '../patching/set.js';
-import { ContextEvents } from '../events/ContextEvents.js';
-import { ContainerInterceptor } from '../context/ContainerInterceptor.js';
-import { BaseDefinition } from '../definitions/abstract/FnDefinition.js';
+import { containerConfiguratorToOptions, InitFn } from '../definitions/ContainerConfigureAware.js';
+import { scopeConfiguratorToOptions } from '../definitions/ScopeConfigureAware.js';
+import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { isPatchSet, Overrides, PatchSet } from './Patch.js';
+import { ContainerConfiguration, ContainerConfigureCallback } from './ContainerConfiguration.js';
 
-export interface Container extends UseFn {}
+interface Container extends UseFn<LifeTime> {}
 
-export class Container extends ExtensibleFunction implements IContainer {
-  readonly use: UseFn;
+class Container extends ExtensibleFunction implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
+  public readonly id = v4();
 
-  constructor(protected readonly containerContext: ContainerContext) {
-    const create: UseFn = definition => {
-      return this.containerContext.request(definition as any);
-    };
-
-    super(create);
-    this.use = create;
-  }
-
-  get parentId() {
-    return this.containerContext.parentId;
-  }
-
-  get id() {
-    return this.containerContext.id;
-  }
-
-  get events(): ContextEvents {
-    return this.containerContext.events;
-  }
-
-  all<TDefinitions extends Array<InstanceDefinition<any, any, any> | BaseDefinition<any, any, any>>>(
-    ...definitions: [...TDefinitions]
-  ): InstancesArray<TDefinitions> {
-    return definitions.map(def => this.containerContext.use(def)) as any;
-  }
-
-  allAsync = <TDefinitions extends AsyncInstanceDefinition<any, any, any>[]>(
-    ...definitions: [...TDefinitions]
-  ): Promise<AsyncInstancesArray<TDefinitions>> =>
-    Promise.all(definitions.map(def => this.containerContext.use(def))) as any;
-
-  checkoutScope = (options: ContainerScopeOptions = {}): IContainer =>
-    new Container(this.containerContext.checkoutScope(options));
-
-  withScope: IContainerScopes['withScope'] = (fnOrOverrides, fn?: any) => {
-    if (typeof fnOrOverrides === 'function') {
-      return fnOrOverrides(this.checkoutScope());
-    } else {
-      return fn!(this.checkoutScope({ overrides: fnOrOverrides }));
-    }
-  };
-
-  override = (definition: AnyInstanceDefinition<any, any, any>): void => {
-    this.containerContext.override(definition);
-  };
-
-  provide = <T>(def: InstanceDefinition<T, LifeTime.scoped, any>, instance: T): void => {
-    const override = set(def, instance);
-    return this.override(override);
-  };
-}
-
-export type ContainerOptions = {
-  globalOverrides?: Overrides; // propagated to descendant containers
-} & ContainerScopeOptions;
-
-export type ContainerScopeOptions = {
-  overrides?: Overrides;
-  interceptor?: ContainerInterceptor;
-};
-
-export function container(globalOverrides?: AnyInstanceDefinition<any, any, any>[] | PatchSet): Container;
-export function container(options?: ContainerOptions): Container;
-export function container(
-  overridesOrOptions?: ContainerOptions | Array<AnyInstanceDefinition<any, any, any>> | PatchSet,
-): Container {
-  if (Array.isArray(overridesOrOptions)) {
-    return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
-  } else if (isPatchSet(overridesOrOptions)) {
-    return new Container(ContainerContext.create([], overridesOrOptions, defaultStrategiesRegistry));
-  } else {
-    return new Container(
-      ContainerContext.create(
-        overridesOrOptions?.overrides ?? [],
-        overridesOrOptions?.globalOverrides ?? [],
-        defaultStrategiesRegistry,
-        overridesOrOptions?.interceptor,
-      ),
+  constructor(
+    public readonly parentId: string | null,
+    private readonly bindingsRegistry: BindingsRegistry,
+    private readonly instancesStore: InstancesStore,
+    private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
+  ) {
+    super(
+      <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+        definition: Definition<TInstance, TLifeTime, TArgs>,
+        ...args: TArgs
+      ) => {
+        return this.use(definition, ...args);
+      },
     );
   }
+
+  new(optionsOrFunction?: ContainerConfigureCallback | ContainerConfiguration): IContainer {
+    const options = containerConfiguratorToOptions(optionsOrFunction);
+
+    const definitionsRegistry = BindingsRegistry.create(options);
+
+    const cnt = new Container(null, definitionsRegistry, InstancesStore.create(), defaultStrategiesRegistry);
+
+    options.initializers.forEach(init => init(cnt.use));
+
+    return cnt;
+  }
+
+  buildExact<T>(definition: Definition<T, any, any>, ...args: any[]): T {
+    return definition.create(this, ...args);
+  }
+
+  use: UseFn<LifeTime> = (definition, ...args) => {
+    const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
+    const strategy = this.strategiesRegistry.get(definition.strategy);
+
+    return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
+  };
+
+  all = <TDefinitions extends Array<Definition<any, any, []>>>(
+    ...definitions: [...TDefinitions]
+  ): TDefinitions extends Array<Definition<Promise<any>, any, []>>
+    ? Promise<AsyncAllInstances<TDefinitions>>
+    : InstancesArray<TDefinitions> => {
+    const results = definitions.map(def => this.use(def));
+
+    if (results.some(result => result instanceof Promise)) {
+      return Promise.all(results) as any;
+    }
+
+    return results as any;
+  };
+
+  defer =
+    <TInstance, TArgs extends any[]>(
+      factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
+    ): ((...args: TArgs) => TInstance) =>
+    (...args: TArgs) =>
+      this.use(factoryDefinition, ...args);
+
+  checkoutScope: IContainerScopes['checkoutScope'] = (optionsOrConfiguration): IContainer => {
+    const options = scopeConfiguratorToOptions(optionsOrConfiguration, this);
+
+    const cnt = new Container(
+      this.id,
+      this.bindingsRegistry.checkoutForScope(options.scopeDefinitions, options.frozenDefinitions),
+      this.instancesStore.childScope(),
+      this.strategiesRegistry,
+    );
+
+    options.initializers.forEach(init => init(cnt.use));
+
+    return cnt;
+  };
+
+  withScope: IContainerScopes['withScope'] = (fnOrOptions, fn?: any) => {
+    if (typeof fnOrOptions === 'function') {
+      return fnOrOptions(this.checkoutScope());
+    } else {
+      return fn!(this.checkoutScope(fnOrOptions));
+    }
+  };
 }
+
+export type ScopeOptions = {
+  readonly frozenDefinitions: readonly Definition<any, any, any>[];
+  readonly scopeDefinitions: readonly Definition<any, any, any>[];
+  readonly initializers: readonly InitFn[];
+};
+
+export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
+  .use;
+
+export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
+  .all;
+
+export const container = new Container(
+  null,
+  BindingsRegistry.create(),
+  InstancesStore.create(),
+  defaultStrategiesRegistry,
+);

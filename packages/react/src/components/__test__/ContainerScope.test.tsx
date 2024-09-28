@@ -1,10 +1,11 @@
-import { scoped, set } from 'hardwired';
+import { fn } from 'hardwired';
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
-import { useDefinition } from '../../hooks/useDefinition.js';
+import { use } from '../../hooks/use.js';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { FC } from 'react';
+import { useScopeConfig } from '../../hooks/useScopeConfig.js';
 
 /**
  * @vitest-environment happy-dom
@@ -15,10 +16,10 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = scoped.fn(() => (counter += 1));
+      const valueD = fn.scoped(() => (counter += 1));
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
-        const value = useDefinition(valueD);
+        const value = use(valueD);
 
         return <div data-testid={testId}>{value}</div>;
       };
@@ -59,10 +60,10 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = scoped.fn(() => (counter += 1));
+      const valueD = fn.scoped(() => (counter += 1));
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
-        const value = useDefinition(valueD);
+        const value = use(valueD);
         return <div data-testid={testId}>{value}</div>;
       };
 
@@ -107,23 +108,35 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const baseD = scoped.fn(() => 0);
-      const valueD = scoped.using(baseD).fn(base => (counter += 1 + base));
+      const baseD = fn.scoped(() => 0);
+      const valueD = fn.scoped(use => {
+        const base = use(baseD);
+
+        return (counter += 1 + base);
+      });
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
-        const value = useDefinition(valueD);
+        const value = use(valueD);
 
         return <div data-testid={testId}>{value}</div>;
       };
 
+      const scope1Config = useScopeConfig(scope => {
+        scope.bind(baseD).toValue(10);
+      });
+
+      const scope2Config = useScopeConfig(scope => {
+        scope.bind(baseD).toValue(100);
+      });
+
       const TestSubject = () => (
         <ContainerProvider>
           S1
-          <ContainerScope overrides={[set(baseD, 10)]}>
+          <ContainerScope config={scope1Config}>
             <ValueRenderer testId={'scope1'} />
           </ContainerScope>
           S2
-          <ContainerScope overrides={[set(baseD, 100)]}>
+          <ContainerScope config={scope2Config}>
             <ValueRenderer testId={'scope2'} />
           </ContainerScope>
         </ContainerProvider>

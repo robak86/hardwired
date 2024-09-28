@@ -1,11 +1,10 @@
-import { transient } from '../../definitions.js';
+import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { value } from '../value.js';
 import { describe, expect, it } from 'vitest';
-import { implicit } from '../implicit.js';
-import { set } from '../../../patching/set.js';
+import { unbound } from '../unbound.js';
 
-describe(`implicit`, () => {
+describe(`unbound`, () => {
   type Externals = { someExternalParam: number };
   type OtherExternals = { otherExternalParam: number };
 
@@ -25,17 +24,29 @@ describe(`implicit`, () => {
   }
 
   const numD = value('otherDependency');
-  const externalParams1D = implicit<Externals>('params1');
-  const externalParams2D = implicit<OtherExternals>('params2');
+  const externalParams1D = unbound<Externals>('params1');
+  const externalParams2D = unbound<OtherExternals>('params2');
 
-  const defUsingExternals1 = transient.using(externalParams1D, numD).class(ExternalsConsumer);
-  const defUsingBothExternals = transient.using(externalParams1D, externalParams2D, numD).class(BothExternalsConsumer);
+  const defUsingExternals1 = fn(use => {
+    const externals = use(externalParams1D);
+    const otherNumDependency = use(numD);
+    return new ExternalsConsumer(externals, otherNumDependency);
+  });
+
+  const defUsingBothExternals = fn(use => {
+    const externals = use(externalParams1D);
+    const externals2 = use(externalParams2D);
+    const otherNumDependency = use(numD);
+    return new BothExternalsConsumer(externals, externals2, otherNumDependency);
+  });
 
   describe(`container.get`, () => {
     it(`returns correct instance`, async () => {
-      const cnt = container();
+      const cnt = container.new();
       const result = cnt
-        .checkoutScope({ overrides: [set(externalParams1D, { someExternalParam: 111 })] })
+        .checkoutScope(c => {
+          c.bind(externalParams1D).toValue({ someExternalParam: 111 });
+        })
         .use(defUsingExternals1);
 
       expect(result.externals).toEqual({ someExternalParam: 111 });
@@ -43,13 +54,11 @@ describe(`implicit`, () => {
     });
 
     it(`merges external params`, async () => {
-      const cnt = container();
+      const cnt = container.new();
       const result = cnt
-        .checkoutScope({
-          overrides: [
-            set(externalParams1D, { someExternalParam: 111 }),
-            set(externalParams2D, { otherExternalParam: 456 }),
-          ],
+        .checkoutScope(c => {
+          c.bind(externalParams1D).toValue({ someExternalParam: 111 });
+          c.bind(externalParams2D).toValue({ otherExternalParam: 456 });
         })
         .use(defUsingBothExternals);
 

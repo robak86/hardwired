@@ -1,7 +1,8 @@
 import { useContainerContext } from '../context/ContainerContext.js';
 import { Diff } from 'utility-types';
-import { InstanceDefinition } from 'hardwired';
+
 import { ComponentType } from 'react';
+import { Definition } from 'hardwired';
 
 export type WithDependenciesConfigured<TDependencies extends object, TExternalProps = {}> = {
   <TProps extends TDependencies>(
@@ -10,7 +11,7 @@ export type WithDependenciesConfigured<TDependencies extends object, TExternalPr
 };
 
 export function withDependencies<TDependencies extends Record<string, any>>(
-  definition: InstanceDefinition<TDependencies, any, any>,
+  definition: Definition<TDependencies, any, any>,
 ): WithDependenciesConfigured<TDependencies> {
   return <TProps extends TDependencies>(
     WrappedComponent: ComponentType<TProps>,
