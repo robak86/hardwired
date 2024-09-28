@@ -1,27 +1,27 @@
 import { describe, vi } from 'vitest';
 import { IContainer } from '../../container/IContainer.js';
-import { combine, CreateFn } from '../combine.js';
+import { createMiddleware, withMiddleware } from '../withMiddleware.js';
 import { fn } from '../definitions.js';
 import { once } from '../../container/Container.js';
 
-describe(`combine`, () => {
+describe(`withMiddleware`, () => {
   class CreatingScopes {
     readonly containerIds: string[] = [];
 
     constructor() {}
 
-    middleware = <T, TArgs extends any[]>(locator: IContainer, next: CreateFn<T, TArgs>, ...args: TArgs): T => {
+    middleware = createMiddleware((locator: IContainer, next, ...args) => {
       return locator.withScope(use => {
         this.containerIds.push(use.id);
         return next(use, ...args);
       });
-    };
+    });
   }
 
   function setup() {
-    const passthrough = <T, TArgs extends any[]>(locator: IContainer, next: CreateFn<T, TArgs>, ...args: TArgs): T => {
+    const passthrough = createMiddleware((locator, next, ...args) => {
       return next(locator, ...args);
-    };
+    });
 
     const scopesMonitoring = new CreatingScopes();
     vi.spyOn(scopesMonitoring, 'middleware');
@@ -35,7 +35,7 @@ describe(`combine`, () => {
 
   describe(`combine without args`, () => {
     it(`returns correct instance`, async () => {
-      const define = combine();
+      const define = withMiddleware();
 
       const defWithMiddleware = define(() => 123);
       expect(once(defWithMiddleware)).toBe(123);
@@ -45,7 +45,7 @@ describe(`combine`, () => {
   describe(`passthrough`, () => {
     it(`returns correct instance`, async () => {
       const { passthrough } = setup();
-      const define = combine(passthrough);
+      const define = withMiddleware(passthrough);
 
       const defWithMiddleware = define(() => 123);
       expect(once(defWithMiddleware)).toBe(123);
@@ -54,7 +54,7 @@ describe(`combine`, () => {
 
     it(`returns correct instance for multiple middlewares`, async () => {
       const { passthrough } = setup();
-      const define = combine(passthrough, passthrough, passthrough);
+      const define = withMiddleware(passthrough, passthrough, passthrough);
 
       const defWithMiddleware = define(() => 123);
       expect(once(defWithMiddleware)).toBe(123);
@@ -63,13 +63,13 @@ describe(`combine`, () => {
 
     it(`works with args`, async () => {
       const { passthrough } = setup();
-      const define = combine(passthrough, passthrough, passthrough);
+      const define = withMiddleware(passthrough, passthrough, passthrough);
 
       const withoutMiddleware = fn((use, arg1: number, arg2: string) => [arg1, arg2]);
 
-      const withMiddleware = define((use, arg1: number, arg2: string) => [arg1, arg2]);
+      const withMiddlewareApplied = define((use, arg1: number, arg2: string) => [arg1, arg2]);
 
-      expect(once(withMiddleware, 123, '123')).toEqual([123, '123']);
+      expect(once(withMiddlewareApplied, 123, '123')).toEqual([123, '123']);
       expect(once(withoutMiddleware, 123, '123')).toEqual([123, '123']);
     });
   });
@@ -77,7 +77,7 @@ describe(`combine`, () => {
   describe(`creatingScope`, () => {
     it(`returns correct instance`, async () => {
       const { creatingScope } = setup();
-      const define = combine(creatingScope);
+      const define = withMiddleware(creatingScope);
 
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));
@@ -90,7 +90,7 @@ describe(`combine`, () => {
 
     it(`returns correct instance for multiple middlewares`, async () => {
       const { creatingScope } = setup();
-      const define = combine(creatingScope, creatingScope, creatingScope);
+      const define = withMiddleware(creatingScope, creatingScope, creatingScope);
 
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));
@@ -103,7 +103,7 @@ describe(`combine`, () => {
 
     it(`creates correct amount of containers`, async () => {
       const { creatingScope, createdContainersIds } = setup();
-      const define = combine(creatingScope, creatingScope, creatingScope);
+      const define = withMiddleware(creatingScope, creatingScope, creatingScope);
 
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));

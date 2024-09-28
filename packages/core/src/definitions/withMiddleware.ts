@@ -5,7 +5,7 @@ import { Definition } from './abstract/Definition.js';
 
 function chainMiddlewares<T, TLifeTime extends LifeTime>(
   middlewares: Middleware[],
-  next: CreateFn<T, any[]>,
+  next: MiddlewareNextFn<T, any[]>,
   lifeTime: TLifeTime,
 ): Definition<T, TLifeTime, any> {
   return new Definition(Symbol(), lifeTime, (use: IContainer, ...args: any[]): T => {
@@ -20,11 +20,19 @@ function chainMiddlewares<T, TLifeTime extends LifeTime>(
   });
 }
 
-export type CreateFn<TInstance, TArgs extends any[]> = (locator: IContainer, ...args: TArgs) => TInstance;
+export type MiddlewareNextFn<TInstance, TArgs extends any[]> = (locator: IContainer, ...args: TArgs) => TInstance;
 
-export type Middleware = <T, TArgs extends any[]>(locator: IContainer, next: CreateFn<T, TArgs>, ...args: TArgs) => T;
+export type Middleware = <T, TArgs extends any[]>(
+  locator: IContainer,
+  next: MiddlewareNextFn<T, TArgs>,
+  ...args: TArgs
+) => T;
 
-export const combine = Object.assign(
+export const createMiddleware = (middlewareFn: Middleware): Middleware => {
+  return middlewareFn;
+};
+
+export const withMiddleware = Object.assign(
   (...middleware: Middleware[]): DefineTransient => {
     return <TInstance, TArgs extends any[]>(
       create: (locator: IContainer<LifeTime.transient>, ...args: TArgs) => TInstance,

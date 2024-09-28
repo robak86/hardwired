@@ -26,7 +26,7 @@ export * from './definitions/abstract/AbstractServiceLocatorDecorator.js';
 
 export * from './container/IContainer.js';
 
-export { Middleware, combine, CreateFn } from './definitions/combine.js';
+export { Middleware, withMiddleware, MiddlewareNextFn, createMiddleware } from './definitions/withMiddleware.js';
 export { cls, ClassType } from './definitions/cls.js';
 export { Definition } from './definitions/abstract/Definition.js';
 
