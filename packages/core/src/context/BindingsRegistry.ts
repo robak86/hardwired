@@ -52,11 +52,7 @@ export class BindingsRegistry {
     return !!this.finalBindingsById.has(definitionId);
   }
 
-  addScopeBinding = (definition: Definition<any, any, any>) => {
-    this.updateScopeBinding(definition);
-  };
-
-  addFinalBinding = (definition: Definition<any, any, any>) => {
+  private addFinalBinding = (definition: Definition<any, any, any>) => {
     if (this.finalBindingsById.has(definition.id)) {
       throw new Error(`Final binding was already set. Cannot override it.`);
     }
