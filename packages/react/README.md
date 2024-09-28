@@ -43,7 +43,7 @@ dependencies to React components (using the service locator pattern).
 
 ## Limitations
 
-React context supports basic reactivity and change detection for the state stored within the context, but it incurs performance penalties in the case of frequent updates. Additionally, the container implementation used by Hardwired internally relies on mutable state, which is not compatible with shallow comparisons that React uses for change detection. Due to these limitations, `hardwired-react` does not provide observability features for objects created by the container. However, observability can be easily enabled by using [MobX](https://mobx.js.org/) or other libraries that offer similar functionality.
+React context supports basic reactivity/change detection for the state stored within the context, but it incurs performance penalties in the case of frequent updates. Additionally, the container implementation used by Hardwired internally relies on mutable state, which is not compatible with shallow comparisons that React uses for change detection. Due to these limitations, `hardwired-react` does not provide observability features for objects created by the container. However, observability can be easily enabled by using [MobX](https://mobx.js.org/) or other libraries that offer similar functionality.
 
 ## Installation
 
@@ -59,44 +59,44 @@ bun add hardwired hardwired-react mobx mobx-react
 
 ## Getting started
 
-1. Create the model layer.
+1. Create the model layer. For this example we use more OOP style
 
->Hardwired also provide support for more [function-oriented](#functional-api) programming style.
+> These examples use OOP, but Hardwired also provide support for [functional](#functional-api) programming style.
 
-   ```typescript
-   import { makeAutoObservable } from 'mobx';
-   import { cls, value } from 'hardwired';
+```typescript
+import { makeAutoObservable } from 'mobx';
+import { cls, value } from 'hardwired';
 
-   const initialValue = value(0);
+const initialValue = value(0);
 
-   export class CounterStore {
-     static instance = cls.singleton(this, initialValue);
+export class CounterStore {
+  static instance = cls.singleton(this, initialValue);
 
-     constructor(public value: number) {
-       makeAutoObservable(this);
-     }
-   }
+  constructor(public value: number) {
+    makeAutoObservable(this);
+  }
+}
 
-   export class CounterActions {
-     static instance = cls.singleton(this, [CounterStore.instance]);
+export class CounterActions {
+  static instance = cls.singleton(this, [CounterStore.instance]);
 
-     constructor(private store: CounterStore) {
-       makeAutoObservable(this);
-     }
+  constructor(private store: CounterStore) {
+    makeAutoObservable(this);
+  }
 
-     increment = () => {
-       this.store.value += 1;
-     };
+  increment = () => {
+    this.store.value += 1;
+  };
 
-     decrement = () => {
-       this.store.value -= 1;
-     };
-   }
-   ```
+  decrement = () => {
+    this.store.value -= 1;
+  };
+}
+```
 
-   For purpose of this example we use `singleton` lifetime. For the detailed explanation of life times,
-   please refer to Hardwired docs
-   [documentation](https://github.com/robak86/hardwired#lifetimes)
+For purpose of this example we use `singleton` lifetime. For the detailed explanation of life times,
+please refer to Hardwired docs
+[documentation](https://github.com/robak86/hardwired#lifetimes)
 
 1. Create components
 
@@ -189,18 +189,11 @@ describe('CounterAction', () => {
 
 ### Components
 
-React components can be tested using both unit and integration-oriented approaches.
-Without using dependency injection, we are somewhat forced to the latter. Integration tests focus on
-testing the component's real, user-facing behavior. They are not burdened with testing implementation
-details, so in theory, they shouldn't be as fragile as unit tests. Unfortunately, in the case of complex
-components, depending solely on integration tests can be costly because they often require a
-complex setup for every test case. In this section, I will present a more unit-test-oriented
-approach. (In a real-world application, one should probably find a good balance between both
-approaches).
+React components can be tested using both unit and integration-oriented approaches. Without using dependency injection, we are somewhat forced to the latter.
 
-In unit tests for `CounterActions`, we want to check if the correct action methods are called on
-corresponding button clicks. We are not interested in side effects that are triggered by these
-methods because this behavior was already tested in the previous [suite](#state).
+Integration tests focus on testing the component's real, user-facing behavior. They are not burdened with testing implementation details, so in theory, they shouldn't be as fragile as unit tests. Unfortunately, in the case of complex components, depending solely on integration tests can be costly because they often require a complex setup for every test case. In this section, I will present a more unit-test-oriented approach. (In a real-world application, one should probably find a good balance between both approaches).
+
+In unit tests for `CounterActions`, we want to check if the correct action methods are called on corresponding button clicks. We are not interested in side effects that are triggered by these methods because this behavior was already tested in the previous [suite](#state).
 
 ```typescript jsx
 // CounterActions.test.tsx
@@ -412,15 +405,15 @@ export const App = () => {
 
 ### Considerations
 
-Using an IoC (Inversion of Control) container for such a simple scenario might seem like overkill, especially when the component structure is quite straightforward. For instance, one could simply pass a label as a prop to `<LabeledCounter/>`, which then forwards it to `<CounterLabel/>`. This straightforward approach allows for rendering two instances of the component with different labels.
+Using an IoC (Inversion of Control) container for such a simple scenario might seem like overkill, especially when the component structure is straightforward. For instance, one could simply pass a label as a prop to `<LabeledCounter/>`, which then forwards it to `<CounterLabel/>`. This simple approach allows for rendering two instances of the component with different labels.
 
 However, the example demonstrates a key advantage of using an IoC container: it eliminates the need for parent components to be aware of the specific properties required by deeper or more distant components in the tree. This is particularly relevant for [container](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0) components, which are typically more complex than dummy/presentational components because they manage all the dependencies needed by their child components. By offloading this complexity to an IoC container, we simplify top-level components, allowing them to focus solely on composing their children without getting involved in the intricacies of their implementations. This approach aligns with treating React components primarily as a view layer, akin to the MVC pattern, and facilitates the separation of business logic into plain classes, simplifying object creation and encapsulation.
 
-However, this method has its drawbacks. Retrieving dependencies with `use` introduces an additional layer of indirection compared to direct prop passing. The dependencies managed by `use` often form a hierarchy—a directed acyclic graph—that does not usually align 1:1 with the components hierarchy. This flexibility can be advantageous, particularly when sharing data across many components, but it can also obscure the flow of data and dependencies through the component structure.
+However, this method has its drawbacks. Retrieving dependencies with `use` introduces an additional layer of indirection compared to direct prop passing. The dependencies managed by `use` form a hierarchy (a directed acyclic graph) that does not usually align 1:1 with the component hierarchy. This flexibility can be advantageous, particularly when sharing data across many components, but it can also obscure the flow of data and dependencies through the component structure.
 
 Furthermore, using `use` ties components more closely to the Hardwired library, which can be restrictive. Where possible, using simpler 'dummy' components as the final nodes in the component tree is preferable.
 
-The ease of injecting dependencies can also lead to excessive interconnections among components and instances retrieved from the container, potentially making the code harder to understand. This complexity can be mitigated by enforcing strict controls over the mutability of injected objects. Typically, injecting read-only objects into multiple components does not lead to issues, whereas uncontrolled mutability with side effects that are accessible to multiple consumers can introduce significant unpredictability and complexity.
+The ease of injecting dependencies can also lead to excessive interconnections among components and instances retrieved from the container. This can potentially make the code harder to understand. This complexity can be mitigated by enforcing strict controls over the mutability of injected objects. Typically, injecting read-only objects into multiple components does not lead to issues. However, uncontrolled mutability with side effects that are accessible to multiple consumers can introduce significant unpredictability and complexity.
 
 ### Mapping Definition Life Time to the React Components Rendering
 
@@ -428,24 +421,18 @@ The ease of injecting dependencies can also lead to excessive interconnections a
 
 #### Scoped Lifetime
 
-The values are memoized in the closest `<ContainerScope>` or `ContainerProvider`. Both mentioned components internally hold their own scope.
+The values are memoized in the closest `<ContainerScope>` or `ContainerProvider`. Both mentioned components internally hold their own private state for scope.
 
 ```typescript jsx
 import { scoped } from 'hardwired';
 import { use, ContainerProvider, ContainerScope } from 'hardwired-react';
 
-const currentId = singleton.fn(() => {
-  return { value: 0 }
-})
 
-const value = scoped.fn(use => {
-  const current = use(currentId);
-  return current.value += 1;
-});
+const value = scoped.fn(use => Math.random());
 
 const Presenter = () => {
-  const value1 = use(value);
-  return <span>{value1}</span>;
+  const _value = use(value);
+  return <span>{_value}</span>;
 };
 
 const App = () => {
@@ -474,17 +461,10 @@ Singleton instances created by `use` become globally cached and are available fo
 import { singleton } from 'hardwired';
 import { use, ContainerProvider, ContainerScope } from 'hardwired-react';
 
-const currentId = singleton.fn(() => {
-  return { value: 0 }
-})
-
-const value = singleton.fn(use => {
-  const current = use(currentId);
-  return current.value += 1;
-});
+const value = singleton.fn(use => Math.random());
 
 const Parent = () => {
-  const val = use(value);
+  const _value = use(value);
 
   return (
     <ContainerScope>
@@ -494,10 +474,10 @@ const Parent = () => {
 };
 
 const Child = () => {
-  const val = use(value);
+  const _value = use(value);
 
   // value is equal to the value from the Parent
-  return <span>{value1}</span>;
+  return <span>{_value}</span>;
 };
 
 const App = () => {
@@ -518,12 +498,9 @@ In this example both `<Parent>` and `<Child>` components will get the same value
 import { transient } from 'hardwired';
 import { use } from 'hardwired-react';
 
-
 const counter = singleton.fn(() => {
   return { value: 0 }
 })
-
-
 
 const countValue = transient.fn(use => {
   const count = use(counter);
@@ -543,7 +520,7 @@ const Parent = () => {
 
 ## Functional API
 
-If you prefer more functional programming style, the counter example can be implemented as follows:
+If you prefer a more functional programming style, the previous counter example can be implemented as follows:
 
 ```typescript
 import { fn, value } from 'hardwired';
