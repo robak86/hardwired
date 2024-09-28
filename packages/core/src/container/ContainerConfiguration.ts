@@ -18,7 +18,7 @@ export class ScopeConfiguration {
   constructor(private readonly _configure: (scope: ScopeConfigureAware, parent: ParentContainer) => void) {}
 
   apply(parent: ParentContainer): ScopeConfigureBinder {
-    const binder = new ScopeConfigureBinder();
+    const binder = new ScopeConfigureBinder(parent);
     this._configure(binder, parent);
     return binder;
   }

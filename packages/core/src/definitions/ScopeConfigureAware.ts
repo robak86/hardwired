@@ -2,7 +2,7 @@ import { Definition } from './abstract/Definition.js';
 import { LifeTime } from './abstract/LifeTime.js';
 import { Binder } from './Binder.js';
 import { ScopeOptions } from '../container/Container.js';
-import { ScopeConfiguration, ScopeConfigureCallback } from '../container/ContainerConfiguration.js';
+import { ParentContainer, ScopeConfiguration, ScopeConfigureCallback } from '../container/ContainerConfiguration.js';
 import { IContainer } from '../container/IContainer.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
@@ -14,7 +14,7 @@ export function scopeConfiguratorToOptions(
   parentContainer: IContainer,
 ): ScopeOptions {
   if (optionsOrFunction instanceof Function) {
-    const binder = new ScopeConfigureBinder();
+    const binder = new ScopeConfigureBinder(parentContainer);
 
     optionsOrFunction(binder, parentContainer);
     return binder;
@@ -34,7 +34,7 @@ export interface ScopeConfigureAware {
 export class ScopeConfigureBinder implements ScopeConfigureAware, ScopeOptions {
   private _scopeDefinitions: Definition<any, any, any>[] = [];
 
-  constructor() {}
+  constructor(private _parentContainer: ParentContainer) {}
 
   bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
@@ -43,7 +43,7 @@ export class ScopeConfigureBinder implements ScopeConfigureAware, ScopeOptions {
       throw new Error(`Binding singletons in for child scopes is not allowed.`);
     }
 
-    return new Binder(definition, this._scopeDefinitions);
+    return new Binder(definition, this._scopeDefinitions, this._parentContainer);
   }
 
   get scopeDefinitions() {

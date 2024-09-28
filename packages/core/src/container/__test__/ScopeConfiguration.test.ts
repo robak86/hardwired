@@ -48,7 +48,7 @@ describe('ScopeConfiguration', () => {
         const root = container.new();
 
         const childContainer = root.checkoutScope((scope, parent) => {
-          scope.bind(compositionRoot).toInheritedFrom(parent);
+          scope.bind(compositionRoot).toInherited();
         });
 
         // First, get the value from the child container, to check if the value will "propagate" to parent

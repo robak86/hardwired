@@ -7,6 +7,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
   constructor(
     private _definition: Definition<TInstance, TLifeTime, TArgs>,
     private _definitions: Definition<any, any, any>[],
+    private _parentContainer: ParentContainer | null,
   ) {}
 
   to(newDefinition: Definition<TInstance, TLifeTime, TArgs>) {
@@ -54,9 +55,9 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
   }
 
   // TODO: this doesn't make sens if the definition is singleton. No need to inherit as singletons are always global
-  toInheritedFrom(container: ParentContainer) {
+  toInherited() {
     const newDefinition = new Definition(this._definition.id, LifeTime.transient, (_, ...args: TArgs) => {
-      return container.use(this._definition, ...args);
+      return this._parentContainer!.use(this._definition, ...args);
     });
     this._definitions.push(newDefinition);
   }

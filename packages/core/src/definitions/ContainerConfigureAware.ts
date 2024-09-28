@@ -49,7 +49,7 @@ export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeO
       this._scopeDefinitionsById.set(definition.id, true);
     }
 
-    return new Binder(definition, this._scopeDefinitions);
+    return new Binder(definition, this._scopeDefinitions, null);
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
@@ -61,7 +61,7 @@ export class ContainerConfigureBinder implements ContainerConfigureAware, ScopeO
       this._frozenDefinitionsById.set(definition.id, true);
     }
 
-    return new Binder(definition, this._frozenDefinitions);
+    return new Binder(definition, this._frozenDefinitions, null);
   }
 
   get scopeDefinitions() {
