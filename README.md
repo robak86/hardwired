@@ -5,13 +5,12 @@
 **Hardwired** is an opinionated, lightweight, functional, and type-safe dependency injection (DI) and inversion of control (IoC) library for TypeScript.
 
 - [x] **Type Safety**: All dependencies are checked at compile time.
-- [x] **No Unsafe Bindings**: No need to manually bind dependencies using strings or symbols and manually providing corresponding types.
+- [x] **No Unsafe Bindings**: No need to manually bind dependencies using strings or symbols manually providing corresponding types as generic parameters.
 - [x] **No Decorators or Reflection**
 - [x] **Lazy Evaluation**: Instances are created only when they are requested.
-- [x] **Designed for structural typing**: Allows polymorphism without requiring interfaces and doesn't require a lot of type annotations.
-- [x] **Functional Approach**: Inspired by React hooks and the Service Locator pattern, but avoids their limitations.
-- [x] **Compact API**: Focused on code readability.
-- [x] **Easy Testing and Mocking**: Allows selectively mocking any dependency in complex dependency graphs, which is especially useful for integration tests.
+- [x] **Designed for structural typing**: Allows polymorphism without requiring interfaces and doesn't require type annotations.
+- [x] **Simple Functional API**: Focused on code readability. Inspired by React hooks but avoids its limitations.
+- [x] **Easy Testing and Mocking**: Allows selectively mocking any dependencies in complex dependency graphs, which is especially useful for integration tests.
 - [x] **Universal Support**: Works seamlessly on every JavaScript runtime and browser.
 
 ## Table of Contents

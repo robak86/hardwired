@@ -39,7 +39,7 @@ Relevant resources:
 Dependency injection is also relevant in React applications. React already provides a
 mechanism for dependency injection in the form of [context](https://beta.reactjs.org/learn/passing-data-deeply-with-context).
 This library aims to provide an opinionated semantics for defining and injecting
-dependencies to React components (using the service locator pattern).
+dependencies to React components.
 
 ## Limitations
 
