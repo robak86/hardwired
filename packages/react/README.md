@@ -19,6 +19,7 @@ Integration for [Hardwired](https://github.com/robak86/hardwired) and [React](ht
       - [Scoped Lifetime](#scoped-lifetime)
       - [Singleton](#singleton)
       - [Transient](#transient)
+  - [Functional API](#functional-api)
 
 ## Motivation
 
@@ -60,6 +61,8 @@ bun add hardwired hardwired-react mobx mobx-react
 
 1. Create the model layer.
 
+>Hardwired also provide support for more [function-oriented](#functional-api) programming style.
+
    ```typescript
    import { makeAutoObservable } from 'mobx';
    import { cls, value } from 'hardwired';
@@ -67,7 +70,7 @@ bun add hardwired hardwired-react mobx mobx-react
    const initialValue = value(0);
 
    export class CounterStore {
-     static instance = cls(this, initialValue);
+     static instance = cls.singleton(this, initialValue);
 
      constructor(public value: number) {
        makeAutoObservable(this);
@@ -75,7 +78,7 @@ bun add hardwired hardwired-react mobx mobx-react
    }
 
    export class CounterActions {
-     static instance = cls(this, CounterStore.instance);
+     static instance = cls.singleton(this, CounterStore.instance);
 
      constructor(private store: CounterStore) {
        makeAutoObservable(this);
@@ -95,7 +98,7 @@ bun add hardwired hardwired-react mobx mobx-react
    please refer to Hardwired docs
    [documentation](https://github.com/robak86/hardwired#lifetimes)
 
-2. Create components
+1. Create components
 
    ```typescript jsx
     import { use } from './use.js';
@@ -123,7 +126,7 @@ bun add hardwired hardwired-react mobx mobx-react
     });
    ```
 
-3. Wrap application with `ContainerProvider`
+2. Wrap application with `ContainerProvider`
 
    ```typescript jsx
    import { FC } from 'react';
@@ -313,7 +316,7 @@ const initialValue = value(0);
 const label = unbound<string>();
 
 class CounterStore {
-  static instance = cls(this, initialValue, label);
+  static instance = cls.scoped(this, initialValue, label);
 
   constructor(
     public value: number,
@@ -324,7 +327,7 @@ class CounterStore {
 }
 
 class CounterActions {
-  static instance = cls(this, CounterStore.instance);
+  static instance = cls.scoped(this, CounterStore.instance);
 
   constructor(private store: CounterStore) {
     makeAutoObservable(this);
@@ -415,7 +418,7 @@ However, the example demonstrates a key advantage of using an IoC container: it 
 
 However, this method has its drawbacks. Retrieving dependencies with `use` introduces an additional layer of indirection compared to direct prop passing. The dependencies managed by `use` often form a hierarchy—a directed acyclic graph—that does not usually align 1:1 with the components hierarchy. This flexibility can be advantageous, particularly when sharing data across many components, but it can also obscure the flow of data and dependencies through the component structure.
 
-Furthermore, using `use` ties components more closely to the hardwired framework, which can be restrictive. Where possible, using simpler 'dummy' components as the final nodes in the component tree is preferable.
+Furthermore, using `use` ties components more closely to the Hardwired library, which can be restrictive. Where possible, using simpler 'dummy' components as the final nodes in the component tree is preferable.
 
 The ease of injecting dependencies can also lead to excessive interconnections among components and instances retrieved from the container, potentially making the code harder to understand. This complexity can be mitigated by enforcing strict controls over the mutability of injected objects. Typically, injecting read-only objects into multiple components does not lead to issues, whereas uncontrolled mutability with side effects that are accessible to multiple consumers can introduce significant unpredictability and complexity.
 
@@ -425,7 +428,7 @@ The ease of injecting dependencies can also lead to excessive interconnections a
 
 #### Scoped Lifetime
 
-The values are memoized in the closest `<ContainerScope>` or `ContainerProvider`. Both components internally hold it's own scope.
+The values are memoized in the closest `<ContainerScope>` or `ContainerProvider`. Both mentioned components internally hold their own scope.
 
 ```typescript jsx
 import { scoped } from 'hardwired';
@@ -536,4 +539,57 @@ const Parent = () => {
     </h1>
   );
 };
+```
+
+## Functional API
+
+If you prefer more functional programming style, the counter example can be implemented as follows:
+
+```typescript
+import { fn, value } from 'hardwired';
+import { use } from 'hardwired-react';
+import { action, observable } from 'mobx';
+import { observer } from 'mobx-react';
+
+// model
+const initialValue = value(0);
+
+const counterStore = fn.singleton(use => {
+  return observable({ value: use(initialValue) });
+});
+
+const incrementAction = fn.singleton(use => {
+  const store = use(counterStore);
+
+  return action(() => (store.value += 1));
+});
+
+const decrementAction = fn.singleton(use => {
+  const store = use(counterStore);
+
+  return action(() => (store.value -= 1));
+});
+
+// view
+export const Counter = observer(() => {
+  const state = use(counterStore);
+
+  return (
+    <h2>
+      Current value: <span data-testid={'counter-value'}>{state.value}</span>
+    </h2>
+  );
+});
+
+export const CounterButtons = observer(() => {
+  const increment = use(incrementAction);
+  const decrement = use(decrementAction);
+
+  return (
+    <>
+      <button onClick={increment}>Increment</button>
+      <button onClick={decrement}>Decrement</button>
+    </>
+  );
+});
 ```
