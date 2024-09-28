@@ -16,7 +16,6 @@ import { scopeConfiguratorToOptions } from '../definitions/ScopeConfigureAware.j
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { ContainerConfiguration, ContainerConfigureCallback } from './ContainerConfiguration.js';
-import { Overrides } from './Overrides.js';
 
 interface Container extends UseFn<LifeTime> {}
 
@@ -108,8 +107,8 @@ class Container
 }
 
 export type ScopeOptions = {
-  frozenDefinitions?: Overrides; // propagated to descendant containers
-  scopeDefinitions?: Overrides;
+  frozenDefinitions?: Array<Definition<any, any, any>>; // propagated to descendant containers
+  scopeDefinitions?: Array<Definition<any, any, any>>;
 };
 
 export const once = new Container(

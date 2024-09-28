@@ -1,4 +1,3 @@
-import { Overrides } from '../container/Overrides.js';
 import { Definition } from '../definitions/abstract/Definition.js';
 import { ScopeOptions } from '../container/Container.js';
 
@@ -24,7 +23,10 @@ export class BindingsRegistry {
     return new BindingsRegistry({ ...this.scopeBindingsById }, { ...this.finalBindingsById });
   }
 
-  checkoutForScope(scopeBindings: Overrides, finalBindings: Overrides): BindingsRegistry {
+  checkoutForScope(
+    scopeBindings: Array<Definition<any, any, any>>,
+    finalBindings: Array<Definition<any, any, any>>,
+  ): BindingsRegistry {
     const newRegistry = new BindingsRegistry(
       new Map(this.scopeBindingsById), // TODO: experiment with proxy object instead of cloning?
       new Map(this.finalBindingsById),
@@ -63,13 +65,13 @@ export class BindingsRegistry {
     this.scopeBindingsById.set(definition.id, definition);
   }
 
-  private addFinalBindings(patches: Overrides) {
+  private addFinalBindings(patches: Array<Definition<any, any, any>>) {
     patches.forEach(patchedResolver => {
       this.addFinalBinding(patchedResolver);
     });
   }
 
-  private addScopeBindings(patches: Overrides) {
+  private addScopeBindings(patches: Array<Definition<any, any, any>>) {
     patches.forEach(patchedResolver => {
       this.updateScopeBinding(patchedResolver);
     });
