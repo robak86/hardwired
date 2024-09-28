@@ -2,8 +2,6 @@ import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
-import { ContextEvents } from '../events/ContextEvents.js';
-
 import { Definition } from '../definitions/abstract/Definition.js';
 import { ScopeConfiguration, ScopeConfigureCallback } from './ContainerConfiguration.js';
 
@@ -21,7 +19,6 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 }
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
-  // TODO: not sure if this should be public
   checkoutScope(options?: ScopeConfigureCallback | ScopeConfiguration): IContainer<TAllowedLifeTime>;
 
   withScope<TValue>(fn: (locator: IServiceLocator<TAllowedLifeTime>) => TValue): TValue;
@@ -48,7 +45,6 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
     IContainerScopes<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;
-  readonly events: ContextEvents;
 }
 
 // prettier-ignore

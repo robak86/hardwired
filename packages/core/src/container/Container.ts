@@ -3,8 +3,6 @@ import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import { AsyncAllInstances, IContainer, IContainerScopes, InstanceCreationAware, UseFn } from './IContainer.js';
 
-import { ContextEvents } from '../events/ContextEvents.js';
-
 import { v4 } from 'uuid';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
@@ -30,7 +28,6 @@ class Container
     private readonly bindingsRegistry: BindingsRegistry,
     private readonly instancesStore: InstancesStore,
     private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
-    public readonly events: ContextEvents,
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -47,13 +44,7 @@ class Container
 
     const definitionsRegistry = BindingsRegistry.create(options);
 
-    return new Container(
-      null,
-      definitionsRegistry,
-      InstancesStore.create(),
-      defaultStrategiesRegistry,
-      new ContextEvents(),
-    );
+    return new Container(null, definitionsRegistry, InstancesStore.create(), defaultStrategiesRegistry);
   }
 
   buildExact<T>(definition: Definition<T, any, any>, ...args: any[]): T {
@@ -84,17 +75,12 @@ class Container
   checkoutScope: IContainerScopes['checkoutScope'] = (optionsOrConfiguration): IContainer => {
     const options = scopeConfiguratorToOptions(optionsOrConfiguration, this);
 
-    const scopeContext = new Container(
+    return new Container(
       this.id,
       this.bindingsRegistry.checkoutForScope(options.scopeDefinitions ?? [], options.frozenDefinitions ?? []),
       this.instancesStore.childScope(),
       this.strategiesRegistry,
-      this.events,
     );
-
-    this.events.onScope.emit({ initiatorContainerId: this.id, scopeContainerId: scopeContext.id });
-
-    return scopeContext;
   };
 
   withScope: IContainerScopes['withScope'] = (fnOrOptions, fn?: any) => {
@@ -111,26 +97,15 @@ export type ScopeOptions = {
   scopeDefinitions?: Array<Definition<any, any, any>>;
 };
 
-export const once = new Container(
-  null,
-  BindingsRegistry.create(),
-  InstancesStore.create(),
-  defaultStrategiesRegistry,
-  new ContextEvents(),
-).use;
+export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
+  .use;
 
-export const all = new Container(
-  null,
-  BindingsRegistry.create(),
-  InstancesStore.create(),
-  defaultStrategiesRegistry,
-  new ContextEvents(),
-).all;
+export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
+  .all;
 
 export const container = new Container(
   null,
   BindingsRegistry.create(),
   InstancesStore.create(),
   defaultStrategiesRegistry,
-  new ContextEvents(),
 );
