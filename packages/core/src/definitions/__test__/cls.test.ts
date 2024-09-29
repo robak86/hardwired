@@ -1,7 +1,6 @@
 import { cls } from '../cls.js';
 import { fn } from '../definitions.js';
 import { container, once } from '../../container/Container.js';
-import { findAllInRenderedTree } from 'react-dom/test-utils';
 
 describe(`cls`, () => {
   const num = fn(() => 123);
