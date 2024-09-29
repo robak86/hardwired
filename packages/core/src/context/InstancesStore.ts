@@ -33,7 +33,7 @@ export class InstancesStore {
     return this.currentScope.has(id);
   }
 
-  upsertGlobalOverrideScope<T>(uuid: symbol, build: () => T) {
+  upsertIntoFrozenInstances<T>(uuid: symbol, build: () => T) {
     if (this.globalOverridesScope.has(uuid)) {
       return this.globalOverridesScope.get(uuid);
     } else {
@@ -43,7 +43,7 @@ export class InstancesStore {
     }
   }
 
-  upsertCurrentScope<T>(uuid: symbol, build: () => T) {
+  upsertIntoScopeInstances<T>(uuid: symbol, build: () => T) {
     if (this.currentScope.has(uuid)) {
       return this.currentScope.get(uuid);
     } else {
@@ -53,7 +53,7 @@ export class InstancesStore {
     }
   }
 
-  upsertGlobalScope<T>(uuid: symbol, build: () => T) {
+  upsertIntoCascadingInstances<T>(uuid: symbol, build: () => T) {
     if (this.hierarchicalScope.has(uuid)) {
       return this.hierarchicalScope.get(uuid);
     } else {

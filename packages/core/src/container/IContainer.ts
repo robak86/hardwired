@@ -1,4 +1,4 @@
-import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import { Instance, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
@@ -18,8 +18,8 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
     ...definitions: [...TDefinitions]
-  ): TDefinitions extends Array<Definition<Promise<any>, any, []>>
-    ? Promise<AsyncAllInstances<TDefinitions>>
+  ): HasPromise<InstancesArray<TDefinitions>> extends true
+    ? Promise<AwaitedInstanceArray<TDefinitions>>
     : InstancesArray<TDefinitions>;
 }
 
@@ -46,9 +46,17 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
 }
 
 // prettier-ignore
-export type AsyncAllItem<T extends Definition<Promise<any>, any, any>> =
-  T extends Definition<Promise<infer TInstance>, any, any> ? TInstance : never;
+export type AwaitedInstance<T extends Definition<Promise<any>, any, any>> =
+  T extends Definition<Promise<infer TInstance>, any, any> ? TInstance : Instance<T>;
 
-export type AsyncAllInstances<T extends Array<Definition<Promise<any>, any, any>>> = {
-  [K in keyof T]: AsyncAllItem<T[K]>;
+export type AwaitedInstanceArray<T extends Array<Definition<Promise<any>, any, any>>> = {
+  [K in keyof T]: AwaitedInstance<T[K]>;
 };
+
+export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
+
+// prettier-ignore
+export type HasPromise<T extends any[]> =
+  T extends [infer First, ...infer Rest] ?
+    IsAnyPromise<First> extends true ? true : HasPromise<Rest>:
+      false;

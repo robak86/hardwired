@@ -1,7 +1,14 @@
 import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { AsyncAllInstances, IContainer, IContainerScopes, InstanceCreationAware, UseFn } from './IContainer.js';
+import {
+  AwaitedInstanceArray,
+  HasPromise,
+  IContainer,
+  IContainerScopes,
+  InstanceCreationAware,
+  UseFn,
+} from './IContainer.js';
 
 import { v4 } from 'uuid';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
@@ -14,6 +21,7 @@ import { scopeConfiguratorToOptions } from '../configuration/abstract/ScopeConfi
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { ContainerConfiguration, ContainerConfigureCallback } from '../configuration/ContainerConfiguration.js';
+import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
 interface Container extends UseFn<LifeTime> {}
 
@@ -64,10 +72,10 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
     return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
-  all = <TDefinitions extends Array<Definition<any, any, []>>>(
+  all = <TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
     ...definitions: [...TDefinitions]
-  ): TDefinitions extends Array<Definition<Promise<any>, any, []>>
-    ? Promise<AsyncAllInstances<TDefinitions>>
+  ): HasPromise<InstancesArray<TDefinitions>> extends true
+    ? Promise<AwaitedInstanceArray<TDefinitions>>
     : InstancesArray<TDefinitions> => {
     const results = definitions.map(def => this.use(def));
 
@@ -90,7 +98,11 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
 
     const cnt = new Container(
       this.id,
-      this.bindingsRegistry.checkoutForScope(options.scopeDefinitions, options.frozenDefinitions),
+      this.bindingsRegistry.checkoutForScope(
+        options.scopeDefinitions,
+        options.frozenDefinitions,
+        options.cascadingDefinitions,
+      ),
       this.instancesStore.childScope(options.cascadingDefinitions),
       this.strategiesRegistry,
     );

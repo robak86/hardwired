@@ -15,13 +15,13 @@ export class SingletonStrategy extends BuildStrategy {
   ) {
     const id = definition.id;
 
-    if (bindingsRegistry.hasFinalBinding(id)) {
-      return instancesStore.upsertGlobalOverrideScope(id, () => {
+    if (bindingsRegistry.hasFrozenBinding(id)) {
+      return instancesStore.upsertIntoFrozenInstances(id, () => {
         return instancesBuilder.buildExact(definition, ...args);
       });
     }
 
-    return instancesStore.upsertGlobalScope(id, () => {
+    return instancesStore.upsertIntoCascadingInstances(id, () => {
       return instancesBuilder.buildExact(definition, ...args);
     });
   }

@@ -18,8 +18,8 @@ export class ScopeConfigurationDSL implements ScopeConfigurable, ScopeOptions {
   cascade<TInstance, TArgs extends any[]>(
     definition: Definition<TInstance, LifeTime.singleton, []>,
   ): Binder<TInstance, LifeTime.singleton, []> {
-    if ((definition.strategy as LifeTime) === LifeTime.singleton) {
-      throw new Error(`Binding singletons in for child scopes is not allowed.`);
+    if ((definition.strategy as LifeTime) !== LifeTime.singleton) {
+      throw new Error(`Cascading is allowed only for singletons.`); // TODO: maybe I should allow it for scoped as well?
     }
 
     return new Binder(definition, this.cascadingDefinitions, this._parentContainer);
