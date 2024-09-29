@@ -1,16 +1,16 @@
 export class HierarchicalStore {
-  private ownEntries: Record<string, any> = {};
+  private ownEntries: Record<symbol, any> = {};
 
   constructor(
-    private ownDefinitionsIds: string[] = [], // ids of instance definitions that should not be inherited from parent, but stored in current HierarchicalStore
+    private ownDefinitionsIds: symbol[] = [], // ids of instance definitions that should not be inherited from parent, but stored in current HierarchicalStore
     private parent: HierarchicalStore | undefined = undefined,
   ) {}
 
-  checkoutChild(overriddenKeys: string[]): HierarchicalStore {
+  checkoutChild(overriddenKeys: symbol[]): HierarchicalStore {
     return new HierarchicalStore(overriddenKeys, this);
   }
 
-  set(key: string, value: any) {
+  set(key: symbol, value: any) {
     if (this.ownDefinitionsIds.includes(key) || !this.parent) {
       this.ownEntries[key] = value;
     } else {
@@ -18,7 +18,7 @@ export class HierarchicalStore {
     }
   }
 
-  get(key: string): any {
+  get(key: symbol): any {
     if (this.ownDefinitionsIds.includes(key) || !this.parent) {
       return this.ownEntries[key];
     } else {
@@ -26,7 +26,7 @@ export class HierarchicalStore {
     }
   }
 
-  has(key: string): boolean {
+  has(key: symbol): boolean {
     if (this.ownDefinitionsIds.includes(key) || !this.parent) {
       return !!this.ownEntries[key];
     }

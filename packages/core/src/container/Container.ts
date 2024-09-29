@@ -41,7 +41,12 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
 
     const definitionsRegistry = BindingsRegistry.create(options);
 
-    const cnt = new Container(null, definitionsRegistry, InstancesStore.create(), defaultStrategiesRegistry);
+    const cnt = new Container(
+      null,
+      definitionsRegistry,
+      InstancesStore.create(options.cascadingDefinitions),
+      defaultStrategiesRegistry,
+    );
 
     options.initializers.forEach(init => init(cnt.use));
 
@@ -86,7 +91,7 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
     const cnt = new Container(
       this.id,
       this.bindingsRegistry.checkoutForScope(options.scopeDefinitions, options.frozenDefinitions),
-      this.instancesStore.childScope(),
+      this.instancesStore.childScope(options.cascadingDefinitions),
       this.strategiesRegistry,
     );
 
@@ -111,15 +116,15 @@ export type ScopeOptions = {
   readonly initializers: readonly InitFn[];
 };
 
-export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
+export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create([]), defaultStrategiesRegistry)
   .use;
 
-export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
+export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create([]), defaultStrategiesRegistry)
   .all;
 
 export const container = new Container(
   null,
   BindingsRegistry.create(),
-  InstancesStore.create(),
+  InstancesStore.create([]),
   defaultStrategiesRegistry,
 );

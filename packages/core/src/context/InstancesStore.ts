@@ -1,21 +1,32 @@
+import { HierarchicalStore } from './HierarchicalStore.js';
+import { Definition } from '../definitions/abstract/Definition.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+
 export class InstancesStore {
-  static create(): InstancesStore {
-    return new InstancesStore(new Map(), new Map(), new Map());
+  static create(scopeOverrides: readonly Definition<any, LifeTime.singleton, []>[]): InstancesStore {
+    const ownKeys = scopeOverrides.map(def => def.id);
+    return new InstancesStore(new HierarchicalStore(ownKeys), new Map(), new Map());
   }
 
   /**
-   * @param globalScope
+   * @param hierarchicalScope
    * @param currentScope
    * @param globalOverridesScope
    */
   constructor(
-    private globalScope: Map<symbol, any>,
+    private hierarchicalScope: HierarchicalStore,
     private currentScope: Map<symbol, any>,
     private globalOverridesScope: Map<symbol, any>,
   ) {}
 
-  childScope(): InstancesStore {
-    return new InstancesStore(this.globalScope, new Map(), this.globalOverridesScope);
+  childScope(scopeOverrides: readonly Definition<any, LifeTime.singleton, []>[]): InstancesStore {
+    const scopeOverridesDefinitionIds = scopeOverrides.map(def => def.id);
+
+    return new InstancesStore(
+      this.hierarchicalScope.checkoutChild(scopeOverridesDefinitionIds),
+      new Map(),
+      this.globalOverridesScope,
+    );
   }
 
   hasInCurrentScope(id: symbol): boolean {
@@ -43,11 +54,11 @@ export class InstancesStore {
   }
 
   upsertGlobalScope<T>(uuid: symbol, build: () => T) {
-    if (this.globalScope.has(uuid)) {
-      return this.globalScope.get(uuid);
+    if (this.hierarchicalScope.has(uuid)) {
+      return this.hierarchicalScope.get(uuid);
     } else {
       const instance = build();
-      this.globalScope.set(uuid, instance);
+      this.hierarchicalScope.set(uuid, instance);
       return instance;
     }
   }
