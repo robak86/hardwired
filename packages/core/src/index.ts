@@ -1,5 +1,5 @@
-export { ScopeConfigureAware } from './definitions/ScopeConfigureAware.js';
-export { ContainerConfigureAware } from './definitions/ContainerConfigureAware.js';
+export { ScopeConfigurable } from './configuration/abstract/ScopeConfigurable.js';
+export { ContainerConfigurable } from './configuration/abstract/ContainerConfigurable.js';
 
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
 export { container, once, all } from './container/Container.js';
@@ -30,4 +30,7 @@ export { Middleware, withMiddleware, MiddlewareNextFn, createMiddleware } from '
 export { cls, ClassType } from './definitions/cls.js';
 export { Definition } from './definitions/abstract/Definition.js';
 
-export * from './container/ContainerConfiguration.js';
+export * from './configuration/ContainerConfiguration.js';
+export { configureScope } from './configuration/ScopeConfiguration.js';
+export { ScopeConfigureCallback } from './configuration/ScopeConfiguration.js';
+export { ScopeConfiguration } from './configuration/ScopeConfiguration.js';

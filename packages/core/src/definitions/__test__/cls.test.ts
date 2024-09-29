@@ -1,6 +1,6 @@
 import { cls } from '../cls.js';
 import { fn } from '../definitions.js';
-import { container } from '../../container/Container.js';
+import { container, once } from '../../container/Container.js';
 
 describe(`cls`, () => {
   const num = fn(() => 123);
@@ -18,6 +18,48 @@ describe(`cls`, () => {
       public readonly b: string,
     ) {}
   }
+
+  describe(`types`, () => {
+    it(`allows skipping args array`, async () => {
+      class NoArgsClass {
+        static instance = cls.transient(this);
+      }
+
+      expect(once(NoArgsClass.instance)).toBeInstanceOf(NoArgsClass);
+    });
+
+    it(`requires args argument in class constructor requires arguments`, async () => {
+      // @ts-ignore
+      class WithArgsClass {
+        // @ts-expect-error - missing args
+        static instance = cls.transient(this);
+
+        // @ts-ignore
+        constructor(private _a: number) {}
+      }
+    });
+  });
+
+  describe(`checking for undefined`, () => {
+    it(`throws when some of the dependencies are undefined`, async () => {
+      class MyClass {}
+
+      expect(() => {
+        // @ts-ignore
+        cls.transient(MyClass, [undefined as any]);
+      }).toThrowError();
+
+      expect(() => {
+        // @ts-ignore
+        cls.scoped(MyClass, [undefined as any]);
+      }).toThrowError();
+
+      expect(() => {
+        // @ts-ignore
+        cls.singleton(MyClass, [undefined as any]);
+      }).toThrowError();
+    });
+  });
 
   describe(`transient`, () => {
     it(`creates correct instance providing correct args`, async () => {

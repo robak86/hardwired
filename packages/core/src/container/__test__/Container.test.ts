@@ -4,6 +4,7 @@ import { container, once } from '../Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
 import { unbound } from '../../definitions/sync/unbound.js';
+import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
@@ -87,16 +88,29 @@ describe(`Container`, () => {
         expect(val1).toEqual(123);
       });
 
-      it(`provides all method for creating multiple instances`, async () => {
-        const use = container.new();
+      describe(`all`, () => {
+        it(`returns correct instances`, async () => {
+          const use = container.new();
 
-        const myDef1 = fn.singleton(() => 123);
-        const myDef2 = fn.singleton(() => 456);
+          const myDef1 = fn.singleton(() => 123);
+          const myDef2 = fn.singleton(() => 456);
 
-        const [val1, val2] = use.all(myDef1, myDef2);
+          const [val1, val2] = use.all(myDef1, myDef2);
 
-        expect(val1).toEqual(123);
-        expect(val2).toEqual(456);
+          expect(val1).toEqual(123);
+          expect(val2).toEqual(456);
+        });
+
+        it(`returns correct type for async instances`, async () => {
+          const use = container.new();
+
+          const myDef1 = fn.singleton(() => 123);
+          const myDef2 = fn.singleton(async () => 456);
+
+          const result = use.all(myDef1, myDef2);
+
+          expectType<TypeEqual<typeof result, Promise<[number, number]>>>(true);
+        });
       });
 
       it(`provides withScope method`, async () => {

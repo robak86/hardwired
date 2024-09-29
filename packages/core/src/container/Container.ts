@@ -1,7 +1,14 @@
 import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { AsyncAllInstances, IContainerScopes, InstanceCreationAware, IContainer, UseFn } from './IContainer.js';
+import {
+  AwaitedInstanceArray,
+  HasPromise,
+  IContainer,
+  IContainerScopes,
+  InstanceCreationAware,
+  UseFn,
+} from './IContainer.js';
 
 import { v4 } from 'uuid';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
@@ -9,11 +16,12 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { containerConfiguratorToOptions, InitFn } from '../definitions/ContainerConfigureAware.js';
-import { scopeConfiguratorToOptions } from '../definitions/ScopeConfigureAware.js';
+import { containerConfiguratorToOptions, InitFn } from '../configuration/abstract/ContainerConfigurable.js';
+import { scopeConfiguratorToOptions } from '../configuration/abstract/ScopeConfigurable.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { ContainerConfiguration, ContainerConfigureCallback } from './ContainerConfiguration.js';
+import { ContainerConfiguration, ContainerConfigureCallback } from '../configuration/ContainerConfiguration.js';
+import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
 interface Container extends UseFn<LifeTime> {}
 
@@ -41,7 +49,12 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
 
     const definitionsRegistry = BindingsRegistry.create(options);
 
-    const cnt = new Container(null, definitionsRegistry, InstancesStore.create(), defaultStrategiesRegistry);
+    const cnt = new Container(
+      null,
+      definitionsRegistry,
+      InstancesStore.create(options.cascadingDefinitions),
+      defaultStrategiesRegistry,
+    );
 
     options.initializers.forEach(init => init(cnt.use));
 
@@ -59,10 +72,10 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
     return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
-  all = <TDefinitions extends Array<Definition<any, any, []>>>(
+  all = <TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
     ...definitions: [...TDefinitions]
-  ): TDefinitions extends Array<Definition<Promise<any>, any, []>>
-    ? Promise<AsyncAllInstances<TDefinitions>>
+  ): HasPromise<InstancesArray<TDefinitions>> extends true
+    ? Promise<AwaitedInstanceArray<TDefinitions>>
     : InstancesArray<TDefinitions> => {
     const results = definitions.map(def => this.use(def));
 
@@ -85,8 +98,12 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
 
     const cnt = new Container(
       this.id,
-      this.bindingsRegistry.checkoutForScope(options.scopeDefinitions, options.frozenDefinitions),
-      this.instancesStore.childScope(),
+      this.bindingsRegistry.checkoutForScope(
+        options.scopeDefinitions,
+        options.frozenDefinitions,
+        options.cascadingDefinitions,
+      ),
+      this.instancesStore.childScope(options.cascadingDefinitions),
       this.strategiesRegistry,
     );
 
@@ -105,20 +122,21 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
 }
 
 export type ScopeOptions = {
-  readonly frozenDefinitions: readonly Definition<any, any, any>[];
-  readonly scopeDefinitions: readonly Definition<any, any, any>[];
+  readonly frozenDefinitions: readonly Definition<any, LifeTime, any>[];
+  readonly scopeDefinitions: readonly Definition<any, LifeTime.transient | LifeTime.scoped, any>[];
+  readonly cascadingDefinitions: readonly Definition<any, LifeTime.singleton, []>[];
   readonly initializers: readonly InitFn[];
 };
 
-export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
+export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create([]), defaultStrategiesRegistry)
   .use;
 
-export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
+export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create([]), defaultStrategiesRegistry)
   .all;
 
 export const container = new Container(
   null,
   BindingsRegistry.create(),
-  InstancesStore.create(),
+  InstancesStore.create([]),
   defaultStrategiesRegistry,
 );

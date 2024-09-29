@@ -15,8 +15,8 @@ export class TransientStrategy extends BuildStrategy {
   ) {
     const id = definition.id;
 
-    if (bindingsRegistry.hasFinalBinding(id)) {
-      return instancesStore.upsertGlobalOverrideScope(id, () => {
+    if (bindingsRegistry.hasFrozenBinding(id)) {
+      return instancesStore.upsertIntoFrozenInstances(id, () => {
         return instancesBuilder.buildExact(definition, ...args);
       });
     }

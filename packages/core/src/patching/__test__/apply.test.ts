@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 import { Definition } from '../../definitions/abstract/Definition.js';
-import { configureContainer } from '../../container/ContainerConfiguration.js';
+import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
