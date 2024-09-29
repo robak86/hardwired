@@ -139,7 +139,9 @@ describe(`SingletonStrategy`, () => {
 
         const level3 = level2.checkoutScope();
 
-        const level3Call = level3.use(a); // important that level1 is called as first
+        // important that level3 is called as first, to check if the value will "propagate" to level2
+        // as it defines cascading binding
+        const level3Call = level3.use(a);
         const level2Call = level2.use(a);
         const level1Call = level1.use(a);
         const rootCall = root.use(a);
