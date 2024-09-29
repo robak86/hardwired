@@ -6,6 +6,7 @@ import {
   ContainerConfigureAllowedLifeTimes,
   InitFn,
 } from '../abstract/ContainerConfigurable.js';
+import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable, ScopeOptions {
   private _scopeDefinitions: Definition<any, any, any>[] = [];
@@ -14,6 +15,8 @@ export class ContainerConfigurationDSL implements ContainerConfigurable, ScopeOp
 
   private _scopeDefinitionsById: Map<symbol, true> = new Map();
   private _frozenDefinitionsById: Map<symbol, true> = new Map();
+
+  readonly cascadingDefinitions: Definition<any, LifeTime.singleton, []>[] = [];
 
   constructor() {}
 

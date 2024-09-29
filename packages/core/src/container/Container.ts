@@ -1,7 +1,7 @@
 import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
 
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
-import { AsyncAllInstances, IContainerScopes, InstanceCreationAware, IContainer, UseFn } from './IContainer.js';
+import { AsyncAllInstances, IContainer, IContainerScopes, InstanceCreationAware, UseFn } from './IContainer.js';
 
 import { v4 } from 'uuid';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
@@ -105,8 +105,9 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
 }
 
 export type ScopeOptions = {
-  readonly frozenDefinitions: readonly Definition<any, any, any>[];
-  readonly scopeDefinitions: readonly Definition<any, any, any>[];
+  readonly frozenDefinitions: readonly Definition<any, LifeTime, any>[];
+  readonly scopeDefinitions: readonly Definition<any, LifeTime.transient | LifeTime.scoped, any>[];
+  readonly cascadingDefinitions: readonly Definition<any, LifeTime.singleton, []>[];
   readonly initializers: readonly InitFn[];
 };
 

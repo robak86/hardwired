@@ -9,6 +9,7 @@ import { ContainerConfigurationDSL } from '../dsl/ContainerConfigurationDSL.js';
 export const emptyContainerOptions: ScopeOptions = Object.freeze({
   scopeDefinitions: Object.freeze([]),
   frozenDefinitions: Object.freeze([]),
+  cascadingDefinitions: Object.freeze([]),
   initializers: Object.freeze([]),
 });
 

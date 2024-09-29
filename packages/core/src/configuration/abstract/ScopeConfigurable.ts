@@ -34,4 +34,8 @@ export interface ScopeConfigurable {
   ): Binder<TInstance, TLifeTime, TArgs>;
 
   onInit(initializer: InitFn): void;
+
+  cascade<TInstance>(
+    definition: Definition<TInstance, LifeTime.singleton, []>,
+  ): Binder<TInstance, LifeTime.singleton, []>;
 }
