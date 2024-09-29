@@ -1,6 +1,7 @@
 import { cls } from '../cls.js';
 import { fn } from '../definitions.js';
 import { container, once } from '../../container/Container.js';
+import { findAllInRenderedTree } from 'react-dom/test-utils';
 
 describe(`cls`, () => {
   const num = fn(() => 123);
@@ -19,7 +20,7 @@ describe(`cls`, () => {
     ) {}
   }
 
-  describe(`no ars class`, () => {
+  describe(`types`, () => {
     it(`allows skipping args array`, async () => {
       class NoArgsClass {
         static instance = cls.transient(this);
@@ -37,6 +38,27 @@ describe(`cls`, () => {
         // @ts-ignore
         constructor(private _a: number) {}
       }
+    });
+  });
+
+  describe(`checking for undefined`, () => {
+    it(`throws when some of the dependencies are undefined`, async () => {
+      class MyClass {}
+
+      expect(() => {
+        // @ts-ignore
+        cls.transient(MyClass, [undefined as any]);
+      }).toThrowError();
+
+      expect(() => {
+        // @ts-ignore
+        cls.scoped(MyClass, [undefined as any]);
+      }).toThrowError();
+
+      expect(() => {
+        // @ts-ignore
+        cls.singleton(MyClass, [undefined as any]);
+      }).toThrowError();
     });
   });
 
