@@ -9,11 +9,11 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { containerConfiguratorToOptions, InitFn } from '../definitions/ContainerConfigureAware.js';
-import { scopeConfiguratorToOptions } from '../definitions/ScopeConfigureAware.js';
+import { containerConfiguratorToOptions, InitFn } from '../configuration/abstract/ContainerConfigurable.js';
+import { scopeConfiguratorToOptions } from '../configuration/abstract/ScopeConfigurable.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { ContainerConfiguration, ContainerConfigureCallback } from './ContainerConfiguration.js';
+import { ContainerConfiguration, ContainerConfigureCallback } from '../configuration/ContainerConfiguration.js';
 
 interface Container extends UseFn<LifeTime> {}
 

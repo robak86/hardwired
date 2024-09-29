@@ -1,13 +1,13 @@
 import { LifeTime } from './abstract/LifeTime.js';
 import { Definition } from './abstract/Definition.js';
 import { IContainer } from '../container/IContainer.js';
-import { ParentContainer } from '../container/ContainerConfiguration.js';
+import { ConfigurationContainer } from '../configuration/ContainerConfiguration.js';
 
 export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
   constructor(
     private _definition: Definition<TInstance, TLifeTime, TArgs>,
     private _definitions: Definition<any, any, any>[],
-    private _parentContainer: ParentContainer | null,
+    private _parentContainer: ConfigurationContainer | null,
   ) {}
 
   to(newDefinition: Definition<TInstance, TLifeTime, TArgs>) {

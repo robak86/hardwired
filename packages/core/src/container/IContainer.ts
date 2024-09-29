@@ -3,7 +3,8 @@ import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
 import { Definition } from '../definitions/abstract/Definition.js';
-import { ScopeConfiguration, ScopeConfigureCallback } from './ContainerConfiguration.js';
+
+import { ScopeConfiguration, ScopeConfigureCallback } from '../configuration/ScopeConfiguration.js';
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue, TArgs extends any[]>(
