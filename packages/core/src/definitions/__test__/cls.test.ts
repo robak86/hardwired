@@ -1,6 +1,6 @@
 import { cls } from '../cls.js';
 import { fn } from '../definitions.js';
-import { container } from '../../container/Container.js';
+import { container, once } from '../../container/Container.js';
 
 describe(`cls`, () => {
   const num = fn(() => 123);
@@ -18,6 +18,27 @@ describe(`cls`, () => {
       public readonly b: string,
     ) {}
   }
+
+  describe(`no ars class`, () => {
+    it(`allows skipping args array`, async () => {
+      class NoArgsClass {
+        static instance = cls.transient(this);
+      }
+
+      expect(once(NoArgsClass.instance)).toBeInstanceOf(NoArgsClass);
+    });
+
+    it(`requires args argument in class constructor requires arguments`, async () => {
+      // @ts-ignore
+      class WithArgsClass {
+        // @ts-expect-error - missing args
+        static instance = cls.transient(this);
+
+        // @ts-ignore
+        constructor(private _a: number) {}
+      }
+    });
+  });
 
   describe(`transient`, () => {
     it(`creates correct instance providing correct args`, async () => {
