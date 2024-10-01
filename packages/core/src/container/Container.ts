@@ -51,8 +51,6 @@ export class Container
   }
 
   new(configureFn?: ContainerConfigureFn): IContainer {
-    // const options = containerConfiguratorToOptions(configureFn);
-
     const definitionsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
 
@@ -62,13 +60,6 @@ export class Container
       const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt);
       configureFn(binder);
     }
-
-    // const cascading = options.cascadingDefinitions.map(def => def.bind(cnt));
-    // definitionsRegistry.addCascadingBindings(cascading);
-    // definitionsRegistry.addScopeBindings(options.scopeDefinitions);
-    // definitionsRegistry.addFrozenBindings(options.frozenDefinitions);
-
-    // options.initializers.forEach(init => init(cnt.use));
     return cnt;
   }
 
