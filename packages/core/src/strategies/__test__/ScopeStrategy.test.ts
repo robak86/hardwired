@@ -96,7 +96,7 @@ describe(`ScopeStrategy`, () => {
       expect(childC.use(a).value).toEqual(2);
 
       const grandChildC = childC.checkoutScope();
-      expect(grandChildC.use(a).value).toEqual(2);
+      expect(grandChildC.use(a).value).toEqual(1);
 
       expect(childC.use(a)).not.toBe(grandChildC.use(a));
     });

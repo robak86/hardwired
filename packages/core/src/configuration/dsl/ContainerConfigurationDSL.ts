@@ -16,12 +16,22 @@ export class ContainerConfigurationDSL implements ContainerConfigurable, ScopeOp
   private _scopeDefinitionsById: Map<symbol, true> = new Map();
   private _frozenDefinitionsById: Map<symbol, true> = new Map();
 
-  readonly cascadingDefinitions: Definition<any, LifeTime.singleton, []>[] = [];
+  readonly cascadingDefinitions: Definition<any, LifeTime.scoped, []>[] = [];
 
   constructor() {}
 
   init(initializer: InitFn): void {
     this._initializers.push(initializer);
+  }
+
+  propagate<TInstance, TArgs extends any[]>(
+    definition: Definition<TInstance, LifeTime.scoped, []>,
+  ): Binder<TInstance, LifeTime.scoped, []> {
+    if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
+      throw new Error(`Cascading is allowed only for singletons.`); // TODO: maybe I should allow it for scoped as well?
+    }
+
+    return new Binder(definition, this.cascadingDefinitions, null);
   }
 
   bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(

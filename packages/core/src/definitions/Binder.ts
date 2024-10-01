@@ -15,6 +15,11 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
     this._definitions.push(definition);
   }
 
+  // TODO: redesign API. User can call just scope.propagate() thinking that it will be propagated
+  toSelf() {
+    this._definitions.push(this._definition);
+  }
+
   toValue(value: TInstance) {
     const newDefinition = new Definition(this._definition.id, this._definition.strategy, (use, ...args) => value);
     this._definitions.push(newDefinition);
