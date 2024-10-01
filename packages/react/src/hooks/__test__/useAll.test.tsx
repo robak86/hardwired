@@ -138,7 +138,7 @@ describe(`useDefinitions`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         const config = useScopeConfig(
           scope => {
-            scope.bind(someExternalParam).toValue(externalValue);
+            scope.bindLocal(someExternalParam).toValue(externalValue);
           },
           [externalValue],
         );

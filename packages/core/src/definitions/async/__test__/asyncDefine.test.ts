@@ -60,8 +60,8 @@ describe(`asyncDefine`, () => {
       const result = await container
         .new()
         .checkoutScope(c => {
-          c.bind(ext1).toValue(1);
-          c.bind(ext2).toValue('str');
+          c.bindLocal(ext1).toValue(1);
+          c.bindLocal(ext2).toValue('str');
         })
         .use(definition);
       expect(result).toEqual([1, 'str']);

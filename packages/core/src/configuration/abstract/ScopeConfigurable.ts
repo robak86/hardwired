@@ -29,12 +29,16 @@ export function scopeConfiguratorToOptions(
 }
 
 export interface ScopeConfigurable {
-  bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 
   onInit(initializer: InitFn): void;
 
   // TODO: add to container configuration
-  propagate<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): Binder<TInstance, LifeTime.scoped, []>;
+  bindCascading<TInstance>(
+    definition: Definition<TInstance, LifeTime.scoped, []>,
+  ): Binder<TInstance, LifeTime.scoped, []>;
+
+  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
 }

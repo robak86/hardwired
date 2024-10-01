@@ -486,27 +486,28 @@ const config = configureScope((scope, use) => {
 - `scope.bind(definition).toInherited()`: Inherits the value from the parent scope.
 
 ```typescript
-import { container, configureScope, fn } from 'hardwired';
+import {container, configureScope, fn} from 'hardwired';
 
 class Boxed<T> {
-  constructor(public value: T) {}
+    constructor(public value: T) {
+    }
 }
 
 const definition = fn.scoped(() => new Boxed(Math.random()));
 const otherDefinition = fn.scoped(() => new Boxed(1));
 
 const scopeConfig = configureScope(scope => {
-  // all the following bindings make the "definition" return the Boxed object with value 1;
-  scope.bind(definition).to(otherDefinition);
-  scope.bind(definition).toValue(new Boxed(1));
-  scope.bind(definition).toDecorated((use, originalValue) => new Boxed(1));
-  scope.bind(definition).toConfigured((use, originalValue) => {
-    originalValue.value = 1;
-  });
-  scope.bind(definition).toRedefined(use => {
-    const otherInstance = use(otherDefinition);
-    return new Boxed(otherInstance.value);
-  });
+    // all the following bindings make the "definition" return the Boxed object with value 1;
+    scope.bindLocal(definition).to(otherDefinition);
+    scope.bindLocal(definition).toValue(new Boxed(1));
+    scope.bindLocal(definition).toDecorated((use, originalValue) => new Boxed(1));
+    scope.bindLocal(definition).toConfigured((use, originalValue) => {
+        originalValue.value = 1;
+    });
+    scope.bindLocal(definition).toRedefined(use => {
+        const otherInstance = use(otherDefinition);
+        return new Boxed(otherInstance.value);
+    });
 });
 
 const scopeWithoutConfiguration = container.checkoutScope();
@@ -634,15 +635,15 @@ const configValue = myContainer.use(config); // { apiUrl: 'https://api.example.c
 ### Using with Scopes
 
 ```typescript
-import { container, configureScope } from 'hardwired';
+import {container, configureScope} from 'hardwired';
 
 const scopeConfig = configureScope(scope => {
-  scope.bind(config).toValue({ apiUrl: 'https://api.example.com' });
+    scope.bindLocal(config).toValue({apiUrl: 'https://api.example.com'});
 });
 
 container.withScope(scopeConfig, use => {
-  const configValue = use(config); // { apiUrl: 'https://api.example.com' }
-  // Use configValue within this scope
+    const configValue = use(config); // { apiUrl: 'https://api.example.com' }
+    // Use configValue within this scope
 });
 ```
 
