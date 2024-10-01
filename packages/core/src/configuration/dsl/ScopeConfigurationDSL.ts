@@ -17,8 +17,6 @@ bindingsRegistry.addCascadingBindings(cascading);
  */
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
-  // readonly initializers: InitFn[] = [];
-
   constructor(
     private _parentContainer: IContainer,
     private _currentContainer: IContainer & IStrategyAware,
@@ -70,17 +68,22 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   }
 
   private _onCascadingStaticBind = (newDefinition: Definition<any, any, any>) => {
+    console.log('_onCascadingStaticBind', this._currentContainer.id);
     this._bindingsRegistry.addCascadingBinding(newDefinition);
   };
 
   private _onCascadingInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+    console.log('_onCascadingInstantiableBind', this._currentContainer.id);
     this._bindingsRegistry.addCascadingBinding(newDefinition.bind(this._currentContainer));
   };
 
   private _onLocalStaticBind = (newDefinition: Definition<any, any, any>) => {
+    console.log('_onLocalStaticBind', this._currentContainer.id);
     this._bindingsRegistry.addScopeBinding(newDefinition);
   };
+
   private _onLocalInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+    console.log('_onLocalInstantiableBind', this._currentContainer.id);
     this._bindingsRegistry.addScopeBinding(newDefinition);
   };
 }

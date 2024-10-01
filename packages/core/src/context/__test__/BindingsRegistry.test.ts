@@ -18,13 +18,13 @@ describe(`BindingsRegistry`, () => {
       const registry = BindingsRegistry.create();
       expect(registry.getDefinition(def)).toBe(def);
 
-      registry.addScopeBindings([defV2]);
+      registry.addScopeBinding(defV2);
       expect(registry.getDefinition(def)).toBe(defV2);
 
       const child = registry.checkoutForScope();
       expect(child.getDefinition(def)).toBe(def);
 
-      registry.addCascadingBindings([defV3]);
+      registry.addCascadingBinding(defV3);
       expect(registry.getDefinition(def)).toBe(defV3);
     });
   });

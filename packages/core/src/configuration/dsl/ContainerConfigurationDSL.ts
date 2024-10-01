@@ -2,7 +2,9 @@ import { Definition } from '../../definitions/abstract/Definition.js';
 import { Binder } from '../../definitions/Binder.js';
 import {
   ContainerConfigurable,
-  ContainerConfigureAllowedLifeTimes,
+  ContainerConfigureBindCascadingLifeTimes,
+  ContainerConfigureBindLocalLifeTimes,
+  ContainerConfigureFreezeLifeTimes,
   InitFn,
 } from '../abstract/ContainerConfigurable.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
@@ -25,23 +27,23 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     initializer(this._currentContainer);
   }
 
-  bindCascading<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, LifeTime.scoped, []>,
-  ): Binder<TInstance, LifeTime.scoped, []> {
-    if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
-      throw new Error(`Cascading is allowed only for singletons.`); // TODO: maybe I should allow it for scoped as well?
-    }
-
+  bindCascading<TInstance>(
+    definition: Definition<TInstance, ContainerConfigureBindCascadingLifeTimes, []>,
+  ): Binder<TInstance, ContainerConfigureBindCascadingLifeTimes, []> {
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
   }
 
-  bindLocal<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bindLocal<TInstance, TLifeTime extends ContainerConfigureBindLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
+    if ((definition.strategy as LifeTime) === LifeTime.singleton) {
+      throw new Error(`Singleton is not allowed for local bindings.`);
+    }
+
     return new Binder(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
   }
 
-  freeze<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     return new Binder(definition, this._onFrozenStaticBind, this._onFrozenInstantiableBind);
@@ -55,17 +57,21 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   };
 
   private _onCascadingStaticBind = (newDefinition: Definition<any, any, any>) => {
+    console.log('_onCascadingStaticBind', this._currentContainer.id);
     this._bindingsRegistry.addCascadingBinding(newDefinition);
   };
 
   private _onCascadingInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+    console.log('_onCascadingInstantiableBind', this._currentContainer.id);
     this._bindingsRegistry.addCascadingBinding(newDefinition.bind(this._currentContainer));
   };
 
   private _onLocalStaticBind = (newDefinition: Definition<any, any, any>) => {
+    console.log('_onLocalStaticBind', this._currentContainer.id);
     this._bindingsRegistry.addScopeBinding(newDefinition);
   };
   private _onLocalInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+    console.log('_onLocalInstantiableBind', this._currentContainer.id);
     this._bindingsRegistry.addScopeBinding(newDefinition);
   };
 }

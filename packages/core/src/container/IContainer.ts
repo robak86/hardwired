@@ -7,6 +7,8 @@ import { Definition } from '../definitions/abstract/Definition.js';
 import { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
+  readonly id: string;
+
   buildWithStrategy<TValue, TArgs extends any[]>(
     instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs

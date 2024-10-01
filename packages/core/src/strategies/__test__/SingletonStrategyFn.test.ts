@@ -261,37 +261,6 @@ describe(`SingletonStrategy`, () => {
         expect(randomFactorySpy).toHaveBeenCalledTimes(1);
       });
 
-      it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value, ex.2`, async () => {
-        const factory = vi.fn(() => Math.random());
-
-        const a = fn.scoped(factory);
-        const b = fn.scoped(use => {
-          return [use(a), Math.random()];
-        });
-
-        const root = container.new(scope => {
-          scope.bindLocal(a).toValue(0);
-        });
-
-        const level1 = root.checkoutScope(scope => {
-          // scope.propagate(b).toSelf();
-        });
-
-        const level2 = level1.checkoutScope(scope => {});
-
-        // when we get B in level-1 it doesn't know that its dependency A is cascaded in level1,
-        // therefore B is propagated to the root, breaking the contract!
-
-        const l2B = level2.use(b); // b should be constrained to level1, but it doesn't know about it, because only a is cascaded
-        const l1B = level1.use(b); // b should be constrained to level1, but it doesn't know about it, because only a is cascaded
-        const rootB = root.use(b);
-
-        // expect(factory).toHaveBeenCalledTimes(1);
-
-        // expect(l1B[0]).toEqual(1);
-        // expect(rootB[0]).toEqual(0);
-      });
-
       it(`it's not allowed to bind singleton definitions for child scopes`, async () => {
         const a = fn.singleton(() => 1);
 
