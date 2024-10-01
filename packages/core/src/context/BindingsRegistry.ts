@@ -40,32 +40,40 @@ export class BindingsRegistry {
     return this._frozenBindingsById.has(definitionId);
   }
 
-  private addFinalBinding = (definition: Definition<any, any, any>) => {
+  addFrozenBindings(patches: readonly Definition<any, any, any>[]) {
+    patches.forEach(patchedResolver => {
+      this.addFrozenBinding(patchedResolver);
+    });
+  }
+
+  addScopeBindings(patches: readonly Definition<any, any, any>[]) {
+    patches.forEach(patchedResolver => {
+      this.addScopeBinding(patchedResolver);
+    });
+  }
+
+  addCascadingBindings(cascadingBindings: readonly Definition<any, any, any>[]) {
+    cascadingBindings.forEach(definition => {
+      this.addCascadingBinding(definition);
+    });
+  }
+
+  addFrozenBinding = (definition: Definition<any, any, any>) => {
     if (this._frozenBindingsById.has(definition.id)) {
       throw new Error(`Final binding was already set. Cannot override it.`);
     }
     this._frozenBindingsById.set(definition.id, definition);
   };
 
-  private updateScopeBinding(definition: Definition<any, any, any>) {
+  addScopeBinding(definition: Definition<any, any, any>) {
+    if (this._scopeBindingsById.has(definition.id)) {
+      throw new Error(`Scope binding was already set. Cannot override it.`);
+    }
+
     this._scopeBindingsById.set(definition.id, definition);
   }
 
-  addFrozenBindings(patches: readonly Definition<any, any, any>[]) {
-    patches.forEach(patchedResolver => {
-      this.addFinalBinding(patchedResolver);
-    });
-  }
-
-  addScopeBindings(patches: readonly Definition<any, any, any>[]) {
-    patches.forEach(patchedResolver => {
-      this.updateScopeBinding(patchedResolver);
-    });
-  }
-
-  addCascadingBindings(cascadingBindings: readonly Definition<any, any, any>[]) {
-    cascadingBindings.forEach(definition => {
-      this._cascadingBindingsById.set(definition.id, definition);
-    });
+  addCascadingBinding(definition: Definition<any, any, any>) {
+    this._cascadingBindingsById.set(definition.id, definition);
   }
 }

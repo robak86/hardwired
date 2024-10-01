@@ -1,22 +1,48 @@
-import { ScopeOptions } from '../../container/Container.js';
 import { Definition } from '../../definitions/abstract/Definition.js';
 import { InitFn } from '../abstract/ContainerConfigurable.js';
-import { ConfigurationContainer } from '../ContainerConfiguration.js';
 import { Binder } from '../../definitions/Binder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
+import { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import { BindingsRegistry } from '../../context/BindingsRegistry.js';
 
-export class ScopeConfigurationDSL implements ScopeConfigurable, ScopeOptions {
-  private _scopeDefinitions: Definition<any, any, any>[] = [];
-  readonly frozenDefinitions: Definition<any, any, any>[] = [];
-  readonly cascadingDefinitions: Definition<any, LifeTime.scoped, any>[] = [];
+/*
 
-  readonly initializers: InitFn[] = [];
+const cascading = options.cascadingDefinitions.map(def => def.bind(cnt));
+bindingsRegistry.addCascadingBindings(cascading);
+    bindingsRegistry.addScopeBindings(options.scopeDefinitions);
+    bindingsRegistry.addCascadingBindings(cascading);
 
-  constructor(private _parentContainer: ConfigurationContainer) {}
+    options.initializers.forEach(init => init(cnt.use));
+ */
+
+export class ScopeConfigurationDSL implements ScopeConfigurable {
+  // readonly initializers: InitFn[] = [];
+
+  constructor(
+    private _parentContainer: IContainer,
+    private _currentContainer: IContainer & IStrategyAware,
+    private _bindingsRegistry: BindingsRegistry,
+  ) {}
 
   cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
-    throw new Error('Method not implemented.');
+    this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
+  }
+
+  inheritLocal<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+    const newDefinition = new Definition(definition.id, LifeTime.transient, (_, ...args: []) => {
+      return this._parentContainer.use(definition, ...args);
+    });
+
+    this._bindingsRegistry.addScopeBinding(newDefinition);
+  }
+
+  inheritCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+    const newDefinition = new Definition(definition.id, LifeTime.transient, (_, ...args: []) => {
+      return this._parentContainer.use(definition, ...args);
+    });
+
+    this._bindingsRegistry.addCascadingBinding(newDefinition);
   }
 
   bindCascading<TInstance, TArgs extends any[]>(
@@ -26,11 +52,11 @@ export class ScopeConfigurationDSL implements ScopeConfigurable, ScopeOptions {
       throw new Error(`Cascading is allowed only for singletons.`); // TODO: maybe I should allow it for scoped as well?
     }
 
-    return new Binder(definition, this.cascadingDefinitions, this._parentContainer);
+    return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
   }
 
   onInit(initializer: InitFn): void {
-    this.initializers.push(initializer);
+    initializer(this._currentContainer);
   }
 
   bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
@@ -40,10 +66,21 @@ export class ScopeConfigurationDSL implements ScopeConfigurable, ScopeOptions {
       throw new Error(`Binding singletons in for child scopes is not allowed.`);
     }
 
-    return new Binder(definition, this._scopeDefinitions, this._parentContainer);
+    return new Binder(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
   }
 
-  get scopeDefinitions() {
-    return this._scopeDefinitions;
-  }
+  private _onCascadingStaticBind = (newDefinition: Definition<any, any, any>) => {
+    this._bindingsRegistry.addCascadingBinding(newDefinition);
+  };
+
+  private _onCascadingInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+    this._bindingsRegistry.addCascadingBinding(newDefinition.bind(this._currentContainer));
+  };
+
+  private _onLocalStaticBind = (newDefinition: Definition<any, any, any>) => {
+    this._bindingsRegistry.addScopeBinding(newDefinition);
+  };
+  private _onLocalInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+    this._bindingsRegistry.addScopeBinding(newDefinition);
+  };
 }

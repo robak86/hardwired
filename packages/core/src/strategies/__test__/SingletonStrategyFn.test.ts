@@ -102,7 +102,7 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(factory);
 
         const root = container.new(scope => {
-          scope.propagate(a).toSelf();
+          scope.cascade(a);
         });
 
         const child = root.checkoutScope(scope => {});
@@ -125,7 +125,7 @@ describe(`SingletonStrategy`, () => {
         });
 
         const root = container.new(scope => {
-          scope.propagate(consumer).toSelf();
+          scope.cascade(consumer);
         });
 
         const child = root.checkoutScope(scope => {
@@ -143,7 +143,7 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(() => 0);
 
         const root = container.new(scope => {
-          scope.propagate(a).toSelf();
+          scope.cascade(a);
         });
 
         const l1 = root.checkoutScope(scope => {});
@@ -203,14 +203,16 @@ describe(`SingletonStrategy`, () => {
         expect(req1).toEqual(req2);
       });
 
-      it(`doesn't propagate singletons created using cascade higher than the scope where cascade was used`, async () => {
+      it(`doesn't propagate scoped definitions created using cascade higher than the scope where cascade was used`, async () => {
         // const propagateFn = vi.fn(() => 10);
         const factory = vi.fn(() => 0);
         const a = fn.scoped(factory);
 
         const root = container.new(scope => {});
         const level1 = root.checkoutScope(scope => {
-          scope.bindCascading(a).toSelf();
+          scope.bindCascading(a).toDecorated((use, value) => {
+            return 1;
+          });
         });
 
         const level2 = level1.checkoutScope(scope => {
@@ -229,30 +231,22 @@ describe(`SingletonStrategy`, () => {
         const l1A = level1.use(a);
         const rootA = root.use(a);
 
-        // expect(rootA).toEqual(0);
-        // expect(l1A).toEqual(0);
-        // expect(l2A).toEqual(10);
-        // expect(l3A).toEqual(10);
-        // expect(l4A).toEqual(10);
+        expect(rootA).toEqual(0);
+        expect(l1A).toEqual(1);
+        expect(l2A).toEqual(1);
+        expect(l3A).toEqual(1);
+        expect(l4A).toEqual(1);
 
-        // expect(propagateFn).toHaveBeenCalledTimes(1)
-        // expect(factory).toHaveBeenCalledTimes(2);
+        expect(factory).toHaveBeenCalledTimes(2);
       });
 
-      it(`does not propagate singletons created in descendent scope to ascendant scopes if all ascendant scopes has patched value`, async () => {
+      it(`does not propagate scoped instances created in descendent scope to ascendant scopes`, async () => {
         const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
-
         const a = fn.scoped(randomFactorySpy);
 
         const root = container.new();
-
-        const level1 = root.checkoutScope(scope => {
-          scope.bindCascading(a).toValue(1);
-        });
-
-        const level2 = level1.checkoutScope(scope => {
-          scope.bindCascading(a).toValue(2);
-        });
+        const level1 = root.checkoutScope(scope => scope.bindCascading(a).toValue(1));
+        const level2 = level1.checkoutScope(scope => scope.bindCascading(a).toValue(2));
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.use(a);

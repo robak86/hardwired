@@ -1,9 +1,6 @@
-import { ConfigurationContainer, ScopeConfiguration, ScopeConfigurable } from 'hardwired';
-import { DependencyList, useMemo } from 'react';
+import { ScopeConfigureFn } from 'hardwired';
+import { DependencyList, useCallback } from 'react';
 
-export const useScopeConfig = (
-  configureFn: (scope: ScopeConfigurable, parentContainer: ConfigurationContainer) => void,
-  deps: DependencyList = [],
-): ScopeConfiguration => {
-  return useMemo(() => new ScopeConfiguration(configureFn), deps);
+export const useScopeConfig = (configureFn: ScopeConfigureFn, deps: DependencyList = []): ScopeConfigureFn => {
+  return useCallback(configureFn, deps);
 };
