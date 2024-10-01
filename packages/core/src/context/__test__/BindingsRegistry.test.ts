@@ -24,7 +24,7 @@ describe(`BindingsRegistry`, () => {
       const child = registry.checkoutForScope();
       expect(child.getDefinition(def)).toBe(def);
 
-      registry.addCascadingBinding(defV3);
+      expect(() => registry.addCascadingBinding(defV3)).toThrow(); // Cannot override scope binding with cascading
       expect(registry.getDefinition(def)).toBe(defV2);
     });
   });

@@ -57,13 +57,21 @@ export class BindingsRegistry {
 
   addScopeBinding(definition: AnyDefinition) {
     if (this._scopeBindingsById.has(definition.id)) {
-      throw new Error(`Cannot bind definition for the current scope. Definition is already set.`);
+      throw new Error(
+        `Cannot bind definition for the current scope. The scope has already other binding for the definition.`,
+      );
     }
 
     this._scopeBindingsById.set(definition.id, definition);
   }
 
   addCascadingBinding(definition: AnyDefinition) {
+    if (this._scopeBindingsById.has(definition.id)) {
+      throw new Error(
+        `Cannot bind cascading definition for the current scope. The scope has already other binding for the definition.`,
+      );
+    }
+
     this._cascadingBindingsById.set(definition.id, definition);
   }
 }
