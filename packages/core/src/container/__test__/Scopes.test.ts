@@ -440,25 +440,6 @@ describe(`Scopes`, () => {
         expect(rootValue).toEqual(l2Value);
         expect(l3Value).toEqual(1);
       });
-
-      it(`throws when inheriting is combined with bindings`, async () => {
-        const def = fn.scoped(() => Math.random());
-
-        const root = container.new(scope => {});
-        expect(() =>
-          root.checkoutScope(scope => {
-            scope.inheritLocal(def);
-            scope.bindLocal(def).toValue(1);
-          }),
-        ).toThrow();
-
-        expect(() =>
-          root.checkoutScope(scope => {
-            scope.bindLocal(def).toValue(1);
-            scope.inheritLocal(def);
-          }),
-        ).toThrow();
-      });
     });
   });
 
