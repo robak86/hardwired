@@ -15,8 +15,6 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
     this._onStaticBind(definition);
   }
 
-  // TODO: redesign API. User can call just scope.propagate() thinking that it will be propagated
-
   toValue(value: TInstance) {
     const newDefinition = new Definition(this._definition.id, this._definition.strategy, (use, ...args) => value);
     this._onStaticBind(newDefinition);
