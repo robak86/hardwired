@@ -249,47 +249,47 @@ For the `Counter` unit tests we just want to make sure that correct counter valu
 
 ```typescript jsx
 // CounterActions.test.tsx
-import { render, fireEvent, waitFor, screen } from '@testing-library/react';
+import {render, fireEvent, waitFor, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Container, container } from 'hardwired';
-import { ContainerProvider } from 'hardwired-react';
-import { runInAction } from 'mobx';
+import {Container, container} from 'hardwired';
+import {ContainerProvider} from 'hardwired-react';
+import {runInAction} from 'mobx';
 
 describe('CounterButtons', () => {
-  function setup(startCountValue: number) {
-    const cnt = container.new(c => {
-        c.bind(initialValue).toValue(startCountValue)
-    })
+    function setup(startCountValue: number) {
+        const cnt = container.new(c => {
+            c.bindLocal(initialValue).toValue(startCountValue)
+        })
 
-    const result = render(
-      <ContainerProvider container={cnt}>
-        <Counter />
-      </ContainerProvider>,
-    );
+        const result = render(
+            <ContainerProvider container={cnt}>
+                <Counter/>
+            </ContainerProvider>,
+        );
 
-    return {
-      getRenderedValue: () => {
-        return result.getByTestId('counter-value').text;
-      },
-      setCounterValue: (newValue: number) => {
-        const store = cnt.use(CounterStore.instance);
-        runInAction(() => {
-          store.value = newValue;
-        });
-      },
-    };
-  }
+        return {
+            getRenderedValue: () => {
+                return result.getByTestId('counter-value').text;
+            },
+            setCounterValue: (newValue: number) => {
+                const store = cnt.use(CounterStore.instance);
+                runInAction(() => {
+                    store.value = newValue;
+                });
+            },
+        };
+    }
 
-  it(`renders correct value`, async () => {
-    const { getRenderedValue } = setup(1);
-    expect(getRenderedValue()).toEqual('1');
-  });
+    it(`renders correct value`, async () => {
+        const {getRenderedValue} = setup(1);
+        expect(getRenderedValue()).toEqual('1');
+    });
 
-  it(`re-renders on counter value change`, async () => {
-    const { getRenderedValue, setCounterValue } = setup(1);
-    setCounterValue(200);
-    expect(getRenderedValue()).toEqual('200');
-  });
+    it(`re-renders on counter value change`, async () => {
+        const {getRenderedValue, setCounterValue} = setup(1);
+        setCounterValue(200);
+        expect(getRenderedValue()).toEqual('200');
+    });
 });
 ```
 

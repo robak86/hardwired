@@ -34,7 +34,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable, ScopeOp
     return new Binder(definition, this.cascadingDefinitions, null);
   }
 
-  bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bindLocal<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if (this._scopeDefinitionsById.has(definition.id)) {

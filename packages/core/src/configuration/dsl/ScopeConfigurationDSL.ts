@@ -15,7 +15,11 @@ export class ScopeConfigurationDSL implements ScopeConfigurable, ScopeOptions {
 
   constructor(private _parentContainer: ConfigurationContainer) {}
 
-  propagate<TInstance, TArgs extends any[]>(
+  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+    throw new Error('Method not implemented.');
+  }
+
+  bindCascading<TInstance, TArgs extends any[]>(
     definition: Definition<TInstance, LifeTime.scoped, []>,
   ): Binder<TInstance, LifeTime.scoped, []> {
     if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
@@ -29,7 +33,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable, ScopeOptions {
     this.initializers.push(initializer);
   }
 
-  bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {
