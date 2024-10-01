@@ -3,6 +3,7 @@ import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import {
   AwaitedInstanceArray,
+  ContainerRunFn,
   HasPromise,
   IContainer,
   IContainerScopes,
@@ -17,12 +18,13 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { containerConfiguratorToOptions, InitFn } from '../configuration/abstract/ContainerConfigurable.js';
-import { scopeConfiguratorToOptions } from '../configuration/abstract/ScopeConfigurable.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { ContainerConfiguration, ContainerConfigureCallback } from '../configuration/ContainerConfiguration.js';
+import { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
+import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -48,20 +50,25 @@ export class Container
     );
   }
 
-  new(optionsOrFunction?: ContainerConfigureCallback | ContainerConfiguration): IContainer {
-    const options = containerConfiguratorToOptions(optionsOrFunction);
+  new(configureFn?: ContainerConfigureFn): IContainer {
+    // const options = containerConfiguratorToOptions(configureFn);
 
     const definitionsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
 
     const cnt = new Container(null, definitionsRegistry, instancesStore);
 
-    const cascading = options.cascadingDefinitions.map(def => def.bind(cnt));
-    definitionsRegistry.addCascadingBindings(cascading);
-    definitionsRegistry.addScopeBindings(options.scopeDefinitions);
-    definitionsRegistry.addFrozenBindings(options.frozenDefinitions);
+    if (configureFn) {
+      const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt);
+      configureFn(binder);
+    }
 
-    options.initializers.forEach(init => init(cnt.use));
+    // const cascading = options.cascadingDefinitions.map(def => def.bind(cnt));
+    // definitionsRegistry.addCascadingBindings(cascading);
+    // definitionsRegistry.addScopeBindings(options.scopeDefinitions);
+    // definitionsRegistry.addFrozenBindings(options.frozenDefinitions);
+
+    // options.initializers.forEach(init => init(cnt.use));
     return cnt;
   }
 
@@ -100,42 +107,31 @@ export class Container
     (...args: TArgs) =>
       this.use(factoryDefinition, ...args);
 
-  checkoutScope: IContainerScopes['checkoutScope'] = (optionsOrConfiguration): IContainer => {
-    const options = scopeConfiguratorToOptions(optionsOrConfiguration, this);
-
-    if (options.frozenDefinitions.length > 0) {
-      throw new Error('Cannot freeze definitions in a child scope');
-    }
-
+  checkoutScope: IContainerScopes['checkoutScope'] = (scopeConfigureFn?: ScopeConfigureFn): IContainer => {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
 
     const cnt = new Container(this.id, bindingsRegistry, instancesStore);
 
-    const cascading = options.cascadingDefinitions.map(def => def.bind(cnt));
-    bindingsRegistry.addScopeBindings(options.scopeDefinitions);
-    bindingsRegistry.addCascadingBindings(cascading);
-
-    options.initializers.forEach(init => init(cnt.use));
+    if (scopeConfigureFn) {
+      const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry);
+      scopeConfigureFn(binder, this);
+    }
 
     return cnt;
   };
 
-  withScope: IContainerScopes['withScope'] = (fnOrOptions, fn?: any) => {
-    if (typeof fnOrOptions === 'function') {
-      return fnOrOptions(this.checkoutScope());
+  withScope: IContainerScopes['withScope'] = (
+    configureOrRunFn: ContainerRunFn<any, any> | ScopeConfigureFn,
+    runFn?: ContainerRunFn<any, any>,
+  ) => {
+    if (configureOrRunFn instanceof Function && runFn) {
+      return runFn(this.checkoutScope(configureOrRunFn as ScopeConfigureFn));
     } else {
-      return fn!(this.checkoutScope(fnOrOptions));
+      return (configureOrRunFn as ContainerRunFn<any, any>)(this.checkoutScope());
     }
   };
 }
-
-export type ScopeOptions = {
-  readonly frozenDefinitions: readonly Definition<any, LifeTime, any>[];
-  readonly scopeDefinitions: readonly Definition<any, LifeTime.transient | LifeTime.scoped, any>[];
-  readonly cascadingDefinitions: readonly Definition<any, LifeTime.scoped, []>[];
-  readonly initializers: readonly InitFn[];
-};
 
 export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
   .use;
