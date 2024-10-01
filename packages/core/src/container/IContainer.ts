@@ -6,6 +6,13 @@ import { Definition } from '../definitions/abstract/Definition.js';
 
 import { ScopeConfiguration, ScopeConfigureCallback } from '../configuration/ScopeConfiguration.js';
 
+export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
+  buildWithStrategy<TValue, TArgs extends any[]>(
+    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue;
+}
+
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue, TArgs extends any[]>(
     instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
