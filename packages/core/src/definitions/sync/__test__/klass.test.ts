@@ -37,7 +37,7 @@ describe(`klass`, () => {
           constructor(private value: number) {}
         }
 
-        const implDef = unbound<number>('number');
+        const implDef = unbound<number>();
 
         describe(`singleton`, () => {
           describe(`compile-time`, () => {
