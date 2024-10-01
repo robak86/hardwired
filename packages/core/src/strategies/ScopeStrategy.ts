@@ -3,11 +3,11 @@ import { InstancesStore } from '../context/InstancesStore.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 
-import { Definition } from '../definitions/abstract/Definition.js';
+import { AnyDefinition } from '../definitions/abstract/Definition.js';
 
 export class ScopeStrategy extends BuildStrategy {
   buildFn(
-    definition: Definition<any, any, any>,
+    definition: AnyDefinition,
     instancesStore: InstancesStore,
     bindingsRegistry: BindingsRegistry,
     instancesBuilder: InstancesBuilder,

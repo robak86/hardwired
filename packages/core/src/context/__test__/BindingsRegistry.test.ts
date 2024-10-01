@@ -12,7 +12,7 @@ describe(`BindingsRegistry`, () => {
   }
 
   describe('scope definitions', () => {
-    it(`doesn't propagate scoped definitions`, async () => {
+    it(`scoped takes precedence over cascading`, async () => {
       const { def, defV2, defV3 } = setup();
 
       const registry = BindingsRegistry.create();
@@ -25,37 +25,7 @@ describe(`BindingsRegistry`, () => {
       expect(child.getDefinition(def)).toBe(def);
 
       registry.addCascadingBinding(defV3);
-      expect(registry.getDefinition(def)).toBe(defV3);
+      expect(registry.getDefinition(def)).toBe(defV2);
     });
-  });
-
-  describe(`cascading definitions`, () => {
-    //   it(`propagates cascading definitions`, async () => {
-    //     const { parentContainer, def, defRedefined } = setup();
-    //
-    //     const registry = BindingsRegistry.create();
-    //
-    //     expect(registry.getDefinition(def)).toBe(defRedefined);
-    //
-    //     const childRegistry = registry.checkoutForScope();
-    //
-    //     expect(childRegistry.getDefinition(def)).toBe(defRedefined);
-    //   });
-    //
-    //   it(`propagates cascading definitions 2`, async () => {
-    //     const { parentContainer, def, defRedefined, defRedefinedTwice } = setup();
-    //
-    //     const registry = BindingsRegistry.create({
-    //       scopeDefinitions: [],
-    //       cascadingDefinitions: [defRedefined],
-    //       frozenDefinitions: [],
-    //     });
-    //
-    //     expect(registry.getDefinition(def)).toBe(defRedefined);
-    //
-    //     const childRegistry = registry.checkoutForScope();
-    //
-    //     expect(childRegistry.getDefinition(def)).toBe(defRedefined);
-    //   });
   });
 });

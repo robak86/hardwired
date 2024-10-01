@@ -2,12 +2,11 @@ import { BuildStrategy } from './abstract/BuildStrategy.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
-
-import { Definition } from '../definitions/abstract/Definition.js';
+import { AnyDefinition } from '../definitions/abstract/Definition.js';
 
 export class TransientStrategy extends BuildStrategy {
   buildFn(
-    definition: Definition<any, any, any>,
+    definition: AnyDefinition,
     instancesStore: InstancesStore,
     bindingsRegistry: BindingsRegistry,
     instancesBuilder: InstancesBuilder,

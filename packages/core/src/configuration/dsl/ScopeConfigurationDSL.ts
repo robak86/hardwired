@@ -1,4 +1,4 @@
-import { Definition } from '../../definitions/abstract/Definition.js';
+import { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
 import { InitFn } from '../abstract/ContainerConfigurable.js';
 import { Binder } from '../../definitions/Binder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
@@ -67,22 +67,22 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     return new Binder(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
   }
 
-  private _onCascadingStaticBind = (newDefinition: Definition<any, any, any>) => {
+  private _onCascadingStaticBind = (newDefinition: AnyDefinition) => {
     console.log('_onCascadingStaticBind', this._currentContainer.id);
     this._bindingsRegistry.addCascadingBinding(newDefinition);
   };
 
-  private _onCascadingInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+  private _onCascadingInstantiableBind = (newDefinition: AnyDefinition) => {
     console.log('_onCascadingInstantiableBind', this._currentContainer.id);
     this._bindingsRegistry.addCascadingBinding(newDefinition.bind(this._currentContainer));
   };
 
-  private _onLocalStaticBind = (newDefinition: Definition<any, any, any>) => {
+  private _onLocalStaticBind = (newDefinition: AnyDefinition) => {
     console.log('_onLocalStaticBind', this._currentContainer.id);
     this._bindingsRegistry.addScopeBinding(newDefinition);
   };
 
-  private _onLocalInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+  private _onLocalInstantiableBind = (newDefinition: AnyDefinition) => {
     console.log('_onLocalInstantiableBind', this._currentContainer.id);
     this._bindingsRegistry.addScopeBinding(newDefinition);
   };
