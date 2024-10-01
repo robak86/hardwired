@@ -1,64 +1,61 @@
-import { HierarchicalStore } from './HierarchicalStore.js';
-import { Definition } from '../definitions/abstract/Definition.js';
-import { LifeTime } from '../definitions/abstract/LifeTime.js';
-
 export class InstancesStore {
-  static create(scopeOverrides: readonly Definition<any, LifeTime.singleton, []>[]): InstancesStore {
-    const ownKeys = scopeOverrides.map(def => def.id);
-    return new InstancesStore(new HierarchicalStore(ownKeys), new Map(), new Map());
+  static create(): InstancesStore {
+    return new InstancesStore(new Map(), new Map(), new Map());
   }
 
   /**
-   * @param hierarchicalScope
-   * @param currentScope
-   * @param globalOverridesScope
+   * @param _globalScope
+   * @param _currentScope
+   * @param _globalOverridesScope
    */
   constructor(
-    private hierarchicalScope: HierarchicalStore,
-    private currentScope: Map<symbol, any>,
-    private globalOverridesScope: Map<symbol, any>,
+    private _globalScope: Map<symbol, any>,
+    private _currentScope: Map<symbol, any>,
+    private _globalOverridesScope: Map<symbol, any>,
   ) {}
 
-  childScope(scopeOverrides: readonly Definition<any, LifeTime.singleton, []>[]): InstancesStore {
-    const scopeOverridesDefinitionIds = scopeOverrides.map(def => def.id);
-
-    return new InstancesStore(
-      this.hierarchicalScope.checkoutChild(scopeOverridesDefinitionIds),
-      new Map(),
-      this.globalOverridesScope,
-    );
+  childScope(): InstancesStore {
+    return new InstancesStore(this._globalScope, new Map(), this._globalOverridesScope);
   }
 
   hasInCurrentScope(id: symbol): boolean {
-    return this.currentScope.has(id);
+    return this._currentScope.has(id);
+  }
+
+  hasInGlobalScope(id: symbol): boolean {
+    return this._globalScope.has(id);
+  }
+
+  hasInGlobalOverridesScope(id: symbol): boolean {
+    return this._globalOverridesScope.has(id);
   }
 
   upsertIntoFrozenInstances<T>(uuid: symbol, build: () => T) {
-    if (this.globalOverridesScope.has(uuid)) {
-      return this.globalOverridesScope.get(uuid);
+    if (this._globalOverridesScope.has(uuid)) {
+      return this._globalOverridesScope.get(uuid);
     } else {
       const instance = build();
-      this.globalOverridesScope.set(uuid, instance);
+      this._globalOverridesScope.set(uuid, instance);
       return instance;
     }
   }
 
   upsertIntoScopeInstances<T>(uuid: symbol, build: () => T) {
-    if (this.currentScope.has(uuid)) {
-      return this.currentScope.get(uuid);
+    if (this._currentScope.has(uuid)) {
+      return this._currentScope.get(uuid);
     } else {
       const instance = build();
-      this.currentScope.set(uuid, instance);
+      this._currentScope.set(uuid, instance);
       return instance;
     }
   }
 
-  upsertIntoCascadingInstances<T>(uuid: symbol, build: () => T) {
-    if (this.hierarchicalScope.has(uuid)) {
-      return this.hierarchicalScope.get(uuid);
+  upsertIntoGlobalInstances<T>(uuid: symbol, build: () => T) {
+    if (this._globalScope.has(uuid)) {
+      return this._globalScope.get(uuid);
     } else {
       const instance = build();
-      this.hierarchicalScope.set(uuid, instance);
+      this._globalScope.set(uuid, instance);
       return instance;
     }
   }
