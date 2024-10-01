@@ -1,8 +1,6 @@
 import { container } from '../container/Container.js';
 
 import { fn } from '../definitions/definitions.js';
-
-// import 'source-map-support/register';
 import { Bench } from 'tinybench';
 
 import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
@@ -27,8 +25,9 @@ const scopedD = fn.scoped(use => {
 });
 
 let cnt: IContainer;
+let childScope: IContainer;
 
-const bench = new Bench({
+const instantiationBench = new Bench({
   time: 100,
   setup: () => {
     cnt = container.new();
@@ -38,7 +37,7 @@ const bench = new Bench({
   },
 });
 
-bench
+instantiationBench
   .add('singletonD', () => {
     cnt.use(singletonD);
   })
@@ -49,7 +48,35 @@ bench
     cnt.use(scopedD);
   });
 
-bench
+instantiationBench
   .warmup()
-  .then(_ => bench.run())
-  .then(_ => console.table(bench.table()));
+  .then(_ => instantiationBench.run())
+  .then(_ => console.table(instantiationBench.table()));
+
+const scopesBench = new Bench({
+  time: 100,
+  setup: () => {
+    cnt = container.new();
+    // cnt.use(singletonD);
+    // cnt.use(scopedD);
+    // cnt.use(transientD);
+
+    childScope = cnt.checkoutScope();
+    childScope.use(singletonD);
+    // childScope.use(scopedD);
+    // childScope.use(transientD);
+  },
+  teardown: () => {
+    cnt = container.new();
+    childScope = container.new();
+  },
+});
+
+scopesBench.add('checkoutScope without configuration', () => {
+  cnt.checkoutScope();
+});
+
+scopesBench
+  .warmup()
+  .then(_ => scopesBench.run())
+  .then(_ => console.table(scopesBench.table()));
