@@ -1,20 +1,11 @@
 import { Definition } from '../definitions/abstract/Definition.js';
-import { ScopeOptions } from '../container/Container.js';
 
 /**
  * This class represents a registry for storing definitions overrides for scope.
  */
 export class BindingsRegistry {
-  static create(
-    options?: Pick<ScopeOptions, 'scopeDefinitions' | 'frozenDefinitions' | 'cascadingDefinitions'>,
-  ): BindingsRegistry {
-    const registry = new BindingsRegistry(new Map(), new Map(), new Map());
-
-    registry.addScopeBindings(options?.scopeDefinitions ?? []);
-    registry.addFrozenBindings(options?.frozenDefinitions ?? []);
-    registry.addCascadingBindings(options?.cascadingDefinitions ?? []);
-
-    return registry;
+  static create(): BindingsRegistry {
+    return new BindingsRegistry(new Map(), new Map(), new Map());
   }
 
   constructor(
@@ -23,21 +14,8 @@ export class BindingsRegistry {
     private _cascadingBindingsById: Map<symbol, Definition<any, any, any>>,
   ) {}
 
-  // TODO: convert the arguments into object
-  checkoutForScope(
-    scopeBindings: readonly Definition<any, any, any>[],
-    frozenBindings: readonly Definition<any, any, any>[],
-    cascadingBindings: readonly Definition<any, any, any>[],
-  ): BindingsRegistry {
-    const newRegistry = new BindingsRegistry(
-      new Map(this._scopeBindingsById), // TODO: experiment with proxy object instead of cloning?
-      new Map(this._frozenBindingsById),
-      new Map(this._cascadingBindingsById),
-    );
-    newRegistry.addScopeBindings(scopeBindings);
-    newRegistry.addFrozenBindings(frozenBindings);
-    newRegistry.addCascadingBindings(cascadingBindings);
-    return newRegistry;
+  checkoutForScope(): BindingsRegistry {
+    return new BindingsRegistry(new Map(), new Map(this._frozenBindingsById), new Map(this._cascadingBindingsById));
   }
 
   getDefinition<T extends Definition<any, any, any>>(definition: T): T {
@@ -73,19 +51,19 @@ export class BindingsRegistry {
     this._scopeBindingsById.set(definition.id, definition);
   }
 
-  private addFrozenBindings(patches: readonly Definition<any, any, any>[]) {
+  addFrozenBindings(patches: readonly Definition<any, any, any>[]) {
     patches.forEach(patchedResolver => {
       this.addFinalBinding(patchedResolver);
     });
   }
 
-  private addScopeBindings(patches: readonly Definition<any, any, any>[]) {
+  addScopeBindings(patches: readonly Definition<any, any, any>[]) {
     patches.forEach(patchedResolver => {
       this.updateScopeBinding(patchedResolver);
     });
   }
 
-  private addCascadingBindings(cascadingBindings: readonly Definition<any, any, any>[]) {
+  addCascadingBindings(cascadingBindings: readonly Definition<any, any, any>[]) {
     cascadingBindings.forEach(definition => {
       this._cascadingBindingsById.set(definition.id, definition);
     });
