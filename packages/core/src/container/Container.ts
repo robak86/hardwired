@@ -7,6 +7,7 @@ import {
   IContainer,
   IContainerScopes,
   InstanceCreationAware,
+  IStrategyAware,
   UseFn,
 } from './IContainer.js';
 
@@ -23,16 +24,19 @@ import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { ContainerConfiguration, ContainerConfigureCallback } from '../configuration/ContainerConfiguration.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
-interface Container extends UseFn<LifeTime> {}
+export interface Container extends UseFn<LifeTime> {}
 
-class Container extends ExtensibleFunction implements InstancesBuilder, InstanceCreationAware, IContainerScopes {
+export class Container
+  extends ExtensibleFunction
+  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IStrategyAware
+{
   public readonly id = v4();
 
   constructor(
     public readonly parentId: string | null,
-    private readonly bindingsRegistry: BindingsRegistry,
-    private readonly instancesStore: InstancesStore,
-    private readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
+    protected readonly bindingsRegistry: BindingsRegistry,
+    protected readonly instancesStore: InstancesStore,
+    protected readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -47,17 +51,17 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
   new(optionsOrFunction?: ContainerConfigureCallback | ContainerConfiguration): IContainer {
     const options = containerConfiguratorToOptions(optionsOrFunction);
 
-    const definitionsRegistry = BindingsRegistry.create(options);
+    const definitionsRegistry = BindingsRegistry.create();
+    const instancesStore = InstancesStore.create();
 
-    const cnt = new Container(
-      null,
-      definitionsRegistry,
-      InstancesStore.create(options.cascadingDefinitions),
-      defaultStrategiesRegistry,
-    );
+    const cnt = new Container(null, definitionsRegistry, instancesStore);
+
+    const cascading = options.cascadingDefinitions.map(def => def.bind(cnt));
+    definitionsRegistry.addCascadingBindings(cascading);
+    definitionsRegistry.addScopeBindings(options.scopeDefinitions);
+    definitionsRegistry.addFrozenBindings(options.frozenDefinitions);
 
     options.initializers.forEach(init => init(cnt.use));
-
     return cnt;
   }
 
@@ -67,9 +71,12 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
 
   use: UseFn<LifeTime> = (definition, ...args) => {
     const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
-    const strategy = this.strategiesRegistry.get(definition.strategy);
+    return this.buildWithStrategy(patchedInstanceDef, ...args);
+  };
 
-    return strategy.buildFn(patchedInstanceDef, this.instancesStore, this.bindingsRegistry, this, ...args);
+  buildWithStrategy: UseFn<LifeTime> = (definition, ...args) => {
+    const strategy = this.strategiesRegistry.get(definition.strategy);
+    return strategy.buildFn(definition, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
   all = <TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
@@ -96,16 +103,18 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
   checkoutScope: IContainerScopes['checkoutScope'] = (optionsOrConfiguration): IContainer => {
     const options = scopeConfiguratorToOptions(optionsOrConfiguration, this);
 
-    const cnt = new Container(
-      this.id,
-      this.bindingsRegistry.checkoutForScope(
-        options.scopeDefinitions,
-        options.frozenDefinitions,
-        options.cascadingDefinitions,
-      ),
-      this.instancesStore.childScope(options.cascadingDefinitions),
-      this.strategiesRegistry,
-    );
+    if (options.frozenDefinitions.length > 0) {
+      throw new Error('Cannot freeze definitions in a child scope');
+    }
+
+    const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
+    const instancesStore = this.instancesStore.childScope();
+
+    const cnt = new Container(this.id, bindingsRegistry, instancesStore);
+
+    const cascading = options.cascadingDefinitions.map(def => def.bind(cnt));
+    bindingsRegistry.addScopeBindings(options.scopeDefinitions);
+    bindingsRegistry.addCascadingBindings(cascading);
 
     options.initializers.forEach(init => init(cnt.use));
 
@@ -124,19 +133,19 @@ class Container extends ExtensibleFunction implements InstancesBuilder, Instance
 export type ScopeOptions = {
   readonly frozenDefinitions: readonly Definition<any, LifeTime, any>[];
   readonly scopeDefinitions: readonly Definition<any, LifeTime.transient | LifeTime.scoped, any>[];
-  readonly cascadingDefinitions: readonly Definition<any, LifeTime.singleton, []>[];
+  readonly cascadingDefinitions: readonly Definition<any, LifeTime.scoped, []>[];
   readonly initializers: readonly InitFn[];
 };
 
-export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create([]), defaultStrategiesRegistry)
+export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
   .use;
 
-export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create([]), defaultStrategiesRegistry)
+export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
   .all;
 
 export const container = new Container(
   null,
   BindingsRegistry.create(),
-  InstancesStore.create([]),
+  InstancesStore.create(),
   defaultStrategiesRegistry,
 );

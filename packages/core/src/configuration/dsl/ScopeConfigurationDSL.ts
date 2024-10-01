@@ -9,16 +9,16 @@ import { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/S
 export class ScopeConfigurationDSL implements ScopeConfigurable, ScopeOptions {
   private _scopeDefinitions: Definition<any, any, any>[] = [];
   readonly frozenDefinitions: Definition<any, any, any>[] = [];
-  readonly cascadingDefinitions: Definition<any, LifeTime.singleton, any>[] = [];
+  readonly cascadingDefinitions: Definition<any, LifeTime.scoped, any>[] = [];
 
   readonly initializers: InitFn[] = [];
 
   constructor(private _parentContainer: ConfigurationContainer) {}
 
-  cascade<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, LifeTime.singleton, []>,
-  ): Binder<TInstance, LifeTime.singleton, []> {
-    if ((definition.strategy as LifeTime) !== LifeTime.singleton) {
+  propagate<TInstance, TArgs extends any[]>(
+    definition: Definition<TInstance, LifeTime.scoped, []>,
+  ): Binder<TInstance, LifeTime.scoped, []> {
+    if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
       throw new Error(`Cascading is allowed only for singletons.`); // TODO: maybe I should allow it for scoped as well?
     }
 

@@ -35,7 +35,6 @@ export interface ScopeConfigurable {
 
   onInit(initializer: InitFn): void;
 
-  cascade<TInstance>(
-    definition: Definition<TInstance, LifeTime.singleton, []>,
-  ): Binder<TInstance, LifeTime.singleton, []>;
+  // TODO: add to container configuration
+  propagate<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): Binder<TInstance, LifeTime.scoped, []>;
 }

@@ -21,7 +21,7 @@ export class SingletonStrategy extends BuildStrategy {
       });
     }
 
-    return instancesStore.upsertIntoCascadingInstances(id, () => {
+    return instancesStore.upsertIntoGlobalInstances(id, () => {
       return instancesBuilder.buildExact(definition, ...args);
     });
   }

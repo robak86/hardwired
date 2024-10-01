@@ -33,6 +33,8 @@ export function containerConfiguratorToOptions(optionsOrFunction?: ContainerConf
 }
 
 export interface ContainerConfigurable {
+  propagate<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): Binder<TInstance, LifeTime.scoped, []>;
+
   bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
