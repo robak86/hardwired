@@ -1,4 +1,4 @@
-import { Definition } from '../../definitions/abstract/Definition.js';
+import { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
 import { Binder } from '../../definitions/Binder.js';
 import {
   ContainerConfigurable,
@@ -49,28 +49,28 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     return new Binder(definition, this._onFrozenStaticBind, this._onFrozenInstantiableBind);
   }
 
-  private _onFrozenStaticBind = (newDefinition: Definition<any, any, any>) => {
+  private _onFrozenStaticBind = (newDefinition: AnyDefinition) => {
     this._bindingsRegistry.addFrozenBinding(newDefinition);
   };
-  private _onFrozenInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+  private _onFrozenInstantiableBind = (newDefinition: AnyDefinition) => {
     this._bindingsRegistry.addFrozenBinding(newDefinition);
   };
 
-  private _onCascadingStaticBind = (newDefinition: Definition<any, any, any>) => {
+  private _onCascadingStaticBind = (newDefinition: AnyDefinition) => {
     console.log('_onCascadingStaticBind', this._currentContainer.id);
     this._bindingsRegistry.addCascadingBinding(newDefinition);
   };
 
-  private _onCascadingInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+  private _onCascadingInstantiableBind = (newDefinition: AnyDefinition) => {
     console.log('_onCascadingInstantiableBind', this._currentContainer.id);
     this._bindingsRegistry.addCascadingBinding(newDefinition.bind(this._currentContainer));
   };
 
-  private _onLocalStaticBind = (newDefinition: Definition<any, any, any>) => {
+  private _onLocalStaticBind = (newDefinition: AnyDefinition) => {
     console.log('_onLocalStaticBind', this._currentContainer.id);
     this._bindingsRegistry.addScopeBinding(newDefinition);
   };
-  private _onLocalInstantiableBind = (newDefinition: Definition<any, any, any>) => {
+  private _onLocalInstantiableBind = (newDefinition: AnyDefinition) => {
     console.log('_onLocalInstantiableBind', this._currentContainer.id);
     this._bindingsRegistry.addScopeBinding(newDefinition);
   };

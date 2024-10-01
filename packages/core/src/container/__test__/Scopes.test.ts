@@ -168,6 +168,21 @@ describe(`Scopes`, () => {
 
         describe(`instantiable binding`, () => {
           describe('overriding with other definition', () => {
+            it(`can be overridden in the descendant scope`, async () => {
+              const dep = fn.scoped(() => 'original');
+
+              const root = container.new(scope => {
+                scope.bindCascading(dep).toValue('root');
+              });
+
+              const l1 = root.checkoutScope(scope => {});
+              const l2 = l1.checkoutScope(scope => {
+                scope.bindLocal(dep).toValue('l2');
+              });
+
+              expect(l2.use(dep)).toEqual('l2');
+            });
+
             it(`uses dependencies from the same scope`, async () => {
               const dep = fn.scoped(() => 'original');
               const consumer = fn.scoped(use => use(dep));
@@ -365,8 +380,8 @@ describe(`Scopes`, () => {
       });
     });
 
-    describe('setting inherited bindings', () => {
-      it(`propagates the instance to descendant scopes`, async () => {
+    describe('inheritLocal', () => {
+      it(`inherits the instance in the current scope`, async () => {
         const def = fn.scoped(() => Math.random());
 
         const root = container.new(scope => {});
@@ -387,10 +402,62 @@ describe(`Scopes`, () => {
         const def = fn.scoped(() => Math.random());
 
         const root = container.new(scope => {});
+        expect(() =>
+          root.checkoutScope(scope => {
+            scope.inheritLocal(def);
+            scope.bindLocal(def).toValue(1);
+          }),
+        ).toThrow();
+
+        expect(() =>
+          root.checkoutScope(scope => {
+            scope.bindLocal(def).toValue(1);
+            scope.inheritLocal(def);
+          }),
+        ).toThrow();
+      });
+    });
+
+    describe(`inheritCascading`, () => {
+      it(`inherits the instance in the current scope and cascades it to the descendent scopes`, async () => {
+        const def = fn.scoped(() => Math.random());
+
+        const root = container.new(scope => {});
         const l1 = root.checkoutScope(scope => {
-          scope.inheritLocal(def);
+          scope.inheritCascading(def);
+        });
+        const l2 = l1.checkoutScope(scope => {});
+        const l3 = l2.checkoutScope(scope => {
           scope.bindLocal(def).toValue(1);
         });
+
+        const rootValue = root.use(def);
+        const l1Value = l1.use(def);
+        const l2Value = l2.use(def);
+        const l3Value = l3.use(def);
+
+        expect(rootValue).toEqual(l1Value);
+        expect(rootValue).toEqual(l2Value);
+        expect(l3Value).toEqual(1);
+      });
+
+      it(`throws when inheriting is combined with bindings`, async () => {
+        const def = fn.scoped(() => Math.random());
+
+        const root = container.new(scope => {});
+        expect(() =>
+          root.checkoutScope(scope => {
+            scope.inheritLocal(def);
+            scope.bindLocal(def).toValue(1);
+          }),
+        ).toThrow();
+
+        expect(() =>
+          root.checkoutScope(scope => {
+            scope.bindLocal(def).toValue(1);
+            scope.inheritLocal(def);
+          }),
+        ).toThrow();
       });
     });
   });

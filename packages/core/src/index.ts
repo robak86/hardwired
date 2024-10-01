@@ -28,7 +28,7 @@ export * from './container/IContainer.js';
 
 export { Middleware, withMiddleware, MiddlewareNextFn, createMiddleware } from './definitions/withMiddleware.js';
 export { cls, ClassType } from './definitions/cls.js';
-export { Definition } from './definitions/abstract/Definition.js';
+export { Definition, AnyDefinition } from './definitions/abstract/Definition.js';
 
 export * from './configuration/ContainerConfiguration.js';
 export { configureScope } from './configuration/ScopeConfiguration.js';
