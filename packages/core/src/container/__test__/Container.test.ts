@@ -138,7 +138,7 @@ describe(`Container`, () => {
   describe(`.replace`, () => {
     describe(`using module.replace`, () => {
       it(`returns replaced value`, async () => {
-        const a = fn.singleton(() => 1);
+        const a = fn.scoped(() => 1);
 
         const cnt = container.new(c => {
           c.bindLocal(a).toValue(2);
@@ -148,11 +148,11 @@ describe(`Container`, () => {
       });
 
       it(`does not affect other definitions`, async () => {
-        const a = fn.singleton(() => 1);
-        const b = fn.singleton(() => 'b');
+        const a = fn.scoped(() => 1);
+        const b = fn.scoped(() => 'b');
 
         const cnt = container.new(c => {
-          c.bindLocal(a).to(fn.singleton(() => 2));
+          c.bindLocal(a).to(fn.scoped(() => 2));
         });
 
         expect(cnt.use(b)).toEqual('b');

@@ -50,7 +50,7 @@ describe(`decorate`, () => {
     const a = value(1);
     const b = value(2);
 
-    const someValue = fn.singleton(use => {
+    const someValue = fn.scoped(use => {
       return use(a) + use(b);
     });
 
@@ -65,7 +65,7 @@ describe(`decorate`, () => {
 
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
-      const a = fn.singleton(() => Math.random());
+      const a = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
         c.bindLocal(a).toDecorated((use, a) => a);

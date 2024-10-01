@@ -11,8 +11,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
 
   to(newDefinition: Definition<TInstance, TLifeTime, TArgs>) {
     const definition = new Definition(this._definition.id, newDefinition.strategy, newDefinition.create);
-
-    this._onStaticBind(definition);
+    this._onInstantiableBind(definition);
   }
 
   toValue(value: TInstance) {

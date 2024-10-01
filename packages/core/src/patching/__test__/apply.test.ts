@@ -11,7 +11,7 @@ import { configureContainer } from '../../configuration/ContainerConfiguration.j
 
 describe(`apply`, () => {
   it(`applies function to original value`, async () => {
-    const someValue = fn.singleton(() => new BoxedValue(1));
+    const someValue = fn.scoped(() => new BoxedValue(1));
 
     const config = configureContainer(c => {
       c.bindLocal(someValue).toConfigured((_, val) => (val.value += 1));
@@ -23,7 +23,7 @@ describe(`apply`, () => {
   });
 
   it(`does not affect original module`, async () => {
-    const someValue = fn.singleton(() => new BoxedValue(1));
+    const someValue = fn.scoped(() => new BoxedValue(1));
 
     expect(container.new().use(someValue).value).toEqual(1);
 
@@ -34,7 +34,7 @@ describe(`apply`, () => {
   });
 
   it(`throws for multiple bind for the same definition`, async () => {
-    const someValue = fn.singleton(() => new BoxedValue(1));
+    const someValue = fn.scoped(() => new BoxedValue(1));
 
     expect(() => {
       container.new(c => {
@@ -64,7 +64,7 @@ describe(`apply`, () => {
     const a = value(new BoxedValue(1));
     const b = value(new BoxedValue(2));
 
-    const someValue = fn.singleton(use => {
+    const someValue = fn.scoped(use => {
       return new BoxedValue(use(a).value + use(b).value);
     });
 
@@ -79,7 +79,7 @@ describe(`apply`, () => {
 
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
-      const someValue = fn.singleton(() => Math.random());
+      const someValue = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
         c.bindLocal(someValue).toConfigured((use, a) => a);
