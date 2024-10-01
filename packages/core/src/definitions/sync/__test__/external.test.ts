@@ -24,8 +24,8 @@ describe(`unbound`, () => {
   }
 
   const numD = value('otherDependency');
-  const externalParams1D = unbound<Externals>('params1');
-  const externalParams2D = unbound<OtherExternals>('params2');
+  const externalParams1D = unbound<Externals>();
+  const externalParams2D = unbound<OtherExternals>();
 
   const defUsingExternals1 = fn(use => {
     const externals = use(externalParams1D);

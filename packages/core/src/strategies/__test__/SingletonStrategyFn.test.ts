@@ -273,8 +273,6 @@ describe(`SingletonStrategy`, () => {
           scope.bindLocal(a).toValue(0);
         });
 
-        console.log('root', root.id);
-
         const level1 = root.checkoutScope(scope => {
           // scope.propagate(b).toSelf();
         });
@@ -292,12 +290,6 @@ describe(`SingletonStrategy`, () => {
 
         // expect(l1B[0]).toEqual(1);
         // expect(rootB[0]).toEqual(0);
-
-        console.log({
-          l1B,
-          rootB,
-          l2B,
-        });
       });
 
       it(`it's not allowed to bind singleton definitions for child scopes`, async () => {

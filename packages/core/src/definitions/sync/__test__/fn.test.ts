@@ -5,7 +5,7 @@ import { unbound } from '../unbound.js';
 
 describe(`fn`, () => {
   describe(`allowed dependencies life times`, () => {
-    const implDef = unbound<number>('number');
+    const implDef = unbound<number>();
 
     describe(`singleton`, () => {
       describe(`compile-time`, () => {

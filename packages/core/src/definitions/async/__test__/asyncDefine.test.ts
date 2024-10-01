@@ -9,8 +9,8 @@ import { unbound } from '../../sync/unbound.js';
 import { Definition } from '../../abstract/Definition.js';
 
 describe(`asyncDefine`, () => {
-  const ext1 = unbound<number>('ext1');
-  const ext2 = unbound<string>('ext2');
+  const ext1 = unbound<number>();
+  const ext2 = unbound<string>();
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
@@ -24,7 +24,7 @@ describe(`asyncDefine`, () => {
     });
 
     it(`.get is typesafe`, async () => {
-      const ext3 = unbound<string>('ext3');
+      const ext3 = unbound<string>();
 
       const usingBothExternals = fn.scoped(use => {
         return [use(ext1), use(ext2)];
