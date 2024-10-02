@@ -28,14 +28,14 @@ describe(`Logger`, () => {
 
       const root = container.new(scope => {
         scope.bindCascading(requestId).toValue('app');
-        scope.bindCascading(Logger.instance).toDecorated((use, val) => {
+        scope.bindCascading(Logger.instance).decorate((use, val) => {
           return val.withLabel(use(requestId));
         });
       });
 
       const requestScopeConfig = configureScope(scope => {
-        scope.bindCascading(requestId).toRedefined(() => nextId().toString());
-        scope.bindCascading(Logger.instance).toDecorated((use, val) => {
+        scope.bindCascading(requestId).define(() => nextId().toString());
+        scope.bindCascading(Logger.instance).decorate((use, val) => {
           return val.withLabel(use(requestId));
         });
       });
