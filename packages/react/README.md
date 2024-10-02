@@ -258,7 +258,7 @@ import {runInAction} from 'mobx';
 describe('CounterButtons', () => {
     function setup(startCountValue: number) {
         const cnt = container.new(c => {
-            c.bindLocal(initialValue).toValue(startCountValue)
+            c.local(initialValue).toValue(startCountValue)
         })
 
         const result = render(

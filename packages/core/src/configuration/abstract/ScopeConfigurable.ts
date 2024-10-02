@@ -10,16 +10,14 @@ export interface ScopeConfigurable {
   inheritLocal<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
   inheritCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
 
-  bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  local<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 
   onInit(initializer: InitFn): void;
 
   // TODO: add to container configuration
-  bindCascading<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped, []>,
-  ): Binder<TInstance, LifeTime.scoped, []>;
+  cascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): Binder<TInstance, LifeTime.scoped, []>;
 
   cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
 }

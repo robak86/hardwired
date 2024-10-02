@@ -16,7 +16,7 @@ describe('ScopeConfiguration', () => {
       const root = container.new();
 
       const childContainer = root.checkoutScope((scope, use) => {
-        scope.bindLocal(compositionRoot).define(_ => use(compositionRoot));
+        scope.local(compositionRoot).define(_ => use(compositionRoot));
       });
 
       // First, get the value from the child container, to check if the value will "propagate" to parent
@@ -46,7 +46,7 @@ describe('ScopeConfiguration', () => {
         container.new(c => {
           try {
             // @ts-expect-error - inheritFrom is not available for the container configuration
-            c.bindLocal(fn.scoped(() => 1)).toInheritedFrom(null);
+            c.local(fn.scoped(() => 1)).toInheritedFrom(null);
           } catch (e) {
             // noop
           }
