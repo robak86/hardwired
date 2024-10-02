@@ -6,16 +6,6 @@ import { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/S
 import { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { BindingsRegistry } from '../../context/BindingsRegistry.js';
 
-/*
-
-const cascading = options.cascadingDefinitions.map(def => def.bind(cnt));
-bindingsRegistry.addCascadingBindings(cascading);
-    bindingsRegistry.addScopeBindings(options.scopeDefinitions);
-    bindingsRegistry.addCascadingBindings(cascading);
-
-    options.initializers.forEach(init => init(cnt.use));
- */
-
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(
     private _parentContainer: IContainer & IStrategyAware,

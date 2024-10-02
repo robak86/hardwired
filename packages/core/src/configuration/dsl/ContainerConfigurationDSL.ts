@@ -18,8 +18,6 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   ) {}
 
   cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
-    // TODO: check if has local definition. If, so then use it.
-
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
   }
 
