@@ -2,6 +2,7 @@ import { describe } from 'vitest';
 import { fn } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
+import { configureScope } from '../../configuration/ScopeConfiguration.js';
 
 describe(`Scopes`, () => {
   describe(`root scope`, () => {
@@ -505,5 +506,46 @@ describe(`Scopes`, () => {
     describe(`freezing definitions set on root`, () => {});
 
     describe(`freezing definitions not set in root`, () => {});
+  });
+
+  describe(`child scopes created by definition`, () => {
+    describe('setting local bindings', () => {
+      it(`doesn't propagate the instance to  descendent scopes`, async () => {
+        const def = fn.scoped(() => 'original');
+        const l1Creator = fn.scoped(use => {
+          const configure = configureScope(scope => {
+            scope.bindLocal(def).toValue('l1');
+          });
+
+          return use.withScope(configure, use => {
+            return use(def);
+          });
+        });
+
+        const root = container.new();
+        expect(root.use(l1Creator)).toEqual('l1');
+        expect(root.use(def)).toEqual('original');
+      });
+    });
+
+    describe('setting cascading bindings', () => {
+      it(`doesn't propagate the instance to  descendent scopes`, async () => {
+        const def = fn.scoped(() => 'original');
+        const l1Creator = fn.scoped(use => {
+          const configure = configureScope(scope => {});
+
+          return use.withScope(configure, use => {
+            return use(def);
+          });
+        });
+
+        const root = container.new(scope => {
+          scope.bindCascading(def).toValue('l1');
+        });
+
+        expect(root.use(l1Creator)).toEqual('l1');
+        expect(root.use(def)).toEqual('l1');
+      });
+    });
   });
 });

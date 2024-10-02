@@ -33,3 +33,4 @@ export { Definition, AnyDefinition } from './definitions/abstract/Definition.js'
 export * from './configuration/ContainerConfiguration.js';
 export { configureScope } from './configuration/ScopeConfiguration.js';
 export { ScopeConfigureFn } from './configuration/ScopeConfiguration.js';
+export * from './configuration/helper/compose.js';
