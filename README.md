@@ -564,17 +564,18 @@ const config = configureScope((scope, use) => {
 
 The assigned value is available only in the current scope.
 
-- `scope.local(definition).toValue(value)`: Replaces a definition with a static value.
-- `scope.local(definition).to(otherDefinition)`: Redirects a definition to another one.
-- `scope.local(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
-- `scope.local(definition).configure(configureFn)`: Modifies the instance after it's created.
-- `scope.local(definition).define(factoryFn)`: Completely redefines how the instance is created.
+- `scope.bindLocal(definition).toValue(value)`: Replaces a definition with a static value.
+- `scope.bindLocal(definition).to(otherDefinition)`: Redirects a definition to another one.
+- `scope.bindLocal(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
+- `scope.bindLocal(definition).configure(configureFn)`: Modifies the instance after it's created.
+- `scope.bindLocal(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
 ```typescript
-import { container, configureScope, fn } from 'hardwired';
+import {container, configureScope, fn} from 'hardwired';
 
 class Boxed<T> {
-  constructor(public value: T) {}
+  constructor(public value: T) {
+  }
 }
 
 const definition = fn.scoped(() => new Boxed(Math.random()));
@@ -582,13 +583,13 @@ const otherDefinition = fn.scoped(() => new Boxed(1));
 
 const scopeConfig = configureScope(scope => {
   // all the following bindings make the "definition" return the Boxed object with value 1;
-  scope.local(definition).to(otherDefinition);
-  scope.local(definition).toValue(new Boxed(1));
-  scope.local(definition).decorate((use, originalValue) => new Boxed(1));
-  scope.local(definition).configure((use, originalValue) => {
+  scope.bindLocal(definition).to(otherDefinition);
+  scope.bindLocal(definition).toValue(new Boxed(1));
+  scope.bindLocal(definition).decorate((use, originalValue) => new Boxed(1));
+  scope.bindLocal(definition).configure((use, originalValue) => {
     originalValue.value = 1;
   });
-  scope.local(definition).define(use => {
+  scope.bindLocal(definition).define(use => {
     const otherInstance = use(otherDefinition);
     return new Boxed(otherInstance.value);
   });
@@ -605,13 +606,13 @@ configuredScope.use(definition); // returns the Boxed object with value 1
 
 The assigned value is available for the current scope and propagated to all newly created descendant scopes
 
-- `scope.cascading(definition).toValue(value)`: Replaces a definition with a static value.
-- `scope.cascading(definition).to(otherDefinition)`: Redirects a definition to another one.
-- `scope.cascading(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
-- `scope.cascading(definition).configure(configureFn)`: Modifies the instance after it's created.
-- `scope.cascading(definition).define(factoryFn)`: Completely redefines how the instance is created.
+- `scope.bindCascading(definition).toValue(value)`: Replaces a definition with a static value.
+- `scope.bindCascading(definition).to(otherDefinition)`: Redirects a definition to another one.
+- `scope.bindCascading(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
+- `scope.bindCascading(definition).configure(configureFn)`: Modifies the instance after it's created.
+- `scope.bindCascading(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
-Additionally, you can make the definition cascading using `scope.markCascading(definition)`.  
+Additionally, you can make the definition cascading using `scope.cascade(definition)`.  
 
 ##### Inheriting instances from the parent scope
 
@@ -736,10 +737,10 @@ const configValue = myContainer.use(config); // { apiUrl: 'https://api.example.c
 ### Using with Scopes
 
 ```typescript
-import { container, configureScope } from 'hardwired';
+import {container, configureScope} from 'hardwired';
 
 const scopeConfig = configureScope(scope => {
-  scope.local(config).toValue({ apiUrl: 'https://api.example.com' });
+  scope.bindLocal(config).toValue({apiUrl: 'https://api.example.com'});
 });
 
 container.withScope(scopeConfig, use => {

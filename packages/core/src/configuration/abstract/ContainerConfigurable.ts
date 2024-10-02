@@ -10,13 +10,13 @@ export type ContainerConfigureCascadingLifeTimes = LifeTime.transient | LifeTime
 export type InitFn = (container: UseFn<any>) => void;
 
 export interface ContainerConfigurable {
-  cascading<TInstance>(
+  bindCascading<TInstance>(
     definition: Definition<TInstance, ContainerConfigureCascadingLifeTimes, []>,
   ): Binder<TInstance, ContainerConfigureCascadingLifeTimes, []>;
 
-  markCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
+  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
 
-  local<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
+  bindLocal<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 

@@ -88,7 +88,7 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(() => 0);
 
         const root = container.new(scope => {
-          scope.local(a).toValue(1);
+          scope.bindLocal(a).toValue(1);
         });
 
         const child = root.checkoutScope(scope => {});
@@ -102,7 +102,7 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(factory);
 
         const root = container.new(scope => {
-          scope.markCascading(a);
+          scope.cascade(a);
         });
 
         const child = root.checkoutScope(scope => {});
@@ -125,11 +125,11 @@ describe(`SingletonStrategy`, () => {
         });
 
         const root = container.new(scope => {
-          scope.markCascading(consumer);
+          scope.cascade(consumer);
         });
 
         const child = root.checkoutScope(scope => {
-          scope.local(a).toValue(1);
+          scope.bindLocal(a).toValue(1);
         });
 
         const childA = child.use(a);
@@ -143,12 +143,12 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(() => 0);
 
         const root = container.new(scope => {
-          scope.markCascading(a);
+          scope.cascade(a);
         });
 
         const l1 = root.checkoutScope(scope => {});
         const l2 = l1.checkoutScope(scope => {
-          scope.cascading(a).toValue(1);
+          scope.bindCascading(a).toValue(1);
         });
         const l3 = l2.checkoutScope(scope => {});
 
@@ -169,7 +169,7 @@ describe(`SingletonStrategy`, () => {
         const c = container.new();
 
         const childC = c.checkoutScope(scope => {
-          scope.cascading(a).toValue(2);
+          scope.bindCascading(a).toValue(2);
         });
 
         expect(childC.use(a)).toEqual(2);
@@ -182,7 +182,7 @@ describe(`SingletonStrategy`, () => {
         const root = container.new();
 
         const level1 = root.checkoutScope(scope => {
-          scope.cascading(a).toValue(2);
+          scope.bindCascading(a).toValue(2);
         });
 
         const level2 = level1.checkoutScope();
@@ -210,7 +210,7 @@ describe(`SingletonStrategy`, () => {
 
         const root = container.new(scope => {});
         const level1 = root.checkoutScope(scope => {
-          scope.cascading(a).decorate((use, value) => {
+          scope.bindCascading(a).decorate((use, value) => {
             return 1;
           });
         });
@@ -245,8 +245,8 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(randomFactorySpy);
 
         const root = container.new();
-        const level1 = root.checkoutScope(scope => scope.cascading(a).toValue(1));
-        const level2 = level1.checkoutScope(scope => scope.cascading(a).toValue(2));
+        const level1 = root.checkoutScope(scope => scope.bindCascading(a).toValue(1));
+        const level2 = level1.checkoutScope(scope => scope.bindCascading(a).toValue(2));
         const level3 = level2.checkoutScope();
 
         const level3Call = level3.use(a);
@@ -269,7 +269,7 @@ describe(`SingletonStrategy`, () => {
         expect(() =>
           root.checkoutScope(c => {
             // @ts-expect-error - should not be possible to override singleton
-            c.local(a).toValue(2);
+            c.bindLocal(a).toValue(2);
           }),
         ).toThrowError();
       });
@@ -330,7 +330,7 @@ describe(`SingletonStrategy`, () => {
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope(scope => {
-          scope.cascading(k1).toValue(2);
+          scope.bindCascading(k1).toValue(2);
         });
 
         expect(childScope.use(k1)).toEqual(1);
@@ -347,7 +347,7 @@ describe(`SingletonStrategy`, () => {
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.checkoutScope(scope => {
-          scope.cascading(k2).toValue(2);
+          scope.bindCascading(k2).toValue(2);
         });
         expect(childScope.use(k1)).toEqual(1);
         expect(childScope.use(k2)).toEqual(2);

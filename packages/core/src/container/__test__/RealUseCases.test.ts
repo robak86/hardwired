@@ -27,15 +27,15 @@ describe(`Logger`, () => {
       }
 
       const root = container.new(scope => {
-        scope.cascading(requestId).toValue('app');
-        scope.cascading(Logger.class).decorate((use, val) => {
+        scope.bindCascading(requestId).toValue('app');
+        scope.bindCascading(Logger.class).decorate((use, val) => {
           return val.withLabel(use(requestId));
         });
       });
 
       const requestScopeConfig = configureScope(scope => {
-        scope.cascading(requestId).define(() => nextId().toString());
-        scope.cascading(Logger.class).decorate((use, val) => {
+        scope.bindCascading(requestId).define(() => nextId().toString());
+        scope.bindCascading(Logger.class).decorate((use, val) => {
           return val.withLabel(use(requestId));
         });
       });

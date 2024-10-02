@@ -45,7 +45,7 @@ describe(`unbound`, () => {
       const cnt = container.new();
       const result = cnt
         .checkoutScope(c => {
-          c.local(externalParams1D).toValue({ someExternalParam: 111 });
+          c.bindLocal(externalParams1D).toValue({ someExternalParam: 111 });
         })
         .use(defUsingExternals1);
 
@@ -57,8 +57,8 @@ describe(`unbound`, () => {
       const cnt = container.new();
       const result = cnt
         .checkoutScope(c => {
-          c.local(externalParams1D).toValue({ someExternalParam: 111 });
-          c.local(externalParams2D).toValue({ otherExternalParam: 456 });
+          c.bindLocal(externalParams1D).toValue({ someExternalParam: 111 });
+          c.bindLocal(externalParams2D).toValue({ otherExternalParam: 456 });
         })
         .use(defUsingBothExternals);
 

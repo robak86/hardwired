@@ -117,7 +117,7 @@ describe(`use`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         const config = useScopeConfig(
           scope => {
-            scope.cascading(someExternalParam).toValue(externalValue);
+            scope.bindCascading(someExternalParam).toValue(externalValue);
           },
           [externalValue],
         );

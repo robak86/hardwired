@@ -122,11 +122,11 @@ describe(`ContainerScope`, () => {
       };
 
       const scope1Config = useScopeConfig(scope => {
-        scope.local(baseD).toValue(10);
+        scope.bindLocal(baseD).toValue(10);
       });
 
       const scope2Config = useScopeConfig(scope => {
-        scope.local(baseD).toValue(100);
+        scope.bindLocal(baseD).toValue(100);
       });
 
       const TestSubject = () => (

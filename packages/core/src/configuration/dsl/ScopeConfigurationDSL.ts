@@ -13,7 +13,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     private _bindingsRegistry: BindingsRegistry,
   ) {}
 
-  markCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
   }
 
@@ -29,7 +29,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     this._bindingsRegistry.addCascadingBinding(newDefinition);
   }
 
-  cascading<TInstance, TArgs extends any[]>(
+  bindCascading<TInstance, TArgs extends any[]>(
     definition: Definition<TInstance, LifeTime.scoped, []>,
   ): Binder<TInstance, LifeTime.scoped, []> {
     if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
@@ -43,7 +43,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     initializer(this._currentContainer);
   }
 
-  local<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {

@@ -141,7 +141,7 @@ describe(`Container`, () => {
         const a = fn.scoped(() => 1);
 
         const cnt = container.new(c => {
-          c.local(a).toValue(2);
+          c.bindLocal(a).toValue(2);
         });
 
         expect(cnt.use(a)).toEqual(2);
@@ -152,7 +152,7 @@ describe(`Container`, () => {
         const b = fn.scoped(() => 'b');
 
         const cnt = container.new(c => {
-          c.local(a).to(fn.scoped(() => 2));
+          c.bindLocal(a).to(fn.scoped(() => 2));
         });
 
         expect(cnt.use(b)).toEqual('b');
@@ -204,7 +204,7 @@ describe(`Container`, () => {
       const [val1, val2] = container
         .new()
         .checkoutScope(c => {
-          c.local(extD).toValue(new BoxedValue(10));
+          c.bindLocal(extD).toValue(new BoxedValue(10));
         })
         .all(multiplyBy2D, divideBy2D);
 
@@ -233,7 +233,7 @@ describe(`Container`, () => {
       const [req1, req2] = container
         .new()
         .checkoutScope(c => {
-          c.local(extD).toValue(new BoxedValue(10));
+          c.bindLocal(extD).toValue(new BoxedValue(10));
         })
         .all(multiplyBy2D, divideBy2D);
       expect(req1.result).toEqual(20);

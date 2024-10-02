@@ -256,40 +256,40 @@ import {ContainerProvider} from 'hardwired-react';
 import {runInAction} from 'mobx';
 
 describe('CounterButtons', () => {
-    function setup(startCountValue: number) {
-        const cnt = container.new(c => {
-            c.local(initialValue).toValue(startCountValue)
-        })
+  function setup(startCountValue: number) {
+    const cnt = container.new(c => {
+      c.bindLocal(initialValue).toValue(startCountValue)
+    })
 
-        const result = render(
-            <ContainerProvider container={cnt}>
-                <Counter/>
-            </ContainerProvider>,
-        );
+    const result = render(
+      <ContainerProvider container={cnt}>
+        <Counter/>
+      </ContainerProvider>,
+    );
 
-        return {
-            getRenderedValue: () => {
-                return result.getByTestId('counter-value').text;
-            },
-            setCounterValue: (newValue: number) => {
-                const store = cnt.use(CounterStore.class);
-                runInAction(() => {
-                    store.value = newValue;
-                });
-            },
-        };
-    }
+    return {
+      getRenderedValue: () => {
+        return result.getByTestId('counter-value').text;
+      },
+      setCounterValue: (newValue: number) => {
+        const store = cnt.use(CounterStore.class);
+        runInAction(() => {
+          store.value = newValue;
+        });
+      },
+    };
+  }
 
-    it(`renders correct value`, async () => {
-        const {getRenderedValue} = setup(1);
-        expect(getRenderedValue()).toEqual('1');
-    });
+  it(`renders correct value`, async () => {
+    const {getRenderedValue} = setup(1);
+    expect(getRenderedValue()).toEqual('1');
+  });
 
-    it(`re-renders on counter value change`, async () => {
-        const {getRenderedValue, setCounterValue} = setup(1);
-        setCounterValue(200);
-        expect(getRenderedValue()).toEqual('200');
-    });
+  it(`re-renders on counter value change`, async () => {
+    const {getRenderedValue, setCounterValue} = setup(1);
+    setCounterValue(200);
+    expect(getRenderedValue()).toEqual('200');
+  });
 });
 ```
 

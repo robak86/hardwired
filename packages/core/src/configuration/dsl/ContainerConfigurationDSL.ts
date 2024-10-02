@@ -17,7 +17,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     private _currentContainer: IContainer & IStrategyAware,
   ) {}
 
-  markCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
   }
 
@@ -25,13 +25,13 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     initializer(this._currentContainer);
   }
 
-  cascading<TInstance>(
+  bindCascading<TInstance>(
     definition: Definition<TInstance, ContainerConfigureCascadingLifeTimes, []>,
   ): Binder<TInstance, ContainerConfigureCascadingLifeTimes, []> {
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
   }
 
-  local<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
+  bindLocal<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {
