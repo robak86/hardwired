@@ -12,11 +12,11 @@ describe('compose', async () => {
       const b = fn.scoped(() => 0);
 
       const config1 = configureScope(scope => {
-        scope.bindLocal(a).toValue(1);
+        scope.local(a).toValue(1);
       });
 
       const config2 = configureScope(scope => {
-        scope.bindLocal(b).toValue(1);
+        scope.local(b).toValue(1);
       });
 
       const composed = compose(config1, config2);
@@ -35,11 +35,11 @@ describe('compose', async () => {
       const b = fn.scoped(() => 0);
 
       const config1 = configureContainer(scope => {
-        scope.bindLocal(a).toValue(1);
+        scope.local(a).toValue(1);
       });
 
       const config2 = configureContainer(scope => {
-        scope.bindLocal(b).toValue(1);
+        scope.local(b).toValue(1);
       });
 
       const composed = compose(config1, config2);

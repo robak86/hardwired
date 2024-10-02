@@ -494,8 +494,8 @@ const handler2 = fn.transient(async (use, req: Request) => {
 // for each scope bind an unique id and brand the logger with it,
 // so the printed string will contain the request id
 const requestScopeConfig = configureScope(scope => {
-  scope.bindCascading(requestId).toValue(uuid());
-  scope.bindCascading(logger).decorate((use, originalLogger) => {
+  scope.cascading(requestId).toValue(uuid());
+  scope.cascading(logger).decorate((use, originalLogger) => {
     const label = use(requestId);
 
     return {
@@ -564,11 +564,11 @@ const config = configureScope((scope, use) => {
 
 The assigned value is available only in the current scope.
 
-- `scope.bindLocal(definition).toValue(value)`: Replaces a definition with a static value.
-- `scope.bindLocal(definition).to(otherDefinition)`: Redirects a definition to another one.
-- `scope.bindLocal(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
-- `scope.bindLocal(definition).configure(configureFn)`: Modifies the instance after it's created.
-- `scope.bindLocal(definition).define(factoryFn)`: Completely redefines how the instance is created.
+- `scope.local(definition).toValue(value)`: Replaces a definition with a static value.
+- `scope.local(definition).to(otherDefinition)`: Redirects a definition to another one.
+- `scope.local(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
+- `scope.local(definition).configure(configureFn)`: Modifies the instance after it's created.
+- `scope.local(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
 ```typescript
 import { container, configureScope, fn } from 'hardwired';
@@ -582,13 +582,13 @@ const otherDefinition = fn.scoped(() => new Boxed(1));
 
 const scopeConfig = configureScope(scope => {
   // all the following bindings make the "definition" return the Boxed object with value 1;
-  scope.bindLocal(definition).to(otherDefinition);
-  scope.bindLocal(definition).toValue(new Boxed(1));
-  scope.bindLocal(definition).decorate((use, originalValue) => new Boxed(1));
-  scope.bindLocal(definition).configure((use, originalValue) => {
+  scope.local(definition).to(otherDefinition);
+  scope.local(definition).toValue(new Boxed(1));
+  scope.local(definition).decorate((use, originalValue) => new Boxed(1));
+  scope.local(definition).configure((use, originalValue) => {
     originalValue.value = 1;
   });
-  scope.bindLocal(definition).define(use => {
+  scope.local(definition).define(use => {
     const otherInstance = use(otherDefinition);
     return new Boxed(otherInstance.value);
   });
@@ -605,11 +605,11 @@ configuredScope.use(definition); // returns the Boxed object with value 1
 
 The assigned value is available for the current scope and propagated to all newly created descendant scopes
 
-- `scope.bindCascading(definition).toValue(value)`: Replaces a definition with a static value.
-- `scope.bindCascading(definition).to(otherDefinition)`: Redirects a definition to another one.
-- `scope.bindCascading(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
-- `scope.bindCascading(definition).configure(configureFn)`: Modifies the instance after it's created.
-- `scope.bindCascading(definition).define(factoryFn)`: Completely redefines how the instance is created.
+- `scope.cascading(definition).toValue(value)`: Replaces a definition with a static value.
+- `scope.cascading(definition).to(otherDefinition)`: Redirects a definition to another one.
+- `scope.cascading(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
+- `scope.cascading(definition).configure(configureFn)`: Modifies the instance after it's created.
+- `scope.cascading(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
 ##### Inheriting instances from the parent scope
 
@@ -628,13 +628,13 @@ const otherDefinition = fn.singleton(() => new Boxed(1));
 
 const rootConfig = configureContainer(container => {
   // in the container configuration we can also bind singletons
-  container.bindCascading(definition).to(otherDefinition);
-  container.bindCascading(definition).toValue(new Boxed(1));
-  container.bindCascading(definition).decorate((use, originalValue) => new Boxed(1));
-  container.bindCascading(definition).configure((use, originalValue) => {
+  container.cascading(definition).to(otherDefinition);
+  container.cascading(definition).toValue(new Boxed(1));
+  container.cascading(definition).decorate((use, originalValue) => new Boxed(1));
+  container.cascading(definition).configure((use, originalValue) => {
     originalValue.value = 1;
   });
-  container.bindCascading(definition).define(use => {
+  container.cascading(definition).define(use => {
     const otherInstance = use(otherDefinition);
     return new Boxed(otherInstance.value);
   });
@@ -651,7 +651,7 @@ Container configuration provides as well more compact syntax:
 
 ```typescript
 const root = container.new(container => {
-  container.bindCascading(definition).to(otherDefinition);
+  container.cascading(definition).to(otherDefinition);
 });
 ```
 
@@ -725,7 +725,7 @@ You must provide a value for unbound definitions when creating a container or sc
 import { container } from 'hardwired';
 
 const myContainer = container.new(container => {
-  container.bindCascading(config).toValue({ apiUrl: 'https://api.example.com' });
+  container.cascading(config).toValue({ apiUrl: 'https://api.example.com' });
 });
 
 const configValue = myContainer.use(config); // { apiUrl: 'https://api.example.com' }
@@ -737,7 +737,7 @@ const configValue = myContainer.use(config); // { apiUrl: 'https://api.example.c
 import { container, configureScope } from 'hardwired';
 
 const scopeConfig = configureScope(scope => {
-  scope.bindLocal(config).toValue({ apiUrl: 'https://api.example.com' });
+  scope.local(config).toValue({ apiUrl: 'https://api.example.com' });
 });
 
 container.withScope(scopeConfig, use => {
@@ -802,13 +802,13 @@ const myApp = fn(use => {
 });
 
 const prodContainer = container.new(container => {
-  container.bindCascading(transport).to(FsLoggerTransport.instance);
-  container.bindCascading(logger).to(ProductionLogger.instance);
+  container.cascading(transport).to(FsLoggerTransport.instance);
+  container.cascading(logger).to(ProductionLogger.instance);
 });
 
 const devContainer = container.new(container => {
-  container.bindCascading(transport).toValue({ write: noop });
-  container.bindCascading(logger).to(DevLogger.instance);
+  container.cascading(transport).toValue({ write: noop });
+  container.cascading(logger).to(DevLogger.instance);
 });
 
 const prodApp = prodContainer.use(myApp);

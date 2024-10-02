@@ -2,8 +2,8 @@ import { AnyDefinition, Definition } from '../../definitions/abstract/Definition
 import { Binder } from '../../definitions/Binder.js';
 import {
   ContainerConfigurable,
-  ContainerConfigureBindCascadingLifeTimes,
-  ContainerConfigureBindLocalLifeTimes,
+  ContainerConfigurecascadingLifeTimes,
+  ContainerConfigurelocalLifeTimes,
   ContainerConfigureFreezeLifeTimes,
   InitFn,
 } from '../abstract/ContainerConfigurable.js';
@@ -27,13 +27,13 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     initializer(this._currentContainer);
   }
 
-  bindCascading<TInstance>(
-    definition: Definition<TInstance, ContainerConfigureBindCascadingLifeTimes, []>,
-  ): Binder<TInstance, ContainerConfigureBindCascadingLifeTimes, []> {
+  cascading<TInstance>(
+    definition: Definition<TInstance, ContainerConfigurecascadingLifeTimes, []>,
+  ): Binder<TInstance, ContainerConfigurecascadingLifeTimes, []> {
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
   }
 
-  bindLocal<TInstance, TLifeTime extends ContainerConfigureBindLocalLifeTimes, TArgs extends any[]>(
+  local<TInstance, TLifeTime extends ContainerConfigurelocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {
