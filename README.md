@@ -145,7 +145,7 @@ In this example:
 
     return {
       log: (message: string) => {
-        console.log(`[LOG][${${_config.appName}}]: ${message}`);
+        console.log(`[LOG][${_config.appName}]: ${message}`);
       },
     };
   });
