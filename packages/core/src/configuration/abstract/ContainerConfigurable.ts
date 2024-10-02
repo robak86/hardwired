@@ -1,43 +1,26 @@
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { Definition } from '../../definitions/abstract/Definition.js';
 import { Binder } from '../../definitions/Binder.js';
-import { ContainerConfiguration, ContainerConfigureCallback } from '../ContainerConfiguration.js';
-import { ScopeOptions } from '../../container/Container.js';
 import { UseFn } from '../../container/IContainer.js';
-import { ContainerConfigurationDSL } from '../dsl/ContainerConfigurationDSL.js';
 
-export const emptyContainerOptions: ScopeOptions = Object.freeze({
-  scopeDefinitions: Object.freeze([]),
-  frozenDefinitions: Object.freeze([]),
-  cascadingDefinitions: Object.freeze([]),
-  initializers: Object.freeze([]),
-});
-
-export type ContainerConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
-
-export type ContainerConfigurator = ContainerConfigureCallback | ContainerConfiguration;
+export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
+export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped;
+export type ContainerConfigureCascadingLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 
 export type InitFn = (container: UseFn<any>) => void;
 
-export function containerConfiguratorToOptions(optionsOrFunction?: ContainerConfigurator): ScopeOptions {
-  if (optionsOrFunction instanceof Function) {
-    const binder = new ContainerConfigurationDSL();
-    optionsOrFunction(binder);
-
-    return binder;
-  } else if (optionsOrFunction instanceof ContainerConfiguration) {
-    return optionsOrFunction.apply();
-  } else {
-    return emptyContainerOptions;
-  }
-}
-
 export interface ContainerConfigurable {
-  bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bindCascading<TInstance>(
+    definition: Definition<TInstance, ContainerConfigureCascadingLifeTimes, []>,
+  ): Binder<TInstance, ContainerConfigureCascadingLifeTimes, []>;
+
+  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
+
+  bindLocal<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 
-  freeze<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 

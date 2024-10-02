@@ -1,6 +1,6 @@
 import { fn } from './definitions.js';
 import { LifeTime } from './abstract/LifeTime.js';
-import { Definition } from './abstract/Definition.js';
+import { AnyDefinition, Definition } from './abstract/Definition.js';
 import { Thunk } from '../utils/Thunk.js';
 import { InstancesDefinitions } from './abstract/sync/InstanceDefinition.js';
 
@@ -10,7 +10,7 @@ export type ClassType<TInstance, TConstructorArgs extends any[]> = {
 
 type IsNotEmpty<T extends any[]> = T extends [] ? false : true;
 
-function assertValidDependencies(dependencies: Definition<any, any, any>[]) {
+function assertValidDependencies(dependencies: AnyDefinition[]) {
   if (dependencies.some(dep => dep === undefined)) {
     throw new Error(
       'Some dependencies are undefined. Try wrapping them in a function. cls(this, () => [dependency1, dependency2])',

@@ -70,7 +70,7 @@ import { cls, value } from 'hardwired';
 const initialValue = value(0);
 
 export class CounterStore {
-  static instance = cls.singleton(this, initialValue);
+  static class = cls.singleton(this, initialValue);
 
   constructor(public value: number) {
     makeAutoObservable(this);
@@ -78,7 +78,7 @@ export class CounterStore {
 }
 
 export class CounterActions {
-  static instance = cls.singleton(this, [CounterStore.instance]);
+  static class = cls.singleton(this, [CounterStore.instance]);
 
   constructor(private store: CounterStore) {
     makeAutoObservable(this);
@@ -105,7 +105,7 @@ please refer to Hardwired docs
     import { observer } from 'mobx-react';
 
     export const Counter = observer(() => {
-      const state = use(CounterStore.instance);
+      const state = use(CounterStore.class);
 
       return (
         <h2>
@@ -115,7 +115,7 @@ please refer to Hardwired docs
     });
 
     export const CounterButtons = observer(() => {
-      const actions = use(CounterActions.instance);
+      const actions = use(CounterActions.class);
 
       return (
         <>
@@ -166,7 +166,7 @@ describe('CounterAction', () => {
 
     // delegating instances construction to the container
     it('increments counter state by 1', () => {
-      const [counterStore, counterStoreActions] = all(CounterStore.instance, CounterActions.instance);
+      const [counterStore, counterStoreActions] = all(CounterStore.instance, CounterActions.class);
 
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(1);
@@ -178,7 +178,7 @@ describe('CounterAction', () => {
       const cnt = container.new(container => {
         container.bind(initialValue).toValue(10);
       });
-      const [counterStore, counterStoreActions] = cnt.all(CounterStore.instance, CounterActions.instance);
+      const [counterStore, counterStoreActions] = cnt.all(CounterStore.instance, CounterActions.class);
 
       counterStoreActions.increment();
       expect(counterStore.value).toEqual(11);
@@ -206,7 +206,7 @@ describe('CounterButtons', () => {
   function setup() {
 
     const cnt = container(container => {
-      container.bind(CounterActions.instance).toConfigured((_, counterActions) => {
+      container.bind(CounterActions.class).configure((_, counterActions) => {
         vi.spyOn(counterActions, 'increment');
         vi.spyOn(counterActions, 'decrement');
       })
@@ -227,7 +227,7 @@ describe('CounterButtons', () => {
         const decrementBtn = result.getByRole('button', { name: /decrement/i });
         userEvent.click(decrementBtn);
       },
-      counterActions: cnt.use(CounterActions.instance),
+      counterActions: cnt.use(CounterActions.class),
     };
   }
 
@@ -249,21 +249,21 @@ For the `Counter` unit tests we just want to make sure that correct counter valu
 
 ```typescript jsx
 // CounterActions.test.tsx
-import { render, fireEvent, waitFor, screen } from '@testing-library/react';
+import {render, fireEvent, waitFor, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Container, container } from 'hardwired';
-import { ContainerProvider } from 'hardwired-react';
-import { runInAction } from 'mobx';
+import {Container, container} from 'hardwired';
+import {ContainerProvider} from 'hardwired-react';
+import {runInAction} from 'mobx';
 
 describe('CounterButtons', () => {
   function setup(startCountValue: number) {
     const cnt = container.new(c => {
-        c.bind(initialValue).toValue(startCountValue)
+      c.bindLocal(initialValue).toValue(startCountValue)
     })
 
     const result = render(
       <ContainerProvider container={cnt}>
-        <Counter />
+        <Counter/>
       </ContainerProvider>,
     );
 
@@ -272,7 +272,7 @@ describe('CounterButtons', () => {
         return result.getByTestId('counter-value').text;
       },
       setCounterValue: (newValue: number) => {
-        const store = cnt.use(CounterStore.instance);
+        const store = cnt.use(CounterStore.class);
         runInAction(() => {
           store.value = newValue;
         });
@@ -281,12 +281,12 @@ describe('CounterButtons', () => {
   }
 
   it(`renders correct value`, async () => {
-    const { getRenderedValue } = setup(1);
+    const {getRenderedValue} = setup(1);
     expect(getRenderedValue()).toEqual('1');
   });
 
   it(`re-renders on counter value change`, async () => {
-    const { getRenderedValue, setCounterValue } = setup(1);
+    const {getRenderedValue, setCounterValue} = setup(1);
     setCounterValue(200);
     expect(getRenderedValue()).toEqual('200');
   });
@@ -309,7 +309,7 @@ const initialValue = value(0);
 const label = unbound<string>();
 
 class CounterStore {
-  static instance = cls.scoped(this, [initialValue, label]);
+  static class = cls.scoped(this, [initialValue, label]);
 
   constructor(
     public value: number,
@@ -320,7 +320,7 @@ class CounterStore {
 }
 
 class CounterActions {
-  static instance = cls.scoped(this, [CounterStore.instance]);
+  static class = cls.scoped(this, [CounterStore.instance]);
 
   constructor(private store: CounterStore) {
     makeAutoObservable(this);
@@ -345,7 +345,7 @@ import { use, ContainerProvider, ContainerScope } from 'hardwired-react';
 import { observer } from 'mobx-react';
 
 export const Counter = observer(() => {
-  const store = use(CounterStore.instance);
+  const store = use(CounterStore.class);
   return (
     <h2>
       Current value: <span data-testid={'counter-value'}>{store.value}</span>
@@ -354,12 +354,12 @@ export const Counter = observer(() => {
 });
 
 export const CounterLabel = observer(() => {
-  const store = use(CounterStore.instance);
+  const store = use(CounterStore.class);
   return <h2>{store.label}</h2>;
 });
 
 export const CounterButtons = observer(() => {
-  const actions = use(CounterActions.instance);
+  const actions = use(CounterActions.class);
 
   return (
     <>

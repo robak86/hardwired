@@ -1,62 +1,71 @@
-import { ScopeOptions } from '../../container/Container.js';
-import { Definition } from '../../definitions/abstract/Definition.js';
+import { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
 import { Binder } from '../../definitions/Binder.js';
 import {
   ContainerConfigurable,
-  ContainerConfigureAllowedLifeTimes,
+  ContainerConfigureCascadingLifeTimes,
+  ContainerConfigureFreezeLifeTimes,
+  ContainerConfigureLocalLifeTimes,
   InitFn,
 } from '../abstract/ContainerConfigurable.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import { BindingsRegistry } from '../../context/BindingsRegistry.js';
+import { IContainer, IStrategyAware } from '../../container/IContainer.js';
 
-export class ContainerConfigurationDSL implements ContainerConfigurable, ScopeOptions {
-  private _scopeDefinitions: Definition<any, any, any>[] = [];
-  private _frozenDefinitions: Definition<any, any, any>[] = [];
-  private _initializers: InitFn[] = [];
+export class ContainerConfigurationDSL implements ContainerConfigurable {
+  constructor(
+    private _bindingsRegistry: BindingsRegistry,
+    private _currentContainer: IContainer & IStrategyAware,
+  ) {}
 
-  private _scopeDefinitionsById: Map<symbol, true> = new Map();
-  private _frozenDefinitionsById: Map<symbol, true> = new Map();
-
-  readonly cascadingDefinitions: Definition<any, LifeTime.singleton, []>[] = [];
-
-  constructor() {}
+  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+    this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
+  }
 
   init(initializer: InitFn): void {
-    this._initializers.push(initializer);
+    initializer(this._currentContainer);
   }
 
-  bind<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bindCascading<TInstance>(
+    definition: Definition<TInstance, ContainerConfigureCascadingLifeTimes, []>,
+  ): Binder<TInstance, ContainerConfigureCascadingLifeTimes, []> {
+    return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
+  }
+
+  bindLocal<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
-    if (this._scopeDefinitionsById.has(definition.id)) {
-      throw new Error(`Definition is already bounded.`);
-    } else {
-      this._scopeDefinitionsById.set(definition.id, true);
+    if ((definition.strategy as LifeTime) === LifeTime.singleton) {
+      throw new Error(`Singleton is not allowed for local bindings.`);
     }
 
-    return new Binder(definition, this._scopeDefinitions, null);
+    return new Binder(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
   }
 
-  freeze<TInstance, TLifeTime extends ContainerConfigureAllowedLifeTimes, TArgs extends any[]>(
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
-    if (this._frozenDefinitionsById.has(definition.id)) {
-      throw new Error(`Definition is already frozen.`);
-    } else {
-      this._frozenDefinitionsById.set(definition.id, true);
-    }
-
-    return new Binder(definition, this._frozenDefinitions, null);
+    return new Binder(definition, this._onFrozenStaticBind, this._onFrozenInstantiableBind);
   }
 
-  get scopeDefinitions() {
-    return this._scopeDefinitions;
-  }
+  private _onFrozenStaticBind = (newDefinition: AnyDefinition) => {
+    this._bindingsRegistry.addFrozenBinding(newDefinition);
+  };
+  private _onFrozenInstantiableBind = (newDefinition: AnyDefinition) => {
+    this._bindingsRegistry.addFrozenBinding(newDefinition);
+  };
 
-  get frozenDefinitions() {
-    return this._frozenDefinitions;
-  }
+  private _onCascadingStaticBind = (newDefinition: AnyDefinition) => {
+    this._bindingsRegistry.addCascadingBinding(newDefinition);
+  };
 
-  get initializers() {
-    return this._initializers;
-  }
+  private _onCascadingInstantiableBind = (newDefinition: AnyDefinition) => {
+    this._bindingsRegistry.addCascadingBinding(newDefinition.bind(this._currentContainer));
+  };
+
+  private _onLocalStaticBind = (newDefinition: AnyDefinition) => {
+    this._bindingsRegistry.addScopeBinding(newDefinition);
+  };
+  private _onLocalInstantiableBind = (newDefinition: AnyDefinition) => {
+    this._bindingsRegistry.addScopeBinding(newDefinition);
+  };
 }

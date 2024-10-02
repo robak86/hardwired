@@ -1,5 +1,7 @@
 import { LifeTime } from './LifeTime.js';
-import { IContainer } from '../../container/IContainer.js';
+import { IContainer, IStrategyAware } from '../../container/IContainer.js';
+
+export type AnyDefinition = Definition<any, LifeTime, any[]>;
 
 export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
   constructor(
@@ -10,5 +12,11 @@ export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any
 
   get name() {
     return this.create.name;
+  }
+
+  bind(container: IStrategyAware): Definition<TInstance, TLifeTime, TArgs> {
+    return new Definition(this.id, this.strategy, (_use, ...args: TArgs) => {
+      return container.buildWithStrategy(this, ...args);
+    });
   }
 }

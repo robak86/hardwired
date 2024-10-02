@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 describe(`asyncFn`, () => {
   describe(`types`, () => {
     describe(`allowed dependencies life times`, () => {
-      const implDef = unbound<number>('ext1');
+      const implDef = unbound<number>();
 
       describe(`singleton`, () => {
         describe(`compile-time`, () => {

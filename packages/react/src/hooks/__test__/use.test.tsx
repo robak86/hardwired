@@ -97,7 +97,7 @@ describe(`use`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = unbound<string>('ext');
+      const someExternalParam = unbound<string>();
 
       const val1Def = fn.scoped(use => {
         const ext = use(someExternalParam);
@@ -117,7 +117,7 @@ describe(`use`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         const config = useScopeConfig(
           scope => {
-            scope.bind(someExternalParam).toValue(externalValue);
+            scope.bindCascading(someExternalParam).toValue(externalValue);
           },
           [externalValue],
         );

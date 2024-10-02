@@ -24,8 +24,8 @@ describe(`unbound`, () => {
   }
 
   const numD = value('otherDependency');
-  const externalParams1D = unbound<Externals>('params1');
-  const externalParams2D = unbound<OtherExternals>('params2');
+  const externalParams1D = unbound<Externals>();
+  const externalParams2D = unbound<OtherExternals>();
 
   const defUsingExternals1 = fn(use => {
     const externals = use(externalParams1D);
@@ -45,7 +45,7 @@ describe(`unbound`, () => {
       const cnt = container.new();
       const result = cnt
         .checkoutScope(c => {
-          c.bind(externalParams1D).toValue({ someExternalParam: 111 });
+          c.bindLocal(externalParams1D).toValue({ someExternalParam: 111 });
         })
         .use(defUsingExternals1);
 
@@ -57,8 +57,8 @@ describe(`unbound`, () => {
       const cnt = container.new();
       const result = cnt
         .checkoutScope(c => {
-          c.bind(externalParams1D).toValue({ someExternalParam: 111 });
-          c.bind(externalParams2D).toValue({ otherExternalParam: 456 });
+          c.bindLocal(externalParams1D).toValue({ someExternalParam: 111 });
+          c.bindLocal(externalParams2D).toValue({ otherExternalParam: 456 });
         })
         .use(defUsingBothExternals);
 

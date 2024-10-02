@@ -9,8 +9,8 @@ import { describe, expect, it } from 'vitest';
 import { Definition } from '../../abstract/Definition.js';
 
 describe(`define`, () => {
-  const ext1 = unbound<number>('ext1');
-  const ext2 = unbound<string>('ext2');
+  const ext1 = unbound<number>();
+  const ext2 = unbound<string>();
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
@@ -28,8 +28,8 @@ describe(`define`, () => {
       const result = container
         .new()
         .checkoutScope(c => {
-          c.bind(ext1).toValue(1);
-          c.bind(ext2).toValue('str');
+          c.bindLocal(ext1).toValue(1);
+          c.bindLocal(ext2).toValue('str');
         })
         .use(definition);
       expect(result).toEqual([1, 'str']);

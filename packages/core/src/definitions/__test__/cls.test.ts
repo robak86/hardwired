@@ -22,17 +22,17 @@ describe(`cls`, () => {
   describe(`types`, () => {
     it(`allows skipping args array`, async () => {
       class NoArgsClass {
-        static instance = cls.transient(this);
+        static class = cls.transient(this);
       }
 
-      expect(once(NoArgsClass.instance)).toBeInstanceOf(NoArgsClass);
+      expect(once(NoArgsClass.class)).toBeInstanceOf(NoArgsClass);
     });
 
     it(`requires args argument in class constructor requires arguments`, async () => {
       // @ts-ignore
       class WithArgsClass {
         // @ts-expect-error - missing args
-        static instance = cls.transient(this);
+        static class = cls.transient(this);
 
         // @ts-ignore
         constructor(private _a: number) {}

@@ -1,41 +1,24 @@
 import { Definition } from '../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { Binder } from '../../definitions/Binder.js';
-import { ScopeOptions } from '../../container/Container.js';
 
-import { emptyContainerOptions, InitFn } from './ContainerConfigurable.js';
-import { IContainer } from '../../container/IContainer.js';
-import { ScopeConfiguration, ScopeConfigureCallback } from '../ScopeConfiguration.js';
-import { ScopeConfigurationDSL } from '../dsl/ScopeConfigurationDSL.js';
+import { InitFn } from './ContainerConfigurable.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
-export type ContainerConfigurator = ScopeConfigureCallback | ScopeConfiguration;
-
-export function scopeConfiguratorToOptions(
-  optionsOrFunction: ContainerConfigurator | undefined,
-  parentContainer: IContainer,
-): ScopeOptions {
-  if (optionsOrFunction instanceof Function) {
-    const binder = new ScopeConfigurationDSL(parentContainer);
-
-    optionsOrFunction(binder, parentContainer);
-    return binder;
-  } else if (optionsOrFunction instanceof ScopeConfiguration) {
-    return optionsOrFunction.apply(parentContainer);
-  } else {
-    return emptyContainerOptions;
-  }
-}
-
 export interface ScopeConfigurable {
-  bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  inheritLocal<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
+  inheritCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
+
+  bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 
   onInit(initializer: InitFn): void;
 
-  cascade<TInstance>(
-    definition: Definition<TInstance, LifeTime.singleton, []>,
-  ): Binder<TInstance, LifeTime.singleton, []>;
+  bindCascading<TInstance>(
+    definition: Definition<TInstance, LifeTime.scoped, []>,
+  ): Binder<TInstance, LifeTime.scoped, []>;
+
+  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
 }
