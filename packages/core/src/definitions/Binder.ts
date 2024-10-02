@@ -19,7 +19,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
     this._onStaticBind(newDefinition);
   }
 
-  toConfigured(configureFn: (locator: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => void): void {
+  configure(configureFn: (locator: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => void): void {
     const newDefinition = new Definition(
       this._definition.id,
       this._definition.strategy,
@@ -33,7 +33,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
     this._onInstantiableBind(newDefinition);
   }
 
-  toDecorated<TExtendedInstance extends TInstance>(
+  decorate<TExtendedInstance extends TInstance>(
     decorateFn: (use: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => TExtendedInstance,
   ): void {
     const newDefinition = new Definition(
@@ -48,7 +48,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
     this._onInstantiableBind(newDefinition);
   }
 
-  toRedefined(create: (locator: IContainer<TLifeTime>, ...args: TArgs) => TInstance): void {
+  define(create: (locator: IContainer<TLifeTime>, ...args: TArgs) => TInstance): void {
     const newDefinition = new Definition(this._definition.id, this._definition.strategy, create);
     this._onInstantiableBind(newDefinition);
   }
