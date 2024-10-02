@@ -40,14 +40,6 @@ export class BindingsRegistry {
     return this._frozenBindingsById.has(definitionId);
   }
 
-  hasScopeBinding(definitionId: symbol): boolean {
-    return this._scopeBindingsById.has(definitionId);
-  }
-
-  hasCascadingBinding(definitionId: symbol): boolean {
-    return this._cascadingBindingsById.has(definitionId);
-  }
-
   addFrozenBinding = (definition: AnyDefinition) => {
     if (this._frozenBindingsById.has(definition.id)) {
       throw new Error(`Final binding was already set. Cannot override it.`);

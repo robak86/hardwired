@@ -83,22 +83,22 @@ describe(`ScopeStrategy`, () => {
       expect(childC.use(a).value).toEqual(2);
     });
 
-    it(`new scope inherits parent scope overrides`, async () => {
-      const a = fn.scoped(() => new BoxedValue(1));
+    it(`new scope doesn't inherit the local bindings`, async () => {
+      const a = fn.scoped(() => new BoxedValue('original'));
 
       const root = container.new();
-      expect(root.use(a).value).toEqual(1);
+      expect(root.use(a).value).toEqual('original');
 
-      const childC = root.checkoutScope(c => {
-        c.bindLocal(a).to(fn.scoped(() => new BoxedValue(2)));
+      const l1 = root.checkoutScope(c => {
+        c.bindLocal(a).to(fn.scoped(() => new BoxedValue('l1')));
       });
 
-      expect(childC.use(a).value).toEqual(2);
+      expect(l1.use(a).value).toEqual('l1');
 
-      const grandChildC = childC.checkoutScope();
-      expect(grandChildC.use(a).value).toEqual(1);
+      const l3 = l1.checkoutScope();
+      expect(l3.use(a).value).toEqual('original');
 
-      expect(childC.use(a)).not.toBe(grandChildC.use(a));
+      expect(l1.use(a)).not.toBe(l3.use(a));
     });
   });
 

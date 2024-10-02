@@ -18,7 +18,7 @@ bindingsRegistry.addCascadingBindings(cascading);
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(
-    private _parentContainer: IContainer,
+    private _parentContainer: IContainer & IStrategyAware,
     private _currentContainer: IContainer & IStrategyAware,
     private _bindingsRegistry: BindingsRegistry,
   ) {}
@@ -28,11 +28,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   }
 
   inheritLocal<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
-    const newDefinition = new Definition(definition.id, LifeTime.transient, (_, ...args: []) => {
-      return this._parentContainer.use(definition, ...args);
-    });
-
-    this._bindingsRegistry.addScopeBinding(newDefinition);
+    this._bindingsRegistry.addScopeBinding(definition.bind(this._parentContainer));
   }
 
   inheritCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
