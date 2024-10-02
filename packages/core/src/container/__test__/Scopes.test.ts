@@ -500,14 +500,6 @@ describe(`Scopes`, () => {
     });
   });
 
-  describe('child scopes', () => {
-    describe('freezing definitions', () => {});
-
-    describe(`freezing definitions set on root`, () => {});
-
-    describe(`freezing definitions not set in root`, () => {});
-  });
-
   describe(`child scopes created by definition`, () => {
     describe('setting local bindings', () => {
       it(`doesn't propagate the instance to  descendent scopes`, async () => {
