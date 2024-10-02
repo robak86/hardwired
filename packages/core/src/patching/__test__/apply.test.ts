@@ -14,7 +14,7 @@ describe(`apply`, () => {
     const someValue = fn.scoped(() => new BoxedValue(1));
 
     const config = configureContainer(c => {
-      c.bindLocal(someValue).toConfigured((_, val) => (val.value += 1));
+      c.bindLocal(someValue).configure((_, val) => (val.value += 1));
     });
 
     const c = container.new(config);
@@ -28,7 +28,7 @@ describe(`apply`, () => {
     expect(container.new().use(someValue).value).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bindLocal(someValue).toConfigured((_, val) => (val.value += 1));
+      c.bindLocal(someValue).configure((_, val) => (val.value += 1));
     });
     expect(cnt.use(someValue).value).toEqual(2);
   });
@@ -38,8 +38,8 @@ describe(`apply`, () => {
 
     expect(() => {
       container.new(c => {
-        c.bindLocal(someValue).toConfigured((_, val) => (val.value += 1));
-        c.bindLocal(someValue).toConfigured((_, val) => (val.value *= 3));
+        c.bindLocal(someValue).configure((_, val) => (val.value += 1));
+        c.bindLocal(someValue).configure((_, val) => (val.value *= 3));
       });
     }).toThrowError();
   });
@@ -50,7 +50,7 @@ describe(`apply`, () => {
     const someValue = value(new BoxedValue(10));
 
     const c = container.new(c => {
-      c.bindLocal(someValue).toConfigured((use, val) => {
+      c.bindLocal(someValue).configure((use, val) => {
         const aVal = use(a);
         const bVal = use(b);
         val.value = val.value + aVal.value + bVal.value;
@@ -69,7 +69,7 @@ describe(`apply`, () => {
     });
 
     const c = container.new(c => {
-      c.bindLocal(someValue).toConfigured((use, val) => {
+      c.bindLocal(someValue).configure((use, val) => {
         val.value = val.value * use(b).value;
       });
     });
@@ -82,7 +82,7 @@ describe(`apply`, () => {
       const someValue = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
-        c.bindLocal(someValue).toConfigured((use, a) => a);
+        c.bindLocal(someValue).configure((use, a) => a);
       });
 
       expect(c.use(someValue)).toEqual(c.use(someValue));
@@ -92,7 +92,7 @@ describe(`apply`, () => {
       const someValue = fn(() => Math.random());
 
       const c = container.new(c => {
-        c.bindLocal(someValue).toConfigured((use, a) => a);
+        c.bindLocal(someValue).configure((use, a) => a);
       });
 
       expect(c.use(someValue)).not.toEqual(c.use(someValue));
@@ -105,7 +105,7 @@ describe(`apply`, () => {
       });
 
       const c = container.new(c => {
-        c.bindLocal(a).toConfigured((use, a) => a);
+        c.bindLocal(a).configure((use, a) => a);
       });
 
       const objDef = fn.scoped(use => ({
@@ -125,7 +125,7 @@ describe(`apply`, () => {
   describe(`globalOverrides`, () => {
     function setup(instanceDef: Definition<MyService, LifeTime.scoped | LifeTime.transient, any>) {
       const scope1 = container.new(c => {
-        c.freeze(instanceDef).toConfigured((use, a) => {
+        c.freeze(instanceDef).configure((use, a) => {
           vi.spyOn(a, 'callMe');
           return a;
         });
