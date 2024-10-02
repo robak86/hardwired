@@ -380,7 +380,63 @@ describe(`Scopes`, () => {
       });
     });
 
+    describe(`inheritCascading`, () => {
+      it(`inherits and cascades the value`, async () => {
+        const def = fn.scoped(() => 'original');
+        const consumer = fn.scoped(use => use(def));
+
+        const root = container.new(scope => {
+          scope.bindLocal(def).toValue('root');
+        });
+        const l1 = root.checkoutScope(scope => {
+          scope.inheritCascading(consumer);
+        });
+        const l2 = l1.checkoutScope(scope => {});
+
+        const rootDefValue = root.use(def);
+        const l1ConsumerValue = l1.use(consumer);
+        const l1DefValue = l1.use(def);
+
+        const l2ConsumerValue = l2.use(consumer);
+        const l2DefValue = l2.use(def);
+
+        expect(rootDefValue).toEqual('root');
+        expect(l1ConsumerValue).toEqual('root');
+        expect(l1DefValue).toEqual('original');
+
+        expect(l2ConsumerValue).toEqual('root');
+        expect(l2DefValue).toEqual('original');
+      });
+    });
+
     describe('inheritLocal', () => {
+      it(`instantiates value in the original scope`, async () => {
+        const def = fn.scoped(() => 'original');
+        const consumer = fn.scoped(use => use(def));
+
+        const root = container.new(scope => {
+          scope.bindLocal(def).toValue('root');
+        });
+        const l1 = root.checkoutScope(scope => {
+          scope.inheritLocal(consumer);
+        });
+        const l2 = l1.checkoutScope(scope => {});
+
+        const rootDefValue = root.use(def);
+        const l1ConsumerValue = l1.use(consumer);
+        const l1DefValue = l1.use(def);
+
+        const l2ConsumerValue = l2.use(consumer);
+        const l2DefValue = l2.use(def);
+
+        expect(rootDefValue).toEqual('root');
+        expect(l1ConsumerValue).toEqual('root');
+        expect(l1DefValue).toEqual('original');
+
+        expect(l2ConsumerValue).toEqual('original');
+        expect(l2DefValue).toEqual('original');
+      });
+
       it(`inherits the instance in the current scope`, async () => {
         const def = fn.scoped(() => Math.random());
 
