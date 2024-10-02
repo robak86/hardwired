@@ -25,14 +25,29 @@ const scopedD = fn.scoped(use => {
 });
 
 let cnt: IContainer;
+// @ts-ignore
+let c1: IContainer;
+// @ts-ignore
+let c2: IContainer;
+let c3: IContainer;
 
 const instantiationBench = new Bench({
   time: 100,
   setup: () => {
     cnt = container.new();
+    c1 = cnt.checkoutScope(scope => {
+      scope.cascade(scopedD);
+    });
+    c2 = cnt.checkoutScope(scope => {});
+    c3 = cnt.checkoutScope(scope => {});
   },
   teardown: () => {
     cnt = container.new();
+    c1 = cnt.checkoutScope(scope => {
+      scope.cascade(scopedD);
+    });
+    c2 = cnt.checkoutScope(scope => {});
+    c3 = cnt.checkoutScope(scope => {});
   },
 });
 
@@ -45,37 +60,12 @@ instantiationBench
   })
   .add('scopedD', () => {
     cnt.use(scopedD);
+  })
+  .add('scopedD cascaded to lower scope', () => {
+    c3.use(scopedD);
   });
 
 instantiationBench
   .warmup()
   .then(_ => instantiationBench.run())
   .then(_ => console.table(instantiationBench.table()));
-
-// const scopesBench = new Bench({
-//   time: 100,
-//   setup: () => {
-//     cnt = container.new();
-//     // cnt.use(singletonD);
-//     // cnt.use(scopedD);
-//     // cnt.use(transientD);
-//
-//     childScope = cnt.checkoutScope();
-//     childScope.use(singletonD);
-//     // childScope.use(scopedD);
-//     // childScope.use(transientD);
-//   },
-//   teardown: () => {
-//     cnt = container.new();
-//     childScope = container.new();
-//   },
-// });
-//
-// scopesBench.add('checkoutScope without configuration', () => {
-//   cnt.checkoutScope();
-// });
-//
-// scopesBench
-//   .warmup()
-//   .then(_ => scopesBench.run())
-//   .then(_ => console.table(scopesBench.table()));
