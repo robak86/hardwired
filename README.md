@@ -96,7 +96,7 @@ const logger = fn.singleton(() => {
 
 // Define the ApiClient class
 class ApiClient {
-  static instance = cls.singleton(this, [config, logger]);
+  static class = cls.singleton(this, [config, logger]);
 
   constructor(
     private config: { apiUrl: string },
@@ -118,7 +118,7 @@ class ApiClient {
 }
 
 // Use the container to retrieve the ApiClient instance
-const apiClient = container.use(ApiClient.instance);
+const apiClient = container.use(ApiClient.class);
 
 // Fetch user data using the ApiClient
 apiClient.fetchUser(1).then(data => {
@@ -155,7 +155,7 @@ In this example:
 
   ```typescript
   class ApiClient {
-    static instance = cls.singleton(this, [config, logger]);
+    static class = cls.singleton(this, [config, logger]);
 
     constructor(
       private config: { apiUrl: string },
@@ -171,7 +171,7 @@ In this example:
 - **Fetching Data**: We retrieve an instance of ApiClient from the container and use it to fetch user data from the API. The ApiClient uses the injected logger to log messages during its operation.
 
   ```typescript
-  const apiClient = container.use(ApiClient.instance);
+  const apiClient = container.use(ApiClient.class);
   apiClient.fetchUser(1).then(data => {
     console.log('User Data:', data);
   });
@@ -348,7 +348,7 @@ import { cls, fn } from 'hardwired';
 const apiUrl = fn.singleton(() => 'https://api.example.com');
 
 class ApiClient {
-  static instance = cls.singleton(this, [apiUrl]);
+  static class = cls.singleton(this, [apiUrl]);
 
   constructor(private apiUrl: string) {}
 
@@ -357,7 +357,7 @@ class ApiClient {
   }
 }
 
-const client = container.use(ApiClient.instance);
+const client = container.use(ApiClient.class);
 ```
 
 In this example:
@@ -370,7 +370,7 @@ The `cls` function accepts also a thunk of dependencies. This is helpful in situ
 
 ```typescript
 class ApiClient {
-  static instance = cls.singleton(this, () => [apiUrl]);
+  static class = cls.singleton(this, () => [apiUrl]);
 
   constructor(private apiUrl: string) {}
 }
@@ -387,7 +387,7 @@ You can use the global, shared container directly:
 ```typescript
 import { container } from 'hardwired';
 
-const client = container.use(ApiClient.instance);
+const client = container.use(ApiClient.class);
 ```
 
 #### Using a Temporal Container
@@ -425,7 +425,7 @@ import { container } from 'hardwired';
 
 const myContainer = container.new();
 
-const client = myContainer.use(ApiClient.instance);
+const client = myContainer.use(ApiClient.class);
 ```
 
 ### Using Scoped Containers
@@ -677,7 +677,7 @@ The container doesn't have access to the parent container, because such doesn't 
 import { configureContainer, cls, container } from 'hardwired';
 
 class ListenersManager {
-  static instance = cls(this, [someEventEmitter]);
+  static class = cls(this, [someEventEmitter]);
 
   constructor(private _eventEmitter: EventEmitter) {}
 
@@ -688,7 +688,7 @@ class ListenersManager {
 
 const containerConfig = configureContainer(container => {
   container.onInit(use => {
-    use(ListenersManager.instance).init();
+    use(ListenersManager.class).init();
   });
 });
 
@@ -774,19 +774,19 @@ interface ITransport {
 }
 
 class DevLogger implements ILogger {
-  static instance = cls.singleton(this);
+  static class = cls.singleton(this);
 
   info() {}
 }
 
 class FsLoggerTransport implements ITransport {
-  static instance = cls.singleton(this);
+  static class = cls.singleton(this);
 
   write() {}
 }
 
 class ProductionLogger implements ILogger {
-  static instance = cls.singleton(this, [transport]);
+  static class = cls.singleton(this, [transport]);
 
   constructor(fsTransport: ITransport) {}
 
@@ -802,13 +802,13 @@ const myApp = fn(use => {
 });
 
 const prodContainer = container.new(container => {
-  container.cascading(transport).to(FsLoggerTransport.instance);
-  container.cascading(logger).to(ProductionLogger.instance);
+  container.cascading(transport).to(FsLoggerTransport.class);
+  container.cascading(logger).to(ProductionLogger.class);
 });
 
 const devContainer = container.new(container => {
   container.cascading(transport).toValue({ write: noop });
-  container.cascading(logger).to(DevLogger.instance);
+  container.cascading(logger).to(DevLogger.class);
 });
 
 const prodApp = prodContainer.use(myApp);
