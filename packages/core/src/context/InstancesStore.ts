@@ -18,18 +18,6 @@ export class InstancesStore {
     return new InstancesStore(this._globalScope, new Map(), this._globalOverridesScope);
   }
 
-  hasInCurrentScope(id: symbol): boolean {
-    return this._currentScope.has(id);
-  }
-
-  hasInGlobalScope(id: symbol): boolean {
-    return this._globalScope.has(id);
-  }
-
-  hasInGlobalOverridesScope(id: symbol): boolean {
-    return this._globalOverridesScope.has(id);
-  }
-
   upsertIntoFrozenInstances<T>(uuid: symbol, build: () => T) {
     if (this._globalOverridesScope.has(uuid)) {
       return this._globalOverridesScope.get(uuid);
