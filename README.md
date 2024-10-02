@@ -128,7 +128,7 @@ apiClient.fetchUser(1).then(data => {
 
 In this example:
 
-- **Configuration Singleton**: We define a config singleton using the value helper, which provides the API base URL.
+- **Configuration Singleton**: We define a `config` singleton using the `value` helper, which provides the API base URL.
 
   ```typescript
   const config = value({
@@ -137,7 +137,7 @@ In this example:
   });
   ```
 
-- **Logger Singleton**: We define a logger singleton that provides a simple logging function.
+- **Logger Singleton**: We define a `logger` singleton that provides a simple logging function.
 
   ```typescript
   const logger = fn.singleton(use => {
@@ -151,7 +151,7 @@ In this example:
   });
   ```
 
-- **ApiClient Class**: We define an ApiClient class that depends on config and logger. We use cls.singleton to create a singleton definition of ApiClient with its dependencies.
+- **ApiClient Class**: We define an `ApiClient` class that depends on config and logger. We use `cls.singleton` to create a singleton definition of `ApiClient` with its dependencies. The name for static property is arbitrary.
 
   ```typescript
   class ApiClient {
@@ -168,7 +168,7 @@ In this example:
   }
   ```
 
-- **Fetching Data**: We retrieve an instance of ApiClient from the container and use it to fetch user data from the API. The ApiClient uses the injected logger to log messages during its operation.
+- **Fetching Data**: We retrieve an instance of `ApiClient` from the container and use it to fetch user data from the API. The `ApiClient` uses the injected `logger` to log messages during its operation.
 
   ```typescript
   const apiClient = container.use(ApiClient.class);
@@ -185,7 +185,7 @@ This example demonstrates:
 - **Lazy Evaluation**: Instances are created only when they are first requested from the container.
 - **Type Safety**: All dependencies and their usages are checked at compile time
 
-> Note: Although it may initially seem unnecessary to use `value` for static values, the object it creates has its own unique identity and can be [bound](#definitions-binding) to different values during container configuration.
+> Note: Although it may initially seem unnecessary to use `value` for static values, the created definition has its own unique identity and can be [bound](#definitions-binding) to different value during container configuration.
 
 ## Core Concepts
 
