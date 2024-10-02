@@ -102,7 +102,7 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(factory);
 
         const root = container.new(scope => {
-          scope.cascade(a);
+          scope.markCascading(a);
         });
 
         const child = root.checkoutScope(scope => {});
@@ -125,7 +125,7 @@ describe(`SingletonStrategy`, () => {
         });
 
         const root = container.new(scope => {
-          scope.cascade(consumer);
+          scope.markCascading(consumer);
         });
 
         const child = root.checkoutScope(scope => {
@@ -143,7 +143,7 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(() => 0);
 
         const root = container.new(scope => {
-          scope.cascade(a);
+          scope.markCascading(a);
         });
 
         const l1 = root.checkoutScope(scope => {});

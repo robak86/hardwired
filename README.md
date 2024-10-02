@@ -611,6 +611,8 @@ The assigned value is available for the current scope and propagated to all newl
 - `scope.cascading(definition).configure(configureFn)`: Modifies the instance after it's created.
 - `scope.cascading(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
+Additionally, you can make the definition cascading using `scope.markCascading(definition)`.  
+
 ##### Inheriting instances from the parent scope
 
 - `scope.inheritLocal(definition)` - inherits the instance from the parent only for the current scope

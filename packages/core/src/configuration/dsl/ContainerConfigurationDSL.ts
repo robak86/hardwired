@@ -2,9 +2,9 @@ import { AnyDefinition, Definition } from '../../definitions/abstract/Definition
 import { Binder } from '../../definitions/Binder.js';
 import {
   ContainerConfigurable,
-  ContainerConfigurecascadingLifeTimes,
-  ContainerConfigurelocalLifeTimes,
+  ContainerConfigureCascadingLifeTimes,
   ContainerConfigureFreezeLifeTimes,
+  ContainerConfigureLocalLifeTimes,
   InitFn,
 } from '../abstract/ContainerConfigurable.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
@@ -17,7 +17,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     private _currentContainer: IContainer & IStrategyAware,
   ) {}
 
-  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+  markCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
   }
 
@@ -26,12 +26,12 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   }
 
   cascading<TInstance>(
-    definition: Definition<TInstance, ContainerConfigurecascadingLifeTimes, []>,
-  ): Binder<TInstance, ContainerConfigurecascadingLifeTimes, []> {
+    definition: Definition<TInstance, ContainerConfigureCascadingLifeTimes, []>,
+  ): Binder<TInstance, ContainerConfigureCascadingLifeTimes, []> {
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
   }
 
-  local<TInstance, TLifeTime extends ContainerConfigurelocalLifeTimes, TArgs extends any[]>(
+  local<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {

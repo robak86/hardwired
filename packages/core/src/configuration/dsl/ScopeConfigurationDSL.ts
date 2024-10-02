@@ -13,7 +13,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     private _bindingsRegistry: BindingsRegistry,
   ) {}
 
-  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+  markCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
   }
 

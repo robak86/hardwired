@@ -16,8 +16,7 @@ export interface ScopeConfigurable {
 
   onInit(initializer: InitFn): void;
 
-  // TODO: add to container configuration
   cascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): Binder<TInstance, LifeTime.scoped, []>;
 
-  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
+  markCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
 }
