@@ -13,7 +13,7 @@ describe(`Logger`, () => {
       const nextId = () => (id += 1);
 
       class Logger {
-        static instance = cls.scoped(this, [value('')]);
+        static class = cls.scoped(this, [value('')]);
 
         constructor(private label: string) {}
 
@@ -28,20 +28,20 @@ describe(`Logger`, () => {
 
       const root = container.new(scope => {
         scope.cascading(requestId).toValue('app');
-        scope.cascading(Logger.instance).decorate((use, val) => {
+        scope.cascading(Logger.class).decorate((use, val) => {
           return val.withLabel(use(requestId));
         });
       });
 
       const requestScopeConfig = configureScope(scope => {
         scope.cascading(requestId).define(() => nextId().toString());
-        scope.cascading(Logger.instance).decorate((use, val) => {
+        scope.cascading(Logger.class).decorate((use, val) => {
           return val.withLabel(use(requestId));
         });
       });
 
       expect(root.use(requestId)).toEqual('app');
-      expect(root.use(Logger.instance).print('msg')).toEqual('appmsg');
+      expect(root.use(Logger.class).print('msg')).toEqual('appmsg');
 
       const req1 = root.checkoutScope(requestScopeConfig);
       const req2 = root.checkoutScope(requestScopeConfig);
@@ -52,11 +52,11 @@ describe(`Logger`, () => {
       expect(req2.use(requestId)).toEqual('2');
       expect(req2.use(requestId)).toEqual(req2.use(requestId));
 
-      expect(req1.use(Logger.instance).print('msg')).toEqual('1msg');
-      expect(req1.use(Logger.instance).print('msg')).toEqual('1msg');
+      expect(req1.use(Logger.class).print('msg')).toEqual('1msg');
+      expect(req1.use(Logger.class).print('msg')).toEqual('1msg');
 
-      expect(req2.use(Logger.instance).print('msg')).toEqual('2msg');
-      expect(req2.use(Logger.instance).print('msg')).toEqual('2msg');
+      expect(req2.use(Logger.class).print('msg')).toEqual('2msg');
+      expect(req2.use(Logger.class).print('msg')).toEqual('2msg');
     });
   });
 });
