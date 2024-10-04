@@ -134,23 +134,17 @@ export class Container
     ? Promise<AwaitedInstanceRecord<TRecord>>
     : InstancesRecord<TRecord> {
     const results = {} as InstancesRecord<any>;
-    let hasPromise = false;
+    const keys = Object.keys(object);
+    let remainingKeys = 0;
+    const deferred = new Deferred<AwaitedInstanceRecord<TRecord>>();
 
-    for (const [key, value] of Object.entries(object)) {
-      const instance = this.use(value);
+    for (const key of keys) {
+      const instance = this.use(object[key]);
       results[key] = instance;
+
       if (instance instanceof Promise) {
-        hasPromise = true;
-      }
-    }
-
-    if (hasPromise) {
-      const deferred = new Deferred<AwaitedInstanceRecord<TRecord>>();
-      const keys = Object.keys(results);
-      let remainingKeys = keys.length;
-
-      for (const key of keys) {
-        results[key] = Promise.resolve(results[key]).then((value: any) => {
+        remainingKeys += 1;
+        instance.then(value => {
           results[key] = value;
           remainingKeys -= 1;
 
@@ -159,7 +153,10 @@ export class Container
           }
         });
       }
+    }
 
+    if (remainingKeys > 0) {
+      // the remainingKeys is set synchronously, so here the decreasing haven't happened yet
       return deferred.promise as any;
     } else {
       return results as any;

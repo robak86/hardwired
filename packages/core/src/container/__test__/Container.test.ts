@@ -127,6 +127,14 @@ describe(`Container`, () => {
         });
 
         describe(`async resolution`, () => {
+          it(`doesn't crash on empty object`, async () => {
+            const use = container.new();
+            const result = await use.object({});
+
+            expect(result).toEqual({});
+            expect(Object.keys(result)).toHaveLength(0);
+          });
+
           it(`returns correct instance for a single key`, async () => {
             const use = container.new();
             const myDef2 = fn.singleton(async () => 456);
