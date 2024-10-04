@@ -2,7 +2,7 @@ import { DisposableScopeConfigurable } from '../abstract/ScopeConfigurable.js';
 import { ScopeConfigurationDSL } from './ScopeConfigurationDSL.js';
 import { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import { DisposeFn, InitFn } from '../abstract/ContainerConfigurable.js';
+import { DisposeFn } from '../abstract/ContainerConfigurable.js';
 
 export class DisposableScopeConfigurationDSL extends ScopeConfigurationDSL implements DisposableScopeConfigurable {
   constructor(
@@ -13,7 +13,7 @@ export class DisposableScopeConfigurationDSL extends ScopeConfigurationDSL imple
   ) {
     super(_parentContainer, _currentContainer, _bindingsRegistry);
   }
-  onDispose(disposeFn: InitFn): void {
+  onDispose(disposeFn: DisposeFn): void {
     this._disposeFns.push(disposeFn);
   }
 }

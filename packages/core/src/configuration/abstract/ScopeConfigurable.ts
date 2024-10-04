@@ -2,12 +2,12 @@ import { Definition } from '../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { Binder } from '../../definitions/Binder.js';
 
-import { InitFn } from './ContainerConfigurable.js';
+import { DisposeFn, InitFn } from './ContainerConfigurable.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
 export interface DisposableScopeConfigurable extends ScopeConfigurable {
-  onDispose(disposeFn: InitFn): void;
+  onDispose(disposeFn: DisposeFn): void;
 }
 
 export interface ScopeConfigurable {
