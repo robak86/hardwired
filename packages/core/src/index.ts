@@ -24,6 +24,7 @@ export * from './definitions/abstract/FnDefinition.js';
 export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
 
 export * from './container/IContainer.js';
+export * from './container/DisposableScope.js';
 
 export { Middleware, withMiddleware, MiddlewareNextFn, createMiddleware } from './definitions/withMiddleware.js';
 export { cls, ClassType } from './definitions/cls.js';
@@ -33,3 +34,4 @@ export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
 export * from './configuration/DisposableScopeConfiguration.js';
 export * from './configuration/helper/compose.js';
+export * from './utils/withTestContainer.js';
