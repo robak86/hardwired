@@ -25,9 +25,9 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     initializer(this._currentContainer);
   }
 
-  bindCascading<TInstance>(
-    definition: Definition<TInstance, ContainerConfigureCascadingLifeTimes, []>,
-  ): Binder<TInstance, ContainerConfigureCascadingLifeTimes, []> {
+  bindCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
+    definition: Definition<TInstance, TLifeTime, []>,
+  ): Binder<TInstance, TLifeTime, []> {
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
   }
 

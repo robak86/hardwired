@@ -13,15 +13,15 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     private _bindingsRegistry: BindingsRegistry,
   ) {}
 
-  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+  cascade<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
   }
 
-  inheritLocal<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+  inheritLocal<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
     this._bindingsRegistry.addScopeBinding(definition.bind(this._parentContainer));
   }
 
-  inheritCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
+  inheritCascading<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
     const newDefinition = new Definition(definition.id, LifeTime.transient, (_, ...args: []) => {
       return this._parentContainer.use(definition, ...args);
     });
@@ -29,9 +29,9 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     this._bindingsRegistry.addCascadingBinding(newDefinition);
   }
 
-  bindCascading<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, LifeTime.scoped, []>,
-  ): Binder<TInstance, LifeTime.scoped, []> {
+  bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+    definition: Definition<TInstance, TLifeTime, []>,
+  ): Binder<TInstance, TLifeTime, []> {
     if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
       throw new Error(`Cascading is allowed only for singletons.`); // TODO: maybe I should allow it for scoped as well?
     }
