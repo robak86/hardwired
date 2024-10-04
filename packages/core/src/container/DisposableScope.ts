@@ -11,6 +11,8 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
   all: InstanceCreationAware['all'];
   defer: InstanceCreationAware['defer'];
 
+  private _isDisposed = false;
+
   constructor(
     private _container: IContainer,
     private _disposeFns: DisposeFn[] = [],
@@ -29,10 +31,19 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
     this.defer = this._container.defer;
   }
 
+  dispose(): void {
+    this[Symbol.dispose]();
+  }
+
   [Symbol.dispose](): void {
+    if (this._isDisposed) {
+      throw new Error('The scope is already disposed.');
+    }
+
     for (const disposeFn of this._disposeFns) {
-      console.log('diposee');
       disposeFn(this);
     }
+
+    this._isDisposed = true;
   }
 }
