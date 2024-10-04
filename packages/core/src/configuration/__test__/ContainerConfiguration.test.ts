@@ -2,6 +2,7 @@ import { container } from '../../container/Container.js';
 import { expectType, TypeOf } from 'ts-expect';
 import { IContainer } from '../../container/IContainer.js';
 import { fn } from '../../definitions/definitions.js';
+import { DisposableScope } from '../../container/DisposableScope.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`container.new`, () => {
@@ -121,6 +122,51 @@ describe(`ContainerConfiguration`, () => {
       );
 
       expect(value).toEqual(456);
+    });
+  });
+
+  describe(`container.disposable`, () => {
+    it(`accepts asynchronous function`, async () => {
+      const cnt = container.new();
+      const scope = cnt.disposable(async c => {});
+
+      expectType<TypeOf<typeof scope, Promise<DisposableScope>>>(true);
+    });
+
+    it(`accepts synchronous function`, async () => {
+      const cnt = container.new();
+      const scope = cnt.disposable(c => {});
+
+      expectType<TypeOf<typeof scope, DisposableScope>>(true);
+    });
+
+    it(`returns container synchronously when no configuration is passed`, async () => {
+      const cnt = container.new();
+      const scope = cnt.disposable();
+
+      expectType<TypeOf<typeof scope, DisposableScope>>(true);
+    });
+
+    it(`correctly configures the scope`, async () => {
+      const def = fn.scoped(() => 123);
+      const cnt = container.new();
+      const scope = await cnt.disposable(async scope => {
+        scope.bindCascading(def).toValue(456);
+      });
+
+      expect(scope.use(def)).toEqual(456);
+    });
+
+    it(`allows to asynchronously get instance from the parent container`, async () => {
+      const fromParent = fn.singleton(async use => 'fromParent');
+
+      const def = fn.scoped(() => 'original');
+      const cnt = container.new();
+      const scope = await cnt.disposable(async (scope, use) => {
+        scope.bindCascading(def).toValue(await use(fromParent));
+      });
+
+      expect(scope.use(def)).toEqual('fromParent');
     });
   });
 });
