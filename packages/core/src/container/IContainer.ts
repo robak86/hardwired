@@ -1,4 +1,10 @@
-import { Instance, InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import {
+  AwaitedInstanceRecord,
+  Instance,
+  InstancesArray,
+  InstancesObject,
+  InstancesRecord,
+} from '../definitions/abstract/sync/InstanceDefinition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 
@@ -10,6 +16,7 @@ import {
   DisposableAsyncScopeConfigureFn,
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
+import { HasPromiseMember } from '../utils/HasPromiseMember.js';
 
 export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
 
@@ -43,6 +50,12 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   ): HasPromise<InstancesArray<TDefinitions>> extends true
     ? Promise<AwaitedInstanceArray<TDefinitions>>
     : InstancesArray<TDefinitions>;
+
+  object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
+    object: TRecord,
+  ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
+    ? Promise<AwaitedInstanceRecord<TRecord>>
+    : InstancesRecord<TRecord>;
 }
 
 export type ContainerRunFn<TAllowedLifeTime extends LifeTime, TValue> = (

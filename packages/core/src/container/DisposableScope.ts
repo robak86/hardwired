@@ -10,6 +10,7 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
   use: InstanceCreationAware['use'];
   all: InstanceCreationAware['all'];
   defer: InstanceCreationAware['defer'];
+  object: InstanceCreationAware['object'];
 
   private _isDisposed = false;
 
@@ -29,6 +30,7 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
     this.use = this._container.use;
     this.all = this._container.all;
     this.defer = this._container.defer;
+    this.object = this._container.object;
   }
 
   dispose(): void {

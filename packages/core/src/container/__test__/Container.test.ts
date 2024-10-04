@@ -113,6 +113,67 @@ describe(`Container`, () => {
         });
       });
 
+      describe(`object`, () => {
+        it(`returns correct instances`, async () => {
+          const use = container.new();
+
+          const myDef1 = fn.singleton(() => 123);
+          const myDef2 = fn.singleton(() => 456);
+
+          const result = use.object({ myDef1, myDef2 });
+
+          expect(result.myDef1).toEqual(123);
+          expect(result.myDef2).toEqual(456);
+        });
+
+        describe(`async resolution`, () => {
+          it(`returns correct instance for a single key`, async () => {
+            const use = container.new();
+            const myDef2 = fn.singleton(async () => 456);
+            const result = await use.object({ myDef2 });
+
+            expect(result.myDef2).toEqual(456);
+          });
+
+          it(`returns correct instance for two keys`, async () => {
+            const use = container.new();
+
+            const myDef1 = fn.singleton(() => 123);
+            const myDef2 = fn.singleton(async () => 456);
+
+            const result = await use.object({ myDef1, myDef2 });
+
+            expect(result.myDef1).toEqual(123);
+            expect(result.myDef2).toEqual(456);
+          });
+
+          it(`returns correct instance for more keys`, async () => {
+            const use = container.new();
+
+            const myDef1 = fn.singleton(async () => 123);
+            const myDef2 = fn.singleton(async () => 456);
+            const myDef3 = fn.singleton(async () => 789);
+
+            const result = await use.object({ myDef1, myDef2, myDef3 });
+
+            expect(result.myDef1).toEqual(123);
+            expect(result.myDef2).toEqual(456);
+            expect(result.myDef3).toEqual(789);
+          });
+        });
+
+        it(`returns correct type for async instances`, async () => {
+          const use = container.new();
+
+          const myDef1 = fn.singleton(() => 123);
+          const myDef2 = fn.singleton(async () => 456);
+
+          const result = use.object({ myDef1, myDef2 });
+
+          expectType<TypeEqual<typeof result, Promise<{ myDef1: number; myDef2: number }>>>(true);
+        });
+      });
+
       it(`provides withScope method`, async () => {
         const use = container.new();
         const myDef = fn.scoped(() => Math.random());

@@ -1,4 +1,9 @@
-import { InstancesArray } from '../definitions/abstract/sync/InstanceDefinition.js';
+import {
+  AwaitedInstanceRecord,
+  InstancesArray,
+  InstancesObject,
+  InstancesRecord,
+} from '../definitions/abstract/sync/InstanceDefinition.js';
 
 import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
 import {
@@ -34,6 +39,8 @@ import {
   DisposableAsyncScopeConfigureFn,
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
+import { HasPromiseMember } from '../utils/HasPromiseMember.js';
+import { Deferred } from '../utils/Deferred.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -119,6 +126,44 @@ export class Container
     }
 
     return results as any;
+  }
+
+  object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
+    object: TRecord,
+  ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
+    ? Promise<AwaitedInstanceRecord<TRecord>>
+    : InstancesRecord<TRecord> {
+    const results = {} as InstancesRecord<any>;
+    let hasPromise = false;
+
+    for (const [key, value] of Object.entries(object)) {
+      const instance = this.use(value);
+      results[key] = instance;
+      if (instance instanceof Promise) {
+        hasPromise = true;
+      }
+    }
+
+    if (hasPromise) {
+      const deferred = new Deferred<AwaitedInstanceRecord<TRecord>>();
+      const keys = Object.keys(results);
+      let remainingKeys = keys.length;
+
+      for (const key of keys) {
+        results[key] = Promise.resolve(results[key]).then((value: any) => {
+          results[key] = value;
+          remainingKeys -= 1;
+
+          if (remainingKeys === 0) {
+            deferred.resolve(results as AwaitedInstanceRecord<TRecord>);
+          }
+        });
+      }
+
+      return deferred.promise as any;
+    } else {
+      return results as any;
+    }
   }
 
   defer<TInstance, TArgs extends any[]>(factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>) {
