@@ -59,7 +59,7 @@ describe(`asyncDefine`, () => {
 
       const result = await container
         .new()
-        .checkoutScope(c => {
+        .scope(c => {
           c.bindLocal(ext1).toValue(1);
           c.bindLocal(ext2).toValue('str');
         })
@@ -83,7 +83,7 @@ describe(`asyncDefine`, () => {
       const value = fn.scoped(() => new BoxedValue(Math.random()));
 
       const definition = fn(async locator => {
-        const scopedContainer = locator.checkoutScope();
+        const scopedContainer = locator.scope();
         return [await scopedContainer(value), await scopedContainer(value)];
       });
 

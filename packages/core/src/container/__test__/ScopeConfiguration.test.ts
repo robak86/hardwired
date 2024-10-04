@@ -15,7 +15,7 @@ describe('ScopeConfiguration', () => {
 
       const root = container.new();
 
-      const childContainer = root.checkoutScope((scope, use) => {
+      const childContainer = root.scope((scope, use) => {
         scope.bindLocal(compositionRoot).define(_ => use(compositionRoot));
       });
 
@@ -31,7 +31,7 @@ describe('ScopeConfiguration', () => {
         const dep = fn.scoped(() => new BoxedValue(Math.random()));
         const root = container.new();
 
-        const childContainer = root.checkoutScope((scope, use) => {
+        const childContainer = root.scope((scope, use) => {
           scope.onInit(use => {
             use(dep).value = 1;
           });
@@ -63,7 +63,7 @@ describe('ScopeConfiguration', () => {
 
         const root = container.new();
 
-        const childContainer = root.checkoutScope((scope, parent) => {
+        const childContainer = root.scope((scope, parent) => {
           scope.inheritLocal(compositionRoot);
         });
 

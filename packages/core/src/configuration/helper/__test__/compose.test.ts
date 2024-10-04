@@ -23,7 +23,7 @@ describe('compose', async () => {
 
       const root = container.new();
 
-      const scoped = root.checkoutScope(composed);
+      const scoped = root.scope(composed);
       expect(scoped.use(a)).toBe(1);
       expect(scoped.use(b)).toBe(1);
     });

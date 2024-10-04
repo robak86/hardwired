@@ -39,6 +39,7 @@
       - [Using a Temporal Container](#using-a-temporal-container)
     - [Creating a New Container](#creating-a-new-container)
     - [Using Scoped Containers](#using-scoped-containers)
+    - [Using Disposable Scope](#using-disposable-scope)
     - [Creating Child Scopes from the Definitions](#creating-child-scopes-from-the-definitions)
   - [Definitions Binding](#definitions-binding)
     - [Scope configuration](#scope-configuration)
@@ -223,7 +224,7 @@ A scoped container inherits all the singleton instances from its parent containe
 - **Overriding**: You can override definitions within a scope without affecting the parent container or other scopes.
 - **Lifecycle Management**: Scoped dependencies are managed independently, allowing you to control their creation within the [scope](#using-scoped-containers) or [the definition](#creating-child-scopes-from-the-definitions).
 
-By utilizing scopes, you can ensure that specific components are instantiated fresh within a particular context while still reusing singleton dependencies from the parent container.
+By using scopes, you can ensure that specific components are instantiated fresh within a particular context while still reusing singleton dependencies from the parent container.
 
 For example, in a web server handling multiple requests concurrently, you can use scopes to ensure that each request has its own instances of certain dependencies (like request-specific data) without interfering with other requests.
 
@@ -430,7 +431,7 @@ const client = myContainer.use(ApiClient.class);
 
 ### Using Scoped Containers
 
-You can create a scoped container, which inherits all the singleton definitions from the root container, but has its own scoped instances.
+You can create a scoped container, which inherits all the singleton instances from the root container, but has its own scoped instances.
 
 ```typescript
 import { container, fn } from 'hardwired';
@@ -438,8 +439,8 @@ import { v4 as uuid } from 'uuid';
 
 const requestId = fn.scoped(() => uuid());
 
-const scope1 = container.checkoutScope();
-const scope2 = container.checkoutScope();
+const scope1 = container.scope();
+const scope2 = container.scope();
 
 const id1 = scope1.use(requestId); // every time you request the requestId from scope1, you get the same id
 const id2 = scope2.use(requestId); // scope2 holds its own requestId value
@@ -456,6 +457,22 @@ const id2 = container.withScope(use => {
   return use(requestIdDefinition);
 });
 ```
+
+### Using Disposable Scope
+
+Apart from the standard scopes, Hardwired provides also disposable scopes, that implements `Disposable` interface and can be used with the [using](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) keyword. Additionally, the disposable scope cannot create any child scopes. This limitation was introduced on purpose to avoid implementing complex logic related to disposing hierarchies of scopes.
+
+```typescript
+const root = container.new();
+
+using disposableScope = root.disposable(scope => {
+  scope.onDispose(use => {
+    use(wsConnection).disconnect();
+  });
+});
+```
+
+This example demonstrates also scope configurations. You can learn more about it [here](#scope-configuration).
 
 ### Creating Child Scopes from the Definitions
 
@@ -571,11 +588,10 @@ The assigned value is available only in the current scope.
 - `scope.bindLocal(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
 ```typescript
-import {container, configureScope, fn} from 'hardwired';
+import { container, configureScope, fn } from 'hardwired';
 
 class Boxed<T> {
-  constructor(public value: T) {
-  }
+  constructor(public value: T) {}
 }
 
 const definition = fn.scoped(() => new Boxed(Math.random()));
@@ -595,10 +611,10 @@ const scopeConfig = configureScope(scope => {
   });
 });
 
-const scopeWithoutConfiguration = container.checkoutScope();
+const scopeWithoutConfiguration = container.scope();
 scopeWithoutConfiguration.use(definition); // returns random value;
 
-const configuredScope = container.checkoutScope(scopeConfig);
+const configuredScope = container.scope(scopeConfig);
 configuredScope.use(definition); // returns the Boxed object with value 1
 ```
 
@@ -612,7 +628,7 @@ The assigned value is available for the current scope and propagated to all newl
 - `scope.bindCascading(definition).configure(configureFn)`: Modifies the instance after it's created.
 - `scope.bindCascading(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
-Additionally, you can make the definition cascading using `scope.cascade(definition)`.  
+Additionally, you can make the definition cascading using `scope.cascade(definition)`.
 
 ##### Inheriting instances from the parent scope
 
@@ -737,10 +753,10 @@ const configValue = myContainer.use(config); // { apiUrl: 'https://api.example.c
 ### Using with Scopes
 
 ```typescript
-import {container, configureScope} from 'hardwired';
+import { container, configureScope } from 'hardwired';
 
 const scopeConfig = configureScope(scope => {
-  scope.bindLocal(config).toValue({apiUrl: 'https://api.example.com'});
+  scope.bindLocal(config).toValue({ apiUrl: 'https://api.example.com' });
 });
 
 container.withScope(scopeConfig, use => {

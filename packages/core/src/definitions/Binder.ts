@@ -9,12 +9,12 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
     private _onInstantiableBind: (newDefinition: Definition<TInstance, TLifeTime, TArgs>) => void,
   ) {}
 
-  to(newDefinition: Definition<TInstance, TLifeTime, TArgs>) {
-    const definition = new Definition(this._definition.id, newDefinition.strategy, newDefinition.create);
+  to(otherDefinition: Definition<TInstance, TLifeTime, TArgs>) {
+    const definition = new Definition(this._definition.id, otherDefinition.strategy, otherDefinition.create);
     this._onInstantiableBind(definition);
   }
 
-  toValue(value: TInstance) {
+  toValue(value: Awaited<TInstance>) {
     const newDefinition = new Definition(this._definition.id, this._definition.strategy, (use, ...args) => value);
     this._onStaticBind(newDefinition);
   }

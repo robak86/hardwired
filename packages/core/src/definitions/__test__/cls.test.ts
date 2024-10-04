@@ -89,7 +89,7 @@ describe(`cls`, () => {
 
       const instance1 = cnt(MyClass.asScoped);
       const instance2 = cnt(MyClass.asScoped);
-      const instance3 = cnt.checkoutScope().use(MyClass.asScoped);
+      const instance3 = cnt.scope().use(MyClass.asScoped);
 
       expect(instance1).toBe(instance2);
       expect(instance1).not.toBe(instance3);

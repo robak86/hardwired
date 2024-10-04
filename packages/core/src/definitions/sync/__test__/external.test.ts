@@ -44,7 +44,7 @@ describe(`unbound`, () => {
     it(`returns correct instance`, async () => {
       const cnt = container.new();
       const result = cnt
-        .checkoutScope(c => {
+        .scope(c => {
           c.bindLocal(externalParams1D).toValue({ someExternalParam: 111 });
         })
         .use(defUsingExternals1);
@@ -56,7 +56,7 @@ describe(`unbound`, () => {
     it(`merges external params`, async () => {
       const cnt = container.new();
       const result = cnt
-        .checkoutScope(c => {
+        .scope(c => {
           c.bindLocal(externalParams1D).toValue({ someExternalParam: 111 });
           c.bindLocal(externalParams2D).toValue({ otherExternalParam: 456 });
         })
