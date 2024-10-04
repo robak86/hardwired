@@ -34,4 +34,4 @@ export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
 export * from './configuration/DisposableScopeConfiguration.js';
 export * from './configuration/helper/compose.js';
-export * from './utils/withTestContainer.js';
+export * from './utils/bindTestContainer.js';

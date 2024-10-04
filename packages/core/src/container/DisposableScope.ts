@@ -33,6 +33,10 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
     this.object = this._container.object;
   }
 
+  get id() {
+    return this._container.id;
+  }
+
   dispose(): void {
     this[Symbol.dispose]();
   }

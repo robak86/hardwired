@@ -6,15 +6,15 @@ import { container } from '../container/Container.js';
 import { DisposableScope } from '../container/DisposableScope.js';
 import { composeAsync } from '../configuration/helper/compose.js';
 
-export type TestRunnerCallbacks = {
+export type BindTestContainerConfig = {
   beforeEach: (fn: () => Promise<void>) => void;
   afterEach: (fn: () => void) => void;
 };
 
-export const withTestContainer =
-  (config: TestRunnerCallbacks) =>
-  (...configureFn: Array<DisposableScopeConfigureFn | DisposableAsyncScopeConfigureFn>): DisposableScope => {
-    const testContainer = container.new();
+export const bindTestContainer = (config: BindTestContainerConfig) => {
+  const testContainer = container.new();
+
+  return (...configureFn: Array<DisposableScopeConfigureFn | DisposableAsyncScopeConfigureFn>): DisposableScope => {
     let disposable: DisposableScope;
 
     config.beforeEach(async () => {
@@ -42,3 +42,4 @@ export const withTestContainer =
       },
     ) as any;
   };
+};

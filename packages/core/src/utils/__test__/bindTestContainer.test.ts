@@ -1,18 +1,19 @@
-import { withTestContainer } from '../withTestContainer.js';
+import { bindTestContainer } from '../bindTestContainer.js';
 import { fn } from '../../definitions/definitions.js';
 import { unbound } from '../../definitions/sync/unbound.js';
+import { InstanceCreationAware } from '../../container/IContainer.js';
 
-const testContainer = withTestContainer({
+const withContainer = bindTestContainer({
   beforeEach,
   afterEach,
 });
 
-describe(`withTestContainer`, () => {
+describe(`bindTestContainer`, () => {
   describe(`using disposable for testing`, () => {
     const results: number[] = [];
     const def = fn.scoped(() => Math.random());
 
-    const use = testContainer(async (scope, use) => {});
+    const use = withContainer(async (scope, use) => {});
 
     it(`uses separate disposable scope per test, first result`, async () => {
       const a = use(def);
@@ -49,7 +50,7 @@ describe(`withTestContainer`, () => {
 
     const dep3 = unbound<string>();
 
-    const use = testContainer(
+    const use = withContainer(
       (scope, use) => {
         scope.bindCascading(dep3).toValue('test');
         scope.onDispose(onDispose);
@@ -81,6 +82,33 @@ describe(`withTestContainer`, () => {
 
     it(`called onDispose`, async () => {
       expect(onDisposeCalls).toEqual(3);
+    });
+  });
+
+  describe(`reusing root container`, () => {
+    const usedContainers: InstanceCreationAware[] = [];
+    const disposableContainerIds: string[] = [];
+    const def = fn.scoped(() => Math.random());
+    const use = withContainer(async (scope, use) => {
+      usedContainers.push(use);
+    });
+
+    it(`uses the same root container in first test case`, async () => {
+      use.all(def);
+      disposableContainerIds.push(use.id);
+    });
+
+    it(`uses the same root container in the send test case`, async () => {
+      use(def);
+      disposableContainerIds.push(use.id);
+    });
+
+    it(`the instances of root container were the same`, async () => {
+      expect(usedContainers[0]).toBe(usedContainers[1]);
+    });
+
+    it(`the scope instances were different`, async () => {
+      expect(disposableContainerIds[0]).not.toBe(disposableContainerIds[1]);
     });
   });
 });
