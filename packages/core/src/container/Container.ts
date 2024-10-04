@@ -8,6 +8,7 @@ import {
   HasPromise,
   IContainer,
   IContainerScopes,
+  IDisposableScopeAware,
   InstanceCreationAware,
   IStrategyAware,
   UseFn,
@@ -26,17 +27,21 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
+import { DisposableScope } from './DisposableScope.js';
+import { DisposableScopeConfigurationDSL } from '../configuration/dsl/DisposableScopeConfigurationDSL.js';
 import { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
+import {
+  DisposableAsyncScopeConfigureFn,
+  DisposableScopeConfigureFn,
+} from '../configuration/DisposableScopeConfiguration.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
 export class Container
   extends ExtensibleFunction
-  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IStrategyAware, Disposable
+  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
 {
   public readonly id = v4();
-  protected disposeFns: DisposeFn[] = [];
-  protected _disposed = false;
 
   constructor(
     public readonly parentId: string | null,
@@ -60,15 +65,6 @@ export class Container
     this.withScope = this.withScope.bind(this);
   }
 
-  [Symbol.dispose](): void {
-    if (this._disposed) {
-      throw new Error('Container already disposed');
-    }
-    this.disposeFns.forEach(disposeFn => disposeFn(this));
-    this.disposeFns.length = 0;
-    this._disposed = true;
-  }
-
   new(): IContainer;
   new(configureFn: AsyncContainerConfigureFn): Promise<IContainer>;
   new(configureFn: ContainerConfigureFn): IContainer;
@@ -79,7 +75,7 @@ export class Container
     const cnt = new Container(null, definitionsRegistry, instancesStore);
 
     if (configureFn) {
-      const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt, cnt.disposeFns);
+      const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt);
       const configResult = configureFn(binder);
 
       if (configResult instanceof Promise) {
@@ -131,6 +127,32 @@ export class Container
     };
   }
 
+  disposable(): DisposableScope;
+  disposable(scopeConfigureFn: DisposableAsyncScopeConfigureFn): Promise<DisposableScope>;
+  disposable(scopeConfigureFn: DisposableScopeConfigureFn): DisposableScope;
+  disposable(
+    scopeConfigureFn?: DisposableScopeConfigureFn | DisposableAsyncScopeConfigureFn,
+  ): DisposableScope | Promise<DisposableScope> {
+    const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
+    const instancesStore = this.instancesStore.childScope();
+
+    const cnt = new Container(this.id, bindingsRegistry, instancesStore);
+    const disposeFns: DisposeFn[] = [];
+    const disposable = new DisposableScope(cnt, disposeFns);
+
+    if (scopeConfigureFn) {
+      const binder = new DisposableScopeConfigurationDSL(this, cnt, bindingsRegistry, disposeFns);
+      const result = scopeConfigureFn(binder, this);
+      if (result instanceof Promise) {
+        return result.then(() => disposable);
+      } else {
+        return disposable;
+      }
+    }
+
+    return disposable;
+  }
+
   checkoutScope(): IContainer;
   checkoutScope(scopeConfigureFn: AsyncScopeConfigureFn): Promise<IContainer>;
   checkoutScope(scopeConfigureFn: ScopeConfigureFn): IContainer;
@@ -141,7 +163,7 @@ export class Container
     const cnt = new Container(this.id, bindingsRegistry, instancesStore);
 
     if (scopeConfigureFn) {
-      const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry, cnt.disposeFns);
+      const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry);
       const result = scopeConfigureFn(binder, this);
       if (result instanceof Promise) {
         return result.then(() => cnt);
@@ -161,28 +183,15 @@ export class Container
     runFn?: ContainerRunFn<LifeTime, TValue>,
   ): TValue | EnsurePromise<TValue> {
     if (runFn) {
-      const scope: IContainer | Promise<IContainer> = this.checkoutScope(
-        configureOrRunFn as ScopeConfigureFn | AsyncScopeConfigureFn,
-      );
+      const configResult = this.checkoutScope(configureOrRunFn as ScopeConfigureFn | AsyncScopeConfigureFn);
 
-      if (scope instanceof Promise) {
-        return scope.then(scope => {
-          const result = runFn(scope);
-
-          scope[Symbol.dispose]();
-          return result;
-        }) as EnsurePromise<TValue>;
+      if (configResult instanceof Promise) {
+        return configResult.then(scope => runFn(scope)) as EnsurePromise<TValue>;
       } else {
-        const result = runFn(scope);
-        scope[Symbol.dispose]();
-        return result;
+        return runFn(configResult);
       }
     } else {
-      const scope = this.checkoutScope();
-      const result = (configureOrRunFn as ContainerRunFn<any, any>)(scope);
-
-      scope[Symbol.dispose]();
-      return result;
+      return (configureOrRunFn as ContainerRunFn<any, any>)(this.checkoutScope());
     }
   }
 }

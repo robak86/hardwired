@@ -6,6 +6,10 @@ import { InitFn } from './ContainerConfigurable.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
+export interface DisposableScopeConfigurable extends ScopeConfigurable {
+  onDispose(disposeFn: InitFn): void;
+}
+
 export interface ScopeConfigurable {
   inheritLocal<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
   inheritCascading<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
@@ -15,8 +19,6 @@ export interface ScopeConfigurable {
   ): Binder<TInstance, TLifeTime, TArgs>;
 
   onInit(initializer: InitFn): void;
-
-  onDispose(disposeFn: InitFn): void;
 
   bindCascading<TInstance>(
     definition: Definition<TInstance, LifeTime.scoped, []>,

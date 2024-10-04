@@ -26,5 +26,4 @@ export interface ContainerConfigurable {
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 
   init(initializer: InitFn): void;
-  onDispose(disposeFn: DisposeFn): void;
 }

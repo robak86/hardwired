@@ -5,6 +5,11 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 import { Definition } from '../definitions/abstract/Definition.js';
 
 import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import { DisposableScope } from './DisposableScope.js';
+import {
+  DisposableAsyncScopeConfigureFn,
+  DisposableScopeConfigureFn,
+} from '../configuration/DisposableScopeConfiguration.js';
 
 export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
 
@@ -15,6 +20,12 @@ export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
     instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs
   ): TValue;
+}
+
+export interface IDisposableScopeAware<TAllowedLifeTime extends LifeTime = LifeTime> {
+  disposable(): DisposableScope;
+  disposable(options: DisposableAsyncScopeConfigureFn): Promise<DisposableScope>;
+  disposable(options?: DisposableScopeConfigureFn): DisposableScope;
 }
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
@@ -59,7 +70,7 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime>,
     UseFn<TAllowedLifeTime>,
-    Disposable {
+    IDisposableScopeAware<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;
 }

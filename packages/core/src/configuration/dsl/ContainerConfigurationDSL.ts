@@ -5,7 +5,6 @@ import {
   ContainerConfigureCascadingLifeTimes,
   ContainerConfigureFreezeLifeTimes,
   ContainerConfigureLocalLifeTimes,
-  DisposeFn,
   InitFn,
 } from '../abstract/ContainerConfigurable.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
@@ -16,7 +15,6 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private _currentContainer: IContainer & IStrategyAware,
-    private _disposeFns: DisposeFn[],
   ) {}
 
   cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
@@ -25,10 +23,6 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
 
   init(initializer: InitFn): void {
     initializer(this._currentContainer);
-  }
-
-  onDispose(disposeFn: DisposeFn): void {
-    this._disposeFns.push(disposeFn);
   }
 
   bindCascading<TInstance>(
