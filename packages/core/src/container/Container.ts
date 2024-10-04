@@ -5,7 +5,7 @@ import {
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
 
-import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrategiesRegistry.js';
+import { containerStrategies } from '../strategies/collection/containerStrategies.js';
 import {
   AwaitedInstanceArray,
   ContainerRunFn,
@@ -25,7 +25,6 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
@@ -54,7 +53,6 @@ export class Container
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
-    protected readonly strategiesRegistry: StrategiesRegistry = defaultStrategiesRegistry,
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -110,7 +108,7 @@ export class Container
   }
 
   buildWithStrategy: UseFn<LifeTime> = (definition, ...args) => {
-    const strategy = this.strategiesRegistry.get(definition.strategy);
+    const strategy = containerStrategies[definition.strategy];
     return strategy.buildFn(definition, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
@@ -233,15 +231,8 @@ export class Container
   }
 }
 
-export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
-  .use;
+export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create()).use;
 
-export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)
-  .all;
+export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create()).all;
 
-export const container = new Container(
-  null,
-  BindingsRegistry.create(),
-  InstancesStore.create(),
-  defaultStrategiesRegistry,
-);
+export const container = new Container(null, BindingsRegistry.create(), InstancesStore.create());
