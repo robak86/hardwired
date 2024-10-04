@@ -4,6 +4,7 @@ import { defaultStrategiesRegistry } from '../strategies/collection/defaultStrat
 import {
   AwaitedInstanceArray,
   ContainerRunFn,
+  EnsurePromise,
   HasPromise,
   IContainer,
   IContainerScopes,
@@ -20,9 +21,9 @@ import { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { StrategiesRegistry } from '../strategies/collection/StrategiesRegistry.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 
@@ -48,9 +49,18 @@ export class Container
         return this.use(definition, ...args);
       },
     );
+
+    this.use = this.use.bind(this);
+    this.all = this.all.bind(this);
+    this.defer = this.defer.bind(this);
+    this.checkoutScope = this.checkoutScope.bind(this);
+    this.withScope = this.withScope.bind(this);
   }
 
-  new(configureFn?: ContainerConfigureFn): IContainer {
+  new(): IContainer;
+  new(configureFn: AsyncContainerConfigureFn): Promise<IContainer>;
+  new(configureFn: ContainerConfigureFn): IContainer;
+  new(configureFn?: ContainerConfigureFn | AsyncContainerConfigureFn): IContainer | Promise<IContainer> {
     const definitionsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
 
@@ -58,8 +68,15 @@ export class Container
 
     if (configureFn) {
       const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt);
-      configureFn(binder);
+      const configResult = configureFn(binder);
+
+      if (configResult instanceof Promise) {
+        return configResult.then(() => cnt);
+      } else {
+        return cnt;
+      }
     }
+
     return cnt;
   }
 
@@ -67,21 +84,24 @@ export class Container
     return definition.create(this, ...args);
   }
 
-  use: UseFn<LifeTime> = (definition, ...args) => {
+  use<TValue, TArgs extends any[]>(
+    definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue {
     const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
     return this.buildWithStrategy(patchedInstanceDef, ...args);
-  };
+  }
 
   buildWithStrategy: UseFn<LifeTime> = (definition, ...args) => {
     const strategy = this.strategiesRegistry.get(definition.strategy);
     return strategy.buildFn(definition, this.instancesStore, this.bindingsRegistry, this, ...args);
   };
 
-  all = <TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
+  all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
     ...definitions: [...TDefinitions]
   ): HasPromise<InstancesArray<TDefinitions>> extends true
     ? Promise<AwaitedInstanceArray<TDefinitions>>
-    : InstancesArray<TDefinitions> => {
+    : InstancesArray<TDefinitions> {
     const results = definitions.map(def => this.use(def));
 
     if (results.some(result => result instanceof Promise)) {
@@ -89,16 +109,18 @@ export class Container
     }
 
     return results as any;
-  };
+  }
 
-  defer =
-    <TInstance, TArgs extends any[]>(
-      factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
-    ): ((...args: TArgs) => TInstance) =>
-    (...args: TArgs) =>
-      this.use(factoryDefinition, ...args);
+  defer<TInstance, TArgs extends any[]>(factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>) {
+    return (...args: TArgs): TInstance => {
+      return this.use(factoryDefinition, ...args);
+    };
+  }
 
-  checkoutScope: IContainerScopes['checkoutScope'] = (scopeConfigureFn?: ScopeConfigureFn): IContainer => {
+  checkoutScope(): IContainer;
+  checkoutScope(scopeConfigureFn: AsyncScopeConfigureFn): Promise<IContainer>;
+  checkoutScope(scopeConfigureFn: ScopeConfigureFn): IContainer;
+  checkoutScope(scopeConfigureFn?: ScopeConfigureFn | AsyncScopeConfigureFn): IContainer | Promise<IContainer> {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
 
@@ -106,22 +128,36 @@ export class Container
 
     if (scopeConfigureFn) {
       const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry);
-      scopeConfigureFn(binder, this);
+      const result = scopeConfigureFn(binder, this);
+      if (result instanceof Promise) {
+        return result.then(() => cnt);
+      } else {
+        return cnt;
+      }
     }
 
     return cnt;
-  };
+  }
 
-  withScope: IContainerScopes['withScope'] = (
-    configureOrRunFn: ContainerRunFn<any, any> | ScopeConfigureFn,
-    runFn?: ContainerRunFn<any, any>,
-  ) => {
-    if (configureOrRunFn instanceof Function && runFn) {
-      return runFn(this.checkoutScope(configureOrRunFn as ScopeConfigureFn));
+  withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
+  withScope<TValue>(options: AsyncScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): EnsurePromise<TValue>;
+  withScope<TValue>(options: ScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): TValue;
+  withScope<TValue>(
+    configureOrRunFn: ScopeConfigureFn | AsyncScopeConfigureFn | ContainerRunFn<LifeTime, TValue>,
+    runFn?: ContainerRunFn<LifeTime, TValue>,
+  ): TValue | EnsurePromise<TValue> {
+    if (runFn) {
+      const configResult = this.checkoutScope(configureOrRunFn as ScopeConfigureFn | AsyncScopeConfigureFn);
+
+      if (configResult instanceof Promise) {
+        return configResult.then(scope => runFn(scope)) as EnsurePromise<TValue>;
+      } else {
+        return runFn(configResult);
+      }
     } else {
       return (configureOrRunFn as ContainerRunFn<any, any>)(this.checkoutScope());
     }
-  };
+  }
 }
 
 export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create(), defaultStrategiesRegistry)

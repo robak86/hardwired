@@ -4,7 +4,9 @@ import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Instance
 
 import { Definition } from '../definitions/abstract/Definition.js';
 
-import { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+
+export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
 
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;
@@ -37,10 +39,13 @@ export type ContainerRunFn<TAllowedLifeTime extends LifeTime, TValue> = (
 ) => TValue;
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
+  checkoutScope(): IContainer<TAllowedLifeTime>;
+  checkoutScope(options: AsyncScopeConfigureFn): Promise<IContainer<TAllowedLifeTime>>;
   checkoutScope(options?: ScopeConfigureFn): IContainer<TAllowedLifeTime>;
 
-  withScope<TValue>(fn: ContainerRunFn<TAllowedLifeTime, TValue>): TValue;
-  withScope<TValue>(options: ScopeConfigureFn, fn: (locator: IContainer<TAllowedLifeTime>) => TValue): TValue;
+  withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
+  withScope<TValue>(options: AsyncScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): EnsurePromise<TValue>;
+  withScope<TValue>(options: ScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): TValue;
 }
 
 export interface UseFn<TAllowedLifeTime extends LifeTime> {
