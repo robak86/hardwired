@@ -438,8 +438,8 @@ import { v4 as uuid } from 'uuid';
 
 const requestId = fn.scoped(() => uuid());
 
-const scope1 = container.checkoutScope();
-const scope2 = container.checkoutScope();
+const scope1 = container.scope();
+const scope2 = container.scope();
 
 const id1 = scope1.use(requestId); // every time you request the requestId from scope1, you get the same id
 const id2 = scope2.use(requestId); // scope2 holds its own requestId value
@@ -595,10 +595,10 @@ const scopeConfig = configureScope(scope => {
   });
 });
 
-const scopeWithoutConfiguration = container.checkoutScope();
+const scopeWithoutConfiguration = container.scope();
 scopeWithoutConfiguration.use(definition); // returns random value;
 
-const configuredScope = container.checkoutScope(scopeConfig);
+const configuredScope = container.scope(scopeConfig);
 configuredScope.use(definition); // returns the Boxed object with value 1
 ```
 

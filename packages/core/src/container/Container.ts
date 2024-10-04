@@ -61,7 +61,7 @@ export class Container
     this.use = this.use.bind(this);
     this.all = this.all.bind(this);
     this.defer = this.defer.bind(this);
-    this.checkoutScope = this.checkoutScope.bind(this);
+    this.scope = this.scope.bind(this);
     this.withScope = this.withScope.bind(this);
   }
 
@@ -153,10 +153,10 @@ export class Container
     return disposable;
   }
 
-  checkoutScope(): IContainer;
-  checkoutScope(scopeConfigureFn: AsyncScopeConfigureFn): Promise<IContainer>;
-  checkoutScope(scopeConfigureFn: ScopeConfigureFn): IContainer;
-  checkoutScope(scopeConfigureFn?: ScopeConfigureFn | AsyncScopeConfigureFn): IContainer | Promise<IContainer> {
+  scope(): IContainer;
+  scope(scopeConfigureFn: AsyncScopeConfigureFn): Promise<IContainer>;
+  scope(scopeConfigureFn: ScopeConfigureFn): IContainer;
+  scope(scopeConfigureFn?: ScopeConfigureFn | AsyncScopeConfigureFn): IContainer | Promise<IContainer> {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
 
@@ -183,7 +183,7 @@ export class Container
     runFn?: ContainerRunFn<LifeTime, TValue>,
   ): TValue | EnsurePromise<TValue> {
     if (runFn) {
-      const configResult = this.checkoutScope(configureOrRunFn as ScopeConfigureFn | AsyncScopeConfigureFn);
+      const configResult = this.scope(configureOrRunFn as ScopeConfigureFn | AsyncScopeConfigureFn);
 
       if (configResult instanceof Promise) {
         return configResult.then(scope => runFn(scope)) as EnsurePromise<TValue>;
@@ -191,7 +191,7 @@ export class Container
         return runFn(configResult);
       }
     } else {
-      return (configureOrRunFn as ContainerRunFn<any, any>)(this.checkoutScope());
+      return (configureOrRunFn as ContainerRunFn<any, any>)(this.scope());
     }
   }
 }

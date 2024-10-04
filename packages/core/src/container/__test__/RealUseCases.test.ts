@@ -43,8 +43,8 @@ describe(`Logger`, () => {
       expect(root.use(requestId)).toEqual('app');
       expect(root.use(Logger.class).print('msg')).toEqual('appmsg');
 
-      const req1 = root.checkoutScope(requestScopeConfig);
-      const req2 = root.checkoutScope(requestScopeConfig);
+      const req1 = root.scope(requestScopeConfig);
+      const req2 = root.scope(requestScopeConfig);
 
       expect(req1.use(requestId)).toEqual('1');
       expect(req1.use(requestId)).toEqual(req1.use(requestId));

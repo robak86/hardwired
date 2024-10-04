@@ -34,7 +34,7 @@ const scopesBench = new Bench({
     cnt.use(scopedD);
     cnt.use(transientD);
 
-    childScope = cnt.checkoutScope();
+    childScope = cnt.scope();
     childScope.use(singletonD);
     childScope.use(scopedD);
     childScope.use(transientD);
@@ -45,8 +45,8 @@ const scopesBench = new Bench({
   },
 });
 
-scopesBench.add('checkoutScope without configuration', () => {
-  cnt.checkoutScope();
+scopesBench.add('scope without configuration', () => {
+  cnt.scope();
 });
 
 scopesBench

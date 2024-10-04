@@ -30,24 +30,24 @@ describe(`ContainerConfiguration`, () => {
     });
   });
 
-  describe(`container.checkoutScope`, () => {
+  describe(`container.scope`, () => {
     it(`accepts asynchronous function`, async () => {
       const cnt = container.new();
-      const scope = cnt.checkoutScope(async c => {});
+      const scope = cnt.scope(async c => {});
 
       expectType<TypeOf<typeof scope, Promise<IContainer>>>(true);
     });
 
     it(`accepts synchronous function`, async () => {
       const cnt = container.new();
-      const scope = cnt.checkoutScope(c => {});
+      const scope = cnt.scope(c => {});
 
       expectType<TypeOf<typeof scope, IContainer>>(true);
     });
 
     it(`returns container synchronously when no configuration is passed`, async () => {
       const cnt = container.new();
-      const scope = cnt.checkoutScope();
+      const scope = cnt.scope();
 
       expectType<TypeOf<typeof scope, IContainer>>(true);
     });
@@ -55,7 +55,7 @@ describe(`ContainerConfiguration`, () => {
     it(`correctly configures the scope`, async () => {
       const def = fn.scoped(() => 123);
       const cnt = container.new();
-      const scope = await cnt.checkoutScope(async scope => {
+      const scope = await cnt.scope(async scope => {
         scope.bindCascading(def).toValue(456);
       });
 
@@ -67,7 +67,7 @@ describe(`ContainerConfiguration`, () => {
 
       const def = fn.scoped(() => 'original');
       const cnt = container.new();
-      const scope = await cnt.checkoutScope(async (scope, use) => {
+      const scope = await cnt.scope(async (scope, use) => {
         scope.bindCascading(def).toValue(await use(fromParent));
       });
 

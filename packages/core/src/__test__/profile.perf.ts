@@ -35,19 +35,19 @@ const instantiationBench = new Bench({
   time: 100,
   setup: () => {
     cnt = container.new();
-    c1 = cnt.checkoutScope(scope => {
+    c1 = cnt.scope(scope => {
       scope.cascade(scopedD);
     });
-    c2 = cnt.checkoutScope(scope => {});
-    c3 = cnt.checkoutScope(scope => {});
+    c2 = cnt.scope(scope => {});
+    c3 = cnt.scope(scope => {});
   },
   teardown: () => {
     cnt = container.new();
-    c1 = cnt.checkoutScope(scope => {
+    c1 = cnt.scope(scope => {
       scope.cascade(scopedD);
     });
-    c2 = cnt.checkoutScope(scope => {});
-    c3 = cnt.checkoutScope(scope => {});
+    c2 = cnt.scope(scope => {});
+    c3 = cnt.scope(scope => {});
   },
 });
 

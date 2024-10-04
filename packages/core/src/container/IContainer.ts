@@ -50,9 +50,9 @@ export type ContainerRunFn<TAllowedLifeTime extends LifeTime, TValue> = (
 ) => TValue;
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
-  checkoutScope(): IContainer<TAllowedLifeTime>;
-  checkoutScope(options: AsyncScopeConfigureFn): Promise<IContainer<TAllowedLifeTime>>;
-  checkoutScope(options?: ScopeConfigureFn): IContainer<TAllowedLifeTime>;
+  scope(): IContainer<TAllowedLifeTime>;
+  scope(options: AsyncScopeConfigureFn): Promise<IContainer<TAllowedLifeTime>>;
+  scope(options?: ScopeConfigureFn): IContainer<TAllowedLifeTime>;
 
   withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
   withScope<TValue>(options: AsyncScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): EnsurePromise<TValue>;

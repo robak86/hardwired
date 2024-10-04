@@ -27,7 +27,7 @@ describe(`define`, () => {
 
       const result = container
         .new()
-        .checkoutScope(c => {
+        .scope(c => {
           c.bindLocal(ext1).toValue(1);
           c.bindLocal(ext2).toValue('str');
         })
@@ -51,7 +51,7 @@ describe(`define`, () => {
       const value = fn.scoped(() => new BoxedValue(Math.random()));
 
       const definition = fn(locator => {
-        const scopedContainer = locator.checkoutScope();
+        const scopedContainer = locator.scope();
         return [scopedContainer(value), scopedContainer(value)];
       });
 

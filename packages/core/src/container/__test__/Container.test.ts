@@ -203,7 +203,7 @@ describe(`Container`, () => {
 
       const [val1, val2] = container
         .new()
-        .checkoutScope(c => {
+        .scope(c => {
           c.bindLocal(extD).toValue(new BoxedValue(10));
         })
         .all(multiplyBy2D, divideBy2D);
@@ -232,7 +232,7 @@ describe(`Container`, () => {
 
       const [req1, req2] = container
         .new()
-        .checkoutScope(c => {
+        .scope(c => {
           c.bindLocal(extD).toValue(new BoxedValue(10));
         })
         .all(multiplyBy2D, divideBy2D);
@@ -272,13 +272,13 @@ describe(`Container`, () => {
     });
   });
 
-  describe(`.checkoutScope`, () => {
+  describe(`.scope`, () => {
     it(`returns clear request scope`, async () => {
       const scopedVal = fn.scoped(() => new BoxedValue(Math.random()));
 
       const cnt = container.new();
-      const reqCnt1 = cnt.checkoutScope();
-      const reqCnt2 = cnt.checkoutScope();
+      const reqCnt1 = cnt.scope();
+      const reqCnt2 = cnt.scope();
 
       const result1 = reqCnt1.use(scopedVal);
       const result2 = reqCnt2.use(scopedVal);

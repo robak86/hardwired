@@ -127,7 +127,7 @@ describe(`decorate`, () => {
         });
       });
 
-      const scope2 = scope1.checkoutScope(scope => {
+      const scope2 = scope1.scope(scope => {
         scope.bindLocal(instanceDef).toValue({ callMe: () => {} });
       });
 
