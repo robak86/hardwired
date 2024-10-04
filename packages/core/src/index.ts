@@ -22,7 +22,6 @@ export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
 
 export * from './definitions/abstract/FnDefinition.js';
 export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
-export * from './definitions/abstract/AbstractServiceLocatorDecorator.js';
 
 export * from './container/IContainer.js';
 

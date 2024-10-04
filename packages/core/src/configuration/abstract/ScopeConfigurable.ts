@@ -16,6 +16,8 @@ export interface ScopeConfigurable {
 
   onInit(initializer: InitFn): void;
 
+  onDispose(disposeFn: InitFn): void;
+
   bindCascading<TInstance>(
     definition: Definition<TInstance, LifeTime.scoped, []>,
   ): Binder<TInstance, LifeTime.scoped, []>;

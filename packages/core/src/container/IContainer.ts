@@ -58,7 +58,8 @@ export interface UseFn<TAllowedLifeTime extends LifeTime> {
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime>,
-    UseFn<TAllowedLifeTime> {
+    UseFn<TAllowedLifeTime>,
+    Disposable {
   readonly id: string;
   readonly parentId: string | null;
 }

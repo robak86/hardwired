@@ -1,5 +1,5 @@
 import { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
-import { InitFn } from '../abstract/ContainerConfigurable.js';
+import { DisposeFn, InitFn } from '../abstract/ContainerConfigurable.js';
 import { Binder } from '../../definitions/Binder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
@@ -11,7 +11,12 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     private _parentContainer: IContainer & IStrategyAware,
     private _currentContainer: IContainer & IStrategyAware,
     private _bindingsRegistry: BindingsRegistry,
+    private _disposeFns: DisposeFn[],
   ) {}
+
+  onDispose(disposeFn: InitFn): void {
+    this._disposeFns.push(disposeFn);
+  }
 
   cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));

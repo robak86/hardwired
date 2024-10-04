@@ -8,6 +8,7 @@ export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.sco
 export type ContainerConfigureCascadingLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 
 export type InitFn = (container: UseFn<any>) => void;
+export type DisposeFn = (container: UseFn<any>) => void;
 
 export interface ContainerConfigurable {
   bindCascading<TInstance>(
@@ -25,4 +26,5 @@ export interface ContainerConfigurable {
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 
   init(initializer: InitFn): void;
+  onDispose(disposeFn: DisposeFn): void;
 }
