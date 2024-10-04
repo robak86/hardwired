@@ -40,7 +40,7 @@ import {
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
 import { HasPromiseMember } from '../utils/HasPromiseMember.js';
-import { Deferred } from '../utils/Deferred.js';
+import { isPromise } from '../utils/IsPromise.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -121,7 +121,7 @@ export class Container
     : InstancesArray<TDefinitions> {
     const results = definitions.map(def => this.use(def));
 
-    if (results.some(result => result instanceof Promise)) {
+    if (results.some(isPromise)) {
       return Promise.all(results) as any;
     }
 
@@ -133,31 +133,26 @@ export class Container
   ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
     ? Promise<AwaitedInstanceRecord<TRecord>>
     : InstancesRecord<TRecord> {
+    const entries = Object.entries(object);
     const results = {} as InstancesRecord<any>;
-    const keys = Object.keys(object);
-    let remainingKeys = 0;
-    const deferred = new Deferred<AwaitedInstanceRecord<TRecord>>();
+    const promises: Promise<void>[] = [];
 
-    for (const key of keys) {
-      const instance = this.use(object[key]);
-      results[key] = instance;
+    for (const [key, definition] of entries) {
+      const instance = this.use(definition);
 
-      if (instance instanceof Promise) {
-        remainingKeys += 1;
-        instance.then(value => {
-          results[key] = value;
-          remainingKeys -= 1;
-
-          if (remainingKeys === 0) {
-            deferred.resolve(results as AwaitedInstanceRecord<TRecord>);
-          }
-        });
+      if (isPromise(instance)) {
+        promises.push(
+          instance.then(value => {
+            results[key] = value;
+          }),
+        );
+      } else {
+        results[key] = instance;
       }
     }
 
-    if (remainingKeys > 0) {
-      // the remainingKeys is set synchronously, so here the decreasing haven't happened yet
-      return deferred.promise as any;
+    if (promises.length > 0) {
+      return Promise.all(promises).then(() => results) as any;
     } else {
       return results as any;
     }
@@ -185,7 +180,7 @@ export class Container
     if (scopeConfigureFn) {
       const binder = new DisposableScopeConfigurationDSL(this, cnt, bindingsRegistry, disposeFns);
       const result = scopeConfigureFn(binder, this);
-      if (result instanceof Promise) {
+      if (isPromise(result)) {
         return result.then(() => disposable);
       } else {
         return disposable;
@@ -227,8 +222,8 @@ export class Container
     if (runFn) {
       const configResult = this.scope(configureOrRunFn as ScopeConfigureFn | AsyncScopeConfigureFn);
 
-      if (configResult instanceof Promise) {
-        return configResult.then(scope => runFn(scope)) as EnsurePromise<TValue>;
+      if (isPromise(configResult)) {
+        return configResult.then(scope => runFn(scope as any)) as EnsurePromise<TValue>;
       } else {
         return runFn(configResult);
       }
