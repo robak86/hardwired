@@ -18,7 +18,7 @@ import {
 } from './IContainer.js';
 
 import { v4 } from 'uuid';
-import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
+
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { Definition } from '../definitions/abstract/Definition.js';
@@ -43,7 +43,7 @@ export interface Container extends UseFn<LifeTime> {}
 
 export class Container
   extends ExtensibleFunction
-  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
+  implements InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
 {
   public readonly id = v4();
 

@@ -14,8 +14,6 @@ export * from './definitions/sync/unbound.js';
 export * from './definitions/abstract/LifeTime.js';
 export type { DerivedLifeTime } from './definitions/utils/DerivedLifeTime.js';
 
-export type { InstancesBuilder } from './context/abstract/InstancesBuilder.js';
-
 export * from './definitions/abstract/FnDefinition.js';
 export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
 

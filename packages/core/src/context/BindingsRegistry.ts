@@ -1,9 +1,6 @@
 import { AnyDefinition } from '../definitions/abstract/Definition.js';
 import { COWMap } from './InstancesMap.js';
 
-/**
- * This class represents a registry for storing definitions overrides for scope.
- */
 export class BindingsRegistry {
   static create(): BindingsRegistry {
     return new BindingsRegistry(COWMap.create(), COWMap.create(), COWMap.create());

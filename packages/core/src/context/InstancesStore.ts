@@ -8,18 +8,18 @@ export class InstancesStore {
   }
 
   /**
-   * @param _globalScope
-   * @param _currentScope
-   * @param _frozenDefinitions
+   * @param _globalInstances
+   * @param _scopeInstances
+   * @param _frozenInstances
    */
   constructor(
-    private _globalScope: InstancesMap,
-    private _currentScope: InstancesMap,
-    private _frozenDefinitions: InstancesMap,
+    private _globalInstances: InstancesMap,
+    private _scopeInstances: InstancesMap,
+    private _frozenInstances: InstancesMap,
   ) {}
 
   childScope(): InstancesStore {
-    return new InstancesStore(this._globalScope, InstancesMap.create(), this._frozenDefinitions);
+    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._frozenInstances);
   }
 
   upsertIntoFrozenInstances<TInstance, TArgs extends any[]>(
@@ -27,7 +27,7 @@ export class InstancesStore {
     container: IContainer,
     ...args: TArgs
   ) {
-    return this._frozenDefinitions.upsert(definition, container, ...args);
+    return this._frozenInstances.upsert(definition, container, ...args);
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
@@ -35,7 +35,7 @@ export class InstancesStore {
     container: IContainer,
     ...args: TArgs
   ) {
-    return this._currentScope.upsert(definition, container, ...args);
+    return this._scopeInstances.upsert(definition, container, ...args);
   }
 
   upsertIntoGlobalInstances<TInstance, TArgs extends any[]>(
@@ -43,6 +43,6 @@ export class InstancesStore {
     container: IContainer,
     ...args: TArgs
   ) {
-    return this._globalScope.upsert(definition, container, ...args);
+    return this._globalInstances.upsert(definition, container, ...args);
   }
 }
