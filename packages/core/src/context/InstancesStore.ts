@@ -1,24 +1,25 @@
 import { Definition } from '../definitions/abstract/Definition.js';
 import { IContainer } from '../container/IContainer.js';
+import { InstancesMap } from './InstancesMap.js';
 
 export class InstancesStore {
   static create(): InstancesStore {
-    return new InstancesStore(new Map(), new Map(), new Map());
+    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), InstancesMap.create());
   }
 
   /**
    * @param _globalScope
    * @param _currentScope
-   * @param _globalOverridesScope
+   * @param _frozenDefinitions
    */
   constructor(
-    private _globalScope: Map<symbol, any>,
-    private _currentScope: Map<symbol, any>,
-    private _globalOverridesScope: Map<symbol, any>,
+    private _globalScope: InstancesMap,
+    private _currentScope: InstancesMap,
+    private _frozenDefinitions: InstancesMap,
   ) {}
 
   childScope(): InstancesStore {
-    return new InstancesStore(this._globalScope, new Map(), this._globalOverridesScope);
+    return new InstancesStore(this._globalScope, InstancesMap.create(), this._frozenDefinitions);
   }
 
   upsertIntoFrozenInstances<TInstance, TArgs extends any[]>(
@@ -26,13 +27,7 @@ export class InstancesStore {
     container: IContainer,
     ...args: TArgs
   ) {
-    if (this._globalOverridesScope.has(definition.id)) {
-      return this._globalOverridesScope.get(definition.id);
-    } else {
-      const instance = definition.create(container, ...args);
-      this._globalOverridesScope.set(definition.id, instance);
-      return instance;
-    }
+    return this._frozenDefinitions.upsert(definition, container, ...args);
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
@@ -40,13 +35,7 @@ export class InstancesStore {
     container: IContainer,
     ...args: TArgs
   ) {
-    if (this._currentScope.has(definition.id)) {
-      return this._currentScope.get(definition.id);
-    } else {
-      const instance = definition.create(container, ...args);
-      this._currentScope.set(definition.id, instance);
-      return instance;
-    }
+    return this._currentScope.upsert(definition, container, ...args);
   }
 
   upsertIntoGlobalInstances<TInstance, TArgs extends any[]>(
@@ -54,12 +43,6 @@ export class InstancesStore {
     container: IContainer,
     ...args: TArgs
   ) {
-    if (this._globalScope.has(definition.id)) {
-      return this._globalScope.get(definition.id);
-    } else {
-      const instance = definition.create(container, ...args);
-      this._globalScope.set(definition.id, instance);
-      return instance;
-    }
+    return this._globalScope.upsert(definition, container, ...args);
   }
 }
