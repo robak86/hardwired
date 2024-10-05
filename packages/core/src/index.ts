@@ -4,13 +4,9 @@ export { ContainerConfigurable } from './configuration/abstract/ContainerConfigu
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
 export { container, once, all } from './container/Container.js';
 
-export * from './strategies/SingletonStrategy.js';
-export * from './strategies/TransientStrategy.js';
 export * from './definitions/definitions.js';
 export * from './definitions/abstract/sync/InstanceDefinition.js';
 export * from './definitions/abstract/sync/InstanceDefinitionDependency.js';
-
-export { BuildStrategy } from './strategies/abstract/BuildStrategy.js';
 
 export { value } from './definitions/sync/value.js';
 

@@ -1,3 +1,6 @@
+import { Definition } from '../definitions/abstract/Definition.js';
+import { IContainer } from '../container/IContainer.js';
+
 export class InstancesStore {
   static create(): InstancesStore {
     return new InstancesStore(new Map(), new Map(), new Map());
@@ -18,32 +21,44 @@ export class InstancesStore {
     return new InstancesStore(this._globalScope, new Map(), this._globalOverridesScope);
   }
 
-  upsertIntoFrozenInstances<T>(uuid: symbol, build: () => T) {
-    if (this._globalOverridesScope.has(uuid)) {
-      return this._globalOverridesScope.get(uuid);
+  upsertIntoFrozenInstances<TInstance, TArgs extends any[]>(
+    definition: Definition<TInstance, any, TArgs>,
+    container: IContainer,
+    ...args: TArgs
+  ) {
+    if (this._globalOverridesScope.has(definition.id)) {
+      return this._globalOverridesScope.get(definition.id);
     } else {
-      const instance = build();
-      this._globalOverridesScope.set(uuid, instance);
+      const instance = definition.create(container, ...args);
+      this._globalOverridesScope.set(definition.id, instance);
       return instance;
     }
   }
 
-  upsertIntoScopeInstances<T>(uuid: symbol, build: () => T) {
-    if (this._currentScope.has(uuid)) {
-      return this._currentScope.get(uuid);
+  upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
+    definition: Definition<TInstance, any, TArgs>,
+    container: IContainer,
+    ...args: TArgs
+  ) {
+    if (this._currentScope.has(definition.id)) {
+      return this._currentScope.get(definition.id);
     } else {
-      const instance = build();
-      this._currentScope.set(uuid, instance);
+      const instance = definition.create(container, ...args);
+      this._currentScope.set(definition.id, instance);
       return instance;
     }
   }
 
-  upsertIntoGlobalInstances<T>(uuid: symbol, build: () => T) {
-    if (this._globalScope.has(uuid)) {
-      return this._globalScope.get(uuid);
+  upsertIntoGlobalInstances<TInstance, TArgs extends any[]>(
+    definition: Definition<TInstance, any, TArgs>,
+    container: IContainer,
+    ...args: TArgs
+  ) {
+    if (this._globalScope.has(definition.id)) {
+      return this._globalScope.get(definition.id);
     } else {
-      const instance = build();
-      this._globalScope.set(uuid, instance);
+      const instance = definition.create(container, ...args);
+      this._globalScope.set(definition.id, instance);
       return instance;
     }
   }

@@ -106,37 +106,17 @@ export class Container
   }
 
   buildWithStrategy: UseFn<LifeTime> = (definition, ...args) => {
-    const id = definition.id;
+    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+      return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
+    }
 
     switch (definition.strategy) {
       case LifeTime.transient:
-        if (this.bindingsRegistry.hasFrozenBinding(id)) {
-          return this.instancesStore.upsertIntoFrozenInstances(id, () => {
-            return definition.create(this, ...args);
-          });
-        }
-
         return definition.create(this, ...args);
       case LifeTime.singleton:
-        if (this.bindingsRegistry.hasFrozenBinding(id)) {
-          return this.instancesStore.upsertIntoFrozenInstances(id, () => {
-            return definition.create(this, ...args);
-          });
-        }
-
-        return this.instancesStore.upsertIntoGlobalInstances(id, () => {
-          return definition.create(this, ...args);
-        });
+        return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
       case LifeTime.scoped:
-        if (this.bindingsRegistry.hasFrozenBinding(id)) {
-          return this.instancesStore.upsertIntoFrozenInstances(id, () => {
-            return definition.create(this, ...args);
-          });
-        }
-
-        return this.instancesStore.upsertIntoScopeInstances(id, () => {
-          return definition.create(this, ...args);
-        });
+        return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
       default:
         throw new Error(`Unsupported strategy ${definition.strategy}`);
     }
