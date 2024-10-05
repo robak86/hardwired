@@ -60,12 +60,6 @@ export class Container
         return this.use(definition, ...args);
       },
     );
-
-    // this.use = this.use.bind(this);
-    // this.all = this.all.bind(this);
-    // this.defer = this.defer.bind(this);
-    // this.scope = this.scope.bind(this);
-    // this.withScope = this.withScope.bind(this);
   }
 
   new(): IContainer;
