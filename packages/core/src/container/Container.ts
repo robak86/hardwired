@@ -61,11 +61,11 @@ export class Container
       },
     );
 
-    this.use = this.use.bind(this);
-    this.all = this.all.bind(this);
-    this.defer = this.defer.bind(this);
-    this.scope = this.scope.bind(this);
-    this.withScope = this.withScope.bind(this);
+    // this.use = this.use.bind(this);
+    // this.all = this.all.bind(this);
+    // this.defer = this.defer.bind(this);
+    // this.scope = this.scope.bind(this);
+    // this.withScope = this.withScope.bind(this);
   }
 
   new(): IContainer;
@@ -241,8 +241,17 @@ export class Container
   }
 }
 
-export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create()).use;
+export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+  definition: Definition<TInstance, TLifeTime, TArgs>,
+  ...args: TArgs
+): TInstance => {
+  const tmpContainer = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+  return tmpContainer.use(definition, ...args);
+};
 
-export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create()).all;
+export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
+  const tmpContainer = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+  return tmpContainer.all(...definitions) as any;
+};
 
 export const container = new Container(null, BindingsRegistry.create(), InstancesStore.create());

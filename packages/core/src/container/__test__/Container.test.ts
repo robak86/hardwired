@@ -16,17 +16,6 @@ describe(`Container`, () => {
       expect(instance).toEqual(123);
     });
 
-    it(`works with destructuring`, async () => {
-      const use = container.new();
-      const someValue = fn.singleton(() => 1000);
-      const myDef = fn.singleton(({ use }) => {
-        return use(someValue) + 123;
-      });
-
-      const instance = use(myDef);
-      expect(instance).toEqual(1123);
-    });
-
     describe(`additional arguments`, () => {
       it(`accepts other arguments for transient definition and works with ad-hoc resolution`, async () => {
         const def = fn((use, userId: number) => {

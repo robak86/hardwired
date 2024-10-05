@@ -1,17 +1,20 @@
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { Definition } from '../definitions/abstract/Definition.js';
-import { IContainer, InstanceCreationAware, UseFn } from './IContainer.js';
+import { AwaitedInstanceArray, HasPromise, IContainer, InstanceCreationAware, UseFn } from './IContainer.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
+import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import {
+  AwaitedInstanceRecord,
+  InstancesArray,
+  InstancesObject,
+  InstancesRecord,
+} from '../definitions/abstract/sync/InstanceDefinition.js';
+import { HasPromiseMember } from '../utils/HasPromiseMember.js';
 
 export interface DisposableScope extends UseFn<LifeTime> {}
 
 export class DisposableScope extends ExtensibleFunction implements InstanceCreationAware, Disposable {
-  use: InstanceCreationAware['use'];
-  all: InstanceCreationAware['all'];
-  defer: InstanceCreationAware['defer'];
-  object: InstanceCreationAware['object'];
-
   private _isDisposed = false;
 
   constructor(
@@ -26,11 +29,6 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
         return this._container.use(definition, ...args);
       },
     );
-
-    this.use = this._container.use;
-    this.all = this._container.all;
-    this.defer = this._container.defer;
-    this.object = this._container.object;
   }
 
   get id() {
@@ -51,5 +49,34 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
     }
 
     this._isDisposed = true;
+  }
+
+  use<TValue, TArgs extends any[]>(
+    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue {
+    return this._container.use(instanceDefinition, ...args);
+  }
+
+  all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
+    ...definitions: [...TDefinitions]
+  ): HasPromise<InstancesArray<TDefinitions>> extends true
+    ? Promise<AwaitedInstanceArray<TDefinitions>>
+    : InstancesArray<TDefinitions> {
+    return this._container.all(...definitions) as any;
+  }
+
+  defer<TInstance, TArgs extends any[]>(
+    factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
+  ): (...args: TArgs) => TInstance {
+    return this._container.defer(factoryDefinition);
+  }
+
+  object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
+    object: TRecord,
+  ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
+    ? Promise<AwaitedInstanceRecord<TRecord>>
+    : InstancesRecord<TRecord> {
+    return this._container.object(object) as any;
   }
 }
