@@ -55,11 +55,32 @@ instantiationBench
   .add('singletonD', () => {
     cnt.use(singletonD);
   })
+  .add('singletonD + new scope', () => {
+    cnt.withScope(use => use(singletonD));
+  })
+  .add('singletonD + new disposable', () => {
+    using scoped = cnt.disposable();
+    scoped.use(singletonD);
+  })
   .add('transientD', () => {
     cnt.use(transientD);
   })
+  .add('transientD + new scope', () => {
+    cnt.withScope(use => use(transientD));
+  })
+  .add('transientD + new disposable', () => {
+    using scoped = cnt.disposable();
+    scoped.use(transientD);
+  })
   .add('scopedD', () => {
     cnt.use(scopedD);
+  })
+  .add('scopedD + new scope', () => {
+    cnt.withScope(use => use(scopedD));
+  })
+  .add('scopedD + new disposable', () => {
+    using scoped = cnt.disposable();
+    scoped.use(scopedD);
   })
   .add('scopedD cascaded to lower scope', () => {
     c3.use(scopedD);
