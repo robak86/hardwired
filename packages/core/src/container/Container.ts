@@ -4,8 +4,6 @@ import {
   InstancesObject,
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
-
-import { containerStrategies } from '../strategies/collection/containerStrategies.js';
 import {
   AwaitedInstanceArray,
   ContainerRunFn,
@@ -108,8 +106,40 @@ export class Container
   }
 
   buildWithStrategy: UseFn<LifeTime> = (definition, ...args) => {
-    const strategy = containerStrategies[definition.strategy];
-    return strategy.buildFn(definition, this.instancesStore, this.bindingsRegistry, this, ...args);
+    const id = definition.id;
+
+    switch (definition.strategy) {
+      case LifeTime.transient:
+        if (this.bindingsRegistry.hasFrozenBinding(id)) {
+          return this.instancesStore.upsertIntoFrozenInstances(id, () => {
+            return definition.create(this, ...args);
+          });
+        }
+
+        return definition.create(this, ...args);
+      case LifeTime.singleton:
+        if (this.bindingsRegistry.hasFrozenBinding(id)) {
+          return this.instancesStore.upsertIntoFrozenInstances(id, () => {
+            return definition.create(this, ...args);
+          });
+        }
+
+        return this.instancesStore.upsertIntoGlobalInstances(id, () => {
+          return definition.create(this, ...args);
+        });
+      case LifeTime.scoped:
+        if (this.bindingsRegistry.hasFrozenBinding(id)) {
+          return this.instancesStore.upsertIntoFrozenInstances(id, () => {
+            return definition.create(this, ...args);
+          });
+        }
+
+        return this.instancesStore.upsertIntoScopeInstances(id, () => {
+          return definition.create(this, ...args);
+        });
+      default:
+        throw new Error(`Unsupported strategy ${definition.strategy}`);
+    }
   };
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(

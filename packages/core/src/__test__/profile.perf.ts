@@ -32,7 +32,7 @@ let c2: IContainer;
 let c3: IContainer;
 
 const instantiationBench = new Bench({
-  time: 100,
+  time: 200,
   setup: () => {
     cnt = container.new();
     c1 = cnt.scope(scope => {

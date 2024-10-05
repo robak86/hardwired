@@ -19,21 +19,12 @@ export class BindingsRegistry {
   }
 
   getDefinition<T extends AnyDefinition>(definition: T): T {
-    const id = definition.id;
-
-    if (this._frozenBindingsById.has(id)) {
-      return this._frozenBindingsById.get(id) as T;
-    }
-
-    if (this._scopeBindingsById.has(id)) {
-      return this._scopeBindingsById.get(id) as T;
-    }
-
-    if (this._cascadingBindingsById.has(id)) {
-      return this._cascadingBindingsById.get(id) as T;
-    }
-
-    return definition;
+    return (
+      (this._frozenBindingsById.get(definition.id) as T) ??
+      (this._scopeBindingsById.get(definition.id) as T) ??
+      (this._cascadingBindingsById.get(definition.id) as T) ??
+      definition
+    );
   }
 
   hasFrozenBinding(definitionId: symbol): boolean {
