@@ -2,19 +2,23 @@ import {
   DisposableAsyncScopeConfigureFn,
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
-import { container } from '../container/Container.js';
 import { DisposableScope } from '../container/DisposableScope.js';
 import { composeAsync } from '../configuration/helper/compose.js';
+import { container } from '../container/Container.js';
+import { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 
 export type BindTestContainerConfig = {
-  beforeEach: (fn: () => Promise<void>) => void;
-  afterEach: (fn: () => void) => void;
+  beforeEach: (fn: () => Promise<void> | void) => void;
+  afterEach: (fn: () => Promise<void> | void) => void;
+  configure?: ContainerConfigureFn | AsyncContainerConfigureFn;
 };
 
 export const bindTestContainer = (config: BindTestContainerConfig) => {
-  const testContainer = container.new();
+  const testContainer = config.configure ? container.new(config.configure) : container.new();
 
-  return (...configureFn: Array<DisposableScopeConfigureFn | DisposableAsyncScopeConfigureFn>): DisposableScope => {
+  const withDisposableScope = (
+    ...configureFn: Array<DisposableScopeConfigureFn | DisposableAsyncScopeConfigureFn>
+  ): DisposableScope => {
     let disposable: DisposableScope;
 
     config.beforeEach(async () => {
@@ -42,4 +46,10 @@ export const bindTestContainer = (config: BindTestContainerConfig) => {
       },
     ) as any;
   };
+
+  return Object.assign(withDisposableScope, {
+    get container() {
+      return testContainer;
+    },
+  });
 };
