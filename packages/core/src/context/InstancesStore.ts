@@ -1,50 +1,48 @@
+import { Definition } from '../definitions/abstract/Definition.js';
+import { IContainer } from '../container/IContainer.js';
+import { InstancesMap } from './InstancesMap.js';
+
 export class InstancesStore {
   static create(): InstancesStore {
-    return new InstancesStore(new Map(), new Map(), new Map());
+    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), InstancesMap.create());
   }
 
   /**
-   * @param _globalScope
-   * @param _currentScope
-   * @param _globalOverridesScope
+   * @param _globalInstances
+   * @param _scopeInstances
+   * @param _frozenInstances
    */
   constructor(
-    private _globalScope: Map<symbol, any>,
-    private _currentScope: Map<symbol, any>,
-    private _globalOverridesScope: Map<symbol, any>,
+    private _globalInstances: InstancesMap,
+    private _scopeInstances: InstancesMap,
+    private _frozenInstances: InstancesMap,
   ) {}
 
   childScope(): InstancesStore {
-    return new InstancesStore(this._globalScope, new Map(), this._globalOverridesScope);
+    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._frozenInstances);
   }
 
-  upsertIntoFrozenInstances<T>(uuid: symbol, build: () => T) {
-    if (this._globalOverridesScope.has(uuid)) {
-      return this._globalOverridesScope.get(uuid);
-    } else {
-      const instance = build();
-      this._globalOverridesScope.set(uuid, instance);
-      return instance;
-    }
+  upsertIntoFrozenInstances<TInstance, TArgs extends any[]>(
+    definition: Definition<TInstance, any, TArgs>,
+    container: IContainer,
+    ...args: TArgs
+  ) {
+    return this._frozenInstances.upsert(definition, container, ...args);
   }
 
-  upsertIntoScopeInstances<T>(uuid: symbol, build: () => T) {
-    if (this._currentScope.has(uuid)) {
-      return this._currentScope.get(uuid);
-    } else {
-      const instance = build();
-      this._currentScope.set(uuid, instance);
-      return instance;
-    }
+  upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
+    definition: Definition<TInstance, any, TArgs>,
+    container: IContainer,
+    ...args: TArgs
+  ) {
+    return this._scopeInstances.upsert(definition, container, ...args);
   }
 
-  upsertIntoGlobalInstances<T>(uuid: symbol, build: () => T) {
-    if (this._globalScope.has(uuid)) {
-      return this._globalScope.get(uuid);
-    } else {
-      const instance = build();
-      this._globalScope.set(uuid, instance);
-      return instance;
-    }
+  upsertIntoGlobalInstances<TInstance, TArgs extends any[]>(
+    definition: Definition<TInstance, any, TArgs>,
+    container: IContainer,
+    ...args: TArgs
+  ) {
+    return this._globalInstances.upsert(definition, container, ...args);
   }
 }

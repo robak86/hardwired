@@ -41,6 +41,7 @@ const validLifeTimes = {
   },
 } as const;
 
+// TODO: decide if the correct definition life time should be checked at runtime
 export const assertValidDependencies = (lifeTime: LifeTime, deps: Definition<any, LifeTime, any>[]) => {
   for (const dependency of deps) {
     assertValidDependency(lifeTime, dependency);

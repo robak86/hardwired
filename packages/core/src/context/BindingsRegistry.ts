@@ -1,69 +1,58 @@
 import { AnyDefinition } from '../definitions/abstract/Definition.js';
+import { COWMap } from './InstancesMap.js';
 
-/**
- * This class represents a registry for storing definitions overrides for scope.
- */
 export class BindingsRegistry {
   static create(): BindingsRegistry {
-    return new BindingsRegistry(new Map(), new Map(), new Map());
+    return new BindingsRegistry(COWMap.create(), COWMap.create(), COWMap.create());
   }
 
   constructor(
-    private _scopeBindingsById: Map<symbol, AnyDefinition>,
-    private _frozenBindingsById: Map<symbol, AnyDefinition>,
-    private _cascadingBindingsById: Map<symbol, AnyDefinition>,
+    private _scopeDefinitions: COWMap<AnyDefinition>,
+    private _frozenDefinitions: COWMap<AnyDefinition>,
+    private _cascadingDefinitions: COWMap<AnyDefinition>,
   ) {}
 
   checkoutForScope(): BindingsRegistry {
-    return new BindingsRegistry(new Map(), new Map(this._frozenBindingsById), new Map(this._cascadingBindingsById));
+    return new BindingsRegistry(COWMap.create(), this._frozenDefinitions.clone(), this._cascadingDefinitions.clone());
   }
 
   getDefinition<T extends AnyDefinition>(definition: T): T {
-    const id = definition.id;
-
-    if (this._frozenBindingsById.has(id)) {
-      return this._frozenBindingsById.get(id) as T;
-    }
-
-    if (this._scopeBindingsById.has(id)) {
-      return this._scopeBindingsById.get(id) as T;
-    }
-
-    if (this._cascadingBindingsById.has(id)) {
-      return this._cascadingBindingsById.get(id) as T;
-    }
-
-    return definition;
+    return (
+      (this._frozenDefinitions.get(definition.id) as T) ??
+      (this._scopeDefinitions.get(definition.id) as T) ??
+      (this._cascadingDefinitions.get(definition.id) as T) ??
+      definition
+    );
   }
 
   hasFrozenBinding(definitionId: symbol): boolean {
-    return this._frozenBindingsById.has(definitionId);
+    return this._frozenDefinitions.has(definitionId);
   }
 
   addFrozenBinding = (definition: AnyDefinition) => {
-    if (this._frozenBindingsById.has(definition.id)) {
+    if (this._frozenDefinitions.has(definition.id)) {
       throw new Error(`Final binding was already set. Cannot override it.`);
     }
-    this._frozenBindingsById.set(definition.id, definition);
+    this._frozenDefinitions.set(definition.id, definition);
   };
 
   addScopeBinding(definition: AnyDefinition) {
-    if (this._scopeBindingsById.has(definition.id)) {
+    if (this._scopeDefinitions.has(definition.id)) {
       throw new Error(
         `Cannot bind definition for the current scope. The scope has already other binding for the definition.`,
       );
     }
 
-    this._scopeBindingsById.set(definition.id, definition);
+    this._scopeDefinitions.set(definition.id, definition);
   }
 
   addCascadingBinding(definition: AnyDefinition) {
-    if (this._scopeBindingsById.has(definition.id)) {
+    if (this._scopeDefinitions.has(definition.id)) {
       throw new Error(
         `Cannot bind cascading definition for the current scope. The scope has already other binding for the definition.`,
       );
     }
 
-    this._cascadingBindingsById.set(definition.id, definition);
+    this._cascadingDefinitions.set(definition.id, definition);
   }
 }

@@ -4,8 +4,6 @@ import {
   InstancesObject,
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
-
-import { containerStrategies } from '../strategies/collection/containerStrategies.js';
 import {
   AwaitedInstanceArray,
   ContainerRunFn,
@@ -20,7 +18,7 @@ import {
 } from './IContainer.js';
 
 import { v4 } from 'uuid';
-import { InstancesBuilder } from '../context/abstract/InstancesBuilder.js';
+
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { Definition } from '../definitions/abstract/Definition.js';
@@ -45,7 +43,7 @@ export interface Container extends UseFn<LifeTime> {}
 
 export class Container
   extends ExtensibleFunction
-  implements InstancesBuilder, InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
+  implements InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
 {
   public readonly id = v4();
 
@@ -62,12 +60,6 @@ export class Container
         return this.use(definition, ...args);
       },
     );
-
-    this.use = this.use.bind(this);
-    this.all = this.all.bind(this);
-    this.defer = this.defer.bind(this);
-    this.scope = this.scope.bind(this);
-    this.withScope = this.withScope.bind(this);
   }
 
   new(): IContainer;
@@ -108,8 +100,20 @@ export class Container
   }
 
   buildWithStrategy: UseFn<LifeTime> = (definition, ...args) => {
-    const strategy = containerStrategies[definition.strategy];
-    return strategy.buildFn(definition, this.instancesStore, this.bindingsRegistry, this, ...args);
+    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+      return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
+    }
+
+    switch (definition.strategy) {
+      case LifeTime.transient:
+        return definition.create(this, ...args);
+      case LifeTime.singleton:
+        return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
+      case LifeTime.scoped:
+        return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
+      default:
+        throw new Error(`Unsupported strategy ${definition.strategy}`);
+    }
   };
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
@@ -231,8 +235,17 @@ export class Container
   }
 }
 
-export const once = new Container(null, BindingsRegistry.create(), InstancesStore.create()).use;
+export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+  definition: Definition<TInstance, TLifeTime, TArgs>,
+  ...args: TArgs
+): TInstance => {
+  const tmpContainer = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+  return tmpContainer.use(definition, ...args);
+};
 
-export const all = new Container(null, BindingsRegistry.create(), InstancesStore.create()).all;
+export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
+  const tmpContainer = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+  return tmpContainer.all(...definitions) as any;
+};
 
 export const container = new Container(null, BindingsRegistry.create(), InstancesStore.create());
