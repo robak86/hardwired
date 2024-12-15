@@ -1,6 +1,12 @@
 import { cls } from 'hardwired';
 
-export class HookValues {
+export interface IHookValues {
+  setHookValue(definitionId: symbol, value: any): void;
+  getHookValue(definitionId: symbol): any;
+  hasValue(definitionId: symbol): boolean;
+}
+
+export class HookValues implements IHookValues {
   private initializedHooks: Record<symbol, any> = {};
 
   setHookValue(definitionId: symbol, value: any): void {
