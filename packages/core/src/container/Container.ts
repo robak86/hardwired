@@ -87,10 +87,6 @@ export class Container
     return cnt;
   }
 
-  buildExact<T>(definition: Definition<T, any, any>, ...args: any[]): T {
-    return definition.create(this, ...args);
-  }
-
   use<TValue, TArgs extends any[]>(
     definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
     ...args: TArgs
