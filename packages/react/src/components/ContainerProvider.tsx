@@ -3,11 +3,11 @@ import { ContainerContext, ContainerContextValue } from '../context/ContainerCon
 import { FC, PropsWithChildren, useEffect, useRef } from 'react';
 import { HookDefinition } from '../definitions/hook.js';
 import { isShallowEqual } from '../utils/useMemoized.js';
-import { initializedHooksD } from '../definitions/initializedHooks.js';
+import { hookValuesD } from '../definitions/hookValues.js';
 
 export type ContainerProviderProps = {
   container?: IContainer;
-  hooks?: Array<HookDefinition<any, any, any>>;
+  hooks?: Array<HookDefinition<any, any>>;
 };
 
 const useAssertHooksNotChanged = <T extends any[]>(hooks: T = [] as unknown as T) => {
@@ -21,7 +21,7 @@ const useAssertHooksNotChanged = <T extends any[]>(hooks: T = [] as unknown as T
   }, [hooks]);
 };
 
-const empty_array: HookDefinition<any, any, any>[] = [];
+const empty_array: HookDefinition<any, any>[] = [] as HookDefinition<any, any>[];
 
 export const ContainerProvider: FC<ContainerProviderProps & PropsWithChildren> = ({
   children,
@@ -45,7 +45,11 @@ export const ContainerProvider: FC<ContainerProviderProps & PropsWithChildren> =
       throw new Error('Container instance is not initialized');
     }
 
-    containerInstance.current.container.use(initializedHooksD).markInitialized(hook.id);
+    // we need to call the hook every time this component is rendered,
+    // so react doesn't complain about calling fewer hooks than expected
+    const hookValue = hook.hook();
+
+    containerInstance.current.container.use(hookValuesD).setHookValue(hook.id, hookValue);
     containerInstance.current.container.use(hook);
   });
 

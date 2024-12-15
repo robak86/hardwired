@@ -10,7 +10,7 @@ import { expect } from 'vitest';
 describe(`ContainerProvider`, () => {
   function setup() {
     const cnt = container.new();
-    const SomeContext = createContext({ value: 123 });
+    const SomeContext = createContext({ someNumberValue: 123 });
     const useSomeContext = vi.fn(() => useContext(SomeContext));
 
     const hookDef = hook(useSomeContext);
@@ -26,8 +26,8 @@ describe(`ContainerProvider`, () => {
 
       return (
         <>
-          <h1 data-testid={'value1'}>{consumedHookValue.value}</h1>
-          <h1 data-testid={'value2'}>{consumedOtherHookValue.value}</h1>
+          <h1 data-testid={'value1'}>{consumedHookValue.use().someNumberValue}</h1>
+          <h1 data-testid={'value2'}>{consumedOtherHookValue.use().someNumberValue}</h1>
         </>
       );
     };
@@ -50,12 +50,13 @@ describe(`ContainerProvider`, () => {
   it(`calls hookFn and memorizes it as singleton`, async () => {
     const { TestSubject, useSomeContext } = setup();
     const result = render(<TestSubject />);
+    expect(useSomeContext).toHaveBeenCalledTimes(2); // calls all registered hooks on every rerender
+
     result.rerender(<TestSubject />);
 
     expect(result.getByTestId('value1').textContent).toEqual('123');
     expect(result.getByTestId('value2').textContent).toEqual('123');
 
-    // called twice, because we use two hooks definitions use the same "useSomeContext" function
-    expect(useSomeContext).toHaveBeenCalledTimes(2);
+    expect(useSomeContext).toHaveBeenCalledTimes(4); // calls all registered hooks on every rerender
   });
 });
