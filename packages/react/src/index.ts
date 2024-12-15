@@ -24,3 +24,4 @@ export { withDependencies } from './hoc/withDependencies.js';
 export type { WithDependenciesConfigured } from './hoc/withDependencies.js';
 
 export * from './hooks/useScopeConfig.js';
+export * from './definitions/hook.js';

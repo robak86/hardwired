@@ -1,6 +1,10 @@
 import { useRef } from 'react';
 
 export const isShallowEqual = (arr1: ReadonlyArray<any>, arr2: ReadonlyArray<any>) => {
+  if (arr1 === arr2) {
+    return true;
+  }
+
   return arr1.length === arr2.length && arr1.every((val, idx) => val === arr2[idx]);
 };
 
