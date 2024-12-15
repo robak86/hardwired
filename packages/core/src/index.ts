@@ -1,4 +1,4 @@
-export { ScopeConfigurable } from './configuration/abstract/ScopeConfigurable.js';
+export { ScopeConfigurable, DisposableScopeConfigurable } from './configuration/abstract/ScopeConfigurable.js';
 export { ContainerConfigurable } from './configuration/abstract/ContainerConfigurable.js';
 
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
