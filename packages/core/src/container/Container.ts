@@ -38,6 +38,7 @@ import {
 } from '../configuration/DisposableScopeConfiguration.js';
 import { HasPromiseMember } from '../utils/HasPromiseMember.js';
 import { isPromise } from '../utils/IsPromise.js';
+import { IInterceptor } from './interceptors/interceptor.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -51,6 +52,7 @@ export class Container
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
+    protected readonly interceptor?: IInterceptor<any>,
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -87,6 +89,10 @@ export class Container
     return cnt;
   }
 
+  withInterceptor(interceptor: IInterceptor<any>): Container {
+    return new Container(this.parentId, this.bindingsRegistry, this.instancesStore, interceptor);
+  }
+
   use<TValue, TArgs extends any[]>(
     definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
     ...args: TArgs
@@ -100,15 +106,39 @@ export class Container
       return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
     }
 
-    switch (definition.strategy) {
-      case LifeTime.transient:
-        return definition.create(this, ...args);
-      case LifeTime.singleton:
-        return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
-      case LifeTime.scoped:
-        return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
-      default:
-        throw new Error(`Unsupported strategy ${definition.strategy}`);
+    if (this.interceptor) {
+      const currentInterceptor = this.interceptor.onEnter(definition, args);
+      const currentContainer = this.withInterceptor(currentInterceptor);
+
+      switch (definition.strategy) {
+        case LifeTime.transient:
+          const instance = definition.create(currentContainer, ...args);
+          return currentInterceptor.onLeave(instance);
+
+        case LifeTime.singleton:
+          return currentInterceptor.onLeave(
+            this.instancesStore.upsertIntoGlobalInstances(definition, currentContainer, ...args),
+          );
+
+        case LifeTime.scoped:
+          return currentInterceptor.onLeave(
+            this.instancesStore.upsertIntoScopeInstances(definition, currentContainer, ...args),
+          );
+
+        default:
+          throw new Error(`Unsupported strategy ${definition.strategy}`);
+      }
+    } else {
+      switch (definition.strategy) {
+        case LifeTime.transient:
+          return definition.create(this, ...args);
+        case LifeTime.singleton:
+          return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
+        case LifeTime.scoped:
+          return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
+        default:
+          throw new Error(`Unsupported strategy ${definition.strategy}`);
+      }
     }
   };
 
