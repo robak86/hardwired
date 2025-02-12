@@ -39,10 +39,11 @@ import {
 import { HasPromiseMember } from '../utils/HasPromiseMember.js';
 import { isPromise } from '../utils/IsPromise.js';
 import { IInterceptor } from './interceptors/interceptor.js';
+import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
-export class Container
+export class Container //<TInterceptors extends Record<string, IInterceptor<any>>>
   extends ExtensibleFunction
   implements InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
 {
@@ -52,7 +53,8 @@ export class Container
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
-    protected readonly interceptor?: IInterceptor<any>,
+    protected readonly interceptorsRegistry: InterceptorsRegistry,
+    protected readonly currentInterceptor?: IInterceptor<any>,
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -64,33 +66,53 @@ export class Container
     );
   }
 
-  new(): IContainer;
-  new(configureFn: AsyncContainerConfigureFn): Promise<IContainer>;
-  new(configureFn: ContainerConfigureFn): IContainer;
-  new(configureFn?: ContainerConfigureFn | AsyncContainerConfigureFn): IContainer | Promise<IContainer> {
+  new(): Container;
+  new(configureFn: AsyncContainerConfigureFn): Promise<Container>;
+  new(configureFn: ContainerConfigureFn): Container;
+  new(configureFn?: ContainerConfigureFn | AsyncContainerConfigureFn): Container | Promise<Container> {
     const definitionsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
+    const interceptorsRegistry = new InterceptorsRegistry();
 
-    const cnt = new Container(null, definitionsRegistry, instancesStore);
+    const cnt = new Container(null, definitionsRegistry, instancesStore, interceptorsRegistry);
 
     if (configureFn) {
-      const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt);
+      const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt, interceptorsRegistry);
       const configResult = configureFn(binder);
 
       if (configResult instanceof Promise) {
         return configResult.then(() => {
-          return cnt;
+          const interceptor = interceptorsRegistry.build();
+
+          return interceptor ? cnt.withInterceptor(interceptor) : cnt;
         });
       } else {
-        return cnt;
+        const interceptor = interceptorsRegistry.build();
+
+        return interceptor ? cnt.withInterceptor(interceptor) : cnt;
       }
     }
 
     return cnt;
   }
 
-  withInterceptor(interceptor: IInterceptor<any>): Container {
-    return new Container(this.parentId, this.bindingsRegistry, this.instancesStore, interceptor);
+  getInterceptor(id: string | symbol): IInterceptor<any> {
+    const interceptor = this.interceptorsRegistry?.get(id);
+    if (!interceptor) {
+      throw new Error(`Interceptor with id ${id.toString()} not found`);
+    }
+
+    return interceptor;
+  }
+
+  protected withInterceptor(interceptor: IInterceptor<any>): Container {
+    return new Container(
+      this.parentId,
+      this.bindingsRegistry,
+      this.instancesStore,
+      this.interceptorsRegistry,
+      interceptor,
+    );
   }
 
   use<TValue, TArgs extends any[]>(
@@ -106,23 +128,25 @@ export class Container
       return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
     }
 
-    if (this.interceptor) {
-      const currentInterceptor = this.interceptor.onEnter(definition, args);
+    if (this.currentInterceptor) {
+      const currentInterceptor = this.currentInterceptor.onEnter(definition, args);
       const currentContainer = this.withInterceptor(currentInterceptor);
 
       switch (definition.strategy) {
         case LifeTime.transient:
           const instance = definition.create(currentContainer, ...args);
-          return currentInterceptor.onLeave(instance);
+          return currentInterceptor.onLeave(instance, definition);
 
         case LifeTime.singleton:
           return currentInterceptor.onLeave(
             this.instancesStore.upsertIntoGlobalInstances(definition, currentContainer, ...args),
+            definition,
           );
 
         case LifeTime.scoped:
           return currentInterceptor.onLeave(
             this.instancesStore.upsertIntoScopeInstances(definition, currentContainer, ...args),
+            definition,
           );
 
         default:
@@ -201,7 +225,7 @@ export class Container
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
 
-    const cnt = new Container(this.id, bindingsRegistry, instancesStore);
+    const cnt = new Container(this.id, bindingsRegistry, instancesStore, this.interceptorsRegistry);
     const disposeFns: DisposeFn[] = [];
     const disposable = new DisposableScope(cnt, disposeFns);
 
@@ -225,7 +249,7 @@ export class Container
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
 
-    const cnt = new Container(this.id, bindingsRegistry, instancesStore);
+    const cnt = new Container(this.id, bindingsRegistry, instancesStore, this.interceptorsRegistry);
 
     if (scopeConfigureFn) {
       const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry);
@@ -265,13 +289,28 @@ export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TAr
   definition: Definition<TInstance, TLifeTime, TArgs>,
   ...args: TArgs
 ): TInstance => {
-  const tmpContainer = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+  const tmpContainer = new Container(
+    null,
+    BindingsRegistry.create(),
+    InstancesStore.create(),
+    InterceptorsRegistry.create(),
+  );
   return tmpContainer.use(definition, ...args);
 };
 
 export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
-  const tmpContainer = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+  const tmpContainer = new Container(
+    null,
+    BindingsRegistry.create(),
+    InstancesStore.create(),
+    InterceptorsRegistry.create(),
+  );
   return tmpContainer.all(...definitions) as any;
 };
 
-export const container = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+export const container = new Container(
+  null,
+  BindingsRegistry.create(),
+  InstancesStore.create(),
+  InterceptorsRegistry.create(),
+);

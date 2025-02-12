@@ -1,10 +1,8 @@
-import { Container } from '../../Container.js';
-import { BindingsRegistry } from '../../../context/BindingsRegistry.js';
-import { InstancesStore } from '../../../context/InstancesStore.js';
-import { IInterceptor } from '../interceptor.js';
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { fn } from '../../../definitions/definitions.js';
+import {container} from '../../Container.js';
+import {IInterceptor} from '../interceptor.js';
+import {Definition} from '../../../definitions/abstract/Definition.js';
+import {LifeTime} from '../../../definitions/abstract/LifeTime.js';
+import {fn} from '../../../definitions/definitions.js';
 
 describe(`interceptor`, () => {
   class TestInterceptor implements IInterceptor<any> {
@@ -27,7 +25,8 @@ describe(`interceptor`, () => {
   describe(`sync`, () => {
     it(`Calls interceptor methods with correct arguments`, () => {
       const interceptor = new TestInterceptor();
-      const cnt = new Container(null, BindingsRegistry.create(), InstancesStore.create()).withInterceptor(interceptor);
+
+      const cnt = container.new(c => c.withInterceptor('test', interceptor));
 
       vi.spyOn(interceptor, 'onEnter');
       vi.spyOn(interceptor, 'onLeave');
@@ -50,17 +49,17 @@ describe(`interceptor`, () => {
       expect(interceptor.onEnter).toHaveBeenNthCalledWith(4, c2, []);
 
       expect(interceptor.onLeave).toHaveBeenCalledTimes(4);
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(1, 'C1');
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(2, 'C2');
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2']);
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']]);
+      expect(interceptor.onLeave).toHaveBeenNthCalledWith(1, 'C1', c1);
+      expect(interceptor.onLeave).toHaveBeenNthCalledWith(2, 'C2', c2);
+      expect(interceptor.onLeave).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], b);
+      expect(interceptor.onLeave).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], a);
     });
   });
 
   describe.skip(`async`, () => {
     it(`Calls interceptor methods with correct arguments`, () => {
       const interceptor = new TestInterceptor();
-      const cnt = new Container(null, BindingsRegistry.create(), InstancesStore.create()).withInterceptor(interceptor);
+      const cnt = container.new(c => c.withInterceptor('test', interceptor));
 
       vi.spyOn(interceptor, 'onEnter');
       vi.spyOn(interceptor, 'onLeave');

@@ -1,13 +1,11 @@
-import { Container, container } from '../container/Container.js';
+import {container} from '../container/Container.js';
 
-import { fn } from '../definitions/definitions.js';
-import { Bench } from 'tinybench';
+import {fn} from '../definitions/definitions.js';
+import {Bench} from 'tinybench';
 
-import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
-import { IContainer } from '../container/IContainer.js';
-import { DependenciesGraphRoot } from '../container/interceptors/dependencies-graph.js';
-import { BindingsRegistry } from '../context/BindingsRegistry.js';
-import { InstancesStore } from '../context/InstancesStore.js';
+import {buildScoped, buildSingletonTree, buildTransient} from './utils.js';
+import {IContainer} from '../container/IContainer.js';
+import {DependenciesGraphRoot} from '../container/interceptors/dependencies-graph.js';
 
 const singletonDefinitions = buildSingletonTree(3, 10);
 const transientDefinitions = buildTransient(3, 10);
@@ -46,9 +44,7 @@ const instantiationBench = new Bench({
     c2 = cnt.scope(scope => {});
     c3 = cnt.scope(scope => {});
 
-    cntWithInterceptor = new Container(null, BindingsRegistry.create(), InstancesStore.create()).withInterceptor(
-      new DependenciesGraphRoot(),
-    );
+    cntWithInterceptor = container.new(c => c.withInterceptor('graph', new DependenciesGraphRoot()));
   },
   teardown: () => {
     cnt = container.new();
@@ -124,7 +120,7 @@ instantiationBench
   .add('[DependencyGraphInterceptor] scopedD + new disposable', () => {
     using scoped = cntWithInterceptor.disposable();
     scoped.use(scopedD);
-  })
+  });
 
 instantiationBench
   .warmup()

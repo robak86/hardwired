@@ -1,4 +1,4 @@
-import { container } from '../../container/Container.js';
+import {Container, container} from '../../container/Container.js';
 import { expectType, TypeOf } from 'ts-expect';
 import { IContainer } from '../../container/IContainer.js';
 import { fn } from '../../definitions/definitions.js';
@@ -8,17 +8,17 @@ describe(`ContainerConfiguration`, () => {
   describe(`container.new`, () => {
     it(`accepts asynchronous function`, async () => {
       const cnt = container.new(async c => {});
-      expectType<TypeOf<typeof cnt, Promise<IContainer>>>(true);
+      expectType<TypeOf<typeof cnt, Promise<Container>>>(true);
     });
 
     it(`accepts synchronous function`, async () => {
       const cnt = container.new(c => {});
-      expectType<TypeOf<typeof cnt, IContainer>>(true);
+      expectType<TypeOf<typeof cnt, Container>>(true);
     });
 
     it(`returns container synchronously when no configuration is passed`, async () => {
       const cnt = container.new();
-      expectType<TypeOf<typeof cnt, IContainer>>(true);
+      expectType<TypeOf<typeof cnt, Container>>(true);
     });
 
     it(`correctly configures the container`, async () => {

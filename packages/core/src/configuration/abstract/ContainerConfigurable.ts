@@ -2,6 +2,7 @@ import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { Definition } from '../../definitions/abstract/Definition.js';
 import { Binder } from '../../definitions/Binder.js';
 import { UseFn } from '../../container/IContainer.js';
+import { IInterceptor } from '../../container/interceptors/interceptor.js';
 
 export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped;
@@ -26,4 +27,6 @@ export interface ContainerConfigurable {
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 
   init(initializer: InitFn): void;
+
+  withInterceptor(id: string | symbol, interceptor: IInterceptor<unknown>): void;
 }
