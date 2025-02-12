@@ -53,8 +53,8 @@ export class Container //<TInterceptors extends Record<string, IInterceptor<any>
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
-    protected readonly interceptorsRegistry: InterceptorsRegistry,
-    protected readonly currentInterceptor?: IInterceptor<any>,
+    protected readonly interceptorsRegistry?: InterceptorsRegistry,
+    protected currentInterceptor?: IInterceptor<any>,
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -128,30 +128,62 @@ export class Container //<TInterceptors extends Record<string, IInterceptor<any>
       return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
     }
 
+    // const isRoot = this.interceptorsRegistry && !this.currentInterceptor;
+    //
+    // if (isRoot) {
+    //   this.currentInterceptor = this.interceptorsRegistry.build();
+    //
+    //   this.currentInterceptor?.onRequest?.(definition, args);
+    // }
+
     if (this.currentInterceptor) {
-      const currentInterceptor = this.currentInterceptor.onEnter(definition, args);
-      const currentContainer = this.withInterceptor(currentInterceptor);
-
-      switch (definition.strategy) {
-        case LifeTime.transient:
-          const instance = definition.create(currentContainer, ...args);
-          return currentInterceptor.onLeave(instance, definition);
-
-        case LifeTime.singleton:
-          return currentInterceptor.onLeave(
-            this.instancesStore.upsertIntoGlobalInstances(definition, currentContainer, ...args),
-            definition,
-          );
-
-        case LifeTime.scoped:
-          return currentInterceptor.onLeave(
-            this.instancesStore.upsertIntoScopeInstances(definition, currentContainer, ...args),
-            definition,
-          );
-
-        default:
-          throw new Error(`Unsupported strategy ${definition.strategy}`);
-      }
+      // const currentInterceptor = this.currentInterceptor.onEnter(definition, args);
+      // const currentContainer = this.withInterceptor(currentInterceptor);
+      //
+      // switch (definition.strategy) {
+      //   case LifeTime.transient:
+      //     const instance = definition.create(currentContainer, ...args);
+      //     const intercepted = currentInterceptor.onLeave(instance, definition);
+      //
+      //     if (this.currentInterceptor?.onRequestFinish && isPromise(intercepted)) {
+      //       return intercepted.then(() => this.currentInterceptor?.onRequestFinish?.(instance));
+      //     } else {
+      //       this.currentInterceptor?.onRequestFinish?.(intercepted);
+      //     }
+      //
+      //     return intercepted;
+      //
+      //   case LifeTime.singleton:
+      //     const singletonInstance = this.instancesStore.upsertIntoGlobalInstances(
+      //       definition,
+      //       currentContainer,
+      //       ...args,
+      //     );
+      //     const interceptedSingleton = currentInterceptor.onLeave(singletonInstance, definition);
+      //
+      //     if (this.currentInterceptor?.onRequestFinish && isPromise(interceptedSingleton)) {
+      //       return interceptedSingleton.then(() => this.currentInterceptor?.onRequestFinish?.(singletonInstance));
+      //     } else {
+      //       this.currentInterceptor?.onRequestFinish?.(interceptedSingleton);
+      //     }
+      //
+      //     return interceptedSingleton;
+      //
+      //   case LifeTime.scoped:
+      //     const scopedInstance = this.instancesStore.upsertIntoScopeInstances(definition, currentContainer, ...args);
+      //     const interceptedScoped = currentInterceptor.onLeave(scopedInstance, definition);
+      //
+      //     if (this.currentInterceptor?.onRequestFinish && isPromise(interceptedScoped)) {
+      //       return interceptedScoped.then(() => this.currentInterceptor?.onRequestFinish?.(scopedInstance));
+      //     } else {
+      //       this.currentInterceptor?.onRequestFinish?.(interceptedScoped);
+      //     }
+      //
+      //     return interceptedScoped;
+      //
+      //   default:
+      //     throw new Error(`Unsupported strategy ${definition.strategy}`);
+      // }
     } else {
       switch (definition.strategy) {
         case LifeTime.transient:
