@@ -421,7 +421,8 @@ The ease of injecting dependencies can also lead to excessive coupling between c
 
 #### Scoped Lifetime
 
-The values are memoized in the closest `<ContainerScope>` or `ContainerProvider`. Both mentioned components internally hold their own private state for scope.
+The values are memoized in the nearest `<ContainerScope>` or `ContainerProvider` up the component tree.
+Both components internally hold their own private state for the current scope.
 
 ```typescript jsx
 import { scoped } from 'hardwired';
@@ -492,37 +493,13 @@ In this example both `<Parent>` and `<Child>` components will get the same value
 
 #### Transient
 
-- transient instances are created on each component rerender
-
-```typescript jsx
-import { transient } from 'hardwired';
-import { use } from 'hardwired-react';
-
-const counter = singleton.fn(() => {
-  return { value: 0 }
-})
-
-const countValue = transient.fn(use => {
-  const count = use(counter);
-  count.value += 1;
-});
-
-const Parent = () => {
-  const value = use(countValue); // returns a value incremented by 1 on every render
-
-  return (
-    <h1>
-      Component rendered <span>{value}</span> times
-    </h1>
-  );
-};
-```
+- transient definitions are not supported by the `hardwired-react` library. The transient instances are not memoized, so they would be created on every render.
 
 ## Functional API
 
 If you prefer a more functional programming style, the previous counter example can be implemented as follows:
 
-```typescript
+```typescript jsx
 import { fn, value } from 'hardwired';
 import { use } from 'hardwired-react';
 import { action, observable } from 'mobx';

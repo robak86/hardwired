@@ -7,6 +7,10 @@ import { isPromise } from '../../../utils/IsPromise.js';
 
 const notInitialized = Symbol('notInitialized');
 
+// TODO: onEnter shouldn return new instance if the node is already registered in the graph root
+// TODO: root should implement two maps - singleton nodes and scoped nodes
+// TODO: onScope should return Interceptor that inherits singletons but has clean scoped definitions
+// TODO: maybe nodes should be just temporal objects? maybe on every onEnter in root all the nodes should be removed from the registered entries?
 export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   private _value: Awaited<T> | symbol = notInitialized;
 
@@ -26,6 +30,14 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     }
 
     return this._value as Awaited<T>;
+  }
+
+  get root(): this {
+    if (this._parent) {
+      return this._parent.root as this;
+    }
+
+    return this as this;
   }
 
   abstract create<TNewInstance>(

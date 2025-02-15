@@ -18,36 +18,36 @@ import {
   UseFn,
 } from './IContainer.js';
 
-import {v4} from 'uuid';
+import { v4 } from 'uuid';
 
-import {BindingsRegistry} from '../context/BindingsRegistry.js';
-import {InstancesStore} from '../context/InstancesStore.js';
-import {Definition} from '../definitions/abstract/Definition.js';
-import {LifeTime} from '../definitions/abstract/LifeTime.js';
-import {ExtensibleFunction} from '../utils/ExtensibleFunction.js';
-import {AsyncContainerConfigureFn, ContainerConfigureFn} from '../configuration/ContainerConfiguration.js';
-import {ValidDependenciesLifeTime} from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import {AsyncScopeConfigureFn, ScopeConfigureFn} from '../configuration/ScopeConfiguration.js';
-import {ScopeConfigurationDSL} from '../configuration/dsl/ScopeConfigurationDSL.js';
-import {ContainerConfigurationDSL} from '../configuration/dsl/ContainerConfigurationDSL.js';
-import {DisposableScope} from './DisposableScope.js';
-import {DisposableScopeConfigurationDSL} from '../configuration/dsl/DisposableScopeConfigurationDSL.js';
-import {DisposeFn} from '../configuration/abstract/ContainerConfigurable.js';
+import { BindingsRegistry } from '../context/BindingsRegistry.js';
+import { InstancesStore } from '../context/InstancesStore.js';
+import { Definition } from '../definitions/abstract/Definition.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
+import { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
+import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
+import { DisposableScope } from './DisposableScope.js';
+import { DisposableScopeConfigurationDSL } from '../configuration/dsl/DisposableScopeConfigurationDSL.js';
+import { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
 import {
   DisposableAsyncScopeConfigureFn,
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
-import {HasPromiseMember} from '../utils/HasPromiseMember.js';
-import {isPromise} from '../utils/IsPromise.js';
-import {IInterceptor} from './interceptors/interceptor.js';
-import {InterceptorsRegistry} from './interceptors/InterceptorsRegistry.js';
+import { HasPromiseMember } from '../utils/HasPromiseMember.js';
+import { isPromise } from '../utils/IsPromise.js';
+import { IInterceptor } from './interceptors/interceptor.js';
+import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
 
-export class Container //<TInterceptors extends Record<string, IInterceptor<any>>>
+export class Container
   extends ExtensibleFunction
   implements InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
 {
@@ -158,6 +158,7 @@ export class Container //<TInterceptors extends Record<string, IInterceptor<any>
     ...args: TArgs
   ): TValue {
     if (this.currentInterceptor) {
+      // TODO: no idea why, but this additional check slows execution by about 4 times, consider using subclass instead e.g. InterceptingContainer
       return this.buildWithStrategyIntercepted(
         this.currentInterceptor.onEnter(definition, args, this.bindingsRegistry, this.instancesStore),
         definition,
