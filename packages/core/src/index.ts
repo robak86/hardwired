@@ -23,6 +23,7 @@ export * from './container/DisposableScope.js';
 export { Middleware, withMiddleware, MiddlewareNextFn, createMiddleware } from './definitions/withMiddleware.js';
 export { cls, ClassType } from './definitions/cls.js';
 export { Definition, AnyDefinition } from './definitions/abstract/Definition.js';
+export { ClassDefinition } from './definitions/abstract/ClassDefinition.js';
 
 export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
