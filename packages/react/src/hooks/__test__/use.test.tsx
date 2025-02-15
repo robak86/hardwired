@@ -1,14 +1,14 @@
-import {cls, container, fn, unbound} from 'hardwired';
-import {render} from '@testing-library/react';
-import {DummyComponent} from '../../__test__/DummyComponent.js';
+import { cls, container, fn, unbound } from 'hardwired';
+import { render } from '@testing-library/react';
+import { DummyComponent } from '../../__test__/DummyComponent.js';
 
-import {ContainerProvider} from '../../components/ContainerProvider.js';
-import {use} from '../use.js';
-import {describe, expect, it} from 'vitest';
-import {ContainerScope} from '../../components/ContainerScope.js';
-import {FC} from 'react';
-import {useScopeConfig} from '../useScopeConfig.js';
-import {IReactLifeCycleAware, withReactLifeCycle,} from '../../interceptors/ReactLifeCycleInterceptor.js';
+import { ContainerProvider } from '../../components/ContainerProvider.js';
+import { use } from '../use.js';
+import { describe, expect, it } from 'vitest';
+import { ContainerScope } from '../../components/ContainerScope.js';
+import { FC } from 'react';
+import { useScopeConfig } from '../useScopeConfig.js';
+import { IReactLifeCycleAware, withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor.js';
 
 /**
  * @vitest-environment happy-dom

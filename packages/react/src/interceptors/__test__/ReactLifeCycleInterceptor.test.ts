@@ -49,6 +49,20 @@ describe(`ReactLifeCycleInterceptor`, () => {
     return { cnt, interceptor };
   }
 
+  describe(`returning graph node`, () => {
+    it(`caches graph nodes`, async () => {
+      const { cnt, interceptor } = setup();
+
+      cnt.use(ChildSvc1.instance);
+      const nodeReq = interceptor.getGraphNode(ChildSvc1.instance);
+
+      cnt.use(ChildSvc1.instance);
+      const nodeReq2 = interceptor.getGraphNode(ChildSvc1.instance);
+
+      expect(nodeReq).toBe(nodeReq2);
+    });
+  });
+
   describe(`single class dependency`, () => {
     it(`allows getting node for the dependency`, async () => {
       const { cnt, interceptor } = setup();

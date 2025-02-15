@@ -3,7 +3,7 @@ import { getTruncatedFunctionDefinition } from '../getTruncatedFunctionDefinitio
 
 describe('getTruncatedFunctionDefinition', () => {
   it('should handle named function', () => {
-    const exampleFunc = function example(a:any, b:any) {
+    const exampleFunc = function example(a: any, b: any) {
       if (a > b) {
         return a;
       } else {

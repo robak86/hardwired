@@ -51,7 +51,7 @@ export class DependenciesGraph<T> extends BaseInterceptor<T> implements IInterce
 }
 
 export class DependenciesGraphRoot extends BaseRootInterceptor<unknown> implements IInterceptor<any> {
-  private _nodesByDefinitionId = new Map<symbol, DependenciesGraph<any>>();
+  // private _nodesByDefinitionId = new Map<symbol, DependenciesGraph<any>>();
 
   create<TNewInstance>(
     parent?: BaseInterceptor<unknown>,
@@ -62,21 +62,22 @@ export class DependenciesGraphRoot extends BaseRootInterceptor<unknown> implemen
 
   getGraphNode<TInstance>(
     definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
-  ): IGraphNode<TInstance> {
-    const graphNode = this._nodesByDefinitionId.get(definition.id);
-
-    if (!graphNode) {
-      throw new Error(`No graph node found for definition ${definition.id.toString()}`);
-    }
-
-    return graphNode as unknown as IGraphNode<TInstance>;
+  ): DependenciesGraph<TInstance> {
+    return super.getGraphNode(definition) as DependenciesGraph<TInstance>;
+    // const graphNode = this._nodesByDefinitionId.get(definition.id);
+    //
+    // if (!graphNode) {
+    //   throw new Error(`No graph node found for definition ${definition.id.toString()}`);
+    // }
+    //
+    // return graphNode as unknown as DependenciesGraph<TInstance>;
   }
 
-  override registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
-    if (this._nodesByDefinitionId.has(definition.id)) {
-      return;
-    }
-
-    this._nodesByDefinitionId.set(definition.id, graphNode as DependenciesGraph<any>);
-  }
+  // override registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
+  //   if (this._nodesByDefinitionId.has(definition.id)) {
+  //     return;
+  //   }
+  //
+  //   this._nodesByDefinitionId.set(definition.id, graphNode as DependenciesGraph<any>);
+  // }
 }

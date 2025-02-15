@@ -7,8 +7,6 @@ import { isPromise } from '../../../utils/IsPromise.js';
 
 const notInitialized = Symbol('notInitialized');
 
-// TODO: onEnter shouldn return new instance if the node is already registered in the graph root
-// TODO: root should implement two maps - singleton nodes and scoped nodes
 // TODO: onScope should return Interceptor that inherits singletons but has clean scoped definitions
 // TODO: maybe nodes should be just temporal objects? maybe on every onEnter in root all the nodes should be removed from the registered entries?
 export abstract class BaseInterceptor<T> implements IInterceptor<T> {
@@ -65,14 +63,26 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     bindingsRegistry: IBindingRegistryRead,
     instancesStore: IInstancesStoryRead,
   ): IInterceptor<TNewInstance> {
-    const childInterceptor = this.create<TNewInstance>(this, definition);
+    const existingNode: BaseInterceptor<TNewInstance> | undefined = this.getGraphNode(definition as any); // TODO: type
 
-    this.registerByDefinition(definition, childInterceptor);
-    this._children.push(childInterceptor);
-    return childInterceptor;
+    if (existingNode) {
+      return existingNode;
+    } else {
+      const childInterceptor = this.create<TNewInstance>(this, definition);
+
+      this.registerByDefinition(definition, childInterceptor);
+      this._children.push(childInterceptor);
+      return childInterceptor;
+    }
   }
 
-  protected registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
+  getGraphNode<TInstance>(
+    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+  ): BaseInterceptor<TInstance> | undefined {
+    return this._parent?.getGraphNode(definition);
+  }
+
+  protected registerByDefinition<T>(definition: Definition<T, any, any[]>, graphNode: BaseInterceptor<T>) {
     if (this._parent) {
       this._parent.registerByDefinition(definition, graphNode);
     } else {
@@ -107,9 +117,38 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
 }
 
 export abstract class BaseRootInterceptor<T> extends BaseInterceptor<T> {
+  private _singletonNodes = new Map<symbol, BaseInterceptor<any>>();
+  private _scopedNodes = new Map<symbol, BaseInterceptor<any>>();
+
   constructor() {
     super(undefined, undefined);
   }
 
-  protected abstract registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<T>): void;
+  registerByDefinition<T>(definition: Definition<T, any, any[]>, graphNode: BaseInterceptor<T>): void {
+    if (definition.strategy === LifeTime.singleton) {
+      if (this._singletonNodes.has(definition.id)) {
+        throw new Error(`Node already registered`);
+      } else {
+        this._singletonNodes.set(definition.id, graphNode);
+      }
+    }
+
+    if (definition.strategy === LifeTime.scoped) {
+      if (this._scopedNodes.has(definition.id)) {
+        throw new Error(`Node already registered`);
+      } else {
+        this._scopedNodes.set(definition.id, graphNode);
+      }
+    }
+  }
+  getGraphNode<TInstance>(
+    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+  ): BaseInterceptor<TInstance> {
+    switch (definition.strategy) {
+      case LifeTime.singleton:
+        return this._singletonNodes.get(definition.id) as BaseInterceptor<TInstance>;
+      case LifeTime.scoped:
+        return this._scopedNodes.get(definition.id) as BaseInterceptor<TInstance>;
+    }
+  }
 }

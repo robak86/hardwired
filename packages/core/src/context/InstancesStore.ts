@@ -1,6 +1,6 @@
-import {Definition} from '../definitions/abstract/Definition.js';
-import {IContainer} from '../container/IContainer.js';
-import {InstancesMap} from './InstancesMap.js';
+import { Definition } from '../definitions/abstract/Definition.js';
+import { IContainer } from '../container/IContainer.js';
+import { InstancesMap } from './InstancesMap.js';
 
 export interface IInstancesStoryRead {
   hasSingleton(definitionId: symbol): boolean;

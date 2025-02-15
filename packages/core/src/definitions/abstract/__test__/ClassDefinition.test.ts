@@ -1,4 +1,4 @@
-import {cls} from "../../cls.js";
+import { cls } from '../../cls.js';
 
 describe(`ClassDefinition`, () => {
   describe(`name`, () => {

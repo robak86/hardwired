@@ -6,7 +6,6 @@ export function getTruncatedFunctionDefinition(funcStr: string): string {
     // Handle single-line fat arrow functions without return keyword
     const singleLineReturnMatch = funcStr.match(/=>\s*([^;]+)/);
 
-
     if (singleLineReturnMatch) {
       return funcStr;
     } else {
@@ -35,5 +34,5 @@ export function getTruncatedFunctionDefinition(funcStr: string): string {
     }
   }
 
-  return `${signature} { ... ${truncatedReturnStatements} }`.replace('return {\\n    }','');
+  return `${signature} { ... ${truncatedReturnStatements} }`.replace('return {\\n    }', '');
 }

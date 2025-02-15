@@ -33,7 +33,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     endTime: number,
   ) {
     console.log(
-      `Returning[${this.scopeLevel}][${definition.strategy}][${prettyMilliseconds(endTime - this._start!, {formatSubMilliseconds: true, compact: true})}]:`,
+      `Returning[${this.scopeLevel}][${definition.strategy}][${prettyMilliseconds(endTime - this._start!, { formatSubMilliseconds: true, compact: true })}]:`,
       instance,
     );
   }

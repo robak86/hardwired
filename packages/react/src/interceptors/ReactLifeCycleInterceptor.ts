@@ -1,5 +1,6 @@
 import { BaseInterceptor, ContainerConfigureFn, Definition, LifeTime } from 'hardwired';
 import { useContainer } from '../context/ContainerContext.js';
+import { BaseRootInterceptor } from 'hardwired';
 
 export interface IReactLifeCycleAware {
   onMount?(): void;
@@ -57,9 +58,7 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
   }
 }
 
-export class ReactLifeCycleRootInterceptor<T> extends ReactLifeCycleInterceptor<T> {
-  private _nodesByDefinitionId = new Map<symbol, ReactLifeCycleInterceptor<any>>();
-
+export class ReactLifeCycleRootInterceptor<T> extends BaseRootInterceptor<T> {
   create<TNewInstance>(
     parent?: BaseInterceptor<T>,
     definition?: Definition<TNewInstance, LifeTime, any[]>,
@@ -70,20 +69,6 @@ export class ReactLifeCycleRootInterceptor<T> extends ReactLifeCycleInterceptor<
   getGraphNode<TInstance>(
     definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
   ): ReactLifeCycleInterceptor<TInstance> {
-    const graphNode = this._nodesByDefinitionId.get(definition.id);
-
-    if (!graphNode) {
-      throw new Error(`No graph node found for definition ${definition.id.toString()}`);
-    }
-
-    return graphNode as unknown as ReactLifeCycleInterceptor<TInstance>;
-  }
-
-  override registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
-    if (this._nodesByDefinitionId.has(definition.id)) {
-      return;
-    }
-
-    this._nodesByDefinitionId.set(definition.id, graphNode as ReactLifeCycleInterceptor<any>);
+    return super.getGraphNode(definition) as ReactLifeCycleInterceptor<TInstance>;
   }
 }

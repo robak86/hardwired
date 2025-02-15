@@ -1,6 +1,6 @@
-import {container} from '../../../Container.js';
-import {fn} from '../../../../definitions/definitions.js';
-import {DependenciesGraphRoot} from '../DependenciesGraph.js';
+import { container } from '../../../Container.js';
+import { fn } from '../../../../definitions/definitions.js';
+import { DependenciesGraphRoot } from '../DependenciesGraph.js';
 
 // TODO:
 // - what should happen with transient definitions? they will be overridden in the situation where multiple singleton/scoped definitions create a transient definition for themselves!!!!
@@ -132,7 +132,7 @@ describe(`DependenciesGraph`, () => {
 
         // keeps the last value, which is confusing, therefore getting transient definitions is forbidden on the type level
         // @ts-expect-error cannot access transient definitions
-        expect(interceptor.getGraphNode(shared).value).toEqual(1); // doesn't override values
+        expect(interceptor.getGraphNode(shared)).toEqual(undefined); // we don't register transient definitions in the graph root
       });
     });
   });
