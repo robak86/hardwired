@@ -14,6 +14,19 @@ import { useScopeConfig } from '../useScopeConfig.js';
  */
 
 describe(`use`, () => {
+  describe(`types`, () => {
+    it(`doesn't accept definition returning promises`, async () => {
+      const asyncDef = fn.scoped(async () => 'val');
+      // @ts-ignore
+      const Component = () => {
+        // @ts-expect-error asyncDef is async and should not be accepted
+        use(asyncDef);
+
+        return <div />;
+      };
+    });
+  });
+
   describe(`instantiating dependencies`, () => {
     const val1Def = fn.singleton(() => 'val1');
 
