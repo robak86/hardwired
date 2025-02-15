@@ -1,4 +1,4 @@
-import {Container, container} from '../../container/Container.js';
+import { Container, container } from '../../container/Container.js';
 import { expectType, TypeOf } from 'ts-expect';
 import { IContainer } from '../../container/IContainer.js';
 import { fn } from '../../definitions/definitions.js';

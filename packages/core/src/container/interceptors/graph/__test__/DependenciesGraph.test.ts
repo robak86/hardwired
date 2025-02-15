@@ -1,6 +1,6 @@
-import { container } from '../../Container.js';
-import { fn } from '../../../definitions/definitions.js';
-import { DependenciesGraphRoot } from '../dependencies-graph.js';
+import {container} from '../../../Container.js';
+import {fn} from '../../../../definitions/definitions.js';
+import {DependenciesGraphRoot} from '../DependenciesGraph.js';
 
 // TODO:
 // - what should happen with transient definitions? they will be overridden in the situation where multiple singleton/scoped definitions create a transient definition for themselves!!!!
@@ -58,15 +58,6 @@ describe(`DependenciesGraph`, () => {
 
     return { interceptor, cnt, a, b, c1, c2 };
   }
-
-  describe(`sync`, () => {
-    it(`Calls interceptor methods with correct arguments`, () => {
-      const { interceptor, cnt, a } = setup();
-      cnt.use(a);
-
-      console.log(interceptor.getGraphNode(a).descendants);
-    });
-  });
 
   describe(`getGraphNode`, () => {
     it(`returns node holding corresponding value`, async () => {

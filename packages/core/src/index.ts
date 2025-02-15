@@ -1,6 +1,12 @@
+export { BaseInterceptor } from './container/interceptors/logging/BaseInterceptor.js';
+
+export * from './container/interceptors/graph/DependenciesGraph.js';
+
+export { LoggingInterceptor } from './container/interceptors/logging/LoggingInterceptor.js';
+
 export { ScopeConfigurable, DisposableScopeConfigurable } from './configuration/abstract/ScopeConfigurable.js';
 export { ContainerConfigurable } from './configuration/abstract/ContainerConfigurable.js';
-export * from './container/interceptors/interceptor.js';
+export { IInterceptor } from './container/interceptors/interceptor.js';
 
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
 export { container, once, all } from './container/Container.js';

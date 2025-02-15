@@ -24,7 +24,8 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "dependencies": {
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "pretty-ms": "^9.2.0"
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0",

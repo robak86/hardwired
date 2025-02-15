@@ -2,6 +2,7 @@ import { Definition } from '../Definition.js';
 import { LifeTime } from '../LifeTime.js';
 import { container } from '../../../container/Container.js';
 import { IContainer, IStrategyAware } from '../../../container/IContainer.js';
+import { describe } from 'vitest';
 
 describe(`Definition`, () => {
   describe(`bind`, () => {
@@ -17,6 +18,16 @@ describe(`Definition`, () => {
       bound.create(cnt2 as IContainer & IStrategyAware);
 
       expect(createSpy).toBeCalledWith(cnt1);
+    });
+  });
+
+  describe(`name`, () => {
+    describe('named function', () => {
+      it(`returns name of the factory function`, async () => {
+        const def = new Definition(Symbol(), LifeTime.scoped, function MyFactory() {});
+
+        expect(def.name).toBe('MyFactory');
+      });
     });
   });
 });

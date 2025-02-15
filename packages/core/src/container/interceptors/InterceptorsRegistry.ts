@@ -1,5 +1,5 @@
-import {IInterceptor} from './interceptor.js';
-import {CompositeInterceptor} from './CompositeInterceptor.js';
+import { IInterceptor } from './interceptor.js';
+import { CompositeInterceptor } from './CompositeInterceptor.js';
 
 export class InterceptorsRegistry {
   constructor() {}

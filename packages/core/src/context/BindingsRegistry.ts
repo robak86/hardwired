@@ -1,7 +1,13 @@
 import { AnyDefinition } from '../definitions/abstract/Definition.js';
 import { COWMap } from './InstancesMap.js';
 
-export class BindingsRegistry {
+export interface IBindingRegistryRead {
+  hasFrozenBinding(definitionId: symbol): boolean;
+  hasScopeDefinition(definitionId: symbol): boolean;
+  hasCascadingDefinition(definitionId: symbol): boolean;
+}
+
+export class BindingsRegistry implements IBindingRegistryRead {
   static create(): BindingsRegistry {
     return new BindingsRegistry(COWMap.create(), COWMap.create(), COWMap.create());
   }
@@ -29,12 +35,20 @@ export class BindingsRegistry {
     return this._frozenDefinitions.has(definitionId);
   }
 
-  addFrozenBinding = (definition: AnyDefinition) => {
+  hasScopeDefinition(definitionId: symbol): boolean {
+    return this._scopeDefinitions.has(definitionId);
+  }
+
+  hasCascadingDefinition(definitionId: symbol): boolean {
+    return this._scopeDefinitions.has(definitionId);
+  }
+
+  addFrozenBinding(definition: AnyDefinition) {
     if (this._frozenDefinitions.has(definition.id)) {
       throw new Error(`Final binding was already set. Cannot override it.`);
     }
     this._frozenDefinitions.set(definition.id, definition);
-  };
+  }
 
   addScopeBinding(definition: AnyDefinition) {
     if (this._scopeDefinitions.has(definition.id)) {

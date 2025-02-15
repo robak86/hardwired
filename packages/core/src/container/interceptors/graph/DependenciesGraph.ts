@@ -1,32 +1,7 @@
-import { Definition } from '../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { IInterceptor } from './interceptor.js';
-import { isPromise } from '../../utils/IsPromise.js';
-
-/**
- * A -> B -> C1
- *        -> C2
- *
- *   -> D -> E -> F1
- *             -> F2
- *
- * onEnter(A)
- *    onEnter(B)
- *      onEnter(C1)
- *      onLeave(instance of C1)
- *      onEnter(C2)
- *      onLeave(instance of C2)
- *    onLeave(instance of B)
- *    onEnter(D)
- *      onEnter(E)
- *        onEnter(F1)
- *        onLeave(instance of F1)
- *        onEnter(F2)
- *        onLeave(instance of F2)
- *       onLeave(instance of E)
- *     onLeave(instance of D)
- * onLeave(instance of A)
- */
+import {Definition} from '../../../definitions/abstract/Definition.js';
+import {LifeTime} from '../../../definitions/abstract/LifeTime.js';
+import {IInterceptor} from '../interceptor.js';
+import {isPromise} from '../../../utils/IsPromise.js';
 
 interface IGraphNode<T> {
   readonly value: T;
@@ -38,6 +13,7 @@ interface IGraphNode<T> {
 }
 
 class GraphNode {
+
   constructor(private _parent?: GraphNode) {}
 
   protected registerGraphNodeByDefinition(definition: Definition<any, any, any[]>, graphNode: DependenciesGraph<any>) {
@@ -119,6 +95,10 @@ export class DependenciesGraph<T> extends GraphNode implements IInterceptor<T>, 
 
     return instance;
   }
+
+  onScope(): IInterceptor<any> {
+    return this;
+  }
 }
 
 export class DependenciesGraphRoot extends GraphNode implements IInterceptor<any> {
@@ -134,6 +114,10 @@ export class DependenciesGraphRoot extends GraphNode implements IInterceptor<any
 
   onLeave(instance: any, definition: Definition<any, LifeTime, any[]>) {
     // never called for the root
+  }
+
+  onScope(): IInterceptor<any> {
+    return this;
   }
 
   getGraphNode<TInstance>(

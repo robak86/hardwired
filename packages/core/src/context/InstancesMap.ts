@@ -1,6 +1,10 @@
 import { Definition } from '../definitions/abstract/Definition.js';
 import { IContainer } from '../container/IContainer.js';
 
+/**
+ * Copy-on-write map. When a map is cloned, the new map references the same inner map as the original map.
+ * When a value is set on the new map, the new map clones the original inner map and sets the value on the new map.
+ */
 export abstract class COWMap<V> {
   static create<V>(): COWMap<V> {
     return new InstancesMap(new Map(), true);

@@ -1,8 +1,14 @@
-import { Definition } from '../definitions/abstract/Definition.js';
-import { IContainer } from '../container/IContainer.js';
-import { InstancesMap } from './InstancesMap.js';
+import {Definition} from '../definitions/abstract/Definition.js';
+import {IContainer} from '../container/IContainer.js';
+import {InstancesMap} from './InstancesMap.js';
 
-export class InstancesStore {
+export interface IInstancesStoryRead {
+  hasSingleton(definitionId: symbol): boolean;
+  hasScoped(definitionId: symbol): boolean;
+  hasFrozen(definitionId: symbol): boolean;
+}
+
+export class InstancesStore implements IInstancesStoryRead {
   static create(): InstancesStore {
     return new InstancesStore(InstancesMap.create(), InstancesMap.create(), InstancesMap.create());
   }
@@ -44,5 +50,17 @@ export class InstancesStore {
     ...args: TArgs
   ) {
     return this._globalInstances.upsert(definition, container, ...args);
+  }
+
+  hasFrozen(definitionId: symbol): boolean {
+    return this._frozenInstances.has(definitionId);
+  }
+
+  hasScoped(definitionId: symbol): boolean {
+    return this._scopeInstances.has(definitionId);
+  }
+
+  hasSingleton(definitionId: symbol): boolean {
+    return this._globalInstances.has(definitionId);
   }
 }
