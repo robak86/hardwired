@@ -1,15 +1,15 @@
-import {IBindingRegistryRead} from '../../../context/BindingsRegistry.js';
-import {IInstancesStoryRead} from '../../../context/InstancesStore.js';
-import {Definition} from '../../../definitions/abstract/Definition.js';
-import {LifeTime} from '../../../definitions/abstract/LifeTime.js';
-import {IInterceptor} from '../interceptor.js';
-import {isPromise} from '../../../utils/IsPromise.js';
+import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
+import { IInstancesStoryRead } from '../../../context/InstancesStore.js';
+import { Definition } from '../../../definitions/abstract/Definition.js';
+import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import { IInterceptor } from '../interceptor.js';
+import { isPromise } from '../../../utils/IsPromise.js';
 
 export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   constructor(
-    private _parent?: BaseInterceptor<unknown>,
-    private _definition?: Definition<T, LifeTime, any[]>,
-    private _children: BaseInterceptor<unknown>[] = [],
+    protected _parent?: BaseInterceptor<unknown>,
+    protected _definition?: Definition<T, LifeTime, any[]>,
+    protected _children: BaseInterceptor<unknown>[] = [],
   ) {}
 
   get children(): this[] {
@@ -81,7 +81,7 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
 }
 
 export abstract class BaseRootInterceptor<T> extends BaseInterceptor<T> {
-  private _nodes: Record<symbol, BaseInterceptor<any>> = {};
+  protected _nodes: Record<symbol, BaseInterceptor<any>> = {};
 
   constructor() {
     super(undefined, undefined);
