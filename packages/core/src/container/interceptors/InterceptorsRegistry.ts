@@ -8,22 +8,22 @@ export class InterceptorsRegistry {
     return new InterceptorsRegistry();
   }
 
-  private _interceptors: Record<string | symbol, IInterceptor<unknown>> = {};
+  private _interceptors = new Map<symbol | string, IInterceptor<any>>();
 
   get(id: string | symbol): IInterceptor<unknown> | undefined {
-    return this._interceptors[id];
+    return this._interceptors.get(id);
   }
 
   register(id: string | symbol, interceptor: IInterceptor<unknown>): void {
-    if (this._interceptors[id]) {
+    if (this._interceptors.has(id)) {
       throw new Error(`Interceptor with name ${id.toString()} already exists.`);
     }
 
-    this._interceptors[id] = interceptor;
+    this._interceptors.set(id, interceptor);
   }
 
   build(): IInterceptor<any> | undefined {
-    const interceptors = Object.values(this._interceptors);
+    const interceptors = [...this._interceptors.values()];
 
     if (interceptors.length === 1) {
       return interceptors[0];

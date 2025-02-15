@@ -132,7 +132,7 @@ describe(`DependenciesGraph`, () => {
 
         // keeps the last value, which is confusing, therefore getting transient definitions is forbidden on the type level
         // @ts-expect-error cannot access transient definitions
-        expect(interceptor.getGraphNode(shared).value).toEqual(2);
+        expect(interceptor.getGraphNode(shared).value).toEqual(1); // doesn't override values
       });
     });
   });

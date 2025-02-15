@@ -1,13 +1,14 @@
-import { container, fn, unbound } from 'hardwired';
-import { render } from '@testing-library/react';
-import { DummyComponent } from '../../__test__/DummyComponent.js';
+import {cls, container, fn, unbound} from 'hardwired';
+import {render} from '@testing-library/react';
+import {DummyComponent} from '../../__test__/DummyComponent.js';
 
-import { ContainerProvider } from '../../components/ContainerProvider.js';
-import { use } from '../use.js';
-import { describe, expect, it } from 'vitest';
-import { ContainerScope } from '../../components/ContainerScope.js';
-import { FC } from 'react';
-import { useScopeConfig } from '../useScopeConfig.js';
+import {ContainerProvider} from '../../components/ContainerProvider.js';
+import {use} from '../use.js';
+import {describe, expect, it} from 'vitest';
+import {ContainerScope} from '../../components/ContainerScope.js';
+import {FC} from 'react';
+import {useScopeConfig} from '../useScopeConfig.js';
+import {IReactLifeCycleAware, withReactLifeCycle,} from '../../interceptors/ReactLifeCycleInterceptor.js';
 
 /**
  * @vitest-environment happy-dom
@@ -167,6 +168,65 @@ describe(`use`, () => {
       expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
       result.rerender(<TestSubject externalValue={'changed'} />);
       expect(result.getByTestId('value').textContent).toEqual('render:2;value:changed');
+    });
+  });
+
+  describe(`lifecycle interceptor`, () => {
+    it(`calls mount on component mount`, async () => {
+      const cnt = container.new(withReactLifeCycle);
+
+      class MountableService implements IReactLifeCycleAware {
+        static instance = cls.singleton(this);
+
+        onMount = vi.fn();
+        onUnmount = vi.fn();
+      }
+
+      const OtherConsumer = () => {
+        use(MountableService.instance);
+
+        return <DummyComponent value={'irrelevant'} />;
+      };
+
+      const Consumer = () => {
+        use(MountableService.instance);
+
+        return <OtherConsumer />;
+      };
+
+      const App = () => {
+        return (
+          <ContainerProvider container={cnt}>
+            <Consumer />
+          </ContainerProvider>
+        );
+      };
+
+      const result = render(<App />);
+
+      const svc = cnt.use(MountableService.instance);
+      expect(svc.onMount).toHaveBeenCalledTimes(1);
+      expect(svc.onUnmount).not.toHaveBeenCalled();
+
+      result.rerender(<App />);
+
+      expect(svc.onMount).toHaveBeenCalledTimes(1);
+      expect(svc.onUnmount).not.toHaveBeenCalled();
+
+      result.unmount();
+
+      expect(svc.onMount).toHaveBeenCalledTimes(1);
+      expect(svc.onUnmount).toHaveBeenCalledTimes(1);
+
+      const remounted = render(<App />);
+
+      expect(svc.onMount).toHaveBeenCalledTimes(2);
+      expect(svc.onUnmount).toHaveBeenCalledTimes(1);
+
+      remounted.unmount();
+
+      expect(svc.onMount).toHaveBeenCalledTimes(2);
+      expect(svc.onUnmount).toHaveBeenCalledTimes(2);
     });
   });
 });

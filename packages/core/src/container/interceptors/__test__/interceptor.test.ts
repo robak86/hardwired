@@ -27,11 +27,24 @@ describe(`interceptor`, () => {
     }
   }
 
+  describe(`container configuration`, () => {
+    describe(`getInterceptor`, () => {
+      it(`returns correct instance of interceptor`, async () => {
+        const interceptor = new TestInterceptor();
+        const interceptorId = Symbol('test');
+        const cnt = container.new(c => c.withInterceptor(interceptorId, interceptor));
+
+        expect(cnt.getInterceptor(interceptorId)).toBe(interceptor);
+      });
+    });
+  });
+
   describe(`sync`, () => {
     it(`Calls interceptor methods with correct arguments`, () => {
-      const interceptor = new TestInterceptor();
 
-      const cnt = container.new(c => c.withInterceptor('test', interceptor));
+
+      const cnt = container.new(c => c.withInterceptor('test', new TestInterceptor()));
+      const interceptor = cnt.getInterceptor('test') as TestInterceptor;
 
       vi.spyOn(interceptor, 'onEnter');
       vi.spyOn(interceptor, 'onLeave');

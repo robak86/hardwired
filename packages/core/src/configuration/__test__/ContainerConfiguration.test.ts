@@ -7,7 +7,10 @@ import { DisposableScope } from '../../container/DisposableScope.js';
 describe(`ContainerConfiguration`, () => {
   describe(`container.new`, () => {
     it(`accepts asynchronous function`, async () => {
-      const cnt = container.new(async c => {});
+      const cnt = container.new(
+        async c => {},
+        c => {},
+      );
       expectType<TypeOf<typeof cnt, Promise<Container>>>(true);
     });
 
@@ -28,6 +31,23 @@ describe(`ContainerConfiguration`, () => {
       });
 
       expect(cnt.use(def)).toEqual(456);
+    });
+
+    it(`accepts multiple config functions`, async () => {
+      const def1 = fn.scoped(() => 123);
+      const def2 = fn.scoped(() => 123);
+
+      const cnt = await container.new(
+        async container => {
+          container.bindCascading(def1).toValue(456);
+        },
+        async container => {
+          container.bindCascading(def2).toValue(789);
+        },
+      );
+
+      expect(cnt.use(def1)).toEqual(456);
+      expect(cnt.use(def2)).toEqual(789);
     });
   });
 

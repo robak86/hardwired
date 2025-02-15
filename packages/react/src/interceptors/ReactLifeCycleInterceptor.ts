@@ -1,4 +1,5 @@
-import { BaseInterceptor, Definition, LifeTime } from 'hardwired';
+import { BaseInterceptor, ContainerConfigureFn, Definition, LifeTime } from 'hardwired';
+import { useContainer } from '../context/ContainerContext.js';
 
 export interface IReactLifeCycleAware {
   onMount?(): void;
@@ -7,7 +8,17 @@ export interface IReactLifeCycleAware {
 
 export const reactLifeCycleInterceptor = Symbol('reactLifeCycleInterceptor');
 
+export const withReactLifeCycle: ContainerConfigureFn = c => {
+  c.withInterceptor(reactLifeCycleInterceptor, new ReactLifeCycleRootInterceptor());
+};
+
+export const useReactLifeCycleInterceptor = () => {
+  return useContainer().getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor<any>;
+};
+
 export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
+  id = Math.random();
+
   protected _isMounted = false;
 
   create<TNewInstance>(
@@ -47,7 +58,7 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
 }
 
 export class ReactLifeCycleRootInterceptor<T> extends ReactLifeCycleInterceptor<T> {
-  private _nodesByDefinitionId: Record<symbol, ReactLifeCycleInterceptor<any>> = {};
+  private _nodesByDefinitionId = new Map<symbol, ReactLifeCycleInterceptor<any>>();
 
   create<TNewInstance>(
     parent?: BaseInterceptor<T>,
@@ -57,9 +68,9 @@ export class ReactLifeCycleRootInterceptor<T> extends ReactLifeCycleInterceptor<
   }
 
   getGraphNode<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>, // TODO: no idea how to handle transient in a reliable way
+    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
   ): ReactLifeCycleInterceptor<TInstance> {
-    const graphNode = this._nodesByDefinitionId[definition.id];
+    const graphNode = this._nodesByDefinitionId.get(definition.id);
 
     if (!graphNode) {
       throw new Error(`No graph node found for definition ${definition.id.toString()}`);
@@ -69,6 +80,10 @@ export class ReactLifeCycleRootInterceptor<T> extends ReactLifeCycleInterceptor<
   }
 
   override registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
-    this._nodesByDefinitionId[definition.id] = graphNode as ReactLifeCycleInterceptor<any>;
+    if (this._nodesByDefinitionId.has(definition.id)) {
+      return;
+    }
+
+    this._nodesByDefinitionId.set(definition.id, graphNode as ReactLifeCycleInterceptor<any>);
   }
 }

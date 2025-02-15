@@ -1,4 +1,4 @@
-export { BaseInterceptor } from './container/interceptors/logging/BaseInterceptor.js';
+export { BaseInterceptor, BaseRootInterceptor } from './container/interceptors/logging/BaseInterceptor.js';
 
 export * from './container/interceptors/graph/DependenciesGraph.js';
 

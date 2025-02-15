@@ -14,34 +14,38 @@ import {
   IDisposableScopeAware,
   InstanceCreationAware,
   IStrategyAware,
+  ReturnTypes,
   UseFn,
 } from './IContainer.js';
 
-import { v4 } from 'uuid';
+import {v4} from 'uuid';
 
-import { BindingsRegistry } from '../context/BindingsRegistry.js';
-import { InstancesStore } from '../context/InstancesStore.js';
-import { Definition } from '../definitions/abstract/Definition.js';
-import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
-import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
-import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
-import { DisposableScope } from './DisposableScope.js';
-import { DisposableScopeConfigurationDSL } from '../configuration/dsl/DisposableScopeConfigurationDSL.js';
-import { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
+import {BindingsRegistry} from '../context/BindingsRegistry.js';
+import {InstancesStore} from '../context/InstancesStore.js';
+import {Definition} from '../definitions/abstract/Definition.js';
+import {LifeTime} from '../definitions/abstract/LifeTime.js';
+import {ExtensibleFunction} from '../utils/ExtensibleFunction.js';
+import {AsyncContainerConfigureFn, ContainerConfigureFn} from '../configuration/ContainerConfiguration.js';
+import {ValidDependenciesLifeTime} from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import {AsyncScopeConfigureFn, ScopeConfigureFn} from '../configuration/ScopeConfiguration.js';
+import {ScopeConfigurationDSL} from '../configuration/dsl/ScopeConfigurationDSL.js';
+import {ContainerConfigurationDSL} from '../configuration/dsl/ContainerConfigurationDSL.js';
+import {DisposableScope} from './DisposableScope.js';
+import {DisposableScopeConfigurationDSL} from '../configuration/dsl/DisposableScopeConfigurationDSL.js';
+import {DisposeFn} from '../configuration/abstract/ContainerConfigurable.js';
 import {
   DisposableAsyncScopeConfigureFn,
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
-import { HasPromiseMember } from '../utils/HasPromiseMember.js';
-import { isPromise } from '../utils/IsPromise.js';
-import { IInterceptor } from './interceptors/interceptor.js';
-import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
+import {HasPromiseMember} from '../utils/HasPromiseMember.js';
+import {isPromise} from '../utils/IsPromise.js';
+import {IInterceptor} from './interceptors/interceptor.js';
+import {InterceptorsRegistry} from './interceptors/InterceptorsRegistry.js';
 
 export interface Container extends UseFn<LifeTime> {}
+
+export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
+  HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
 
 export class Container //<TInterceptors extends Record<string, IInterceptor<any>>>
   extends ExtensibleFunction
@@ -66,34 +70,35 @@ export class Container //<TInterceptors extends Record<string, IInterceptor<any>
     );
   }
 
-  new(): Container;
-  new(configureFn: AsyncContainerConfigureFn): Promise<Container>;
-  new(configureFn: ContainerConfigureFn): Container;
-  new(configureFn?: ContainerConfigureFn | AsyncContainerConfigureFn): Container | Promise<Container> {
+  new<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): ContainerNewReturnType<TConfigureFns> {
     const definitionsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
     const interceptorsRegistry = new InterceptorsRegistry();
 
     const cnt = new Container(null, definitionsRegistry, instancesStore, interceptorsRegistry, null);
 
-    if (configureFn) {
+    if (configureFns.length) {
       const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt, interceptorsRegistry);
-      const configResult = configureFn(binder);
 
-      if (configResult instanceof Promise) {
-        return configResult.then(() => {
+      const configs = configureFns.map(configureFn => configureFn(binder));
+      const hasAsync = configs.some(isPromise);
+
+      if (hasAsync) {
+        return Promise.all(configs).then(() => {
           const interceptor = interceptorsRegistry.build();
 
           return interceptor ? cnt.withInterceptor(interceptor) : cnt;
-        });
+        }) as any;
       } else {
         const interceptor = interceptorsRegistry.build();
 
-        return interceptor ? cnt.withInterceptor(interceptor) : cnt;
+        return interceptor ? cnt.withInterceptor(interceptor) : (cnt as any);
       }
     }
 
-    return cnt;
+    return cnt as any;
   }
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {

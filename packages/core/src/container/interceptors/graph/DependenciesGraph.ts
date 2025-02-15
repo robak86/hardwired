@@ -2,8 +2,6 @@ import { Definition } from '../../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import { IInterceptor } from '../interceptor.js';
 import { BaseInterceptor, BaseRootInterceptor } from '../logging/BaseInterceptor.js';
-import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
-import { IInstancesStoryRead } from '../../../context/InstancesStore.js';
 
 interface IGraphNode<T> {
   readonly value: T;
@@ -15,8 +13,6 @@ interface IGraphNode<T> {
 }
 
 export class DependenciesGraph<T> extends BaseInterceptor<T> implements IInterceptor<T>, IGraphNode<any> {
-  private _value?: T;
-
   create<TNewInstance>(
     parent?: BaseInterceptor<unknown>,
     definition?: Definition<TNewInstance, LifeTime, any[]>,
@@ -32,15 +28,11 @@ export class DependenciesGraph<T> extends BaseInterceptor<T> implements IInterce
     return this._definition;
   }
 
-  get value() {
-    return this._value;
-  }
-
   /**
    * Returns all the descendants of the current node, including the current node
    */
   get flatten(): unknown[] {
-    return [this._value, ...this.children.flatMap(child => child.descendants)];
+    return [this.value, ...this.children.flatMap(child => child.descendants)];
   }
 
   /**
@@ -56,18 +48,11 @@ export class DependenciesGraph<T> extends BaseInterceptor<T> implements IInterce
   get flattenUnique(): unknown[] {
     return [...new Set(this.flatten)];
   }
-
-  override onSelfCreated(
-    instance: Awaited<T>,
-    definition: Definition<T, LifeTime, any[]>,
-    bindingsRegistry: IBindingRegistryRead,
-    instancesStore: IInstancesStoryRead,
-  ) {
-    this._value = instance;
-  }
 }
 
 export class DependenciesGraphRoot extends BaseRootInterceptor<unknown> implements IInterceptor<any> {
+  private _nodesByDefinitionId = new Map<symbol, DependenciesGraph<any>>();
+
   create<TNewInstance>(
     parent?: BaseInterceptor<unknown>,
     definition?: Definition<TNewInstance, LifeTime, any[]>,
@@ -76,14 +61,22 @@ export class DependenciesGraphRoot extends BaseRootInterceptor<unknown> implemen
   }
 
   getGraphNode<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>, // TODO: no idea how to handle transient in a reliable way
+    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
   ): IGraphNode<TInstance> {
-    const graphNode = this._nodes[definition.id];
+    const graphNode = this._nodesByDefinitionId.get(definition.id);
 
     if (!graphNode) {
       throw new Error(`No graph node found for definition ${definition.id.toString()}`);
     }
 
     return graphNode as unknown as IGraphNode<TInstance>;
+  }
+
+  override registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
+    if (this._nodesByDefinitionId.has(definition.id)) {
+      return;
+    }
+
+    this._nodesByDefinitionId.set(definition.id, graphNode as DependenciesGraph<any>);
   }
 }

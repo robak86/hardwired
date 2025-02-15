@@ -17,6 +17,7 @@ import {
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
 import { HasPromiseMember } from '../utils/HasPromiseMember.js';
+import {IInterceptor} from "./interceptors/interceptor.js";
 
 export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
 
@@ -86,6 +87,8 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
     IDisposableScopeAware<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;
+
+  getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
 }
 
 // prettier-ignore
@@ -97,6 +100,10 @@ export type AwaitedInstanceArray<T extends Array<Definition<Promise<any>, any, a
 };
 
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
+
+export type ReturnTypes<T extends any[]> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? ReturnType<T[K]> : never;
+}
 
 // prettier-ignore
 export type HasPromise<T extends any[]> =

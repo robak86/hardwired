@@ -28,15 +28,13 @@ export const ContainerProvider: FC<ContainerProviderProps & PropsWithChildren> =
   container,
   hooks = empty_array,
 }) => {
-  const containerInstance = useRef<ContainerContextValue | null>();
+  const containerInstance = useRef<ContainerContextValue>({ container: container || defaultContainer });
 
   // hook array should not change
   useAssertHooksNotChanged(hooks);
 
-  if (!containerInstance.current) {
-    containerInstance.current = {
-      container: container || defaultContainer,
-    };
+  if (container && container !== containerInstance.current.container) {
+    throw new Error('Container instance cannot be changed');
   }
 
   // eagerly call hooks

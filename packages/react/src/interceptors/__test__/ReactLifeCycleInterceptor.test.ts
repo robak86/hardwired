@@ -1,4 +1,9 @@
-import { IReactLifeCycleAware, ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
+import {
+  IReactLifeCycleAware,
+  reactLifeCycleInterceptor,
+  ReactLifeCycleRootInterceptor,
+  withReactLifeCycle,
+} from '../ReactLifeCycleInterceptor.js';
 import { cls, container } from 'hardwired';
 import { expect } from 'vitest';
 
@@ -38,11 +43,21 @@ describe(`ReactLifeCycleInterceptor`, () => {
   }
 
   function setup() {
-    const interceptor = new ReactLifeCycleRootInterceptor();
-    const cnt = container.new(c => c.withInterceptor('react', interceptor));
+    const cnt = container.new(withReactLifeCycle);
+    const interceptor = cnt.getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor<any>;
 
     return { cnt, interceptor };
   }
+
+  describe(`single class dependency`, () => {
+    it(`allows getting node for the dependency`, async () => {
+      const { cnt, interceptor } = setup();
+
+      cnt.use(ChildSvc1.instance);
+
+      expect(interceptor.getGraphNode(ChildSvc1.instance).value).toBeInstanceOf(ChildSvc1);
+    });
+  });
 
   describe(`is mountable/unmountable`, () => {
     it(`returns correct values based on the availability of mount/unmount callbacks`, async () => {

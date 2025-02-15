@@ -5,7 +5,11 @@ import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import { IInterceptor } from '../interceptor.js';
 import { isPromise } from '../../../utils/IsPromise.js';
 
+const notInitialized = Symbol('notInitialized');
+
 export abstract class BaseInterceptor<T> implements IInterceptor<T> {
+  private _value: Awaited<T> | symbol = notInitialized;
+
   constructor(
     protected _parent?: BaseInterceptor<unknown>,
     protected _definition?: Definition<T, LifeTime, any[]>,
@@ -16,16 +20,16 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     return this._children as this[];
   }
 
-  registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
-    if (this._parent) {
-      this._parent.registerByDefinition(definition, graphNode);
-    } else {
-      throw new Error(`No parent to associate the dependency with`);
+  get value(): Awaited<T> {
+    if (this._value === notInitialized) {
+      throw new Error(`Value not initialized`);
     }
+
+    return this._value as Awaited<T>;
   }
 
   abstract create<TNewInstance>(
-    parent?: BaseInterceptor<unknown>,
+    parent?: BaseInterceptor<T>,
     definition?: Definition<TNewInstance, LifeTime, any[]>,
   ): BaseInterceptor<TNewInstance>;
 
@@ -56,6 +60,14 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     return childInterceptor;
   }
 
+  protected registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
+    if (this._parent) {
+      this._parent.registerByDefinition(definition, graphNode);
+    } else {
+      throw new Error(`No parent to associate the dependency with`);
+    }
+  }
+
   onLeave(
     instance: T,
     definition: Definition<T, LifeTime, any[]>,
@@ -65,10 +77,12 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     if (isPromise(instance)) {
       instance.then(instanceAwaited => {
         this.onSelfCreated(instanceAwaited as Awaited<T>, definition, bindingsRegistry, instancesStore);
+        this._value = instanceAwaited as Awaited<T>;
         return this._parent?.onDependencyCreated(instanceAwaited, definition, bindingsRegistry, instancesStore);
       });
     } else {
       this.onSelfCreated(instance as Awaited<T>, definition, bindingsRegistry, instancesStore);
+      this._value = instance as Awaited<T>;
       this._parent?.onDependencyCreated(instance, definition, bindingsRegistry, instancesStore);
     }
 
@@ -76,18 +90,14 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   }
 
   onScope(): IInterceptor<T> {
-    return this.create(this._parent, this._definition);
+    return this.create(this, this._definition);
   }
 }
 
 export abstract class BaseRootInterceptor<T> extends BaseInterceptor<T> {
-  protected _nodes: Record<symbol, BaseInterceptor<any>> = {};
-
   constructor() {
     super(undefined, undefined);
   }
 
-  registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<T>) {
-    this._nodes[definition.id] = graphNode;
-  }
+  protected abstract registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<T>): void;
 }
