@@ -20,7 +20,6 @@ describe(`ContainerProvider`, () => {
       return use(hookDef);
     });
 
-
     const ChildComponent = () => {
       const consumedHookValue = use(hookConsumer);
       const consumedOtherHookValue = use(otherHookDef);

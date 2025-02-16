@@ -1,6 +1,5 @@
-import { BaseInterceptor, ContainerConfigureFn, Definition, LifeTime } from 'hardwired';
-import { useContainer } from '../context/ContainerContext.js';
-import { BaseRootInterceptor } from 'hardwired';
+import {BaseInterceptor, BaseRootInterceptor, ContainerConfigureFn, COWMap, Definition, LifeTime} from 'hardwired';
+import {useContainer} from '../context/ContainerContext.js';
 
 export interface IReactLifeCycleAware {
   onMount?(): void;
@@ -17,6 +16,7 @@ export const useReactLifeCycleInterceptor = () => {
   return useContainer().getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor<any>;
 };
 
+// TODO: use(myDefinition, {forceMount: true, forceRemount: true}) // forceMount = mount, forceRemount = unmount + mount
 export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
   id = Math.random();
 
@@ -38,7 +38,11 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
   }
 
   mount(force = false) {
-    if ((this.isMountable && !this._isMounted) || force) {
+    if (!this.isMountable) {
+      return
+    }
+
+    if (!this._isMounted || force) {
       (this.value as IReactLifeCycleAware).onMount?.();
       this._isMounted = true;
     }
@@ -48,7 +52,11 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
   }
 
   unmount(force = false) {
-    if ((this.isUnmountable && this._isMounted) || force) {
+    if (!this.isUnmountable) {
+      return
+    }
+
+    if (this._isMounted || force) {
       (this.value as IReactLifeCycleAware).onUnmount?.();
       this._isMounted = false;
     }
@@ -64,6 +72,13 @@ export class ReactLifeCycleRootInterceptor<T> extends BaseRootInterceptor<T> {
     definition?: Definition<TNewInstance, LifeTime, any[]>,
   ): BaseInterceptor<TNewInstance> {
     return new ReactLifeCycleInterceptor(parent, definition);
+  }
+
+  createForScope<TNewInstance>(
+    singletonNodes: COWMap<BaseInterceptor<any>>,
+    scopedNodes: COWMap<BaseInterceptor<any>>,
+  ): BaseRootInterceptor<TNewInstance> {
+    return new ReactLifeCycleRootInterceptor(singletonNodes, scopedNodes);
   }
 
   getGraphNode<TInstance>(

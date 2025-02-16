@@ -4,11 +4,10 @@ import { Definition } from '../../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import { IInterceptor } from '../interceptor.js';
 import { isPromise } from '../../../utils/IsPromise.js';
+import { COWMap } from '../../../context/InstancesMap.js';
 
 const notInitialized = Symbol('notInitialized');
 
-// TODO: onScope should return Interceptor that inherits singletons but has clean scoped definitions
-// TODO: maybe nodes should be just temporal objects? maybe on every onEnter in root all the nodes should be removed from the registered entries?
 export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   private _value: Awaited<T> | symbol = notInitialized;
 
@@ -17,6 +16,11 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     protected _definition?: Definition<T, LifeTime, any[]>,
     protected _children: BaseInterceptor<unknown>[] = [],
   ) {}
+
+  abstract create<TNewInstance>(
+    parent?: BaseInterceptor<T>,
+    definition?: Definition<TNewInstance, LifeTime, any[]>,
+  ): BaseInterceptor<TNewInstance>;
 
   get children(): this[] {
     return this._children as this[];
@@ -37,11 +41,6 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
 
     return this as this;
   }
-
-  abstract create<TNewInstance>(
-    parent?: BaseInterceptor<T>,
-    definition?: Definition<TNewInstance, LifeTime, any[]>,
-  ): BaseInterceptor<TNewInstance>;
 
   onDependencyCreated<TDependency>(
     instance: TDependency,
@@ -82,14 +81,6 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     return this._parent?.getGraphNode(definition);
   }
 
-  protected registerByDefinition<T>(definition: Definition<T, any, any[]>, graphNode: BaseInterceptor<T>) {
-    if (this._parent) {
-      this._parent.registerByDefinition(definition, graphNode);
-    } else {
-      throw new Error(`No parent to associate the dependency with`);
-    }
-  }
-
   onLeave(
     instance: T,
     definition: Definition<T, LifeTime, any[]>,
@@ -112,17 +103,36 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   }
 
   onScope(): IInterceptor<T> {
-    return this.create(this, this._definition);
+    if (this._parent) {
+      return this._parent.onScope() as IInterceptor<T>;
+    } else {
+      throw new Error(`No parent to create a scope`);
+    }
+  }
+
+  protected registerByDefinition<T>(definition: Definition<T, any, any[]>, graphNode: BaseInterceptor<T>) {
+    if (this._parent) {
+      this._parent.registerByDefinition(definition, graphNode);
+    } else {
+      throw new Error(`No parent to associate the dependency with`);
+    }
   }
 }
 
 export abstract class BaseRootInterceptor<T> extends BaseInterceptor<T> {
-  private _singletonNodes = new Map<symbol, BaseInterceptor<any>>();
-  private _scopedNodes = new Map<symbol, BaseInterceptor<any>>();
-
-  constructor() {
+  constructor(
+    private _singletonNodes = COWMap.create<BaseInterceptor<any>>(),
+    private _scopedNodes = COWMap.create<BaseInterceptor<any>>(),
+    private _level: number = 0,
+  ) {
     super(undefined, undefined);
   }
+
+  abstract createForScope<TNewInstance>(
+    singletonNodes: COWMap<BaseInterceptor<any>>,
+    scopedNodes: COWMap<BaseInterceptor<any>>,
+    level: number,
+  ): BaseRootInterceptor<TNewInstance>
 
   registerByDefinition<T>(definition: Definition<T, any, any[]>, graphNode: BaseInterceptor<T>): void {
     if (definition.strategy === LifeTime.singleton) {
@@ -150,5 +160,9 @@ export abstract class BaseRootInterceptor<T> extends BaseInterceptor<T> {
       case LifeTime.scoped:
         return this._scopedNodes.get(definition.id) as BaseInterceptor<TInstance>;
     }
+  }
+
+  onScope(): IInterceptor<T> {
+    return this.createForScope(this._singletonNodes, COWMap.create<BaseInterceptor<any>>(), this._level + 1);
   }
 }

@@ -5,13 +5,19 @@ import { useReactLifeCycleInterceptor } from '../interceptors/ReactLifeCycleInte
 
 export type NotPromise<T> = T extends Promise<unknown> ? never : T;
 
+export type UseDefinitionHookOptions = {
+  forceMount?: boolean;
+  forceRemount?: boolean;
+};
+
 export type UseDefinitionHook = {
   <TInstance>(
     factoryDefinition: Definition<NotPromise<TInstance>, LifeTime.scoped | LifeTime.singleton, []>,
+    options?: UseDefinitionHookOptions,
   ): TInstance;
 };
 
-export const use: UseDefinitionHook = definition => {
+export const use: UseDefinitionHook = (definition, options) => {
   const container = useContainer();
   const instance = container.use(definition);
   const interceptor = useReactLifeCycleInterceptor();
@@ -19,7 +25,12 @@ export const use: UseDefinitionHook = definition => {
   const graphNode = interceptor?.getGraphNode(definition);
 
   useEffect(() => {
-    graphNode?.mount();
+    if (options?.forceRemount) {
+      graphNode?.unmount();
+      graphNode?.mount();
+    } else {
+      graphNode?.mount(options?.forceMount ?? false);
+    }
 
     return () => {
       graphNode?.unmount();

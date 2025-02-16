@@ -65,7 +65,7 @@ describe(`DependenciesGraph`, () => {
 
       cnt.use(a);
 
-      const interceptor = cnt.getInterceptor('graph') as DependenciesGraphRoot;
+      const interceptor = cnt.getInterceptor('graph') as DependenciesGraphRoot<any>;
 
       expect(interceptor.getGraphNode(a).value).toEqual({ A: { B: { c1: 'C1', c2: 'C2' } } });
       expect(interceptor.getGraphNode(b).value).toEqual({ B: { c1: 'C1', c2: 'C2' } });
@@ -100,7 +100,7 @@ describe(`DependenciesGraph`, () => {
 
         await cnt.use(a);
 
-        const interceptor = cnt.getInterceptor('graph') as DependenciesGraphRoot;
+        const interceptor = cnt.getInterceptor('graph') as DependenciesGraphRoot<any>;
 
         expect(interceptor.getGraphNode(a).value).toEqual({ A: { B: { c1: 'C1', c2: 'C2' } } });
         expect(interceptor.getGraphNode(b).value).toEqual({ B: { c1: 'C1', c2: 'C2' } });
@@ -125,7 +125,7 @@ describe(`DependenciesGraph`, () => {
         await cnt.use(a);
         await cnt.use(b);
 
-        const interceptor = cnt.getInterceptor('graph') as DependenciesGraphRoot;
+        const interceptor = cnt.getInterceptor('graph') as DependenciesGraphRoot<any>;
 
         expect(interceptor.getGraphNode(a).value).toEqual({ A: 1 });
         expect(interceptor.getGraphNode(b).value).toEqual({ B: 2 });

@@ -2,16 +2,24 @@ import { IInterceptor } from './interceptor.js';
 import { CompositeInterceptor } from './CompositeInterceptor.js';
 
 export class InterceptorsRegistry {
-  constructor() {}
-
   static create() {
     return new InterceptorsRegistry();
   }
 
-  private _interceptors = new Map<symbol | string, IInterceptor<any>>();
+  constructor(private _interceptors = new Map<symbol | string, IInterceptor<any>>()) {}
 
   get(id: string | symbol): IInterceptor<unknown> | undefined {
     return this._interceptors.get(id);
+  }
+
+  scope(): InterceptorsRegistry {
+    const _childScopeInterceptors = new Map<symbol | string, IInterceptor<any>>();
+
+    this._interceptors.forEach((interceptor, id) => {
+      _childScopeInterceptors.set(id, interceptor.onScope());
+    });
+
+    return new InterceptorsRegistry(_childScopeInterceptors);
   }
 
   register(id: string | symbol, interceptor: IInterceptor<unknown>): void {

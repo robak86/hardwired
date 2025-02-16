@@ -158,7 +158,6 @@ export class Container
     ...args: TArgs
   ): TValue {
     if (this.currentInterceptor) {
-      // TODO: no idea why, but this additional check slows execution by about 4 times, consider using subclass instead e.g. InterceptingContainer
       return this.buildWithStrategyIntercepted(
         this.currentInterceptor.onEnter(definition, args, this.bindingsRegistry, this.instancesStore),
         definition,
@@ -265,12 +264,14 @@ export class Container
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
 
+    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope();
+
     const cnt = new Container(
       this.id,
       bindingsRegistry,
       instancesStore,
-      this.interceptorsRegistry,
-      this.currentInterceptor?.onScope() ?? null,
+      scopeInterceptorsRegistry,
+      scopeInterceptorsRegistry.build() ?? null,
     );
 
     if (scopeConfigureFn) {

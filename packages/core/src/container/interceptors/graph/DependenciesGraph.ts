@@ -2,6 +2,7 @@ import { Definition } from '../../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import { IInterceptor } from '../interceptor.js';
 import { BaseInterceptor, BaseRootInterceptor } from '../logging/BaseInterceptor.js';
+import { COWMap } from '../../../context/InstancesMap.js';
 
 interface IGraphNode<T> {
   readonly value: T;
@@ -50,8 +51,13 @@ export class DependenciesGraph<T> extends BaseInterceptor<T> implements IInterce
   }
 }
 
-export class DependenciesGraphRoot extends BaseRootInterceptor<unknown> implements IInterceptor<any> {
-  // private _nodesByDefinitionId = new Map<symbol, DependenciesGraph<any>>();
+export class DependenciesGraphRoot<T> extends BaseRootInterceptor<T> implements IInterceptor<any> {
+  createForScope<TNewInstance>(
+    singletonNodes: COWMap<BaseInterceptor<any>>,
+    scopedNodes: COWMap<BaseInterceptor<any>>,
+  ): BaseRootInterceptor<TNewInstance> {
+    return new DependenciesGraphRoot(singletonNodes, scopedNodes);
+  }
 
   create<TNewInstance>(
     parent?: BaseInterceptor<unknown>,
@@ -64,20 +70,5 @@ export class DependenciesGraphRoot extends BaseRootInterceptor<unknown> implemen
     definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
   ): DependenciesGraph<TInstance> {
     return super.getGraphNode(definition) as DependenciesGraph<TInstance>;
-    // const graphNode = this._nodesByDefinitionId.get(definition.id);
-    //
-    // if (!graphNode) {
-    //   throw new Error(`No graph node found for definition ${definition.id.toString()}`);
-    // }
-    //
-    // return graphNode as unknown as DependenciesGraph<TInstance>;
   }
-
-  // override registerByDefinition(definition: Definition<any, any, any[]>, graphNode: BaseInterceptor<any>) {
-  //   if (this._nodesByDefinitionId.has(definition.id)) {
-  //     return;
-  //   }
-  //
-  //   this._nodesByDefinitionId.set(definition.id, graphNode as DependenciesGraph<any>);
-  // }
 }
