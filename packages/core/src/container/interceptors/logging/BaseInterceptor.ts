@@ -10,11 +10,11 @@ const notInitialized = Symbol('notInitialized');
 
 export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   private _value: Awaited<T> | symbol = notInitialized;
+  protected _children: BaseInterceptor<unknown>[] = [];
 
   constructor(
     protected _parent?: BaseInterceptor<unknown>,
     protected _definition?: Definition<T, LifeTime, any[]>,
-    protected _children: BaseInterceptor<unknown>[] = [],
   ) {}
 
   abstract create<TNewInstance>(

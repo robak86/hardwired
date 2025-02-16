@@ -1,8 +1,8 @@
-import {Definition} from '../../../../definitions/abstract/Definition.js';
-import {LifeTime} from '../../../../definitions/abstract/LifeTime.js';
-import {BaseInterceptor, BaseRootInterceptor} from '../BaseInterceptor.js';
-import {container} from '../../../Container.js';
-import {fn} from '../../../../definitions/definitions.js';
+import { Definition } from '../../../../definitions/abstract/Definition.js';
+import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import { BaseInterceptor, BaseRootInterceptor } from '../BaseInterceptor.js';
+import { container } from '../../../Container.js';
+import { fn } from '../../../../definitions/definitions.js';
 
 describe(`BaseInterceptor`, () => {
   class Node<T> extends BaseInterceptor<T> {

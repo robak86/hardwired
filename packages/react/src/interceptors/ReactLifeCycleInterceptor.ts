@@ -1,5 +1,5 @@
-import {BaseInterceptor, BaseRootInterceptor, ContainerConfigureFn, Definition, LifeTime} from 'hardwired';
-import {useContainer} from '../context/ContainerContext.js';
+import { BaseInterceptor, BaseRootInterceptor, ContainerConfigureFn, Definition, LifeTime } from 'hardwired';
+import { useContainer } from '../context/ContainerContext.js';
 
 export interface IReactLifeCycleAware {
   onMount?(): void;
@@ -39,7 +39,7 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
 
   mount(force = false) {
     if (!this.isMountable) {
-      return
+      return;
     }
 
     if (!this._isMounted || force) {
@@ -53,7 +53,7 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
 
   unmount(force = false) {
     if (!this.isUnmountable) {
-      return
+      return;
     }
 
     if (this._isMounted || force) {

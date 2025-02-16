@@ -1,7 +1,7 @@
-import {Definition} from '../../../definitions/abstract/Definition.js';
-import {LifeTime} from '../../../definitions/abstract/LifeTime.js';
-import {IInterceptor} from '../interceptor.js';
-import {BaseInterceptor, BaseRootInterceptor} from '../logging/BaseInterceptor.js';
+import { Definition } from '../../../definitions/abstract/Definition.js';
+import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import { IInterceptor } from '../interceptor.js';
+import { BaseInterceptor, BaseRootInterceptor } from '../logging/BaseInterceptor.js';
 
 interface IGraphNode<T> {
   readonly value: T;
@@ -17,7 +17,7 @@ export class DependenciesGraph<T> extends BaseInterceptor<T> implements IInterce
     parent?: BaseInterceptor<unknown>,
     definition?: Definition<TNewInstance, LifeTime, any[]>,
   ): DependenciesGraph<TNewInstance> {
-    return new DependenciesGraph(parent, definition, []);
+    return new DependenciesGraph(parent, definition);
   }
 
   get definition(): Definition<T, LifeTime, any[]> {
@@ -62,7 +62,7 @@ export class DependenciesGraphRoot<T> extends BaseRootInterceptor<T> implements 
     parent?: BaseInterceptor<unknown>,
     definition?: Definition<TNewInstance, LifeTime, any[]>,
   ): BaseInterceptor<TNewInstance> {
-    return new DependenciesGraph(parent, definition, []);
+    return new DependenciesGraph(parent, definition);
   }
 
   getGraphNode<TInstance>(
