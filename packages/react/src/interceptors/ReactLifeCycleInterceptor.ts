@@ -1,4 +1,4 @@
-import {BaseInterceptor, BaseRootInterceptor, ContainerConfigureFn, COWMap, Definition, LifeTime} from 'hardwired';
+import {BaseInterceptor, BaseRootInterceptor, ContainerConfigureFn, Definition, LifeTime} from 'hardwired';
 import {useContainer} from '../context/ContainerContext.js';
 
 export interface IReactLifeCycleAware {
@@ -74,12 +74,12 @@ export class ReactLifeCycleRootInterceptor<T> extends BaseRootInterceptor<T> {
     return new ReactLifeCycleInterceptor(parent, definition);
   }
 
-  createForScope<TNewInstance>(
-    singletonNodes: COWMap<BaseInterceptor<any>>,
-    scopedNodes: COWMap<BaseInterceptor<any>>,
-  ): BaseRootInterceptor<TNewInstance> {
-    return new ReactLifeCycleRootInterceptor(singletonNodes, scopedNodes);
-  }
+  // createForScope<TNewInstance>(
+  //   singletonNodes: COWMap<BaseInterceptor<any>>,
+  //   scopedNodes: COWMap<BaseInterceptor<any>>,
+  // ): BaseRootInterceptor<TNewInstance> {
+  //   return new ReactLifeCycleRootInterceptor(singletonNodes, scopedNodes);
+  // }
 
   getGraphNode<TInstance>(
     definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,

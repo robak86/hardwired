@@ -128,11 +128,17 @@ export abstract class BaseRootInterceptor<T> extends BaseInterceptor<T> {
     super(undefined, undefined);
   }
 
-  abstract createForScope<TNewInstance>(
-    singletonNodes: COWMap<BaseInterceptor<any>>,
-    scopedNodes: COWMap<BaseInterceptor<any>>,
-    level: number,
-  ): BaseRootInterceptor<TNewInstance>
+  createForScope(): this {
+    // Create a new instance of whatever the actual class is
+    const clone: this = Object.create(Object.getPrototypeOf(this));
+
+    Object.assign(clone, this); // Copy all properties
+
+    clone._scopedNodes = COWMap.create<BaseInterceptor<any>>();
+    clone._level = this._level + 1;
+
+    return clone;
+  }
 
   registerByDefinition<T>(definition: Definition<T, any, any[]>, graphNode: BaseInterceptor<T>): void {
     if (definition.strategy === LifeTime.singleton) {
@@ -163,6 +169,6 @@ export abstract class BaseRootInterceptor<T> extends BaseInterceptor<T> {
   }
 
   onScope(): IInterceptor<T> {
-    return this.createForScope(this._singletonNodes, COWMap.create<BaseInterceptor<any>>(), this._level + 1);
+    return this.createForScope();
   }
 }

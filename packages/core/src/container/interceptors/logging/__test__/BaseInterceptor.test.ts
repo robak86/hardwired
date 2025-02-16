@@ -1,4 +1,3 @@
-import {COWMap} from '../../../../context/InstancesMap.js';
 import {Definition} from '../../../../definitions/abstract/Definition.js';
 import {LifeTime} from '../../../../definitions/abstract/LifeTime.js';
 import {BaseInterceptor, BaseRootInterceptor} from '../BaseInterceptor.js';
@@ -16,16 +15,6 @@ describe(`BaseInterceptor`, () => {
   }
 
   class Root<T> extends BaseRootInterceptor<T> {
-    createForScope<TNewInstance>(
-      singletonNodes: COWMap<BaseInterceptor<any>>,
-      scopedNodes: COWMap<BaseInterceptor<any>>,
-      level: number,
-    ): BaseRootInterceptor<TNewInstance> {
-
-      this.constructor(singletonNodes, scopedNodes, level);
-
-      return new Root(singletonNodes, COWMap.create<BaseInterceptor<any>>(), level);
-    }
     create<TNewInstance>(
       parent?: BaseInterceptor<T> | undefined,
       definition?: Definition<TNewInstance, LifeTime, any[]> | undefined,

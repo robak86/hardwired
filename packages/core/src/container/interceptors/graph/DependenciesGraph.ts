@@ -1,8 +1,7 @@
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { IInterceptor } from '../interceptor.js';
-import { BaseInterceptor, BaseRootInterceptor } from '../logging/BaseInterceptor.js';
-import { COWMap } from '../../../context/InstancesMap.js';
+import {Definition} from '../../../definitions/abstract/Definition.js';
+import {LifeTime} from '../../../definitions/abstract/LifeTime.js';
+import {IInterceptor} from '../interceptor.js';
+import {BaseInterceptor, BaseRootInterceptor} from '../logging/BaseInterceptor.js';
 
 interface IGraphNode<T> {
   readonly value: T;
@@ -52,12 +51,12 @@ export class DependenciesGraph<T> extends BaseInterceptor<T> implements IInterce
 }
 
 export class DependenciesGraphRoot<T> extends BaseRootInterceptor<T> implements IInterceptor<any> {
-  createForScope<TNewInstance>(
-    singletonNodes: COWMap<BaseInterceptor<any>>,
-    scopedNodes: COWMap<BaseInterceptor<any>>,
-  ): BaseRootInterceptor<TNewInstance> {
-    return new DependenciesGraphRoot(singletonNodes, scopedNodes);
-  }
+  // createForScope<TNewInstance>(
+  //   singletonNodes: COWMap<BaseInterceptor<any>>,
+  //   scopedNodes: COWMap<BaseInterceptor<any>>,
+  // ): BaseRootInterceptor<TNewInstance> {
+  //   return new DependenciesGraphRoot(singletonNodes, scopedNodes);
+  // }
 
   create<TNewInstance>(
     parent?: BaseInterceptor<unknown>,
