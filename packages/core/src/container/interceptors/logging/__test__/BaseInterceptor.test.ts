@@ -75,5 +75,30 @@ describe(`BaseInterceptor`, () => {
       expect(childInterceptor.getGraphNode(def)?.value).toEqual(123);
       expect(rootInterceptor.getGraphNode(def)?.value).toEqual(1);
     });
+
+    it(`has correct children`, async () => {
+      const { cnt } = setup();
+      const shared = fn.singleton(() => 1);
+      const consumer = fn.scoped(use => ({ c: use(shared) }));
+
+      const rootInterceptor = cnt.getInterceptor('graph') as Root<any>;
+
+      const scope1 = cnt.scope();
+      const scope1Interceptor = scope1.getInterceptor('graph') as Node<any>;
+
+      const scope2 = cnt.scope();
+      const scope2Interceptor = scope2.getInterceptor('graph') as Node<any>;
+
+      scope1.use(consumer);
+      scope2.use(consumer);
+
+      const sharedDefNode = rootInterceptor.getGraphNode(shared);
+
+      const scope1ConsumerNode = scope1Interceptor.getGraphNode(consumer);
+      const scope2ConsumerNode = scope2Interceptor.getGraphNode(consumer);
+
+      expect(scope1ConsumerNode?.children).toEqual([sharedDefNode]);
+      expect(scope2ConsumerNode?.children).toEqual([sharedDefNode]);
+    });
   });
 });

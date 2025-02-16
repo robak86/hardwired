@@ -20,13 +20,17 @@ export const useReactLifeCycleInterceptor = () => {
 export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
   id = Math.random();
 
-  protected _isMounted = false;
+  protected _refCount = 0;
 
   create<TNewInstance>(
     parent?: BaseInterceptor<T>,
     definition?: Definition<TNewInstance, LifeTime, any[]>,
   ): BaseInterceptor<TNewInstance> {
     return new ReactLifeCycleInterceptor(parent, definition);
+  }
+
+  get refCount() {
+    return this._refCount;
   }
 
   get isMountable() {
@@ -42,10 +46,11 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
       return;
     }
 
-    if (!this._isMounted || force) {
+    if (this._refCount === 0 || force) {
       (this.value as IReactLifeCycleAware).onMount?.();
-      this._isMounted = true;
     }
+
+    this._refCount += 1;
 
     // even if the current object is not mountable, we still need to mount its children
     this.children.forEach(child => child.mount(force));
@@ -56,9 +61,10 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
       return;
     }
 
-    if (this._isMounted || force) {
+    this._refCount -= 1;
+
+    if (this._refCount === 0 || force) {
       (this.value as IReactLifeCycleAware).onUnmount?.();
-      this._isMounted = false;
     }
 
     // even if the current object is not unmountable, we still need to unmount its children

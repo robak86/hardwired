@@ -151,4 +151,56 @@ describe(`ReactLifeCycleInterceptor`, () => {
       expect(childSvc2.onUnmount).toHaveBeenCalledOnce();
     });
   });
+
+  describe(`scopes`, () => {
+    it(`calls correctly mount on a singleton definition used by scoped definition instantiated in multiple scopes`, async () => {
+      const { cnt, interceptor } = setup();
+
+      const childScope1 = cnt.scope();
+      const childScope1Interceptor = childScope1.getInterceptor(
+        reactLifeCycleInterceptor,
+      ) as ReactLifeCycleRootInterceptor<any>;
+
+      const childScope2 = cnt.scope();
+      const childScope2Interceptor = childScope2.getInterceptor(
+        reactLifeCycleInterceptor,
+      ) as ReactLifeCycleRootInterceptor<any>;
+
+      childScope1.use(Service1.instance);
+      childScope2.use(Service1.instance);
+
+      childScope1Interceptor.getGraphNode(Service1.instance).mount();
+      childScope2Interceptor.getGraphNode(Service1.instance).mount();
+
+      const childSvc1Node = interceptor.getGraphNode(ChildSvc1.instance);
+      const childSvc2Node = interceptor.getGraphNode(ChildSvc2.instance);
+
+      expect(childSvc1Node.refCount).toEqual(2);
+      expect(childSvc2Node.refCount).toEqual(2);
+
+      const childSvc1 = cnt.use(ChildSvc1.instance);
+      const childSvc2 = cnt.use(ChildSvc2.instance);
+
+      expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
+      expect(childSvc2.onMount).toHaveBeenCalledTimes(1);
+      expect(childSvc1.onUnmount).not.toBeCalled();
+      expect(childSvc2.onUnmount).not.toBeCalled();
+
+      childScope1Interceptor.getGraphNode(Service1.instance).unmount();
+
+      expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
+      expect(childSvc2.onMount).toHaveBeenCalledTimes(1);
+
+      expect(childSvc1.onUnmount).not.toBeCalled();
+      expect(childSvc2.onUnmount).not.toBeCalled();
+
+      childScope2Interceptor.getGraphNode(Service1.instance).unmount();
+
+      expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
+      expect(childSvc2.onMount).toHaveBeenCalledTimes(1);
+
+      expect(childSvc1.onUnmount).toHaveBeenCalledTimes(1);
+      expect(childSvc2.onUnmount).toHaveBeenCalledTimes(1);
+    });
+  });
 });

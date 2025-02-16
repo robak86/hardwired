@@ -65,6 +65,10 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     const existingNode: BaseInterceptor<TNewInstance> | undefined = this.getGraphNode(definition as any); // TODO: type
 
     if (existingNode) {
+      if (!this._children.includes(existingNode)) {
+        this._children.push(existingNode);
+      }
+
       return existingNode;
     } else {
       const childInterceptor = this.create<TNewInstance>(this, definition);
