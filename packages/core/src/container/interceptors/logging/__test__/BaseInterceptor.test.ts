@@ -3,6 +3,7 @@ import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import { BaseInterceptor, BaseRootInterceptor } from '../BaseInterceptor.js';
 import { container } from '../../../Container.js';
 import { fn } from '../../../../definitions/definitions.js';
+import { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 
 describe(`BaseInterceptor`, () => {
   class Node<T> extends BaseInterceptor<T> {
@@ -23,8 +24,8 @@ describe(`BaseInterceptor`, () => {
     }
   }
 
-  function setup() {
-    const cnt = container.new(c => c.withInterceptor('graph', new Root()));
+  function setup(...setupFns: ContainerConfigureFn[]) {
+    const cnt = container.new(c => c.withInterceptor('graph', new Root()), ...setupFns);
     const interceptor = cnt.getInterceptor('graph') as Root<any>;
 
     return { cnt, interceptor };
@@ -99,6 +100,35 @@ describe(`BaseInterceptor`, () => {
 
       expect(scope1ConsumerNode?.children).toEqual([sharedDefNode]);
       expect(scope2ConsumerNode?.children).toEqual([sharedDefNode]);
+    });
+
+    it(`works with cascading`, async () => {
+      const shared = fn.singleton(() => 1);
+      const consumer = fn.scoped(use => ({ c: use(shared), value: 0 }));
+
+      const { cnt } = setup(c => {
+        c.bindCascading(consumer).to(fn.scoped(use => ({ c: use(shared), value: 1 })));
+      });
+
+      const rootInterceptor = cnt.getInterceptor('graph') as Root<any>;
+      const scope1 = cnt.scope();
+      const scope2 = cnt.scope();
+
+      expect(scope1.use(consumer)).toEqual({ c: 1, value: 1 });
+      expect(scope2.use(consumer)).toEqual({ c: 1, value: 1 });
+      expect(scope1.use(consumer)).toBe(scope2.use(consumer));
+
+      const scope1Interceptor = scope1.getInterceptor('graph') as Node<any>;
+      expect(scope1Interceptor.getGraphNode(consumer)?.value).toEqual({ c: 1, value: 1 });
+
+      const scope2Interceptor = scope2.getInterceptor('graph') as Node<any>;
+      expect(scope2Interceptor.getGraphNode(consumer)?.value).toEqual({ c: 1, value: 1 });
+
+      expect(rootInterceptor.getGraphNode(consumer)).toBe(scope1Interceptor.getGraphNode(consumer));
+
+      // expect(rootInterceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
+
+      // expect(scope1Interceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
     });
   });
 });

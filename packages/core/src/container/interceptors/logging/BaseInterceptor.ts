@@ -8,6 +8,15 @@ import { COWMap } from '../../../context/InstancesMap.js';
 
 const notInitialized = Symbol('notInitialized');
 
+// TODO: make this interceptor something between a primitive onEnter/onLeave interceptor and higher level abstraction
+// TODO: rename GraphBuildInterceptor and GraphBuildInterceptorNode
+// e.g. BaseInterceptor could take two factories, one for creating root, and the second for creating node
+
+interface BaseInterceptorConfiguration<TNode, TRoot> {
+  createNode<T>(definition: Definition<T, any, any>, value: Awaited<T>, children: TNode[]): TNode; // TODO: awaited might be difficult?
+  // createRoot(children: TNode[]): TRoot;
+}
+
 export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   private _value: Awaited<T> | symbol = notInitialized;
   protected _children: BaseInterceptor<unknown>[] = [];
@@ -17,6 +26,7 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     protected _definition?: Definition<T, LifeTime, any[]>,
   ) {}
 
+  // TODO: make it polymorphic, so it doesn't have to be abstract !!!
   abstract create<TNewInstance>(
     parent?: BaseInterceptor<T>,
     definition?: Definition<TNewInstance, LifeTime, any[]>,
@@ -106,6 +116,7 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     return instance;
   }
 
+  // TODO: this might create memory leaks if parent node holds references to scoped nodes, but that shouldn't be possible?
   onScope(): IInterceptor<T> {
     if (this._parent) {
       return this._parent.onScope() as IInterceptor<T>;
@@ -149,6 +160,7 @@ export abstract class BaseRootInterceptor<T> extends BaseInterceptor<T> {
       }
     }
   }
+
   getGraphNode<TInstance>(
     definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
   ): BaseInterceptor<TInstance> {
