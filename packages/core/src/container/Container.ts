@@ -47,6 +47,11 @@ export interface Container extends UseFn<LifeTime> {}
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
 
+export type NewScopeReturnType<
+  TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
+  TAllowedLifeTime extends LifeTime = LifeTime,
+> = HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<IContainer<TAllowedLifeTime>> : IContainer<TAllowedLifeTime>;
+
 export class Container
   extends ExtensibleFunction
   implements InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
@@ -59,6 +64,7 @@ export class Container
     protected readonly instancesStore: InstancesStore,
     protected readonly interceptorsRegistry: InterceptorsRegistry,
     protected readonly currentInterceptor: IInterceptor<any> | null,
+    protected readonly scopeTags: (string | symbol)[],
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -77,7 +83,7 @@ export class Container
     const instancesStore = InstancesStore.create();
     const interceptorsRegistry = new InterceptorsRegistry();
 
-    const cnt = new Container(null, definitionsRegistry, instancesStore, interceptorsRegistry, null);
+    const cnt = new Container(null, definitionsRegistry, instancesStore, interceptorsRegistry, null, []);
 
     if (configureFns.length) {
       const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt, interceptorsRegistry);
@@ -112,6 +118,7 @@ export class Container
       this.instancesStore,
       this.interceptorsRegistry,
       interceptor,
+      this.scopeTags,
     );
   }
 
@@ -239,13 +246,14 @@ export class Container
   ): DisposableScope | Promise<DisposableScope> {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
+    const tags: (string | symbol)[] = [];
 
-    const cnt = new Container(this.id, bindingsRegistry, instancesStore, this.interceptorsRegistry, null);
+    const cnt = new Container(this.id, bindingsRegistry, instancesStore, this.interceptorsRegistry, null, tags);
     const disposeFns: DisposeFn[] = [];
     const disposable = new DisposableScope(cnt, disposeFns);
 
     if (scopeConfigureFn) {
-      const binder = new DisposableScopeConfigurationDSL(this, cnt, bindingsRegistry, disposeFns);
+      const binder = new DisposableScopeConfigurationDSL(this, cnt, bindingsRegistry, tags, disposeFns);
       const result = scopeConfigureFn(binder, this);
       if (isPromise(result)) {
         return result.then(() => disposable);
@@ -257,14 +265,14 @@ export class Container
     return disposable;
   }
 
-  scope(): IContainer;
-  scope(scopeConfigureFn: AsyncScopeConfigureFn): Promise<IContainer>;
-  scope(scopeConfigureFn: ScopeConfigureFn): IContainer;
-  scope(scopeConfigureFn?: ScopeConfigureFn | AsyncScopeConfigureFn): IContainer | Promise<IContainer> {
+  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): NewScopeReturnType<TConfigureFns> {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
+    const tags: (string | symbol)[] = [];
 
-    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope();
+    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(this.scopeTags);
 
     const cnt = new Container(
       this.id,
@@ -272,21 +280,26 @@ export class Container
       instancesStore,
       scopeInterceptorsRegistry,
       scopeInterceptorsRegistry.build() ?? null,
+      tags,
     );
 
-    if (scopeConfigureFn) {
-      const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry);
-      const result = scopeConfigureFn(binder, this);
-      if (result instanceof Promise) {
-        return result.then(() => {
-          return cnt;
-        });
+    if (configureFns.length) {
+      const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry, tags);
+
+      const configs = configureFns.map(configureFn => {
+        return configureFn(binder, this);
+      });
+
+      const hasAsync = configs.some(isPromise);
+
+      if (hasAsync) {
+        return Promise.all(configs).then(() => cnt) as NewScopeReturnType<TConfigureFns>;
       } else {
-        return cnt;
+        return cnt as any;
       }
     }
 
-    return cnt;
+    return cnt as any;
   }
 
   withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
@@ -320,6 +333,7 @@ export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TAr
     InstancesStore.create(),
     InterceptorsRegistry.create(),
     null,
+    [],
   );
   return tmpContainer.use(definition, ...args);
 };
@@ -331,6 +345,7 @@ export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
     InstancesStore.create(),
     InterceptorsRegistry.create(),
     null,
+    [],
   );
   return tmpContainer.all(...definitions) as any;
 };
@@ -341,4 +356,5 @@ export const container = new Container(
   InstancesStore.create(),
   InterceptorsRegistry.create(),
   null,
+  [],
 );

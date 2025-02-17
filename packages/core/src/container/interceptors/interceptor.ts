@@ -2,6 +2,7 @@ import { Definition } from '../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { IBindingRegistryRead } from '../../context/BindingsRegistry.js';
 import { IInstancesStoryRead } from '../../context/InstancesStore.js';
+import { ScopeTag } from '../IContainer.js';
 
 export interface IInterceptor<TInstance> {
   onEnter<TNewInstance>(
@@ -18,5 +19,5 @@ export interface IInterceptor<TInstance> {
     instancesStore: IInstancesStoryRead,
   ): TInstance;
 
-  onScope(): IInterceptor<TInstance>;
+  onScope(tags: ScopeTag[]): IInterceptor<TInstance>;
 }

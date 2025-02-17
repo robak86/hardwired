@@ -3,6 +3,7 @@ import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { IInterceptor } from './interceptor.js';
 import { IBindingRegistryRead } from '../../context/BindingsRegistry.js';
 import { IInstancesStoryRead } from '../../context/InstancesStore.js';
+import { ScopeTag } from '../IContainer.js';
 
 export class CompositeInterceptor<TInstance> implements IInterceptor<TInstance> {
   constructor(private _interceptors: IInterceptor<TInstance>[]) {}
@@ -30,8 +31,8 @@ export class CompositeInterceptor<TInstance> implements IInterceptor<TInstance> 
     );
   }
 
-  onScope(): IInterceptor<TInstance> {
-    return new CompositeInterceptor(this._interceptors.map(interceptor => interceptor.onScope()));
+  onScope(tags: ScopeTag[]): IInterceptor<TInstance> {
+    return new CompositeInterceptor(this._interceptors.map(interceptor => interceptor.onScope(tags)));
   }
 
   append(interceptor: IInterceptor<TInstance>): CompositeInterceptor<TInstance> {

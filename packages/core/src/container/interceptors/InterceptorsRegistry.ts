@@ -1,5 +1,6 @@
 import { IInterceptor } from './interceptor.js';
 import { CompositeInterceptor } from './CompositeInterceptor.js';
+import { ScopeTag } from '../IContainer.js';
 
 export class InterceptorsRegistry {
   static create() {
@@ -12,11 +13,11 @@ export class InterceptorsRegistry {
     return this._interceptors.get(id);
   }
 
-  scope(): InterceptorsRegistry {
+  scope(tags: ScopeTag[]): InterceptorsRegistry {
     const _childScopeInterceptors = new Map<symbol | string, IInterceptor<any>>();
 
     this._interceptors.forEach((interceptor, id) => {
-      _childScopeInterceptors.set(id, interceptor.onScope());
+      _childScopeInterceptors.set(id, interceptor.onScope(tags));
     });
 
     return new InterceptorsRegistry(_childScopeInterceptors);

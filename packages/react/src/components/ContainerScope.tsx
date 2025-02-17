@@ -15,7 +15,11 @@ export const ContainerScope: FC<ContainerScopeProps & PropsWithChildren> = ({
 }) => {
   const container = useContainer();
   const getScopedContainer = useMemoized(() => {
-    return container.scope(config);
+    if (config) {
+      return container.scope(config);
+    } else {
+      return container.scope();
+    }
   });
 
   return (

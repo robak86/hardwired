@@ -18,8 +18,11 @@ import {
 } from '../configuration/DisposableScopeConfiguration.js';
 import { HasPromiseMember } from '../utils/HasPromiseMember.js';
 import { IInterceptor } from './interceptors/interceptor.js';
+import { NewScopeReturnType } from './Container.js';
 
 export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
+
+export type ScopeTag = string | symbol;
 
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;
@@ -64,9 +67,9 @@ export type ContainerRunFn<TAllowedLifeTime extends LifeTime, TValue> = (
 ) => TValue;
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
-  scope(): IContainer<TAllowedLifeTime>;
-  scope(options: AsyncScopeConfigureFn): Promise<IContainer<TAllowedLifeTime>>;
-  scope(options?: ScopeConfigureFn): IContainer<TAllowedLifeTime>;
+  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): NewScopeReturnType<TConfigureFns, TAllowedLifeTime>;
 
   withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
   withScope<TValue>(options: AsyncScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): EnsurePromise<TValue>;

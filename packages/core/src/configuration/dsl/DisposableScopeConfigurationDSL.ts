@@ -9,9 +9,10 @@ export class DisposableScopeConfigurationDSL extends ScopeConfigurationDSL imple
     _parentContainer: IContainer & IStrategyAware,
     _currentContainer: IContainer & IStrategyAware,
     _bindingsRegistry: BindingsRegistry,
+    _tags: (string | symbol)[],
     private _disposeFns: DisposeFn[],
   ) {
-    super(_parentContainer, _currentContainer, _bindingsRegistry);
+    super(_parentContainer, _currentContainer, _bindingsRegistry, _tags);
   }
   onDispose(disposeFn: DisposeFn): void {
     this._disposeFns.push(disposeFn);
