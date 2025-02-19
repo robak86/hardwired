@@ -24,6 +24,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
 
   getDefinition<T extends AnyDefinition>(definition: T): T {
     return (
+      // returned by priority. Frozen overrides scope, scope overrides cascading, cascading overrides definition
       (this._frozenDefinitions.get(definition.id) as T) ??
       (this._scopeDefinitions.get(definition.id) as T) ??
       (this._cascadingDefinitions.get(definition.id) as T) ??
@@ -40,7 +41,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   hasCascadingDefinition(definitionId: symbol): boolean {
-    return this._scopeDefinitions.has(definitionId);
+    return this._cascadingDefinitions.has(definitionId);
   }
 
   addFrozenBinding(definition: AnyDefinition) {

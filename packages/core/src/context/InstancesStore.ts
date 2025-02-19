@@ -2,13 +2,13 @@ import { Definition } from '../definitions/abstract/Definition.js';
 import { IContainer } from '../container/IContainer.js';
 import { InstancesMap } from './InstancesMap.js';
 
-export interface IInstancesStoryRead {
+export interface IInstancesStoreRead {
   hasSingleton(definitionId: symbol): boolean;
   hasScoped(definitionId: symbol): boolean;
   hasFrozen(definitionId: symbol): boolean;
 }
 
-export class InstancesStore implements IInstancesStoryRead {
+export class InstancesStore implements IInstancesStoreRead {
   static create(): InstancesStore {
     return new InstancesStore(InstancesMap.create(), InstancesMap.create(), InstancesMap.create());
   }
