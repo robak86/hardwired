@@ -18,10 +18,6 @@ export interface BaseInterceptorConfiguration<TNode extends GraphNode<any>> {
   createNode<T>(definition: Definition<T, any, any>, value: Awaited<T>, children: TNode[], tags: ScopeTag[]): TNode; // TODO: awaited might be difficult?
 }
 
-// TODO:
-// replace configuration with just a function
-// Make react life cycle use GraphBuildInterceptor - in order to use one would need to make it easily extendable (constructor arguments madness)
-//
 export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements IInterceptor<T> {
   static create<TNode extends GraphNode<any>>(configuration: BaseInterceptorConfiguration<TNode>) {
     const context = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []);

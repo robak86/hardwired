@@ -1,3 +1,11 @@
+export {
+  GraphBuilderInterceptor,
+  BaseInterceptorConfiguration,
+  GraphNode,
+} from './container/interceptors/graph/GraphBuilderInterceptor.js';
+export * from './container/interceptors/graph/GraphBuilderContext.js';
+export * from './container/interceptors/graph/GraphNodesRegistry.js';
+
 export { COWMap } from './context/InstancesMap.js';
 
 export { BaseInterceptor, BaseRootInterceptor } from './container/interceptors/logging/BaseInterceptor.js';
