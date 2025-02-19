@@ -1,4 +1,4 @@
-import { BaseInterceptor, BaseRootInterceptor, ContainerConfigureFn, Definition, LifeTime } from 'hardwired';
+import { ContainerConfigureFn, Definition, GraphBuilderInterceptor, ScopeTag } from 'hardwired';
 import { useContainer } from '../context/ContainerContext.js';
 
 export interface IReactLifeCycleAware {
@@ -13,21 +13,18 @@ export const withReactLifeCycle: ContainerConfigureFn = c => {
 };
 
 export const useReactLifeCycleInterceptor = () => {
-  return useContainer().getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor<any>;
+  return useContainer().getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor;
 };
 
 // TODO: use(myDefinition, {forceMount: true, forceRemount: true}) // forceMount = mount, forceRemount = unmount + mount
-export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
+export class ReactLifeCycleNode<T> {
   id = Math.random();
-
   protected _refCount = 0;
 
-  create<TNewInstance>(
-    parent?: BaseInterceptor<T>,
-    definition?: Definition<TNewInstance, LifeTime, any[]>,
-  ): BaseInterceptor<TNewInstance> {
-    return new ReactLifeCycleInterceptor(parent, definition);
-  }
+  constructor(
+    readonly value: T,
+    readonly children: ReactLifeCycleNode<any>[] = [],
+  ) {}
 
   get refCount() {
     return this._refCount;
@@ -72,24 +69,26 @@ export class ReactLifeCycleInterceptor<T> extends BaseInterceptor<T> {
   }
 }
 
-export class ReactLifeCycleRootInterceptor<T> extends BaseRootInterceptor<T> {
-  create<TNewInstance>(
-    parent?: BaseInterceptor<T>,
-    definition?: Definition<TNewInstance, LifeTime, any[]>,
-  ): BaseInterceptor<TNewInstance> {
-    return new ReactLifeCycleInterceptor(parent, definition);
+export class ReactLifeCycleRootInterceptor extends GraphBuilderInterceptor<never, ReactLifeCycleNode<unknown>> {
+  constructor() {
+    super({
+      createNode<T>(
+        definition: Definition<T, any, any>,
+        value: Awaited<T>,
+        children: ReactLifeCycleNode<unknown>[],
+        tags: ScopeTag[],
+      ): ReactLifeCycleNode<T> {
+        return new ReactLifeCycleNode(value, children) as ReactLifeCycleNode<T>;
+      },
+    });
   }
 
-  // createForScope<TNewInstance>(
-  //   singletonNodes: COWMap<BaseInterceptor<any>>,
-  //   scopedNodes: COWMap<BaseInterceptor<any>>,
-  // ): BaseRootInterceptor<TNewInstance> {
-  //   return new ReactLifeCycleRootInterceptor(singletonNodes, scopedNodes);
-  // }
+  getGraphNode<TInstance>(definition: Definition<TInstance, any, any>): ReactLifeCycleNode<TInstance> {
+    const graphNode = super.getGraphNode(definition);
+    if (!graphNode) {
+      throw new Error(`No graph node found for ${definition.name}`);
+    }
 
-  getGraphNode<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
-  ): ReactLifeCycleInterceptor<TInstance> {
-    return super.getGraphNode(definition) as ReactLifeCycleInterceptor<TInstance>;
+    return graphNode as ReactLifeCycleNode<TInstance>;
   }
 }
