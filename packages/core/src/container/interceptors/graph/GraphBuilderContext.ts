@@ -2,12 +2,10 @@ import { GraphNodesRegistry } from './GraphNodesRegistry.js';
 import { ScopeTag } from '../../IContainer.js';
 import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
 import { IInstancesStoreRead } from '../../../context/InstancesStore.js';
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { BaseInterceptorConfiguration, GraphNode } from './GraphBuilderInterceptor.js';
+import { GraphNode } from './GraphBuilderInterceptor.js';
 
 export class GraphBuilderContext<TNode extends GraphNode<any>> {
   constructor(
-    protected _configuration: BaseInterceptorConfiguration<TNode>,
     protected _nodesRegistry: GraphNodesRegistry<TNode>,
     protected _scopeTags: ScopeTag[], // can use defaults
     protected _bindingRegistry?: IBindingRegistryRead, // can use empty store
@@ -19,8 +17,8 @@ export class GraphBuilderContext<TNode extends GraphNode<any>> {
     this._instancesStore = instancesStore;
   }
 
-  createNode<T>(definition: Definition<T, any, any>, value: Awaited<T>, children: TNode[]): TNode {
-    return this._configuration.createNode(definition, value, children, this._scopeTags);
+  get scopeTags(): ScopeTag[] {
+    return this._scopeTags;
   }
 
   get bindingRegistry(): IBindingRegistryRead {
@@ -48,12 +46,6 @@ export class GraphBuilderContext<TNode extends GraphNode<any>> {
     bindingsRegistry: IBindingRegistryRead,
     instancesStore: IInstancesStoreRead,
   ): GraphBuilderContext<TNode> {
-    return new GraphBuilderContext(
-      this._configuration,
-      this._nodesRegistry.scope(),
-      scopeTags,
-      bindingsRegistry,
-      instancesStore,
-    );
+    return new GraphBuilderContext(this._nodesRegistry.scope(), scopeTags, bindingsRegistry, instancesStore);
   }
 }

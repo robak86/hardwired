@@ -24,8 +24,8 @@ export interface BaseInterceptorConfiguration<TNode extends GraphNode<any>> {
 //
 export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements IInterceptor<T> {
   static create<TNode extends GraphNode<any>>(configuration: BaseInterceptorConfiguration<TNode>) {
-    const context = new GraphBuilderContext(configuration, new GraphNodesRegistry<TNode>(), []);
-    return new GraphBuilderInterceptor<never, TNode>(context);
+    const context = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []);
+    return new GraphBuilderInterceptor<never, TNode>(context, configuration);
   }
 
   private _node: TNode | symbol = notInitialized;
@@ -33,6 +33,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
 
   constructor(
     protected _context: GraphBuilderContext<TNode>,
+    protected _configuration: BaseInterceptorConfiguration<TNode>,
     protected _definition?: Definition<T, LifeTime, any[]>,
     protected _parentScopeRootInterceptor?: GraphBuilderInterceptor<T, TNode>,
   ) {}
@@ -66,17 +67,19 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
 
     if (isPromise(instance)) {
       instance.then(instanceAwaited => {
-        this._node = this._context.createNode(
+        this._node = this._configuration.createNode(
           this.definition,
           instanceAwaited as Awaited<T>,
           this._children.map(c => c.node),
+          this._context.scopeTags,
         );
       });
     } else {
-      this._node = this._context.createNode(
+      this._node = this._configuration.createNode(
         this.definition,
         instance as Awaited<T>,
         this._children.map(c => c.node),
+        this._context.scopeTags,
       );
     }
 
@@ -90,6 +93,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
   ): IInterceptor<T> {
     return new GraphBuilderInterceptor(
       this._context.onScope(scopeTags, bindingsRegistry, instancesStore),
+      this._configuration,
       undefined,
       this,
     );
@@ -133,7 +137,11 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
 
       return existingNode;
     } else {
-      const childInterceptor = new GraphBuilderInterceptor<TNewInstance, TNode>(this._context, definition);
+      const childInterceptor = new GraphBuilderInterceptor<TNewInstance, TNode>(
+        this._context,
+        this._configuration,
+        definition,
+      );
 
       this._context.nodesRegistry.registerByDefinition(definition, childInterceptor);
       this._children.push(childInterceptor);
