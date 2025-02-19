@@ -5,9 +5,9 @@ import { IContainer } from '../container/IContainer.js';
  * Copy-on-write map. When a map is cloned, the new map references the same inner map as the original map.
  * When a value is set on the new map, the new map clones the original inner map and sets the value on the new map.
  */
-export abstract class COWMap<V> {
+export class COWMap<V> {
   static create<V>(): COWMap<V> {
-    return new InstancesMap(new Map(), true);
+    return new COWMap(new Map(), true);
   }
 
   protected constructor(
@@ -32,19 +32,21 @@ export abstract class COWMap<V> {
     return this._instances.get(definitionId);
   }
 
-  abstract clone(): COWMap<V>;
+  clone(): COWMap<V> {
+    return new COWMap(this._instances, false);
+  }
 }
 
-export class InstancesMap extends COWMap<any> {
+export class InstancesMap extends Map<symbol, any> {
   static create(): InstancesMap {
-    return new InstancesMap(new Map(), true);
+    return new InstancesMap();
   }
 
   upsert<TInstance, TArgs extends any[]>(
     definition: Definition<TInstance, any, TArgs>,
     container: IContainer,
     ...args: TArgs
-  ) {
+  ): TInstance {
     if (this.has(definition.id)) {
       return this.get(definition.id);
     } else {
@@ -52,9 +54,5 @@ export class InstancesMap extends COWMap<any> {
       this.set(definition.id, instance);
       return instance;
     }
-  }
-
-  clone(): InstancesMap {
-    return new InstancesMap(this._instances, false);
   }
 }
