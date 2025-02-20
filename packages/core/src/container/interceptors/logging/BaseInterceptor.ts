@@ -1,5 +1,3 @@
-import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
-import { IInstancesStoryRead } from '../../../context/InstancesStore.js';
 import { Definition } from '../../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import { IInterceptor } from '../interceptor.js';
@@ -7,15 +5,6 @@ import { isPromise } from '../../../utils/IsPromise.js';
 import { COWMap } from '../../../context/InstancesMap.js';
 
 const notInitialized = Symbol('notInitialized');
-
-// TODO: make this interceptor something between a primitive onEnter/onLeave interceptor and higher level abstraction
-// TODO: rename GraphBuildInterceptor and GraphBuildInterceptorNode
-// e.g. BaseInterceptor could take two factories, one for creating root, and the second for creating node
-
-interface BaseInterceptorConfiguration<TNode, TRoot> {
-  createNode<T>(definition: Definition<T, any, any>, value: Awaited<T>, children: TNode[]): TNode; // TODO: awaited might be difficult?
-  // createRoot(children: TNode[]): TRoot;
-}
 
 export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   private _value: Awaited<T> | symbol = notInitialized;
@@ -55,22 +44,13 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
   onDependencyCreated<TDependency>(
     instance: TDependency,
     dependencyDefinition: Definition<TDependency, any, any>,
-    bindingsRegistry: IBindingRegistryRead,
-    instancesStore: IInstancesStoryRead,
   ): void {}
 
-  onSelfCreated(
-    instance: Awaited<T>,
-    definition: Definition<T, LifeTime, any[]>,
-    bindingsRegistry: IBindingRegistryRead,
-    instancesStore: IInstancesStoryRead,
-  ): void {}
+  onSelfCreated(instance: Awaited<T>, definition: Definition<T, LifeTime, any[]>): void {}
 
   onEnter<TNewInstance>(
     definition: Definition<TNewInstance, LifeTime, any[]>,
     args: any[],
-    bindingsRegistry: IBindingRegistryRead,
-    instancesStore: IInstancesStoryRead,
   ): IInterceptor<TNewInstance> {
     const existingNode: BaseInterceptor<TNewInstance> | undefined = this.getGraphNode(definition as any); // TODO: type
 
@@ -95,22 +75,17 @@ export abstract class BaseInterceptor<T> implements IInterceptor<T> {
     return this._parent?.getGraphNode(definition);
   }
 
-  onLeave(
-    instance: T,
-    definition: Definition<T, LifeTime, any[]>,
-    bindingsRegistry: IBindingRegistryRead,
-    instancesStore: IInstancesStoryRead,
-  ): T {
+  onLeave(instance: T, definition: Definition<T, LifeTime, any[]>): T {
     if (isPromise(instance)) {
       instance.then(instanceAwaited => {
-        this.onSelfCreated(instanceAwaited as Awaited<T>, definition, bindingsRegistry, instancesStore);
+        this.onSelfCreated(instanceAwaited as Awaited<T>, definition);
         this._value = instanceAwaited as Awaited<T>;
-        return this._parent?.onDependencyCreated(instanceAwaited, definition, bindingsRegistry, instancesStore);
+        return this._parent?.onDependencyCreated(instanceAwaited, definition);
       });
     } else {
-      this.onSelfCreated(instance as Awaited<T>, definition, bindingsRegistry, instancesStore);
+      this.onSelfCreated(instance as Awaited<T>, definition);
       this._value = instance as Awaited<T>;
-      this._parent?.onDependencyCreated(instance, definition, bindingsRegistry, instancesStore);
+      this._parent?.onDependencyCreated(instance, definition);
     }
 
     return instance;

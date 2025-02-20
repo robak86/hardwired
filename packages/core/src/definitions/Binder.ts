@@ -10,25 +10,21 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
   ) {}
 
   to(otherDefinition: Definition<TInstance, TLifeTime, TArgs>) {
-    const definition = new Definition(this._definition.id, otherDefinition.strategy, otherDefinition.create);
+    const definition = new Definition(this._definition.id, otherDefinition.strategy, otherDefinition.create, true);
     this._onInstantiableBind(definition);
   }
 
   toValue(value: Awaited<TInstance>) {
-    const newDefinition = new Definition(this._definition.id, this._definition.strategy, (use, ...args) => value);
+    const newDefinition = this._definition.override(() => value);
     this._onStaticBind(newDefinition);
   }
 
   configure(configureFn: (locator: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => void): void {
-    const newDefinition = new Definition(
-      this._definition.id,
-      this._definition.strategy,
-      (use: IContainer, ...args: TArgs) => {
-        const instance = this._definition.create(use, ...args);
-        configureFn(use, instance, ...args);
-        return instance;
-      },
-    );
+    const newDefinition = this._definition.override((use: IContainer, ...args: TArgs) => {
+      const instance = this._definition.create(use, ...args);
+      configureFn(use, instance, ...args);
+      return instance;
+    });
 
     this._onInstantiableBind(newDefinition);
   }
@@ -36,20 +32,17 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
   decorate<TExtendedInstance extends TInstance>(
     decorateFn: (use: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => TExtendedInstance,
   ): void {
-    const newDefinition = new Definition(
-      this._definition.id,
-      this._definition.strategy,
-      (use: IContainer, ...args: TArgs): TInstance => {
-        const instance = this._definition.create(use, ...args);
-        return decorateFn(use, instance, ...args);
-      },
-    );
+    const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TInstance => {
+      const instance = this._definition.create(use, ...args);
+      return decorateFn(use, instance, ...args);
+    });
 
     this._onInstantiableBind(newDefinition);
   }
 
   define(create: (locator: IContainer<TLifeTime>, ...args: TArgs) => TInstance): void {
-    const newDefinition = new Definition(this._definition.id, this._definition.strategy, create);
+    const newDefinition = this._definition.override(create);
+
     this._onInstantiableBind(newDefinition);
   }
 }

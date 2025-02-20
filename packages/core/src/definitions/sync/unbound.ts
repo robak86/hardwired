@@ -15,7 +15,7 @@ export class UnboundDefinition<TInstance, TLifeTime extends LifeTime, TArgs exte
   readonly kind = 'unbound';
 
   constructor(id: symbol, strategy: TLifeTime) {
-    super(id, strategy, createUnboundDefinition);
+    super(id, strategy, createUnboundDefinition, false);
   }
 }
 

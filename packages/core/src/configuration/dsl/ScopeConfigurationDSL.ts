@@ -3,13 +3,13 @@ import { InitFn } from '../abstract/ContainerConfigurable.js';
 import { Binder } from '../../definitions/Binder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
-import { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import { IContainer } from '../../container/IContainer.js';
 import { BindingsRegistry } from '../../context/BindingsRegistry.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(
-    private _parentContainer: IContainer & IStrategyAware,
-    private _currentContainer: IContainer & IStrategyAware,
+    private _parentContainer: IContainer,
+    private _currentContainer: IContainer,
     private _bindingsRegistry: BindingsRegistry,
     private _tags: (string | symbol)[],
   ) {}
@@ -25,15 +25,11 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   }
 
   inheritLocal<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
-    this._bindingsRegistry.addScopeBinding(definition.bind(this._parentContainer));
+    this._bindingsRegistry.addScopeBinding(definition.inherit(this._parentContainer));
   }
 
   inheritCascading<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
-    const newDefinition = new Definition(definition.id, LifeTime.transient, (_, ...args: []) => {
-      return this._parentContainer.use(definition, ...args);
-    });
-
-    this._bindingsRegistry.addCascadingBinding(newDefinition);
+    this._bindingsRegistry.addCascadingBinding(definition.inherit(this._parentContainer));
   }
 
   bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(

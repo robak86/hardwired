@@ -4,8 +4,6 @@ import { Definition } from '../../../definitions/abstract/Definition.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import { fn } from '../../../definitions/definitions.js';
 import { Mocked } from 'vitest';
-import { BindingsRegistry } from '../../../context/BindingsRegistry.js';
-import { InstancesStore } from '../../../context/InstancesStore.js';
 
 describe(`interceptor`, () => {
   class TestInterceptor implements IInterceptor<any> {
@@ -59,64 +57,16 @@ describe(`interceptor`, () => {
       cnt.use(a);
 
       expect(interceptor.onEnter).toHaveBeenCalledTimes(4);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(
-        1,
-        a,
-        [],
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(
-        2,
-        b,
-        [],
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(
-        3,
-        c1,
-        [],
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(
-        4,
-        c2,
-        [],
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
+      expect(interceptor.onEnter).toHaveBeenNthCalledWith(1, a, []);
+      expect(interceptor.onEnter).toHaveBeenNthCalledWith(2, b, []);
+      expect(interceptor.onEnter).toHaveBeenNthCalledWith(3, c1, []);
+      expect(interceptor.onEnter).toHaveBeenNthCalledWith(4, c2, []);
 
       expect(interceptor.onLeave).toHaveBeenCalledTimes(4);
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(
-        1,
-        'C1',
-        c1,
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(
-        2,
-        'C2',
-        c2,
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(
-        3,
-        ['B', 'C1', 'C2'],
-        b,
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(
-        4,
-        ['A', ['B', 'C1', 'C2']],
-        a,
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
+      expect(interceptor.onLeave).toHaveBeenNthCalledWith(1, 'C1', c1);
+      expect(interceptor.onLeave).toHaveBeenNthCalledWith(2, 'C2', c2);
+      expect(interceptor.onLeave).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], b);
+      expect(interceptor.onLeave).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], a);
     });
   });
 
@@ -140,34 +90,10 @@ describe(`interceptor`, () => {
       await cnt.use(a);
 
       expect(interceptor.onEnter).toHaveBeenCalledTimes(4);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(
-        1,
-        a,
-        [],
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(
-        2,
-        b,
-        [],
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(
-        3,
-        c1,
-        [],
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(
-        4,
-        c2,
-        [],
-        expect.any(BindingsRegistry),
-        expect.any(InstancesStore),
-      );
+      expect(interceptor.onEnter).toHaveBeenNthCalledWith(1, a, []);
+      expect(interceptor.onEnter).toHaveBeenNthCalledWith(2, b, []);
+      expect(interceptor.onEnter).toHaveBeenNthCalledWith(3, c1, []);
+      expect(interceptor.onEnter).toHaveBeenNthCalledWith(4, c2, []);
 
       const onLeaveCalls = (interceptor.onLeave as Mocked<any>).mock.calls;
 

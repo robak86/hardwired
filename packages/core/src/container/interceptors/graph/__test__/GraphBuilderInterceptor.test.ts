@@ -145,7 +145,7 @@ describe(`GraphBuildInterceptor`, () => {
         expect(scope1Interceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
       });
 
-      it(`works with inheriting instance from the parent scope`, async () => {
+      it(`works with inheritLocal`, async () => {
         const shared = fn.singleton(() => 1);
         const consumer = fn.scoped(use => ({ c: use(shared), value: -1 }));
 
@@ -153,14 +153,52 @@ describe(`GraphBuildInterceptor`, () => {
           c.bindLocal(consumer).to(fn.scoped(use => ({ c: use(shared), value: 1 })));
         });
 
-        // expect(cnt.use(consumer)).toEqual({ c: 1, value: 1 });
         const scope1 = cnt.scope(c => c.inheritLocal(consumer));
         // const scope2 = cnt.scope(c => c.inheritLocal(consumer));
 
         expect(scope1.use(consumer)).toEqual({ c: 1, value: 1 });
         // expect(scope2.use(consumer)).toEqual({ c: 1, value: 1 });
         // expect(scope1.use(consumer)).toBe(scope2.use(consumer));
+        //
+        // // fetch consumer from the root container after it was fetched from the child container, so we check
+        // // if it was propagated to the root container
+        // expect(cnt.use(consumer)).toEqual({ c: 1, value: 1 });
         // expect(cnt.use(consumer)).toBe(scope1.use(consumer));
+
+        expect((cnt.getInterceptor('graph') as TestInterceptor).getGraphNode(consumer)?.value).toEqual({
+          c: 1,
+          value: 1,
+        });
+
+        expect((cnt.getInterceptor('graph') as TestInterceptor).getGraphNode(consumer)).toBe(
+          (scope1.getInterceptor('graph') as TestInterceptor).getGraphNode(consumer),
+        );
+      });
+
+      it(`works with inheritCascading`, async () => {
+        const shared = fn.singleton(() => 1);
+        const consumer = fn.scoped(use => ({ c: use(shared), value: -1 }));
+
+        const { cnt } = setup(c => {
+          c.bindLocal(consumer).to(fn.scoped(use => ({ c: use(shared), value: 1 })));
+        });
+
+        const scope1 = cnt.scope(c => c.inheritCascading(consumer));
+        const scope2 = cnt.scope(c => c.inheritCascading(consumer));
+
+        const scope2_1 = scope1.scope();
+        const scope2_2 = scope2.scope();
+
+        expect(scope2_1.use(consumer)).toEqual({ c: 1, value: 1 });
+        expect(scope2_2.use(consumer)).toEqual({ c: 1, value: 1 });
+        expect(scope1.use(consumer)).toEqual({ c: 1, value: 1 });
+        expect(scope2.use(consumer)).toEqual({ c: 1, value: 1 });
+        expect(scope1.use(consumer)).toBe(scope2.use(consumer));
+
+        // fetch consumer from the root container after it was fetched from the child container, so we check
+        // if it was propagated to the root container
+        expect(cnt.use(consumer)).toEqual({ c: 1, value: 1 });
+        expect(cnt.use(consumer)).toBe(scope1.use(consumer));
       });
     });
   });

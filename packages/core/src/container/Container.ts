@@ -13,7 +13,6 @@ import {
   IContainerScopes,
   IDisposableScopeAware,
   InstanceCreationAware,
-  IStrategyAware,
   ReturnTypes,
   UseFn,
 } from './IContainer.js';
@@ -50,11 +49,14 @@ export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerCon
 export type NewScopeReturnType<
   TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
   TAllowedLifeTime extends LifeTime = LifeTime,
-> = HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<IContainer<TAllowedLifeTime>> : IContainer<TAllowedLifeTime>;
+> =
+  HasPromise<ReturnTypes<TConfigureFns>> extends true
+    ? Promise<IContainer<TAllowedLifeTime>>
+    : IContainer<TAllowedLifeTime>;
 
 export class Container
   extends ExtensibleFunction
-  implements InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
+  implements InstanceCreationAware, IContainerScopes, IDisposableScopeAware
 {
   public readonly id = v4();
 
@@ -79,14 +81,14 @@ export class Container
   new<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
     ...configureFns: TConfigureFns
   ): ContainerNewReturnType<TConfigureFns> {
-    const definitionsRegistry = BindingsRegistry.create();
+    const bindingsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
     const interceptorsRegistry = new InterceptorsRegistry();
 
-    const cnt = new Container(null, definitionsRegistry, instancesStore, interceptorsRegistry, null, []);
+    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, []);
 
     if (configureFns.length) {
-      const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt, interceptorsRegistry);
+      const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry);
 
       const configs = configureFns.map(configureFn => configureFn(binder));
       const hasAsync = configs.some(isPromise);
@@ -94,11 +96,13 @@ export class Container
       if (hasAsync) {
         return Promise.all(configs).then(() => {
           const interceptor = interceptorsRegistry.build();
+          interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
 
           return interceptor ? cnt.withInterceptor(interceptor) : cnt;
         }) as any;
       } else {
         const interceptor = interceptorsRegistry.build();
+        interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
 
         return interceptor ? cnt.withInterceptor(interceptor) : (cnt as any);
       }
@@ -126,8 +130,30 @@ export class Container
     definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
     ...args: TArgs
   ): TValue {
-    const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
-    return this.buildWithStrategy(patchedInstanceDef, ...args);
+    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+
+    if (this.currentInterceptor) {
+      return this.buildWithStrategyIntercepted(
+        this.currentInterceptor.onEnter(patchedDefinition, args),
+        patchedDefinition,
+        ...args,
+      );
+    } else {
+      if (this.bindingsRegistry.hasFrozenBinding(patchedDefinition.id)) {
+        return this.instancesStore.upsertIntoFrozenInstances(patchedDefinition, this, ...args);
+      }
+
+      switch (patchedDefinition.strategy) {
+        case LifeTime.transient:
+          return patchedDefinition.create(this, ...args);
+        case LifeTime.singleton:
+          return this.instancesStore.upsertIntoGlobalInstances(patchedDefinition, this, ...args);
+        case LifeTime.scoped:
+          return this.instancesStore.upsertIntoScopeInstances(patchedDefinition, this, ...args);
+        default:
+          throw new Error(`Unsupported strategy ${patchedDefinition.strategy}`);
+      }
+    }
   }
 
   private buildWithStrategyIntercepted<TValue, TArgs extends any[]>(
@@ -139,53 +165,25 @@ export class Container
 
     if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
       const instance = this.instancesStore.upsertIntoFrozenInstances(definition, withChildInterceptor, ...args);
-      return currentInterceptor.onLeave(instance, definition, this.bindingsRegistry, this.instancesStore);
+      return currentInterceptor.onLeave(instance, definition);
     }
 
     if (definition.strategy === LifeTime.transient) {
       const instance = definition.create(withChildInterceptor, ...args);
-      return currentInterceptor.onLeave(instance, definition, this.bindingsRegistry, this.instancesStore);
+      return currentInterceptor.onLeave(instance, definition);
     }
 
     if (definition.strategy === LifeTime.singleton) {
       const instance = this.instancesStore.upsertIntoGlobalInstances(definition, withChildInterceptor, ...args);
-      return currentInterceptor.onLeave(instance, definition, this.bindingsRegistry, this.instancesStore);
+      return currentInterceptor.onLeave(instance, definition);
     }
 
     if (definition.strategy === LifeTime.scoped) {
       const instance = this.instancesStore.upsertIntoScopeInstances(definition, withChildInterceptor, ...args);
-      return currentInterceptor.onLeave(instance, definition, this.bindingsRegistry, this.instancesStore);
+      return currentInterceptor.onLeave(instance, definition);
     }
 
     throw new Error(`Unsupported strategy ${definition.strategy}`);
-  }
-
-  buildWithStrategy<TValue, TArgs extends any[]>(
-    definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
-    ...args: TArgs
-  ): TValue {
-    if (this.currentInterceptor) {
-      return this.buildWithStrategyIntercepted(
-        this.currentInterceptor.onEnter(definition, args, this.bindingsRegistry, this.instancesStore),
-        definition,
-        ...args,
-      );
-    } else {
-      if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-        return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
-      }
-
-      switch (definition.strategy) {
-        case LifeTime.transient:
-          return definition.create(this, ...args);
-        case LifeTime.singleton:
-          return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
-        case LifeTime.scoped:
-          return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
-        default:
-          throw new Error(`Unsupported strategy ${definition.strategy}`);
-      }
-    }
   }
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
@@ -272,7 +270,7 @@ export class Container
     const instancesStore = this.instancesStore.childScope();
     const tags: (string | symbol)[] = [];
 
-    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(this.scopeTags);
+    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(this.scopeTags, bindingsRegistry, instancesStore);
 
     const cnt = new Container(
       this.id,

@@ -44,7 +44,9 @@ const instantiationBench = new Bench({
     c2 = cnt.scope(scope => {});
     c3 = cnt.scope(scope => {});
 
-    cntWithInterceptor = container.new(c => c.withInterceptor('graph', new DependenciesGraphRoot()));
+    cntWithInterceptor = container.new(c => {
+      c.withInterceptor('graph', new DependenciesGraphRoot());
+    });
   },
   teardown: () => {
     cnt = container.new();
