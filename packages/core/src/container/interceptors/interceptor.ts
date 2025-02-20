@@ -4,7 +4,6 @@ import { IBindingRegistryRead } from '../../context/BindingsRegistry.js';
 import { IInstancesStoreRead } from '../../context/InstancesStore.js';
 import { ScopeTag } from '../IContainer.js';
 
-// TODO: perhaps we should provide container (the same simplified version as for fn(...)) instance to onEnter, onLeave, onScope?
 export interface IInterceptor<TInstance> {
   configureRoot?(bindingRegistry: IBindingRegistryRead, instancesStore: IInstancesStoreRead): void;
 

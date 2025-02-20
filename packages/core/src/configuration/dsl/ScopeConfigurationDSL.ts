@@ -27,7 +27,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     definition: Definition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []> {
     if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
-      throw new Error(`Cascading is allowed only for scoped.`); // TODO: maybe I should allow it for scoped as well?
+      throw new Error(`Cascading is allowed only for scoped.`);
     }
 
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
