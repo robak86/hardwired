@@ -251,7 +251,7 @@ export class Container
     const disposable = new DisposableScope(cnt, disposeFns);
 
     if (scopeConfigureFn) {
-      const binder = new DisposableScopeConfigurationDSL(this, cnt, bindingsRegistry, tags, disposeFns);
+      const binder = new DisposableScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposeFns);
       const result = scopeConfigureFn(binder, this);
       if (isPromise(result)) {
         return result.then(() => disposable);
@@ -282,7 +282,7 @@ export class Container
     );
 
     if (configureFns.length) {
-      const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry, tags);
+      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags);
 
       const configs = configureFns.map(configureFn => {
         return configureFn(binder, this);

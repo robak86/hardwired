@@ -8,7 +8,6 @@ import { BindingsRegistry } from '../../context/BindingsRegistry.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(
-    private _parentContainer: IContainer,
     private _currentContainer: IContainer,
     private _bindingsRegistry: BindingsRegistry,
     private _tags: (string | symbol)[],
@@ -22,14 +21,6 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
 
   cascade<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
-  }
-
-  inheritLocal<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
-    this._bindingsRegistry.addScopeBinding(definition.inherit(this._parentContainer));
-  }
-
-  inheritCascading<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
-    this._bindingsRegistry.addCascadingBinding(definition.inherit(this._parentContainer));
   }
 
   bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(

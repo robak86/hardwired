@@ -39,10 +39,4 @@ export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any
       return container.use(this.asOverride(), ...args);
     });
   }
-
-  inherit(container: IContainer): Definition<TInstance, TLifeTime, TArgs> {
-    return this.override((_use, ...args: TArgs) => {
-      return container.use(this, ...args);
-    });
-  }
 }

@@ -52,27 +52,6 @@ describe('ScopeConfiguration', () => {
           }
         });
       });
-
-      it(`allows inheriting value from the parent`, async () => {
-        const depA = fn.scoped(() => Math.random());
-        const depB = fn.scoped(() => Math.random());
-
-        const compositionRoot = fn.scoped(use => {
-          return [use(depA), use(depB)];
-        });
-
-        const root = container.new();
-
-        const childContainer = root.scope((scope, parent) => {
-          scope.inheritLocal(compositionRoot);
-        });
-
-        // First, get the value from the child container, to check if the value will "propagate" to parent
-        const rootInstance1 = childContainer.use(compositionRoot);
-        const rootInstance2 = root.use(compositionRoot);
-
-        expect(rootInstance1).toEqual(rootInstance2);
-      });
     });
   });
 });
