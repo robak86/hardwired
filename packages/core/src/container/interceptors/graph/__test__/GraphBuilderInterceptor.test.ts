@@ -4,9 +4,6 @@ import { ContainerConfigureFn } from '../../../../configuration/ContainerConfigu
 import { GraphBuilderInterceptor, GraphNode } from '../GraphBuilderInterceptor.js';
 import { Definition } from '../../../../definitions/abstract/Definition.js';
 
-// TODO: add tests for and
-// inheritLocal, inheritCascading
-// add tests for memory leaks
 describe(`GraphBuildInterceptor`, () => {
   class SomeNode<T> implements GraphNode<T> {
     readonly id = Math.random();
