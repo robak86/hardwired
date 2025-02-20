@@ -47,7 +47,6 @@
       - [Available bindings](#available-bindings)
         - [Local Bindings](#local-bindings)
         - [Cascading Bindings](#cascading-bindings)
-        - [Inheriting instances from the parent scope](#inheriting-instances-from-the-parent-scope)
     - [Container configuration (root scope)](#container-configuration-root-scope)
       - [Eager instantiation](#eager-instantiation)
   - [Unbound Definitions](#unbound-definitions)
@@ -562,7 +561,6 @@ Scope configuration is used for creating a new scope.
 
 - It allows binding definitions for the **transient** and **scoped** lifetimes for the current scope, also including all descendant scopes.
 - Scope configuration has access to the parent container for configuring the scope dynamically based on values from the parent scope.
-- Additionally, it's possible to make a new scope inherit selected scoped instances from the parent
 
 #### Defining scope configuration
 
@@ -630,14 +628,9 @@ The assigned value is available for the current scope and propagated to all newl
 
 Additionally, you can make the definition cascading using `scope.cascade(definition)`.
 
-##### Inheriting instances from the parent scope
-
-- `scope.inheritLocal(definition)` - inherits the instance from the parent only for the current scope
-- `scope.inheritCascading(definition)` - inherits the instance from the parent for the current and all descendant scopes
-
 ### Container configuration (root scope)
 
-The configuration is provided while creating a new container. It's similar to the [Scope Configuration](#scope-configuration), but it also allows binding singletons. Additionally, it doesn't allow inheriting any values as there is no parent scope.
+The configuration is provided while creating a new container. It's similar to the [Scope Configuration](#scope-configuration), but it also allows binding singletons.
 
 ```typescript
 import { container, configureContainer, fn } from 'hardwired';
