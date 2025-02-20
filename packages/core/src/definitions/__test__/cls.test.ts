@@ -38,6 +38,20 @@ describe(`cls`, () => {
         constructor(private _a: number) {}
       }
     });
+
+    it(`enforces correct scopes`, async () => {
+      class DependencyClass {
+        static instance = cls.scoped(this);
+      }
+
+      // @ts-ignore
+      class InvalidScopeClass {
+        // @ts-expect-error - DependencyClass.instance has invalid scope
+        static class = cls.singleton(this, [DependencyClass.instance]);
+
+        constructor(_a: DependencyClass) {}
+      }
+    });
   });
 
   describe(`checking for undefined`, () => {

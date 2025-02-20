@@ -13,7 +13,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
     public readonly klass: ClassType<TInstance, TConstructorArgs>,
-    public readonly dependencies?: Thunk<InstancesDefinitions<TConstructorArgs>>,
+    public readonly dependencies?: Thunk<InstancesDefinitions<TConstructorArgs, TLifeTime>>,
   ) {
     // TODO: perhaps the inner condition checking deps could be extracted from the critical path
     super(id, strategy, use => {
