@@ -8,8 +8,6 @@ export * from './container/interceptors/graph/GraphNodesRegistry.js';
 
 export { COWMap } from './context/InstancesMap.js';
 
-export { BaseInterceptor, BaseRootInterceptor } from './container/interceptors/logging/BaseInterceptor.js';
-
 export * from './container/interceptors/graph/DependenciesGraph.js';
 
 export { LoggingInterceptor } from './container/interceptors/logging/LoggingInterceptor.js';
