@@ -1,6 +1,6 @@
 export {
   GraphBuilderInterceptor,
-  BaseInterceptorConfiguration,
+  GraphBuilderInterceptorConfig,
   GraphNode,
 } from './container/interceptors/graph/GraphBuilderInterceptor.js';
 export * from './container/interceptors/graph/GraphBuilderContext.js';

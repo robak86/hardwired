@@ -14,12 +14,12 @@ export interface GraphNode<T> {
   value: T;
 }
 
-export interface BaseInterceptorConfiguration<TNode extends GraphNode<any>> {
-  createNode<T>(definition: Definition<T, any, any>, value: Awaited<T>, children: TNode[], tags: ScopeTag[]): TNode; // TODO: awaited might be difficult?
+export interface GraphBuilderInterceptorConfig<TNode extends GraphNode<any>> {
+  createNode<T>(definition: Definition<T, any, any>, value: Awaited<T>, children: TNode[], tags: ScopeTag[]): TNode;
 }
 
 export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements IInterceptor<T> {
-  static create<TNode extends GraphNode<any>>(configuration: BaseInterceptorConfiguration<TNode>) {
+  static create<TNode extends GraphNode<any>>(configuration: GraphBuilderInterceptorConfig<TNode>) {
     const context = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []);
     return new GraphBuilderInterceptor<never, TNode>(configuration, context);
   }
@@ -28,7 +28,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
   protected _children: GraphBuilderInterceptor<unknown, TNode>[] = [];
 
   constructor(
-    protected _configuration: BaseInterceptorConfiguration<TNode>,
+    protected _configuration: GraphBuilderInterceptorConfig<TNode>,
     protected _context: GraphBuilderContext<TNode> = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []),
     protected _definition?: Definition<T, LifeTime, any[]>,
     protected _parentScopeRootInterceptor?: GraphBuilderInterceptor<T, TNode>,
