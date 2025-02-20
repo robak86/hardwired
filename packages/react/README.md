@@ -493,7 +493,7 @@ In this example both `<Parent>` and `<Child>` components will get the same value
 
 #### Transient
 
-- transient definitions are not supported by the `hardwired-react` library. The transient instances are not memoized, so they would be created on every render.
+- Isn't supported for the React components.
 
 ## Functional API
 
