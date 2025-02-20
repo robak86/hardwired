@@ -1,3 +1,6 @@
+// interceptors
+export * from './interceptors/ReactLifeCycleInterceptor.js';
+
 // components
 export { ContainerProvider } from './components/ContainerProvider.js';
 export type { ContainerProviderProps } from './components/ContainerProvider.js';
