@@ -246,6 +246,106 @@ describe(`use`, () => {
         expect(svc.onMount).toHaveBeenCalledTimes(2);
         expect(svc.onUnmount).toHaveBeenCalledTimes(2);
       });
+
+      describe(`forceMount`, () => {
+        it(`forces mount of already mounted component`, async () => {
+          const cnt = container.new(withReactLifeCycle);
+
+          const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
+            use(MountableServiceConsumer.instance);
+
+            return renderChild && <Consumer />;
+          };
+
+          const Consumer = () => {
+            const [id] = useState(Math.random());
+            const svc = use(MountableServiceConsumer.instance, { forceMount: true });
+
+            return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
+          };
+
+          const App = (props: { renderChild: boolean; other?: string }) => {
+            return (
+              <ContainerProvider container={cnt}>
+                <ConsumerParent renderChild={props.renderChild} />
+              </ContainerProvider>
+            );
+          };
+
+          const result = render(<App renderChild={false} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.rerender(<App renderChild={true} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.rerender(<App renderChild={true} other={'rerender on prop change'} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.rerender(<App renderChild={false} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.unmount();
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+        });
+      });
+
+      describe(`forceReMount`, () => {
+        it(`forces mount of already mounted component`, async () => {
+          const cnt = container.new(withReactLifeCycle);
+
+          const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
+            use(MountableServiceConsumer.instance);
+
+            return renderChild && <Consumer />;
+          };
+
+          const Consumer = () => {
+            const [id] = useState(Math.random());
+            const svc = use(MountableServiceConsumer.instance, { forceRemount: true });
+
+            return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
+          };
+
+          const App = (props: { renderChild: boolean; other?: string }) => {
+            return (
+              <ContainerProvider container={cnt}>
+                <ConsumerParent renderChild={props.renderChild} />
+              </ContainerProvider>
+            );
+          };
+
+          const result = render(<App renderChild={false} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.rerender(<App renderChild={true} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+
+          result.rerender(<App renderChild={true} other={'rerender on prop change'} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+
+          result.rerender(<App renderChild={false} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(2);
+
+          result.unmount();
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(2);
+        });
+      });
     });
 
     describe(`scoped instances`, () => {

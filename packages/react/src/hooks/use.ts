@@ -22,9 +22,9 @@ export const use: UseDefinitionHook = (definition, options) => {
   const instance = container.use(definition);
   const interceptor = useReactLifeCycleInterceptor();
 
-  const graphNode = interceptor?.getGraphNode(definition);
-
   useEffect(() => {
+    const graphNode = interceptor?.getGraphNode(definition);
+
     if (options?.forceRemount) {
       graphNode?.unmount();
       graphNode?.mount();

@@ -16,7 +16,6 @@ export const useReactLifeCycleInterceptor = () => {
   return useContainer().getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor;
 };
 
-// TODO: use(myDefinition, {forceMount: true, forceRemount: true}) // forceMount = mount, forceRemount = unmount + mount
 export class ReactLifeCycleNode<T> {
   id = Math.random();
   protected _refCount = 0;
@@ -73,10 +72,10 @@ export class ReactLifeCycleRootInterceptor extends GraphBuilderInterceptor<never
   constructor() {
     super({
       createNode<T>(
-        definition: Definition<T, any, any>,
+        _definition: Definition<T, any, any>,
         value: Awaited<T>,
         children: ReactLifeCycleNode<unknown>[],
-        tags: ScopeTag[],
+        _tags: ScopeTag[],
       ): ReactLifeCycleNode<T> {
         return new ReactLifeCycleNode(value, children) as ReactLifeCycleNode<T>;
       },
