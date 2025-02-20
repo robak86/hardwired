@@ -1,12 +1,12 @@
 import { DisposableScopeConfigurable } from '../abstract/ScopeConfigurable.js';
 import { ScopeConfigurationDSL } from './ScopeConfigurationDSL.js';
-import { IContainer } from '../../container/IContainer.js';
+import { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import { DisposeFn } from '../abstract/ContainerConfigurable.js';
 
 export class DisposableScopeConfigurationDSL extends ScopeConfigurationDSL implements DisposableScopeConfigurable {
   constructor(
-    _currentContainer: IContainer,
+    _currentContainer: IContainer & IStrategyAware,
     _bindingsRegistry: BindingsRegistry,
     _tags: (string | symbol)[],
     private _disposeFns: DisposeFn[],

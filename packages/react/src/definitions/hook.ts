@@ -14,7 +14,7 @@ export class HookDefinition<TInstance, TLifeTime extends LifeTime> extends Defin
     public readonly hook: () => TInstance,
     factory: (container: IContainer) => HookValue<TInstance>,
   ) {
-    super(definitionId, lifeTime, factory, false);
+    super(definitionId, lifeTime, factory);
   }
 }
 

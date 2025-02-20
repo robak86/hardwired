@@ -24,6 +24,15 @@ export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
 
 export type ScopeTag = string | symbol;
 
+export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
+  readonly id: string;
+
+  buildWithStrategy<TValue, TArgs extends any[]>(
+    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue;
+}
+
 export interface IDisposableScopeAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   disposable(): DisposableScope;
   disposable(options: DisposableAsyncScopeConfigureFn): Promise<DisposableScope>;

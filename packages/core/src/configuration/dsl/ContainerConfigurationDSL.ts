@@ -9,14 +9,14 @@ import {
 } from '../abstract/ContainerConfigurable.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import { IContainer } from '../../container/IContainer.js';
+import { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { IInterceptor } from '../../container/interceptors/interceptor.js';
 import { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
-    private _currentContainer: IContainer,
+    private _currentContainer: IContainer & IStrategyAware,
     private _interceptors: InterceptorsRegistry,
   ) {}
 

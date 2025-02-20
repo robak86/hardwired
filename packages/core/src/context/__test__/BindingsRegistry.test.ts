@@ -5,8 +5,8 @@ import { Definition } from '../../definitions/abstract/Definition.js';
 describe(`BindingsRegistry`, () => {
   function setup() {
     const def = fn.scoped(() => 1);
-    const defV2 = new Definition(def.id, def.strategy, () => 123).asOverride();
-    const defV3 = new Definition(def.id, def.strategy, () => 456).asOverride();
+    const defV2 = new Definition(def.id, def.strategy, () => 123);
+    const defV3 = new Definition(def.id, def.strategy, () => 456);
 
     return { def, defV2, defV3 };
   }

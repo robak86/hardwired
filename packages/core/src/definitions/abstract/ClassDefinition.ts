@@ -16,26 +16,21 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     public readonly dependencies?: Thunk<InstancesDefinitions<TConstructorArgs>>,
   ) {
     // TODO: perhaps the inner condition checking deps could be extracted from the critical path
-    super(
-      id,
-      strategy,
-      use => {
-        // no dependencies
-        if (dependencies === undefined) {
-          //@ts-ignore
-          return new klass();
-        }
+    super(id, strategy, use => {
+      // no dependencies
+      if (dependencies === undefined) {
+        //@ts-ignore
+        return new klass();
+      }
 
-        // array dependencies
-        if (Array.isArray(dependencies)) {
-          return new klass(...(dependencies.map(dep => use(dep)) as TConstructorArgs));
-        }
+      // array dependencies
+      if (Array.isArray(dependencies)) {
+        return new klass(...(dependencies.map(dep => use(dep)) as TConstructorArgs));
+      }
 
-        // thunk dependencies
-        return new klass(...(dependencies().map(dep => use(dep)) as TConstructorArgs));
-      },
-      false,
-    );
+      // thunk dependencies
+      return new klass(...(dependencies().map(dep => use(dep)) as TConstructorArgs));
+    });
 
     Array.isArray(dependencies) && this.assertValidDependencies(dependencies);
   }

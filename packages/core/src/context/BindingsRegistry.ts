@@ -23,11 +23,6 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   getDefinition<T extends AnyDefinition>(definition: T): T {
-    if (definition.isOverride) {
-      // prevent infinite loop
-      return definition;
-    }
-
     return (
       // returned by priority. Frozen overrides scope, scope overrides cascading, cascading overrides definition
       (this._frozenDefinitions.get(definition.id) as T) ??
@@ -50,10 +45,6 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   addFrozenBinding(definition: AnyDefinition) {
-    if (!definition.isOverride) {
-      throw new Error(`Cannot bind definition as frozen. Only override definitions can be frozen.`);
-    }
-
     if (this._frozenDefinitions.has(definition.id)) {
       throw new Error(`Final binding was already set. Cannot override it.`);
     }
@@ -61,10 +52,6 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   addScopeBinding(definition: AnyDefinition) {
-    if (!definition.isOverride) {
-      throw new Error(`Cannot bind definition as frozen. Only override definitions can be frozen.`);
-    }
-
     if (this._scopeDefinitions.has(definition.id)) {
       throw new Error(
         `Cannot bind definition for the current scope. The scope has already other binding for the definition.`,
@@ -75,10 +62,6 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   addCascadingBinding(definition: AnyDefinition) {
-    if (!definition.isOverride) {
-      throw new Error(`Cannot bind definition as frozen. Only override definitions can be frozen.`);
-    }
-
     if (this._scopeDefinitions.has(definition.id)) {
       throw new Error(
         `Cannot bind cascading definition for the current scope. The scope has already other binding for the definition.`,

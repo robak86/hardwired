@@ -8,21 +8,16 @@ function chainMiddlewares<T, TLifeTime extends LifeTime>(
   next: MiddlewareNextFn<T, any[]>,
   lifeTime: TLifeTime,
 ): Definition<T, TLifeTime, any> {
-  return new Definition(
-    Symbol(),
-    lifeTime,
-    (use: IContainer, ...args: any[]): T => {
-      let nextHandler = next;
-      for (let i = middlewares.length - 1; i >= 0; i--) {
-        const currentMiddleware = middlewares[i];
-        const currentNextHandler = nextHandler;
-        nextHandler = (use: IContainer, ...args: any[]) => currentMiddleware(use, currentNextHandler, ...args);
-      }
+  return new Definition(Symbol(), lifeTime, (use: IContainer, ...args: any[]): T => {
+    let nextHandler = next;
+    for (let i = middlewares.length - 1; i >= 0; i--) {
+      const currentMiddleware = middlewares[i];
+      const currentNextHandler = nextHandler;
+      nextHandler = (use: IContainer, ...args: any[]) => currentMiddleware(use, currentNextHandler, ...args);
+    }
 
-      return nextHandler(use, ...args);
-    },
-    false,
-  );
+    return nextHandler(use, ...args);
+  });
 }
 
 export type MiddlewareNextFn<TInstance, TArgs extends any[]> = (locator: IContainer, ...args: TArgs) => TInstance;

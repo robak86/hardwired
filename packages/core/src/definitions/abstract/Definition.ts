@@ -1,5 +1,5 @@
 import { LifeTime } from './LifeTime.js';
-import { IContainer } from '../../container/IContainer.js';
+import { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { getTruncatedFunctionDefinition } from '../utils/getTruncatedFunctionDefinition.js';
 
 export type AnyDefinition = Definition<any, LifeTime, any[]>;
@@ -9,7 +9,6 @@ export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
     public readonly create: (context: IContainer, ...args: TArgs) => TInstance,
-    public readonly isOverride = false, // TODO: rename isFinal? skipOverrideSearch?, forceExact?
   ) {}
 
   get name() {
@@ -21,12 +20,7 @@ export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any
   }
 
   override(createFn: (context: IContainer, ...args: TArgs) => TInstance): Definition<TInstance, TLifeTime, TArgs> {
-    return new Definition(this.id, this.strategy, createFn, true);
-  }
-
-  // TODO: forceExact!?
-  asOverride(): Definition<TInstance, TLifeTime, TArgs> {
-    return new Definition(this.id, this.strategy, this.create, true);
+    return new Definition(this.id, this.strategy, createFn);
   }
 
   /**
@@ -34,9 +28,9 @@ export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any
    * the container will be used to resolve its dependencies.
    * @param container
    */
-  bind(container: IContainer): Definition<TInstance, TLifeTime, TArgs> {
+  bind(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, TArgs> {
     return this.override((_use, ...args: TArgs) => {
-      return container.use(this.asOverride(), ...args);
+      return container.buildWithStrategy(this, ...args);
     });
   }
 }

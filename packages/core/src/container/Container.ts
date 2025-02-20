@@ -131,27 +131,29 @@ export class Container
     ...args: TArgs
   ): TValue {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+    return this.buildWithStrategy(patchedDefinition, ...args);
+  }
 
+  buildWithStrategy<TValue, TArgs extends any[]>(
+    definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue {
     if (this.currentInterceptor) {
-      return this.buildWithStrategyIntercepted(
-        this.currentInterceptor.onEnter(patchedDefinition, args),
-        patchedDefinition,
-        ...args,
-      );
+      return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition, args), definition, ...args);
     } else {
-      if (this.bindingsRegistry.hasFrozenBinding(patchedDefinition.id)) {
-        return this.instancesStore.upsertIntoFrozenInstances(patchedDefinition, this, ...args);
+      if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+        return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
       }
 
-      switch (patchedDefinition.strategy) {
+      switch (definition.strategy) {
         case LifeTime.transient:
-          return patchedDefinition.create(this, ...args);
+          return definition.create(this, ...args);
         case LifeTime.singleton:
-          return this.instancesStore.upsertIntoGlobalInstances(patchedDefinition, this, ...args);
+          return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
         case LifeTime.scoped:
-          return this.instancesStore.upsertIntoScopeInstances(patchedDefinition, this, ...args);
+          return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
         default:
-          throw new Error(`Unsupported strategy ${patchedDefinition.strategy}`);
+          throw new Error(`Unsupported strategy ${definition.strategy}`);
       }
     }
   }

@@ -7,7 +7,7 @@ describe(`Definition`, () => {
   describe(`bind`, () => {
     it(`binds to some container ignoring the one passed to create`, async () => {
       const createSpy = vi.fn();
-      const def = new Definition(Symbol(), LifeTime.scoped, createSpy, false);
+      const def = new Definition(Symbol(), LifeTime.scoped, createSpy);
 
       const cnt1 = container.new();
       const cnt2 = container.new();
@@ -23,7 +23,7 @@ describe(`Definition`, () => {
   describe(`name`, () => {
     describe('named function', () => {
       it(`returns name of the factory function`, async () => {
-        const def = new Definition(Symbol(), LifeTime.scoped, function MyFactory() {}, false);
+        const def = new Definition(Symbol(), LifeTime.scoped, function MyFactory() {});
 
         expect(def.name).toBe('MyFactory');
       });
