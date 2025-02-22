@@ -5,7 +5,7 @@ import { UseFn } from '../../container/IContainer.js';
 import { IInterceptor } from '../../container/interceptors/interceptor.js';
 
 export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
-export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped;
+export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureCascadingLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 
 export type InitFn = (container: UseFn<any>) => void;
@@ -18,7 +18,7 @@ export interface ContainerConfigurable {
 
   cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
 
-  bindLocal<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
+  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
 

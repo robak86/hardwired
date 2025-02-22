@@ -37,7 +37,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     initializer(this._currentContainer);
   }
 
-  bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {

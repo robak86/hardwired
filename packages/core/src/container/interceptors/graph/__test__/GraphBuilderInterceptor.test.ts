@@ -76,7 +76,7 @@ describe(`GraphBuildInterceptor`, () => {
         expect(rootValue).toEqual(1);
 
         const childScope = cnt.scope(c => {
-          return c.bindLocal(def).toValue(123);
+          return c.bind(def).toValue(123);
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
@@ -181,7 +181,7 @@ describe(`GraphBuildInterceptor`, () => {
         expect(rootValue).toEqual(1);
 
         const childScope = await cnt.scope(async c => {
-          return c.bindLocal(def).toValue(123);
+          return c.bind(def).toValue(123);
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
@@ -218,7 +218,7 @@ describe(`GraphBuildInterceptor`, () => {
         expect(scope2ConsumerNode?.children).toEqual([sharedDefNode]);
       });
 
-      it(`works with cascading`, async () => {
+      it(`works with bindCascading`, async () => {
         const shared = fn.singleton(async () => 1);
         const consumer = fn.scoped(async use => ({ c: await use(shared), value: 0 }));
 
@@ -245,6 +245,29 @@ describe(`GraphBuildInterceptor`, () => {
 
         expect(rootInterceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
         expect(scope1Interceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
+      });
+
+      it(`works with cascade`, async () => {
+        const shared = fn.singleton(async () => 1);
+        const consumer = fn.scoped(async use => ({ c: await use(shared), value: Math.random() }));
+
+        const { cnt } = setup(c => {
+          c.cascade(consumer);
+        });
+
+        const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
+        const scope1 = cnt.scope();
+        const scope2 = cnt.scope();
+
+        expect(await scope1.use(consumer)).toBe(await scope2.use(consumer));
+        expect(await cnt.use(consumer)).toBe(await scope1.use(consumer));
+
+        const scope1Interceptor = scope1.getInterceptor('graph') as TestInterceptor;
+        const scope2Interceptor = scope2.getInterceptor('graph') as TestInterceptor;
+
+        expect(rootInterceptor.getGraphNode(consumer)).toBe(scope1Interceptor.getGraphNode(consumer));
+        expect(rootInterceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
+        expect(scope2Interceptor.getGraphNode(consumer)).toBe(scope1Interceptor.getGraphNode(consumer));
       });
     });
   });

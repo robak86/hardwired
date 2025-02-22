@@ -28,8 +28,8 @@ describe(`define`, () => {
       const result = container
         .new()
         .scope(c => {
-          c.bindLocal(ext1).toValue(1);
-          c.bindLocal(ext2).toValue('str');
+          c.bind(ext1).toValue(1);
+          c.bind(ext2).toValue('str');
         })
         .use(definition);
       expect(result).toEqual([1, 'str']);

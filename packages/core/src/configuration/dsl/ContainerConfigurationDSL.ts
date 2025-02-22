@@ -38,7 +38,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
   }
 
-  bindLocal<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
+  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {

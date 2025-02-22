@@ -29,7 +29,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindLocal(def).toValue(2));
+            const l2 = l1.scope(scope => scope.bind(def).toValue(2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -39,7 +39,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindLocal(def).configure(() => 2));
+            const l2 = l1.scope(scope => scope.bind(def).configure(() => 2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -49,7 +49,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindLocal(def).decorate(() => 2));
+            const l2 = l1.scope(scope => scope.bind(def).decorate(() => 2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -61,7 +61,7 @@ describe(`Scopes`, () => {
 
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindLocal(def).to(def2));
+            const l2 = l1.scope(scope => scope.bind(def).to(def2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -129,7 +129,7 @@ describe(`Scopes`, () => {
     describe('setting local bindings', () => {
       it(`doesn't propagate the instance to  descendent scopes`, async () => {
         const def = fn.scoped(() => 'original');
-        const root = container.new(scope => scope.bindLocal(def).toValue('root'));
+        const root = container.new(scope => scope.bind(def).toValue('root'));
         const l1 = root.scope();
         const l2 = l1.scope();
 
@@ -147,11 +147,11 @@ describe(`Scopes`, () => {
         });
 
         const root = container.new(scope => {
-          scope.bindLocal(def).toValue(1);
+          scope.bind(def).toValue(1);
           scope.bindCascading(consumer).toValue(2);
         });
-        const l1 = root.scope(scope => scope.bindLocal(def).toValue(10));
-        const l2 = l1.scope(scope => scope.bindLocal(def).toValue(100));
+        const l1 = root.scope(scope => scope.bind(def).toValue(10));
+        const l2 = l1.scope(scope => scope.bind(def).toValue(100));
         const l3 = l2.scope(scope => {});
 
         const l3Consumer = l3.use(consumer);
@@ -174,7 +174,7 @@ describe(`Scopes`, () => {
 
           const l1 = root.scope(scope => {});
           const l2 = l1.scope(scope => {
-            scope.bindLocal(dep).toValue('l2');
+            scope.bind(dep).toValue('l2');
           });
 
           expect(l2.use(dep)).toEqual('l2');
@@ -186,11 +186,11 @@ describe(`Scopes`, () => {
           const consumerReplacement = fn.scoped(use => use(dep) + '_consumer_replacement');
 
           const root = container.new(scope => {
-            scope.bindLocal(dep).toValue('root');
+            scope.bind(dep).toValue('root');
             scope.bindCascading(consumer).to(consumerReplacement);
           });
           const l1 = root.scope(scope => {
-            scope.bindLocal(dep).toValue('l1');
+            scope.bind(dep).toValue('l1');
           });
 
           const l1Consumer = l1.use(consumer);
@@ -207,16 +207,16 @@ describe(`Scopes`, () => {
           const consumerReplacementV2 = fn.scoped(use => use(dep) + '_consumer_replacement_v2');
 
           const root = container.new(scope => {
-            scope.bindLocal(dep).toValue('root');
+            scope.bind(dep).toValue('root');
             scope.bindCascading(consumer).to(consumerReplacementV1);
           });
 
           const l1 = root.scope(scope => {
-            scope.bindLocal(dep).toValue('l1');
+            scope.bind(dep).toValue('l1');
           });
 
           const l2 = l1.scope(scope => {
-            scope.bindLocal(dep).toValue('l2');
+            scope.bind(dep).toValue('l2');
             scope.bindCascading(consumer).to(consumerReplacementV2);
           });
 
@@ -250,11 +250,11 @@ describe(`Scopes`, () => {
           const consumer = fn.scoped(use => use(dep));
 
           const root = container.new(scope => {
-            scope.bindLocal(dep).toValue('root');
+            scope.bind(dep).toValue('root');
             scope.bindCascading(consumer).decorate((use, val) => val + '_consumer_replacement');
           });
           const l1 = root.scope(scope => {
-            scope.bindLocal(dep).toValue('l1');
+            scope.bind(dep).toValue('l1');
           });
 
           const l1Consumer = l1.use(consumer);
@@ -269,16 +269,16 @@ describe(`Scopes`, () => {
           const consumer = fn.scoped(use => use(dep));
 
           const root = container.new(scope => {
-            scope.bindLocal(dep).toValue('root');
+            scope.bind(dep).toValue('root');
             scope.bindCascading(consumer).decorate((use, val) => val + '_consumer_replacement_v1');
           });
 
           const l1 = root.scope(scope => {
-            scope.bindLocal(dep).toValue('l1');
+            scope.bind(dep).toValue('l1');
           });
 
           const l2 = l1.scope(scope => {
-            scope.bindLocal(dep).toValue('l2');
+            scope.bind(dep).toValue('l2');
             scope.bindCascading(consumer).decorate((use, val) => val + '_consumer_replacement_v2');
           });
 
@@ -312,13 +312,13 @@ describe(`Scopes`, () => {
           const consumer = fn.scoped(use => use(dep));
 
           const root = container.new(scope => {
-            scope.bindLocal(dep).toValue(new BoxedValue('root'));
+            scope.bind(dep).toValue(new BoxedValue('root'));
             scope.bindCascading(consumer).configure((use, val) => {
               val.value = val.value + '_consumer_replacement';
             });
           });
           const l1 = root.scope(scope => {
-            scope.bindLocal(dep).toValue(new BoxedValue('l1'));
+            scope.bind(dep).toValue(new BoxedValue('l1'));
           });
 
           const l1Consumer = l1.use(consumer);
@@ -333,18 +333,18 @@ describe(`Scopes`, () => {
           const consumer = fn.scoped(use => use(dep));
 
           const root = container.new(scope => {
-            scope.bindLocal(dep).toValue(new BoxedValue('root'));
+            scope.bind(dep).toValue(new BoxedValue('root'));
             scope.bindCascading(consumer).configure((use, val) => {
               val.value = val.value + '_consumer_replacement_v1';
             });
           });
 
           const l1 = root.scope(scope => {
-            scope.bindLocal(dep).toValue(new BoxedValue('l1'));
+            scope.bind(dep).toValue(new BoxedValue('l1'));
           });
 
           const l2 = l1.scope(scope => {
-            scope.bindLocal(dep).toValue(new BoxedValue('l2'));
+            scope.bind(dep).toValue(new BoxedValue('l2'));
             scope.bindCascading(consumer).configure((use, val) => {
               val.value = val.value + '_consumer_replacement_v2';
             });
@@ -382,7 +382,7 @@ describe(`Scopes`, () => {
         const def = fn.scoped(() => 'original');
         const l1Creator = fn.scoped(use => {
           const configure = configureScope(scope => {
-            scope.bindLocal(def).toValue('l1');
+            scope.bind(def).toValue('l1');
           });
 
           return use.withScope(configure, use => {
