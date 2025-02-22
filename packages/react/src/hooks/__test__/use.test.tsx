@@ -405,6 +405,66 @@ describe(`use`, () => {
         expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
         expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
       });
+
+      it(`calls correctly callbacks when service is used within list item`, async () => {
+        const cnt = container.new(withReactLifeCycle);
+
+        const ScopedConsumer = () => {
+          const [id] = useState(Math.random());
+          const svc = use(MountableServiceConsumer.instance);
+
+          return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
+        };
+
+        type ScopeConfig = {
+          isEnabled: boolean;
+        };
+
+        const App = (props: { scopes: ScopeConfig[] }) => {
+          return (
+            <ContainerProvider container={cnt}>
+              {props.scopes.map((scope, index) => {
+                return (
+                  <div key={index}>
+                    {scope.isEnabled && (
+                      <ContainerScope>
+                        <ScopedConsumer />
+                      </ContainerScope>
+                    )}
+                  </div>
+                );
+              })}
+            </ContainerProvider>
+          );
+        };
+
+        function randomScopeConfigs(num: number) {
+          return Array.from({ length: num }).map(idx => {
+            return {
+              isEnabled: Math.random() > 0.5,
+            };
+          });
+        }
+
+        const scopes = [{ isEnabled: true }, ...randomScopeConfigs(10)];
+
+        const result = render(<App scopes={scopes} />);
+
+        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+        for (let i = 0; i < 20; i++) {
+          result.rerender(<App scopes={[{ isEnabled: true }, ...randomScopeConfigs(20)]} />);
+        }
+
+        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+        result.rerender(<App scopes={[]} />);
+
+        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+      });
     });
   });
 });
