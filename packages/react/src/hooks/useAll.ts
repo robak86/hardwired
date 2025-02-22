@@ -18,10 +18,10 @@ export const useAll: UseDefinitionsHook = (...definitions) => {
   useEffect(() => {
     const graphNodes = definitions.map(definition => interceptor?.getGraphNode(definition));
 
-    graphNodes.forEach(graphNode => graphNode?.mount());
+    graphNodes.forEach(graphNode => graphNode?.acquire());
 
     return () => {
-      graphNodes.forEach(graphNode => graphNode?.unmount());
+      graphNodes.forEach(graphNode => graphNode?.release());
     };
   }, [interceptor]);
 

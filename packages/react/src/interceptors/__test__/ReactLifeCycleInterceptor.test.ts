@@ -95,7 +95,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const { cnt, interceptor } = setup();
 
       cnt.use(Service1.instance);
-      interceptor.getGraphNode(Service1.instance).mount();
+      interceptor.getGraphNode(Service1.instance).acquire();
 
       const childSvc1 = cnt.use(ChildSvc1.instance);
       const childSvc2 = cnt.use(ChildSvc2.instance);
@@ -108,9 +108,9 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const { cnt, interceptor } = setup();
 
       cnt.use(Service1.instance);
-      interceptor.getGraphNode(Service1.instance).mount();
-      interceptor.getGraphNode(Service1.instance).mount();
-      interceptor.getGraphNode(Service1.instance).mount();
+      interceptor.getGraphNode(Service1.instance).acquire();
+      interceptor.getGraphNode(Service1.instance).acquire();
+      interceptor.getGraphNode(Service1.instance).acquire();
 
       const childSvc1 = cnt.use(ChildSvc1.instance);
       const childSvc2 = cnt.use(ChildSvc2.instance);
@@ -125,8 +125,8 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const { cnt, interceptor } = setup();
 
       cnt.use(Service1.instance);
-      interceptor.getGraphNode(Service1.instance).mount();
-      interceptor.getGraphNode(Service1.instance).unmount();
+      interceptor.getGraphNode(Service1.instance).acquire();
+      interceptor.getGraphNode(Service1.instance).release();
 
       const childSvc1 = cnt.use(ChildSvc1.instance);
       const childSvc2 = cnt.use(ChildSvc2.instance);
@@ -139,10 +139,10 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const { cnt, interceptor } = setup();
 
       cnt.use(Service1.instance);
-      interceptor.getGraphNode(Service1.instance).mount();
-      interceptor.getGraphNode(Service1.instance).unmount();
-      interceptor.getGraphNode(Service1.instance).unmount();
-      interceptor.getGraphNode(Service1.instance).unmount();
+      interceptor.getGraphNode(Service1.instance).acquire();
+      interceptor.getGraphNode(Service1.instance).release();
+      interceptor.getGraphNode(Service1.instance).release();
+      interceptor.getGraphNode(Service1.instance).release();
 
       const childSvc1 = cnt.use(ChildSvc1.instance);
       const childSvc2 = cnt.use(ChildSvc2.instance);
@@ -169,8 +169,8 @@ describe(`ReactLifeCycleInterceptor`, () => {
       childScope1.use(Service1.instance);
       childScope2.use(Service1.instance);
 
-      childScope1Interceptor.getGraphNode(Service1.instance).mount();
-      childScope2Interceptor.getGraphNode(Service1.instance).mount();
+      childScope1Interceptor.getGraphNode(Service1.instance).acquire();
+      childScope2Interceptor.getGraphNode(Service1.instance).acquire();
 
       const childSvc1Node = interceptor.getGraphNode(ChildSvc1.instance);
       const childSvc2Node = interceptor.getGraphNode(ChildSvc2.instance);
@@ -186,7 +186,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
       expect(childSvc1.onUnmount).not.toBeCalled();
       expect(childSvc2.onUnmount).not.toBeCalled();
 
-      childScope1Interceptor.getGraphNode(Service1.instance).unmount();
+      childScope1Interceptor.getGraphNode(Service1.instance).release();
 
       expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
       expect(childSvc2.onMount).toHaveBeenCalledTimes(1);
@@ -194,7 +194,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
       expect(childSvc1.onUnmount).not.toBeCalled();
       expect(childSvc2.onUnmount).not.toBeCalled();
 
-      childScope2Interceptor.getGraphNode(Service1.instance).unmount();
+      childScope2Interceptor.getGraphNode(Service1.instance).release();
 
       expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
       expect(childSvc2.onMount).toHaveBeenCalledTimes(1);

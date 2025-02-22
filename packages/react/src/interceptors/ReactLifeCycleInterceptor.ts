@@ -1,5 +1,6 @@
 import { ContainerConfigureFn, Definition, GraphBuilderInterceptor, ScopeTag } from 'hardwired';
 import { useContainer } from '../context/ContainerContext.js';
+import { ReactLifeCycleNode } from './ReactLifeCycleNode.js';
 
 export interface IReactLifeCycleAware {
   onMount?(): void;
@@ -15,58 +16,6 @@ export const withReactLifeCycle: ContainerConfigureFn = c => {
 export const useReactLifeCycleInterceptor = () => {
   return useContainer().getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor;
 };
-
-export class ReactLifeCycleNode<T> {
-  id = Math.random();
-  protected _refCount = 0;
-
-  constructor(
-    readonly value: T,
-    readonly children: ReactLifeCycleNode<any>[] = [],
-  ) {}
-
-  get refCount() {
-    return this._refCount;
-  }
-
-  get isMountable() {
-    return this.value instanceof Object && 'onMount' in this.value;
-  }
-
-  get isUnmountable() {
-    return this.value instanceof Object && 'onUnmount' in this.value;
-  }
-
-  mount(force = false) {
-    if (!this.isMountable) {
-      return;
-    }
-
-    if (this._refCount === 0 || force) {
-      (this.value as IReactLifeCycleAware).onMount?.();
-    }
-
-    this._refCount += 1;
-
-    // even if the current object is not mountable, we still need to mount its children
-    this.children.forEach(child => child.mount(force));
-  }
-
-  unmount(force = false) {
-    if (!this.isUnmountable) {
-      return;
-    }
-
-    this._refCount -= 1;
-
-    if (this._refCount === 0 || force) {
-      (this.value as IReactLifeCycleAware).onUnmount?.();
-    }
-
-    // even if the current object is not unmountable, we still need to unmount its children
-    this.children.forEach(child => child.unmount(force));
-  }
-}
 
 export class ReactLifeCycleRootInterceptor extends GraphBuilderInterceptor<never, ReactLifeCycleNode<unknown>> {
   constructor() {

@@ -26,14 +26,14 @@ export const use: UseDefinitionHook = (definition, options) => {
     const graphNode = interceptor?.getGraphNode(definition);
 
     if (options?.forceRemount) {
-      graphNode?.unmount();
-      graphNode?.mount();
+      graphNode?.release(true);
+      graphNode?.acquire(true);
     } else {
-      graphNode?.mount(options?.forceMount ?? false);
+      graphNode?.acquire(options?.forceMount ?? false);
     }
 
     return () => {
-      graphNode?.unmount();
+      graphNode?.release();
     };
   }, [interceptor, definition]);
 
