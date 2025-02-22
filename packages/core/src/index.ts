@@ -17,7 +17,7 @@ export { ContainerConfigurable } from './configuration/abstract/ContainerConfigu
 export { IInterceptor } from './container/interceptors/interceptor.js';
 
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
-export { container, once, all } from './container/Container.js';
+export { Container, container, once, all } from './container/Container.js';
 
 export * from './definitions/definitions.js';
 export * from './definitions/abstract/sync/InstanceDefinition.js';
