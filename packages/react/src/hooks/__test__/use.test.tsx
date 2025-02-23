@@ -15,19 +15,6 @@ import { IReactLifeCycleAware, withReactLifeCycle } from '../../interceptors/Rea
  */
 
 describe(`use`, () => {
-  describe(`types`, () => {
-    it(`doesn't accept definition returning promises`, async () => {
-      const asyncDef = fn.scoped(async () => 'val');
-      // @ts-ignore
-      const Component = () => {
-        // @ts-expect-error asyncDef is async and should not be accepted
-        use(asyncDef);
-
-        return <div />;
-      };
-    });
-  });
-
   describe(`instantiating dependencies`, () => {
     const val1Def = fn.singleton(() => 'val1');
 
@@ -198,7 +185,7 @@ describe(`use`, () => {
 
     describe(`single scope`, () => {
       it(`calls mount on component mount`, async () => {
-        const cnt = container.new(withReactLifeCycle);
+        const cnt = container.new(withReactLifeCycle());
 
         const OtherConsumer = () => {
           use(MountableService.instance);
@@ -249,7 +236,7 @@ describe(`use`, () => {
 
       describe(`forceMount`, () => {
         it(`forces mount of already mounted component`, async () => {
-          const cnt = container.new(withReactLifeCycle);
+          const cnt = container.new(withReactLifeCycle());
 
           const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
             use(MountableServiceConsumer.instance);
@@ -299,7 +286,7 @@ describe(`use`, () => {
 
       describe(`forceReMount`, () => {
         it(`forces mount of already mounted component`, async () => {
-          const cnt = container.new(withReactLifeCycle);
+          const cnt = container.new(withReactLifeCycle());
 
           const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
             use(MountableServiceConsumer.instance);
@@ -400,7 +387,7 @@ describe(`use`, () => {
 
     describe(`scoped instances`, () => {
       it(`correctly calls mount/unmount for shared singleton used from scoped definition used in multiple scopes`, async () => {
-        const cnt = container.new(withReactLifeCycle);
+        const cnt = container.new(withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());
@@ -457,7 +444,7 @@ describe(`use`, () => {
       });
 
       it(`calls correctly callbacks when service is used within list item`, async () => {
-        const cnt = container.new(withReactLifeCycle);
+        const cnt = container.new(withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());

@@ -1,11 +1,17 @@
 import { IReactLifeCycleAware } from './ReactLifeCycleInterceptor.js';
 
+export type ReactLifeCycleNodeCallbacks = {
+  onMount?: <T>(instance: T) => void;
+  onUnmount?: <T>(instance: T) => void;
+};
+
 export class ReactLifeCycleNode<T> {
   protected _refCount = 0;
 
   constructor(
     readonly value: T,
     readonly children: ReactLifeCycleNode<any>[] = [],
+    private _callbacks?: ReactLifeCycleNodeCallbacks,
   ) {}
 
   get refCount() {
@@ -22,6 +28,7 @@ export class ReactLifeCycleNode<T> {
 
   acquire(forceMount = false) {
     if ((this.isMountable && this._refCount === 0) || forceMount) {
+      this._callbacks?.onMount?.(this.value);
       (this.value as IReactLifeCycleAware).onMount?.();
     }
 
@@ -39,6 +46,7 @@ export class ReactLifeCycleNode<T> {
     }
 
     if ((this.isUnmountable && this._refCount === 0) || forceUnmount) {
+      this._callbacks?.onUnmount?.(this.value);
       (this.value as IReactLifeCycleAware).onUnmount?.();
     }
 

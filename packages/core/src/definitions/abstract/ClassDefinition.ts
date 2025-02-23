@@ -15,7 +15,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     public readonly klass: ClassType<TInstance, TConstructorArgs>,
     public readonly dependencies?: Thunk<InstancesDefinitions<TConstructorArgs, TLifeTime>>,
   ) {
-    // TODO: perhaps the inner condition checking deps could be extracted from the critical path
+    // TODO: perhaps the inner condition for checking deps could be extracted from the critical path
     super(id, strategy, use => {
       // no dependencies
       if (dependencies === undefined) {

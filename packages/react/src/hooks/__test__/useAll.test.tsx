@@ -226,7 +226,7 @@ describe(`useDefinitions`, () => {
 
     describe(`single scope`, () => {
       it(`calls mount on component mount`, async () => {
-        const cnt = container.new(withReactLifeCycle);
+        const cnt = container.new(withReactLifeCycle());
 
         const OtherConsumer = () => {
           useAll(MountableService.instance, MountableServiceOther.instance);
@@ -294,7 +294,7 @@ describe(`useDefinitions`, () => {
 
     describe(`scoped instances`, () => {
       it(`correctly calls mount/unmount for shared singleton used from scoped definition used in multiple scopes`, async () => {
-        const cnt = container.new(withReactLifeCycle);
+        const cnt = container.new(withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());

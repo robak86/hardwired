@@ -1,6 +1,20 @@
 import { ReactLifeCycleNode } from '../ReactLifeCycleNode.js';
+import { expect } from 'vitest';
 
 describe(`ReactLifeCycleNode`, () => {
+  describe(`isMountable`, () => {
+    it(`works with subclasses`, async () => {
+      class Mountable extends ReactLifeCycleNode<any> {
+        onMount() {}
+      }
+
+      class MountableSubClass extends Mountable {}
+
+      const node = new ReactLifeCycleNode(new MountableSubClass(null));
+      expect(node.isMountable).toBe(true);
+    });
+  });
+
   describe(`only mount method defined`, () => {
     it(`calls mount on mountable object`, async () => {
       const mountable = { onMount: vi.fn() };
@@ -164,6 +178,73 @@ describe(`ReactLifeCycleNode`, () => {
       node.release();
       expect(mountable.value.onMount).toHaveBeenCalledTimes(2);
       expect(unmountable.value.onUnmount).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe(`complex hierarchy`, () => {
+    it(`correctly counts refs and calls mount and unmount`, async () => {
+      const shared = new ReactLifeCycleNode({ onMount: vi.fn(), onUnmount: vi.fn() });
+      const consumer1 = new ReactLifeCycleNode({ onMount: vi.fn(), onUnmount: vi.fn() }, [shared]);
+      const consumer2 = new ReactLifeCycleNode({ onMount: vi.fn(), onUnmount: vi.fn() }, [shared]);
+
+      const root = new ReactLifeCycleNode({ onMount: vi.fn(), onUnmount: vi.fn() }, [consumer1, consumer2]);
+
+      // rendering root
+      root.acquire();
+
+      // mount should be called only once
+      expect(shared.value.onMount).toHaveBeenCalledTimes(1);
+
+      // rendering consumer1
+      consumer1.acquire();
+
+      // consumer is getting mounted
+      expect(consumer1.value.onMount).toHaveBeenCalledTimes(1);
+      expect(consumer1.value.onUnmount).toHaveBeenCalledTimes(0);
+
+      // shared is also mounted as it is referenced by consumer1
+      expect(shared.value.onMount).toHaveBeenCalledTimes(1);
+
+      // rendering shared
+      shared.acquire();
+
+      // shared is already mounted
+      expect(shared.value.onMount).toHaveBeenCalledTimes(1);
+
+      // rendering consumer2
+      consumer2.acquire();
+
+      // consumer2 is getting mounted
+      expect(consumer2.value.onMount).toHaveBeenCalledTimes(1);
+      expect(consumer2.value.onUnmount).toHaveBeenCalledTimes(0);
+
+      // shared is already mounted
+      expect(shared.value.onMount).toHaveBeenCalledTimes(1);
+
+      // root unmounted
+      root.release();
+      expect(root.value.onUnmount).toHaveBeenCalledTimes(1); // root should be unmounted, the other nodes still are referenced
+
+      expect(shared.value.onUnmount).toHaveBeenCalledTimes(0);
+      expect(consumer1.value.onUnmount).toHaveBeenCalledTimes(0);
+      expect(consumer2.value.onUnmount).toHaveBeenCalledTimes(0);
+
+      shared.release();
+      expect(shared.value.onUnmount).toHaveBeenCalledTimes(0); // shared is not unmounted as it is still referenced by consumer1 and consumer2
+      expect(consumer1.value.onUnmount).toHaveBeenCalledTimes(0);
+      expect(consumer2.value.onUnmount).toHaveBeenCalledTimes(0);
+
+      consumer1.release();
+      expect(shared.value.onUnmount).toHaveBeenCalledTimes(0); // shared is not unmounted as it is still referenced by consumer2
+      expect(consumer1.value.onUnmount).toHaveBeenCalledTimes(1);
+      expect(consumer2.value.onUnmount).toHaveBeenCalledTimes(0);
+
+      consumer2.release();
+
+      // all instances can be unmounted now as they are not referenced by any other node
+      expect(shared.value.onUnmount).toHaveBeenCalledTimes(1);
+      expect(consumer1.value.onUnmount).toHaveBeenCalledTimes(1);
+      expect(consumer2.value.onUnmount).toHaveBeenCalledTimes(1);
     });
   });
 });

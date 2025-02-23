@@ -1,6 +1,3 @@
-// interceptors
-export * from './interceptors/ReactLifeCycleInterceptor.js';
-
 // components
 export { ContainerProvider } from './components/ContainerProvider.js';
 export type { ContainerProviderProps } from './components/ContainerProvider.js';
@@ -30,3 +27,7 @@ export * from './hooks/useScopeConfig.js';
 export * from './definitions/hook.js';
 
 export { hookValuesD, IHookValues } from './definitions/hookValues.js';
+
+// interceptors
+export * from './interceptors/ReactLifeCycleInterceptor.js';
+export { ReactLifeCycleNode } from './interceptors/ReactLifeCycleNode.js';
