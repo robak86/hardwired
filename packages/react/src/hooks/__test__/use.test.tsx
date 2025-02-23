@@ -346,6 +346,56 @@ describe(`use`, () => {
           expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(2);
         });
       });
+
+      describe(`skipLifecycle`, () => {
+        it(`skips calling mount/unmount callbacks`, async () => {
+          const cnt = container.new(withReactLifeCycle());
+
+          const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
+            use(MountableServiceConsumer.instance);
+
+            return renderChild && <Consumer />;
+          };
+
+          const Consumer = () => {
+            const [id] = useState(Math.random());
+            const svc = use(MountableServiceConsumer.instance, { skipLifecycle: true });
+
+            return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
+          };
+
+          const App = (props: { renderChild: boolean; other?: string }) => {
+            return (
+              <ContainerProvider container={cnt}>
+                <ConsumerParent renderChild={props.renderChild} />
+              </ContainerProvider>
+            );
+          };
+
+          const result = render(<App renderChild={false} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.rerender(<App renderChild={true} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.rerender(<App renderChild={true} other={'rerender on prop change'} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.rerender(<App renderChild={false} />);
+
+          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+          result.unmount();
+          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+        });
+      });
     });
 
     describe(`scoped instances`, () => {
