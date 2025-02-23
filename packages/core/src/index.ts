@@ -1,3 +1,5 @@
+export { Deferred } from './definitions/utils/Deferred.js';
+
 export {
   GraphBuilderInterceptor,
   GraphBuilderInterceptorConfig,
