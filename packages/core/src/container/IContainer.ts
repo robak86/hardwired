@@ -17,8 +17,12 @@ import {
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
 import { HasPromiseMember } from '../utils/HasPromiseMember.js';
+import { IInterceptor } from './interceptors/interceptor.js';
+import { NewScopeReturnType } from './Container.js';
 
 export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
+
+export type ScopeTag = string | symbol;
 
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;
@@ -63,9 +67,9 @@ export type ContainerRunFn<TAllowedLifeTime extends LifeTime, TValue> = (
 ) => TValue;
 
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
-  scope(): IContainer<TAllowedLifeTime>;
-  scope(options: AsyncScopeConfigureFn): Promise<IContainer<TAllowedLifeTime>>;
-  scope(options?: ScopeConfigureFn): IContainer<TAllowedLifeTime>;
+  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): NewScopeReturnType<TConfigureFns, TAllowedLifeTime>;
 
   withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
   withScope<TValue>(options: AsyncScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): EnsurePromise<TValue>;
@@ -86,6 +90,8 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
     IDisposableScopeAware<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;
+
+  getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
 }
 
 // prettier-ignore
@@ -97,6 +103,10 @@ export type AwaitedInstanceArray<T extends Array<Definition<Promise<any>, any, a
 };
 
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
+
+export type ReturnTypes<T extends any[]> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? ReturnType<T[K]> : never;
+};
 
 // prettier-ignore
 export type HasPromise<T extends any[]> =

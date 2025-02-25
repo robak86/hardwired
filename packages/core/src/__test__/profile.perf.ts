@@ -5,6 +5,7 @@ import { Bench } from 'tinybench';
 
 import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
 import { IContainer } from '../container/IContainer.js';
+import { DependenciesGraphRoot } from '../container/interceptors/graph/DependenciesGraph.js';
 
 const singletonDefinitions = buildSingletonTree(3, 10);
 const transientDefinitions = buildTransient(3, 10);
@@ -25,6 +26,8 @@ const scopedD = fn.scoped(use => {
 });
 
 let cnt: IContainer;
+let cntWithInterceptor: IContainer;
+
 // @ts-ignore
 let c1: IContainer;
 // @ts-ignore
@@ -40,6 +43,10 @@ const instantiationBench = new Bench({
     });
     c2 = cnt.scope(scope => {});
     c3 = cnt.scope(scope => {});
+
+    cntWithInterceptor = container.new(c => {
+      c.withInterceptor('graph', new DependenciesGraphRoot());
+    });
   },
   teardown: () => {
     cnt = container.new();
@@ -84,6 +91,37 @@ instantiationBench
   })
   .add('scopedD cascaded to lower scope', () => {
     c3.use(scopedD);
+  })
+  // with interceptor
+  .add('[DependencyGraphInterceptor] singletonD', () => {
+    cntWithInterceptor.use(singletonD);
+  })
+  .add('[DependencyGraphInterceptor] singletonD + new scope', () => {
+    cntWithInterceptor.withScope(use => use(singletonD));
+  })
+  .add('[DependencyGraphInterceptor] singletonD + new disposable', () => {
+    using scoped = cntWithInterceptor.disposable();
+    scoped.use(singletonD);
+  })
+  .add('[DependencyGraphInterceptor] transientD', () => {
+    cntWithInterceptor.use(transientD);
+  })
+  .add('[DependencyGraphInterceptor] transientD + new scope', () => {
+    cntWithInterceptor.withScope(use => use(transientD));
+  })
+  .add('[DependencyGraphInterceptor] transientD + new disposable', () => {
+    using scoped = cntWithInterceptor.disposable();
+    scoped.use(transientD);
+  })
+  .add('[DependencyGraphInterceptor] scopedD', () => {
+    cntWithInterceptor.use(scopedD);
+  })
+  .add('[DependencyGraphInterceptor] scopedD + new scope', () => {
+    cntWithInterceptor.withScope(use => use(scopedD));
+  })
+  .add('[DependencyGraphInterceptor] scopedD + new disposable', () => {
+    using scoped = cntWithInterceptor.disposable();
+    scoped.use(scopedD);
   });
 
 instantiationBench

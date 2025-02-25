@@ -11,10 +11,7 @@ export interface DisposableScopeConfigurable extends ScopeConfigurable {
 }
 
 export interface ScopeConfigurable {
-  inheritLocal<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void;
-  inheritCascading<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void;
-
-  bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 

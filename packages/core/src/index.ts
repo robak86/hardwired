@@ -1,8 +1,25 @@
+export { Deferred } from './definitions/utils/Deferred.js';
+
+export {
+  GraphBuilderInterceptor,
+  GraphBuilderInterceptorConfig,
+  GraphNode,
+} from './container/interceptors/graph/GraphBuilderInterceptor.js';
+export * from './container/interceptors/graph/GraphBuilderContext.js';
+export * from './container/interceptors/graph/GraphNodesRegistry.js';
+
+export { COWMap } from './context/InstancesMap.js';
+
+export * from './container/interceptors/graph/DependenciesGraph.js';
+
+export { LoggingInterceptor } from './container/interceptors/logging/LoggingInterceptor.js';
+
 export { ScopeConfigurable, DisposableScopeConfigurable } from './configuration/abstract/ScopeConfigurable.js';
 export { ContainerConfigurable } from './configuration/abstract/ContainerConfigurable.js';
+export { IInterceptor } from './container/interceptors/interceptor.js';
 
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
-export { container, once, all } from './container/Container.js';
+export { Container, container, once, all } from './container/Container.js';
 
 export * from './definitions/definitions.js';
 export * from './definitions/abstract/sync/InstanceDefinition.js';
@@ -22,6 +39,7 @@ export * from './container/DisposableScope.js';
 export { Middleware, withMiddleware, MiddlewareNextFn, createMiddleware } from './definitions/withMiddleware.js';
 export { cls, ClassType } from './definitions/cls.js';
 export { Definition, AnyDefinition } from './definitions/abstract/Definition.js';
+export { ClassDefinition } from './definitions/abstract/ClassDefinition.js';
 
 export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';

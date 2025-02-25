@@ -12,7 +12,7 @@ describe(`decorate`, () => {
     const someValue = value(1);
 
     const c = container.new(c => {
-      c.bindLocal(someValue).decorate((_, val) => val + 1);
+      c.bind(someValue).decorate((_, val) => val + 1);
     });
 
     expect(c.use(someValue)).toEqual(2);
@@ -24,7 +24,7 @@ describe(`decorate`, () => {
     expect(container.new().use(someValue)).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bindLocal(someValue).decorate((_, val) => val + 1);
+      c.bind(someValue).decorate((_, val) => val + 1);
     });
 
     expect(cnt.use(someValue)).toEqual(2);
@@ -36,7 +36,7 @@ describe(`decorate`, () => {
     const someValue = value(10);
 
     const c = container.new(c => {
-      c.bindLocal(someValue).decorate((use, val) => {
+      c.bind(someValue).decorate((use, val) => {
         const aVal = use(a);
         const bVal = use(b);
         return val + aVal + bVal;
@@ -55,7 +55,7 @@ describe(`decorate`, () => {
     });
 
     const c = container.new(c => {
-      c.bindLocal(someValue).decorate((use, val) => {
+      c.bind(someValue).decorate((use, val) => {
         return val * use(b);
       });
     });
@@ -68,7 +68,7 @@ describe(`decorate`, () => {
       const a = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
-        c.bindLocal(a).decorate((use, a) => a);
+        c.bind(a).decorate((use, a) => a);
       });
 
       expect(c.use(a)).toEqual(c.use(a));
@@ -78,7 +78,7 @@ describe(`decorate`, () => {
       const a = fn(() => Math.random());
 
       const c = container.new(c => {
-        c.bindLocal(a).decorate((use, a) => a);
+        c.bind(a).decorate((use, a) => a);
       });
 
       expect(c.use(a)).not.toEqual(c.use(a));
@@ -92,7 +92,7 @@ describe(`decorate`, () => {
       });
 
       const c = container.new(c => {
-        c.bindLocal(a).decorate((use, a) => a);
+        c.bind(a).decorate((use, a) => a);
       });
 
       const obj1 = fn.scoped(use => ({
@@ -128,7 +128,7 @@ describe(`decorate`, () => {
       });
 
       const scope2 = scope1.scope(scope => {
-        scope.bindLocal(instanceDef).toValue({ callMe: () => {} });
+        scope.bind(instanceDef).toValue({ callMe: () => {} });
       });
 
       const instance1 = scope1.use(instanceDef);

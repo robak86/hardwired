@@ -41,7 +41,7 @@ describe(`ScopeStrategy`, () => {
       expect(c.use(k1).value).toEqual(1);
 
       const childScope = c.scope(c => {
-        c.bindLocal(k1).to(fn.scoped(() => new Boxed(2)));
+        c.bind(k1).to(fn.scoped(() => new Boxed(2)));
       });
 
       expect(childScope.use(k1).value).toEqual(1);
@@ -60,7 +60,7 @@ describe(`ScopeStrategy`, () => {
       expect(c.use(k1)).toEqual(1);
 
       const childScope = c.scope(scope => {
-        scope.bindLocal(k2).to(fn.scoped(() => 2));
+        scope.bind(k2).to(fn.scoped(() => 2));
       });
 
       expect(childScope.use(k1)).toEqual(1);
@@ -77,7 +77,7 @@ describe(`ScopeStrategy`, () => {
       expect(c.use(a).value).toEqual(1);
 
       const childC = c.scope(c => {
-        c.bindLocal(a).to(fn.scoped(() => new BoxedValue(2)));
+        c.bind(a).to(fn.scoped(() => new BoxedValue(2)));
       });
 
       expect(childC.use(a).value).toEqual(2);
@@ -90,7 +90,7 @@ describe(`ScopeStrategy`, () => {
       expect(root.use(a).value).toEqual('original');
 
       const l1 = root.scope(c => {
-        c.bindLocal(a).to(fn.scoped(() => new BoxedValue('l1')));
+        c.bind(a).to(fn.scoped(() => new BoxedValue('l1')));
       });
 
       expect(l1.use(a).value).toEqual('l1');
@@ -138,7 +138,7 @@ describe(`ScopeStrategy`, () => {
         const c = container.new();
 
         const childC = c.scope(c => {
-          c.bindLocal(a).to(fn.scoped(() => 2));
+          c.bind(a).to(fn.scoped(() => 2));
         });
 
         expect(c.use(a)).toEqual(1);
@@ -157,7 +157,7 @@ describe(`ScopeStrategy`, () => {
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.scope(c => {
-          c.bindLocal(k1).to(fn.scoped(() => 2));
+          c.bind(k1).to(fn.scoped(() => 2));
         });
 
         expect(childScope.use(k1)).toEqual(1);
@@ -174,7 +174,7 @@ describe(`ScopeStrategy`, () => {
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.scope(c => {
-          c.bindLocal(k2).to(fn.scoped(() => 2));
+          c.bind(k2).to(fn.scoped(() => 2));
         });
 
         expect(childScope.use(k1)).toEqual(1);
@@ -231,7 +231,7 @@ describe(`ScopeStrategy`, () => {
         const c = container.new();
 
         const childC = c.scope(c => {
-          c.bindLocal(a).to(fn.scoped(async () => 2));
+          c.bind(a).to(fn.scoped(async () => 2));
         });
 
         expect(await c.use(a)).toEqual(1);
@@ -250,7 +250,7 @@ describe(`ScopeStrategy`, () => {
         expect(await c.use(k1)).toEqual(1);
 
         const childScope = c.scope(c => {
-          c.bindLocal(k1).to(fn.scoped(async () => 2));
+          c.bind(k1).to(fn.scoped(async () => 2));
         });
         expect(await childScope.use(k1)).toEqual(1);
       });
@@ -267,7 +267,7 @@ describe(`ScopeStrategy`, () => {
         expect(await c.use(k1)).toEqual(1);
 
         const childScope = c.scope(c => {
-          c.bindLocal(k2).to(fn.scoped(async () => 2));
+          c.bind(k2).to(fn.scoped(async () => 2));
         });
         expect(await childScope.use(k1)).toEqual(1);
         expect(await childScope.use(k2)).toEqual(2);

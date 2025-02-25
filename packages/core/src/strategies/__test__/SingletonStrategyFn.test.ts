@@ -88,7 +88,7 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(() => 0);
 
         const root = container.new(scope => {
-          scope.bindLocal(a).toValue(1);
+          scope.bind(a).toValue(1);
         });
 
         const child = root.scope(scope => {});
@@ -129,7 +129,7 @@ describe(`SingletonStrategy`, () => {
         });
 
         const child = root.scope(scope => {
-          scope.bindLocal(a).toValue(1);
+          scope.bind(a).toValue(1);
         });
 
         const childA = child.use(a);
@@ -269,7 +269,7 @@ describe(`SingletonStrategy`, () => {
         expect(() =>
           root.scope(c => {
             // @ts-expect-error - should not be possible to override singleton
-            c.bindLocal(a).toValue(2);
+            c.bind(a).toValue(2);
           }),
         ).toThrowError();
       });

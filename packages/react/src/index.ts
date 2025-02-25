@@ -27,3 +27,7 @@ export * from './hooks/useScopeConfig.js';
 export * from './definitions/hook.js';
 
 export { hookValuesD, IHookValues } from './definitions/hookValues.js';
+
+// interceptors
+export * from './interceptors/ReactLifeCycleInterceptor.js';
+export { ReactLifeCycleNode } from './interceptors/ReactLifeCycleNode.js';

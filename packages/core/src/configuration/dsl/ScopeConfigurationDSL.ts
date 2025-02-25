@@ -8,32 +8,26 @@ import { BindingsRegistry } from '../../context/BindingsRegistry.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(
-    private _parentContainer: IContainer & IStrategyAware,
     private _currentContainer: IContainer & IStrategyAware,
     private _bindingsRegistry: BindingsRegistry,
+    private _tags: (string | symbol)[],
   ) {}
+
+  appendTag(tag: string | symbol): void {
+    if (!this._tags.includes(tag)) {
+      this._tags.push(tag);
+    }
+  }
 
   cascade<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
-  }
-
-  inheritLocal<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
-    this._bindingsRegistry.addScopeBinding(definition.bind(this._parentContainer));
-  }
-
-  inheritCascading<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
-    const newDefinition = new Definition(definition.id, LifeTime.transient, (_, ...args: []) => {
-      return this._parentContainer.use(definition, ...args);
-    });
-
-    this._bindingsRegistry.addCascadingBinding(newDefinition);
   }
 
   bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     definition: Definition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []> {
     if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
-      throw new Error(`Cascading is allowed only for singletons.`); // TODO: maybe I should allow it for scoped as well?
+      throw new Error(`Cascading is allowed only for scoped.`);
     }
 
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
@@ -43,7 +37,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     initializer(this._currentContainer);
   }
 
-  bindLocal<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {

@@ -10,12 +10,19 @@ import {
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import { IInterceptor } from '../../container/interceptors/interceptor.js';
+import { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private _currentContainer: IContainer & IStrategyAware,
+    private _interceptors: InterceptorsRegistry,
   ) {}
+
+  withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
+    this._interceptors.register(name, interceptor);
+  }
 
   cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
     this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
@@ -31,7 +38,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
   }
 
-  bindLocal<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
+  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {

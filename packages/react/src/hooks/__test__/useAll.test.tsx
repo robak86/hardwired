@@ -1,4 +1,4 @@
-import { container, fn, unbound } from 'hardwired';
+import { cls, container, fn, unbound } from 'hardwired';
 import { render } from '@testing-library/react';
 import { DummyComponent } from '../../__test__/DummyComponent.js';
 
@@ -7,8 +7,9 @@ import { useAll } from '../useAll.js';
 import { expectType, TypeEqual } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { useScopeConfig } from '../useScopeConfig.js';
+import { IReactLifeCycleAware, withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor.js';
 
 /**
  * @vitest-environment happy-dom
@@ -186,6 +187,168 @@ describe(`useDefinitions`, () => {
       expect(result.getByTestId('value').textContent).toEqual(
         'def:1,render:3;value:changed|def:2,render:4;value:changed',
       );
+    });
+  });
+
+  describe(`lifecycle interceptor`, () => {
+    class MountableService implements IReactLifeCycleAware {
+      static instance = cls.singleton(this);
+
+      id = Math.random();
+
+      onMount = vi.fn();
+      onUnmount = vi.fn();
+    }
+
+    class MountableServiceOther implements IReactLifeCycleAware {
+      static instance = cls.singleton(this);
+
+      id = Math.random();
+
+      onMount = vi.fn();
+      onUnmount = vi.fn();
+    }
+
+    class MountableServiceConsumer {
+      static instance = cls.scoped(this, [MountableService.instance]);
+
+      id = Math.random();
+
+      constructor(private _mountableService: MountableService) {}
+
+      get dependencyId() {
+        return this._mountableService.id;
+      }
+
+      onMount = vi.fn();
+      onUnmount = vi.fn();
+    }
+
+    describe(`single scope`, () => {
+      it(`calls mount on component mount`, async () => {
+        const cnt = container.new(withReactLifeCycle());
+
+        const OtherConsumer = () => {
+          useAll(MountableService.instance, MountableServiceOther.instance);
+
+          return <DummyComponent value={'irrelevant'} />;
+        };
+
+        const Consumer = () => {
+          useAll(MountableService.instance, MountableServiceOther.instance);
+
+          return <OtherConsumer />;
+        };
+
+        const App = () => {
+          return (
+            <ContainerProvider container={cnt}>
+              <Consumer />
+            </ContainerProvider>
+          );
+        };
+
+        const result = render(<App />);
+
+        const svc = cnt.use(MountableService.instance);
+        expect(svc.onMount).toHaveBeenCalledTimes(1);
+        expect(svc.onUnmount).not.toHaveBeenCalled();
+
+        const otherSvc = cnt.use(MountableServiceOther.instance);
+        expect(otherSvc.onMount).toHaveBeenCalledTimes(1);
+        expect(otherSvc.onUnmount).not.toHaveBeenCalled();
+
+        result.rerender(<App />);
+
+        expect(svc.onMount).toHaveBeenCalledTimes(1);
+        expect(svc.onUnmount).not.toHaveBeenCalled();
+
+        expect(otherSvc.onMount).toHaveBeenCalledTimes(1);
+        expect(otherSvc.onUnmount).not.toHaveBeenCalled();
+
+        result.unmount();
+
+        expect(svc.onMount).toHaveBeenCalledTimes(1);
+        expect(svc.onUnmount).toHaveBeenCalledTimes(1);
+
+        expect(otherSvc.onMount).toHaveBeenCalledTimes(1);
+        expect(otherSvc.onUnmount).toHaveBeenCalledTimes;
+
+        const remounted = render(<App />);
+
+        expect(svc.onMount).toHaveBeenCalledTimes(2);
+        expect(svc.onUnmount).toHaveBeenCalledTimes(1);
+
+        expect(otherSvc.onMount).toHaveBeenCalledTimes(2);
+        expect(otherSvc.onUnmount).toHaveBeenCalledTimes(1);
+
+        remounted.unmount();
+
+        expect(svc.onMount).toHaveBeenCalledTimes(2);
+        expect(svc.onUnmount).toHaveBeenCalledTimes(2);
+
+        expect(otherSvc.onMount).toHaveBeenCalledTimes(2);
+        expect(otherSvc.onUnmount).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe(`scoped instances`, () => {
+      it(`correctly calls mount/unmount for shared singleton used from scoped definition used in multiple scopes`, async () => {
+        const cnt = container.new(withReactLifeCycle());
+
+        const ScopedConsumer = () => {
+          const [id] = useState(Math.random());
+          const [svc] = useAll(MountableServiceConsumer.instance);
+
+          return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
+        };
+
+        const App = (props: { renderScope1: boolean; renderScope2: boolean }) => {
+          return (
+            <ContainerProvider container={cnt}>
+              <div>
+                {props.renderScope1 && (
+                  <ContainerScope>
+                    <ScopedConsumer />
+                  </ContainerScope>
+                )}
+              </div>
+              <div>
+                {props.renderScope2 && (
+                  <ContainerScope>
+                    <ScopedConsumer />
+                  </ContainerScope>
+                )}
+              </div>
+            </ContainerProvider>
+          );
+        };
+
+        const result = render(<App renderScope1={false} renderScope2={false} />);
+
+        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(0);
+        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+        result.rerender(<App renderScope1={true} renderScope2={true} />);
+
+        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+        result.rerender(<App renderScope1={true} renderScope2={false} />);
+
+        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+
+        result.rerender(<App renderScope1={false} renderScope2={false} />);
+
+        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
+        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+
+        result.rerender(<App renderScope1={true} renderScope2={false} />);
+
+        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
+        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+      });
     });
   });
 });

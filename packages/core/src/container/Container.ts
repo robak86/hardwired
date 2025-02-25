@@ -13,7 +13,7 @@ import {
   IContainerScopes,
   IDisposableScopeAware,
   InstanceCreationAware,
-  IStrategyAware,
+  ReturnTypes,
   UseFn,
 } from './IContainer.js';
 
@@ -38,12 +38,25 @@ import {
 } from '../configuration/DisposableScopeConfiguration.js';
 import { HasPromiseMember } from '../utils/HasPromiseMember.js';
 import { isPromise } from '../utils/IsPromise.js';
+import { IInterceptor } from './interceptors/interceptor.js';
+import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
+export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
+  HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
+
+export type NewScopeReturnType<
+  TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
+  TAllowedLifeTime extends LifeTime = LifeTime,
+> =
+  HasPromise<ReturnTypes<TConfigureFns>> extends true
+    ? Promise<IContainer<TAllowedLifeTime>>
+    : IContainer<TAllowedLifeTime>;
+
 export class Container
   extends ExtensibleFunction
-  implements InstanceCreationAware, IContainerScopes, IStrategyAware, IDisposableScopeAware
+  implements InstanceCreationAware, IContainerScopes, IDisposableScopeAware
 {
   public readonly id = v4();
 
@@ -51,6 +64,9 @@ export class Container
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
+    protected readonly interceptorsRegistry: InterceptorsRegistry,
+    protected readonly currentInterceptor: IInterceptor<any> | null,
+    protected readonly scopeTags: (string | symbol)[],
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -62,55 +78,115 @@ export class Container
     );
   }
 
-  new(): IContainer;
-  new(configureFn: AsyncContainerConfigureFn): Promise<IContainer>;
-  new(configureFn: ContainerConfigureFn): IContainer;
-  new(configureFn?: ContainerConfigureFn | AsyncContainerConfigureFn): IContainer | Promise<IContainer> {
-    const definitionsRegistry = BindingsRegistry.create();
+  new<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): ContainerNewReturnType<TConfigureFns> {
+    const bindingsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
+    const interceptorsRegistry = new InterceptorsRegistry();
 
-    const cnt = new Container(null, definitionsRegistry, instancesStore);
+    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, []);
 
-    if (configureFn) {
-      const binder = new ContainerConfigurationDSL(definitionsRegistry, cnt);
-      const configResult = configureFn(binder);
+    if (configureFns.length) {
+      const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry);
 
-      if (configResult instanceof Promise) {
-        return configResult.then(() => {
-          return cnt;
-        });
+      const configs = configureFns.map(configureFn => configureFn(binder));
+      const hasAsync = configs.some(isPromise);
+
+      if (hasAsync) {
+        return Promise.all(configs).then(() => {
+          const interceptor = interceptorsRegistry.build();
+          interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
+
+          return interceptor ? cnt.withInterceptor(interceptor) : cnt;
+        }) as any;
       } else {
-        return cnt;
+        const interceptor = interceptorsRegistry.build();
+        interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
+
+        return interceptor ? cnt.withInterceptor(interceptor) : (cnt as any);
       }
     }
 
-    return cnt;
+    return cnt as any;
+  }
+
+  getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
+    return this.interceptorsRegistry?.get(id);
+  }
+
+  protected withInterceptor(interceptor: IInterceptor<any>): Container {
+    return new Container(
+      this.parentId,
+      this.bindingsRegistry,
+      this.instancesStore,
+      this.interceptorsRegistry,
+      interceptor,
+      this.scopeTags,
+    );
   }
 
   use<TValue, TArgs extends any[]>(
     definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
     ...args: TArgs
   ): TValue {
-    const patchedInstanceDef = this.bindingsRegistry.getDefinition(definition);
-    return this.buildWithStrategy(patchedInstanceDef, ...args);
+    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+    return this.buildWithStrategy(patchedDefinition, ...args);
   }
 
-  buildWithStrategy: UseFn<LifeTime> = (definition, ...args) => {
+  buildWithStrategy<TValue, TArgs extends any[]>(
+    definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue {
+    if (this.currentInterceptor) {
+      return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition, args), definition, ...args);
+    } else {
+      if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+        return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
+      }
+
+      switch (definition.strategy) {
+        case LifeTime.transient:
+          return definition.create(this, ...args);
+        case LifeTime.singleton:
+          return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
+        case LifeTime.scoped:
+          return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
+        default:
+          throw new Error(`Unsupported strategy ${definition.strategy}`);
+      }
+    }
+  }
+
+  private buildWithStrategyIntercepted<TValue, TArgs extends any[]>(
+    currentInterceptor: IInterceptor<any>,
+    definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
+    ...args: TArgs
+  ): TValue {
+    const withChildInterceptor = this.withInterceptor(currentInterceptor);
+
     if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-      return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
+      const instance = this.instancesStore.upsertIntoFrozenInstances(definition, withChildInterceptor, ...args);
+      return currentInterceptor.onLeave(instance, definition);
     }
 
-    switch (definition.strategy) {
-      case LifeTime.transient:
-        return definition.create(this, ...args);
-      case LifeTime.singleton:
-        return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
-      case LifeTime.scoped:
-        return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
-      default:
-        throw new Error(`Unsupported strategy ${definition.strategy}`);
+    if (definition.strategy === LifeTime.transient) {
+      const instance = definition.create(withChildInterceptor, ...args);
+      return currentInterceptor.onLeave(instance, definition);
     }
-  };
+
+    if (definition.strategy === LifeTime.singleton) {
+      const instance = this.instancesStore.upsertIntoGlobalInstances(definition, withChildInterceptor, ...args);
+      return currentInterceptor.onLeave(instance, definition);
+    }
+
+    if (definition.strategy === LifeTime.scoped) {
+      const instance = this.instancesStore.upsertIntoScopeInstances(definition, withChildInterceptor, ...args);
+      return currentInterceptor.onLeave(instance, definition);
+    }
+
+    throw new Error(`Unsupported strategy ${definition.strategy}`);
+  }
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
     ...definitions: [...TDefinitions]
@@ -170,13 +246,14 @@ export class Container
   ): DisposableScope | Promise<DisposableScope> {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
+    const tags: (string | symbol)[] = [];
 
-    const cnt = new Container(this.id, bindingsRegistry, instancesStore);
+    const cnt = new Container(this.id, bindingsRegistry, instancesStore, this.interceptorsRegistry, null, tags);
     const disposeFns: DisposeFn[] = [];
     const disposable = new DisposableScope(cnt, disposeFns);
 
     if (scopeConfigureFn) {
-      const binder = new DisposableScopeConfigurationDSL(this, cnt, bindingsRegistry, disposeFns);
+      const binder = new DisposableScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposeFns);
       const result = scopeConfigureFn(binder, this);
       if (isPromise(result)) {
         return result.then(() => disposable);
@@ -188,26 +265,41 @@ export class Container
     return disposable;
   }
 
-  scope(): IContainer;
-  scope(scopeConfigureFn: AsyncScopeConfigureFn): Promise<IContainer>;
-  scope(scopeConfigureFn: ScopeConfigureFn): IContainer;
-  scope(scopeConfigureFn?: ScopeConfigureFn | AsyncScopeConfigureFn): IContainer | Promise<IContainer> {
+  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): NewScopeReturnType<TConfigureFns> {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
+    const tags: (string | symbol)[] = [];
 
-    const cnt = new Container(this.id, bindingsRegistry, instancesStore);
+    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(this.scopeTags, bindingsRegistry, instancesStore);
 
-    if (scopeConfigureFn) {
-      const binder = new ScopeConfigurationDSL(this, cnt, bindingsRegistry);
-      const result = scopeConfigureFn(binder, this);
-      if (result instanceof Promise) {
-        return result.then(() => cnt);
+    const cnt = new Container(
+      this.id,
+      bindingsRegistry,
+      instancesStore,
+      scopeInterceptorsRegistry,
+      scopeInterceptorsRegistry.build() ?? null,
+      tags,
+    );
+
+    if (configureFns.length) {
+      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags);
+
+      const configs = configureFns.map(configureFn => {
+        return configureFn(binder, this);
+      });
+
+      const hasAsync = configs.some(isPromise);
+
+      if (hasAsync) {
+        return Promise.all(configs).then(() => cnt) as NewScopeReturnType<TConfigureFns>;
       } else {
-        return cnt;
+        return cnt as any;
       }
     }
 
-    return cnt;
+    return cnt as any;
   }
 
   withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
@@ -235,13 +327,34 @@ export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TAr
   definition: Definition<TInstance, TLifeTime, TArgs>,
   ...args: TArgs
 ): TInstance => {
-  const tmpContainer = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+  const tmpContainer = new Container(
+    null,
+    BindingsRegistry.create(),
+    InstancesStore.create(),
+    InterceptorsRegistry.create(),
+    null,
+    [],
+  );
   return tmpContainer.use(definition, ...args);
 };
 
 export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
-  const tmpContainer = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+  const tmpContainer = new Container(
+    null,
+    BindingsRegistry.create(),
+    InstancesStore.create(),
+    InterceptorsRegistry.create(),
+    null,
+    [],
+  );
   return tmpContainer.all(...definitions) as any;
 };
 
-export const container = new Container(null, BindingsRegistry.create(), InstancesStore.create());
+export const container = new Container(
+  null,
+  BindingsRegistry.create(),
+  InstancesStore.create(),
+  InterceptorsRegistry.create(),
+  null,
+  [],
+);
