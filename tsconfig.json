@@ -10,6 +10,7 @@
     "noUnusedLocals": true,
     "jsx": "react-jsx", // support JSX
     "strict": true,
+    "verbatimModuleSyntax": true,
     "removeComments": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
