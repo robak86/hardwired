@@ -56,7 +56,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "eslint-plugin-unused-imports": "^4.1.4",
-    "happy-dom": "^14.7.1",
+    "happy-dom": "15.10.2",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
