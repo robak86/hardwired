@@ -33,9 +33,10 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/react": "^15.0.2",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/react-hooks": "^8.0.1",
-    "@testing-library/user-event": "^14.5.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/airbnb__node-memwatch": "^2.0.3",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.78",
@@ -67,8 +68,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
     "@vitest/coverage-v8": "^2.1.2",
-    "vite": "^5.2.8",
-    "vitest": "^2.1.2",
+    "vitest": "^3.0.8",
     "ts-monorepo": "^0.3.4",
     "utility-types": "^3.11.0"
   },
