@@ -4,6 +4,7 @@
   "description": "Minimalistic type-safe dependencies container",
   "private": true,
   "scripts": {
+    "prepare": "lefthook install",
     "start": "tsc -b tsconfig.packages.json --watch --pretty",
     "build": "yarn build:esm && yarn build:cjs",
     "build:esm": "tsc -b tsconfig.packages.json --pretty",

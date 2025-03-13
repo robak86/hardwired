@@ -1,0 +1,18 @@
+pre-commit:
+  commands:
+    format:
+      glob: '*.{js,ts,tsx}'
+      exclude: '\.d\.tsx?$'
+      run: yarn prettier --write {staged_files} && git add {staged_files}
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: 'build'
+      run: yarn build
+
+    - name: 'lint'
+      run: yarn lint
+
+    - name: 'test'
+      run: yarn test
