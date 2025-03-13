@@ -42,7 +42,7 @@ export const hook = <TReturn>(hookFn: () => TReturn): HookDefinition<TReturn, Li
 
     return {
       use(): TReturn {
-        return initializedHooks.getHookValue(definitionId);
+        return initializedHooks.getHookValue(definitionId) as TReturn;
       },
     };
   });

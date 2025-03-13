@@ -20,7 +20,7 @@ describe(`InstancesConsumer`, () => {
         return val + 10;
       });
 
-      const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => {
+      const ValueRenderer = ({ testId, value }: { testId: string; value: number }) => {
         return <div data-testid={testId}>{value}</div>;
       };
 

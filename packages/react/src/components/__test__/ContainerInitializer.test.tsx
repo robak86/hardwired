@@ -23,7 +23,7 @@ describe(`ContainerInitializer`, () => {
       return () => c.use(initializeMe).init();
     });
 
-    const ValueRenderer = ({ testId }: { testId: any }) => {
+    const ValueRenderer = ({ testId }: { testId: string }) => {
       const value = use(initializeMe);
 
       return <div data-testid={testId}>{value.value}</div>;

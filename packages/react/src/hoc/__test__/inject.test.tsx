@@ -15,7 +15,9 @@ describe(`inject`, () => {
       const valueA = value(1);
       const valueB = value(2);
 
-      const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
+      const ValueRenderer = ({ testId, value }: { testId: string; value: number }) => (
+        <div data-testid={testId}>{value}</div>
+      );
 
       const Cmp = inject({ valueA, valueB })(({ valueA, valueB }) => {
         return (
@@ -54,7 +56,9 @@ describe(`inject`, () => {
       const valueA = value(1);
       const valueB = value(2);
 
-      const ValueRenderer = ({ testId, value }: { testId: any; value: any }) => <div data-testid={testId}>{value}</div>;
+      const ValueRenderer = ({ testId, value }: { testId: string; value: number }) => (
+        <div data-testid={testId}>{value}</div>
+      );
 
       const Cmp = inject({ valueA, valueB })(({ valueA, valueB }) => {
         return (

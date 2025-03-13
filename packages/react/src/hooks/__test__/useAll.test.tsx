@@ -287,7 +287,7 @@ describe(`useDefinitions`, () => {
         expect(svc.onUnmount).toHaveBeenCalledTimes(1);
 
         expect(otherSvc.onMount).toHaveBeenCalledTimes(1);
-        expect(otherSvc.onUnmount).toHaveBeenCalledTimes;
+        expect(otherSvc.onUnmount).toHaveBeenCalledTimes(1);
 
         const remounted = render(<App />);
 

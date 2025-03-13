@@ -54,6 +54,11 @@ export type NewScopeReturnType<
     ? Promise<IContainer<TAllowedLifeTime>>
     : IContainer<TAllowedLifeTime>;
 
+export type ContainerAllReturn<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>> =
+  HasPromise<InstancesArray<TDefinitions>> extends true
+    ? Promise<AwaitedInstanceArray<TDefinitions>>
+    : InstancesArray<TDefinitions>;
+
 export class Container
   extends ExtensibleFunction
   implements InstanceCreationAware, IContainerScopes, IDisposableScopeAware
@@ -197,16 +202,14 @@ export class Container
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
     ...definitions: [...TDefinitions]
-  ): HasPromise<InstancesArray<TDefinitions>> extends true
-    ? Promise<AwaitedInstanceArray<TDefinitions>>
-    : InstancesArray<TDefinitions> {
+  ): ContainerAllReturn<TDefinitions> {
     const results = definitions.map(def => this.use(def));
 
     if (results.some(isPromise)) {
-      return Promise.all(results) as any;
+      return Promise.all(results) as ContainerAllReturn<TDefinitions>;
     }
 
-    return results as any;
+    return results as ContainerAllReturn<TDefinitions>;
   }
 
   object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
