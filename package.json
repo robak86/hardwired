@@ -15,7 +15,6 @@
     "test": "yarn run vitest --config ./vitest.config.ts",
     "test:coverage": "yarn run vitest --config ./vitest.config.ts --coverage --run --coverage.exclude=packages/core/src/__test__",
     "postinstall": "tsm link",
-    "prepare": "husky install",
     "purge": "rimraf packages/**/lib/* packages/**/dist/* packages/**/*.tsbuildinfo node_modules packages/**/node_modules",
     "format": "prettier --write 'packages/**/src/**/*.{ts,tsx,js}'",
     "lint": "eslint 'packages/**/*.{!d.ts,ts,tsx}' --fix"
@@ -57,7 +56,6 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "eslint-plugin-unused-imports": "^4.1.4",
     "happy-dom": "15.10.2",
-    "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "react": "^18.2.0",
