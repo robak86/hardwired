@@ -3,15 +3,14 @@ import type { Definition } from '../definitions/abstract/Definition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import type {
-  AwaitedInstanceRecord,
-  InstancesArray,
-  InstancesObject,
-  InstancesRecord,
-} from '../definitions/abstract/sync/InstanceDefinition.js';
-import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 
-import type { AwaitedInstanceArray, HasPromise, IContainer, InstanceCreationAware, UseFn } from './IContainer.js';
+import type {
+  ContainerAllReturn,
+  ContainerObjectReturn,
+  IContainer,
+  InstanceCreationAware,
+  UseFn,
+} from './IContainer.js';
 
 export interface DisposableScope extends UseFn<LifeTime> {}
 
@@ -61,10 +60,8 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
     ...definitions: [...TDefinitions]
-  ): HasPromise<InstancesArray<TDefinitions>> extends true
-    ? Promise<AwaitedInstanceArray<TDefinitions>>
-    : InstancesArray<TDefinitions> {
-    return this._container.all(...definitions) as any;
+  ): ContainerAllReturn<TDefinitions> {
+    return this._container.all(...definitions) as ContainerAllReturn<TDefinitions>;
   }
 
   defer<TInstance, TArgs extends any[]>(
@@ -75,9 +72,7 @@ export class DisposableScope extends ExtensibleFunction implements InstanceCreat
 
   object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
     object: TRecord,
-  ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
-    ? Promise<AwaitedInstanceRecord<TRecord>>
-    : InstancesRecord<TRecord> {
-    return this._container.object(object) as any;
+  ): ContainerObjectReturn<TRecord> {
+    return this._container.object(object) as ContainerObjectReturn<TRecord>;
   }
 }

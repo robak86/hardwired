@@ -1,14 +1,9 @@
 import { v4 } from 'uuid';
 
-import type {
-  AwaitedInstanceRecord,
-  InstancesArray,
-  InstancesObject,
-  InstancesRecord,
-} from '../definitions/abstract/sync/InstanceDefinition.js';
+import type { InstancesRecord } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
-import type { Definition } from '../definitions/abstract/Definition.js';
+import type { AnyDefinition, Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
@@ -22,11 +17,11 @@ import type {
   DisposableAsyncScopeConfigureFn,
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
-import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 import { isPromise } from '../utils/IsPromise.js';
 
 import type {
-  AwaitedInstanceArray,
+  ContainerAllReturn,
+  ContainerObjectReturn,
   ContainerRunFn,
   EnsurePromise,
   HasPromise,
@@ -34,6 +29,7 @@ import type {
   IContainerScopes,
   IDisposableScopeAware,
   InstanceCreationAware,
+  NewScopeReturnType,
   ReturnTypes,
   UseFn,
 } from './IContainer.js';
@@ -45,19 +41,6 @@ export interface Container extends UseFn<LifeTime> {}
 
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
-
-export type NewScopeReturnType<
-  TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
-  TAllowedLifeTime extends LifeTime = LifeTime,
-> =
-  HasPromise<ReturnTypes<TConfigureFns>> extends true
-    ? Promise<IContainer<TAllowedLifeTime>>
-    : IContainer<TAllowedLifeTime>;
-
-export type ContainerAllReturn<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>> =
-  HasPromise<InstancesArray<TDefinitions>> extends true
-    ? Promise<AwaitedInstanceArray<TDefinitions>>
-    : InstancesArray<TDefinitions>;
 
 export class Container
   extends ExtensibleFunction
@@ -176,28 +159,28 @@ export class Container
     if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
       const instance = this.instancesStore.upsertIntoFrozenInstances(definition, withChildInterceptor, ...args);
 
-      return currentInterceptor.onLeave(instance, definition);
+      return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
     if (definition.strategy === LifeTime.transient) {
       const instance = definition.create(withChildInterceptor, ...args);
 
-      return currentInterceptor.onLeave(instance, definition);
+      return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
     if (definition.strategy === LifeTime.singleton) {
       const instance = this.instancesStore.upsertIntoGlobalInstances(definition, withChildInterceptor, ...args);
 
-      return currentInterceptor.onLeave(instance, definition);
+      return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
     if (definition.strategy === LifeTime.scoped) {
       const instance = this.instancesStore.upsertIntoScopeInstances(definition, withChildInterceptor, ...args);
 
-      return currentInterceptor.onLeave(instance, definition);
+      return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
-    throw new Error(`Unsupported strategy ${definition.strategy}`);
+    throw new Error(`Unsupported strategy ${(definition as AnyDefinition).strategy}`);
   }
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
@@ -214,9 +197,7 @@ export class Container
 
   object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
     object: TRecord,
-  ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
-    ? Promise<AwaitedInstanceRecord<TRecord>>
-    : InstancesRecord<TRecord> {
+  ): ContainerObjectReturn<TRecord> {
     const entries = Object.entries(object);
     const results = {} as InstancesRecord<any>;
     const promises: Promise<void>[] = [];
@@ -236,9 +217,9 @@ export class Container
     }
 
     if (promises.length > 0) {
-      return Promise.all(promises).then(() => results) as any;
+      return Promise.all(promises).then(() => results) as ContainerObjectReturn<TRecord>;
     } else {
-      return results as any;
+      return results as ContainerObjectReturn<TRecord>;
     }
   }
 
@@ -285,7 +266,7 @@ export class Container
 
     const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(this.scopeTags, bindingsRegistry, instancesStore);
 
-    const cnt = new Container(
+    const cnt: IContainer = new Container(
       this.id,
       bindingsRegistry,
       instancesStore,
@@ -306,11 +287,11 @@ export class Container
       if (hasAsync) {
         return Promise.all(configs).then(() => cnt) as NewScopeReturnType<TConfigureFns>;
       } else {
-        return cnt as any;
+        return cnt as NewScopeReturnType<TConfigureFns>;
       }
     }
 
-    return cnt as any;
+    return cnt as NewScopeReturnType<TConfigureFns>;
   }
 
   withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;

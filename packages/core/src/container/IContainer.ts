@@ -5,7 +5,7 @@ import type {
   InstancesObject,
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
-import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { type LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import type { Definition } from '../definitions/abstract/Definition.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
@@ -17,7 +17,6 @@ import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 
 import type { DisposableScope } from './DisposableScope.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
-import type { NewScopeReturnType } from './Container.js';
 
 export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
 
@@ -65,6 +64,19 @@ export type ContainerRunFn<TAllowedLifeTime extends LifeTime, TValue> = (
   locator: IContainer<TAllowedLifeTime>,
 ) => TValue;
 
+export type NewScopeReturnType<
+  TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
+  TAllowedLifeTime extends LifeTime = LifeTime,
+> =
+  HasPromise<ReturnTypes<TConfigureFns>> extends true
+    ? Promise<IContainer<TAllowedLifeTime>>
+    : IContainer<TAllowedLifeTime>;
+
+export type ContainerAllReturn<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>> =
+  HasPromise<InstancesArray<TDefinitions>> extends true
+    ? Promise<AwaitedInstanceArray<TDefinitions>>
+    : InstancesArray<TDefinitions>;
+
 export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
@@ -110,3 +122,8 @@ export type HasPromise<T extends any[]> =
   T extends [infer First, ...infer Rest] ?
     IsAnyPromise<First> extends true ? true : HasPromise<Rest>:
       false;
+
+export type ContainerObjectReturn<TRecord extends Record<PropertyKey, Definition<any, any, any>>> =
+  HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
+    ? Promise<AwaitedInstanceRecord<TRecord>>
+    : InstancesRecord<TRecord>;
