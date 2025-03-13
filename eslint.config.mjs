@@ -85,6 +85,15 @@ export default typescriptLint.config(
       ],
     },
   },
+  // Overrides for test files
+  {
+    files: [
+      'packages/*/src/**/*.test.{ts,tsx}',
+    ],
+    rules: {
+      '@typescript-eslint/require-await': 'off',
+    },
+  },
   {
     ignores: ['**/*.d.ts', '**/dist/**'],
   },
