@@ -29,6 +29,7 @@ import type {
   IContainerScopes,
   IDisposableScopeAware,
   InstanceCreationAware,
+  IStrategyAware,
   NewScopeReturnType,
   ReturnTypes,
   UseFn,
@@ -266,7 +267,7 @@ export class Container
 
     const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(this.scopeTags, bindingsRegistry, instancesStore);
 
-    const cnt: IContainer = new Container(
+    const cnt: IContainer & IStrategyAware = new Container(
       this.id,
       bindingsRegistry,
       instancesStore,
@@ -287,11 +288,11 @@ export class Container
       if (hasAsync) {
         return Promise.all(configs).then(() => cnt) as NewScopeReturnType<TConfigureFns>;
       } else {
-        return cnt as NewScopeReturnType<TConfigureFns>;
+        return cnt as unknown as NewScopeReturnType<TConfigureFns>;
       }
     }
 
-    return cnt as NewScopeReturnType<TConfigureFns>;
+    return cnt as unknown as NewScopeReturnType<TConfigureFns>;
   }
 
   withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
