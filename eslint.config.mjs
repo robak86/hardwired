@@ -49,7 +49,15 @@ const commonPaddingRules = [
 
 export default typescriptLint.config(
   eslint.configs.recommended,
-  typescriptLint.configs.recommended,
+  typescriptLint.configs.recommendedTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
   typescriptLint.configs.stylistic,
   {
     name: 'typescript overrides',
@@ -60,10 +68,13 @@ export default typescriptLint.config(
       '@typescript-eslint/no-unnecessary-type-constraint': 'error',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/consistent-type-exports': 'error',
       '@typescript-eslint/consistent-type-definitions': 'off',
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/class-literal-property-style': 'off',
+      '@typescript-eslint/no-unsafe-declaration-merging': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn', // or "error"
         {

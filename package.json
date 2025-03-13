@@ -18,7 +18,7 @@
     "prepare": "husky install",
     "purge": "rimraf packages/**/lib/* packages/**/dist/* packages/**/*.tsbuildinfo node_modules packages/**/node_modules",
     "format": "prettier --write 'packages/**/src/**/*.{ts,tsx,js}'",
-    "lint": "eslint 'packages/**/*.{!d.ts,ts,tsx}'"
+    "lint": "eslint 'packages/**/*.{!d.ts,ts,tsx}' --fix"
   },
   "author": "Tomasz Robaczewski",
   "license": "MIT",
