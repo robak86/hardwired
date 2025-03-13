@@ -1,7 +1,8 @@
+import type { FC, PropsWithChildren } from 'react';
+import type { ScopeConfigureFn } from 'hardwired';
+
 import { ContainerContext, useContainer } from '../context/ContainerContext.js';
 import { useMemoized } from '../utils/useMemoized.js';
-import { FC, PropsWithChildren } from 'react';
-import { ScopeConfigureFn } from 'hardwired';
 
 export type ContainerScopeProps = {
   invalidateKeys?: ReadonlyArray<any>; // TODO: feels redundant. Most likely scope should be invalidated only by comparing config references

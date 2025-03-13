@@ -16,11 +16,11 @@ export function useMemoized<T>(factory: () => T): (invalidateKeys: ReadonlyArray
 
   function getValue(keys: ReadonlyArray<any>) {
     const areKeysEqual = isShallowEqual(keys, scopedContainer.current.invalidationKeys);
+
     if (!areKeysEqual || !scopedContainer.current.value) {
       scopedContainer.current = { invalidationKeys: [...keys], value: factory() };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return scopedContainer.current.value!;
   }
 

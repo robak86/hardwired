@@ -1,5 +1,5 @@
-import { Definition } from '../definitions/abstract/Definition.js';
-import { IContainer } from '../container/IContainer.js';
+import type { Definition } from '../definitions/abstract/Definition.js';
+import type { IContainer } from '../container/IContainer.js';
 
 /**
  * Copy-on-write map. When a map is cloned, the new map references the same inner map as the original map.
@@ -51,7 +51,9 @@ export class InstancesMap extends Map<symbol, any> {
       return this.get(definition.id);
     } else {
       const instance = definition.create(container, ...args);
+
       this.set(definition.id, instance);
+
       return instance;
     }
   }

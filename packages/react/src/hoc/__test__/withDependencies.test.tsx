@@ -1,11 +1,11 @@
 import { container, fn } from 'hardwired';
-import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { render, within } from '@testing-library/react';
-import { withDependencies } from '../withDependencies.js';
-
-import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
-import { FC, ReactElement } from 'react';
+import type { FC, ReactElement } from 'react';
+
+import { ContainerProvider } from '../../components/ContainerProvider.js';
+import { withDependencies } from '../withDependencies.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { use } from '../../hooks/use.js';
 
 /**
@@ -44,6 +44,7 @@ describe(`withDependencies`, () => {
     const ChildComponent = () => {
       const age = use(ageDef);
       const firstName = use(firstNameDef);
+
       return (
         <>
           <ValueRenderer testId={'ageFromChildComponent'} value={age.value} />
@@ -62,6 +63,7 @@ describe(`withDependencies`, () => {
 
   function renderWithContainer(element: ReactElement, cnt = container.new()) {
     const result = render(<ContainerProvider container={cnt}>{element}</ContainerProvider>);
+
     return {
       result,
       unmount: result.unmount,
@@ -87,6 +89,7 @@ describe(`withDependencies`, () => {
       const BoundComponent = bindDependencies(WrappedComponent);
 
       const { getRenderedAge, getRenderedFirstName } = renderWithContainer(<BoundComponent testId={'instance1'} />);
+
       expect(getRenderedAge('instance1')).toEqual('100');
       expect(getRenderedFirstName('instance1')).toEqual('John');
     });
@@ -104,6 +107,7 @@ describe(`withDependencies`, () => {
           <BoundComponent testId={'instance2'} />
         </>,
       );
+
       expect(getRenderedAge('instance1')).toEqual(getRenderedAge('instance2'));
     });
 
@@ -115,6 +119,7 @@ describe(`withDependencies`, () => {
       const BoundComponent = bindDependencies(WrappedComponent);
 
       const { getRenderedAge, getRenderedFirstName } = renderWithContainer(<BoundComponent testId={'instance1'} />);
+
       expect(getRenderedAge('instance1')).toEqual('100');
       expect(getRenderedFirstName('instance1')).toEqual('John');
     });

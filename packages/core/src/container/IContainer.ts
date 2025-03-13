@@ -1,24 +1,23 @@
-import {
+import type {
   AwaitedInstanceRecord,
   Instance,
   InstancesArray,
   InstancesObject,
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-
-import { Definition } from '../definitions/abstract/Definition.js';
-
-import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import { DisposableScope } from './DisposableScope.js';
-import {
+import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import type { Definition } from '../definitions/abstract/Definition.js';
+import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import type {
   DisposableAsyncScopeConfigureFn,
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
-import { HasPromiseMember } from '../utils/HasPromiseMember.js';
-import { IInterceptor } from './interceptors/interceptor.js';
-import { NewScopeReturnType } from './Container.js';
+import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
+
+import type { DisposableScope } from './DisposableScope.js';
+import type { IInterceptor } from './interceptors/interceptor.js';
+import type { NewScopeReturnType } from './Container.js';
 
 export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
 
@@ -76,12 +75,10 @@ export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> 
   withScope<TValue>(options: ScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): TValue;
 }
 
-export interface UseFn<TAllowedLifeTime extends LifeTime> {
-  <TValue, TArgs extends any[]>(
-    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
-    ...args: TArgs
-  ): TValue;
-}
+export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue, TArgs extends any[]>(
+  instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+  ...args: TArgs
+) => TValue;
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,

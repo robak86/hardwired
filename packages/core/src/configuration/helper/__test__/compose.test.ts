@@ -1,4 +1,5 @@
 import { describe } from 'vitest';
+
 import { container } from '../../../container/Container.js';
 import { fn } from '../../../definitions/definitions.js';
 import { configureScope } from '../../ScopeConfiguration.js';
@@ -24,6 +25,7 @@ describe('compose', async () => {
       const root = container.new();
 
       const scoped = root.scope(composed);
+
       expect(scoped.use(a)).toBe(1);
       expect(scoped.use(b)).toBe(1);
     });

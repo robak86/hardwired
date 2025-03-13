@@ -1,16 +1,17 @@
-import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { Definition } from '../definitions/abstract/Definition.js';
-import { AwaitedInstanceArray, HasPromise, IContainer, InstanceCreationAware, UseFn } from './IContainer.js';
+import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import type { Definition } from '../definitions/abstract/Definition.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
-import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import {
+import type { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
+import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import type {
   AwaitedInstanceRecord,
   InstancesArray,
   InstancesObject,
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
-import { HasPromiseMember } from '../utils/HasPromiseMember.js';
+import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
+
+import type { AwaitedInstanceArray, HasPromise, IContainer, InstanceCreationAware, UseFn } from './IContainer.js';
 
 export interface DisposableScope extends UseFn<LifeTime> {}
 

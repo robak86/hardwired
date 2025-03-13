@@ -1,7 +1,8 @@
-import { Optional } from 'utility-types';
+import type { Optional } from 'utility-types';
+import type { FC } from 'react';
+import type { AnyDefinition, Definition } from 'hardwired';
+
 import { useAll } from '../hooks/useAll.js';
-import { FC } from 'react';
-import { AnyDefinition, Definition } from 'hardwired';
 
 export const inject =
   <TDefinitions extends Record<string, AnyDefinition>>(definitions: TDefinitions) =>
@@ -25,6 +26,7 @@ export const inject =
       const instances = useAll(...definitionsForInject);
 
       const instancesObj: Record<string, any> = {};
+
       definitionKeysForInject.forEach((key, idx) => {
         instancesObj[key] = instances[idx];
       });

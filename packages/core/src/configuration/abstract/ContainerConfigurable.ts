@@ -1,8 +1,8 @@
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { Definition } from '../../definitions/abstract/Definition.js';
-import { Binder } from '../../definitions/Binder.js';
-import { UseFn } from '../../container/IContainer.js';
-import { IInterceptor } from '../../container/interceptors/interceptor.js';
+import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import type { Definition } from '../../definitions/abstract/Definition.js';
+import type { Binder } from '../../definitions/Binder.js';
+import type { UseFn } from '../../container/IContainer.js';
+import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 
 export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;

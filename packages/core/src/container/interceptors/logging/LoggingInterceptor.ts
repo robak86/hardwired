@@ -1,11 +1,11 @@
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { IInterceptor } from '../interceptor.js';
-import { isPromise } from '../../../utils/IsPromise.js';
 import prettyMilliseconds from 'pretty-ms';
 
-import { IInstancesStoreRead } from '../../../context/InstancesStore.js';
-import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
+import type { Definition } from '../../../definitions/abstract/Definition.js';
+import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import type { IInterceptor } from '../interceptor.js';
+import { isPromise } from '../../../utils/IsPromise.js';
+import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
+import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
 
 export class LoggingInterceptor<T> implements IInterceptor<T> {
   static create() {
@@ -18,7 +18,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     private _parent?: LoggingInterceptor<unknown>,
     private _definition?: Definition<T, LifeTime, any[]>,
     private _instances?: IInstancesStoreRead,
-    private _scopeLevel: number = 0,
+    private _scopeLevel = 0,
   ) {}
 
   get definition(): Definition<T, LifeTime, any[]> {
@@ -67,7 +67,9 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     instancesStore: IInstancesStoreRead,
   ): IInterceptor<T> {
     const newScopeLevel = this._scopeLevel + 1;
+
     console.log(`Creating new scope: S${newScopeLevel}`);
+
     return new LoggingInterceptor(this, this._definition, instancesStore, newScopeLevel);
   }
 

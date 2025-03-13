@@ -1,12 +1,11 @@
+import { describe, expect, it, vi } from 'vitest';
+
 import { container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { fn } from '../../definitions/definitions.js';
-
 import { value } from '../../definitions/sync/value.js';
-import { describe, expect, it, vi } from 'vitest';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-
-import { Definition } from '../../definitions/abstract/Definition.js';
+import type { Definition } from '../../definitions/abstract/Definition.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 
 describe(`apply`, () => {
@@ -30,6 +29,7 @@ describe(`apply`, () => {
     const cnt = container.new(c => {
       c.bind(someValue).configure((_, val) => (val.value += 1));
     });
+
     expect(cnt.use(someValue).value).toEqual(2);
   });
 
@@ -53,6 +53,7 @@ describe(`apply`, () => {
       c.bind(someValue).configure((use, val) => {
         const aVal = use(a);
         const bVal = use(b);
+
         val.value = val.value + aVal.value + bVal.value;
       });
     });
@@ -127,6 +128,7 @@ describe(`apply`, () => {
       const scope1 = container.new(c => {
         c.freeze(instanceDef).configure((use, a) => {
           vi.spyOn(a, 'callMe');
+
           return a;
         });
       });
@@ -137,6 +139,7 @@ describe(`apply`, () => {
 
       const instance1 = scope1.use(instanceDef);
       const instance2 = scope2.use(instanceDef);
+
       return { instance1, instance2 };
     }
 
@@ -147,6 +150,7 @@ describe(`apply`, () => {
     describe(`apply on scoped definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
         const { instance1, instance2 } = setup(fn.scoped(() => new MyService()));
+
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
@@ -157,6 +161,7 @@ describe(`apply`, () => {
     describe(`apply on transients definition`, () => {
       it(`guarantees that only single instance will be available in all scopes`, async () => {
         const { instance1, instance2 } = setup(fn(() => new MyService()));
+
         instance1.callMe(1, 2);
 
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);

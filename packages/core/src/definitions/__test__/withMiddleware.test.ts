@@ -1,5 +1,6 @@
 import { describe, vi } from 'vitest';
-import { IContainer } from '../../container/IContainer.js';
+
+import type { IContainer } from '../../container/IContainer.js';
 import { createMiddleware, withMiddleware } from '../withMiddleware.js';
 import { fn } from '../definitions.js';
 import { once } from '../../container/Container.js';
@@ -13,6 +14,7 @@ describe(`withMiddleware`, () => {
     middleware = createMiddleware((locator: IContainer, next, ...args) => {
       return locator.withScope(use => {
         this.containerIds.push(use.id);
+
         return next(use, ...args);
       });
     });
@@ -24,6 +26,7 @@ describe(`withMiddleware`, () => {
     });
 
     const scopesMonitoring = new CreatingScopes();
+
     vi.spyOn(scopesMonitoring, 'middleware');
 
     return {
@@ -38,6 +41,7 @@ describe(`withMiddleware`, () => {
       const define = withMiddleware();
 
       const defWithMiddleware = define(() => 123);
+
       expect(once(defWithMiddleware)).toBe(123);
     });
   });
@@ -48,6 +52,7 @@ describe(`withMiddleware`, () => {
       const define = withMiddleware(passthrough);
 
       const defWithMiddleware = define(() => 123);
+
       expect(once(defWithMiddleware)).toBe(123);
       expect(passthrough).toHaveBeenCalledTimes(1);
     });
@@ -57,6 +62,7 @@ describe(`withMiddleware`, () => {
       const define = withMiddleware(passthrough, passthrough, passthrough);
 
       const defWithMiddleware = define(() => 123);
+
       expect(once(defWithMiddleware)).toBe(123);
       expect(passthrough).toHaveBeenCalledTimes(3);
     });

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { getTruncatedFunctionDefinition } from '../getTruncatedFunctionDefinition.js';
 
 describe('getTruncatedFunctionDefinition', () => {
@@ -10,6 +11,7 @@ describe('getTruncatedFunctionDefinition', () => {
         return b;
       }
     };
+
     expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe(
       'function example(a, b) { ... return a; ... return b; }',
     );
@@ -39,6 +41,7 @@ describe('getTruncatedFunctionDefinition', () => {
 
       return b;
     };
+
     expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe(
       'function example(a, b, c) { ... return a; ... return c; ... return b; }',
     );
@@ -52,6 +55,7 @@ describe('getTruncatedFunctionDefinition', () => {
         return b;
       }
     };
+
     expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe(
       'function (a, b) { ... return a; ... return b; }',
     );
@@ -65,6 +69,7 @@ describe('getTruncatedFunctionDefinition', () => {
         return b;
       }
     };
+
     expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe('(a, b) => { ... return a; ... return b; }');
   });
 
@@ -76,6 +81,7 @@ describe('getTruncatedFunctionDefinition', () => {
         return b;
       }
     };
+
     expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe(
       'async (a, b) => { ... return a; ... return b; }',
     );
@@ -89,6 +95,7 @@ describe('getTruncatedFunctionDefinition', () => {
 
       return b;
     };
+
     expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe(
       'async (a, b) => { ... return a; ... return b; }',
     );
@@ -104,6 +111,7 @@ describe('getTruncatedFunctionDefinition', () => {
         }
       },
     };
+
     expect(getTruncatedFunctionDefinition(obj.example.toString())).toBe(
       'example(a, b) { ... return a; ... return b; }',
     );

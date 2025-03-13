@@ -1,4 +1,5 @@
 import { describe, expect } from 'vitest';
+
 import { fn } from '../../definitions/definitions.js';
 import { container } from '../Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
@@ -10,6 +11,7 @@ describe(`Scopes`, () => {
       it(`freezes values for the root scope`, async () => {
         const def = fn.singleton(() => Math.random());
         const cnt = container.new(scope => scope.freeze(def).toValue(1));
+
         expect(cnt.use(def)).toEqual(1);
       });
 
@@ -155,12 +157,15 @@ describe(`Scopes`, () => {
         const l3 = l2.scope(scope => {});
 
         const l3Consumer = l3.use(consumer);
+
         expect(l3Consumer).toEqual(2);
 
         const l2Consumer = l2.use(consumer);
+
         expect(l2Consumer).toEqual(2);
 
         const l2Def = l2.use(def);
+
         expect(l2Def).toEqual(100);
       });
 
@@ -194,9 +199,11 @@ describe(`Scopes`, () => {
           });
 
           const l1Consumer = l1.use(consumer);
+
           expect(l1Consumer).toEqual('root_consumer_replacement');
 
           const l1Dep = l1.use(dep);
+
           expect(l1Dep).toEqual('l1');
         });
 
@@ -258,9 +265,11 @@ describe(`Scopes`, () => {
           });
 
           const l1Consumer = l1.use(consumer);
+
           expect(l1Consumer).toEqual('root_consumer_replacement');
 
           const l1Dep = l1.use(dep);
+
           expect(l1Dep).toEqual('l1');
         });
 
@@ -322,9 +331,11 @@ describe(`Scopes`, () => {
           });
 
           const l1Consumer = l1.use(consumer);
+
           expect(l1Consumer).toEqual(new BoxedValue('root_consumer_replacement'));
 
           const l1Dep = l1.use(dep);
+
           expect(l1Dep).toEqual(new BoxedValue('l1'));
         });
 
@@ -391,6 +402,7 @@ describe(`Scopes`, () => {
         });
 
         const root = container.new();
+
         expect(root.use(l1Creator)).toEqual('l1');
         expect(root.use(def)).toEqual('original');
       });

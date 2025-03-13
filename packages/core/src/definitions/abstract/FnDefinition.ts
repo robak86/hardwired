@@ -1,5 +1,6 @@
+import type { IContainer } from '../../container/IContainer.js';
+
 import { LifeTime } from './LifeTime.js';
-import { IContainer } from '../../container/IContainer.js';
 import { Definition } from './Definition.js';
 
 export const fnDefinition =

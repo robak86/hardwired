@@ -1,9 +1,10 @@
+import { Bench } from 'tinybench';
+
 import { fn } from '../definitions/definitions.js';
+import type { IContainer } from '../container/IContainer.js';
+import { container } from '../container/Container.js';
 
 import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
-import { IContainer } from '../container/IContainer.js';
-import { container } from '../container/Container.js';
-import { Bench } from 'tinybench';
 
 const singletonDefinitions = buildSingletonTree(3, 10);
 const transientDefinitions = buildTransient(3, 10);
@@ -49,7 +50,7 @@ scopesBench.add('scope without configuration', () => {
   cnt.scope();
 });
 
-scopesBench
+await scopesBench
   .warmup()
   .then(_ => scopesBench.run())
   .then(_ => console.table(scopesBench.table()));

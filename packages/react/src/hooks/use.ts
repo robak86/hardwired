@@ -1,6 +1,7 @@
-import { Definition, LifeTime } from 'hardwired';
-import { useContainer } from '../context/ContainerContext.js';
+import type { Definition, LifeTime } from 'hardwired';
 import { useEffect, useRef } from 'react';
+
+import { useContainer } from '../context/ContainerContext.js';
 import { useReactLifeCycleInterceptor } from '../interceptors/ReactLifeCycleInterceptor.js';
 
 export type UseDefinitionHookOptions =
@@ -20,12 +21,10 @@ export type UseDefinitionHookOptions =
       forceRemount: boolean;
     };
 
-export type UseDefinitionHook = {
-  <TInstance>(
-    factoryDefinition: Definition<TInstance, LifeTime.singleton | LifeTime.scoped, []>,
-    options?: UseDefinitionHookOptions,
-  ): TInstance;
-};
+export type UseDefinitionHook = <TInstance>(
+  factoryDefinition: Definition<TInstance, LifeTime.singleton | LifeTime.scoped, []>,
+  options?: UseDefinitionHookOptions,
+) => TInstance;
 
 function useAssertValidOptions(options: UseDefinitionHookOptions | undefined) {
   const initialOptions = useRef(options);

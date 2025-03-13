@@ -1,6 +1,7 @@
-import { LifeTime } from './abstract/LifeTime.js';
+import type { IContainer } from '../container/IContainer.js';
+
+import type { LifeTime } from './abstract/LifeTime.js';
 import { Definition } from './abstract/Definition.js';
-import { IContainer } from '../container/IContainer.js';
 
 export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
   constructor(
@@ -11,18 +12,22 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
 
   to(otherDefinition: Definition<TInstance, TLifeTime, TArgs>) {
     const definition = new Definition(this._definition.id, otherDefinition.strategy, otherDefinition.create);
+
     this._onInstantiableBind(definition);
   }
 
   toValue(value: Awaited<TInstance>) {
     const newDefinition = this._definition.override(() => value);
+
     this._onStaticBind(newDefinition);
   }
 
   configure(configureFn: (locator: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => void): void {
     const newDefinition = this._definition.override((use: IContainer, ...args: TArgs) => {
       const instance = this._definition.create(use, ...args);
+
       configureFn(use, instance, ...args);
+
       return instance;
     });
 
@@ -34,6 +39,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> 
   ): void {
     const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TInstance => {
       const instance = this._definition.create(use, ...args);
+
       return decorateFn(use, instance, ...args);
     });
 

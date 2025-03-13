@@ -1,6 +1,6 @@
-import { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
+import type { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
 import { Binder } from '../../definitions/Binder.js';
-import {
+import type {
   ContainerConfigurable,
   ContainerConfigureCascadingLifeTimes,
   ContainerConfigureFreezeLifeTimes,
@@ -8,10 +8,10 @@ import {
   InitFn,
 } from '../abstract/ContainerConfigurable.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import { IInterceptor } from '../../container/interceptors/interceptor.js';
-import { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
+import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
+import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import type { IInterceptor } from '../../container/interceptors/interceptor.js';
+import type { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(

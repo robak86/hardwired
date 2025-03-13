@@ -1,9 +1,10 @@
+import type { Mocked } from 'vitest';
+
 import { container } from '../../Container.js';
-import { IInterceptor } from '../interceptor.js';
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import type { IInterceptor } from '../interceptor.js';
+import type { Definition } from '../../../definitions/abstract/Definition.js';
+import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import { fn } from '../../../definitions/definitions.js';
-import { Mocked } from 'vitest';
 
 describe(`interceptor`, () => {
   class TestInterceptor implements IInterceptor<any> {

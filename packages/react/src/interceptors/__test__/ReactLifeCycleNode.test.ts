@@ -1,9 +1,10 @@
-import { ReactLifeCycleNode } from '../ReactLifeCycleNode.js';
 import { expect } from 'vitest';
+
+import { ReactLifeCycleNode } from '../ReactLifeCycleNode.js';
 
 describe(`ReactLifeCycleNode`, () => {
   describe(`isMountable`, () => {
-    it(`works with subclasses`, async () => {
+    it(`works with subclasses`, () => {
       class Mountable extends ReactLifeCycleNode<any> {
         onMount() {}
       }
@@ -11,19 +12,21 @@ describe(`ReactLifeCycleNode`, () => {
       class MountableSubClass extends Mountable {}
 
       const node = new ReactLifeCycleNode(new MountableSubClass(null));
+
       expect(node.isMountable).toBe(true);
     });
   });
 
   describe(`only mount method defined`, () => {
-    it(`calls mount on mountable object`, async () => {
+    it(`calls mount on mountable object`, () => {
       const mountable = { onMount: vi.fn() };
       const node = new ReactLifeCycleNode(mountable);
+
       node.acquire();
       expect(mountable.onMount).toHaveBeenCalledTimes(1);
     });
 
-    it(`recursively calls mount on children even if the parent is not mountable`, async () => {
+    it(`recursively calls mount on children even if the parent is not mountable`, () => {
       const mountable = new ReactLifeCycleNode({ onMount: vi.fn() });
       const notMountableParent = new ReactLifeCycleNode({}, [mountable]);
 
@@ -31,16 +34,17 @@ describe(`ReactLifeCycleNode`, () => {
       expect(mountable.value.onMount).toHaveBeenCalledTimes(1);
     });
 
-    it(`doesn't call mount on already mounted node`, async () => {
+    it(`doesn't call mount on already mounted node`, () => {
       const mountable = new ReactLifeCycleNode({ onMount: vi.fn() });
       const node = new ReactLifeCycleNode({}, [mountable, mountable]);
+
       node.acquire();
       node.acquire();
       expect(mountable.value.onMount).toHaveBeenCalledTimes(1);
     });
 
     describe(`forceMount`, () => {
-      it(`remounts already mounted node`, async () => {
+      it(`remounts already mounted node`, () => {
         const mountable = new ReactLifeCycleNode({ onMount: vi.fn() });
 
         mountable.acquire();
@@ -53,15 +57,16 @@ describe(`ReactLifeCycleNode`, () => {
   });
 
   describe(`only unmount method defined`, () => {
-    it(`calls unmount on unmountable object`, async () => {
+    it(`calls unmount on unmountable object`, () => {
       const unmountable = { onUnmount: vi.fn() };
       const node = new ReactLifeCycleNode(unmountable);
+
       node.acquire();
       node.release();
       expect(unmountable.onUnmount).toHaveBeenCalledTimes(1);
     });
 
-    it(`recursively calls unmount on children even if the parent is not unmountable`, async () => {
+    it(`recursively calls unmount on children even if the parent is not unmountable`, () => {
       const unmountable = new ReactLifeCycleNode({ onUnmount: vi.fn() });
       const notUnmountableParent = new ReactLifeCycleNode({}, [unmountable]);
 
@@ -73,6 +78,7 @@ describe(`ReactLifeCycleNode`, () => {
     it(`doesn't call unmount on already unmounted node`, async () => {
       const unmountable = new ReactLifeCycleNode({ onUnmount: vi.fn() });
       const node = new ReactLifeCycleNode({}, [unmountable]);
+
       node.acquire();
       node.release();
       node.release();
@@ -132,6 +138,7 @@ describe(`ReactLifeCycleNode`, () => {
   describe(`mount and unmount defined`, () => {
     it(`calls mount and unmount on mountable and unmountable object`, async () => {
       const node = new ReactLifeCycleNode({ onMount: vi.fn(), onUnmount: vi.fn() });
+
       node.acquire();
       node.release();
       expect(node.value.onMount).toHaveBeenCalledTimes(1);

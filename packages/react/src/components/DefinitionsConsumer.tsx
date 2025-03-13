@@ -1,6 +1,7 @@
-import { InstancesArray } from 'hardwired';
+import type { InstancesArray } from 'hardwired';
+import type { AnyDefinition } from 'hardwired';
+
 import { useAll } from '../hooks/useAll.js';
-import { AnyDefinition } from 'hardwired';
 
 export type DefinitionsConsumerProps<TInstanceDefinitions extends AnyDefinition[]> = {
   definitions: TInstanceDefinitions;

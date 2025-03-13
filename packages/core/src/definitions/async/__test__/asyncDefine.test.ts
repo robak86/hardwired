@@ -1,12 +1,13 @@
-import { LifeTime } from '../../abstract/LifeTime.js';
-import { expectType, TypeOf } from 'ts-expect';
+import type { TypeOf } from 'ts-expect';
+import { expectType } from 'ts-expect';
+import { describe, expect, it } from 'vitest';
+
+import type { LifeTime } from '../../abstract/LifeTime.js';
 import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
-import { describe, expect, it } from 'vitest';
 import { unbound } from '../../sync/unbound.js';
-
-import { Definition } from '../../abstract/Definition.js';
+import type { Definition } from '../../abstract/Definition.js';
 
 describe(`asyncDefine`, () => {
   const ext1 = unbound<number>();
@@ -15,11 +16,13 @@ describe(`asyncDefine`, () => {
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
       const definition = fn(async locator => null);
+
       expectType<TypeOf<typeof definition, Definition<Promise<null>, LifeTime.transient, []>>>(true);
     });
 
     it(`accepts additional params`, async () => {
       const definition = fn(async (use, userId: number) => null);
+
       expectType<TypeOf<typeof definition, Definition<Promise<null>, LifeTime.transient, [number]>>>(true);
     });
 
@@ -46,6 +49,7 @@ describe(`asyncDefine`, () => {
         const usingBothNotAllowed = use(usingBothExternalsWithNotAllowed);
         // @ts-ignore
         const instance3 = use(ext3);
+
         return null;
       });
     });
@@ -64,6 +68,7 @@ describe(`asyncDefine`, () => {
           c.bind(ext2).toValue('str');
         })
         .use(definition);
+
       expect(result).toEqual([1, 'str']);
     });
 
@@ -84,6 +89,7 @@ describe(`asyncDefine`, () => {
 
       const definition = fn(async locator => {
         const scopedContainer = locator.scope();
+
         return [await scopedContainer(value), await scopedContainer(value)];
       });
 
@@ -155,6 +161,7 @@ describe(`asyncDefine`, () => {
       });
 
       const result = await container.new().use(exampleD);
+
       expect(result.req1[0]).toEqual(result.req2[0]);
     });
   });

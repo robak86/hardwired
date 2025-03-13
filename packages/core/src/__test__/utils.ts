@@ -1,4 +1,4 @@
-import { Definition } from '../definitions/abstract/Definition.js';
+import type { AnyDefinition, Definition } from '../definitions/abstract/Definition.js';
 import { fn } from '../definitions/definitions.js';
 
 export function buildSingletonTree(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
@@ -6,7 +6,7 @@ export function buildSingletonTree(times: number, depth: number, currentDepth = 
     return [];
   }
 
-  const definitions: any[] = [];
+  const definitions: AnyDefinition[] = [];
 
   for (let i = 0; i < times; i++) {
     definitions.push(

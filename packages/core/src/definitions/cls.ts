@@ -1,12 +1,11 @@
+import type { Thunk } from '../utils/Thunk.js';
+
 import { LifeTime } from './abstract/LifeTime.js';
-import { Definition } from './abstract/Definition.js';
-import { Thunk } from '../utils/Thunk.js';
-import { InstancesDefinitions } from './abstract/sync/InstanceDefinition.js';
+import type { Definition } from './abstract/Definition.js';
+import type { InstancesDefinitions } from './abstract/sync/InstanceDefinition.js';
 import { ClassDefinition } from './abstract/ClassDefinition.js';
 
-export type ClassType<TInstance, TConstructorArgs extends any[]> = {
-  new (...args: TConstructorArgs): TInstance;
-};
+export type ClassType<TInstance, TConstructorArgs extends any[]> = new (...args: TConstructorArgs) => TInstance;
 
 type IsNotEmpty<T extends any[]> = T extends [] ? false : true;
 

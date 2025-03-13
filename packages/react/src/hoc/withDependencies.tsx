@@ -1,14 +1,14 @@
+import type { Diff } from 'utility-types';
+import type { ComponentType } from 'react';
+import type { Definition } from 'hardwired';
+
 import { useContainerContext } from '../context/ContainerContext.js';
-import { Diff } from 'utility-types';
 
-import { ComponentType } from 'react';
-import { Definition } from 'hardwired';
-
-export type WithDependenciesConfigured<TDependencies extends object, TExternalProps = {}> = {
-  <TProps extends TDependencies>(
-    WrappedComponent: ComponentType<TProps>,
-  ): ComponentType<Diff<TProps, TDependencies> & TExternalProps>;
-};
+export type WithDependenciesConfigured<TDependencies extends object, TExternalProps = {}> = <
+  TProps extends TDependencies,
+>(
+  WrappedComponent: ComponentType<TProps>,
+) => ComponentType<Diff<TProps, TDependencies> & TExternalProps>;
 
 export function withDependencies<TDependencies extends Record<string, any>>(
   definition: Definition<TDependencies, any, any>,

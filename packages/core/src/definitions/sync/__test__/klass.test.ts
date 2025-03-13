@@ -1,12 +1,12 @@
-import { value } from '../value.js';
-import { expectType, TypeEqual } from 'ts-expect';
-
-import { LifeTime } from '../../abstract/LifeTime.js';
-import { fn } from '../../definitions.js';
+import type { TypeEqual } from 'ts-expect';
+import { expectType } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
-import { unbound } from '../unbound.js';
 
-import { Definition } from '../../abstract/Definition.js';
+import { value } from '../value.js';
+import type { LifeTime } from '../../abstract/LifeTime.js';
+import { fn } from '../../definitions.js';
+import { unbound } from '../unbound.js';
+import type { Definition } from '../../abstract/Definition.js';
 
 describe(`klass`, () => {
   describe(`external params`, () => {

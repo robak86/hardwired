@@ -1,8 +1,11 @@
-import { Container, container } from '../../container/Container.js';
-import { expectType, TypeOf } from 'ts-expect';
-import { IContainer } from '../../container/IContainer.js';
+import type { TypeOf } from 'ts-expect';
+import { expectType } from 'ts-expect';
+
+import type { Container } from '../../container/Container.js';
+import { container } from '../../container/Container.js';
+import type { IContainer } from '../../container/IContainer.js';
 import { fn } from '../../definitions/definitions.js';
-import { DisposableScope } from '../../container/DisposableScope.js';
+import type { DisposableScope } from '../../container/DisposableScope.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`container.new`, () => {
@@ -11,16 +14,19 @@ describe(`ContainerConfiguration`, () => {
         async c => {},
         c => {},
       );
+
       expectType<TypeOf<typeof cnt, Promise<Container>>>(true);
     });
 
     it(`accepts synchronous function`, async () => {
       const cnt = container.new(c => {});
+
       expectType<TypeOf<typeof cnt, Container>>(true);
     });
 
     it(`returns container synchronously when no configuration is passed`, async () => {
       const cnt = container.new();
+
       expectType<TypeOf<typeof cnt, Container>>(true);
     });
 

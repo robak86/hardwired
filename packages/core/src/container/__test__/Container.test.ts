@@ -1,10 +1,11 @@
+import { describe, expect, it } from 'vitest';
+import type { TypeEqual } from 'ts-expect';
+import { expectType } from 'ts-expect';
+
 import { fn } from '../../definitions/definitions.js';
 import { container, once } from '../Container.js';
-
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { describe, expect, it } from 'vitest';
 import { unbound } from '../../definitions/sync/unbound.js';
-import { expectType, TypeEqual } from 'ts-expect';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
@@ -13,6 +14,7 @@ describe(`Container`, () => {
       const myDef = fn.singleton(() => 123);
 
       const instance = use(myDef);
+
       expect(instance).toEqual(123);
     });
 
@@ -22,6 +24,7 @@ describe(`Container`, () => {
           return userId;
         });
         const value = once(def, 123);
+
         expect(value).toEqual(123);
       });
 
@@ -31,6 +34,7 @@ describe(`Container`, () => {
         });
 
         const value = container.new().use(def, 123);
+
         expect(value).toEqual(123);
       });
 
@@ -44,6 +48,7 @@ describe(`Container`, () => {
         });
 
         const value = container.new().use(consumer, 456);
+
         expect(value).toEqual(456);
       });
 
@@ -53,6 +58,7 @@ describe(`Container`, () => {
         });
 
         const remove = container.new().defer(removeUser);
+
         expect(remove).toBeInstanceOf(Function);
 
         expect(remove(123)).toEqual(123);
@@ -74,6 +80,7 @@ describe(`Container`, () => {
         const myDef1 = fn.singleton(() => 123);
 
         const val1 = use.use(myDef1);
+
         expect(val1).toEqual(123);
       });
 
@@ -179,6 +186,7 @@ describe(`Container`, () => {
         });
 
         const [val1, val2] = use(consumer);
+
         expect(val1).not.toBe(val2);
       });
     });
@@ -189,6 +197,7 @@ describe(`Container`, () => {
       const cDef = fn.singleton(() => 'cValue');
       const c = container.new();
       const cValue = c.use(cDef);
+
       expect(cValue).toEqual('cValue');
     });
   });
@@ -238,6 +247,7 @@ describe(`Container`, () => {
       });
 
       const actual = c.use(aPlusB);
+
       expect(actual).toEqual(30);
     });
   });
@@ -249,6 +259,7 @@ describe(`Container`, () => {
 
       const c = container.new();
       const [aInstance, bInstance] = c.all(a, b);
+
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -279,12 +290,14 @@ describe(`Container`, () => {
       const multiplyBy2D = fn.scoped(use => {
         const val = use(extD);
         const sharedVal = use(scopeSharedValD);
+
         return { result: val.value * 2, shared: sharedVal };
       });
 
       const divideBy2D = fn.scoped(use => {
         const val = use(extD);
         const sharedVal = use(scopeSharedValD);
+
         return { result: val.value / 2, shared: sharedVal };
       });
 
@@ -294,6 +307,7 @@ describe(`Container`, () => {
           c.bind(extD).toValue(new BoxedValue(10));
         })
         .all(multiplyBy2D, divideBy2D);
+
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);
 
@@ -308,6 +322,7 @@ describe(`Container`, () => {
 
       const c = container.new();
       const [aInstance, bInstance] = await c.all(a, b);
+
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -326,6 +341,7 @@ describe(`Container`, () => {
 
       const c = container.new();
       const k3Instance = c.use(k3);
+
       expect(await k3Instance).toEqual(3);
     });
   });

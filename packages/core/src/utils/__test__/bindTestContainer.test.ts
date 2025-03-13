@@ -1,7 +1,7 @@
 import { bindTestContainer } from '../bindTestContainer.js';
 import { fn } from '../../definitions/definitions.js';
 import { unbound } from '../../definitions/sync/unbound.js';
-import { InstanceCreationAware } from '../../container/IContainer.js';
+import type { InstanceCreationAware } from '../../container/IContainer.js';
 
 const withContainer = bindTestContainer({
   beforeEach,
@@ -17,11 +17,13 @@ describe(`bindTestContainer`, () => {
 
     it(`uses separate disposable scope per test, first result`, async () => {
       const a = use(def);
+
       results.push(a);
     });
 
     it(`uses separate disposable scope per test, first result`, async () => {
       const a = use(def);
+
       results.push(a);
     });
 
@@ -40,11 +42,13 @@ describe(`bindTestContainer`, () => {
 
     const dep1 = fn.scoped(async () => {
       await sleep(100);
+
       return Math.random();
     });
 
     const dep2 = fn.scoped(async () => {
       await sleep(100);
+
       return Math.random();
     });
 

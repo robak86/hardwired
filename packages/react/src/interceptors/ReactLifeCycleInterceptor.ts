@@ -1,6 +1,10 @@
-import { ContainerConfigureFn, Definition, GraphBuilderInterceptor, ScopeTag } from 'hardwired';
+import type { ContainerConfigureFn, Definition, ScopeTag } from 'hardwired';
+import { GraphBuilderInterceptor } from 'hardwired';
+
 import { useContainer } from '../context/ContainerContext.js';
-import { ReactLifeCycleNode, ReactLifeCycleNodeCallbacks } from './ReactLifeCycleNode.js';
+
+import type { ReactLifeCycleNodeCallbacks } from './ReactLifeCycleNode.js';
+import { ReactLifeCycleNode } from './ReactLifeCycleNode.js';
 
 export interface IReactLifeCycleAware {
   onMount?(): void;
@@ -54,6 +58,7 @@ export class ReactLifeCycleRootInterceptor extends GraphBuilderInterceptor<never
 
   getGraphNode<TInstance>(definition: Definition<TInstance, any, any>): ReactLifeCycleNode<TInstance> | undefined {
     const graphNode = super.getGraphNode(definition);
+
     if (!graphNode) {
       console.warn(
         `React lifecycles interceptor node not found for definition: ${definition.name.toString()}.

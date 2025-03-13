@@ -1,8 +1,10 @@
-import { LifeTime } from './LifeTime.js';
-import { AnyDefinition, Definition } from './Definition.js';
-import { ClassType } from '../cls.js';
-import { Thunk } from '../../utils/Thunk.js';
-import { InstancesDefinitions } from './sync/InstanceDefinition.js';
+import type { ClassType } from '../cls.js';
+import type { Thunk } from '../../utils/Thunk.js';
+
+import type { LifeTime } from './LifeTime.js';
+import type { AnyDefinition } from './Definition.js';
+import { Definition } from './Definition.js';
+import type { InstancesDefinitions } from './sync/InstanceDefinition.js';
 
 export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructorArgs extends any[]> extends Definition<
   TInstance,

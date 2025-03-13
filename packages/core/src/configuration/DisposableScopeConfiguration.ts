@@ -1,5 +1,5 @@
-import { DisposableScopeConfigurable } from './abstract/ScopeConfigurable.js';
-import { ConfigurationContainer } from './ContainerConfiguration.js';
+import type { DisposableScopeConfigurable } from './abstract/ScopeConfigurable.js';
+import type { ConfigurationContainer } from './ContainerConfiguration.js';
 
 export type DisposableScopeConfigureFn = (scope: DisposableScopeConfigurable, parent: ConfigurationContainer) => void;
 export type DisposableAsyncScopeConfigureFn = (

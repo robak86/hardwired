@@ -1,6 +1,7 @@
-import { container } from '../container/Container.js';
 import { Bench } from 'tinybench';
-import { IContainer } from '../container/IContainer.js';
+
+import { container } from '../container/Container.js';
+import type { IContainer } from '../container/IContainer.js';
 import { fn } from '../definitions/definitions.js';
 import { unbound } from '../definitions/sync/unbound.js';
 

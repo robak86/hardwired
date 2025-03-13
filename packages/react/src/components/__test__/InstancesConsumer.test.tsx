@@ -1,8 +1,9 @@
 import { fn } from 'hardwired';
-import { ContainerProvider } from '../ContainerProvider.js';
-import { DefinitionsConsumer } from '../DefinitionsConsumer.js';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+
+import { ContainerProvider } from '../ContainerProvider.js';
+import { DefinitionsConsumer } from '../DefinitionsConsumer.js';
 
 /**
  * @vitest-environment happy-dom
@@ -15,6 +16,7 @@ describe(`InstancesConsumer`, () => {
 
       const val2Def = fn.singleton(use => {
         const val = use(valDef);
+
         return val + 10;
       });
 
@@ -60,6 +62,7 @@ describe(`InstancesConsumer`, () => {
       const valDef = fn.singleton(() => 1);
       const val2Def = fn.singleton(use => {
         const val = use(valDef);
+
         return val + 10;
       });
 

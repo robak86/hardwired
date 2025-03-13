@@ -1,6 +1,7 @@
-import { LifeTime } from './LifeTime.js';
-import { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { getTruncatedFunctionDefinition } from '../utils/getTruncatedFunctionDefinition.js';
+
+import type { LifeTime } from './LifeTime.js';
 
 export type AnyDefinition = Definition<any, LifeTime, any[]>;
 

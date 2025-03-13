@@ -1,8 +1,9 @@
-import { GraphNodesRegistry } from './GraphNodesRegistry.js';
-import { ScopeTag } from '../../IContainer.js';
-import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
-import { IInstancesStoreRead } from '../../../context/InstancesStore.js';
-import { GraphNode } from './GraphBuilderInterceptor.js';
+import type { ScopeTag } from '../../IContainer.js';
+import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
+import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
+
+import type { GraphNodesRegistry } from './GraphNodesRegistry.js';
+import type { GraphNode } from './GraphBuilderInterceptor.js';
 
 export class GraphBuilderContext<TNode extends GraphNode<any>> {
   constructor(

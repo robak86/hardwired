@@ -1,10 +1,31 @@
-import {
+import { v4 } from 'uuid';
+
+import type {
   AwaitedInstanceRecord,
   InstancesArray,
   InstancesObject,
   InstancesRecord,
 } from '../definitions/abstract/sync/InstanceDefinition.js';
-import {
+import { BindingsRegistry } from '../context/BindingsRegistry.js';
+import { InstancesStore } from '../context/InstancesStore.js';
+import type { Definition } from '../definitions/abstract/Definition.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
+import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
+import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
+import { DisposableScopeConfigurationDSL } from '../configuration/dsl/DisposableScopeConfigurationDSL.js';
+import type { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
+import type {
+  DisposableAsyncScopeConfigureFn,
+  DisposableScopeConfigureFn,
+} from '../configuration/DisposableScopeConfiguration.js';
+import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
+import { isPromise } from '../utils/IsPromise.js';
+
+import type {
   AwaitedInstanceArray,
   ContainerRunFn,
   EnsurePromise,
@@ -16,29 +37,8 @@ import {
   ReturnTypes,
   UseFn,
 } from './IContainer.js';
-
-import { v4 } from 'uuid';
-
-import { BindingsRegistry } from '../context/BindingsRegistry.js';
-import { InstancesStore } from '../context/InstancesStore.js';
-import { Definition } from '../definitions/abstract/Definition.js';
-import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
-import { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
-import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { DisposableScope } from './DisposableScope.js';
-import { DisposableScopeConfigurationDSL } from '../configuration/dsl/DisposableScopeConfigurationDSL.js';
-import { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
-import {
-  DisposableAsyncScopeConfigureFn,
-  DisposableScopeConfigureFn,
-} from '../configuration/DisposableScopeConfiguration.js';
-import { HasPromiseMember } from '../utils/HasPromiseMember.js';
-import { isPromise } from '../utils/IsPromise.js';
-import { IInterceptor } from './interceptors/interceptor.js';
+import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 
 export interface Container extends UseFn<LifeTime> {}
@@ -96,19 +96,21 @@ export class Container
       if (hasAsync) {
         return Promise.all(configs).then(() => {
           const interceptor = interceptorsRegistry.build();
+
           interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
 
           return interceptor ? cnt.withInterceptor(interceptor) : cnt;
-        }) as any;
+        }) as ContainerNewReturnType<TConfigureFns>;
       } else {
         const interceptor = interceptorsRegistry.build();
+
         interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
 
-        return interceptor ? cnt.withInterceptor(interceptor) : (cnt as any);
+        return (interceptor ? cnt.withInterceptor(interceptor) : cnt) as ContainerNewReturnType<TConfigureFns>;
       }
     }
 
-    return cnt as any;
+    return cnt as ContainerNewReturnType<TConfigureFns>;
   }
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
@@ -131,6 +133,7 @@ export class Container
     ...args: TArgs
   ): TValue {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+
     return this.buildWithStrategy(patchedDefinition, ...args);
   }
 
@@ -167,21 +170,25 @@ export class Container
 
     if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
       const instance = this.instancesStore.upsertIntoFrozenInstances(definition, withChildInterceptor, ...args);
+
       return currentInterceptor.onLeave(instance, definition);
     }
 
     if (definition.strategy === LifeTime.transient) {
       const instance = definition.create(withChildInterceptor, ...args);
+
       return currentInterceptor.onLeave(instance, definition);
     }
 
     if (definition.strategy === LifeTime.singleton) {
       const instance = this.instancesStore.upsertIntoGlobalInstances(definition, withChildInterceptor, ...args);
+
       return currentInterceptor.onLeave(instance, definition);
     }
 
     if (definition.strategy === LifeTime.scoped) {
       const instance = this.instancesStore.upsertIntoScopeInstances(definition, withChildInterceptor, ...args);
+
       return currentInterceptor.onLeave(instance, definition);
     }
 
@@ -255,6 +262,7 @@ export class Container
     if (scopeConfigureFn) {
       const binder = new DisposableScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposeFns);
       const result = scopeConfigureFn(binder, this);
+
       if (isPromise(result)) {
         return result.then(() => disposable);
       } else {
@@ -335,6 +343,7 @@ export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TAr
     null,
     [],
   );
+
   return tmpContainer.use(definition, ...args);
 };
 
@@ -347,6 +356,7 @@ export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
     null,
     [],
   );
+
   return tmpContainer.all(...definitions) as any;
 };
 

@@ -1,7 +1,8 @@
-import { AnyDefinition, Definition } from '../Definition.js';
-import { AwaitedInstance } from '../../../container/IContainer.js';
-import { ValidDependenciesLifeTime } from './InstanceDefinitionDependency.js';
-import { LifeTime } from '../LifeTime.js';
+import type { AnyDefinition, Definition } from '../Definition.js';
+import type { AwaitedInstance } from '../../../container/IContainer.js';
+import type { LifeTime } from '../LifeTime.js';
+
+import type { ValidDependenciesLifeTime } from './InstanceDefinitionDependency.js';
 
 // prettier-ignore
 export type Instance<T extends AnyDefinition> =

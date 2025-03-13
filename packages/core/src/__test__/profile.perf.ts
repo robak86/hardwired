@@ -1,11 +1,11 @@
-import { container } from '../container/Container.js';
-
-import { fn } from '../definitions/definitions.js';
 import { Bench } from 'tinybench';
 
-import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
-import { IContainer } from '../container/IContainer.js';
+import { container } from '../container/Container.js';
+import { fn } from '../definitions/definitions.js';
+import type { IContainer } from '../container/IContainer.js';
 import { DependenciesGraphRoot } from '../container/interceptors/graph/DependenciesGraph.js';
+
+import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
 
 const singletonDefinitions = buildSingletonTree(3, 10);
 const transientDefinitions = buildTransient(3, 10);
@@ -29,8 +29,6 @@ let cnt: IContainer;
 let cntWithInterceptor: IContainer;
 
 // @ts-ignore
-let c1: IContainer;
-// @ts-ignore
 let c2: IContainer;
 let c3: IContainer;
 
@@ -38,9 +36,7 @@ const instantiationBench = new Bench({
   time: 200,
   setup: () => {
     cnt = container.new();
-    c1 = cnt.scope(scope => {
-      scope.cascade(scopedD);
-    });
+
     c2 = cnt.scope(scope => {});
     c3 = cnt.scope(scope => {});
 
@@ -50,9 +46,7 @@ const instantiationBench = new Bench({
   },
   teardown: () => {
     cnt = container.new();
-    c1 = cnt.scope(scope => {
-      scope.cascade(scopedD);
-    });
+
     c2 = cnt.scope(scope => {});
     c3 = cnt.scope(scope => {});
   },
@@ -124,7 +118,7 @@ instantiationBench
     scoped.use(scopedD);
   });
 
-instantiationBench
+await instantiationBench
   .warmup()
   .then(_ => instantiationBench.run())
   .then(_ => console.table(instantiationBench.table()));

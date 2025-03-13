@@ -1,12 +1,13 @@
+import type { TypeOf } from 'ts-expect';
+import { expectType } from 'ts-expect';
+import { describe, expect, it } from 'vitest';
+
 import { unbound } from '../unbound.js';
-import { LifeTime } from '../../abstract/LifeTime.js';
-import { expectType, TypeOf } from 'ts-expect';
+import type { LifeTime } from '../../abstract/LifeTime.js';
 import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { BoxedValue } from '../../../__test__/BoxedValue.js';
-import { describe, expect, it } from 'vitest';
-
-import { Definition } from '../../abstract/Definition.js';
+import type { Definition } from '../../abstract/Definition.js';
 
 describe(`define`, () => {
   const ext1 = unbound<number>();
@@ -15,6 +16,7 @@ describe(`define`, () => {
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
       const definition = fn(locator => null);
+
       expectType<TypeOf<typeof definition, Definition<null, LifeTime.transient, []>>>(true);
     });
   });
@@ -32,6 +34,7 @@ describe(`define`, () => {
           c.bind(ext2).toValue('str');
         })
         .use(definition);
+
       expect(result).toEqual([1, 'str']);
     });
 
@@ -52,6 +55,7 @@ describe(`define`, () => {
 
       const definition = fn(locator => {
         const scopedContainer = locator.scope();
+
         return [scopedContainer(value), scopedContainer(value)];
       });
 
@@ -121,6 +125,7 @@ describe(`define`, () => {
       });
 
       const result = container.new().use(exampleD);
+
       expect(result.req1[0]).toEqual(result.req2[0]);
     });
   });

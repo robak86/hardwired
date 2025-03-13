@@ -1,6 +1,6 @@
-import { AsyncScopeConfigureFn, ScopeConfigureFn } from '../ScopeConfiguration.js';
-import { AsyncContainerConfigureFn, ContainerConfigureFn } from '../ContainerConfiguration.js';
-import { DisposableAsyncScopeConfigureFn, DisposableScopeConfigureFn } from '../DisposableScopeConfiguration.js';
+import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../ScopeConfiguration.js';
+import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../ContainerConfiguration.js';
+import type { DisposableAsyncScopeConfigureFn, DisposableScopeConfigureFn } from '../DisposableScopeConfiguration.js';
 
 export const compose = <T extends ScopeConfigureFn | ContainerConfigureFn | DisposableScopeConfigureFn>(
   ...fns: T[]

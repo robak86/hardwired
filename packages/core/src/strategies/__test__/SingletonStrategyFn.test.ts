@@ -1,9 +1,9 @@
-import { all, container } from '../../container/Container.js';
 import { v4 } from 'uuid';
-import { fn } from '../../definitions/definitions.js';
-
-import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
+
+import { all, container } from '../../container/Container.js';
+import { fn } from '../../definitions/definitions.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`SingletonStrategy`, () => {
   describe(`sync resolution`, () => {
@@ -24,6 +24,7 @@ describe(`SingletonStrategy`, () => {
       describe(`single module`, () => {
         it(`returns class instance`, async () => {
           const c = container.new();
+
           expect(c.use(leaf)).toHaveProperty('value');
           expect(c.use(leaf)).toHaveProperty('id');
         });
@@ -31,6 +32,7 @@ describe(`SingletonStrategy`, () => {
         it(`constructs class with correct dependencies`, async () => {
           const c = container.new();
           const instance = c.use(leaf);
+
           expect(instance.value).toEqual('someString');
         });
 
@@ -38,6 +40,7 @@ describe(`SingletonStrategy`, () => {
           const c = container.new();
           const instance = c.use(leaf);
           const instance2 = c.use(leaf);
+
           expect(instance).toBe(instance2);
         });
       });
@@ -55,6 +58,7 @@ describe(`SingletonStrategy`, () => {
           const consumerFromChild1 = c.use(child1SingletonConsumer);
           const consumerFromChild2 = c.use(child2SingletonConsumer);
           const theSingletonInstance = c.use(theSingleton);
+
           expect(consumerFromChild1.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromChild2.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromRoot.testClassInstance.id).toEqual(theSingletonInstance.id);
@@ -66,6 +70,7 @@ describe(`SingletonStrategy`, () => {
           const consumerFromChild1 = c.use(child1SingletonConsumer);
           const consumerFromChild2 = c.use(child2SingletonConsumer);
           const theSingletonInstance = c.use(theSingleton);
+
           expect(consumerFromChild1.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromChild2.testClassInstance.id).toEqual(theSingletonInstance.id);
         });
@@ -78,6 +83,7 @@ describe(`SingletonStrategy`, () => {
 
           const c2 = container.new();
           const instanceFromC2 = c2.use(leaf);
+
           expect(instanceFromC1.id).not.toEqual(instanceFromC2.id);
         });
       });
@@ -200,6 +206,7 @@ describe(`SingletonStrategy`, () => {
 
         const req1 = childC.use(a); // important that childC is called as first
         const req2 = parentC.use(a);
+
         expect(req1).toEqual(req2);
       });
 
@@ -282,6 +289,7 @@ describe(`SingletonStrategy`, () => {
 
         const req1 = childC.use(a); // important that childC is called as first
         const req2 = parentC.use(a);
+
         expect(req1).toEqual(req2);
       });
 
@@ -349,6 +357,7 @@ describe(`SingletonStrategy`, () => {
         const childScope = c.scope(scope => {
           scope.bindCascading(k2).toValue(2);
         });
+
         expect(childScope.use(k1)).toEqual(1);
         expect(childScope.use(k2)).toEqual(2);
       });
@@ -381,6 +390,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDef = fn.singleton(async () => new NoArgsCls());
 
           const result = await container.new().use(asyncDef);
+
           expect(result).toBeInstanceOf(NoArgsCls);
         });
       });
@@ -393,6 +403,7 @@ describe(`SingletonStrategy`, () => {
             return new TestClassArgs2(await use(asyncDep), await use(syncDep));
           });
           const result = await container.new().use(asyncDef);
+
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -404,6 +415,7 @@ describe(`SingletonStrategy`, () => {
             return new TestClassArgs2(await use(asyncDep), await use(syncDep));
           });
           const result = await container.new().use(asyncDef);
+
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -415,6 +427,7 @@ describe(`SingletonStrategy`, () => {
             return new TestClassArgs2(await use(asyncDep), await use(syncDep));
           });
           const result = await container.new().use(asyncDef);
+
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -426,6 +439,7 @@ describe(`SingletonStrategy`, () => {
         it(`returns correct value`, async () => {
           const asyncDef = fn.singleton(async () => 123);
           const result = await container.new().use(asyncDef);
+
           expect(result).toEqual(123);
         });
       });
@@ -440,6 +454,7 @@ describe(`SingletonStrategy`, () => {
               return [await use(asyncDep), use(syncDep)];
             });
             const result = await container.new().use(asyncDef);
+
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -453,6 +468,7 @@ describe(`SingletonStrategy`, () => {
               return [await use(asyncDep), use(syncDep)];
             });
             const result = await container.new().use(asyncDef);
+
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -466,6 +482,7 @@ describe(`SingletonStrategy`, () => {
               return [use(asyncDep), use(syncDep)];
             });
             const result = await container.new().use(asyncDef);
+
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -499,6 +516,7 @@ describe(`SingletonStrategy`, () => {
 
           const slowSingleton = fn.singleton(use => {
             const _counter = use(counter);
+
             _counter.value++;
 
             return new BoxedValue(Math.random());
@@ -506,11 +524,13 @@ describe(`SingletonStrategy`, () => {
 
           const consumer1 = fn.singleton(async use => {
             await randomSleep();
+
             return use(slowSingleton);
           });
 
           const consumer2 = fn.singleton(async use => {
             await randomSleep();
+
             return use(slowSingleton);
           });
 
@@ -533,6 +553,7 @@ describe(`SingletonStrategy`, () => {
           });
 
           const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
+
           expect(result1.value).toEqual(123);
           expect(result2.value).toEqual(123);
         });
@@ -558,16 +579,19 @@ describe(`SingletonStrategy`, () => {
 
         const beforeConsumer1 = fn.singleton(async use => {
           const s = await use(slowSingleton);
+
           return resolveAfter(s.value, 10);
         });
 
         const beforeConsumer2 = fn.singleton(async use => {
           const s = await use(slowSingleton);
+
           return resolveAfter(s.value, 10);
         });
 
         const beforeConsumer3 = fn.singleton(async use => {
           const s = await use(slowSingleton);
+
           return resolveAfter(s.value, 10);
         });
 

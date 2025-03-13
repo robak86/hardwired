@@ -1,9 +1,9 @@
 import { container, fn, value } from 'hardwired';
-import { inject } from '../inject.js';
-
 import { render } from '@testing-library/react';
-import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { describe, expect, it } from 'vitest';
+
+import { inject } from '../inject.js';
+import { ContainerProvider } from '../../components/ContainerProvider.js';
 
 /**
  * @vitest-environment happy-dom
@@ -43,6 +43,7 @@ describe(`inject`, () => {
 
     it(`injects dependencies`, async () => {
       const { getValueA, getValueB } = setup();
+
       expect(getValueA()).toEqual('1');
       expect(getValueB()).toEqual('2');
     });
@@ -81,6 +82,7 @@ describe(`inject`, () => {
 
     it(`injects dependencies`, async () => {
       const { getValueA, getValueB } = setup();
+
       expect(getValueA()).toEqual('100');
       expect(getValueB()).toEqual('2');
     });
@@ -118,6 +120,7 @@ describe(`inject`, () => {
 
     it(`creates all instances using the same request scope`, async () => {
       const { getValueA, getValueB } = setup();
+
       expect(getValueA()).toEqual(getValueB());
     });
   });

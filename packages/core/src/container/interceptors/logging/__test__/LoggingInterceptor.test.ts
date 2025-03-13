@@ -81,16 +81,19 @@ describe.skip(`LoggingInterceptor`, () => {
 
       const a = fn.singleton(async () => {
         await sleep(50);
+
         return 'A';
       });
 
       const b = fn.singleton(async use => {
         await sleep(200);
+
         return { b: await use(a) };
       });
 
       const c = fn.singleton(async use => {
         await sleep(100);
+
         return { c: await use(b) };
       });
 

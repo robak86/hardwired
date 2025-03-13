@@ -1,7 +1,11 @@
-import { container as defaultContainer, IContainer } from 'hardwired';
-import { ContainerContext, ContainerContextValue } from '../context/ContainerContext.js';
-import { FC, PropsWithChildren, useEffect, useRef } from 'react';
-import { HookDefinition } from '../definitions/hook.js';
+import type { IContainer } from 'hardwired';
+import { container as defaultContainer } from 'hardwired';
+import type { FC, PropsWithChildren } from 'react';
+import { useEffect, useRef } from 'react';
+
+import type { ContainerContextValue } from '../context/ContainerContext.js';
+import { ContainerContext } from '../context/ContainerContext.js';
+import type { HookDefinition } from '../definitions/hook.js';
 import { isShallowEqual } from '../utils/useMemoized.js';
 import { hookValuesD } from '../definitions/hookValues.js';
 
@@ -17,6 +21,7 @@ const useAssertHooksNotChanged = <T extends any[]>(hooks: T = [] as unknown as T
     if (!isShallowEqual(prevHooks.current, hooks)) {
       throw new Error(`Hooks changed from ${prevHooks.current} to ${hooks}. Hooks list cannot change.`);
     }
+
     prevHooks.current = hooks; // Update the previous value
   }, [hooks]);
 };

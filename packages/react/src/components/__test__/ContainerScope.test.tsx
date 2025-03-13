@@ -1,10 +1,11 @@
 import { fn } from 'hardwired';
+import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import type { FC } from 'react';
+
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { use } from '../../hooks/use.js';
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { FC } from 'react';
 import { useScopeConfig } from '../../hooks/useScopeConfig.js';
 
 /**
@@ -41,6 +42,7 @@ describe(`ContainerScope`, () => {
     it.skip(`renders descendent components using new request scope`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject />);
+
       expect(result.getByTestId('scope1').textContent).toEqual('1');
       expect(result.getByTestId('scope2').textContent).toEqual('2');
       result.rerender(<TestSubject />);
@@ -64,6 +66,7 @@ describe(`ContainerScope`, () => {
 
       const ValueRenderer = ({ testId }: { testId: any }) => {
         const value = use(valueD);
+
         return <div data-testid={testId}>{value}</div>;
       };
 
@@ -87,6 +90,7 @@ describe(`ContainerScope`, () => {
     it(`renders descendent components using new request scope`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject scope1Keys={['id1']} scope2Keys={['id2']} />);
+
       expect(result.getByTestId('scope1').textContent).toEqual('1');
       expect(result.getByTestId('scope2').textContent).toEqual('2');
       result.rerender(<TestSubject scope1Keys={['id1']} scope2Keys={['id2']} />);
@@ -148,6 +152,7 @@ describe(`ContainerScope`, () => {
     it.skip(`renders descendent components using new request scope`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject />);
+
       expect(result.getByTestId('scope1').textContent).toEqual('11');
       expect(result.getByTestId('scope2').textContent).toEqual('112');
       result.rerender(<TestSubject />);

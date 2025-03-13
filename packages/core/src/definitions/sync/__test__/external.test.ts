@@ -1,7 +1,8 @@
+import { describe, expect, it } from 'vitest';
+
 import { fn } from '../../definitions.js';
 import { container } from '../../../container/Container.js';
 import { value } from '../value.js';
-import { describe, expect, it } from 'vitest';
 import { unbound } from '../unbound.js';
 
 describe(`unbound`, () => {
@@ -30,6 +31,7 @@ describe(`unbound`, () => {
   const defUsingExternals1 = fn(use => {
     const externals = use(externalParams1D);
     const otherNumDependency = use(numD);
+
     return new ExternalsConsumer(externals, otherNumDependency);
   });
 
@@ -37,6 +39,7 @@ describe(`unbound`, () => {
     const externals = use(externalParams1D);
     const externals2 = use(externalParams2D);
     const otherNumDependency = use(numD);
+
     return new BothExternalsConsumer(externals, externals2, otherNumDependency);
   });
 

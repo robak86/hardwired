@@ -1,6 +1,7 @@
-import { IContainer } from '../container/IContainer.js';
+import type { IContainer } from '../container/IContainer.js';
+
 import { LifeTime } from './abstract/LifeTime.js';
-import { DefineScoped, DefineSingleton, DefineTransient } from './definitions.js';
+import type { DefineScoped, DefineSingleton, DefineTransient } from './definitions.js';
 import { Definition } from './abstract/Definition.js';
 
 function chainMiddlewares<T, TLifeTime extends LifeTime>(
@@ -10,9 +11,11 @@ function chainMiddlewares<T, TLifeTime extends LifeTime>(
 ): Definition<T, TLifeTime, any> {
   return new Definition(Symbol(), lifeTime, (use: IContainer, ...args: any[]): T => {
     let nextHandler = next;
+
     for (let i = middlewares.length - 1; i >= 0; i--) {
       const currentMiddleware = middlewares[i];
       const currentNextHandler = nextHandler;
+
       nextHandler = (use: IContainer, ...args: any[]) => currentMiddleware(use, currentNextHandler, ...args);
     }
 

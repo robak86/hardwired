@@ -36,6 +36,7 @@ describe(`disposable`, () => {
 
       function run() {
         const cnt = container.new();
+
         using scope = cnt.disposable(scope => scope.onDispose(disposeSpy));
         scope.use(def);
       }

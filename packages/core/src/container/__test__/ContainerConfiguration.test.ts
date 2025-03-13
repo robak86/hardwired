@@ -1,4 +1,5 @@
 import { describe } from 'vitest';
+
 import { fn } from '../../definitions/definitions.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { container } from '../Container.js';

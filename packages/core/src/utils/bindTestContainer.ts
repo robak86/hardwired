@@ -1,11 +1,11 @@
-import {
+import type {
   DisposableAsyncScopeConfigureFn,
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
-import { DisposableScope } from '../container/DisposableScope.js';
+import type { DisposableScope } from '../container/DisposableScope.js';
 import { composeAsync } from '../configuration/helper/compose.js';
 import { container } from '../container/Container.js';
-import { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 
 export type BindTestContainerConfig = {
   beforeEach: (fn: () => Promise<void> | void) => void;

@@ -1,4 +1,5 @@
-import { AnyDefinition } from '../definitions/abstract/Definition.js';
+import type { AnyDefinition } from '../definitions/abstract/Definition.js';
+
 import { COWMap } from './InstancesMap.js';
 
 export interface IBindingRegistryRead {
@@ -48,6 +49,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
     if (this._frozenDefinitions.has(definition.id)) {
       throw new Error(`Final binding was already set. Cannot override it.`);
     }
+
     this._frozenDefinitions.set(definition.id, definition);
   }
 

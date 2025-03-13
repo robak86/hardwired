@@ -1,6 +1,7 @@
+import { describe, expect, it } from 'vitest';
+
 import { unbound } from '../../sync/unbound.js';
 import { fn } from '../../definitions.js';
-import { describe, expect, it } from 'vitest';
 
 describe(`asyncFn`, () => {
   describe(`types`, () => {

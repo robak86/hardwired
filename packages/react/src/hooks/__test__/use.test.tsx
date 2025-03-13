@@ -1,14 +1,16 @@
 import { cls, container, fn, unbound } from 'hardwired';
 import { render } from '@testing-library/react';
-import { DummyComponent } from '../../__test__/DummyComponent.js';
+import { describe, expect, it } from 'vitest';
+import type { FC } from 'react';
+import { useState } from 'react';
 
+import { DummyComponent } from '../../__test__/DummyComponent.js';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { use } from '../use.js';
-import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
-import { FC, useState } from 'react';
 import { useScopeConfig } from '../useScopeConfig.js';
-import { IReactLifeCycleAware, withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor.js';
+import type { IReactLifeCycleAware } from '../../interceptors/ReactLifeCycleInterceptor.js';
+import { withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor.js';
 
 /**
  * @vitest-environment happy-dom
@@ -21,6 +23,7 @@ describe(`use`, () => {
     function setup() {
       const Consumer = () => {
         const val1 = use(val1Def);
+
         return <DummyComponent value={val1} />;
       };
 
@@ -35,6 +38,7 @@ describe(`use`, () => {
 
     it(`gets dependency from the module`, async () => {
       const wrapper = setup();
+
       expect(wrapper.getByTestId('value').textContent).toEqual('val1');
     });
   });
@@ -48,6 +52,7 @@ describe(`use`, () => {
 
       const Consumer = () => {
         const cls = use(clsDef);
+
         return <DummyComponent value={cls} />;
       };
 
@@ -102,6 +107,7 @@ describe(`use`, () => {
 
       const val1Def = fn.scoped(use => {
         const ext = use(someExternalParam);
+
         return `render:${checkoutRenderId()};value:${ext}`;
       });
 
@@ -110,6 +116,7 @@ describe(`use`, () => {
 
       const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
         const val1 = use(val1Def);
+
         return <DummyComponent value={val1} />;
       };
 
@@ -138,12 +145,14 @@ describe(`use`, () => {
     it(`builds instance using external value provided by props`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject externalValue={'initialValue'} />);
+
       expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
     });
 
     it(`does not revalidate instance if external parameter does not change`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject externalValue={'initialValue'} />);
+
       expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
       result.rerender(<TestSubject externalValue={'initialValue'} />);
       expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
@@ -152,6 +161,7 @@ describe(`use`, () => {
     it(`revalidates instance on external parameter change`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject externalValue={'initialValue'} />);
+
       expect(result.getByTestId('value').textContent).toEqual('render:1;value:initialValue');
       result.rerender(<TestSubject externalValue={'changed'} />);
       expect(result.getByTestId('value').textContent).toEqual('render:2;value:changed');
@@ -210,6 +220,7 @@ describe(`use`, () => {
         const result = render(<App />);
 
         const svc = cnt.use(MountableService.instance);
+
         expect(svc.onMount).toHaveBeenCalledTimes(1);
         expect(svc.onUnmount).not.toHaveBeenCalled();
 

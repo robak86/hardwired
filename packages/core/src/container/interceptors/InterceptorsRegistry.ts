@@ -1,8 +1,9 @@
-import { IInterceptor } from './interceptor.js';
+import type { ScopeTag } from '../IContainer.js';
+import type { IBindingRegistryRead } from '../../context/BindingsRegistry.js';
+import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
+
 import { CompositeInterceptor } from './CompositeInterceptor.js';
-import { ScopeTag } from '../IContainer.js';
-import { IBindingRegistryRead } from '../../context/BindingsRegistry.js';
-import { IInstancesStoreRead } from '../../context/InstancesStore.js';
+import type { IInterceptor } from './interceptor.js';
 
 export class InterceptorsRegistry {
   static create() {

@@ -1,10 +1,11 @@
-import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
-import { IInstancesStoreRead } from '../../../context/InstancesStore.js';
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { IInterceptor } from '../interceptor.js';
+import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
+import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
+import type { Definition } from '../../../definitions/abstract/Definition.js';
+import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import type { IInterceptor } from '../interceptor.js';
 import { isPromise } from '../../../utils/IsPromise.js';
-import { ScopeTag } from '../../IContainer.js';
+import type { ScopeTag } from '../../IContainer.js';
+
 import { GraphNodesRegistry } from './GraphNodesRegistry.js';
 import { GraphBuilderContext } from './GraphBuilderContext.js';
 
@@ -21,6 +22,7 @@ export interface GraphBuilderInterceptorConfig<TNode extends GraphNode<any>> {
 export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements IInterceptor<T> {
   static create<TNode extends GraphNode<any>>(configuration: GraphBuilderInterceptorConfig<TNode>) {
     const context = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []);
+
     return new GraphBuilderInterceptor<never, TNode>(configuration, context);
   }
 
@@ -47,6 +49,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     if (cascadingNode) {
       return cascadingNode.instantiate(definition);
     }
+
     return this.instantiate(definition);
   }
 
@@ -141,6 +144,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
 
       this._context.nodesRegistry.registerByDefinition(definition, childInterceptor);
       this._children.push(childInterceptor);
+
       return childInterceptor;
     }
   }

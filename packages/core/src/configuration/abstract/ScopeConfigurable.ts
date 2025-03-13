@@ -1,8 +1,8 @@
-import { Definition } from '../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { Binder } from '../../definitions/Binder.js';
+import type { Definition } from '../../definitions/abstract/Definition.js';
+import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import type { Binder } from '../../definitions/Binder.js';
 
-import { DisposeFn, InitFn } from './ContainerConfigurable.js';
+import type { DisposeFn, InitFn } from './ContainerConfigurable.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 

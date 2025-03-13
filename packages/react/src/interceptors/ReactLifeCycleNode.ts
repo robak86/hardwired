@@ -1,4 +1,4 @@
-import { IReactLifeCycleAware } from './ReactLifeCycleInterceptor.js';
+import type { IReactLifeCycleAware } from './ReactLifeCycleInterceptor.js';
 
 export type ReactLifeCycleNodeCallbacks = {
   onMount?: <T>(instance: T) => void;
