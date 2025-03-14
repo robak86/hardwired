@@ -1,5 +1,10 @@
 import type { Definition } from '../definitions/abstract/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
+import { isPromise } from '../utils/IsPromise.js';
+
+function isDisposable(obj: any): obj is Disposable {
+  return typeof obj?.[Symbol.dispose] === 'function';
+}
 
 /**
  * Copy-on-write map. When a map is cloned, the new map references the same inner map as the original map.
@@ -7,7 +12,7 @@ import type { IContainer } from '../container/IContainer.js';
  */
 export class COWMap<V> {
   static create<V>(): COWMap<V> {
-    return new COWMap(new Map(), true);
+    return new COWMap<V>(new Map(), true);
   }
 
   protected constructor(
@@ -38,8 +43,14 @@ export class COWMap<V> {
 }
 
 export class InstancesMap extends Map<symbol, any> {
+  private _disposables: Disposable[] = [];
+
   static create(): InstancesMap {
     return new InstancesMap();
+  }
+
+  get disposables() {
+    return this._disposables;
   }
 
   upsert<TInstance, TArgs extends any[]>(
@@ -48,11 +59,23 @@ export class InstancesMap extends Map<symbol, any> {
     ...args: TArgs
   ): TInstance {
     if (this.has(definition.id)) {
-      return this.get(definition.id);
+      return this.get(definition.id) as TInstance;
     } else {
       const instance = definition.create(container, ...args);
 
       this.set(definition.id, instance);
+
+      if (isPromise(instance)) {
+        void instance.then(instanceAwaited => {
+          if (isDisposable(instanceAwaited)) {
+            this._disposables.push(instanceAwaited);
+          }
+        });
+      }
+
+      if (isDisposable(instance)) {
+        this._disposables.push(instance as Disposable);
+      }
 
       return instance;
     }

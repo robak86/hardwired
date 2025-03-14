@@ -22,6 +22,14 @@ export class InstancesStore implements IInstancesStoreRead {
     private _scopeInstances: InstancesMap,
   ) {}
 
+  get rootDisposables() {
+    return this._globalInstances.disposables;
+  }
+
+  get scopeDisposables() {
+    return this._scopeInstances.disposables;
+  }
+
   childScope(): InstancesStore {
     return new InstancesStore(this._globalInstances, InstancesMap.create());
   }

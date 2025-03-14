@@ -13,7 +13,6 @@ import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDS
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isPromise } from '../utils/IsPromise.js';
 import { ScopesRegistry } from '../utils/ScopesRegistry.js';
-import type { DefinitionDisposable } from '../utils/DefinitionDisposable.js';
 
 import type {
   ContainerAllReturn,
@@ -65,21 +64,16 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     const bindingsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
     const interceptorsRegistry = new InterceptorsRegistry();
-    const disposables: DefinitionDisposable<any>[] = [];
+    // const disposables: DefinitionDisposable<any>[] = [];
     const scopesRegistry = ScopesRegistry.create();
 
     const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, scopesRegistry, null, []);
 
-    if (configureFns.length) {
-      this.scopesRegistry.register(cnt, disposables);
+    this.scopesRegistry.registerRoot(cnt, instancesStore.rootDisposables);
+    this.scopesRegistry.registerScope(cnt, instancesStore.scopeDisposables);
 
-      const binder = new ContainerConfigurationDSL(
-        bindingsRegistry,
-        instancesStore,
-        cnt,
-        interceptorsRegistry,
-        disposables,
-      );
+    if (configureFns.length) {
+      const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry);
 
       const configs = configureFns.map(configureFn => configureFn(binder));
       const hasAsync = configs.some(isPromise);
@@ -119,6 +113,10 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       this.scopeTags,
     );
   }
+
+  // [Symbol.dispose]() {
+  //   this.scopesRegistry.dispose(this.id);
+  // }
 
   use<TValue, TArgs extends any[]>(
     definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
@@ -238,7 +236,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
   ): NewScopeReturnType<TConfigureFns> {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
-    const disposables: DefinitionDisposable<any>[] = [];
     const tags: (string | symbol)[] = [];
 
     const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(tags, bindingsRegistry, instancesStore);
@@ -253,10 +250,10 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       tags,
     );
 
-    if (configureFns.length) {
-      this.scopesRegistry.register(cnt, disposables);
+    this.scopesRegistry.registerScope(cnt, instancesStore.scopeDisposables);
 
-      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, instancesStore, disposables, tags);
+    if (configureFns.length) {
+      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags);
 
       const configs = configureFns.map(configureFn => {
         return configureFn(binder, this);

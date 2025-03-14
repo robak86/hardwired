@@ -12,26 +12,13 @@ import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
-import type { InstancesStore } from '../../context/InstancesStore.js';
-import { DefinitionDisposable } from '../../utils/DefinitionDisposable.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
-    private _instancesStore: InstancesStore,
     private _currentContainer: IContainer & IStrategyAware,
     private _interceptors: InterceptorsRegistry,
-    private _disposables: DefinitionDisposable<any>[],
   ) {}
-
-  onDispose<T>(
-    definition: Definition<T, LifeTime.singleton | LifeTime.scoped, []>,
-    disposeFn: (instance: Awaited<T>) => void | Promise<void>,
-  ): void {
-    this._disposables.push(
-      new DefinitionDisposable(definition, disposeFn, this._bindingsRegistry, this._instancesStore),
-    );
-  }
 
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
     this._interceptors.register(name, interceptor);

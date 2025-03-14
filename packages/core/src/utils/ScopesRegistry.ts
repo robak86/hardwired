@@ -7,32 +7,68 @@ export class ScopesRegistry {
     return new ScopesRegistry();
   }
 
-  private disposables: Record<string, Disposable[]> = {};
+  private _scopesDisposables: Record<string, Disposable[]> = {};
+  private _rootDisposables: Record<string, Disposable[]> = {}; // should be actually a one!
 
-  private _scopesFinalizer = new FinalizationRegistry<string>(this.onFinalize.bind(this));
+  private _scopesFinalizer = new FinalizationRegistry<string>(this.onScopeFinalize.bind(this));
+  private _rootFinalizer = new FinalizationRegistry<string>(this.onRootFinalize.bind(this));
 
-  onFinalize(containerId: string) {
-    const toBeDisposed = this.disposables[containerId] ?? [];
+  // private _childScopes = new Map<string, string[]>(); // by parent Id
 
-    console.log('Finalizing container', containerId, toBeDisposed.length, this.disposables);
+  private onScopeFinalize(containerId: string) {
+    const toBeDisposed = this._scopesDisposables[containerId] ?? [];
 
-    console.log('Disposing', toBeDisposed);
+    toBeDisposed.forEach(disposable => {
+      try {
+        disposable[Symbol.dispose]();
+      } catch (e) {
+        console.error('Failed to dispose', e);
+      }
+    });
 
-    toBeDisposed.forEach(disposable => disposable[Symbol.dispose]());
-
-    delete this.disposables[containerId];
+    delete this._scopesDisposables[containerId];
   }
 
-  register(container: IIdentifiable, disposables: Disposable[]) {
+  // dispose(containerId: string) {
+  //   throw new Error('Implement me!');
+  // }
+
+  private onRootFinalize(containerId: string) {
+    const toBeDisposed = this._rootDisposables[containerId] ?? [];
+
+    toBeDisposed.forEach(disposable => {
+      try {
+        disposable[Symbol.dispose]();
+      } catch (e) {
+        console.error('Failed to dispose', e);
+      }
+    });
+
+    delete this._rootDisposables[containerId];
+  }
+
+  registerScope(container: IIdentifiable, disposables: Disposable[]) {
     const containerId = container.id;
 
-    if (this.disposables[containerId]) {
+    if (this._scopesDisposables[containerId]) {
       throw new Error(`Container with id ${containerId} is already registered`);
     }
 
-    this.disposables[containerId] = disposables;
+    this._scopesDisposables[containerId] = disposables;
 
     this._scopesFinalizer.register(container, containerId, disposables);
+  }
+
+  registerRoot(container: IIdentifiable, disposables: Disposable[]) {
+    const containerId = container.id;
+
+    if (this._rootDisposables[containerId]) {
+      throw new Error(`Container with id ${containerId} is already registered`);
+    }
+
+    this._rootDisposables[containerId] = disposables;
+
+    this._rootFinalizer.register(container, containerId, disposables);
   }
 }
 

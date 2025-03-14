@@ -18,9 +18,4 @@ export interface ScopeConfigurable {
   ): Binder<TInstance, TLifeTime, []>;
 
   cascade<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void;
-
-  onDispose<T>(
-    definition: Definition<T, LifeTime.scoped, []>,
-    disposeFn: (instance: Awaited<T>) => void | Promise<void>,
-  ): void;
 }

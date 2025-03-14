@@ -26,7 +26,7 @@ describe(`ScopesRegistry`, () => {
         id: crypto.randomUUID(),
       };
 
-      disposer.register(container, [disposable]);
+      disposer.registerScope(container, [disposable]);
     };
 
     run();

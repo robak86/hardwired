@@ -66,10 +66,10 @@ export type ContainerAllReturn<TDefinitions extends Array<Definition<any, ValidD
     ? Promise<AwaitedInstanceArray<TDefinitions>>
     : InstancesArray<TDefinitions>;
 
-export interface IContainerScopes<TAllowedLifeTime extends LifeTime = LifeTime> {
+export interface IContainerScopes {
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
-  ): NewScopeReturnType<TConfigureFns, TAllowedLifeTime>;
+  ): NewScopeReturnType<TConfigureFns>;
 
   withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
   withScope<TValue>(options: AsyncScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): EnsurePromise<TValue>;
@@ -83,7 +83,7 @@ export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue, TArgs extends an
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
-    IContainerScopes<TAllowedLifeTime>,
+    IContainerScopes,
     UseFn<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;

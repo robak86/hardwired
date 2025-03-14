@@ -1,23 +1,43 @@
-import { vi } from 'vitest';
+import { afterAll, vi } from 'vitest';
 
 import { container } from '../Container.js';
 import { fn } from '../../definitions/definitions.js';
 import { runGC } from '../../utils/__test__/ScopesRegistry.test.js';
 
+import { withContainer } from './withContainer.js';
+
+const status = {
+  isDisposed: false,
+};
+
+afterAll(async () => {
+  await vi.waitFor(
+    () => {
+      expect(status.isDisposed).toEqual(true);
+    },
+    {
+      timeout: 5000,
+    },
+  );
+});
+
 describe(`registering scopes`, () => {
-  const singleton1 = fn.singleton(() => 'singleton1');
-  const singleton2 = fn.singleton(async () => 'singleton2');
+  class Disposable {
+    constructor(private _disposeFn: (...args: any[]) => unknown) {}
+
+    [Symbol.dispose]() {
+      this._disposeFn();
+    }
+  }
 
   describe(`rootContainer`, () => {
     describe(`scoped`, () => {
       it(`disposes scoped instances`, async () => {
         const disposeSpy = vi.fn<[string]>();
-        const scoped1 = fn.scoped(() => 'scoped1');
+        const scoped1 = fn.scoped(() => new Disposable(disposeSpy));
 
         function main() {
-          const cnt = container.new(c => {
-            c.onDispose(scoped1, val => disposeSpy(val));
-          });
+          const cnt = container.new();
 
           cnt.use(scoped1);
         }
@@ -27,7 +47,7 @@ describe(`registering scopes`, () => {
         await runGC();
 
         await vi.waitFor(() => {
-          expect(disposeSpy).toHaveBeenCalledWith('scoped1');
+          expect(disposeSpy).toHaveBeenCalled();
         });
       });
     });
@@ -36,11 +56,10 @@ describe(`registering scopes`, () => {
       describe(`instance was created`, () => {
         it(`disposes root container disposables when it is garbage collected`, async () => {
           const disposeSpy = vi.fn<[string]>();
+          const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
 
           function main() {
-            const cnt = container.new(c => {
-              c.onDispose(singleton1, val => disposeSpy(val));
-            });
+            const cnt = container.new();
 
             cnt.use(singleton1);
           }
@@ -49,17 +68,17 @@ describe(`registering scopes`, () => {
 
           await runGC();
 
-          expect(disposeSpy).toHaveBeenCalledWith('singleton1');
+          expect(disposeSpy).toHaveBeenCalled();
         });
 
         it(`disposes multiple definitions`, async () => {
           const disposeSpy = vi.fn<[string]>();
 
+          const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
+          const singleton2 = fn.singleton(async () => new Disposable(disposeSpy));
+
           async function main() {
-            const cnt = container.new(c => {
-              c.onDispose(singleton1, val => disposeSpy(val));
-              c.onDispose(singleton2, val => disposeSpy(val));
-            });
+            const cnt = container.new();
 
             cnt.use(singleton1);
             await cnt.use(singleton2);
@@ -69,8 +88,9 @@ describe(`registering scopes`, () => {
 
           await runGC();
 
-          expect(disposeSpy).toHaveBeenNthCalledWith(1, 'singleton1');
-          expect(disposeSpy).toHaveBeenNthCalledWith(2, 'singleton2');
+          await vi.waitFor(() => {
+            expect(disposeSpy).toHaveBeenCalledTimes(2);
+          });
         });
 
         it(`doesn't crash when dispose throws`, async () => {
@@ -78,10 +98,10 @@ describe(`registering scopes`, () => {
             throw new Error('dispose error');
           });
 
+          const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
+
           function main() {
-            const cnt = container.new(c => {
-              c.onDispose(singleton1, val => disposeSpy(val));
-            });
+            const cnt = container.new();
 
             cnt.use(singleton1);
           }
@@ -90,7 +110,7 @@ describe(`registering scopes`, () => {
 
           await runGC();
 
-          expect(disposeSpy).toHaveBeenCalledWith('singleton1');
+          expect(disposeSpy).toHaveBeenCalled();
         });
 
         it(`doesn't create mem leaks`, async () => {
@@ -102,16 +122,13 @@ describe(`registering scopes`, () => {
 
             created.push(val);
 
-            return val;
+            return new Disposable(() => {
+              disposed.push(val);
+            });
           });
 
           function main() {
-            const cnt = container.new(c => {
-              c.onDispose(sideEffectDef, val => {
-                console.log('DISPOSE', val);
-                disposed.push(val);
-              });
-            });
+            const cnt = container.new();
 
             cnt.use(sideEffectDef);
           }
@@ -134,38 +151,19 @@ describe(`registering scopes`, () => {
           });
         });
       });
-
-      describe(`instance wasn't created`, () => {
-        it(`doesnt run dispose functions`, async () => {
-          const disposeSpy = vi.fn<[string]>();
-
-          function main() {
-            container.new(c => {
-              c.onDispose(singleton1, val => disposeSpy(val));
-            });
-          }
-
-          main();
-
-          await runGC();
-
-          expect(disposeSpy).not.toHaveBeenCalled();
-        });
-      });
     });
   });
 
   describe(`scopes`, () => {
     describe(`scoped`, () => {
       it(`disposes scoped instances`, async () => {
-        const scoped1 = fn.scoped(() => 'scoped1');
         const disposeSpy = vi.fn<[string]>();
+
+        const scoped1 = fn.scoped(() => new Disposable(disposeSpy));
         const cnt = container.new();
 
         function main() {
-          const scope = cnt.scope(c => {
-            c.onDispose(scoped1, val => disposeSpy(val));
-          });
+          const scope = cnt.scope();
 
           scope.use(scoped1);
         }
@@ -175,23 +173,20 @@ describe(`registering scopes`, () => {
         await runGC();
 
         await vi.waitFor(() => {
-          expect(disposeSpy).toHaveBeenCalledWith('scoped1');
+          expect(disposeSpy).toHaveBeenCalled();
         });
       });
 
       it(`correctly disposes nested scopes`, async () => {
-        const scoped1 = fn.scoped(() => 'scoped1');
         const disposeSpy = vi.fn<[string]>();
+        const scoped1 = fn.scoped(() => new Disposable(disposeSpy));
+
         const cnt = container.new();
 
         function main() {
-          const scope1 = cnt.scope(c => {
-            c.onDispose(scoped1, val => disposeSpy(val));
-          });
+          const scope1 = cnt.scope();
 
-          const scope2 = scope1.scope(c => {
-            c.onDispose(scoped1, val => disposeSpy(val));
-          });
+          const scope2 = scope1.scope();
 
           scope1.use(scoped1);
           scope2.use(scoped1);
@@ -207,26 +202,17 @@ describe(`registering scopes`, () => {
       });
 
       it(`does not dispose cascading scoped definition`, async () => {
-        const scoped1 = fn.scoped(() => 'scoped1');
         const disposeSpy = vi.fn<[string]>();
+        const scoped1 = fn.scoped(() => new Disposable(disposeSpy));
+
         const cnt = container.new();
 
-        console.log('containerId', cnt.id);
+        const scope1 = cnt.scope(c => {
+          c.cascade(scoped1);
+        });
 
         function main() {
-          const scope1 = cnt.scope(c => {
-            c.onDispose(scoped1, val => disposeSpy(val));
-
-            c.cascade(scoped1);
-          });
-
-          console.log('scope1Id', scope1.id);
-
-          const scope2 = scope1.scope(c => {
-            // c.onDispose(scoped1, val => disposeSpy(val));
-          });
-
-          console.log('scope2Id', scope2.id);
+          const scope2 = scope1.scope();
 
           const val1 = scope1.use(scoped1);
           const val2 = scope2.use(scoped1);
@@ -242,6 +228,21 @@ describe(`registering scopes`, () => {
           expect(disposeSpy).toHaveBeenCalledTimes(1);
         });
       });
+    });
+  });
+
+  describe(`integration with vitest`, () => {
+    const it = withContainer();
+
+    it(`provides instance of container`, async ({ use }) => {
+      const def = fn.singleton(() => {
+        return new Disposable(() => {
+          status.isDisposed = true;
+          console.log('WTTTTTTTF');
+        });
+      });
+
+      const disposable = use(def);
     });
   });
 });
