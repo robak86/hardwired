@@ -18,9 +18,7 @@ export class InstancesStore implements IInstancesStoreRead {
   private static _finalizer = InstancesFinalizer.create();
 
   static create(): InstancesStore {
-    const instancesStore = new InstancesStore(InstancesMap.create(), InstancesMap.create(), [], []);
-
-    return instancesStore;
+    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), [], []);
   }
 
   readonly id = crypto.randomUUID();
