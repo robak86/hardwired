@@ -5,68 +5,48 @@ export class InstancesFinalizer {
     return new InstancesFinalizer();
   }
 
-  private _scopesDisposables: Record<string, Disposable[]> = {};
-  private _scopesFinalizer = new FinalizationRegistry<string>(this.onScopeFinalize.bind(this));
+  private _scopesFinalizer = new FinalizationRegistry<Disposable[]>(this.onScopeFinalize.bind(this));
+  private _rootFinalizer = new FinalizationRegistry<Disposable[]>(this.onRootFinalize.bind(this));
 
-  private _rootDisposables: Record<string, Disposable[]> = {};
-  private _rootFinalizer = new FinalizationRegistry(this.onRootFinalize.bind(this));
+  private _scopeRegistries = new WeakSet<IIdentifiable>();
+  private _rootRegistries = new WeakSet<IIdentifiable>();
 
   registerScope(instancesRegistry: IIdentifiable, scopeDisposables: Disposable[]) {
-    const instancesRegistryId = instancesRegistry.id;
-
-    if (this._scopesDisposables[instancesRegistryId]) {
+    if (this._scopeRegistries.has(instancesRegistry)) {
       return;
     }
 
-    this._scopesDisposables[instancesRegistryId] = scopeDisposables;
-
-    this._scopesFinalizer.register(instancesRegistry, instancesRegistryId, scopeDisposables);
+    this._scopesFinalizer.register(instancesRegistry, scopeDisposables, scopeDisposables);
+    this._scopeRegistries.add(instancesRegistry);
   }
 
   registerRoot(instancesRegistry: IIdentifiable, rootDisposables: Disposable[]) {
-    const instancesRegistryId = instancesRegistry.id;
-
-    if (this._rootDisposables[instancesRegistryId]) {
+    if (this._rootRegistries.has(instancesRegistry)) {
       return;
     }
 
-    this._rootDisposables[instancesRegistryId] = rootDisposables;
-
-    this._rootFinalizer.register(instancesRegistry, instancesRegistryId, rootDisposables);
+    this._rootFinalizer.register(instancesRegistry, rootDisposables, rootDisposables);
+    this._rootRegistries.add(instancesRegistry);
   }
 
-  private onScopeFinalize(instanceRegistryId: string) {
-    const toBeDisposed = this._scopesDisposables[instanceRegistryId];
-
-    if (!toBeDisposed) {
-      return;
-    }
-
-    toBeDisposed.forEach(disposable => {
+  private onScopeFinalize(disposables: Disposable[]) {
+    disposables.forEach(disposable => {
       try {
         disposable[Symbol.dispose]();
       } catch (e) {
         console.error('Failed to dispose', e);
       }
     });
-
-    delete this._scopesDisposables[instanceRegistryId];
   }
 
-  private onRootFinalize(id: string) {
-    if (this._rootDisposables[id] === undefined) {
-      return;
-    }
-
-    this._rootDisposables[id].forEach(disposable => {
+  private onRootFinalize(disposables: Disposable[]) {
+    disposables.forEach(disposable => {
       try {
         disposable[Symbol.dispose]();
       } catch (e) {
         console.error('Failed to dispose', e);
       }
     });
-
-    delete this._rootDisposables[id];
   }
 }
 

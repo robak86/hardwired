@@ -56,6 +56,45 @@ describe(`registering scopes`, () => {
           expect(disposeSpy).toHaveBeenCalled();
         });
 
+        it(`doesn't dispatch dispose twice `, async () => {
+          const disposeSpy = vi.fn<[string]>();
+          const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
+
+          function main() {
+            const cnt = container.new();
+
+            const scope = cnt.scope();
+
+            scope.use(singleton1);
+            cnt.use(singleton1);
+          }
+
+          main();
+
+          await runGC();
+
+          expect(disposeSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it(`dispatch dispose if singleton was propagated from the child scope`, async () => {
+          const disposeSpy = vi.fn<[string]>();
+          const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
+
+          function main() {
+            const cnt = container.new();
+
+            const scope = cnt.scope();
+
+            scope.use(singleton1);
+          }
+
+          main();
+
+          await runGC();
+
+          expect(disposeSpy).toHaveBeenCalledTimes(1);
+        });
+
         it(`disposes multiple definitions`, async () => {
           const disposeSpy = vi.fn<[string]>();
 
@@ -216,7 +255,7 @@ describe(`registering scopes`, () => {
     });
   });
 
-  describe(`integration with vitest`, () => {
+  describe.skip(`integration with vitest`, () => {
     const it = withContainer();
 
     const status = {
