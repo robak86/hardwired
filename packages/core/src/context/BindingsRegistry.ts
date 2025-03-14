@@ -13,6 +13,8 @@ export class BindingsRegistry implements IBindingRegistryRead {
     return new BindingsRegistry(COWMap.create(), COWMap.create(), COWMap.create());
   }
 
+  private _ownCascadingDefinitions: COWMap<AnyDefinition> = COWMap.create();
+
   constructor(
     private _scopeDefinitions: COWMap<AnyDefinition>,
     private _frozenDefinitions: COWMap<AnyDefinition>,
@@ -39,6 +41,10 @@ export class BindingsRegistry implements IBindingRegistryRead {
 
   hasScopeDefinition(definitionId: symbol): boolean {
     return this._scopeDefinitions.has(definitionId);
+  }
+
+  inheritsScopedDefinition(definitionId: symbol): boolean {
+    return !this._ownCascadingDefinitions.has(definitionId) && this._cascadingDefinitions.has(definitionId);
   }
 
   hasCascadingDefinition(definitionId: symbol): boolean {
@@ -71,5 +77,6 @@ export class BindingsRegistry implements IBindingRegistryRead {
     }
 
     this._cascadingDefinitions.set(definition.id, definition);
+    this._ownCascadingDefinitions.set(definition.id, definition);
   }
 }

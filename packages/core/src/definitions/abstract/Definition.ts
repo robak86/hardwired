@@ -30,6 +30,8 @@ export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any
    * @param container
    */
   bind(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, TArgs> {
+    console.log('binding to container', container.id);
+
     return this.override((_use, ...args: TArgs) => {
       return container.buildWithStrategy(this, ...args);
     });

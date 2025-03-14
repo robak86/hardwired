@@ -5,15 +5,14 @@ import { fn } from '../../definitions/definitions.js';
 import { runGC } from '../../utils/__test__/ScopesRegistry.test.js';
 
 describe(`registering scopes`, () => {
-  describe(`container creation`, () => {
-    const singleton1 = fn.singleton(() => 'singleton1');
-    const singleton2 = fn.singleton(async () => 'singleton2');
+  const singleton1 = fn.singleton(() => 'singleton1');
+  const singleton2 = fn.singleton(async () => 'singleton2');
 
-    const scoped1 = fn.scoped(() => 'scoped1');
-
+  describe(`rootContainer`, () => {
     describe(`scoped`, () => {
       it(`disposes scoped instances`, async () => {
         const disposeSpy = vi.fn<[string]>();
+        const scoped1 = fn.scoped(() => 'scoped1');
 
         function main() {
           const cnt = container.new(c => {
@@ -27,7 +26,9 @@ describe(`registering scopes`, () => {
 
         await runGC();
 
-        expect(disposeSpy).toHaveBeenCalledWith('scoped1');
+        await vi.waitFor(() => {
+          expect(disposeSpy).toHaveBeenCalledWith('scoped1');
+        });
       });
     });
 
@@ -149,6 +150,96 @@ describe(`registering scopes`, () => {
           await runGC();
 
           expect(disposeSpy).not.toHaveBeenCalled();
+        });
+      });
+    });
+  });
+
+  describe(`scopes`, () => {
+    describe(`scoped`, () => {
+      it(`disposes scoped instances`, async () => {
+        const scoped1 = fn.scoped(() => 'scoped1');
+        const disposeSpy = vi.fn<[string]>();
+        const cnt = container.new();
+
+        function main() {
+          const scope = cnt.scope(c => {
+            c.onDispose(scoped1, val => disposeSpy(val));
+          });
+
+          scope.use(scoped1);
+        }
+
+        main();
+
+        await runGC();
+
+        await vi.waitFor(() => {
+          expect(disposeSpy).toHaveBeenCalledWith('scoped1');
+        });
+      });
+
+      it(`correctly disposes nested scopes`, async () => {
+        const scoped1 = fn.scoped(() => 'scoped1');
+        const disposeSpy = vi.fn<[string]>();
+        const cnt = container.new();
+
+        function main() {
+          const scope1 = cnt.scope(c => {
+            c.onDispose(scoped1, val => disposeSpy(val));
+          });
+
+          const scope2 = scope1.scope(c => {
+            c.onDispose(scoped1, val => disposeSpy(val));
+          });
+
+          scope1.use(scoped1);
+          scope2.use(scoped1);
+        }
+
+        main();
+
+        await runGC();
+
+        await vi.waitFor(() => {
+          expect(disposeSpy).toHaveBeenCalledTimes(2);
+        });
+      });
+
+      it(`does not dispose cascading scoped definition`, async () => {
+        const scoped1 = fn.scoped(() => 'scoped1');
+        const disposeSpy = vi.fn<[string]>();
+        const cnt = container.new();
+
+        console.log('containerId', cnt.id);
+
+        function main() {
+          const scope1 = cnt.scope(c => {
+            c.onDispose(scoped1, val => disposeSpy(val));
+
+            c.cascade(scoped1);
+          });
+
+          console.log('scope1Id', scope1.id);
+
+          const scope2 = scope1.scope(c => {
+            // c.onDispose(scoped1, val => disposeSpy(val));
+          });
+
+          console.log('scope2Id', scope2.id);
+
+          const val1 = scope1.use(scoped1);
+          const val2 = scope2.use(scoped1);
+
+          expect(val1).toBe(val2);
+        }
+
+        main();
+
+        await runGC();
+
+        await vi.waitFor(() => {
+          expect(disposeSpy).toHaveBeenCalledTimes(1);
         });
       });
     });

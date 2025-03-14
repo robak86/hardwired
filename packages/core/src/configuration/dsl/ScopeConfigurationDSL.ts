@@ -6,7 +6,7 @@ import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstr
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import type { InstancesStore } from '../../context/InstancesStore.js';
-import { DefinitionDisposable } from '../../utils/ScopesRegistry.js';
+import { DefinitionDisposable } from '../../utils/DefinitionDisposable.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(
@@ -21,6 +21,10 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     definition: Definition<T, LifeTime.scoped, []>,
     disposeFn: (instance: Awaited<T>) => void | Promise<void>,
   ): void {
+    if (this._bindingsRegistry.inheritsScopedDefinition(definition.id)) {
+      throw new Error(`Cannot register dispose function for cascading scoped definition ${definition.name}`);
+    }
+
     this._disposables.push(
       new DefinitionDisposable(definition, disposeFn, this._bindingsRegistry, this._instancesRegistry),
     );

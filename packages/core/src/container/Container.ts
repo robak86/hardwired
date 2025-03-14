@@ -12,8 +12,8 @@ import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/S
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isPromise } from '../utils/IsPromise.js';
-import type { DefinitionDisposable } from '../utils/ScopesRegistry.js';
 import { ScopesRegistry } from '../utils/ScopesRegistry.js';
+import type { DefinitionDisposable } from '../utils/DefinitionDisposable.js';
 
 import type {
   ContainerAllReturn,
@@ -70,9 +70,9 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
 
     const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, scopesRegistry, null, []);
 
-    this.scopesRegistry.register(cnt, disposables);
-
     if (configureFns.length) {
+      this.scopesRegistry.register(cnt, disposables);
+
       const binder = new ContainerConfigurationDSL(
         bindingsRegistry,
         instancesStore,
@@ -233,42 +233,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     };
   }
 
-  // disposable(): DisposableScope;
-  // disposable(scopeConfigureFn: DisposableAsyncScopeConfigureFn): Promise<DisposableScope>;
-  // disposable(scopeConfigureFn: DisposableScopeConfigureFn): DisposableScope;
-  // disposable(
-  //   scopeConfigureFn?: DisposableScopeConfigureFn | DisposableAsyncScopeConfigureFn,
-  // ): DisposableScope | Promise<DisposableScope> {
-  //   const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
-  //   const instancesStore = this.instancesStore.childScope();
-  //   const tags: (string | symbol)[] = [];
-  //
-  //   const cnt = new Container(
-  //     this.id,
-  //     bindingsRegistry,
-  //     instancesStore,
-  //     this.interceptorsRegistry,
-  //     this.scopesRegistry,
-  //     null,
-  //     tags,
-  //   );
-  //   const disposeFns: DisposeFn[] = [];
-  //   const disposable = new DisposableScope(cnt, disposeFns);
-  //
-  //   if (scopeConfigureFn) {
-  //     const binder = new DisposableScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposeFns);
-  //     const result = scopeConfigureFn(binder, this);
-  //
-  //     if (isPromise(result)) {
-  //       return result.then(() => disposable);
-  //     } else {
-  //       return disposable;
-  //     }
-  //   }
-  //
-  //   return disposable;
-  // }
-
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
   ): NewScopeReturnType<TConfigureFns> {
@@ -277,7 +241,7 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     const disposables: DefinitionDisposable<any>[] = [];
     const tags: (string | symbol)[] = [];
 
-    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(this.scopeTags, bindingsRegistry, instancesStore);
+    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(tags, bindingsRegistry, instancesStore);
 
     const cnt: IContainer & IStrategyAware = new Container(
       this.id,
@@ -290,6 +254,8 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     );
 
     if (configureFns.length) {
+      this.scopesRegistry.register(cnt, disposables);
+
       const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, instancesStore, disposables, tags);
 
       const configs = configureFns.map(configureFn => {

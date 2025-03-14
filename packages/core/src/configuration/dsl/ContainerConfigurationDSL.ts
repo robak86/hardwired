@@ -12,8 +12,8 @@ import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
-import { DefinitionDisposable } from '../../utils/ScopesRegistry.js';
 import type { InstancesStore } from '../../context/InstancesStore.js';
+import { DefinitionDisposable } from '../../utils/DefinitionDisposable.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(
