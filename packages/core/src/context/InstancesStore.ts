@@ -17,16 +17,13 @@ export class InstancesStore implements IInstancesStoreRead {
 
   private static _finalizer = InstancesFinalizer.create();
 
-  readonly id = crypto.randomUUID();
-
   static create(): InstancesStore {
     const instancesStore = new InstancesStore(InstancesMap.create(), InstancesMap.create(), [], []);
 
-    InstancesStore._finalizer.registerRoot(instancesStore, instancesStore._globalDisposables);
-    InstancesStore._finalizer.registerScope(instancesStore, instancesStore._scopeDisposables);
-
     return instancesStore;
   }
+
+  readonly id = crypto.randomUUID();
 
   constructor(
     private _globalInstances: InstancesMap,
@@ -37,18 +34,7 @@ export class InstancesStore implements IInstancesStoreRead {
   ) {}
 
   childScope(): InstancesStore {
-    // const scopeDisposables: Disposable[] = [];
-
-    const instancesStore = new InstancesStore(
-      this._globalInstances,
-      InstancesMap.create(),
-      this._globalDisposables,
-      [],
-    );
-
-    InstancesStore._finalizer.registerScope(instancesStore, instancesStore._scopeDisposables);
-
-    return instancesStore;
+    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._globalDisposables, []);
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
@@ -66,9 +52,7 @@ export class InstancesStore implements IInstancesStoreRead {
       if (isPromise(instance)) {
         void instance.then(instanceAwaited => {
           if (isDisposable(instanceAwaited)) {
-            // this._instancesFinalizer.registerScope(this);
-            // this._instancesFinalizer.appendScopeDisposable(this.id, instanceAwaited);
-
+            InstancesStore._finalizer.registerScope(this, this._scopeDisposables);
             this._scopeDisposables.push(instanceAwaited);
 
             console.log('Appending scope disposable', definition.name);
@@ -80,6 +64,7 @@ export class InstancesStore implements IInstancesStoreRead {
         // this._instancesFinalizer.registerScope(this);
         // this._instancesFinalizer.appendScopeDisposable(this.id, instance);
 
+        InstancesStore._finalizer.registerScope(this, this._scopeDisposables);
         this._scopeDisposables.push(instance);
         console.log('Appending scope disposable', definition.name);
       }
@@ -105,6 +90,8 @@ export class InstancesStore implements IInstancesStoreRead {
           if (isDisposable(instanceAwaited)) {
             // this._instancesFinalizer.registerRoot(this);
             // this._instancesFinalizer.appendRootDisposable(instanceAwaited);
+
+            InstancesStore._finalizer.registerRoot(this, this._globalDisposables);
             this._globalDisposables.push(instanceAwaited);
             console.log('Appending root disposable', definition.name);
           }
@@ -115,6 +102,7 @@ export class InstancesStore implements IInstancesStoreRead {
         // this._instancesFinalizer.registerRoot(this);
         // this._instancesFinalizer.appendRootDisposable(instance);
         console.log('Appending root disposable', definition.name);
+        InstancesStore._finalizer.registerRoot(this, this._globalDisposables);
         this._globalDisposables.push(instance);
       }
 

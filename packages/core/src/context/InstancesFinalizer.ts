@@ -16,8 +16,8 @@ export class InstancesFinalizer {
 
     const instancesRegistryId = instancesRegistry.id;
 
-    if (this._scopesDisposables[instancesRegistryId] !== undefined) {
-      throw new Error(`Container with id ${instancesRegistryId} is already registered`);
+    if (this._scopesDisposables[instancesRegistryId]) {
+      return;
     }
 
     this._scopesDisposables[instancesRegistryId] = scopeDisposables;
@@ -30,8 +30,8 @@ export class InstancesFinalizer {
 
     const instancesRegistryId = instancesRegistry.id;
 
-    if (this._rootDisposables[instancesRegistryId] !== undefined) {
-      throw new Error(`Container with id ${instancesRegistryId} is already registered`);
+    if (this._rootDisposables[instancesRegistryId]) {
+      return;
     }
 
     this._rootDisposables[instancesRegistryId] = rootDisposables;
