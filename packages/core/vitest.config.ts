@@ -5,5 +5,6 @@ export default defineConfig({
     include: ['**/__test__/*.test.{ts,tsx}'],
     clearMocks: true,
     globals: true,
+    environment: 'node',
   },
 });

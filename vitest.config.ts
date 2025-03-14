@@ -2,6 +2,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    poolOptions: {
+      forks: {
+        execArgv: ['--expose-gc'],
+      },
+    },
     workspace: ['./packages/core/vitest.config.ts', './packages/react/vitest.config.ts'],
     coverage: {
       provider: 'v8',
