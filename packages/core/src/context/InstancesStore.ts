@@ -64,4 +64,16 @@ export class InstancesStore implements IInstancesStoreRead {
   hasSingleton(definitionId: symbol): boolean {
     return this._globalInstances.has(definitionId);
   }
+
+  has(definitionId: symbol): boolean {
+    return this.hasFrozen(definitionId) || this.hasScoped(definitionId) || this.hasSingleton(definitionId);
+  }
+
+  get(definitionId: symbol): unknown {
+    return (
+      this._frozenInstances.get(definitionId) ??
+      this._globalInstances.get(definitionId) ??
+      this._scopeInstances.get(definitionId)
+    );
+  }
 }

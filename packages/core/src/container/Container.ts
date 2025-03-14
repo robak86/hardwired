@@ -18,6 +18,8 @@ import type {
   DisposableScopeConfigureFn,
 } from '../configuration/DisposableScopeConfiguration.js';
 import { isPromise } from '../utils/IsPromise.js';
+import type { DefinitionDisposable } from '../utils/ScopesRegistry.js';
+import { ScopesRegistry } from '../utils/ScopesRegistry.js';
 
 import type {
   ContainerAllReturn,
@@ -54,6 +56,7 @@ export class Container
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
     protected readonly interceptorsRegistry: InterceptorsRegistry,
+    protected readonly scopesRegistry: ScopesRegistry,
     protected readonly currentInterceptor: IInterceptor<any> | null,
     protected readonly scopeTags: (string | symbol)[],
   ) {
@@ -73,11 +76,21 @@ export class Container
     const bindingsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
     const interceptorsRegistry = new InterceptorsRegistry();
+    const disposables: DefinitionDisposable<any>[] = [];
+    const scopesRegistry = ScopesRegistry.create();
 
-    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, []);
+    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, scopesRegistry, null, []);
+
+    this.scopesRegistry.register(cnt, disposables);
 
     if (configureFns.length) {
-      const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry);
+      const binder = new ContainerConfigurationDSL(
+        bindingsRegistry,
+        instancesStore,
+        cnt,
+        interceptorsRegistry,
+        disposables,
+      );
 
       const configs = configureFns.map(configureFn => configureFn(binder));
       const hasAsync = configs.some(isPromise);
@@ -112,6 +125,7 @@ export class Container
       this.bindingsRegistry,
       this.instancesStore,
       this.interceptorsRegistry,
+      this.scopesRegistry,
       interceptor,
       this.scopeTags,
     );
@@ -240,7 +254,15 @@ export class Container
     const instancesStore = this.instancesStore.childScope();
     const tags: (string | symbol)[] = [];
 
-    const cnt = new Container(this.id, bindingsRegistry, instancesStore, this.interceptorsRegistry, null, tags);
+    const cnt = new Container(
+      this.id,
+      bindingsRegistry,
+      instancesStore,
+      this.interceptorsRegistry,
+      this.scopesRegistry,
+      null,
+      tags,
+    );
     const disposeFns: DisposeFn[] = [];
     const disposable = new DisposableScope(cnt, disposeFns);
 
@@ -272,6 +294,7 @@ export class Container
       bindingsRegistry,
       instancesStore,
       scopeInterceptorsRegistry,
+      this.scopesRegistry,
       scopeInterceptorsRegistry.build() ?? null,
       tags,
     );
@@ -325,6 +348,7 @@ export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TAr
     BindingsRegistry.create(),
     InstancesStore.create(),
     InterceptorsRegistry.create(),
+    ScopesRegistry.create(),
     null,
     [],
   );
@@ -338,6 +362,7 @@ export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
     BindingsRegistry.create(),
     InstancesStore.create(),
     InterceptorsRegistry.create(),
+    ScopesRegistry.create(),
     null,
     [],
   );
@@ -350,6 +375,7 @@ export const container = new Container(
   BindingsRegistry.create(),
   InstancesStore.create(),
   InterceptorsRegistry.create(),
+  ScopesRegistry.create(),
   null,
   [],
 );

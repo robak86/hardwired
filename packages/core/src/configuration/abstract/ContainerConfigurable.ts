@@ -29,4 +29,9 @@ export interface ContainerConfigurable {
   init(initializer: InitFn): void;
 
   withInterceptor(id: string | symbol, interceptor: IInterceptor<unknown>): void;
+
+  onDispose<T>(
+    definition: Definition<T, LifeTime.singleton | LifeTime.scoped, []>,
+    disposeFn: (instance: Awaited<T>) => void | Promise<void>,
+  ): void;
 }
