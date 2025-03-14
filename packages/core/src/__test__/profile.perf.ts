@@ -59,21 +59,18 @@ instantiationBench
   .add('singletonD + new scope', () => {
     cnt.scope().use(singletonD);
   })
-
   .add('transientD', () => {
     cnt.use(transientD);
   })
   .add('transientD + new scope', () => {
     cnt.scope().use(transientD);
   })
-
   .add('scopedD', () => {
     cnt.use(scopedD);
   })
-  // .add('scopedD + new scope', () => {
-  //   cnt.scope().use(scopedD);
-  // })
-
+  .add('scopedD + new scope', () => {
+    cnt.scope().use(scopedD);
+  })
   .add('scopedD cascaded to lower scope', () => {
     c3.use(scopedD);
   })
@@ -81,22 +78,21 @@ instantiationBench
   .add('[DependencyGraphInterceptor] singletonD', () => {
     cntWithInterceptor.use(singletonD);
   })
-  // .add('[DependencyGraphInterceptor] singletonD + new scope', () => {
-  //   cntWithInterceptor.scope().use(singletonD);
-  // })
+  .add('[DependencyGraphInterceptor] singletonD + new scope', () => {
+    cntWithInterceptor.scope().use(singletonD);
+  })
   .add('[DependencyGraphInterceptor] transientD', () => {
     cntWithInterceptor.use(transientD);
   })
-  // .add('[DependencyGraphInterceptor] transientD + new scope', () => {
-  //   cntWithInterceptor.scope().use(transientD);
-  // })
-
+  .add('[DependencyGraphInterceptor] transientD + new scope', () => {
+    cntWithInterceptor.scope().use(transientD);
+  })
   .add('[DependencyGraphInterceptor] scopedD', () => {
     cntWithInterceptor.use(scopedD);
+  })
+  .add('[DependencyGraphInterceptor] scopedD + new scope', () => {
+    cntWithInterceptor.scope().use(scopedD);
   });
-// .add('[DependencyGraphInterceptor] scopedD + new scope', () => {
-//   cntWithInterceptor.scope().use(scopedD);
-// });
 
 await instantiationBench
   .warmup()
