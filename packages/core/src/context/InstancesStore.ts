@@ -52,19 +52,13 @@ export class InstancesStore implements IInstancesStoreRead {
           if (isDisposable(instanceAwaited)) {
             InstancesStore._finalizer.registerScope(this, this._scopeDisposables);
             this._scopeDisposables.push(instanceAwaited);
-
-            console.log('Appending scope disposable', definition.name);
           }
         });
       }
 
       if (isDisposable(instance)) {
-        // this._instancesFinalizer.registerScope(this);
-        // this._instancesFinalizer.appendScopeDisposable(this.id, instance);
-
         InstancesStore._finalizer.registerScope(this, this._scopeDisposables);
         this._scopeDisposables.push(instance);
-        console.log('Appending scope disposable', definition.name);
       }
 
       return instance;
@@ -86,20 +80,13 @@ export class InstancesStore implements IInstancesStoreRead {
       if (isPromise(instance)) {
         void instance.then(instanceAwaited => {
           if (isDisposable(instanceAwaited)) {
-            // this._instancesFinalizer.registerRoot(this);
-            // this._instancesFinalizer.appendRootDisposable(instanceAwaited);
-
             InstancesStore._finalizer.registerRoot(this, this._globalDisposables);
             this._globalDisposables.push(instanceAwaited);
-            console.log('Appending root disposable', definition.name);
           }
         });
       }
 
       if (isDisposable(instance)) {
-        // this._instancesFinalizer.registerRoot(this);
-        // this._instancesFinalizer.appendRootDisposable(instance);
-        console.log('Appending root disposable', definition.name);
         InstancesStore._finalizer.registerRoot(this, this._globalDisposables);
         this._globalDisposables.push(instance);
       }

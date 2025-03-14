@@ -12,8 +12,6 @@ export class InstancesFinalizer {
   private _rootFinalizer = new FinalizationRegistry(this.onRootFinalize.bind(this));
 
   registerScope(instancesRegistry: IIdentifiable, scopeDisposables: Disposable[]) {
-    console.log('registerScope', instancesRegistry.id);
-
     const instancesRegistryId = instancesRegistry.id;
 
     if (this._scopesDisposables[instancesRegistryId]) {
@@ -26,8 +24,6 @@ export class InstancesFinalizer {
   }
 
   registerRoot(instancesRegistry: IIdentifiable, rootDisposables: Disposable[]) {
-    console.log('registerRoot', instancesRegistry.id);
-
     const instancesRegistryId = instancesRegistry.id;
 
     if (this._rootDisposables[instancesRegistryId]) {
@@ -40,13 +36,9 @@ export class InstancesFinalizer {
   }
 
   private onScopeFinalize(instanceRegistryId: string) {
-    console.log('InstancesFinalizer onScopeFinalize', instanceRegistryId);
-
     const toBeDisposed = this._scopesDisposables[instanceRegistryId];
 
     if (!toBeDisposed) {
-      console.log('No disposables found for container', instanceRegistryId);
-
       return;
     }
 
@@ -62,8 +54,6 @@ export class InstancesFinalizer {
   }
 
   private onRootFinalize(id: string) {
-    console.log('InstancesFinalizer onRootFinalize');
-
     if (this._rootDisposables[id] === undefined) {
       return;
     }
