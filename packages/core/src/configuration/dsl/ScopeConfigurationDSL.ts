@@ -5,13 +5,26 @@ import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
+import type { InstancesStore } from '../../context/InstancesStore.js';
+import { DefinitionDisposable } from '../../utils/ScopesRegistry.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(
     private _currentContainer: IContainer & IStrategyAware,
     private _bindingsRegistry: BindingsRegistry,
+    private _instancesRegistry: InstancesStore,
+    private _disposables: DefinitionDisposable<any>[],
     private _tags: (string | symbol)[],
   ) {}
+
+  onDispose<T>(
+    definition: Definition<T, LifeTime.scoped, []>,
+    disposeFn: (instance: Awaited<T>) => void | Promise<void>,
+  ): void {
+    this._disposables.push(
+      new DefinitionDisposable(definition, disposeFn, this._bindingsRegistry, this._instancesRegistry),
+    );
+  }
 
   appendTag(tag: string | symbol): void {
     if (!this._tags.includes(tag)) {

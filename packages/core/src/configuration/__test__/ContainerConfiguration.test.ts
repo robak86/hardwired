@@ -5,7 +5,6 @@ import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
 import { fn } from '../../definitions/definitions.js';
-import type { DisposableScope } from '../../container/DisposableScope.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`container.new`, () => {
@@ -152,31 +151,10 @@ describe(`ContainerConfiguration`, () => {
   });
 
   describe(`container.disposable`, () => {
-    it(`accepts asynchronous function`, async () => {
-      const cnt = container.new();
-      const scope = cnt.disposable(async c => {});
-
-      expectType<TypeOf<typeof scope, Promise<DisposableScope>>>(true);
-    });
-
-    it(`accepts synchronous function`, async () => {
-      const cnt = container.new();
-      const scope = cnt.disposable(c => {});
-
-      expectType<TypeOf<typeof scope, DisposableScope>>(true);
-    });
-
-    it(`returns container synchronously when no configuration is passed`, async () => {
-      const cnt = container.new();
-      const scope = cnt.disposable();
-
-      expectType<TypeOf<typeof scope, DisposableScope>>(true);
-    });
-
     it(`correctly configures the scope`, async () => {
       const def = fn.scoped(() => 123);
       const cnt = container.new();
-      const scope = await cnt.disposable(async scope => {
+      const scope = await cnt.scope(async scope => {
         scope.bindCascading(def).toValue(456);
       });
 
@@ -188,7 +166,7 @@ describe(`ContainerConfiguration`, () => {
 
       const def = fn.scoped(() => 'original');
       const cnt = container.new();
-      const scope = await cnt.disposable(async (scope, use) => {
+      const scope = await cnt.scope(async (scope, use) => {
         scope.bindCascading(def).toValue(await use(fromParent));
       });
 

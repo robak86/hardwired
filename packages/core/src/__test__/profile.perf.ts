@@ -59,30 +59,21 @@ instantiationBench
   .add('singletonD + new scope', () => {
     cnt.withScope(use => use(singletonD));
   })
-  .add('singletonD + new disposable', () => {
-    using scoped = cnt.disposable();
-    scoped.use(singletonD);
-  })
+
   .add('transientD', () => {
     cnt.use(transientD);
   })
   .add('transientD + new scope', () => {
     cnt.withScope(use => use(transientD));
   })
-  .add('transientD + new disposable', () => {
-    using scoped = cnt.disposable();
-    scoped.use(transientD);
-  })
+
   .add('scopedD', () => {
     cnt.use(scopedD);
   })
   .add('scopedD + new scope', () => {
     cnt.withScope(use => use(scopedD));
   })
-  .add('scopedD + new disposable', () => {
-    using scoped = cnt.disposable();
-    scoped.use(scopedD);
-  })
+
   .add('scopedD cascaded to lower scope', () => {
     c3.use(scopedD);
   })
@@ -93,29 +84,18 @@ instantiationBench
   .add('[DependencyGraphInterceptor] singletonD + new scope', () => {
     cntWithInterceptor.withScope(use => use(singletonD));
   })
-  .add('[DependencyGraphInterceptor] singletonD + new disposable', () => {
-    using scoped = cntWithInterceptor.disposable();
-    scoped.use(singletonD);
-  })
   .add('[DependencyGraphInterceptor] transientD', () => {
     cntWithInterceptor.use(transientD);
   })
   .add('[DependencyGraphInterceptor] transientD + new scope', () => {
     cntWithInterceptor.withScope(use => use(transientD));
   })
-  .add('[DependencyGraphInterceptor] transientD + new disposable', () => {
-    using scoped = cntWithInterceptor.disposable();
-    scoped.use(transientD);
-  })
+
   .add('[DependencyGraphInterceptor] scopedD', () => {
     cntWithInterceptor.use(scopedD);
   })
   .add('[DependencyGraphInterceptor] scopedD + new scope', () => {
     cntWithInterceptor.withScope(use => use(scopedD));
-  })
-  .add('[DependencyGraphInterceptor] scopedD + new disposable', () => {
-    using scoped = cntWithInterceptor.disposable();
-    scoped.use(scopedD);
   });
 
 await instantiationBench

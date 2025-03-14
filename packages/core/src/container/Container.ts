@@ -11,12 +11,6 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/Ins
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
-import { DisposableScopeConfigurationDSL } from '../configuration/dsl/DisposableScopeConfigurationDSL.js';
-import type { DisposeFn } from '../configuration/abstract/ContainerConfigurable.js';
-import type {
-  DisposableAsyncScopeConfigureFn,
-  DisposableScopeConfigureFn,
-} from '../configuration/DisposableScopeConfiguration.js';
 import { isPromise } from '../utils/IsPromise.js';
 import type { DefinitionDisposable } from '../utils/ScopesRegistry.js';
 import { ScopesRegistry } from '../utils/ScopesRegistry.js';
@@ -29,14 +23,12 @@ import type {
   HasPromise,
   IContainer,
   IContainerScopes,
-  IDisposableScopeAware,
   InstanceCreationAware,
   IStrategyAware,
   NewScopeReturnType,
   ReturnTypes,
   UseFn,
 } from './IContainer.js';
-import { DisposableScope } from './DisposableScope.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 
@@ -45,10 +37,7 @@ export interface Container extends UseFn<LifeTime> {}
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
 
-export class Container
-  extends ExtensibleFunction
-  implements InstanceCreationAware, IContainerScopes, IDisposableScopeAware
-{
+export class Container extends ExtensibleFunction implements InstanceCreationAware, IContainerScopes {
   public readonly id = v4();
 
   constructor(
@@ -244,47 +233,48 @@ export class Container
     };
   }
 
-  disposable(): DisposableScope;
-  disposable(scopeConfigureFn: DisposableAsyncScopeConfigureFn): Promise<DisposableScope>;
-  disposable(scopeConfigureFn: DisposableScopeConfigureFn): DisposableScope;
-  disposable(
-    scopeConfigureFn?: DisposableScopeConfigureFn | DisposableAsyncScopeConfigureFn,
-  ): DisposableScope | Promise<DisposableScope> {
-    const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
-    const instancesStore = this.instancesStore.childScope();
-    const tags: (string | symbol)[] = [];
-
-    const cnt = new Container(
-      this.id,
-      bindingsRegistry,
-      instancesStore,
-      this.interceptorsRegistry,
-      this.scopesRegistry,
-      null,
-      tags,
-    );
-    const disposeFns: DisposeFn[] = [];
-    const disposable = new DisposableScope(cnt, disposeFns);
-
-    if (scopeConfigureFn) {
-      const binder = new DisposableScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposeFns);
-      const result = scopeConfigureFn(binder, this);
-
-      if (isPromise(result)) {
-        return result.then(() => disposable);
-      } else {
-        return disposable;
-      }
-    }
-
-    return disposable;
-  }
+  // disposable(): DisposableScope;
+  // disposable(scopeConfigureFn: DisposableAsyncScopeConfigureFn): Promise<DisposableScope>;
+  // disposable(scopeConfigureFn: DisposableScopeConfigureFn): DisposableScope;
+  // disposable(
+  //   scopeConfigureFn?: DisposableScopeConfigureFn | DisposableAsyncScopeConfigureFn,
+  // ): DisposableScope | Promise<DisposableScope> {
+  //   const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
+  //   const instancesStore = this.instancesStore.childScope();
+  //   const tags: (string | symbol)[] = [];
+  //
+  //   const cnt = new Container(
+  //     this.id,
+  //     bindingsRegistry,
+  //     instancesStore,
+  //     this.interceptorsRegistry,
+  //     this.scopesRegistry,
+  //     null,
+  //     tags,
+  //   );
+  //   const disposeFns: DisposeFn[] = [];
+  //   const disposable = new DisposableScope(cnt, disposeFns);
+  //
+  //   if (scopeConfigureFn) {
+  //     const binder = new DisposableScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposeFns);
+  //     const result = scopeConfigureFn(binder, this);
+  //
+  //     if (isPromise(result)) {
+  //       return result.then(() => disposable);
+  //     } else {
+  //       return disposable;
+  //     }
+  //   }
+  //
+  //   return disposable;
+  // }
 
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
   ): NewScopeReturnType<TConfigureFns> {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
+    const disposables: DefinitionDisposable<any>[] = [];
     const tags: (string | symbol)[] = [];
 
     const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(this.scopeTags, bindingsRegistry, instancesStore);
@@ -300,7 +290,7 @@ export class Container
     );
 
     if (configureFns.length) {
-      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags);
+      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, instancesStore, disposables, tags);
 
       const configs = configureFns.map(configureFn => {
         return configureFn(binder, this);

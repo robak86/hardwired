@@ -9,13 +9,8 @@ import { type LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
 import type { Definition } from '../definitions/abstract/Definition.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import type {
-  DisposableAsyncScopeConfigureFn,
-  DisposableScopeConfigureFn,
-} from '../configuration/DisposableScopeConfiguration.js';
 import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 
-import type { DisposableScope } from './DisposableScope.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
 
 export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
@@ -29,12 +24,6 @@ export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
     instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs
   ): TValue;
-}
-
-export interface IDisposableScopeAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  disposable(): DisposableScope;
-  disposable(options: DisposableAsyncScopeConfigureFn): Promise<DisposableScope>;
-  disposable(options?: DisposableScopeConfigureFn): DisposableScope;
 }
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
@@ -95,8 +84,7 @@ export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue, TArgs extends an
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes<TAllowedLifeTime>,
-    UseFn<TAllowedLifeTime>,
-    IDisposableScopeAware<TAllowedLifeTime> {
+    UseFn<TAllowedLifeTime> {
   readonly id: string;
   readonly parentId: string | null;
 

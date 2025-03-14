@@ -14,7 +14,7 @@ export * from './container/interceptors/graph/DependenciesGraph.js';
 
 export { LoggingInterceptor } from './container/interceptors/logging/LoggingInterceptor.js';
 
-export type { ScopeConfigurable, DisposableScopeConfigurable } from './configuration/abstract/ScopeConfigurable.js';
+export type { ScopeConfigurable } from './configuration/abstract/ScopeConfigurable.js';
 export type { ContainerConfigurable } from './configuration/abstract/ContainerConfigurable.js';
 export type { IInterceptor } from './container/interceptors/interceptor.js';
 
@@ -34,7 +34,6 @@ export * from './definitions/abstract/FnDefinition.js';
 export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
 
 export type * from './container/IContainer.js';
-export * from './container/DisposableScope.js';
 
 export type { Middleware, MiddlewareNextFn } from './definitions/withMiddleware.js';
 export { withMiddleware, createMiddleware } from './definitions/withMiddleware.js';
@@ -46,6 +45,5 @@ export { ClassDefinition } from './definitions/abstract/ClassDefinition.js';
 
 export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
-export * from './configuration/DisposableScopeConfiguration.js';
+
 export * from './configuration/helper/compose.js';
-export * from './utils/bindTestContainer.js';

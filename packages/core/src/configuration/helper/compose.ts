@@ -1,23 +1,14 @@
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../ScopeConfiguration.js';
 import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../ContainerConfiguration.js';
-import type { DisposableAsyncScopeConfigureFn, DisposableScopeConfigureFn } from '../DisposableScopeConfiguration.js';
 
-export const compose = <T extends ScopeConfigureFn | ContainerConfigureFn | DisposableScopeConfigureFn>(
-  ...fns: T[]
-): T => {
+export const compose = <T extends ScopeConfigureFn | ContainerConfigureFn>(...fns: T[]): T => {
   return ((...args: [any, any]) => {
     fns.forEach(fn => fn(...args));
   }) as T;
 };
 
 export const composeAsync = <
-  T extends
-    | AsyncScopeConfigureFn
-    | AsyncContainerConfigureFn
-    | DisposableAsyncScopeConfigureFn
-    | ScopeConfigureFn
-    | ContainerConfigureFn
-    | DisposableScopeConfigureFn,
+  T extends AsyncScopeConfigureFn | AsyncContainerConfigureFn | ScopeConfigureFn | ContainerConfigureFn,
 >(
   ...fns: T[]
 ): T => {

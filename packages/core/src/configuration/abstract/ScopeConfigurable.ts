@@ -2,13 +2,9 @@ import type { Definition } from '../../definitions/abstract/Definition.js';
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { Binder } from '../../definitions/Binder.js';
 
-import type { DisposeFn, InitFn } from './ContainerConfigurable.js';
+import type { InitFn } from './ContainerConfigurable.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
-
-export interface DisposableScopeConfigurable extends ScopeConfigurable {
-  onDispose(disposeFn: DisposeFn): void;
-}
 
 export interface ScopeConfigurable {
   bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
@@ -22,4 +18,9 @@ export interface ScopeConfigurable {
   ): Binder<TInstance, TLifeTime, []>;
 
   cascade<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void;
+
+  onDispose<T>(
+    definition: Definition<T, LifeTime.scoped, []>,
+    disposeFn: (instance: Awaited<T>) => void | Promise<void>,
+  ): void;
 }

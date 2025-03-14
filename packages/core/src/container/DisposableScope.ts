@@ -14,11 +14,11 @@ import type {
 
 export interface DisposableScope extends UseFn<LifeTime> {}
 
-export interface IDisposableScope extends Disposable {
+export interface IDisposable extends Disposable {
   dispose(): void;
 }
 
-export class DisposableScope extends ExtensibleFunction implements InstanceCreationAware, IDisposableScope {
+export class DisposableScope extends ExtensibleFunction implements InstanceCreationAware, IDisposable {
   private _isDisposed = false;
 
   constructor(

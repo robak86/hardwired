@@ -1,6 +1,4 @@
 import { container } from '../../container/Container.js';
-import { fn } from '../../definitions/definitions.js';
-import { DisposableScope } from '../../container/DisposableScope.js';
 
 describe(`disposable`, () => {
   describe(`disposing container`, () => {
@@ -26,24 +24,6 @@ describe(`disposable`, () => {
       } catch (err) {
         // noop
       }
-    });
-  });
-
-  describe(`disposing disposable scope`, () => {
-    it(`calls dispose function with the container instance`, async () => {
-      const disposeSpy = vi.fn();
-      const def = fn.scoped(() => 'def');
-
-      function run() {
-        const cnt = container.new();
-
-        using scope = cnt.disposable(scope => scope.onDispose(disposeSpy));
-        scope.use(def);
-      }
-
-      run();
-      expect(disposeSpy).toHaveBeenCalledTimes(1);
-      expect(disposeSpy).toHaveBeenCalledWith(expect.any(DisposableScope));
     });
   });
 });
