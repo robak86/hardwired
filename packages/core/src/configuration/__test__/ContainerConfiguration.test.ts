@@ -101,55 +101,6 @@ describe(`ContainerConfiguration`, () => {
     });
   });
 
-  describe(`container.withScope`, () => {
-    it(`accepts asynchronous function`, async () => {
-      const cnt = container.new();
-      const value = cnt.withScope(
-        async c => {},
-        () => {
-          return 123;
-        },
-      );
-
-      expectType<TypeOf<typeof value, Promise<number>>>(true);
-    });
-
-    it(`accepts synchronous function`, async () => {
-      const cnt = container.new();
-      const value = cnt.withScope(
-        c => {},
-        () => {
-          return 123;
-        },
-      );
-
-      expectType<TypeOf<typeof value, number>>(true);
-    });
-
-    it(`returns value synchronously when no configuration is passed`, async () => {
-      const cnt = container.new();
-      const value = cnt.withScope(() => 123);
-
-      expectType<TypeOf<typeof value, number>>(true);
-    });
-
-    it(`correctly configures the scope`, async () => {
-      const def = fn.scoped(() => 123);
-
-      const cnt = container.new();
-      const value = await cnt.withScope(
-        async scope => {
-          scope.bindCascading(def).toValue(456);
-        },
-        use => {
-          return use(def);
-        },
-      );
-
-      expect(value).toEqual(456);
-    });
-  });
-
   describe(`container.disposable`, () => {
     it(`correctly configures the scope`, async () => {
       const def = fn.scoped(() => 123);

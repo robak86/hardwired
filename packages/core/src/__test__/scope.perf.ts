@@ -19,9 +19,7 @@ const transientD = fn(use => {
 });
 
 const scopedD = fn.scoped(use => {
-  return use.withScope(use => {
-    return use.all(...scopedDefinitions);
-  });
+  return use.scope().all(...scopedDefinitions);
 });
 
 let cnt: IContainer;

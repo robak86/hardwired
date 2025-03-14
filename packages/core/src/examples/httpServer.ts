@@ -17,6 +17,8 @@ class HomePageHandler implements IRequestHandler {
   constructor(private _req: IncomingMessage) {}
 
   handle(): string {
+    console.log(this._req.url);
+
     return 'Hello, World!';
   }
 

@@ -20,17 +20,17 @@ const transientD = fn(use => {
 });
 
 const scopedD = fn.scoped(use => {
-  return use.withScope(use => {
-    return use.all(...scopedDefinitions);
-  });
+  const scope = use.scope();
+
+  return scope.all(...scopedDefinitions);
 });
 
 let cnt: IContainer;
 let cntWithInterceptor: IContainer;
 
 // @ts-ignore
-let c2: IContainer;
-let c3: IContainer;
+let c2: IContainer | null;
+let c3: IContainer | null;
 
 const instantiationBench = new Bench({
   time: 200,
@@ -45,10 +45,10 @@ const instantiationBench = new Bench({
     });
   },
   teardown: () => {
-    cnt = container.new();
+    cnt = null;
 
-    c2 = cnt.scope(scope => {});
-    c3 = cnt.scope(scope => {});
+    c2 = null;
+    c3 = null;
   },
 });
 
@@ -57,22 +57,22 @@ instantiationBench
     cnt.use(singletonD);
   })
   .add('singletonD + new scope', () => {
-    cnt.withScope(use => use(singletonD));
+    cnt.scope().use(singletonD);
   })
 
   .add('transientD', () => {
     cnt.use(transientD);
   })
   .add('transientD + new scope', () => {
-    cnt.withScope(use => use(transientD));
+    cnt.scope().use(transientD);
   })
 
   .add('scopedD', () => {
     cnt.use(scopedD);
   })
-  .add('scopedD + new scope', () => {
-    cnt.withScope(use => use(scopedD));
-  })
+  // .add('scopedD + new scope', () => {
+  //   cnt.scope().use(scopedD);
+  // })
 
   .add('scopedD cascaded to lower scope', () => {
     c3.use(scopedD);
@@ -81,22 +81,22 @@ instantiationBench
   .add('[DependencyGraphInterceptor] singletonD', () => {
     cntWithInterceptor.use(singletonD);
   })
-  .add('[DependencyGraphInterceptor] singletonD + new scope', () => {
-    cntWithInterceptor.withScope(use => use(singletonD));
-  })
+  // .add('[DependencyGraphInterceptor] singletonD + new scope', () => {
+  //   cntWithInterceptor.scope().use(singletonD);
+  // })
   .add('[DependencyGraphInterceptor] transientD', () => {
     cntWithInterceptor.use(transientD);
   })
-  .add('[DependencyGraphInterceptor] transientD + new scope', () => {
-    cntWithInterceptor.withScope(use => use(transientD));
-  })
+  // .add('[DependencyGraphInterceptor] transientD + new scope', () => {
+  //   cntWithInterceptor.scope().use(transientD);
+  // })
 
   .add('[DependencyGraphInterceptor] scopedD', () => {
     cntWithInterceptor.use(scopedD);
-  })
-  .add('[DependencyGraphInterceptor] scopedD + new scope', () => {
-    cntWithInterceptor.withScope(use => use(scopedD));
   });
+// .add('[DependencyGraphInterceptor] scopedD + new scope', () => {
+//   cntWithInterceptor.scope().use(scopedD);
+// });
 
 await instantiationBench
   .warmup()

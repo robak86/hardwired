@@ -182,7 +182,7 @@ describe(`Container`, () => {
         const use = container.new();
         const myDef = fn.scoped(() => Math.random());
         const consumer = fn.scoped(use => {
-          return [use.withScope(use => use(myDef)), use.withScope(use => use(myDef))];
+          return [use.scope().use(myDef), use.scope().use(myDef)];
         });
 
         const [val1, val2] = use(consumer);

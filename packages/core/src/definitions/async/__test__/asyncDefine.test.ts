@@ -146,13 +146,9 @@ describe(`asyncDefine`, () => {
         const r1 = await use(randomD);
         const r2 = await use(randomD);
 
-        const req2 = await use.withScope(async use => {
-          const s1 = await use(singletonD);
-          const r1 = await use(randomD);
-          const r2 = await use(randomD);
+        const reqScope = use.scope();
 
-          return [s1, r1, r2];
-        });
+        const req2 = [await reqScope.use(singletonD), await reqScope.use(randomD), await reqScope.use(randomD)];
 
         return {
           req1: [s1, r1, r2],

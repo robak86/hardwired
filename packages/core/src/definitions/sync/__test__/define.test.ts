@@ -110,13 +110,9 @@ describe(`define`, () => {
         const r1 = use(randomD);
         const r2 = use(randomD);
 
-        const req2 = use.withScope(use => {
-          const s1 = use(singletonD);
-          const r1 = use(randomD);
-          const r2 = use(randomD);
+        const reqScope = use.scope();
 
-          return [s1, r1, r2];
-        });
+        const req2 = [reqScope.use(singletonD), reqScope.use(randomD), reqScope.use(randomD)];
 
         return {
           req1: [s1, r1, r2],

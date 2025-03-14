@@ -16,7 +16,15 @@ export class ScopesRegistry {
   // private _childScopes = new Map<string, string[]>(); // by parent Id
 
   private onScopeFinalize(containerId: string) {
-    const toBeDisposed = this._scopesDisposables[containerId] ?? [];
+    console.log('onScopeFinalize', containerId);
+
+    const toBeDisposed = this._scopesDisposables[containerId];
+
+    if (!toBeDisposed) {
+      console.log('No disposables found for container', containerId);
+
+      return;
+    }
 
     toBeDisposed.forEach(disposable => {
       try {
@@ -34,7 +42,14 @@ export class ScopesRegistry {
   // }
 
   private onRootFinalize(containerId: string) {
-    const toBeDisposed = this._rootDisposables[containerId] ?? [];
+    console.log('onRootFinalize', containerId);
+    const toBeDisposed = this._rootDisposables[containerId];
+
+    if (!toBeDisposed) {
+      console.log('No disposables found for container', containerId);
+
+      return;
+    }
 
     toBeDisposed.forEach(disposable => {
       try {

@@ -396,9 +396,9 @@ describe(`Scopes`, () => {
             scope.bind(def).toValue('l1');
           });
 
-          return use.withScope(configure, use => {
-            return use(def);
-          });
+          const scope = use.scope(configure);
+
+          return scope.use(def);
         });
 
         const root = container.new();
@@ -413,10 +413,9 @@ describe(`Scopes`, () => {
         const def = fn.scoped(() => 'original');
         const l1Creator = fn.scoped(use => {
           const configure = configureScope(scope => {});
+          const scope = use.scope(configure);
 
-          return use.withScope(configure, use => {
-            return use(def);
-          });
+          return scope.use(def);
         });
 
         const root = container.new(scope => {

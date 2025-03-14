@@ -17,8 +17,6 @@ import { ScopesRegistry } from '../utils/ScopesRegistry.js';
 import type {
   ContainerAllReturn,
   ContainerObjectReturn,
-  ContainerRunFn,
-  EnsurePromise,
   HasPromise,
   IContainer,
   IContainerScopes,
@@ -269,26 +267,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     }
 
     return cnt as unknown as NewScopeReturnType<TConfigureFns>;
-  }
-
-  withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
-  withScope<TValue>(options: AsyncScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): EnsurePromise<TValue>;
-  withScope<TValue>(options: ScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): TValue;
-  withScope<TValue>(
-    configureOrRunFn: ScopeConfigureFn | AsyncScopeConfigureFn | ContainerRunFn<LifeTime, TValue>,
-    runFn?: ContainerRunFn<LifeTime, TValue>,
-  ): TValue | EnsurePromise<TValue> {
-    if (runFn) {
-      const configResult = this.scope(configureOrRunFn as ScopeConfigureFn | AsyncScopeConfigureFn);
-
-      if (isPromise(configResult)) {
-        return configResult.then(scope => runFn(scope as any)) as EnsurePromise<TValue>;
-      } else {
-        return runFn(configResult);
-      }
-    } else {
-      return (configureOrRunFn as ContainerRunFn<any, any>)(this.scope());
-    }
   }
 }
 

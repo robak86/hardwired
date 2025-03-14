@@ -22,7 +22,7 @@ describe.skip(`LoggingInterceptor`, () => {
       cnt.use(c);
       cnt.use(c);
 
-      cnt.withScope(use => use(c));
+      cnt.scope().use(c);
     });
 
     it(`it prints correct messages for classes`, async () => {

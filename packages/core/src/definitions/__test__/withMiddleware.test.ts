@@ -12,11 +12,11 @@ describe(`withMiddleware`, () => {
     constructor() {}
 
     middleware = createMiddleware((locator: IContainer, next, ...args) => {
-      return locator.withScope(use => {
-        this.containerIds.push(use.id);
+      const scope = locator.scope();
 
-        return next(use, ...args);
-      });
+      this.containerIds.push(scope.id);
+
+      return next(scope, ...args);
     });
   }
 

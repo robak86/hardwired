@@ -70,10 +70,6 @@ export interface IContainerScopes {
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
   ): NewScopeReturnType<TConfigureFns>;
-
-  withScope<TValue>(fn: ContainerRunFn<LifeTime, TValue>): TValue;
-  withScope<TValue>(options: AsyncScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): EnsurePromise<TValue>;
-  withScope<TValue>(options: ScopeConfigureFn, fn: ContainerRunFn<LifeTime, TValue>): TValue;
 }
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue, TArgs extends any[]>(

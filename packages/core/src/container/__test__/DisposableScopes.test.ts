@@ -242,7 +242,7 @@ describe(`registering scopes`, () => {
         });
       });
 
-      const disposable = use(def);
+      const _disposable = use(def);
     });
   });
 });
