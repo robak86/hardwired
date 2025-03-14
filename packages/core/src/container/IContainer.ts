@@ -13,9 +13,15 @@ import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
 
-export type EnsurePromise<T> = T extends Promise<any> ? T : Promise<T>;
-
 export type ScopeTag = string | symbol;
+
+export interface IIdentifiable {
+  readonly id: string;
+}
+
+export interface ISymbolIdentifiable {
+  readonly id: symbol;
+}
 
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;

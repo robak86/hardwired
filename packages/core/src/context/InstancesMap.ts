@@ -2,7 +2,7 @@ import type { Definition } from '../definitions/abstract/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
 import { isPromise } from '../utils/IsPromise.js';
 
-function isDisposable(obj: any): obj is Disposable {
+export function isDisposable(obj: any): obj is Disposable {
   return typeof obj?.[Symbol.dispose] === 'function';
 }
 

@@ -12,7 +12,6 @@ import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/S
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isPromise } from '../utils/IsPromise.js';
-import { ScopesRegistry } from '../utils/ScopesRegistry.js';
 
 import type {
   ContainerAllReturn,
@@ -42,7 +41,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
     protected readonly interceptorsRegistry: InterceptorsRegistry,
-    protected readonly scopesRegistry: ScopesRegistry,
     protected readonly currentInterceptor: IInterceptor<any> | null,
     protected readonly scopeTags: (string | symbol)[],
   ) {
@@ -62,13 +60,8 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     const bindingsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
     const interceptorsRegistry = new InterceptorsRegistry();
-    // const disposables: DefinitionDisposable<any>[] = [];
-    const scopesRegistry = ScopesRegistry.create();
 
-    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, scopesRegistry, null, []);
-
-    this.scopesRegistry.registerRoot(cnt, instancesStore.rootDisposables);
-    this.scopesRegistry.registerScope(cnt, instancesStore.scopeDisposables);
+    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, []);
 
     if (configureFns.length) {
       const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry);
@@ -106,7 +99,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       this.bindingsRegistry,
       this.instancesStore,
       this.interceptorsRegistry,
-      this.scopesRegistry,
       interceptor,
       this.scopeTags,
     );
@@ -243,12 +235,12 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       bindingsRegistry,
       instancesStore,
       scopeInterceptorsRegistry,
-      this.scopesRegistry,
+
       scopeInterceptorsRegistry.build() ?? null,
       tags,
     );
 
-    this.scopesRegistry.registerScope(cnt, instancesStore.scopeDisposables);
+    // this.scopesRegistry.registerScope(cnt, instancesStore.scopeDisposables);
 
     if (configureFns.length) {
       const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags);
@@ -279,7 +271,6 @@ export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TAr
     BindingsRegistry.create(),
     InstancesStore.create(),
     InterceptorsRegistry.create(),
-    ScopesRegistry.create(),
     null,
     [],
   );
@@ -293,7 +284,6 @@ export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
     BindingsRegistry.create(),
     InstancesStore.create(),
     InterceptorsRegistry.create(),
-    ScopesRegistry.create(),
     null,
     [],
   );
@@ -306,7 +296,6 @@ export const container = new Container(
   BindingsRegistry.create(),
   InstancesStore.create(),
   InterceptorsRegistry.create(),
-  ScopesRegistry.create(),
   null,
   [],
 );

@@ -1,7 +1,9 @@
 import type { Definition } from '../definitions/abstract/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
+import { isPromise } from '../utils/IsPromise.js';
 
-import { InstancesMap } from './InstancesMap.js';
+import { InstancesMap, isDisposable } from './InstancesMap.js';
+import { InstancesFinalizer } from './InstancesFinalizer.js';
 
 export interface IInstancesStoreRead {
   hasRootInstance(definitionId: symbol): boolean;
@@ -9,17 +11,16 @@ export interface IInstancesStoreRead {
 }
 
 export class InstancesStore implements IInstancesStoreRead {
+  readonly id = crypto.randomUUID();
+
   static create(): InstancesStore {
-    return new InstancesStore(InstancesMap.create(), InstancesMap.create());
+    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), InstancesFinalizer.create());
   }
 
-  /**
-   * @param _globalInstances
-   * @param _scopeInstances
-   */
   constructor(
     private _globalInstances: InstancesMap,
     private _scopeInstances: InstancesMap,
+    private _instancesFinalizer: InstancesFinalizer,
   ) {}
 
   get rootDisposables() {
@@ -31,7 +32,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   childScope(): InstancesStore {
-    return new InstancesStore(this._globalInstances, InstancesMap.create());
+    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._instancesFinalizer.scope());
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
@@ -39,7 +40,32 @@ export class InstancesStore implements IInstancesStoreRead {
     container: IContainer,
     ...args: TArgs
   ) {
-    return this._scopeInstances.upsert(definition, container, ...args);
+    if (this._scopeInstances.has(definition.id)) {
+      return this._scopeInstances.get(definition.id) as TInstance;
+    } else {
+      const instance = definition.create(container, ...args);
+
+      this._scopeInstances.set(definition.id, instance);
+
+      if (isPromise(instance)) {
+        void instance.then(instanceAwaited => {
+          if (isDisposable(instanceAwaited)) {
+            this._instancesFinalizer.registerScope(this);
+            this._instancesFinalizer.appendScopeDisposable(this.id, instanceAwaited);
+
+            console.log('Appending scope disposable', definition.name);
+          }
+        });
+      }
+
+      if (isDisposable(instance)) {
+        this._instancesFinalizer.registerScope(this);
+        this._instancesFinalizer.appendScopeDisposable(this.id, instance);
+        console.log('Appending scope disposable', definition.name);
+      }
+
+      return instance;
+    }
   }
 
   upsertIntoRootInstances<TInstance, TArgs extends any[]>(
@@ -47,7 +73,31 @@ export class InstancesStore implements IInstancesStoreRead {
     container: IContainer,
     ...args: TArgs
   ) {
-    return this._globalInstances.upsert(definition, container, ...args);
+    if (this._globalInstances.has(definition.id)) {
+      return this._globalInstances.get(definition.id) as TInstance;
+    } else {
+      const instance = definition.create(container, ...args);
+
+      this._globalInstances.set(definition.id, instance);
+
+      if (isPromise(instance)) {
+        void instance.then(instanceAwaited => {
+          if (isDisposable(instanceAwaited)) {
+            this._instancesFinalizer.registerRoot(this);
+            this._instancesFinalizer.appendRootDisposable(instanceAwaited);
+            console.log('Appending root disposable', definition.name);
+          }
+        });
+      }
+
+      if (isDisposable(instance)) {
+        this._instancesFinalizer.registerRoot(this);
+        this._instancesFinalizer.appendRootDisposable(instance);
+        console.log('Appending root disposable', definition.name);
+      }
+
+      return instance;
+    }
   }
 
   hasScopedInstance(definitionId: symbol): boolean {
@@ -56,13 +106,5 @@ export class InstancesStore implements IInstancesStoreRead {
 
   hasRootInstance(definitionId: symbol): boolean {
     return this._globalInstances.has(definitionId);
-  }
-
-  has(definitionId: symbol): boolean {
-    return this.hasScopedInstance(definitionId) || this.hasRootInstance(definitionId);
-  }
-
-  get(definitionId: symbol): unknown {
-    return this._globalInstances.get(definitionId) ?? this._scopeInstances.get(definitionId);
   }
 }

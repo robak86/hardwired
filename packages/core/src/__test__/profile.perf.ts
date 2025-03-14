@@ -29,8 +29,8 @@ let cnt: IContainer;
 let cntWithInterceptor: IContainer;
 
 // @ts-ignore
-let c2: IContainer | null;
-let c3: IContainer | null;
+let c2: IContainer;
+let c3: IContainer;
 
 const instantiationBench = new Bench({
   time: 200,
@@ -45,10 +45,10 @@ const instantiationBench = new Bench({
     });
   },
   teardown: () => {
-    cnt = null;
-
-    c2 = null;
-    c3 = null;
+    // cnt = undefined;
+    //
+    // c2 = null;
+    // c3 = null;
   },
 });
 
