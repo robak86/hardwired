@@ -5,50 +5,44 @@ export class InstancesFinalizer {
     return new InstancesFinalizer();
   }
 
-  private _scopesDisposables = new Map<string, Disposable[]>();
+  private _scopesDisposables: Record<string, Disposable[]> = {};
   private _scopesFinalizer = new FinalizationRegistry<string>(this.onScopeFinalize.bind(this));
 
-  constructor(
-    private _rootDisposables: Disposable[] = [],
-    private _rootFinalizer = new FinalizationRegistry(this.onRootFinalize.bind(this)),
-  ) {}
+  private _rootDisposables: Record<string, Disposable[]> = {};
+  private _rootFinalizer = new FinalizationRegistry(this.onRootFinalize.bind(this));
 
-  scope(): InstancesFinalizer {
-    return new InstancesFinalizer(this._rootDisposables, this._rootFinalizer);
-  }
-
-  appendScopeDisposable(instancesRegistryId: string, disposable: Disposable) {
-    if (!this._scopesDisposables.has(instancesRegistryId)) {
-      this._scopesDisposables.set(instancesRegistryId, []);
-    }
-
-    console.log('Appending scope disposable');
-    this._scopesDisposables.get(instancesRegistryId)!.push(disposable);
-  }
-
-  appendRootDisposable(disposable: Disposable) {
-    console.log('Appending root disposable');
-    this._rootDisposables.push(disposable);
-  }
-
-  registerScope(instancesRegistry: IIdentifiable) {
+  registerScope(instancesRegistry: IIdentifiable, scopeDisposables: Disposable[]) {
     console.log('registerScope', instancesRegistry.id);
 
-    this._scopesFinalizer.register(instancesRegistry, instancesRegistry.id.toString(), []);
+    const instancesRegistryId = instancesRegistry.id;
+
+    if (this._scopesDisposables[instancesRegistryId] !== undefined) {
+      throw new Error(`Container with id ${instancesRegistryId} is already registered`);
+    }
+
+    this._scopesDisposables[instancesRegistryId] = scopeDisposables;
+
+    this._scopesFinalizer.register(instancesRegistry, instancesRegistryId, scopeDisposables);
   }
 
-  registerRoot(instancesRegistry: IIdentifiable) {
-    // const containerId = instancesRegistry.id;
-
+  registerRoot(instancesRegistry: IIdentifiable, rootDisposables: Disposable[]) {
     console.log('registerRoot', instancesRegistry.id);
 
-    this._rootFinalizer.register(instancesRegistry, '__unused', []);
+    const instancesRegistryId = instancesRegistry.id;
+
+    if (this._rootDisposables[instancesRegistryId] !== undefined) {
+      throw new Error(`Container with id ${instancesRegistryId} is already registered`);
+    }
+
+    this._rootDisposables[instancesRegistryId] = rootDisposables;
+
+    this._rootFinalizer.register(instancesRegistry, instancesRegistryId, rootDisposables);
   }
 
   private onScopeFinalize(instanceRegistryId: string) {
     console.log('InstancesFinalizer onScopeFinalize', instanceRegistryId);
 
-    const toBeDisposed = this._scopesDisposables.get(instanceRegistryId);
+    const toBeDisposed = this._scopesDisposables[instanceRegistryId];
 
     if (!toBeDisposed) {
       console.log('No disposables found for container', instanceRegistryId);
@@ -64,13 +58,17 @@ export class InstancesFinalizer {
       }
     });
 
-    this._scopesDisposables.delete(instanceRegistryId);
+    delete this._scopesDisposables[instanceRegistryId];
   }
 
-  private onRootFinalize() {
+  private onRootFinalize(id: string) {
     console.log('InstancesFinalizer onRootFinalize');
 
-    this._rootDisposables.forEach(disposable => {
+    if (this._rootDisposables[id] === undefined) {
+      return;
+    }
+
+    this._rootDisposables[id].forEach(disposable => {
       try {
         disposable[Symbol.dispose]();
       } catch (e) {
@@ -78,7 +76,7 @@ export class InstancesFinalizer {
       }
     });
 
-    this._rootDisposables.length = 0;
+    delete this._rootDisposables[id];
   }
 }
 

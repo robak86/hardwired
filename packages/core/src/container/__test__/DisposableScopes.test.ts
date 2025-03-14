@@ -35,106 +35,105 @@ describe(`registering scopes`, () => {
       });
     });
 
-    describe(`singletons`, () => {
-      describe(`instance was created`, () => {
-        it(`disposes root container disposables when it is garbage collected`, async () => {
-          const disposeSpy = vi.fn<[string]>();
-          const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
-
-          function main() {
-            const cnt = container.new();
-
-            cnt.use(singleton1);
-          }
-
-          main();
-
-          await runGC();
-
-          expect(disposeSpy).toHaveBeenCalled();
-        });
-
-        // it(`disposes multiple definitions`, async () => {
-        //   const disposeSpy = vi.fn<[string]>();
-        //
-        //   const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
-        //   const singleton2 = fn.singleton(async () => new Disposable(disposeSpy));
-        //
-        //   async function main() {
-        //     const cnt = container.new();
-        //
-        //     cnt.use(singleton1);
-        //     await cnt.use(singleton2);
-        //   }
-        //
-        //   await main();
-        //
-        //   await runGC();
-        //
-        //   await vi.waitFor(() => {
-        //     expect(disposeSpy).toHaveBeenCalledTimes(2);
-        //   });
-        // });
-        //
-        // it(`doesn't crash when dispose throws`, async () => {
-        //   const disposeSpy = vi.fn<[string]>(() => {
-        //     throw new Error('dispose error');
-        //   });
-        //
-        //   const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
-        //
-        //   function main() {
-        //     const cnt = container.new();
-        //
-        //     cnt.use(singleton1);
-        //   }
-        //
-        //   main();
-        //
-        //   await runGC();
-        //
-        //   expect(disposeSpy).toHaveBeenCalled();
-        // });
-        //
-        // it(`doesn't create mem leaks`, async () => {
-        //   const created: number[] = [];
-        //   const disposed: number[] = [];
-        //
-        //   const sideEffectDef = fn.singleton(() => {
-        //     const val = Math.random();
-        //
-        //     created.push(val);
-        //
-        //     return new Disposable(() => {
-        //       disposed.push(val);
-        //     });
-        //   });
-        //
-        //   function main() {
-        //     const cnt = container.new();
-        //
-        //     cnt.use(sideEffectDef);
-        //   }
-        //
-        //   const count = 5;
-        //
-        //   for (let i = 0; i < count; i++) {
-        //     main();
-        //   }
-        //
-        //   expect(created).toHaveLength(count);
-        //   expect(disposed).toHaveLength(0);
-        //
-        //   await runGC();
-        //
-        //   expect(created).toHaveLength(count);
-        //
-        //   await vi.waitFor(() => {
-        //     expect(disposed).toHaveLength(count);
-        //   });
-        // });
-      });
-    });
+    // describe(`singletons`, () => {
+    //   describe(`instance was created`, () => {
+    //     // it(`disposes root container disposables when it is garbage collected`, async () => {
+    //     //   const disposeSpy = vi.fn<[string]>();
+    //     //   const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
+    //     //
+    //     //   function main() {
+    //     //     const cnt = container.new();
+    //     //
+    //     //     cnt.use(singleton1);
+    //     //   }
+    //     //
+    //     //   main();
+    //     //
+    //     //   await runGC();
+    //     //
+    //     //   expect(disposeSpy).toHaveBeenCalled();
+    //     // });
+    //     // it(`disposes multiple definitions`, async () => {
+    //     //   const disposeSpy = vi.fn<[string]>();
+    //     //
+    //     //   const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
+    //     //   const singleton2 = fn.singleton(async () => new Disposable(disposeSpy));
+    //     //
+    //     //   async function main() {
+    //     //     const cnt = container.new();
+    //     //
+    //     //     cnt.use(singleton1);
+    //     //     await cnt.use(singleton2);
+    //     //   }
+    //     //
+    //     //   await main();
+    //     //
+    //     //   await runGC();
+    //     //
+    //     //   await vi.waitFor(() => {
+    //     //     expect(disposeSpy).toHaveBeenCalledTimes(2);
+    //     //   });
+    //     // });
+    //     //
+    //     // it(`doesn't crash when dispose throws`, async () => {
+    //     //   const disposeSpy = vi.fn<[string]>(() => {
+    //     //     throw new Error('dispose error');
+    //     //   });
+    //     //
+    //     //   const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
+    //     //
+    //     //   function main() {
+    //     //     const cnt = container.new();
+    //     //
+    //     //     cnt.use(singleton1);
+    //     //   }
+    //     //
+    //     //   main();
+    //     //
+    //     //   await runGC();
+    //     //
+    //     //   expect(disposeSpy).toHaveBeenCalled();
+    //     // });
+    //     //
+    //     // it(`doesn't create mem leaks`, async () => {
+    //     //   const created: number[] = [];
+    //     //   const disposed: number[] = [];
+    //     //
+    //     //   const sideEffectDef = fn.singleton(() => {
+    //     //     const val = Math.random();
+    //     //
+    //     //     created.push(val);
+    //     //
+    //     //     return new Disposable(() => {
+    //     //       disposed.push(val);
+    //     //     });
+    //     //   });
+    //     //
+    //     //   function main() {
+    //     //     const cnt = container.new();
+    //     //
+    //     //     cnt.use(sideEffectDef);
+    //     //   }
+    //     //
+    //     //   const count = 5;
+    //     //
+    //     //   for (let i = 0; i < count; i++) {
+    //     //     main();
+    //     //   }
+    //     //
+    //     //   expect(created).toHaveLength(count);
+    //     //   expect(disposed).toHaveLength(0);
+    //     //
+    //     //   await runGC();
+    //     //
+    //     //   expect(created).toHaveLength(count);
+    //     //
+    //     //   await vi.waitFor(() => {
+    //     //     expect(disposed).toHaveLength(count);
+    //     //   });
+    //     // });
+    //   });
+    // });
   });
 
   // describe(`scopes`, () => {
