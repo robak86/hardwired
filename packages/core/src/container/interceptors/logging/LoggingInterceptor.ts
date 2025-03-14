@@ -91,10 +91,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
 
   protected hasCached(definitionId: symbol): boolean {
     return (
-      (this._instances?.hasSingleton(definitionId) ||
-        this._instances?.hasScoped(definitionId) ||
-        this._instances?.hasFrozen(definitionId)) ??
-      false
+      (this._instances?.hasRootInstance(definitionId) || this._instances?.hasScopedInstance(definitionId)) ?? false
     );
   }
 }

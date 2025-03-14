@@ -137,14 +137,14 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition, args), definition, ...args);
     } else {
       if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-        return this.instancesStore.upsertIntoFrozenInstances(definition, this, ...args);
+        return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
       }
 
       switch (definition.strategy) {
         case LifeTime.transient:
           return definition.create(this, ...args);
         case LifeTime.singleton:
-          return this.instancesStore.upsertIntoGlobalInstances(definition, this, ...args);
+          return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
         case LifeTime.scoped:
           return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
         default:
@@ -161,7 +161,7 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
 
     if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-      const instance = this.instancesStore.upsertIntoFrozenInstances(definition, withChildInterceptor, ...args);
+      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor, ...args);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
@@ -173,7 +173,7 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     }
 
     if (definition.strategy === LifeTime.singleton) {
-      const instance = this.instancesStore.upsertIntoGlobalInstances(definition, withChildInterceptor, ...args);
+      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor, ...args);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }

@@ -4,37 +4,26 @@ import type { IContainer } from '../container/IContainer.js';
 import { InstancesMap } from './InstancesMap.js';
 
 export interface IInstancesStoreRead {
-  hasSingleton(definitionId: symbol): boolean;
-  hasScoped(definitionId: symbol): boolean;
-  hasFrozen(definitionId: symbol): boolean;
+  hasRootInstance(definitionId: symbol): boolean;
+  hasScopedInstance(definitionId: symbol): boolean;
 }
 
 export class InstancesStore implements IInstancesStoreRead {
   static create(): InstancesStore {
-    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), InstancesMap.create());
+    return new InstancesStore(InstancesMap.create(), InstancesMap.create());
   }
 
   /**
    * @param _globalInstances
    * @param _scopeInstances
-   * @param _frozenInstances
    */
   constructor(
     private _globalInstances: InstancesMap,
     private _scopeInstances: InstancesMap,
-    private _frozenInstances: InstancesMap,
   ) {}
 
   childScope(): InstancesStore {
-    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._frozenInstances);
-  }
-
-  upsertIntoFrozenInstances<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, any, TArgs>,
-    container: IContainer,
-    ...args: TArgs
-  ) {
-    return this._frozenInstances.upsert(definition, container, ...args);
+    return new InstancesStore(this._globalInstances, InstancesMap.create());
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
@@ -45,7 +34,7 @@ export class InstancesStore implements IInstancesStoreRead {
     return this._scopeInstances.upsert(definition, container, ...args);
   }
 
-  upsertIntoGlobalInstances<TInstance, TArgs extends any[]>(
+  upsertIntoRootInstances<TInstance, TArgs extends any[]>(
     definition: Definition<TInstance, any, TArgs>,
     container: IContainer,
     ...args: TArgs
@@ -53,27 +42,19 @@ export class InstancesStore implements IInstancesStoreRead {
     return this._globalInstances.upsert(definition, container, ...args);
   }
 
-  hasFrozen(definitionId: symbol): boolean {
-    return this._frozenInstances.has(definitionId);
-  }
-
-  hasScoped(definitionId: symbol): boolean {
+  hasScopedInstance(definitionId: symbol): boolean {
     return this._scopeInstances.has(definitionId);
   }
 
-  hasSingleton(definitionId: symbol): boolean {
+  hasRootInstance(definitionId: symbol): boolean {
     return this._globalInstances.has(definitionId);
   }
 
   has(definitionId: symbol): boolean {
-    return this.hasFrozen(definitionId) || this.hasScoped(definitionId) || this.hasSingleton(definitionId);
+    return this.hasScopedInstance(definitionId) || this.hasRootInstance(definitionId);
   }
 
   get(definitionId: symbol): unknown {
-    return (
-      this._frozenInstances.get(definitionId) ??
-      this._globalInstances.get(definitionId) ??
-      this._scopeInstances.get(definitionId)
-    );
+    return this._globalInstances.get(definitionId) ?? this._scopeInstances.get(definitionId);
   }
 }
