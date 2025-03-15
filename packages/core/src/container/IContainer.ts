@@ -30,10 +30,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     ...args: TArgs
   ): TValue;
 
-  ifExists<TValue>(
-    definition: Definition<TValue, LifeTime.singleton | LifeTime.scoped, []>,
-    callback: (instance: Awaited<TValue>) => void,
-  ): void;
+  useExisting<TValue>(definition: Definition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null;
 
   defer<TInstance, TArgs extends any[]>(
     factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,

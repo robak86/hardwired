@@ -114,26 +114,12 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
   }
 
   /**
-   * Runs the callback when the instance is memoized in the current scope or in the root scope (singletons).
-   * Could be used to run some side effects only whe the instance was created, e.g. cleanup, logging, etc.
+   * Use instance if it is already memoized in the root scope or in the current scope. Otherwise, return null;
+   * Cascading instances are returned only from the scope holding the instance.
    * @param definition
-   * @param callback
    */
-  ifExists<TValue>(
-    definition: Definition<TValue, LifeTime.singleton | LifeTime.scoped, []>,
-    callback: (instance: Awaited<TValue>) => void,
-  ): void {
-    if (this.instancesStore.has(definition.id)) {
-      const instance = this.instancesStore.get(definition.id) as TValue;
-
-      if (isPromise(instance)) {
-        void instance.then(instance => {
-          callback(instance as Awaited<TValue>);
-        });
-      } else {
-        callback(instance as Awaited<TValue>);
-      }
-    }
+  useExisting<TValue>(definition: Definition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null {
+    return (this.instancesStore.get(definition.id) as TValue) ?? null;
   }
 
   buildWithStrategy<TValue, TArgs extends any[]>(

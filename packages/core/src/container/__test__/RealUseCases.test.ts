@@ -5,7 +5,7 @@ import { unbound } from '../../definitions/sync/unbound.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
 
 describe(`Logger`, () => {
-  describe(`branding with id per request`, () => {
+  describe(`branding logger with an id for a request`, () => {
     it(`return correct output`, async () => {
       const requestId = unbound<string>();
 
