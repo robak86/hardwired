@@ -299,3 +299,7 @@ export const container = new Container(
   null,
   [],
 );
+
+export const onDisposeError = (listener: (error: unknown) => void) => {
+  InstancesStore.addDisposeErrorListener(listener);
+};

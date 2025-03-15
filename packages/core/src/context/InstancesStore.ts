@@ -15,6 +15,14 @@ export class InstancesStore implements IInstancesStoreRead {
     InstancesStore._finalizer = finalizer;
   }
 
+  static addDisposeErrorListener(listener: (error: unknown) => void) {
+    InstancesStore._finalizer.on('onDisposeError', listener);
+
+    return () => {
+      InstancesStore._finalizer.off('onDisposeError', listener);
+    };
+  }
+
   private static _finalizer = InstancesFinalizer.create();
 
   static create(): InstancesStore {
