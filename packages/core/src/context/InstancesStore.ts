@@ -1,3 +1,5 @@
+import { v4 } from 'uuid';
+
 import type { Definition } from '../definitions/abstract/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
 import { isPromise } from '../utils/IsPromise.js';
@@ -26,17 +28,15 @@ export class InstancesStore implements IInstancesStoreRead {
   private static _finalizer = InstancesFinalizer.create();
 
   static create(): InstancesStore {
-    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), [], [], null);
+    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), null);
   }
 
   private readonly _root: InstancesStore;
+  readonly id = v4();
 
   constructor(
     private _globalInstances: InstancesMap,
     private _scopeInstances: InstancesMap,
-
-    private _globalDisposables: Disposable[],
-    private _scopeDisposables: Disposable[],
 
     _root: InstancesStore | null,
   ) {
@@ -44,9 +44,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   childScope(): InstancesStore {
-    // InstancesStore._finalizer.appendChildInstancesRegistry(this, childInstances);
-
-    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._globalDisposables, [], this._root);
+    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._root);
   }
 
   upsertIntoTransientInstances<TInstance, TArgs extends any[]>(
@@ -109,15 +107,13 @@ export class InstancesStore implements IInstancesStoreRead {
     if (isPromise(instance)) {
       void instance.then(instanceAwaited => {
         if (isDisposable(instanceAwaited)) {
-          InstancesStore._finalizer.registerScope(this, this._scopeDisposables);
-          this._scopeDisposables.push(instanceAwaited);
+          InstancesStore._finalizer.registerScope(this, instanceAwaited);
         }
       });
     }
 
     if (isDisposable(instance)) {
-      InstancesStore._finalizer.registerScope(this, this._scopeDisposables);
-      this._scopeDisposables.push(instance);
+      InstancesStore._finalizer.registerScope(this, instance);
     }
   }
 
@@ -125,15 +121,13 @@ export class InstancesStore implements IInstancesStoreRead {
     if (isPromise(instance)) {
       void instance.then(instanceAwaited => {
         if (isDisposable(instanceAwaited)) {
-          InstancesStore._finalizer.registerRoot(this._root, this._globalDisposables);
-          this._globalDisposables.push(instanceAwaited);
+          InstancesStore._finalizer.registerRoot(this._root, instanceAwaited);
         }
       });
     }
 
     if (isDisposable(instance)) {
-      InstancesStore._finalizer.registerRoot(this._root, this._globalDisposables);
-      this._globalDisposables.push(instance);
+      InstancesStore._finalizer.registerRoot(this._root, instance);
     }
   }
 }
