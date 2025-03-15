@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { TypeEqual } from 'ts-expect';
 import { expectType } from 'ts-expect';
 
-import { fn } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/fn.js';
 import { container, once } from '../Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { unbound } from '../../definitions/sync/unbound.js';
+import { unbound } from '../../definitions/unbound.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {

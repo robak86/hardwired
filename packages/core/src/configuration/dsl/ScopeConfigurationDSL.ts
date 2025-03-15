@@ -1,6 +1,6 @@
-import type { Definition } from '../../definitions/abstract/Definition.js';
+import type { Definition } from '../../definitions/impl/Definition.js';
 import type { InitFn } from '../abstract/ContainerConfigurable.js';
-import { Binder } from '../../definitions/Binder.js';
+import { Binder } from '../Binder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';

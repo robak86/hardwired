@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
 import { container } from '../Container.js';
-import { fn } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/fn.js';
 import { runGC } from '../../utils/__test__/runGC.js';
 
 describe(`registering scopes`, () => {

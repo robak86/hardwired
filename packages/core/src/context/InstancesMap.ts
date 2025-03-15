@@ -1,4 +1,4 @@
-import type { Definition } from '../definitions/abstract/Definition.js';
+import type { Definition } from '../definitions/impl/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
 import { isPromise } from '../utils/IsPromise.js';
 

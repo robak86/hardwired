@@ -1,5 +1,5 @@
 import { COWMap } from '../../../context/InstancesMap.js';
-import type { Definition } from '../../../definitions/abstract/Definition.js';
+import type { Definition } from '../../../definitions/impl/Definition.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 
 import type { GraphBuilderInterceptor, GraphNode } from './GraphBuilderInterceptor.js';

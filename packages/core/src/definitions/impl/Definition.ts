@@ -1,8 +1,7 @@
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { getTruncatedFunctionDefinition } from '../utils/getTruncatedFunctionDefinition.js';
-
-import type { LifeTime } from './LifeTime.js';
-import type { IDefinition } from './IDefinition.js';
+import type { LifeTime } from '../abstract/LifeTime.js';
+import type { IDefinition } from '../abstract/IDefinition.js';
 
 export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]>
   implements IDefinition<TInstance, TLifeTime, TArgs>

@@ -1,5 +1,5 @@
-import { fn } from '../../definitions.js';
-import { once } from '../../../container/Container.js';
+import { fn } from '../fn.js';
+import { once } from '../../container/Container.js';
 
 describe(`FnDefinition`, () => {
   describe(`ad hoc instantiation`, () => {

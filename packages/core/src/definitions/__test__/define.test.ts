@@ -3,11 +3,11 @@ import { expectType } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 
 import { unbound } from '../unbound.js';
-import type { LifeTime } from '../../abstract/LifeTime.js';
-import { fn } from '../../definitions.js';
-import { container } from '../../../container/Container.js';
-import { BoxedValue } from '../../../__test__/BoxedValue.js';
-import type { Definition } from '../../abstract/Definition.js';
+import type { LifeTime } from '../abstract/LifeTime.js';
+import { fn } from '../fn.js';
+import { container } from '../../container/Container.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
+import type { Definition } from '../impl/Definition.js';
 
 describe(`define`, () => {
   const ext1 = unbound<number>();

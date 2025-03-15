@@ -1,6 +1,6 @@
 import { describe, expect } from 'vitest';
 
-import { fn } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/fn.js';
 import { container } from '../Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';

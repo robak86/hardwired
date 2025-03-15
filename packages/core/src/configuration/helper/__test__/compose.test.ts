@@ -1,7 +1,7 @@
 import { describe } from 'vitest';
 
 import { container } from '../../../container/Container.js';
-import { fn } from '../../../definitions/definitions.js';
+import { fn } from '../../../definitions/fn.js';
 import { configureScope } from '../../ScopeConfiguration.js';
 import { compose } from '../compose.js';
 import { configureContainer } from '../../ContainerConfiguration.js';

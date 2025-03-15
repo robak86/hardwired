@@ -1,8 +1,8 @@
 import { createServer, type IncomingMessage } from 'node:http';
 
-import { unbound } from '../definitions/sync/unbound.js';
+import { unbound } from '../definitions/unbound.js';
 import { cls } from '../definitions/cls.js';
-import { fn } from '../definitions/definitions.js';
+import { fn } from '../definitions/fn.js';
 import { once } from '../container/Container.js';
 
 const reqD = unbound<IncomingMessage>();

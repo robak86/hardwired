@@ -4,10 +4,10 @@ import type {
   InstancesArray,
   InstancesObject,
   InstancesRecord,
-} from '../definitions/abstract/sync/InstanceDefinition.js';
+} from '../definitions/abstract/InstanceDefinition.js';
 import { type LifeTime } from '../definitions/abstract/LifeTime.js';
-import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
-import type { Definition } from '../definitions/abstract/Definition.js';
+import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
+import type { Definition } from '../definitions/impl/Definition.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 

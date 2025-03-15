@@ -2,10 +2,10 @@ import type { Thunk, UnwrapThunk } from '../utils/Thunk.js';
 import type { HasPromise } from '../container/IContainer.js';
 
 import { LifeTime } from './abstract/LifeTime.js';
-import type { Definition } from './abstract/Definition.js';
-import { ClassDefinition } from './abstract/ClassDefinition.js';
-import type { ValidDependenciesLifeTime } from './abstract/sync/InstanceDefinitionDependency.js';
-import type { InstancesArray } from './abstract/sync/InstanceDefinition.js';
+import type { Definition } from './impl/Definition.js';
+import { ClassDefinition } from './impl/ClassDefinition.js';
+import type { ValidDependenciesLifeTime } from './abstract/InstanceDefinitionDependency.js';
+import type { InstancesArray } from './abstract/InstanceDefinition.js';
 
 export type ClassType<TInstance, TConstructorArgs extends any[]> = new (...args: TConstructorArgs) => TInstance;
 

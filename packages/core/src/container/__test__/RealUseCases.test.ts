@@ -2,10 +2,10 @@ import { test } from 'vitest';
 
 import { cls } from '../../definitions/cls.js';
 import { container } from '../Container.js';
-import { value } from '../../definitions/sync/value.js';
-import { unbound } from '../../definitions/sync/unbound.js';
+import { value } from '../../definitions/value.js';
+import { unbound } from '../../definitions/unbound.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
-import { fn } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/fn.js';
 import type { IContainer } from '../IContainer.js';
 import {
   type AsyncContainerConfigureFn,

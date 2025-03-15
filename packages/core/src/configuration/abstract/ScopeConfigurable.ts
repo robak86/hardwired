@@ -1,6 +1,6 @@
-import type { Definition } from '../../definitions/abstract/Definition.js';
+import type { Definition } from '../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { Binder } from '../../definitions/Binder.js';
+import type { Binder } from '../Binder.js';
 
 import type { InitFn } from './ContainerConfigurable.js';
 

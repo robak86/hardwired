@@ -1,5 +1,5 @@
 import { container } from '../../../Container.js';
-import { fn } from '../../../../definitions/definitions.js';
+import { fn } from '../../../../definitions/fn.js';
 import { DependenciesGraphRoot } from '../DependenciesGraph.js';
 
 describe(`DependenciesGraph`, () => {

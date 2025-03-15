@@ -1,13 +1,13 @@
 import { v4 } from 'uuid';
 
-import type { InstancesRecord } from '../definitions/abstract/sync/InstanceDefinition.js';
+import type { InstancesRecord } from '../definitions/abstract/InstanceDefinition.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
-import type { Definition } from '../definitions/abstract/Definition.js';
+import type { Definition } from '../definitions/impl/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
-import type { ValidDependenciesLifeTime } from '../definitions/abstract/sync/InstanceDefinitionDependency.js';
+import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';

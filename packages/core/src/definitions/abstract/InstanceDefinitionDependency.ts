@@ -1,5 +1,6 @@
-import { LifeTime } from '../LifeTime.js';
-import type { Definition } from '../Definition.js';
+import type { Definition } from '../impl/Definition.js';
+
+import { LifeTime } from './LifeTime.js';
 
 export type InstanceDefinitionDependency<TValue, TLifeTime extends LifeTime> = Definition<
   TValue,

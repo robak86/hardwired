@@ -1,7 +1,7 @@
 import { describe } from 'vitest';
 
 import { Definition } from '../Definition.js';
-import { LifeTime } from '../LifeTime.js';
+import { LifeTime } from '../../abstract/LifeTime.js';
 import { container } from '../../../container/Container.js';
 
 describe(`Definition`, () => {

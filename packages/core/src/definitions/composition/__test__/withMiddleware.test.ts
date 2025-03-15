@@ -1,9 +1,9 @@
 import { describe, vi } from 'vitest';
 
-import type { IContainer } from '../../container/IContainer.js';
+import type { IContainer } from '../../../container/IContainer.js';
 import { createMiddleware, withMiddleware } from '../withMiddleware.js';
-import { fn } from '../definitions.js';
-import { once } from '../../container/Container.js';
+import { fn } from '../../fn.js';
+import { once } from '../../../container/Container.js';
 
 describe(`withMiddleware`, () => {
   class CreatingScopes {

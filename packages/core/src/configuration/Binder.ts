@@ -1,7 +1,6 @@
 import type { IContainer } from '../container/IContainer.js';
-
-import type { LifeTime } from './abstract/LifeTime.js';
-import { Definition } from './abstract/Definition.js';
+import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { Definition } from '../definitions/impl/Definition.js';
 
 export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
   constructor(

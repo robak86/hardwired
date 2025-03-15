@@ -4,7 +4,7 @@ import { expectType } from 'ts-expect';
 import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
-import { fn } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/fn.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`container.new`, () => {

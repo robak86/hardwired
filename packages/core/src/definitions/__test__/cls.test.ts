@@ -1,7 +1,7 @@
 import { expectType } from 'ts-expect';
 
 import { cls } from '../cls.js';
-import { fn } from '../definitions.js';
+import { fn } from '../fn.js';
 import { container, once } from '../../container/Container.js';
 
 describe(`cls`, () => {

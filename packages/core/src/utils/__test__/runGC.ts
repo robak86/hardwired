@@ -10,3 +10,13 @@ export function runGC() {
     setImmediate(resolve);
   });
 }
+
+const registry = new FinalizationRegistry((heldValue: string) => {
+  console.log(`Object with label "${heldValue}" has been garbage collected!`);
+});
+
+export const trackObject = (obj: WeakKey, label: string) => {
+  registry.register(obj, label);
+
+  return obj;
+};

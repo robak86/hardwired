@@ -1,9 +1,9 @@
 import { container } from '../../../Container.js';
-import { fn } from '../../../../definitions/definitions.js';
+import { fn } from '../../../../definitions/fn.js';
 import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 import type { GraphNode } from '../GraphBuilderInterceptor.js';
 import { GraphBuilderInterceptor } from '../GraphBuilderInterceptor.js';
-import type { Definition } from '../../../../definitions/abstract/Definition.js';
+import type { Definition } from '../../../../definitions/impl/Definition.js';
 
 describe(`GraphBuildInterceptor`, () => {
   class SomeNode<T> implements GraphNode<T> {

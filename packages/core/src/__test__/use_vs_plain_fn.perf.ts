@@ -2,8 +2,8 @@ import { Bench } from 'tinybench';
 
 import { container } from '../container/Container.js';
 import type { IContainer } from '../container/IContainer.js';
-import { fn } from '../definitions/definitions.js';
-import { unbound } from '../definitions/sync/unbound.js';
+import { fn } from '../definitions/fn.js';
+import { unbound } from '../definitions/unbound.js';
 
 type Ctx = { value: number };
 

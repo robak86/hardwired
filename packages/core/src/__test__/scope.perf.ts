@@ -1,6 +1,6 @@
 import { Bench } from 'tinybench';
 
-import { fn } from '../definitions/definitions.js';
+import { fn } from '../definitions/fn.js';
 import type { IContainer } from '../container/IContainer.js';
 import { container } from '../container/Container.js';
 

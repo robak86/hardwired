@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { fn } from '../../definitions.js';
+import { fn } from '../fn.js';
 import { unbound } from '../unbound.js';
 
 describe(`fn`, () => {

@@ -1,7 +1,7 @@
 import { Bench } from 'tinybench';
 
 import { container } from '../container/Container.js';
-import { fn } from '../definitions/definitions.js';
+import { fn } from '../definitions/fn.js';
 import type { IContainer } from '../container/IContainer.js';
 import { DependenciesGraphRoot } from '../container/interceptors/graph/DependenciesGraph.js';
 

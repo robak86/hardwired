@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { fn } from '../../definitions.js';
-import { container } from '../../../container/Container.js';
+import { fn } from '../fn.js';
+import { container } from '../../container/Container.js';
 import { value } from '../value.js';
 import { unbound } from '../unbound.js';
 

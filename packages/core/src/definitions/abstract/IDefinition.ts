@@ -1,7 +1,7 @@
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import type { Definition } from '../impl/Definition.js';
 
 import type { LifeTime } from './LifeTime.js';
-import type { Definition } from './Definition.js';
 
 export type AnyDefinition = IDefinition<any, LifeTime, any[]>;
 

@@ -1,5 +1,5 @@
-import type { Definition } from '../../definitions/abstract/Definition.js';
-import { Binder } from '../../definitions/Binder.js';
+import type { Definition } from '../../definitions/impl/Definition.js';
+import { Binder } from '../Binder.js';
 import type {
   ContainerConfigurable,
   ContainerConfigureCascadingLifeTimes,

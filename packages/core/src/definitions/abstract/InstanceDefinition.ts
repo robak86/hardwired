@@ -1,8 +1,8 @@
-import type { Definition } from '../Definition.js';
-import type { AwaitedInstance } from '../../../container/IContainer.js';
-import type { LifeTime } from '../LifeTime.js';
-import type { AnyDefinition } from '../IDefinition.js';
+import type { Definition } from '../impl/Definition.js';
+import type { AwaitedInstance } from '../../container/IContainer.js';
 
+import type { LifeTime } from './LifeTime.js';
+import type { AnyDefinition } from './IDefinition.js';
 import type { ValidDependenciesLifeTime } from './InstanceDefinitionDependency.js';
 
 // prettier-ignore

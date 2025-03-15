@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { container } from '../../container/Container.js';
-import { fn } from '../../definitions/definitions.js';
-import { value } from '../../definitions/sync/value.js';
+import { fn } from '../../definitions/fn.js';
+import { value } from '../../definitions/value.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { Definition } from '../../definitions/abstract/Definition.js';
+import type { Definition } from '../../definitions/impl/Definition.js';
 
 describe(`decorate`, () => {
   it(`decorates original value`, async () => {

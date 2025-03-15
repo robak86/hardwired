@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import { describe, expect, it } from 'vitest';
 
 import { all, container } from '../../container/Container.js';
-import { fn } from '../../definitions/definitions.js';
+import { fn } from '../../definitions/fn.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`SingletonStrategy`, () => {

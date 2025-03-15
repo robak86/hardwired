@@ -1,6 +1,6 @@
 import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
 import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
-import type { Definition } from '../../../definitions/abstract/Definition.js';
+import type { Definition } from '../../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IInterceptor } from '../interceptor.js';
 import { isPromise } from '../../../utils/IsPromise.js';

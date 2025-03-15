@@ -2,8 +2,8 @@ import { v4 } from 'uuid';
 import { describe, expect, it } from 'vitest';
 
 import { container } from '../../container/Container.js';
-import { fn } from '../../definitions/definitions.js';
-import { value } from '../../definitions/sync/value.js';
+import { fn } from '../../definitions/fn.js';
+import { value } from '../../definitions/value.js';
 
 describe(`ClassTransientResolver`, () => {
   describe(`sync resolution`, () => {

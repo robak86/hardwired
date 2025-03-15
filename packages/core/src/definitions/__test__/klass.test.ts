@@ -3,10 +3,10 @@ import { expectType } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 
 import { value } from '../value.js';
-import type { LifeTime } from '../../abstract/LifeTime.js';
-import { fn } from '../../definitions.js';
+import type { LifeTime } from '../abstract/LifeTime.js';
+import { fn } from '../fn.js';
 import { unbound } from '../unbound.js';
-import type { Definition } from '../../abstract/Definition.js';
+import type { Definition } from '../impl/Definition.js';
 
 describe(`klass`, () => {
   describe(`external params`, () => {

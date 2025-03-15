@@ -1,6 +1,6 @@
 import { container } from '../../../Container.js';
 import { LoggingInterceptor } from '../LoggingInterceptor.js';
-import { fn } from '../../../../definitions/definitions.js';
+import { fn } from '../../../../definitions/fn.js';
 import { cls } from '../../../../definitions/cls.js';
 
 describe.skip(`LoggingInterceptor`, () => {

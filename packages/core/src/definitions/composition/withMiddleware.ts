@@ -1,8 +1,7 @@
-import type { IContainer } from '../container/IContainer.js';
-
-import { LifeTime } from './abstract/LifeTime.js';
-import type { DefineScoped, DefineSingleton, DefineTransient } from './definitions.js';
-import { Definition } from './abstract/Definition.js';
+import type { IContainer } from '../../container/IContainer.js';
+import { LifeTime } from '../abstract/LifeTime.js';
+import type { DefineScoped, DefineSingleton, DefineTransient } from '../fn.js';
+import { Definition } from '../impl/Definition.js';
 
 function chainMiddlewares<T, TLifeTime extends LifeTime>(
   middlewares: Middleware[],

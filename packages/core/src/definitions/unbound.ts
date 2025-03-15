@@ -1,5 +1,5 @@
-import { LifeTime } from '../abstract/LifeTime.js';
-import { Definition } from '../abstract/Definition.js';
+import { LifeTime } from './abstract/LifeTime.js';
+import { Definition } from './impl/Definition.js';
 
 function createUnboundDefinition(): never {
   throw new Error(

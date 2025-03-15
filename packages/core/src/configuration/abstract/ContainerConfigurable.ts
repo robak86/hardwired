@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { Definition } from '../../definitions/abstract/Definition.js';
-import type { Binder } from '../../definitions/Binder.js';
+import type { Definition } from '../../definitions/impl/Definition.js';
+import type { Binder } from '../Binder.js';
 import type { UseFn } from '../../container/IContainer.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 

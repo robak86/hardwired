@@ -1,6 +1,6 @@
 import { BindingsRegistry } from '../BindingsRegistry.js';
-import { fn } from '../../definitions/definitions.js';
-import { Definition } from '../../definitions/abstract/Definition.js';
+import { fn } from '../../definitions/fn.js';
+import { Definition } from '../../definitions/impl/Definition.js';
 
 describe(`BindingsRegistry`, () => {
   function setup() {

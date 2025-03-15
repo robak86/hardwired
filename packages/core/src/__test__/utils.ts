@@ -1,5 +1,5 @@
-import type { Definition } from '../definitions/abstract/Definition.js';
-import { fn } from '../definitions/definitions.js';
+import type { Definition } from '../definitions/impl/Definition.js';
+import { fn } from '../definitions/fn.js';
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
 
 export function buildSingletonTreeFn(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {

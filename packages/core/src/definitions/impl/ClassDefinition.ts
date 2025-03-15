@@ -2,11 +2,11 @@ import type { ClassType } from '../cls.js';
 import { type Thunk, unwrapThunk } from '../../utils/Thunk.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { isPromise } from '../../utils/IsPromise.js';
+import type { LifeTime } from '../abstract/LifeTime.js';
+import type { InstancesDefinitions } from '../abstract/InstanceDefinition.js';
+import type { AnyDefinition, IDefinition } from '../abstract/IDefinition.js';
 
-import type { LifeTime } from './LifeTime.js';
 import { Definition } from './Definition.js';
-import type { InstancesDefinitions } from './sync/InstanceDefinition.js';
-import type { AnyDefinition, IDefinition } from './IDefinition.js';
 
 export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructorArgs extends any[]>
   implements IDefinition<TInstance, TLifeTime, []>
