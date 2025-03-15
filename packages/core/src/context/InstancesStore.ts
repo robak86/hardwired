@@ -18,10 +18,10 @@ export class InstancesStore implements IInstancesStoreRead {
   private static _finalizer = InstancesFinalizer.create();
 
   static create(): InstancesStore {
-    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), [], []);
+    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), [], [], null);
   }
 
-  readonly id = crypto.randomUUID();
+  private readonly _root: InstancesStore;
 
   constructor(
     private _globalInstances: InstancesMap,
@@ -29,10 +29,24 @@ export class InstancesStore implements IInstancesStoreRead {
 
     private _globalDisposables: Disposable[],
     private _scopeDisposables: Disposable[],
-  ) {}
+
+    _root: InstancesStore | null,
+  ) {
+    this._root = _root ?? this;
+  }
 
   childScope(): InstancesStore {
-    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._globalDisposables, []);
+    const childInstances = new InstancesStore(
+      this._globalInstances,
+      InstancesMap.create(),
+      this._globalDisposables,
+      [],
+      this._root,
+    );
+
+    // InstancesStore._finalizer.appendChildInstancesRegistry(this, childInstances);
+
+    return childInstances;
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
@@ -80,14 +94,14 @@ export class InstancesStore implements IInstancesStoreRead {
       if (isPromise(instance)) {
         void instance.then(instanceAwaited => {
           if (isDisposable(instanceAwaited)) {
-            InstancesStore._finalizer.registerRoot(this, this._globalDisposables);
+            InstancesStore._finalizer.registerRoot(this._root, this._globalDisposables);
             this._globalDisposables.push(instanceAwaited);
           }
         });
       }
 
       if (isDisposable(instance)) {
-        InstancesStore._finalizer.registerRoot(this, this._globalDisposables);
+        InstancesStore._finalizer.registerRoot(this._root, this._globalDisposables);
         this._globalDisposables.push(instance);
       }
 
