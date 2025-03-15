@@ -1,5 +1,3 @@
-import { v4 } from 'uuid';
-
 import type { Definition } from '../definitions/abstract/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
 import { isPromise } from '../utils/IsPromise.js';
@@ -32,7 +30,6 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   private readonly _root: InstancesStore;
-  readonly id = v4();
 
   constructor(
     private _globalInstances: InstancesMap,
