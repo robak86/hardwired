@@ -15,14 +15,6 @@ import type { IInterceptor } from './interceptors/interceptor.js';
 
 export type ScopeTag = string | symbol;
 
-export interface IIdentifiable {
-  readonly id: string;
-}
-
-export interface ISymbolIdentifiable {
-  readonly id: symbol;
-}
-
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;
 
@@ -37,6 +29,11 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
     ...args: TArgs
   ): TValue;
+
+  ifExists<TValue>(
+    definition: Definition<TValue, LifeTime.singleton | LifeTime.scoped, []>,
+    callback: (instance: Awaited<TValue>) => void,
+  ): void;
 
   defer<TInstance, TArgs extends any[]>(
     factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,

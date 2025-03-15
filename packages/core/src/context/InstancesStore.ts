@@ -100,6 +100,14 @@ export class InstancesStore implements IInstancesStoreRead {
     return this._globalInstances.has(definitionId);
   }
 
+  has(definitionId: symbol): boolean {
+    return this.hasRootInstance(definitionId) || this.hasScopedInstance(definitionId);
+  }
+
+  get(definitionId: symbol): unknown {
+    return this._globalInstances.get(definitionId) ?? this._scopeInstances.get(definitionId);
+  }
+
   private registerDisposable(instance: unknown, disposeKey: WeakKey) {
     if (isPromise(instance)) {
       void instance.then(instanceAwaited => {

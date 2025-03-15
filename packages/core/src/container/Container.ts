@@ -104,10 +104,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     );
   }
 
-  // [Symbol.dispose]() {
-  //   this.scopesRegistry.dispose(this.id);
-  // }
-
   use<TValue, TArgs extends any[]>(
     definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
     ...args: TArgs
@@ -115,6 +111,29 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition, ...args);
+  }
+
+  /**
+   * Runs the callback when the instance is memoized in the current scope or in the root scope (singletons).
+   * Could be used to run some side effects only whe the instance was created, e.g. cleanup, logging, etc.
+   * @param definition
+   * @param callback
+   */
+  ifExists<TValue>(
+    definition: Definition<TValue, LifeTime.singleton | LifeTime.scoped, []>,
+    callback: (instance: Awaited<TValue>) => void,
+  ): void {
+    if (this.instancesStore.has(definition.id)) {
+      const instance = this.instancesStore.get(definition.id) as TValue;
+
+      if (isPromise(instance)) {
+        void instance.then(instance => {
+          callback(instance as Awaited<TValue>);
+        });
+      } else {
+        callback(instance as Awaited<TValue>);
+      }
+    }
   }
 
   buildWithStrategy<TValue, TArgs extends any[]>(
@@ -155,7 +174,7 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     }
 
     if (definition.strategy === LifeTime.transient) {
-      const instance = definition.create(withChildInterceptor, ...args);
+      const instance = this.instancesStore.upsertIntoTransientInstances(definition, withChildInterceptor, ...args);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
@@ -195,7 +214,7 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     const promises: Promise<void>[] = [];
 
     for (const [key, definition] of entries) {
-      const instance = this.use(definition);
+      const instance: unknown = this.use(definition as AnyDefinition);
 
       if (isPromise(instance)) {
         promises.push(
@@ -239,8 +258,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       scopeInterceptorsRegistry.build() ?? null,
       tags,
     );
-
-    // this.scopesRegistry.registerScope(cnt, instancesStore.scopeDisposables);
 
     if (configureFns.length) {
       const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags);
