@@ -1,3 +1,11 @@
+### 1.5.0
+
+#### Breaking changes
+
+- Unify creation of scopes - remove `container.withScope`, `container.disposable` methods.
+  - Now every scope is disposable by default.
+  - Whenever an object having `Symbol.dispose` method is created, it is automatically disposed when the scope is garbage collected.
+
 ### 1.4.0
 
 #### Breaking changes
@@ -80,4 +88,3 @@ const App = () => {
 ### 1.0.0
 
 - Simplify API. Drop builder-based and fluent interface approach in favor of `fs` and `cls` factory functions
-

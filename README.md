@@ -39,7 +39,6 @@
       - [Using a Temporal Container](#using-a-temporal-container)
     - [Creating a New Container](#creating-a-new-container)
     - [Using Scoped Containers](#using-scoped-containers)
-    - [Using Disposable Scope](#using-disposable-scope)
     - [Creating Child Scopes within the Definitions](#creating-child-scopes-within-the-definitions)
   - [Definitions Binding](#definitions-binding)
     - [Scope configuration](#scope-configuration)
@@ -459,33 +458,7 @@ const id1 = scope1.use(requestId); // every time you request the requestId from 
 const id2 = scope2.use(requestId); // scope2 holds its own requestId value
 ```
 
-You can alternatively create a scoped container by utilizing the `withScope` method, which accepts a callback function as its parameter. This approach allows you to define and manage the scope of a container within the context of the provided function.
-
-```typescript
-const id1 = container.withScope(use => {
-  return use(requestIdDefinition);
-});
-
-const id2 = container.withScope(use => {
-  return use(requestIdDefinition);
-});
-```
-
-### Using Disposable Scope
-
-Apart from the standard scopes, Hardwired provides also disposable scopes, that implements `Disposable` interface and can be used with the [using](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) keyword. Additionally, the disposable scope cannot create any child scopes. This limitation was introduced on purpose to avoid implementing complex logic related to disposing hierarchies of scopes.
-
-```typescript
-const root = container.new();
-
-using disposableScope = root.disposable(scope => {
-  scope.onDispose(use => {
-    use(wsConnection).disconnect();
-  });
-});
-```
-
-This example demonstrates also scope configurations. You can learn more about it [here](#scope-configuration).
+Every scope is automatically disposable. Whenever an instance created in the scope implements `Symbol.dispose` method, it is automatically disposed when the scope is garbage collected.
 
 ### Creating Child Scopes within the Definitions
 
