@@ -130,7 +130,7 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
 
       switch (definition.strategy) {
         case LifeTime.transient:
-          return definition.create(this, ...args);
+          return this.instancesStore.upsertIntoTransientInstances(definition, this, ...args);
         case LifeTime.singleton:
           return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
         case LifeTime.scoped:
