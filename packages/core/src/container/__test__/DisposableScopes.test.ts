@@ -1,10 +1,8 @@
-import { afterEach, vi } from 'vitest';
+import { vi } from 'vitest';
 
 import { container } from '../Container.js';
 import { fn } from '../../definitions/definitions.js';
 import { runGC } from '../../utils/__test__/runGC.js';
-
-import { withContainer } from './withContainer.js';
 
 describe(`registering scopes`, () => {
   class Disposable {
@@ -176,6 +174,27 @@ describe(`registering scopes`, () => {
         });
       });
     });
+
+    describe(`transient`, () => {
+      it(`disposes scoped instances`, async () => {
+        const disposeSpy = vi.fn<[string]>();
+        const transient = fn(() => new Disposable(disposeSpy));
+
+        function main() {
+          const cnt = container.new();
+
+          cnt.use(transient);
+        }
+
+        main();
+
+        await runGC();
+
+        await vi.waitFor(() => {
+          expect(disposeSpy).toHaveBeenCalled();
+        });
+      });
+    });
   });
 
   describe(`scopes`, () => {
@@ -231,6 +250,8 @@ describe(`registering scopes`, () => {
 
         const cnt = container.new();
 
+        // defined outside the main function. It won't be garbage collected when we define assertion,
+        // hence disposeSpy won't be called
         const scope1 = cnt.scope(c => {
           c.cascade(scoped1);
         });
@@ -249,42 +270,64 @@ describe(`registering scopes`, () => {
         await runGC();
 
         await vi.waitFor(() => {
-          expect(disposeSpy).toHaveBeenCalledTimes(1);
+          expect(disposeSpy).toHaveBeenCalledTimes(0);
         });
       });
     });
   });
 
-  describe.skip(`integration with vitest`, () => {
-    const it = withContainer();
+  describe(`integration`, () => {
+    describe(`stress test`, () => {
+      it(`doesn't skip any disposal`, async () => {
+        const runCount = 1_000;
 
-    const status = {
-      isDisposed: false,
-    };
+        let count = 0;
 
-    afterEach(async () => {
-      await runGC();
+        class TestDisposable {
+          constructor() {
+            count += 1;
+          }
 
-      await vi.waitFor(
-        () => {
-          expect(status.isDisposed).toEqual(true);
-        },
-        {
-          timeout: 1000,
-        },
-      );
-    });
+          [Symbol.dispose]() {
+            count -= 1;
+          }
+        }
 
-    it(`provides instance of container`, async ({ use }) => {
-      const def = fn.singleton(() => {
-        return new Disposable(() => {
-          console.log('WTTTTTTTF');
+        const singletonD = fn.scoped(() => new TestDisposable());
+        const transientD = fn(() => new TestDisposable());
+        const scopedD = fn.scoped(() => new TestDisposable());
 
-          status.isDisposed = true;
+        function main() {
+          const cnt = container.new();
+
+          cnt.use(singletonD);
+          cnt.use(scopedD);
+          cnt.use(transientD);
+
+          for (let i = 0; i < runCount; i++) {
+            const scope1 = cnt.scope();
+
+            scope1.use(singletonD);
+            scope1.use(scopedD);
+            scope1.use(transientD);
+
+            const scope2 = scope1.scope(s => {
+              s.cascade(scopedD);
+            });
+
+            scope2.use(singletonD);
+            scope2.use(scopedD);
+            scope2.use(transientD);
+          }
+        }
+
+        main();
+
+        await vi.waitFor(async () => {
+          await runGC();
+          expect(count).toBe(0);
         });
       });
-
-      use(def);
     });
   });
 });
