@@ -1,3 +1,5 @@
+import { expectType } from 'ts-expect';
+
 import { cls } from '../cls.js';
 import { fn } from '../definitions.js';
 import { container, once } from '../../container/Container.js';
@@ -18,6 +20,66 @@ describe(`cls`, () => {
       public readonly b: string,
     ) {}
   }
+
+  describe(`automatic awaiting of async dependencies`, () => {
+    it(`returns async definition and creates class after awaiting all dependencies`, async () => {
+      const asyncNum = fn(async () => 123);
+
+      class MyClass {
+        static instance = cls.singleton(this, [asyncNum]);
+        constructor(readonly val: number) {}
+      }
+
+      const myClass = await once(MyClass.instance);
+
+      expect(myClass.val).toBe(123);
+    });
+
+    describe(`multiple async and non-async dependencies`, () => {
+      it(`correctly awaits all the dependencies`, async () => {
+        const num = fn(() => 123);
+        const str = fn(() => '123');
+
+        const asyncNum = fn(async () => 123);
+        const asyncStr = fn(async () => '123');
+
+        class MyClass {
+          static instance = cls.singleton(this, [asyncNum, asyncStr, num, str]);
+          constructor(
+            readonly numFromAsync: number,
+            readonly strFromAsync: string,
+            readonly num: number,
+            readonly str: string,
+          ) {}
+        }
+
+        class ParentClass {
+          static instance = cls.singleton(this, [MyClass.instance]);
+          constructor(readonly myClass: MyClass) {}
+        }
+
+        const c = await once(ParentClass.instance);
+
+        expect(c.myClass.numFromAsync).toBe(123);
+        expect(c.myClass.strFromAsync).toBe('123');
+        expect(c.myClass.num).toBe(123);
+        expect(c.myClass.str).toBe('123');
+      });
+    });
+
+    describe(`types`, () => {
+      it(`if some of the dependencies definitions are async the class definition becomes also async`, async () => {
+        const asyncNum = fn(async () => 123);
+
+        class MyClass {
+          static instance = cls.singleton(this, [asyncNum]);
+          constructor(readonly val: number) {}
+        }
+
+        expectType<Promise<MyClass>>(once(MyClass.instance));
+      });
+    });
+  });
 
   describe(`types`, () => {
     it(`allows skipping args array`, async () => {

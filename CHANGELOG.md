@@ -2,9 +2,57 @@
 
 #### Breaking changes
 
-- Unify creation of scopes - remove `container.withScope`, `container.disposable` methods.
+- Unify creation of scopes - remove `container.withScope`, `container.disposable` methods and `DisposableScope` class.
   - Now every scope is disposable by default.
   - Whenever an object having `Symbol.dispose` method is created, it is automatically disposed when the scope is garbage collected.
+
+#### Features
+
+- add `useExisting` helper method for getting instances only if they are memoized in the current scope or the root
+- add **experimental** support for automatic disposal of instances which implement `Symbol.dispose` method
+
+```typescript
+import { scoped } from 'hardwired';
+
+class MyDisposable implements Disposable {
+  static instance = cls.scoped(MyDisposable);
+
+  [Symbol.dispose]() {
+    console.log('Disposed');
+  }
+}
+
+const cnt = container.new();
+
+function runWithScope() {
+  const scope = cnt.scope();
+  scope.use(MyDisposable.instance);
+}
+
+runWithScope();
+// here the scope created within the method can be garbage collected
+// and [Symbol.dispose] method of MyDisposable will be called
+```
+
+- add automatic lifting of asynchronicity when some of the class dependencies are async
+
+```typescript
+import { fn, cls, once } from 'hardwired';
+
+const asyncDep = fn.singleton(async () => 123); // async definition
+const syncDep = fn.singleton(() => 123); // sync definition
+
+class MyClass {
+  static instance = cls(MyClass, [asyncDep, syncDep]);
+
+  constructor(
+    public asyncDepAwaited: number, // asyncDep is typed as awaited by the container
+    public syncDep: number,
+  ) {}
+}
+
+const myClass = await once(MyClass.instance); // needs to be awaited because MyClass.instance is async
+```
 
 ### 1.4.0
 

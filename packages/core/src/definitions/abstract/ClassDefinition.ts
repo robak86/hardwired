@@ -1,5 +1,7 @@
 import type { ClassType } from '../cls.js';
-import type { Thunk } from '../../utils/Thunk.js';
+import { type Thunk, unwrapThunk } from '../../utils/Thunk.js';
+import type { IContainer } from '../../container/IContainer.js';
+import { isPromise } from '../../utils/IsPromise.js';
 
 import type { LifeTime } from './LifeTime.js';
 import type { AnyDefinition } from './Definition.js';
@@ -11,6 +13,8 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
   TLifeTime,
   []
 > {
+  private _hasOnlySyncDependencies = false; // flag for optimization, so we don't have to check every time
+
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
@@ -18,23 +22,35 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     public readonly dependencies?: Thunk<InstancesDefinitions<TConstructorArgs, TLifeTime>>,
   ) {
     // TODO: perhaps the inner condition for checking deps could be extracted from the critical path
-    super(id, strategy, use => {
+    const create = (use: IContainer): TInstance => {
       // no dependencies
       if (dependencies === undefined) {
         //@ts-ignore
         return new klass();
       }
 
-      // array dependencies
-      if (Array.isArray(dependencies)) {
-        return new klass(...(dependencies.map(dep => use(dep)) as TConstructorArgs));
+      const deps = use.all(...unwrapThunk(dependencies)) as TConstructorArgs | Promise<TConstructorArgs>;
+
+      if (this._hasOnlySyncDependencies) {
+        return new klass(...(deps as TConstructorArgs));
       }
 
-      // thunk dependencies
-      return new klass(...(dependencies().map(dep => use(dep)) as TConstructorArgs));
-    });
+      if (isPromise(deps)) {
+        return deps.then(deps => {
+          return new klass(...deps);
+        }) as TInstance;
+      } else {
+        this._hasOnlySyncDependencies = true;
 
-    Array.isArray(dependencies) && this.assertValidDependencies(dependencies);
+        return new klass(...deps);
+      }
+    };
+
+    super(id, strategy, create);
+
+    if (Array.isArray(dependencies)) {
+      this.assertValidDependencies(dependencies);
+    }
   }
 
   get name() {
