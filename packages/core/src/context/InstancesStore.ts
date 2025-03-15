@@ -3,7 +3,7 @@ import type { IContainer } from '../container/IContainer.js';
 import { isPromise } from '../utils/IsPromise.js';
 
 import { InstancesMap, isDisposable } from './InstancesMap.js';
-import { InstancesFinalizer } from './InstancesFinalizer.js';
+import { DisposablesFinalizer } from './DisposablesFinalizer.js';
 
 export interface IInstancesStoreRead {
   hasRootInstance(definitionId: symbol): boolean;
@@ -11,7 +11,7 @@ export interface IInstancesStoreRead {
 }
 
 export class InstancesStore implements IInstancesStoreRead {
-  static setFinalizer(finalizer: InstancesFinalizer) {
+  static setFinalizer(finalizer: DisposablesFinalizer) {
     InstancesStore._finalizer = finalizer;
   }
 
@@ -23,7 +23,7 @@ export class InstancesStore implements IInstancesStoreRead {
     };
   }
 
-  private static _finalizer = InstancesFinalizer.create();
+  private static _finalizer = DisposablesFinalizer.create();
 
   static create(): InstancesStore {
     return new InstancesStore(InstancesMap.create(), InstancesMap.create(), null);

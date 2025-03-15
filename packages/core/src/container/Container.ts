@@ -13,6 +13,7 @@ import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDS
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isPromise } from '../utils/IsPromise.js';
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
+import { DisposablesFinalizer } from '../context/DisposablesFinalizer.js';
 
 import type {
   ContainerAllReturn,
@@ -28,14 +29,46 @@ import type {
 } from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
+import { ChildScopes } from './ChildScopes.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
 
+class ContainerDisposer implements Disposable {
+  private _isDisposed = false;
+  private _disposables: Disposable[] = [];
+
+  constructor(readonly id: string) {}
+
+  registerDisposable(disposable: Disposable) {
+    if (this._isDisposed) {
+      throw new Error('ContainerDisposer is disposed');
+    }
+
+    this._disposables.push(disposable);
+  }
+
+  [Symbol.dispose]() {
+    if (this._isDisposed) {
+      return;
+    }
+
+    this._isDisposed = true;
+    console.log('ContainerDisposer', this.id, this._disposables);
+  }
+}
+
+const containerFinalizer = new DisposablesFinalizer();
+
 export class Container extends ExtensibleFunction implements InstanceCreationAware, IContainerScopes {
   public readonly id = v4();
+
+  private _isDisposed = false;
+
+  private _childScopes = new ChildScopes();
+  private _disposer = new ContainerDisposer(this.id);
 
   constructor(
     public readonly parentId: string | null,
@@ -53,6 +86,24 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
         return this.use(definition, ...args);
       },
     );
+
+    containerFinalizer.registerDisposable(this, this._disposer);
+  }
+
+  [Symbol.dispose]() {
+    if (this._isDisposed) {
+      return;
+    }
+
+    this._disposer[Symbol.dispose]();
+
+    // dispose own;
+
+    this._childScopes.forEach(child => {
+      child[Symbol.dispose]();
+    });
+
+    this._isDisposed = true;
   }
 
   new<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
@@ -105,6 +156,14 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     );
   }
 
+  dispose() {
+    // first call all the finalizers registered during the configuration phase
+
+    (this.instancesStore as any) = null;
+
+    this._isDisposed = true;
+  }
+
   use<TValue, TArgs extends any[]>(
     definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
     ...args: TArgs
@@ -127,6 +186,10 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
     ...args: TArgs
   ): TValue {
+    if (this._isDisposed) {
+      throw new Error(`Container ${this.id} is disposed`);
+    }
+
     if (this.currentInterceptor) {
       return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition, args), definition, ...args);
     } else {
@@ -227,6 +290,10 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     };
   }
 
+  get activeScopes() {
+    return this._childScopes.count;
+  }
+
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
   ): NewScopeReturnType<TConfigureFns> {
@@ -245,6 +312,8 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       scopeInterceptorsRegistry.build() ?? null,
       tags,
     );
+
+    this._childScopes.append(cnt);
 
     if (configureFns.length) {
       const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags);

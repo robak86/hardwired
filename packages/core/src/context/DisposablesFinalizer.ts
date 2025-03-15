@@ -1,10 +1,10 @@
 import EventEmitter from 'node:events';
 
-export class InstancesFinalizer extends EventEmitter<{
+export class DisposablesFinalizer extends EventEmitter<{
   onDisposeError: [unknown];
 }> {
   static create() {
-    return new InstancesFinalizer();
+    return new DisposablesFinalizer();
   }
 
   private _finalizer = new FinalizationRegistry<Disposable[]>(this.onFinalize.bind(this));
@@ -45,4 +45,4 @@ export class InstancesFinalizer extends EventEmitter<{
   }
 }
 
-export const scopes = new InstancesFinalizer();
+export const scopes = new DisposablesFinalizer();

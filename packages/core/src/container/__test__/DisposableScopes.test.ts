@@ -13,6 +13,29 @@ describe(`registering scopes`, () => {
     }
   }
 
+  describe(`explicit disposal`, () => {
+    it(`allows instances Store to be garbage collected, so te dispose methods should be called`, async () => {
+      const disposeSpy = vi.fn<[string]>();
+      const singleton1 = fn.singleton(() => new Disposable(disposeSpy));
+      const scoped = fn.scoped(() => new Disposable(disposeSpy));
+
+      const cnt = container.new();
+      const scope = cnt.scope();
+
+      scope.use(scoped);
+      scope.dispose();
+
+      cnt.use(singleton1);
+      cnt.dispose();
+
+      await runGC();
+
+      await vi.waitFor(() => {
+        expect(disposeSpy).toHaveBeenCalled();
+      });
+    });
+  });
+
   describe(`rootContainer`, () => {
     describe(`scoped`, () => {
       it(`disposes scoped instances`, async () => {
@@ -71,7 +94,9 @@ describe(`registering scopes`, () => {
 
           await runGC();
 
-          expect(disposeSpy).toHaveBeenCalledTimes(1);
+          await vi.waitFor(() => {
+            expect(disposeSpy).toHaveBeenCalledTimes(1);
+          });
         });
 
         it(`dispatch dispose if singleton was propagated from the child scope`, async () => {
