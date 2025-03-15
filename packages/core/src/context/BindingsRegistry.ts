@@ -1,4 +1,4 @@
-import type { AnyDefinition } from '../definitions/abstract/Definition.js';
+import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
 
 import { COWMap } from './InstancesMap.js';
 

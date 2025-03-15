@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 import type { InstancesRecord } from '../definitions/abstract/sync/InstanceDefinition.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
-import type { AnyDefinition, Definition } from '../definitions/abstract/Definition.js';
+import type { Definition } from '../definitions/abstract/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
@@ -12,6 +12,7 @@ import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/S
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isPromise } from '../utils/IsPromise.js';
+import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
 
 import type {
   ContainerAllReturn,

@@ -39,7 +39,6 @@ export type { Middleware, MiddlewareNextFn } from './definitions/withMiddleware.
 export { withMiddleware, createMiddleware } from './definitions/withMiddleware.js';
 export type { ClassType } from './definitions/cls.js';
 export { cls } from './definitions/cls.js';
-export type { AnyDefinition } from './definitions/abstract/Definition.js';
 export { Definition } from './definitions/abstract/Definition.js';
 export { ClassDefinition } from './definitions/abstract/ClassDefinition.js';
 
@@ -47,3 +46,4 @@ export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
 
 export * from './configuration/helper/compose.js';
+export type { AnyDefinition } from './definitions/abstract/IDefinition.js';

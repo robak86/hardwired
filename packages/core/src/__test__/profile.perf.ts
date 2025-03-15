@@ -5,11 +5,11 @@ import { fn } from '../definitions/definitions.js';
 import type { IContainer } from '../container/IContainer.js';
 import { DependenciesGraphRoot } from '../container/interceptors/graph/DependenciesGraph.js';
 
-import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
+import { buildScopedFn, buildSingletonTreeFn, buildTransientFn } from './utils.js';
 
-const singletonDefinitions = buildSingletonTree(3, 10);
-const transientDefinitions = buildTransient(3, 10);
-const scopedDefinitions = buildScoped(3, 10);
+const singletonDefinitions = buildSingletonTreeFn(3, 10);
+const transientDefinitions = buildTransientFn(3, 10);
+const scopedDefinitions = buildScopedFn(3, 10);
 
 const singletonD = fn.singleton(use => {
   return use.all(...singletonDefinitions);

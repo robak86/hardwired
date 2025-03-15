@@ -1,10 +1,11 @@
-import type { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
+import type { Definition } from '../../definitions/abstract/Definition.js';
 import type { InitFn } from '../abstract/ContainerConfigurable.js';
 import { Binder } from '../../definitions/Binder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
+import type { AnyDefinition } from '../../definitions/abstract/IDefinition.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(

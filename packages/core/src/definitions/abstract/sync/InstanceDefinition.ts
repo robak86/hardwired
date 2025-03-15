@@ -1,6 +1,7 @@
-import type { AnyDefinition, Definition } from '../Definition.js';
+import type { Definition } from '../Definition.js';
 import type { AwaitedInstance } from '../../../container/IContainer.js';
 import type { LifeTime } from '../LifeTime.js';
+import type { AnyDefinition } from '../IDefinition.js';
 
 import type { ValidDependenciesLifeTime } from './InstanceDefinitionDependency.js';
 

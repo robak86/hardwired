@@ -2,10 +2,11 @@ import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { getTruncatedFunctionDefinition } from '../utils/getTruncatedFunctionDefinition.js';
 
 import type { LifeTime } from './LifeTime.js';
+import type { IDefinition } from './IDefinition.js';
 
-export type AnyDefinition = Definition<any, LifeTime, any[]>;
-
-export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
+export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]>
+  implements IDefinition<TInstance, TLifeTime, TArgs>
+{
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,

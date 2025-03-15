@@ -1,4 +1,4 @@
-import type { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
+import type { Definition } from '../../definitions/abstract/Definition.js';
 import { Binder } from '../../definitions/Binder.js';
 import type {
   ContainerConfigurable,
@@ -12,6 +12,7 @@ import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
+import type { AnyDefinition } from '../../definitions/abstract/IDefinition.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(
