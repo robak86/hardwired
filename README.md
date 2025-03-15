@@ -458,7 +458,25 @@ const id1 = scope1.use(requestId); // every time you request the requestId from 
 const id2 = scope2.use(requestId); // scope2 holds its own requestId value
 ```
 
-Every scope is automatically disposable. Whenever an instance created in the scope implements `Symbol.dispose` method, it is automatically disposed when the scope is garbage collected.
+> **Experimental:** Every scope is disposable, which means that whenever an object created by the scope implements the `Symbol.dispose` method, that method is automatically called when the scope is being garbage collected.
+
+**Singleton** definitions are released only when the root container is garbage collected.
+
+**Scoped** definitions are released when the scope is garbage collected. In case of cascading definition, the instance is disposed when the owning scope is garbage collected.
+
+The same mechanism also applies to **transient** definitions. The transient definitions created by a scope, even if they are not memoized, are released only when the scope is garbage collected.
+
+> **Warning**: The order of disposal is not guaranteed, so dispose methods shouldn't make any assumptions about the state of other dependencies during disposal. In general, most of the time you should explicitly dispose the resources, whenever you create a scope and don't use it anymore.
+
+```typescript
+const scope = rootContainer.scope();
+
+// ... do something with scope
+
+scope.ifCreated(myDisposableDefinition, myDisposableInstance => {
+  myDisposableInstance.destroy();
+});
+```
 
 ### Creating Child Scopes within the Definitions
 
