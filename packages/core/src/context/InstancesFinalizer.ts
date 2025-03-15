@@ -1,7 +1,5 @@
 import EventEmitter from 'node:events';
 
-import type { IIdentifiable } from '../container/IContainer.js';
-
 export class InstancesFinalizer extends EventEmitter<{
   onDisposeError: [unknown];
 }> {
@@ -9,44 +7,24 @@ export class InstancesFinalizer extends EventEmitter<{
     return new InstancesFinalizer();
   }
 
-  private _scopesFinalizer = new FinalizationRegistry<Disposable[]>(this.onFinalize.bind(this));
-  private _rootFinalizer = new FinalizationRegistry<Disposable[]>(this.onFinalize.bind(this));
-
+  private _finalizer = new FinalizationRegistry<Disposable[]>(this.onFinalize.bind(this));
   private _disposables = new WeakSet<Disposable>();
+  private _instanceDisposables = new WeakMap<WeakKey, Disposable[]>();
 
-  private _scopeDisposables: Record<string, Disposable[]> = {};
-  private _rootDisposables: Record<string, Disposable[]> = {};
-
-  registerScope(instancesRegistry: IIdentifiable, scopeDisposable: Disposable) {
-    if (this._disposables.has(scopeDisposable)) {
+  registerDisposable(instancesRegistry: WeakKey, disposable: Disposable) {
+    if (this._disposables.has(disposable)) {
       return;
     }
 
-    if (this._scopeDisposables[instancesRegistry.id] === undefined) {
+    if (!this._instanceDisposables.has(instancesRegistry)) {
       const disposables: Disposable[] = [];
 
-      this._scopeDisposables[instancesRegistry.id] = disposables;
-      this._scopesFinalizer.register(instancesRegistry, disposables, instancesRegistry);
+      this._instanceDisposables.set(instancesRegistry, disposables);
+      this._finalizer.register(instancesRegistry, disposables, instancesRegistry);
     }
 
-    this._scopeDisposables[instancesRegistry.id].push(scopeDisposable);
-    this._disposables.add(scopeDisposable);
-  }
-
-  registerRoot(instancesRegistry: IIdentifiable, rootDisposable: Disposable) {
-    if (this._disposables.has(rootDisposable)) {
-      return;
-    }
-
-    if (this._rootDisposables[instancesRegistry.id] === undefined) {
-      const disposables: Disposable[] = [];
-
-      this._rootDisposables[instancesRegistry.id] = disposables;
-      this._rootFinalizer.register(instancesRegistry, disposables, instancesRegistry);
-    }
-
-    this._rootDisposables[instancesRegistry.id].push(rootDisposable);
-    this._disposables.add(rootDisposable);
+    this._instanceDisposables.get(instancesRegistry)?.push(disposable);
+    this._disposables.add(disposable);
   }
 
   private onFinalize(disposables: Disposable[]) {
