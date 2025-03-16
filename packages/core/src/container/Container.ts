@@ -13,7 +13,6 @@ import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDS
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isPromise } from '../utils/IsPromise.js';
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
-import { DisposablesFinalizer } from '../context/DisposablesFinalizer.js';
 
 import type {
   ContainerAllReturn,
@@ -37,8 +36,6 @@ export interface Container extends UseFn<LifeTime> {}
 
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
-
-const containerFinalizer = new DisposablesFinalizer();
 
 export class Container
   extends ExtensibleFunction

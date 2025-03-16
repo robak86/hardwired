@@ -1,7 +1,7 @@
 import type { Definition } from '../definitions/impl/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
 import { isPromise } from '../utils/IsPromise.js';
-import { CompositeDisposable } from '../container/CompositeDisposable.js';
+import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
 
 import { InstancesMap, isDisposable } from './InstancesMap.js';
 

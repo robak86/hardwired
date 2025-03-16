@@ -13,8 +13,8 @@ export class DisposablesFinalizer extends EventEmitter<{
 
   /***
    * Registers disposable instance to be disposed when the target is garbage collected.
-   * For the target we use object that lives as a part of a scope (InstancesStore). So whenever instances store
-   * is garbage collected, all disposables that are registered for that store will be disposed.
+   * For the target we use object that lives as a part of a scope (InstancesStore).
+   * So, whenever the scope holding that object, all disposables that are registered for that store will be disposed.
    * @param target
    * @param disposable
    */
