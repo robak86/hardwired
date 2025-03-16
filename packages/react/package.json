@@ -1,6 +1,6 @@
 {
   "name": "hardwired-react",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/robak86/hardwired",
@@ -24,11 +24,11 @@
   "types": "./dist/cjs/index.d.ts",
   "dependencies": {},
   "peerDependencies": {
-    "hardwired": "1.4.0",
+    "hardwired": "1.5.0",
     "react": "^18 || ^19"
   },
   "devDependencies": {
-    "hardwired": "1.4.0"
+    "hardwired": "1.5.0"
   },
   "files": [
     "dist",
