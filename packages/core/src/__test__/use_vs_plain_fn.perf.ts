@@ -49,7 +49,7 @@ instantiationBench
     cnt.use(d1);
   });
 
-instantiationBench
+await instantiationBench
   .warmup()
   .then(_ => instantiationBench.run())
   .then(_ => console.table(instantiationBench.table()));

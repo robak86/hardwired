@@ -248,7 +248,7 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`does not propagate scoped instances created in descendent scope to ascendant scopes`, async () => {
-        const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
+        const randomFactorySpy = vi.fn(() => Math.random());
         const a = fn.scoped(randomFactorySpy);
 
         const root = container.new();
@@ -400,7 +400,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDep = fn.singleton(async () => 123);
           const syncDep = fn.singleton(() => 'str');
           const asyncDef = fn.singleton(async use => {
-            return new TestClassArgs2(await use(asyncDep), await use(syncDep));
+            return new TestClassArgs2(await use(asyncDep), use(syncDep));
           });
           const result = await container.new().use(asyncDef);
 

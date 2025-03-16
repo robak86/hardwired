@@ -44,5 +44,4 @@ export { ClassDefinition } from './definitions/impl/ClassDefinition.js';
 export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
 
-export * from './configuration/helper/compose.js';
 export type { AnyDefinition } from './definitions/abstract/IDefinition.js';

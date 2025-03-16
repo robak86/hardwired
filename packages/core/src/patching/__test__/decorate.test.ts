@@ -148,6 +148,7 @@ describe(`decorate`, () => {
 
         instance1.callMe(1, 2);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
         expect(instance1).toBe(instance2);
       });
@@ -159,6 +160,7 @@ describe(`decorate`, () => {
 
         instance1.callMe(1, 2);
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
         expect(instance1).toBe(instance2);
       });

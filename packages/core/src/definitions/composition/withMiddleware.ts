@@ -34,28 +34,33 @@ export const createMiddleware = (middlewareFn: Middleware): Middleware => {
   return middlewareFn;
 };
 
-export const withMiddleware = Object.assign(
-  (...middleware: Middleware[]): DefineTransient => {
+export type CustomFnFactory = {
+  transient(...middleware: Middleware[]): DefineTransient;
+  singleton(...middleware: Middleware[]): DefineSingleton;
+  scoped(...middleware: Middleware[]): DefineScoped;
+};
+
+// TODO: this is very limited as we cannot produce fn function that accepts some additional configuration param, before factoryFn
+export const withMiddleware: CustomFnFactory = {
+  transient(...middleware: Middleware[]): DefineTransient {
     return <TInstance, TArgs extends any[]>(
       create: (locator: IContainer<LifeTime.transient>, ...args: TArgs) => TInstance,
     ): Definition<TInstance, LifeTime.transient, TArgs> => {
       return chainMiddlewares(middleware, create, LifeTime.transient);
     };
   },
-  {
-    singleton(...middleware: Middleware[]): DefineSingleton {
-      return <TInstance>(
-        create: (locator: IContainer<LifeTime.singleton>) => TInstance,
-      ): Definition<TInstance, LifeTime.singleton, []> => {
-        return chainMiddlewares(middleware, create, LifeTime.singleton);
-      };
-    },
-    scoped(...middleware: Middleware[]): DefineScoped {
-      return <TInstance>(
-        create: (locator: IContainer<LifeTime.scoped>) => TInstance,
-      ): Definition<TInstance, LifeTime.scoped, []> => {
-        return chainMiddlewares(middleware, create, LifeTime.scoped);
-      };
-    },
+  singleton(...middleware: Middleware[]): DefineSingleton {
+    return <TInstance>(
+      create: (locator: IContainer<LifeTime.singleton>) => TInstance,
+    ): Definition<TInstance, LifeTime.singleton, []> => {
+      return chainMiddlewares(middleware, create, LifeTime.singleton);
+    };
   },
-);
+  scoped(...middleware: Middleware[]): DefineScoped {
+    return <TInstance>(
+      create: (locator: IContainer<LifeTime.scoped>) => TInstance,
+    ): Definition<TInstance, LifeTime.scoped, []> => {
+      return chainMiddlewares(middleware, create, LifeTime.scoped);
+    };
+  },
+};

@@ -38,7 +38,7 @@ describe(`withMiddleware`, () => {
 
   describe(`combine without args`, () => {
     it(`returns correct instance`, async () => {
-      const define = withMiddleware();
+      const define = withMiddleware.transient();
 
       const defWithMiddleware = define(() => 123);
 
@@ -49,7 +49,7 @@ describe(`withMiddleware`, () => {
   describe(`passthrough`, () => {
     it(`returns correct instance`, async () => {
       const { passthrough } = setup();
-      const define = withMiddleware(passthrough);
+      const define = withMiddleware.transient(passthrough);
 
       const defWithMiddleware = define(() => 123);
 
@@ -59,7 +59,7 @@ describe(`withMiddleware`, () => {
 
     it(`returns correct instance for multiple middlewares`, async () => {
       const { passthrough } = setup();
-      const define = withMiddleware(passthrough, passthrough, passthrough);
+      const define = withMiddleware.transient(passthrough, passthrough, passthrough);
 
       const defWithMiddleware = define(() => 123);
 
@@ -69,7 +69,7 @@ describe(`withMiddleware`, () => {
 
     it(`works with args`, async () => {
       const { passthrough } = setup();
-      const define = withMiddleware(passthrough, passthrough, passthrough);
+      const define = withMiddleware.transient(passthrough, passthrough, passthrough);
 
       const withoutMiddleware = fn((use, arg1: number, arg2: string) => [arg1, arg2]);
 
@@ -83,7 +83,7 @@ describe(`withMiddleware`, () => {
   describe(`creatingScope`, () => {
     it(`returns correct instance`, async () => {
       const { creatingScope } = setup();
-      const define = withMiddleware(creatingScope);
+      const define = withMiddleware.transient(creatingScope);
 
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));
@@ -96,7 +96,7 @@ describe(`withMiddleware`, () => {
 
     it(`returns correct instance for multiple middlewares`, async () => {
       const { creatingScope } = setup();
-      const define = withMiddleware(creatingScope, creatingScope, creatingScope);
+      const define = withMiddleware.transient(creatingScope, creatingScope, creatingScope);
 
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));
@@ -109,7 +109,7 @@ describe(`withMiddleware`, () => {
 
     it(`creates correct amount of containers`, async () => {
       const { creatingScope, createdContainersIds } = setup();
-      const define = withMiddleware(creatingScope, creatingScope, creatingScope);
+      const define = withMiddleware.transient(creatingScope, creatingScope, creatingScope);
 
       const randomScopedValue = fn.scoped(() => Math.random());
       const defWithMiddleware = define(use => use(randomScopedValue));
