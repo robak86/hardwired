@@ -70,7 +70,8 @@
     "@vitest/coverage-v8": "^2.1.2",
     "vitest": "^3.0.8",
     "ts-monorepo": "^0.3.4",
-    "utility-types": "^3.11.0"
+    "utility-types": "^3.11.0",
+    "lefthook": "^1.11.3"
   },
   "dependencies": {}
 }
