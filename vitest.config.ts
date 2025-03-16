@@ -5,9 +5,9 @@ export default defineConfig({
     workspace: ['./packages/core/vitest.config.ts', './packages/react/vitest.config.ts'],
     coverage: {
       provider: 'v8',
-      reporter: 'cobertura',
-      include: ['./packages/**/*'],
-      exclude: ['./packages/core/src/__test__/*', './*'],
+      reporter: ['cobertura', 'html'],
+      include: ['packages/**/src'],
+      exclude: ['./packages/core/src/__test__/*', './packages/examples/'],
       extension: ['ts', 'tsx'],
     },
   },
