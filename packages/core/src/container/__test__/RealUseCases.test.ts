@@ -14,7 +14,7 @@ import {
 } from '../../configuration/ContainerConfiguration.js';
 
 describe(`Testing`, () => {
-  describe(`using container in vitest context with cleaning up resources`, () => {
+  describe(`using container in vitest context with custom cleaning of resources`, () => {
     const status = {
       isDestroyed: false,
     };
@@ -32,11 +32,8 @@ describe(`Testing`, () => {
     ) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use: any) => {
-          const scope = await container.new(...containerConfigFns);
-
+          using scope = await container.new(...containerConfigFns);
           await use(scope);
-
-          scope.useExisting(dbConnection)?.destroy();
         },
       });
     };
@@ -44,15 +41,15 @@ describe(`Testing`, () => {
     const setupDB = configureContainer(c => {
       c.cascade(dbConnection);
 
-      // TODO: ideally disposal should be registered here
+      c.onDispose(scope => {
+        scope.useExisting(dbConnection)?.destroy();
+      });
     });
 
     const it = withContainer(setupDB);
 
     it(`uses container`, async ({ use }) => {
-      const scope = use.scope(_c => {
-        // configure
-      });
+      const scope = use.scope();
 
       scope.use(dbConnection);
     });
