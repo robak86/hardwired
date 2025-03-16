@@ -10,17 +10,23 @@ export interface IBindingRegistryRead {
 
 export class BindingsRegistry implements IBindingRegistryRead {
   static create(): BindingsRegistry {
-    return new BindingsRegistry(COWMap.create(), COWMap.create(), COWMap.create());
+    return new BindingsRegistry(COWMap.create(), COWMap.create(), COWMap.create(), new Map());
   }
 
   constructor(
     private _scopeDefinitions: COWMap<AnyDefinition>,
     private _frozenDefinitions: COWMap<AnyDefinition>,
     private _cascadingDefinitions: COWMap<AnyDefinition>,
+    private _ownCascadingDefinitions: Map<symbol, AnyDefinition>,
   ) {}
 
   checkoutForScope(): BindingsRegistry {
-    return new BindingsRegistry(COWMap.create(), this._frozenDefinitions.clone(), this._cascadingDefinitions.clone());
+    return new BindingsRegistry(
+      COWMap.create(),
+      this._frozenDefinitions.clone(),
+      this._cascadingDefinitions.clone(),
+      new Map(),
+    );
   }
 
   getDefinition<T extends AnyDefinition>(definition: T): T {
@@ -39,6 +45,10 @@ export class BindingsRegistry implements IBindingRegistryRead {
 
   hasScopeDefinition(definitionId: symbol): boolean {
     return this._scopeDefinitions.has(definitionId);
+  }
+
+  inheritsCascadingDefinition(definitionId: symbol): boolean {
+    return this._cascadingDefinitions.has(definitionId) && !this._ownCascadingDefinitions.has(definitionId);
   }
 
   hasCascadingDefinition(definitionId: symbol): boolean {
@@ -63,6 +73,15 @@ export class BindingsRegistry implements IBindingRegistryRead {
     this._scopeDefinitions.set(definition.id, definition);
   }
 
+  /**
+   * Registers cascading binding for the current scope and all child scopes.
+   * Cascading definition is a definition that is bound to scope (Definition#bind(container)).
+   * When we register cascading definition here, it gets inherited by all child binding registries, so effectively
+   * whenever we try to resolve the definition in some child scope, we will get the definition instantiated in
+   * the scope that is bound to the definition override.
+   *
+   * @param definition - definition bound to some particular scope
+   */
   addCascadingBinding(definition: AnyDefinition) {
     if (this._scopeDefinitions.has(definition.id)) {
       throw new Error(
@@ -71,5 +90,6 @@ export class BindingsRegistry implements IBindingRegistryRead {
     }
 
     this._cascadingDefinitions.set(definition.id, definition);
+    this._ownCascadingDefinitions.set(definition.id, definition);
   }
 }

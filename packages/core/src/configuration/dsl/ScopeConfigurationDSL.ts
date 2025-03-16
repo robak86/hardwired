@@ -36,7 +36,11 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
       throw new Error(`Cascading is allowed only for scoped.`);
     }
 
-    return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
+    return new Binder<TInstance, TLifeTime, []>(
+      definition,
+      this._onCascadingStaticBind,
+      this._onCascadingInstantiableBind,
+    );
   }
 
   onInit(initializer: InitFn): void {

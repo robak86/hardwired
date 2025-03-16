@@ -1,8 +1,14 @@
-import { describe, expect, type MockInstance, vi } from 'vitest';
+import { describe, expect, type MockInstance, test, vi } from 'vitest';
 
 import { container } from '../Container.js';
 import { runGC } from '../../utils/__test__/runGC.js';
 import { fn } from '../../definitions/fn.js';
+import {
+  type AsyncContainerConfigureFn,
+  configureContainer,
+  type ContainerConfigureFn,
+} from '../../configuration/ContainerConfiguration.js';
+import type { IContainer } from '../IContainer.js';
 
 describe(`registering scopes`, () => {
   class Disposable {
@@ -120,15 +126,10 @@ describe(`registering scopes`, () => {
 
         expect(cnt.stats.childScopes).toEqual(100);
 
-        await vi.waitFor(
-          async () => {
-            await runGC();
-            expect(cnt.stats.childScopes).toEqual(0);
-          },
-          {
-            timeout: 50_000,
-          },
-        );
+        await vi.waitFor(async () => {
+          await runGC();
+          expect(cnt.stats.childScopes).toEqual(0);
+        });
       });
     });
 
@@ -269,61 +270,155 @@ describe(`registering scopes`, () => {
           },
         );
       });
+
+      it(`throws when container is used after manual disposal`, async () => {
+        const def = fn.singleton(() => 123);
+
+        const cnt = container.new();
+
+        cnt[Symbol.dispose]();
+
+        expect(() => {
+          cnt.use(def);
+        }).toThrowError();
+      });
     });
   });
 
-  describe(`integration`, () => {
-    describe(`stress test`, () => {
-      it(`doesn't skip any disposal`, async () => {
-        const runCount = 1_000;
+  describe(`fuzzy test`, () => {
+    const maybe = (callback: () => void) => {
+      if (Math.random() > 0.5) {
+        callback();
+      }
+    };
 
-        let count = 0;
+    it(`does not skip any disposal`, async () => {
+      const runCount = 10_000;
 
-        class TestDisposable {
-          constructor() {
-            count += 1;
-          }
+      let count = 0;
 
-          [Symbol.dispose]() {
-            count -= 1;
-          }
+      class TestDisposable {
+        constructor() {
+          count += 1;
         }
 
-        const singletonD = fn.scoped(() => new TestDisposable());
-        const transientD = fn(() => new TestDisposable());
-        const scopedD = fn.scoped(() => new TestDisposable());
-
-        function main() {
-          using cnt = container.new();
-
-          cnt.use(singletonD);
-          cnt.use(scopedD);
-          cnt.use(transientD);
-
-          for (let i = 0; i < runCount; i++) {
-            using scope1 = cnt.scope();
-
-            scope1.use(singletonD);
-            scope1.use(scopedD);
-            scope1.use(transientD);
-
-            using scope2 = scope1.scope(s => {
-              s.cascade(scopedD);
-            });
-
-            scope2.use(singletonD);
-            scope2.use(scopedD);
-            scope2.use(transientD);
-          }
+        [Symbol.dispose]() {
+          count -= 1;
         }
+      }
 
-        main();
+      const singletonD = fn.singleton(() => new TestDisposable());
+      const transientD = fn(() => new TestDisposable());
+      const scoped1 = fn.scoped(() => new TestDisposable());
+      const scoped2 = fn.scoped(() => new TestDisposable());
+      const asyncScoped = fn.scoped(async () => new TestDisposable());
 
-        await vi.waitFor(async () => {
-          await runGC();
-          expect(count).toBe(0);
+      async function main() {
+        using cnt = container.new(c => {
+          maybe(() => {
+            c.cascade(scoped1);
+            c.cascade(scoped2);
+            c.cascade(asyncScoped);
+          });
         });
+
+        maybe(() => {
+          cnt.use(singletonD);
+          cnt.use(scoped1);
+          cnt.use(transientD);
+          void cnt.use(asyncScoped);
+        });
+
+        for (let i = 0; i < runCount; i++) {
+          using scope1 = cnt.scope(s => {
+            maybe(() => {
+              s.cascade(scoped1);
+              s.cascade(scoped2);
+              s.cascade(asyncScoped);
+            });
+          });
+
+          maybe(() => {
+            scope1.use(singletonD);
+            scope1.use(scoped1);
+            scope1.use(transientD);
+          });
+
+          using scope2 = scope1.scope(s => {
+            maybe(() => {
+              s.cascade(scoped1);
+              s.cascade(scoped2);
+              s.cascade(asyncScoped);
+            });
+          });
+
+          maybe(() => {
+            scope2.use(scoped2);
+          });
+
+          using scope3 = scope2.scope();
+
+          maybe(() => {
+            scope3.use(scoped1);
+          });
+
+          await scope3.use(asyncScoped);
+        }
+      }
+
+      await main();
+
+      await vi.waitFor(async () => {
+        await runGC();
+        expect(count).toBe(0);
       });
+    });
+  });
+
+  describe(`integration with vitest`, () => {
+    const status = {
+      isDisposed: false,
+      customDisposeCalled: false,
+    };
+
+    const dbConnection = fn.scoped(() => {
+      return {
+        [Symbol.dispose]() {
+          status.isDisposed = true;
+        },
+      };
+    });
+
+    const withContainer = <TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
+      ...containerConfigFns: TConfigureFns
+    ) => {
+      return test.extend<{ use: IContainer }>({
+        use: async ({}, use: any) => {
+          using scope = await container.new(...containerConfigFns);
+          await use(scope);
+        },
+      });
+    };
+
+    const setupDB = configureContainer(c => {
+      c.cascade(dbConnection);
+
+      c.onDispose(use => {
+        status.customDisposeCalled = true;
+      });
+    });
+
+    const it = withContainer(setupDB);
+
+    it(`uses container`, async ({ use }) => {
+      const scope = use.scope();
+
+      scope.use(dbConnection);
+    });
+
+    it(`has cleaned resources from the previous run`, async () => {
+      expect(status.isDisposed).toBe(true);
+      expect(status.customDisposeCalled).toBe(true);
     });
   });
 });

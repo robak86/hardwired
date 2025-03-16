@@ -1,7 +1,7 @@
 import type { Definition } from '../definitions/impl/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
 import { isPromise } from '../utils/IsPromise.js';
-import type { CompositeDisposable } from '../container/CompositeDisposable.js';
+import { CompositeDisposable } from '../container/CompositeDisposable.js';
 
 import { InstancesMap, isDisposable } from './InstancesMap.js';
 
@@ -11,34 +11,37 @@ export interface IInstancesStoreRead {
 }
 
 export class InstancesStore implements IInstancesStoreRead {
-  // static setFinalizer(finalizer: DisposablesFinalizer) {
-  //   InstancesStore._finalizer = finalizer;
-  // }
-
-  // static addDisposeErrorListener(listener: (error: unknown) => void) {
-  //   InstancesStore._finalizer.on('onDisposeError', listener);
-  //
-  //   return () => {
-  //     InstancesStore._finalizer.off('onDisposeError', listener);
-  //   };
-  // }
-
-  // private static _finalizer = DisposablesFinalizer.create();
-
-  static create(rootDisposer: CompositeDisposable, ownDisposer: CompositeDisposable): InstancesStore {
-    return new InstancesStore(InstancesMap.create(), InstancesMap.create(), rootDisposer, ownDisposer);
+  static create(): InstancesStore {
+    return new InstancesStore(
+      InstancesMap.create(),
+      InstancesMap.create(),
+      new CompositeDisposable(),
+      new CompositeDisposable(),
+    );
   }
 
-  constructor(
+  private constructor(
     private _globalInstances: InstancesMap,
     private _scopeInstances: InstancesMap,
-
     private _rootDisposer: CompositeDisposable,
     private _currentDisposer: CompositeDisposable,
   ) {}
 
-  childScope(ownDisposer: CompositeDisposable): InstancesStore {
-    return new InstancesStore(this._globalInstances, InstancesMap.create(), this._rootDisposer, ownDisposer);
+  disposeRoot() {
+    this._rootDisposer[Symbol.dispose]();
+  }
+
+  disposeCurrent() {
+    this._currentDisposer[Symbol.dispose]();
+  }
+
+  childScope(): InstancesStore {
+    return new InstancesStore(
+      this._globalInstances,
+      InstancesMap.create(),
+      this._rootDisposer,
+      new CompositeDisposable(),
+    );
   }
 
   upsertIntoTransientInstances<TInstance, TArgs extends any[]>(
@@ -56,6 +59,7 @@ export class InstancesStore implements IInstancesStoreRead {
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
     definition: Definition<TInstance, any, TArgs>,
     container: IContainer,
+    isCascadingInherited: boolean,
     ...args: TArgs
   ) {
     if (this._scopeInstances.has(definition.id)) {
@@ -63,9 +67,17 @@ export class InstancesStore implements IInstancesStoreRead {
     } else {
       const instance = definition.create(container, ...args);
 
+      // If the definition is bound to the current container then after calling definition.create
+      // we already may have the instance in the store, hence we cannot register it for duplicated disposal.
+      if (this._scopeInstances.has(definition.id)) {
+        return this._scopeInstances.get(definition.id) as TInstance;
+      }
+
       this._scopeInstances.set(definition.id, instance);
 
-      this.registerDisposable(instance, this._currentDisposer);
+      if (!isCascadingInherited) {
+        this.registerDisposable(instance, this._currentDisposer);
+      }
 
       return instance;
     }
@@ -97,11 +109,7 @@ export class InstancesStore implements IInstancesStoreRead {
     return this._globalInstances.has(definitionId);
   }
 
-  has(definitionId: symbol): boolean {
-    return this.hasRootInstance(definitionId) || this.hasScopedInstance(definitionId);
-  }
-
-  get(definitionId: symbol): unknown {
+  getExisting(definitionId: symbol): unknown {
     return this._globalInstances.get(definitionId) ?? this._scopeInstances.get(definitionId);
   }
 

@@ -30,7 +30,6 @@ import type {
 import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 import { ChildScopes } from './ChildScopes.js';
-import { CompositeDisposable } from './CompositeDisposable.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -41,24 +40,14 @@ const containerFinalizer = new DisposablesFinalizer();
 
 export class Container extends ExtensibleFunction implements InstanceCreationAware, IContainerScopes {
   static root(): Container {
-    const rootDisposer = new CompositeDisposable();
-    const ownDisposer = new CompositeDisposable();
-
-    const cnt = new Container(
+    return new Container(
       null,
       BindingsRegistry.create(),
-      InstancesStore.create(rootDisposer, ownDisposer),
+      InstancesStore.create(),
       InterceptorsRegistry.create(),
       null,
       [],
-      rootDisposer,
-      ownDisposer,
     );
-
-    // containerFinalizer.registerDisposable(cnt, ownDisposer);
-    // containerFinalizer.registerDisposable(cnt, rootDisposer);
-
-    return cnt;
   }
 
   public readonly id = v4();
@@ -74,8 +63,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     protected readonly interceptorsRegistry: InterceptorsRegistry,
     protected readonly currentInterceptor: IInterceptor<any> | null,
     protected readonly scopeTags: (string | symbol)[],
-    protected readonly _rootDisposer: CompositeDisposable,
-    protected readonly _ownDisposer: CompositeDisposable,
     protected readonly _disposableFns: Array<(container: IContainer) => void> = [],
   ) {
     super(
@@ -98,11 +85,10 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     this._disposableFns.forEach(fn => fn(this));
 
     if (this.parentId === null) {
-      // is root
-      this._rootDisposer[Symbol.dispose]();
+      this.instancesStore.disposeRoot();
     }
 
-    this._ownDisposer[Symbol.dispose]();
+    this.instancesStore.disposeCurrent();
 
     this._isDisposed = true;
   }
@@ -110,25 +96,12 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
   new<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
     ...configureFns: TConfigureFns
   ): ContainerNewReturnType<TConfigureFns> {
-    const rootDisposer = new CompositeDisposable();
-    const scopeDisposer = new CompositeDisposable();
-
     const bindingsRegistry = BindingsRegistry.create();
-    const instancesStore = InstancesStore.create(rootDisposer, scopeDisposer);
+    const instancesStore = InstancesStore.create();
     const interceptorsRegistry = new InterceptorsRegistry();
     const disposableFns: Array<(container: IContainer) => void> = [];
 
-    const cnt = new Container(
-      null,
-      bindingsRegistry,
-      instancesStore,
-      interceptorsRegistry,
-      null,
-      [],
-      rootDisposer,
-      scopeDisposer,
-      disposableFns,
-    );
+    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, [], disposableFns);
 
     // containerFinalizer.registerDisposable(cnt, cnt._ownDisposer);
     // containerFinalizer.registerDisposable(cnt, cnt._rootDisposer);
@@ -162,9 +135,8 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
   ): NewScopeReturnType<TConfigureFns> {
-    const scopeDisposer = new CompositeDisposable();
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
-    const instancesStore = this.instancesStore.childScope(scopeDisposer);
+    const instancesStore = this.instancesStore.childScope();
     const tags: (string | symbol)[] = [];
     const disposableFns: Array<(container: IContainer) => void> = [];
 
@@ -177,8 +149,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       scopeInterceptorsRegistry,
       scopeInterceptorsRegistry.build() ?? null,
       tags,
-      this._rootDisposer,
-      scopeDisposer,
       disposableFns,
     );
 
@@ -217,8 +187,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       this.interceptorsRegistry,
       interceptor,
       this.scopeTags,
-      this._rootDisposer,
-      this._ownDisposer,
     );
   }
 
@@ -237,7 +205,7 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
    * @param definition
    */
   useExisting<TValue>(definition: Definition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null {
-    return (this.instancesStore.get(definition.id) as TValue) ?? null;
+    return (this.instancesStore.getExisting(definition.id) as TValue) ?? null;
   }
 
   buildWithStrategy<TValue, TArgs extends any[]>(
@@ -261,7 +229,12 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
         case LifeTime.singleton:
           return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
         case LifeTime.scoped:
-          return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
+          return this.instancesStore.upsertIntoScopeInstances(
+            definition,
+            this,
+            this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
+            ...args,
+          );
       }
     }
   }
@@ -292,7 +265,12 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     }
 
     if (definition.strategy === LifeTime.scoped) {
-      const instance = this.instancesStore.upsertIntoScopeInstances(definition, withChildInterceptor, ...args);
+      const instance = this.instancesStore.upsertIntoScopeInstances(
+        definition,
+        withChildInterceptor,
+        this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
+        ...args,
+      );
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
@@ -350,8 +328,8 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     return {
       childScopes: this._childScopes.count,
       tags: this.scopeTags,
-      ownDisposablesCount: this._ownDisposer.count,
-      rootDisposablesCount: this._rootDisposer.count,
+      /*ownDisposablesCount: this._ownDisposer.count,
+      rootDisposablesCount: this._rootDisposer.count,*/
 
       // TODO: add singletons count
       // TODO: add scoped count
