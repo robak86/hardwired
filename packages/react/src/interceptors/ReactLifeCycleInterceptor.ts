@@ -1,4 +1,4 @@
-import type { ContainerConfigureFn, Definition, ScopeTag } from 'hardwired';
+import type { ContainerConfigureFn, Definition, LifeTime, ScopeTag } from 'hardwired';
 import { GraphBuilderInterceptor } from 'hardwired';
 
 import { useContainer } from '../context/ContainerContext.js';
@@ -56,7 +56,9 @@ export class ReactLifeCycleRootInterceptor extends GraphBuilderInterceptor<never
     }
   }
 
-  getGraphNode<TInstance>(definition: Definition<TInstance, any, any>): ReactLifeCycleNode<TInstance> | undefined {
+  getGraphNode<TInstance>(
+    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+  ): ReactLifeCycleNode<TInstance> | undefined {
     const graphNode = super.getGraphNode(definition);
 
     if (!graphNode) {

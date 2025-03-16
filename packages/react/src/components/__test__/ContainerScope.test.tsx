@@ -64,7 +64,7 @@ describe(`ContainerScope`, () => {
 
       const valueD = fn.scoped(() => (counter += 1));
 
-      const ValueRenderer = ({ testId }: { testId: any }) => {
+      const ValueRenderer = ({ testId }: { testId: string }) => {
         const value = use(valueD);
 
         return <div data-testid={testId}>{value}</div>;
