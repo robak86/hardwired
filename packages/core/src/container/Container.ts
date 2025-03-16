@@ -13,6 +13,7 @@ import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDS
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isPromise } from '../utils/IsPromise.js';
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
+import { maybePromiseAllThen, maybePromiseAll } from '../utils/async.js';
 
 import type {
   ContainerAllReturn,
@@ -55,7 +56,6 @@ export class Container
   public readonly id = v4();
 
   private _isDisposed = false;
-
   private _childScopes = new ChildScopes();
 
   constructor(
@@ -82,9 +82,8 @@ export class Container
       return;
     }
 
-    this._childScopes.forEach(child => child[Symbol.dispose]());
-
     this._disposableFns.forEach(fn => fn(this));
+    this._childScopes.forEach(child => child[Symbol.dispose]());
 
     if (this.parentId === null) {
       this.instancesStore.disposeRoot();
@@ -105,30 +104,17 @@ export class Container
 
     const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, [], disposableFns);
 
-    // containerFinalizer.registerDisposable(cnt, cnt._ownDisposer);
-    // containerFinalizer.registerDisposable(cnt, cnt._rootDisposer);
-
     if (configureFns.length) {
       const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry, disposableFns);
-
       const configs = configureFns.map(configureFn => configureFn(binder));
-      const hasAsync = configs.some(isPromise);
 
-      if (hasAsync) {
-        return Promise.all(configs).then(() => {
-          const interceptor = interceptorsRegistry.build();
-
-          interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
-
-          return interceptor ? cnt.withInterceptor(interceptor) : cnt;
-        }) as ContainerNewReturnType<TConfigureFns>;
-      } else {
+      return maybePromiseAllThen(configs, () => {
         const interceptor = interceptorsRegistry.build();
 
         interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
 
-        return (interceptor ? cnt.withInterceptor(interceptor) : cnt) as ContainerNewReturnType<TConfigureFns>;
-      }
+        return interceptor ? cnt.withInterceptor(interceptor) : cnt;
+      }) as ContainerNewReturnType<TConfigureFns>;
     }
 
     return cnt as ContainerNewReturnType<TConfigureFns>;
@@ -156,8 +142,6 @@ export class Container
 
     this._childScopes.append(cnt);
 
-    // containerFinalizer.registerDisposable(cnt, cnt._ownDisposer);
-
     if (configureFns.length) {
       const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposableFns);
 
@@ -165,13 +149,7 @@ export class Container
         return configureFn(binder, this);
       });
 
-      const hasAsync = configs.some(isPromise);
-
-      if (hasAsync) {
-        return Promise.all(configs).then(() => cnt) as NewScopeReturnType<TConfigureFns>;
-      } else {
-        return cnt as unknown as NewScopeReturnType<TConfigureFns>;
-      }
+      return maybePromiseAllThen(configs, () => cnt) as unknown as NewScopeReturnType<TConfigureFns>;
     }
 
     return cnt as unknown as NewScopeReturnType<TConfigureFns>;
@@ -285,11 +263,7 @@ export class Container
   ): ContainerAllReturn<TDefinitions> {
     const results = definitions.map(def => this.use(def));
 
-    if (results.some(isPromise)) {
-      return Promise.all(results) as ContainerAllReturn<TDefinitions>;
-    }
-
-    return results as ContainerAllReturn<TDefinitions>;
+    return maybePromiseAll(results) as ContainerAllReturn<TDefinitions>;
   }
 
   object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
