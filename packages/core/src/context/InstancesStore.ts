@@ -68,7 +68,7 @@ export class InstancesStore implements IInstancesStoreRead {
       const instance = definition.create(container, ...args);
 
       // If the definition is bound to the current container then after calling definition.create
-      // we already may have the instance in the store, hence we cannot register it for duplicated disposal.
+      // we already have the instance in the store, hence we should not register it for duplicated disposal.
       if (this._scopeInstances.has(definition.id)) {
         return this._scopeInstances.get(definition.id) as TInstance;
       }
