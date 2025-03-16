@@ -12,7 +12,12 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     private _currentContainer: IContainer & IStrategyAware,
     private _bindingsRegistry: BindingsRegistry,
     private _tags: (string | symbol)[],
+    private _disposeFns: Array<(scope: IContainer) => void>,
   ) {}
+
+  onDispose(callback: (scope: IContainer) => void): void {
+    this._disposeFns.push(callback);
+  }
 
   appendTag(tag: string | symbol): void {
     if (!this._tags.includes(tag)) {

@@ -19,7 +19,12 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     private _bindingsRegistry: BindingsRegistry,
     private _currentContainer: IContainer & IStrategyAware,
     private _interceptors: InterceptorsRegistry,
+    private _disposeFns: Array<(scope: IContainer) => void>,
   ) {}
+
+  onDispose(callback: (scope: IContainer) => void): void {
+    this._disposeFns.push(callback);
+  }
 
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
     this._interceptors.register(name, interceptor);

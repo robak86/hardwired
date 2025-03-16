@@ -30,45 +30,42 @@ import type {
 import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 import { ChildScopes } from './ChildScopes.js';
+import { CompositeDisposable } from './CompositeDisposable.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
 
-class ContainerDisposer implements Disposable {
-  private _isDisposed = false;
-  private _disposables: Disposable[] = [];
-
-  constructor(readonly id: string) {}
-
-  registerDisposable(disposable: Disposable) {
-    if (this._isDisposed) {
-      throw new Error('ContainerDisposer is disposed');
-    }
-
-    this._disposables.push(disposable);
-  }
-
-  [Symbol.dispose]() {
-    if (this._isDisposed) {
-      return;
-    }
-
-    this._isDisposed = true;
-    console.log('ContainerDisposer', this.id, this._disposables);
-  }
-}
-
 const containerFinalizer = new DisposablesFinalizer();
 
 export class Container extends ExtensibleFunction implements InstanceCreationAware, IContainerScopes {
+  static root(): Container {
+    const rootDisposer = new CompositeDisposable();
+    const ownDisposer = new CompositeDisposable();
+
+    const cnt = new Container(
+      null,
+      BindingsRegistry.create(),
+      InstancesStore.create(rootDisposer, ownDisposer),
+      InterceptorsRegistry.create(),
+      null,
+      [],
+      rootDisposer,
+      ownDisposer,
+    );
+
+    // containerFinalizer.registerDisposable(cnt, ownDisposer);
+    // containerFinalizer.registerDisposable(cnt, rootDisposer);
+
+    return cnt;
+  }
+
   public readonly id = v4();
 
   private _isDisposed = false;
 
   private _childScopes = new ChildScopes();
-  private _disposer = new ContainerDisposer(this.id);
 
   constructor(
     public readonly parentId: string | null,
@@ -77,6 +74,9 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     protected readonly interceptorsRegistry: InterceptorsRegistry,
     protected readonly currentInterceptor: IInterceptor<any> | null,
     protected readonly scopeTags: (string | symbol)[],
+    protected readonly _rootDisposer: CompositeDisposable,
+    protected readonly _ownDisposer: CompositeDisposable,
+    protected readonly _disposableFns: Array<(container: IContainer) => void> = [],
   ) {
     super(
       <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
@@ -86,8 +86,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
         return this.use(definition, ...args);
       },
     );
-
-    containerFinalizer.registerDisposable(this, this._disposer);
   }
 
   [Symbol.dispose]() {
@@ -95,13 +93,16 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       return;
     }
 
-    this._disposer[Symbol.dispose]();
+    this._childScopes.forEach(child => child[Symbol.dispose]());
 
-    // dispose own;
+    this._disposableFns.forEach(fn => fn(this));
 
-    this._childScopes.forEach(child => {
-      child[Symbol.dispose]();
-    });
+    if (this.parentId === null) {
+      // is root
+      this._rootDisposer[Symbol.dispose]();
+    }
+
+    this._ownDisposer[Symbol.dispose]();
 
     this._isDisposed = true;
   }
@@ -109,14 +110,31 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
   new<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
     ...configureFns: TConfigureFns
   ): ContainerNewReturnType<TConfigureFns> {
-    const bindingsRegistry = BindingsRegistry.create();
-    const instancesStore = InstancesStore.create();
-    const interceptorsRegistry = new InterceptorsRegistry();
+    const rootDisposer = new CompositeDisposable();
+    const scopeDisposer = new CompositeDisposable();
 
-    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, []);
+    const bindingsRegistry = BindingsRegistry.create();
+    const instancesStore = InstancesStore.create(rootDisposer, scopeDisposer);
+    const interceptorsRegistry = new InterceptorsRegistry();
+    const disposableFns: Array<(container: IContainer) => void> = [];
+
+    const cnt = new Container(
+      null,
+      bindingsRegistry,
+      instancesStore,
+      interceptorsRegistry,
+      null,
+      [],
+      rootDisposer,
+      scopeDisposer,
+      disposableFns,
+    );
+
+    // containerFinalizer.registerDisposable(cnt, cnt._ownDisposer);
+    // containerFinalizer.registerDisposable(cnt, cnt._rootDisposer);
 
     if (configureFns.length) {
-      const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry);
+      const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry, disposableFns);
 
       const configs = configureFns.map(configureFn => configureFn(binder));
       const hasAsync = configs.some(isPromise);
@@ -141,6 +159,52 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     return cnt as ContainerNewReturnType<TConfigureFns>;
   }
 
+  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): NewScopeReturnType<TConfigureFns> {
+    const scopeDisposer = new CompositeDisposable();
+    const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
+    const instancesStore = this.instancesStore.childScope(scopeDisposer);
+    const tags: (string | symbol)[] = [];
+    const disposableFns: Array<(container: IContainer) => void> = [];
+
+    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(tags, bindingsRegistry, instancesStore);
+
+    const cnt: Container & IStrategyAware = new Container(
+      this.id,
+      bindingsRegistry,
+      instancesStore,
+      scopeInterceptorsRegistry,
+      scopeInterceptorsRegistry.build() ?? null,
+      tags,
+      this._rootDisposer,
+      scopeDisposer,
+      disposableFns,
+    );
+
+    this._childScopes.append(cnt);
+
+    // containerFinalizer.registerDisposable(cnt, cnt._ownDisposer);
+
+    if (configureFns.length) {
+      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposableFns);
+
+      const configs = configureFns.map(configureFn => {
+        return configureFn(binder, this);
+      });
+
+      const hasAsync = configs.some(isPromise);
+
+      if (hasAsync) {
+        return Promise.all(configs).then(() => cnt) as NewScopeReturnType<TConfigureFns>;
+      } else {
+        return cnt as unknown as NewScopeReturnType<TConfigureFns>;
+      }
+    }
+
+    return cnt as unknown as NewScopeReturnType<TConfigureFns>;
+  }
+
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
     return this.interceptorsRegistry?.get(id);
   }
@@ -153,15 +217,9 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
       this.interceptorsRegistry,
       interceptor,
       this.scopeTags,
+      this._rootDisposer,
+      this._ownDisposer,
     );
-  }
-
-  dispose() {
-    // first call all the finalizers registered during the configuration phase
-
-    (this.instancesStore as any) = null;
-
-    this._isDisposed = true;
   }
 
   use<TValue, TArgs extends any[]>(
@@ -204,8 +262,6 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
           return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
         case LifeTime.scoped:
           return this.instancesStore.upsertIntoScopeInstances(definition, this, ...args);
-        default:
-          throw new Error(`Unsupported strategy ${definition.strategy}`);
       }
     }
   }
@@ -290,48 +346,17 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     };
   }
 
-  get activeScopes() {
-    return this._childScopes.count;
-  }
+  get stats() {
+    return {
+      childScopes: this._childScopes.count,
+      tags: this.scopeTags,
+      ownDisposablesCount: this._ownDisposer.count,
+      rootDisposablesCount: this._rootDisposer.count,
 
-  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
-    ...configureFns: TConfigureFns
-  ): NewScopeReturnType<TConfigureFns> {
-    const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
-    const instancesStore = this.instancesStore.childScope();
-    const tags: (string | symbol)[] = [];
-
-    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(tags, bindingsRegistry, instancesStore);
-
-    const cnt: IContainer & IStrategyAware = new Container(
-      this.id,
-      bindingsRegistry,
-      instancesStore,
-      scopeInterceptorsRegistry,
-
-      scopeInterceptorsRegistry.build() ?? null,
-      tags,
-    );
-
-    this._childScopes.append(cnt);
-
-    if (configureFns.length) {
-      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags);
-
-      const configs = configureFns.map(configureFn => {
-        return configureFn(binder, this);
-      });
-
-      const hasAsync = configs.some(isPromise);
-
-      if (hasAsync) {
-        return Promise.all(configs).then(() => cnt) as NewScopeReturnType<TConfigureFns>;
-      } else {
-        return cnt as unknown as NewScopeReturnType<TConfigureFns>;
-      }
-    }
-
-    return cnt as unknown as NewScopeReturnType<TConfigureFns>;
+      // TODO: add singletons count
+      // TODO: add scoped count
+      // TODO: add depth level?
+    };
   }
 }
 
@@ -339,40 +364,11 @@ export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TAr
   definition: Definition<TInstance, TLifeTime, TArgs>,
   ...args: TArgs
 ): TInstance => {
-  const tmpContainer = new Container(
-    null,
-    BindingsRegistry.create(),
-    InstancesStore.create(),
-    InterceptorsRegistry.create(),
-    null,
-    [],
-  );
-
-  return tmpContainer.use(definition, ...args);
+  return Container.root().use(definition, ...args);
 };
 
 export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
-  const tmpContainer = new Container(
-    null,
-    BindingsRegistry.create(),
-    InstancesStore.create(),
-    InterceptorsRegistry.create(),
-    null,
-    [],
-  );
-
-  return tmpContainer.all(...definitions) as any;
+  return Container.root().all(...definitions) as any;
 };
 
-export const container = new Container(
-  null,
-  BindingsRegistry.create(),
-  InstancesStore.create(),
-  InterceptorsRegistry.create(),
-  null,
-  [],
-);
-
-export const onDisposeError = (listener: (error: unknown) => void) => {
-  InstancesStore.addDisposeErrorListener(listener);
-};
+export const container = Container.root();

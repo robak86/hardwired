@@ -36,8 +36,6 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
   ): (...args: TArgs) => TInstance;
 
-  dispose(): void;
-
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
     ...definitions: [...TDefinitions]
   ): HasPromise<InstancesArray<TDefinitions>> extends true
