@@ -75,7 +75,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
 
   onLeave(instance: T, definition: Definition<T, any, any>): T {
     if (isPromise(instance)) {
-      instance.then(instanceAwaited => {
+      void instance.then(instanceAwaited => {
         console.groupEnd();
 
         return this._parent?.onDependencyInstanceCreated?.(definition, instanceAwaited, performance.now());

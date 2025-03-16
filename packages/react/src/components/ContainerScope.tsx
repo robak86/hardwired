@@ -5,7 +5,7 @@ import { ContainerContext, useContainer } from '../context/ContainerContext.js';
 import { useMemoized } from '../utils/useMemoized.js';
 
 export type ContainerScopeProps = {
-  invalidateKeys?: ReadonlyArray<any>; // TODO: feels redundant. Most likely scope should be invalidated only by comparing config references
+  invalidateKeys?: ReadonlyArray<string | number | boolean>; // TODO: feels redundant. Most likely scope should be invalidated only by comparing config references
   config?: ScopeConfigureFn;
 };
 

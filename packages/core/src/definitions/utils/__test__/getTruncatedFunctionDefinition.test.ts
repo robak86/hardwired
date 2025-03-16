@@ -4,7 +4,7 @@ import { getTruncatedFunctionDefinition } from '../getTruncatedFunctionDefinitio
 
 describe('getTruncatedFunctionDefinition', () => {
   it('should handle named function', () => {
-    const exampleFunc = function example(a: any, b: any) {
+    const exampleFunc = function example(a: number, b: number) {
       if (a > b) {
         return a;
       } else {
@@ -18,19 +18,19 @@ describe('getTruncatedFunctionDefinition', () => {
   });
 
   it(`correctly handles the return of single line fat arrow function`, async () => {
-    const exampleFunc = (a: any, b: any) => 123;
+    const exampleFunc = (a: number, b: number) => 123;
 
     expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe('(a, b) => 123');
   });
 
   it(`returns correct value for empty body for fat arrow function`, async () => {
-    const exampleFunc = (a: any, b: any) => {};
+    const exampleFunc = (a: number, b: number) => {};
 
     expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toEqual('(a, b) => {\n    }');
   });
 
   it('should handle named function', () => {
-    const exampleFunc = function example(a: any, b: any, c: any) {
+    const exampleFunc = function example(a: number, b: number, c: number) {
       if (a > b) {
         return a;
       }
@@ -48,7 +48,7 @@ describe('getTruncatedFunctionDefinition', () => {
   });
 
   it('should handle unnamed function', () => {
-    const exampleFunc = function (a: any, b: any) {
+    const exampleFunc = function (a: number, b: number) {
       if (a > b) {
         return a;
       } else {
@@ -62,7 +62,7 @@ describe('getTruncatedFunctionDefinition', () => {
   });
 
   it('should handle arrow function', () => {
-    const exampleFunc = (a: any, b: any) => {
+    const exampleFunc = (a: number, b: number) => {
       if (a > b) {
         return a;
       } else {
@@ -74,7 +74,7 @@ describe('getTruncatedFunctionDefinition', () => {
   });
 
   it('should handle async arrow function', () => {
-    const exampleFunc = async (a: any, b: any) => {
+    const exampleFunc = async (a: number, b: number) => {
       if (a > b) {
         return a;
       } else {
@@ -88,7 +88,7 @@ describe('getTruncatedFunctionDefinition', () => {
   });
 
   it('should handle async arrow function v2', () => {
-    const exampleFunc = async (a: any, b: any) => {
+    const exampleFunc = async (a: number, b: number) => {
       if (a > b) {
         return a;
       }
@@ -103,7 +103,7 @@ describe('getTruncatedFunctionDefinition', () => {
 
   it('should handle method shorthand', () => {
     const obj = {
-      example(a: any, b: any) {
+      example(a: number, b: number) {
         if (a > b) {
           return a;
         } else {

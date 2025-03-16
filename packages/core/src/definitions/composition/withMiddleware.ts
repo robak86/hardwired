@@ -3,19 +3,19 @@ import { LifeTime } from '../abstract/LifeTime.js';
 import type { DefineScoped, DefineSingleton, DefineTransient } from '../fn.js';
 import { Definition } from '../impl/Definition.js';
 
-function chainMiddlewares<T, TLifeTime extends LifeTime>(
+function chainMiddlewares<T, TLifeTime extends LifeTime, TArgs extends unknown[]>(
   middlewares: Middleware[],
-  next: MiddlewareNextFn<T, any[]>,
+  next: MiddlewareNextFn<T, TArgs>,
   lifeTime: TLifeTime,
-): Definition<T, TLifeTime, any> {
-  return new Definition(Symbol(), lifeTime, (use: IContainer, ...args: any[]): T => {
+): Definition<T, TLifeTime, TArgs> {
+  return new Definition(Symbol(), lifeTime, (use: IContainer, ...args: TArgs): T => {
     let nextHandler = next;
 
     for (let i = middlewares.length - 1; i >= 0; i--) {
       const currentMiddleware = middlewares[i];
       const currentNextHandler = nextHandler;
 
-      nextHandler = (use: IContainer, ...args: any[]) => currentMiddleware(use, currentNextHandler, ...args);
+      nextHandler = (use: IContainer, ...args: TArgs) => currentMiddleware(use, currentNextHandler, ...args);
     }
 
     return nextHandler(use, ...args);
@@ -43,7 +43,7 @@ export type CustomFnFactory = {
 // TODO: this is very limited as we cannot produce fn function that accepts some additional configuration param, before factoryFn
 export const withMiddleware: CustomFnFactory = {
   transient(...middleware: Middleware[]): DefineTransient {
-    return <TInstance, TArgs extends any[]>(
+    return <TInstance, TArgs extends unknown[]>(
       create: (locator: IContainer<LifeTime.transient>, ...args: TArgs) => TInstance,
     ): Definition<TInstance, LifeTime.transient, TArgs> => {
       return chainMiddlewares(middleware, create, LifeTime.transient);

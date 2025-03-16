@@ -65,7 +65,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     }
 
     if (isPromise(instance)) {
-      instance.then(instanceAwaited => {
+      void instance.then(instanceAwaited => {
         this._node = this._configuration.createNode(
           this.definition,
           instanceAwaited as Awaited<T>,
@@ -126,7 +126,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
 
   private instantiate<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>) {
     const existingNode: GraphBuilderInterceptor<TNewInstance, TNode> | undefined = this._context.nodesRegistry.getOwn(
-      definition as any,
+      definition as Definition<TNewInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
     );
 
     if (existingNode) {

@@ -90,12 +90,12 @@ describe(`asyncDefine`, () => {
       const definition = fn(async locator => {
         const scopedContainer = locator.scope();
 
-        return [await scopedContainer(value), await scopedContainer(value)];
+        return [scopedContainer(value), scopedContainer(value)];
       });
 
       const cnt = container.new();
 
-      const result0 = await cnt.use(value);
+      const result0 = cnt.use(value);
       const result1 = await cnt.use(definition);
       const result2 = await cnt.use(definition);
 
@@ -108,7 +108,7 @@ describe(`asyncDefine`, () => {
       const value = fn.singleton(() => new BoxedValue(Math.random()));
 
       const definition = fn.singleton(async locator => {
-        return [await locator.use(value), await locator.use(value)];
+        return [locator.use(value), locator.use(value)];
       });
 
       const cnt = container.new();
@@ -121,7 +121,7 @@ describe(`asyncDefine`, () => {
       const value = fn.scoped(() => new BoxedValue(Math.random()));
 
       const definition = fn.scoped(async use => {
-        return [await use(value), await use(value)];
+        return [use(value), use(value)];
       });
 
       const definitionConsumer = fn.scoped(use => {
@@ -130,7 +130,7 @@ describe(`asyncDefine`, () => {
 
       const cnt = container.new();
 
-      const result = await cnt.use(definitionConsumer);
+      const result = cnt.use(definitionConsumer);
 
       expect(result[0]).toBe(result[1]);
     });

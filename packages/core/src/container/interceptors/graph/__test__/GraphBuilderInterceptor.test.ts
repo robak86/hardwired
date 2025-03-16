@@ -200,7 +200,7 @@ describe(`GraphBuildInterceptor`, () => {
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
         const childInterceptor = childScope.getInterceptor('graph') as TestInterceptor;
 
-        childScope.use(def); // memoize scoped in the child container and child interceptor
+        await childScope.use(def); // memoize scoped in the child container and child interceptor
 
         expect(childInterceptor.getGraphNode(def)?.value).toEqual(123);
         expect(rootInterceptor.getGraphNode(def)?.value).toEqual(1);

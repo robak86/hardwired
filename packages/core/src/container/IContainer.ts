@@ -38,9 +38,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
     ...definitions: [...TDefinitions]
-  ): HasPromise<InstancesArray<TDefinitions>> extends true
-    ? Promise<AwaitedInstanceArray<TDefinitions>>
-    : InstancesArray<TDefinitions>;
+  ): ContainerAllReturn<TDefinitions>;
 
   object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
     object: TRecord,

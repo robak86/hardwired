@@ -1,5 +1,3 @@
-import type { Mocked } from 'vitest';
-
 import { container } from '../../Container.js';
 import type { IInterceptor } from '../interceptor.js';
 import type { Definition } from '../../../definitions/impl/Definition.js';
@@ -77,7 +75,7 @@ describe(`interceptor`, () => {
       const cnt = container.new(c => c.withInterceptor('test', interceptor));
 
       vi.spyOn(interceptor, 'onEnter');
-      vi.spyOn(interceptor, 'onLeave');
+      const onLeaveSpy = vi.spyOn(interceptor, 'onLeave');
 
       /*
         A -> B  -> C1
@@ -96,7 +94,8 @@ describe(`interceptor`, () => {
       expect(interceptor.onEnter).toHaveBeenNthCalledWith(3, c1, []);
       expect(interceptor.onEnter).toHaveBeenNthCalledWith(4, c2, []);
 
-      const onLeaveCalls = (interceptor.onLeave as Mocked<any>).mock.calls;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const onLeaveCalls = onLeaveSpy.mock.calls as any;
 
       expect(onLeaveCalls).toHaveLength(4);
       expect(await onLeaveCalls[0][0]).toEqual('C1');

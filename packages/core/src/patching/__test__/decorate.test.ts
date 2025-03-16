@@ -5,6 +5,7 @@ import { fn } from '../../definitions/fn.js';
 import { value } from '../../definitions/value.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { Definition } from '../../definitions/impl/Definition.js';
+import type { ScopeConfigureAllowedLifeTimes } from '../../configuration/abstract/ScopeConfigurable.js';
 
 describe(`decorate`, () => {
   it(`decorates original value`, async () => {
@@ -119,7 +120,7 @@ describe(`decorate`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: Definition<MyService, any, any>) {
+    function setup(instanceDef: Definition<MyService, ScopeConfigureAllowedLifeTimes, []>) {
       const scope1 = container.new(c => {
         c.freeze(instanceDef).configure((use, a) => {
           vi.spyOn(a, 'callMe');
@@ -148,7 +149,6 @@ describe(`decorate`, () => {
 
         instance1.callMe(1, 2);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
         expect(instance1).toBe(instance2);
       });
@@ -160,7 +160,6 @@ describe(`decorate`, () => {
 
         instance1.callMe(1, 2);
 
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(instance1.callMe).toHaveBeenCalledWith(1, 2);
         expect(instance1).toBe(instance2);
       });

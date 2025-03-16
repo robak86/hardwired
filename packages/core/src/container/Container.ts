@@ -20,7 +20,6 @@ import type {
   ContainerObjectReturn,
   HasPromise,
   IContainer,
-  InstanceCreationAware,
   IStrategyAware,
   NewScopeReturnType,
   ReturnTypes,
@@ -297,8 +296,10 @@ export const once = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>
   return Container.root().use(definition, ...args);
 };
 
-export const all: InstanceCreationAware['all'] = (...definitions: any[]) => {
-  return Container.root().all(...definitions) as any;
+export const all = <TDefinitions extends Array<Definition<any, LifeTime, []>>>(
+  ...definitions: [...TDefinitions]
+): ContainerAllReturn<TDefinitions> => {
+  return Container.root().all(...definitions) as ContainerAllReturn<TDefinitions>;
 };
 
 export const container = Container.root();

@@ -97,6 +97,7 @@ export default typescriptLint.config(
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       'unused-imports/no-unused-vars': 'off',
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
   {

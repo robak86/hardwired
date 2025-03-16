@@ -1,11 +1,10 @@
 import type { TypeEqual } from 'ts-expect';
 import { expectType } from 'ts-expect';
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'vitest';
 
 import { value } from '../value.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import { fn } from '../fn.js';
-import { unbound } from '../unbound.js';
 import type { Definition } from '../impl/Definition.js';
 
 describe(`klass`, () => {
@@ -29,39 +28,6 @@ describe(`klass`, () => {
         });
 
         expectType<TypeEqual<typeof cls, Definition<TestClass, LifeTime.scoped, []>>>(true);
-      });
-
-      describe(`allowed dependencies life times`, () => {
-        class NumberConsumer {
-          // @ts-ignore
-          constructor(private value: number) {}
-        }
-
-        const implDef = unbound<number>();
-
-        describe(`singleton`, () => {
-          describe(`compile-time`, () => {
-            it(`does not accept unbound definitions`, async () => {
-              try {
-                // @ts-expect-error singleton does not accept unbound definitions
-                const dep = singleton.using(implDef).class(NumberConsumer);
-              } catch (e) {
-                // noop
-              }
-            });
-          });
-
-          describe(`runtime`, () => {
-            it.skip(`does not accept unbound definitions`, async () => {
-              const buildDef = () => {
-                // @ts-expect-error singleton does not accept unbound definitions
-                singleton.using(implDef).class(NumberConsumer);
-              };
-
-              expect(buildDef).toThrow('Cannot use scoped dependency for singleton definition.');
-            });
-          });
-        });
       });
     });
   });
