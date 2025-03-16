@@ -7,7 +7,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: 'cobertura',
       include: ['./packages/**/*'],
-      exclude: ['./packages/core/src/__test__/*', './*'],
+      exclude: ['./**/*'],
     },
   },
 });
