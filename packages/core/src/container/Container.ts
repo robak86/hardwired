@@ -13,7 +13,7 @@ import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDS
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isPromise } from '../utils/IsPromise.js';
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
-import { maybePromiseAllThen, maybePromiseAll } from '../utils/async.js';
+import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 
 import type {
   ContainerAllReturn,
@@ -317,7 +317,7 @@ export class Container
   }
 }
 
-export const once: UseFn<LifeTime> = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
+export const once = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
   definition: Definition<TInstance, TLifeTime, TArgs>,
   ...args: TArgs
 ): TInstance => {

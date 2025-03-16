@@ -10,7 +10,7 @@ import {
 } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';
 
-describe(`registering scopes`, () => {
+describe(`container#[Symbol.dispose]`, () => {
   class Disposable {
     constructor(private _disposeFn: (...args: any[]) => unknown) {}
 
@@ -292,18 +292,30 @@ describe(`registering scopes`, () => {
       }
     };
 
-    it(`does not skip any disposal`, async () => {
-      const runCount = 10_000;
+    const delayed = (delay: number, callback: () => void) => {
+      return new Promise<void>(resolve => {
+        setTimeout(() => {
+          callback();
+          resolve();
+        }, delay);
+      });
+    };
+
+    it(`does not skip any disposal`, { timeout: 50_000 }, async () => {
+      const runCount = 1000;
+      const innerRunCount = 5;
 
       let count = 0;
 
       class TestDisposable {
         constructor() {
+          // console.log('count', count);
           count += 1;
         }
 
         [Symbol.dispose]() {
           count -= 1;
+          // console.log('count', count);
         }
       }
 
@@ -330,39 +342,74 @@ describe(`registering scopes`, () => {
         });
 
         for (let i = 0; i < runCount; i++) {
-          using scope1 = cnt.scope(s => {
-            maybe(() => {
-              s.cascade(scoped1);
-              s.cascade(scoped2);
-              s.cascade(asyncScoped);
+          for (let j = 0; j < innerRunCount; j++) {
+            using scope1 = cnt.scope(s => {
+              maybe(() => {
+                s.cascade(scoped1);
+                s.cascade(scoped2);
+                s.cascade(asyncScoped);
+              });
             });
-          });
 
-          maybe(() => {
-            scope1.use(singletonD);
-            scope1.use(scoped1);
-            scope1.use(transientD);
-          });
-
-          using scope2 = scope1.scope(s => {
             maybe(() => {
-              s.cascade(scoped1);
-              s.cascade(scoped2);
-              s.cascade(asyncScoped);
+              scope1.use(singletonD);
+              scope1.use(scoped1);
+              scope1.use(transientD);
             });
-          });
 
-          maybe(() => {
-            scope2.use(scoped2);
-          });
+            await delayed(Math.random() * 5, () => {
+              using nextTickScope = cnt.scope(s => {
+                maybe(() => {
+                  s.cascade(scoped1);
+                  s.cascade(scoped2);
+                  s.cascade(asyncScoped);
+                });
+              });
 
-          using scope3 = scope2.scope();
+              maybe(() => {
+                nextTickScope.use(singletonD);
+                nextTickScope.use(scoped1);
+                nextTickScope.use(transientD);
+              });
+            });
 
-          maybe(() => {
-            scope3.use(scoped1);
-          });
+            // not awaited
+            void delayed(Math.random() * 5, () => {
+              using nextTickScope = cnt.scope(s => {
+                maybe(() => {
+                  s.cascade(scoped1);
+                  s.cascade(scoped2);
+                  s.cascade(asyncScoped);
+                });
+              });
 
-          await scope3.use(asyncScoped);
+              maybe(() => {
+                nextTickScope.use(singletonD);
+                nextTickScope.use(scoped1);
+                nextTickScope.use(transientD);
+              });
+            });
+
+            using scope2 = scope1.scope(s => {
+              maybe(() => {
+                s.cascade(scoped1);
+                s.cascade(scoped2);
+                s.cascade(asyncScoped);
+              });
+            });
+
+            maybe(() => {
+              scope2.use(scoped2);
+            });
+
+            using scope3 = scope2.scope();
+
+            maybe(() => {
+              scope3.use(scoped1);
+            });
+
+            await scope3.use(asyncScoped);
+          }
         }
       }
 
@@ -370,6 +417,7 @@ describe(`registering scopes`, () => {
 
       await vi.waitFor(async () => {
         await runGC();
+
         expect(count).toBe(0);
       });
     });
