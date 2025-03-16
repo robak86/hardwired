@@ -77,11 +77,21 @@ export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue, TArgs extends an
   ...args: TArgs
 ) => TValue;
 
+export type ContainerStats = {
+  childScopeCount: number;
+  nestedScopeCount: number;
+};
+
+export interface IContainerStatsAware {
+  stats: ContainerStats;
+}
+
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes,
     UseFn<TAllowedLifeTime>,
-    Disposable {
+    Disposable,
+    IContainerStatsAware {
   readonly id: string;
   readonly parentId: string | null;
 

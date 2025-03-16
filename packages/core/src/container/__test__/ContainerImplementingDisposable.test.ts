@@ -95,12 +95,12 @@ describe(`registering scopes`, () => {
 
         main();
 
-        expect(cnt.stats.childScopes).toEqual(100);
+        expect(cnt.stats.childScopeCount).toEqual(100);
 
         await vi.waitFor(
           async () => {
             await runGC();
-            expect(cnt.stats.childScopes).toEqual(0);
+            expect(cnt.stats.childScopeCount).toEqual(0);
           },
           {
             timeout: 50_000,
@@ -124,11 +124,11 @@ describe(`registering scopes`, () => {
 
         main();
 
-        expect(cnt.stats.childScopes).toEqual(100);
+        expect(cnt.stats.childScopeCount).toEqual(100);
 
         await vi.waitFor(async () => {
           await runGC();
-          expect(cnt.stats.childScopes).toEqual(0);
+          expect(cnt.stats.childScopeCount).toEqual(0);
         });
       });
     });
@@ -256,7 +256,7 @@ describe(`registering scopes`, () => {
 
         main();
 
-        expect(cnt.stats.childScopes).toEqual(100);
+        expect(cnt.stats.childScopeCount).toEqual(100);
         expect(scopeSpies.length).toEqual(100);
 
         cnt[Symbol.dispose]();

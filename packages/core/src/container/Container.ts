@@ -18,6 +18,7 @@ import { DisposablesFinalizer } from '../context/DisposablesFinalizer.js';
 import type {
   ContainerAllReturn,
   ContainerObjectReturn,
+  ContainerStats,
   HasPromise,
   IContainer,
   IContainerScopes,
@@ -324,10 +325,13 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
     };
   }
 
-  get stats() {
+  get stats(): ContainerStats {
     return {
-      childScopes: this._childScopes.count,
-      tags: this.scopeTags,
+      childScopeCount: this._childScopes.count,
+      nestedScopeCount: this._childScopes.reduce((sum, container) => {
+        return sum + container.stats.childScopeCount;
+      }, 0),
+
       /*ownDisposablesCount: this._ownDisposer.count,
       rootDisposablesCount: this._rootDisposer.count,*/
 
