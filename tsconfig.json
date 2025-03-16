@@ -2,13 +2,14 @@
   "compilerOptions": {
     "types": ["vitest/globals"],
     "composite": true,
+    "target": "es2022",
+    "lib": ["es2022", "esnext.disposable", "dom"],
     "declarationMap": true,
     "declaration": true,
     "sourceMap": true,
-    "target": "ESNext",
     "module": "Node16",
     "noUnusedLocals": true,
-    "jsx": "react-jsx", // support JSX
+    "jsx": "react-jsx",
     "strict": true,
     "verbatimModuleSyntax": true,
     "removeComments": true,

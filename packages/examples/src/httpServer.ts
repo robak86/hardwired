@@ -1,14 +1,11 @@
 import { createServer, type IncomingMessage } from 'node:http';
 
-import { unbound } from '../definitions/unbound.js';
-import { cls } from '../definitions/cls.js';
-import { fn } from '../definitions/fn.js';
-import { once } from '../container/Container.js';
+import { cls, fn, once, unbound } from 'hardwired';
 
 const reqD = unbound<IncomingMessage>();
 
 interface IRequestHandler {
-  handle(req: IncomingMessage): string;
+  handle(req: IncomingMessage): object;
 }
 
 class HomePageHandler implements IRequestHandler {
@@ -16,10 +13,12 @@ class HomePageHandler implements IRequestHandler {
 
   constructor(private _req: IncomingMessage) {}
 
-  handle(): string {
-    console.log(this._req.url);
-
-    return 'Hello, World!';
+  handle() {
+    return {
+      hello: 'world',
+      path: this._req.url,
+      headers: this._req.headers,
+    };
   }
 
   [Symbol.dispose]() {
@@ -28,14 +27,19 @@ class HomePageHandler implements IRequestHandler {
 }
 
 const app = fn.singleton(use => {
+  setInterval(() => {
+    console.log(`Container stats`, use.stats);
+  }, 1000);
+
   return createServer((req, res) => {
-    const requestScope = use.scope(s => {
-      s.bindCascading(reqD).toValue(req);
+    using requestScope = use.scope((reqScope, parent) => {
+      reqScope.bindCascading(reqD).toValue(req);
     });
 
     const handler = requestScope.use(HomePageHandler.instance);
 
-    res.end(handler.handle());
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(handler.handle()));
   });
 });
 
