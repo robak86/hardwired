@@ -27,12 +27,8 @@ class HomePageHandler implements IRequestHandler {
 }
 
 const app = fn.singleton(use => {
-  setInterval(() => {
-    console.log(`Container stats`, use.stats);
-  }, 1000);
-
   return createServer((req, res) => {
-    using requestScope = use.scope((reqScope, parent) => {
+    const requestScope = use.scope((reqScope, parent) => {
       reqScope.bindCascading(reqD).toValue(req);
     });
 
@@ -40,6 +36,8 @@ const app = fn.singleton(use => {
 
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(handler.handle()));
+
+    requestScope.dispose();
   });
 });
 

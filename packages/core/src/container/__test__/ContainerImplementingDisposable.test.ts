@@ -1,7 +1,6 @@
-import { describe, expect, type MockInstance, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import { container } from '../Container.js';
-import { runGC } from '../../utils/__test__/runGC.js';
 import { fn } from '../../definitions/fn.js';
 import {
   type AsyncContainerConfigureFn,
@@ -31,10 +30,30 @@ describe(`container#[Symbol.dispose]`, () => {
 
         scope.use(def);
 
-        siblingScope[Symbol.dispose]();
+        siblingScope.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(0);
 
-        scope[Symbol.dispose]();
+        scope.dispose();
+        expect(disposeSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it(`doesn't dispose scoped instance cascaded from the parent scope`, async () => {
+        const disposeSpy = vi.fn();
+        const def = fn.scoped(() => new Disposable(disposeSpy));
+        const cnt = container.new();
+
+        const scope1 = cnt.scope(s => {
+          s.cascade(def);
+        });
+
+        const scope2 = scope1.scope();
+
+        scope2.use(def);
+        scope2.dispose();
+
+        expect(disposeSpy).toHaveBeenCalledTimes(0);
+
+        scope1.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(1);
       });
     });
@@ -50,17 +69,17 @@ describe(`container#[Symbol.dispose]`, () => {
 
         scope.use(def);
 
-        scope[Symbol.dispose]();
+        scope.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(0);
 
-        cnt[Symbol.dispose]();
+        cnt.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(1);
       });
     });
   });
 
   describe('custom dispose callbacks', () => {
-    it(`works with using, when callback references container`, async () => {
+    it(`it's called correctly`, async () => {
       const disposeSpy = vi.fn();
       const def = fn.singleton(() => ({
         dispose: disposeSpy,
@@ -68,69 +87,16 @@ describe(`container#[Symbol.dispose]`, () => {
 
       const cnt = container.new();
 
-      function inner() {
-        using scope = cnt.scope(s => {
-          s.onDispose(use => {
-            use.useExisting(def)?.dispose();
-          });
+      const scope = cnt.scope(s => {
+        s.onDispose(use => {
+          use.useExisting(def)?.dispose();
         });
+      });
 
-        scope.use(def);
-      }
-
-      inner();
+      scope.use(def);
+      scope.dispose();
 
       expect(disposeSpy).toHaveBeenCalledTimes(1);
-    });
-
-    describe(`scopes hierarchy`, { timeout: 50_000 }, () => {
-      it(`keeps weak references so child scopes can be garbage collected`, async () => {
-        const cnt = container.new();
-
-        function main() {
-          for (let i = 0; i < 100; i++) {
-            cnt.scope();
-          }
-        }
-
-        main();
-
-        expect(cnt.stats.childScopeCount).toEqual(100);
-
-        await vi.waitFor(
-          async () => {
-            await runGC();
-            expect(cnt.stats.childScopeCount).toEqual(0);
-          },
-          {
-            timeout: 50_000,
-          },
-        );
-      });
-
-      it(`allows garbage collection of children even if the scope has some scoped instances memoized `, async () => {
-        const cnt = container.new();
-        const scopedDef = fn.scoped(() => {
-          return new Disposable(() => {
-            console.log('disposed');
-          });
-        });
-
-        function main() {
-          for (let i = 0; i < 100; i++) {
-            cnt.scope().use(scopedDef);
-          }
-        }
-
-        main();
-
-        expect(cnt.stats.childScopeCount).toEqual(100);
-
-        await vi.waitFor(async () => {
-          await runGC();
-          expect(cnt.stats.childScopeCount).toEqual(0);
-        });
-      });
     });
 
     describe(`dispose`, () => {
@@ -142,133 +108,20 @@ describe(`container#[Symbol.dispose]`, () => {
           c.onDispose(rootDispose);
         });
 
-        cnt.scope(c => {
+        const scope = cnt.scope(c => {
           c.onDispose(scopeDispose);
         });
 
-        cnt[Symbol.dispose]();
-        cnt[Symbol.dispose]();
+        cnt.dispose();
+        cnt.dispose();
 
         expect(rootDispose).toHaveBeenCalledTimes(1);
-        expect(scopeDispose).toHaveBeenCalledTimes(1);
-      });
+        expect(scopeDispose).toHaveBeenCalledTimes(0);
 
-      it(`doesn't dispose child scope if it was previously garbage collected`, async () => {
-        const someDef = fn.singleton(() => 123);
-
-        const scopeDispose = vi.fn();
-        const rootDispose = vi.fn();
-
-        async function main() {
-          using cnt = container.new(c => {
-            c.onDispose(use => {
-              rootDispose(use);
-            });
-          });
-
-          async function inner() {
-            using scope = cnt.scope(s => {
-              s.onDispose(use => {
-                scopeDispose(use);
-              });
-            });
-
-            scope.use(someDef);
-          }
-
-          await inner();
-        }
-
-        await main();
+        scope.dispose();
+        scope.dispose();
 
         expect(scopeDispose).toHaveBeenCalledTimes(1);
-        expect(rootDispose).toHaveBeenCalledTimes(1);
-      });
-
-      it(`works with using`, async () => {
-        const someDef = fn.singleton(() => 123);
-
-        const scopeDispose = vi.fn();
-        const rootDispose = vi.fn();
-
-        function main() {
-          using cnt = container.new(c => {
-            c.onDispose(use => {
-              rootDispose(use);
-            });
-          });
-
-          using scope = cnt.scope(s => {
-            s.onDispose(use => {
-              scopeDispose(use);
-            });
-          });
-
-          scope.use(someDef);
-        }
-
-        main();
-
-        expect(scopeDispose).toHaveBeenCalledTimes(1);
-        expect(rootDispose).toHaveBeenCalledTimes(1);
-      });
-
-      it(`calls recursively dispose`, async () => {
-        const scopeDispose = vi.fn();
-        const rootDispose = vi.fn();
-
-        const cnt = container.new(c => {
-          c.onDispose(use => {
-            rootDispose(use);
-          });
-        });
-
-        const scope = cnt.scope(s => {
-          s.onDispose(use => {
-            scopeDispose(use);
-          });
-        });
-
-        scope[Symbol.dispose]();
-        expect(scopeDispose).toHaveBeenCalledWith(scope);
-
-        cnt[Symbol.dispose]();
-        expect(rootDispose).toHaveBeenCalledWith(cnt);
-      });
-
-      it(`recursively calls dispose on child containers`, { timeout: 50_000 }, async () => {
-        const cnt = container.new();
-        const scopeSpies: MockInstance<[], void>[] = [];
-
-        function main() {
-          for (let i = 0; i < 100; i++) {
-            cnt.scope(s => {
-              const disposeSpy = vi.fn();
-
-              scopeSpies.push(disposeSpy);
-
-              s.onDispose(() => {
-                disposeSpy();
-              });
-            });
-          }
-        }
-
-        main();
-
-        expect(cnt.stats.childScopeCount).toEqual(100);
-        expect(scopeSpies.length).toEqual(100);
-
-        cnt[Symbol.dispose]();
-
-        await vi.waitFor(
-          async () => {
-            scopeSpies.forEach(spy => expect(spy).toHaveBeenCalled());
-          },
-          {
-            timeout: 50_000,
-          },
-        );
       });
 
       it(`throws when container is used after manual disposal`, async () => {
@@ -276,149 +129,11 @@ describe(`container#[Symbol.dispose]`, () => {
 
         const cnt = container.new();
 
-        cnt[Symbol.dispose]();
+        cnt.dispose();
 
         expect(() => {
           cnt.use(def);
         }).toThrowError();
-      });
-    });
-  });
-
-  describe(`fuzzy test`, () => {
-    const maybe = (callback: () => void) => {
-      if (Math.random() > 0.5) {
-        callback();
-      }
-    };
-
-    const delayed = (delay: number, callback: () => void) => {
-      return new Promise<void>(resolve => {
-        setTimeout(() => {
-          callback();
-          resolve();
-        }, delay);
-      });
-    };
-
-    it(`does not skip any disposal`, { timeout: 50_000 }, async () => {
-      const runCount = 1000;
-      const innerRunCount = 5;
-
-      let count = 0;
-
-      class TestDisposable {
-        constructor() {
-          // console.log('count', count);
-          count += 1;
-        }
-
-        [Symbol.dispose]() {
-          count -= 1;
-          // console.log('count', count);
-        }
-      }
-
-      const singletonD = fn.singleton(() => new TestDisposable());
-      const transientD = fn(() => new TestDisposable());
-      const scoped1 = fn.scoped(() => new TestDisposable());
-      const scoped2 = fn.scoped(() => new TestDisposable());
-      const asyncScoped = fn.scoped(async () => new TestDisposable());
-
-      async function main() {
-        using cnt = container.new(c => {
-          maybe(() => {
-            c.cascade(scoped1);
-            c.cascade(scoped2);
-            c.cascade(asyncScoped);
-          });
-        });
-
-        maybe(() => {
-          cnt.use(singletonD);
-          cnt.use(scoped1);
-          cnt.use(transientD);
-          void cnt.use(asyncScoped);
-        });
-
-        for (let i = 0; i < runCount; i++) {
-          for (let j = 0; j < innerRunCount; j++) {
-            using scope1 = cnt.scope(s => {
-              maybe(() => {
-                s.cascade(scoped1);
-                s.cascade(scoped2);
-                s.cascade(asyncScoped);
-              });
-            });
-
-            maybe(() => {
-              scope1.use(singletonD);
-              scope1.use(scoped1);
-              scope1.use(transientD);
-            });
-
-            await delayed(Math.random() * 5, () => {
-              using nextTickScope = cnt.scope(s => {
-                maybe(() => {
-                  s.cascade(scoped1);
-                  s.cascade(scoped2);
-                  s.cascade(asyncScoped);
-                });
-              });
-
-              maybe(() => {
-                nextTickScope.use(singletonD);
-                nextTickScope.use(scoped1);
-                nextTickScope.use(transientD);
-              });
-            });
-
-            // not awaited
-            void delayed(Math.random() * 5, () => {
-              using nextTickScope = cnt.scope(s => {
-                maybe(() => {
-                  s.cascade(scoped1);
-                  s.cascade(scoped2);
-                  s.cascade(asyncScoped);
-                });
-              });
-
-              maybe(() => {
-                nextTickScope.use(singletonD);
-                nextTickScope.use(scoped1);
-                nextTickScope.use(transientD);
-              });
-            });
-
-            using scope2 = scope1.scope(s => {
-              maybe(() => {
-                s.cascade(scoped1);
-                s.cascade(scoped2);
-                s.cascade(asyncScoped);
-              });
-            });
-
-            maybe(() => {
-              scope2.use(scoped2);
-            });
-
-            using scope3 = scope2.scope();
-
-            maybe(() => {
-              scope3.use(scoped1);
-            });
-
-            await scope3.use(asyncScoped);
-          }
-        }
-      }
-
-      await main();
-
-      await vi.waitFor(async () => {
-        await runGC();
-
-        expect(count).toBe(0);
       });
     });
   });
@@ -442,8 +157,11 @@ describe(`container#[Symbol.dispose]`, () => {
     ) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use: any) => {
-          using scope = await container.new(...containerConfigFns);
+          const scope = await container.new(...containerConfigFns);
+
           await use(scope);
+
+          scope.dispose();
         },
       });
     };

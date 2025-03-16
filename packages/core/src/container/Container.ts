@@ -18,11 +18,8 @@ import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type {
   ContainerAllReturn,
   ContainerObjectReturn,
-  ContainerStats,
   HasPromise,
   IContainer,
-  IContainerScopes,
-  IContainerStatsAware,
   InstanceCreationAware,
   IStrategyAware,
   NewScopeReturnType,
@@ -31,17 +28,13 @@ import type {
 } from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
-import { ChildScopes } from './ChildScopes.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
 
-export class Container
-  extends ExtensibleFunction
-  implements InstanceCreationAware, IContainerScopes, IContainerStatsAware
-{
+export class Container extends ExtensibleFunction implements IContainer {
   static root(): Container {
     return new Container(
       null,
@@ -56,7 +49,6 @@ export class Container
   public readonly id = v4();
 
   private _isDisposed = false;
-  private _childScopes = new ChildScopes();
 
   constructor(
     public readonly parentId: string | null,
@@ -78,20 +70,23 @@ export class Container
   }
 
   [Symbol.dispose]() {
+    this.dispose();
+  }
+
+  dispose() {
     if (this._isDisposed) {
       return;
     }
 
-    this._disposableFns.forEach(fn => fn(this));
-    this._childScopes.forEach(child => child[Symbol.dispose]());
+    this._isDisposed = true;
+
+    this._disposableFns.forEach(dispose => dispose(this));
 
     if (this.parentId === null) {
       this.instancesStore.disposeRoot();
     }
 
     this.instancesStore.disposeCurrent();
-
-    this._isDisposed = true;
   }
 
   new<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
@@ -139,8 +134,6 @@ export class Container
       tags,
       disposableFns,
     );
-
-    this._childScopes.append(cnt);
 
     if (configureFns.length) {
       const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposableFns);
@@ -205,7 +198,7 @@ export class Container
 
       switch (definition.strategy) {
         case LifeTime.transient:
-          return this.instancesStore.upsertIntoTransientInstances(definition, this, ...args);
+          return definition.create(this, ...args);
         case LifeTime.singleton:
           return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
         case LifeTime.scoped:
@@ -233,7 +226,7 @@ export class Container
     }
 
     if (definition.strategy === LifeTime.transient) {
-      const instance = this.instancesStore.upsertIntoTransientInstances(definition, withChildInterceptor, ...args);
+      const instance = definition.create(this, ...args);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
@@ -297,22 +290,6 @@ export class Container
   defer<TInstance, TArgs extends any[]>(factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>) {
     return (...args: TArgs): TInstance => {
       return this.use(factoryDefinition, ...args);
-    };
-  }
-
-  get stats(): ContainerStats {
-    return {
-      childScopeCount: this._childScopes.count,
-      nestedScopeCount: this._childScopes.reduce((sum, container) => {
-        return sum + container.stats.childScopeCount;
-      }, 0),
-
-      // TODO: ownDisposablesCount: this._ownDisposer.count,
-      // TODO: rootDisposablesCount: this._rootDisposer.count,*/
-
-      // TODO: add singletons count
-      // TODO: add scoped count
-      // TODO: add depth level?
     };
   }
 }

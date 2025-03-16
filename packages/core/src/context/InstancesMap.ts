@@ -1,7 +1,3 @@
-import type { Definition } from '../definitions/impl/Definition.js';
-import type { IContainer } from '../container/IContainer.js';
-import { isPromise } from '../utils/IsPromise.js';
-
 export function isDisposable(obj: any): obj is Disposable {
   return typeof obj?.[Symbol.dispose] === 'function';
 }
@@ -39,45 +35,5 @@ export class COWMap<V> {
 
   clone(): COWMap<V> {
     return new COWMap(this._instances, false);
-  }
-}
-
-export class InstancesMap extends Map<symbol, any> {
-  private _disposables: Disposable[] = [];
-
-  static create(): InstancesMap {
-    return new InstancesMap();
-  }
-
-  get disposables() {
-    return this._disposables;
-  }
-
-  upsert<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, any, TArgs>,
-    container: IContainer,
-    ...args: TArgs
-  ): TInstance {
-    if (this.has(definition.id)) {
-      return this.get(definition.id) as TInstance;
-    } else {
-      const instance = definition.create(container, ...args);
-
-      this.set(definition.id, instance);
-
-      if (isPromise(instance)) {
-        void instance.then(instanceAwaited => {
-          if (isDisposable(instanceAwaited)) {
-            this._disposables.push(instanceAwaited);
-          }
-        });
-      }
-
-      if (isDisposable(instance)) {
-        this._disposables.push(instance as Disposable);
-      }
-
-      return instance;
-    }
   }
 }

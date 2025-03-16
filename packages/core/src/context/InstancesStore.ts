@@ -3,7 +3,7 @@ import type { IContainer } from '../container/IContainer.js';
 import { isPromise } from '../utils/IsPromise.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
 
-import { InstancesMap, isDisposable } from './InstancesMap.js';
+import { isDisposable } from './InstancesMap.js';
 
 export interface IInstancesStoreRead {
   hasRootInstance(definitionId: symbol): boolean;
@@ -13,16 +13,16 @@ export interface IInstancesStoreRead {
 export class InstancesStore implements IInstancesStoreRead {
   static create(): InstancesStore {
     return new InstancesStore(
-      InstancesMap.create(),
-      InstancesMap.create(),
+      new Map<symbol, unknown>(),
+      new Map<symbol, unknown>(),
       new CompositeDisposable(),
       new CompositeDisposable(),
     );
   }
 
   private constructor(
-    private _globalInstances: InstancesMap,
-    private _scopeInstances: InstancesMap,
+    private _globalInstances: Map<symbol, unknown>,
+    private _scopeInstances: Map<symbol, unknown>,
     private _rootDisposer: CompositeDisposable,
     private _currentDisposer: CompositeDisposable,
   ) {}
@@ -36,24 +36,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   childScope(): InstancesStore {
-    return new InstancesStore(
-      this._globalInstances,
-      InstancesMap.create(),
-      this._rootDisposer,
-      new CompositeDisposable(),
-    );
-  }
-
-  upsertIntoTransientInstances<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, any, TArgs>,
-    container: IContainer,
-    ...args: TArgs
-  ) {
-    const instance = definition.create(container, ...args);
-
-    this.registerDisposable(instance, this._currentDisposer);
-
-    return instance;
+    return new InstancesStore(this._globalInstances, new Map(), this._rootDisposer, new CompositeDisposable());
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(

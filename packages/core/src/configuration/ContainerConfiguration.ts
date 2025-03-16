@@ -1,4 +1,4 @@
-import type { IContainerStatsAware, InstanceCreationAware, UseFn } from '../container/IContainer.js';
+import type { InstanceCreationAware, UseFn } from '../container/IContainer.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import type { ContainerConfigurable } from './abstract/ContainerConfigurable.js';
@@ -10,4 +10,4 @@ export const configureContainer = <T extends ContainerConfigureFn | AsyncContain
   return configureFn;
 };
 
-export type ConfigurationContainer = InstanceCreationAware & UseFn<LifeTime> & IContainerStatsAware;
+export type ConfigurationContainer = InstanceCreationAware & UseFn<LifeTime>;

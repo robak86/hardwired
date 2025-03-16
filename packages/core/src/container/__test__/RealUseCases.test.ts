@@ -32,8 +32,11 @@ describe(`Testing`, () => {
     ) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use: any) => {
-          using scope = await container.new(...containerConfigFns);
+          const scope = await container.new(...containerConfigFns);
+
           await use(scope);
+
+          scope.dispose();
         },
       });
     };
