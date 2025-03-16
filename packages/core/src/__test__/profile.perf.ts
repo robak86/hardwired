@@ -91,7 +91,7 @@ instantiationBench
     cntWithInterceptor.scope().use(scopedD);
   });
 
-await instantiationBench
+void instantiationBench
   .warmup()
   .then(_ => instantiationBench.run())
   .then(_ => console.table(instantiationBench.table()));

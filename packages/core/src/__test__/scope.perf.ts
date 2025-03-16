@@ -48,7 +48,7 @@ scopesBench.add('scope without configuration', () => {
   cnt.scope();
 });
 
-await scopesBench
+void scopesBench
   .warmup()
   .then(_ => scopesBench.run())
   .then(_ => console.table(scopesBench.table()));
