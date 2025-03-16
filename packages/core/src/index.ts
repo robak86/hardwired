@@ -23,7 +23,7 @@ export { Container, container, once, all } from './container/Container.js';
 
 export * from './definitions/fn.js';
 export type * from './definitions/abstract/InstanceDefinition.js';
-export * from './definitions/abstract/InstanceDefinitionDependency.js';
+export type * from './definitions/abstract/InstanceDefinitionDependency.js';
 
 export { value } from './definitions/value.js';
 
