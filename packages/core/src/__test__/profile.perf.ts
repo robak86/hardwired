@@ -41,12 +41,7 @@ const instantiationBench = new Bench({
       c.withInterceptor('graph', new DependenciesGraphRoot());
     });
   },
-  teardown: () => {
-    // cnt = undefined;
-    //
-    // c2 = null;
-    // c3 = null;
-  },
+  teardown: () => {},
 });
 
 instantiationBench

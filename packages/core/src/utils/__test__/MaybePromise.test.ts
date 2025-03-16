@@ -4,12 +4,6 @@ import { isPromise } from '../IsPromise.js';
 
 import { MaybePromise, maybePromise, maybePromiseAll } from './../MaybePromise.js';
 
-// Mock for isPromise if needed
-vi.mock('./IsPromise.js', () => ({
-  isPromise: (value: any) =>
-    value instanceof Promise || (value !== null && typeof value === 'object' && typeof value.then === 'function'),
-}));
-
 describe('MaybePromise', () => {
   describe('Static Methods', () => {
     describe('of', () => {
