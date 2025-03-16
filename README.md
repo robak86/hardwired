@@ -705,7 +705,7 @@ In this example `myObject` will return always the same instance with `someMethod
 
 #### Eager instantiation
 
-The container doesn't have access to the parent container, because such doesn't exist, but provides a mechanism for initializing the current container.
+Hardwired provides a mechanism for selective eager instantiation of dependencies. During the configuration of the root container you can register `onInit` callbacks, that will be called, when the container is created.
 
 ```typescript
 import { configureContainer, cls, container } from 'hardwired';
