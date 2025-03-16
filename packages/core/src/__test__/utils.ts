@@ -35,6 +35,7 @@ export function buildTransientFn(times: number, depth: number, currentDepth = 0)
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return definitions;
 }
 
@@ -53,5 +54,6 @@ export function buildScopedFn(times: number, depth: number, currentDepth = 0): D
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return definitions;
 }

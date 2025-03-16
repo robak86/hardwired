@@ -17,7 +17,7 @@ describe(`ContainerInitializer`, () => {
       }
     }
 
-    const initializeMe = fn.scoped(use => new InitializeMe());
+    const initializeMe = fn.scoped(() => new InitializeMe());
 
     const initializer = fn.scoped(c => {
       return () => c.use(initializeMe).init();

@@ -3,7 +3,7 @@ import { getTruncatedFunctionDefinition } from '../utils/getTruncatedFunctionDef
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
 
-export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]>
+export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]>
   implements IDefinition<TInstance, TLifeTime, TArgs>
 {
   constructor(

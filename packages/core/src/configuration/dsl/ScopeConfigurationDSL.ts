@@ -54,7 +54,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
       throw new Error(`Binding singletons in for child scopes is not allowed.`);
     }
 
-    return new Binder(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
+    return new Binder<TInstance, TLifeTime, TArgs>(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
   }
 
   private _onCascadingStaticBind = (newDefinition: AnyDefinition) => {

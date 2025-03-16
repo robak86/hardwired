@@ -92,7 +92,7 @@ describe(`cls`, () => {
 
     it(`requires args argument in class constructor requires arguments`, async () => {
       // @ts-ignore
-      class WithArgsClass {
+      class _WithArgsClass {
         // @ts-expect-error - missing args
         static class = cls.transient(this);
 
@@ -107,7 +107,7 @@ describe(`cls`, () => {
       }
 
       // @ts-ignore
-      class InvalidScopeClass {
+      class _InvalidScopeClass {
         // @ts-expect-error - DependencyClass.instance has invalid scope
         static class = cls.singleton(this, [DependencyClass.instance]);
 

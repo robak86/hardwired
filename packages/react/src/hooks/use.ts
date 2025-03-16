@@ -78,7 +78,7 @@ export const use: UseDefinitionHook = (definition, options) => {
 
       graphNode?.release();
     };
-  }, [interceptor, definition]);
+  }, [interceptor, definition, options?.skipLifecycle, options?.forceRemount, options?.forceMount]);
 
   return instance;
 };

@@ -28,8 +28,6 @@ const scopedD = fn.scoped(use => {
 let cnt: IContainer;
 let cntWithInterceptor: IContainer;
 
-// @ts-ignore
-let c2: IContainer;
 let c3: IContainer;
 
 const instantiationBench = new Bench({
@@ -37,8 +35,7 @@ const instantiationBench = new Bench({
   setup: () => {
     cnt = container.new();
 
-    c2 = cnt.scope(scope => {});
-    c3 = cnt.scope(scope => {});
+    c3 = cnt.scope();
 
     cntWithInterceptor = container.new(c => {
       c.withInterceptor('graph', new DependenciesGraphRoot());

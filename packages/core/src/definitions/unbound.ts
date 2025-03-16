@@ -7,11 +7,7 @@ function createUnboundDefinition(): never {
   );
 }
 
-export class UnboundDefinition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> extends Definition<
-  TInstance,
-  TLifeTime,
-  TArgs
-> {
+export class UnboundDefinition<TInstance, TLifeTime extends LifeTime> extends Definition<TInstance, TLifeTime, []> {
   readonly kind = 'unbound';
 
   constructor(id: symbol, strategy: TLifeTime) {
@@ -20,6 +16,6 @@ export class UnboundDefinition<TInstance, TLifeTime extends LifeTime, TArgs exte
 }
 
 // TODO: maybe this should be transient by default!!
-export function unbound<T>(): UnboundDefinition<T, LifeTime.scoped, []> {
-  return new UnboundDefinition<T, LifeTime.scoped, []>(Symbol(), LifeTime.scoped);
+export function unbound<T>(): UnboundDefinition<T, LifeTime.scoped> {
+  return new UnboundDefinition<T, LifeTime.scoped>(Symbol(), LifeTime.scoped);
 }

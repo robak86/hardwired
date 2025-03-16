@@ -5,7 +5,9 @@ import type { LifeTime } from './LifeTime.js';
 
 export type AnyDefinition = IDefinition<any, LifeTime, any[]>;
 
-export interface IDefinition<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
+export type UnknownDefinition = IDefinition<unknown, LifeTime, unknown[]>;
+
+export interface IDefinition<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> {
   readonly id: symbol;
   readonly strategy: TLifeTime;
   readonly create: (context: IContainer, ...args: TArgs) => TInstance;

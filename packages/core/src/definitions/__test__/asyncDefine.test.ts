@@ -15,13 +15,13 @@ describe(`asyncDefine`, () => {
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
-      const definition = fn(async locator => null);
+      const definition = fn(async () => null);
 
       expectType<TypeOf<typeof definition, Definition<Promise<null>, LifeTime.transient, []>>>(true);
     });
 
     it(`accepts additional params`, async () => {
-      const definition = fn(async (use, userId: number) => null);
+      const definition = fn(async (_use, _userId: number) => null);
 
       expectType<TypeOf<typeof definition, Definition<Promise<null>, LifeTime.transient, [number]>>>(true);
     });
@@ -38,17 +38,17 @@ describe(`asyncDefine`, () => {
       });
 
       // @ts-ignore
-      const definition = fn(async use => {
+      const _definition = fn(async use => {
         // @ts-ignore
-        const instance1 = use(ext1);
+        const _instance1 = use(ext1);
         // @ts-ignore
-        const instance2 = use(ext2);
+        const _instance2 = use(ext2);
         // @ts-ignore
-        const usingBoth = use(usingBothExternals);
+        const _usingBoth = use(usingBothExternals);
         // @ts-ignore
-        const usingBothNotAllowed = use(usingBothExternalsWithNotAllowed);
+        const _usingBothNotAllowed = use(usingBothExternalsWithNotAllowed);
         // @ts-ignore
-        const instance3 = use(ext3);
+        const _instance3 = use(ext3);
 
         return null;
       });

@@ -1,21 +1,16 @@
 import { container } from '../../Container.js';
 import type { IInterceptor } from '../interceptor.js';
-import type { Definition } from '../../../definitions/impl/Definition.js';
-import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import { fn } from '../../../definitions/fn.js';
 
 describe(`interceptor`, () => {
   class TestInterceptor implements IInterceptor<any> {
     constructor() {}
 
-    onEnter<TNewInstance>(
-      definition: Definition<TNewInstance, LifeTime, any[]>,
-      ...args: any[]
-    ): IInterceptor<TNewInstance> {
-      return this;
+    onEnter<TNewInstance>(): IInterceptor<TNewInstance> {
+      return this as IInterceptor<TNewInstance>;
     }
 
-    onLeave(instance: any) {
+    onLeave(instance: unknown) {
       return instance;
     }
 
@@ -48,8 +43,8 @@ describe(`interceptor`, () => {
         A -> B  -> C1
                 -> C2
        */
-      const c1 = fn.singleton(use => 'C1');
-      const c2 = fn.singleton(use => 'C2');
+      const c1 = fn.singleton(() => 'C1');
+      const c2 = fn.singleton(() => 'C2');
       const b = fn.singleton(use => ['B', use(c1), use(c2)]);
       const a = fn.singleton(use => ['A', use(b)]);
 
@@ -81,8 +76,8 @@ describe(`interceptor`, () => {
         A -> B  -> C1
                 -> C2
        */
-      const c1 = fn.singleton(async use => 'C1');
-      const c2 = fn.singleton(async use => 'C2');
+      const c1 = fn.singleton(async () => 'C1');
+      const c2 = fn.singleton(async () => 'C2');
       const b = fn.singleton(async use => ['B', await use(c1), await use(c2)]);
       const a = fn.singleton(async use => ['A', await use(b)]);
 

@@ -144,7 +144,7 @@ describe(`apply`, () => {
     }
 
     class MyService {
-      callMe(...args: any[]) {}
+      callMe(..._args: any[]) {}
     }
 
     describe(`apply on scoped definition`, () => {

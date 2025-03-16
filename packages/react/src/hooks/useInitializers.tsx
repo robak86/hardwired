@@ -12,5 +12,5 @@ export function useInitializers(...initializers: ContainerInitializerDefinition[
     initializerFns.forEach(initializer => {
       initializer();
     });
-  }, []);
+  }, [initializerFns]);
 }

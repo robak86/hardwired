@@ -10,15 +10,15 @@ describe(`ContainerConfiguration`, () => {
   describe(`container.new`, () => {
     it(`accepts asynchronous function`, async () => {
       const cnt = container.new(
-        async c => {},
-        c => {},
+        async _c => {},
+        _c => {},
       );
 
       expectType<TypeOf<typeof cnt, Promise<Container>>>(true);
     });
 
     it(`accepts synchronous function`, async () => {
-      const cnt = container.new(c => {});
+      const cnt = container.new(_c => {});
 
       expectType<TypeOf<typeof cnt, Container>>(true);
     });
@@ -59,14 +59,14 @@ describe(`ContainerConfiguration`, () => {
   describe(`container.scope`, () => {
     it(`accepts asynchronous function`, async () => {
       const cnt = container.new();
-      const scope = cnt.scope(async c => {});
+      const scope = cnt.scope(async () => {});
 
       expectType<TypeOf<typeof scope, Promise<IContainer>>>(true);
     });
 
     it(`accepts synchronous function`, async () => {
       const cnt = container.new();
-      const scope = cnt.scope(c => {});
+      const scope = cnt.scope();
 
       expectType<TypeOf<typeof scope, IContainer>>(true);
     });
@@ -89,7 +89,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`allows to asynchronously get instance from the parent container`, async () => {
-      const fromParent = fn.singleton(async use => 'fromParent');
+      const fromParent = fn.singleton(async () => 'fromParent');
 
       const def = fn.scoped(() => 'original');
       const cnt = container.new();
@@ -113,7 +113,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`allows to asynchronously get instance from the parent container`, async () => {
-      const fromParent = fn.singleton(async use => 'fromParent');
+      const fromParent = fn.singleton(async () => 'fromParent');
 
       const def = fn.scoped(() => 'original');
       const cnt = container.new();

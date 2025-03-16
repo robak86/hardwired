@@ -40,10 +40,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     this._context.initialize(bindingRegistry, instancesStore);
   }
 
-  onEnter<TNewInstance>(
-    definition: Definition<TNewInstance, LifeTime, any[]>,
-    args: any[],
-  ): IInterceptor<TNewInstance> {
+  onEnter<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
     const cascadingNode = this.getRootForCascading(definition);
 
     if (cascadingNode) {
@@ -59,7 +56,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return this._context.nodesRegistry.getNode(definition)?.node;
   }
 
-  onLeave(instance: T, definition: Definition<T, LifeTime, any[]>): T {
+  onLeave(instance: T): T {
     if (this._node !== notInitialized) {
       return instance;
     }

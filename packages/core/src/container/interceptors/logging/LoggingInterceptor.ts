@@ -40,10 +40,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     );
   }
 
-  onEnter<TNewInstance>(
-    dependencyDefinition: Definition<TNewInstance, LifeTime, any[]>,
-    args: any[],
-  ): IInterceptor<TNewInstance> {
+  onEnter<TNewInstance>(dependencyDefinition: Definition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
     if (this.hasCached(dependencyDefinition.id)) {
       console.group(
         `Fetching cached[${this.scopeLevel}][${dependencyDefinition.strategy}]: ${dependencyDefinition.name}`,

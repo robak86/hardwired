@@ -2,7 +2,7 @@ import type { IContainer } from '../container/IContainer.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { Definition } from '../definitions/impl/Definition.js';
 
-export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends any[]> {
+export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> {
   constructor(
     private _definition: Definition<TInstance, TLifeTime, TArgs>,
     private _onStaticBind: (newDefinition: Definition<TInstance, TLifeTime, TArgs>) => void,

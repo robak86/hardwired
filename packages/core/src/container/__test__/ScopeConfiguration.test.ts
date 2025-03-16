@@ -32,7 +32,7 @@ describe('ScopeConfiguration', () => {
         const dep = fn.scoped(() => new BoxedValue(Math.random()));
         const root = container.new();
 
-        const childContainer = root.scope((scope, use) => {
+        const childContainer = root.scope(scope => {
           scope.onInit(use => {
             use(dep).value = 1;
           });

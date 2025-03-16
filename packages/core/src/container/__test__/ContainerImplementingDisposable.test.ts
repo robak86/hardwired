@@ -169,7 +169,7 @@ describe(`container#[Symbol.dispose]`, () => {
     const setupDB = configureContainer(c => {
       c.cascade(dbConnection);
 
-      c.onDispose(use => {
+      c.onDispose(() => {
         status.customDisposeCalled = true;
       });
     });

@@ -249,7 +249,10 @@ export class Container extends ExtensibleFunction implements IContainer {
   all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
     ...definitions: [...TDefinitions]
   ): ContainerAllReturn<TDefinitions> {
-    const results = definitions.map(def => this.use(def));
+    const results = definitions.map(def => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return this.use(def);
+    });
 
     return maybePromiseAll(results) as ContainerAllReturn<TDefinitions>;
   }

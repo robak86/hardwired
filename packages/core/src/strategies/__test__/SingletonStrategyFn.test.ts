@@ -97,7 +97,7 @@ describe(`SingletonStrategy`, () => {
           scope.bind(a).toValue(1);
         });
 
-        const child = root.scope(scope => {});
+        const child = root.scope();
 
         expect(child.use(a)).toEqual(0);
         expect(root.use(a)).toEqual(1);
@@ -111,8 +111,8 @@ describe(`SingletonStrategy`, () => {
           scope.cascade(a);
         });
 
-        const child = root.scope(scope => {});
-        const grandChild = child.scope(scope => {});
+        const child = root.scope();
+        const grandChild = child.scope();
 
         const rootVal = root.use(a);
         const childVal = child.use(a);
@@ -152,11 +152,11 @@ describe(`SingletonStrategy`, () => {
           scope.cascade(a);
         });
 
-        const l1 = root.scope(scope => {});
+        const l1 = root.scope();
         const l2 = l1.scope(scope => {
           scope.bindCascading(a).toValue(1);
         });
-        const l3 = l2.scope(scope => {});
+        const l3 = l2.scope();
 
         const l1A = l1.use(a);
         const l2A = l2.use(a);
@@ -215,22 +215,16 @@ describe(`SingletonStrategy`, () => {
         const factory = vi.fn(() => 0);
         const a = fn.scoped(factory);
 
-        const root = container.new(scope => {});
+        const root = container.new();
         const level1 = root.scope(scope => {
-          scope.bindCascading(a).decorate((use, value) => {
+          scope.bindCascading(a).decorate(() => {
             return 1;
           });
         });
 
-        const level2 = level1.scope(scope => {
-          // scope.propagate(a).toRedefined(propagateFn);
-        });
-
-        const level3 = level2.scope(scope => {
-          // scope.propagate(a).toValue(10);
-        });
-
-        const level4 = level3.scope(scope => {});
+        const level2 = level1.scope();
+        const level3 = level2.scope();
+        const level4 = level3.scope();
 
         const l4A = level4.use(a);
         const l3A = level3.use(a);
@@ -366,7 +360,7 @@ describe(`SingletonStrategy`, () => {
 
   describe(`async resolution`, () => {
     const resolveAfter = <T>(timeout: number, value: T): Promise<T> => {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         setTimeout(() => {
           resolve(value);
         }, timeout);

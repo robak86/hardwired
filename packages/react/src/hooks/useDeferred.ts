@@ -14,6 +14,6 @@ export const useDeferred: UseDeferredHook = definition => {
     (...args) => {
       return container.use(definition, ...args);
     },
-    [container],
+    [container, definition],
   );
 };

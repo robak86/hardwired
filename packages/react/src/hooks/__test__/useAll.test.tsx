@@ -25,7 +25,7 @@ describe(`useDefinitions`, () => {
       const val2Def = fn.scoped(() => 123);
 
       // @ts-ignore
-      const Component = () => {
+      const _Component = () => {
         const [val1, val2] = useAll(val1Def, val2Def);
 
         expectType<TypeEqual<typeof val1, string>>(true);
@@ -138,7 +138,7 @@ describe(`useDefinitions`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
+      const Consumer: FC<{ externalValue: string }> = () => {
         const values = useAll(val1Def, val2Def);
 
         return <DummyComponent value={values.join('|')} />;

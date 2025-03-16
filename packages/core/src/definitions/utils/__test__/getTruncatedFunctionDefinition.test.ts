@@ -18,15 +18,15 @@ describe('getTruncatedFunctionDefinition', () => {
   });
 
   it(`correctly handles the return of single line fat arrow function`, async () => {
-    const exampleFunc = (a: number, b: number) => 123;
+    const exampleFunc = (_a: number, _b: number) => 123;
 
-    expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe('(a, b) => 123');
+    expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toBe('(_a, _b) => 123');
   });
 
   it(`returns correct value for empty body for fat arrow function`, async () => {
-    const exampleFunc = (a: number, b: number) => {};
+    const exampleFunc = (_a: number, _b: number) => {};
 
-    expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toEqual('(a, b) => {\n    }');
+    expect(getTruncatedFunctionDefinition(exampleFunc.toString())).toEqual('(_a, _b) => {\n    }');
   });
 
   it('should handle named function', () => {

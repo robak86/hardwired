@@ -114,7 +114,7 @@ describe(`use`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
+      const Consumer: FC<{ externalValue: string }> = () => {
         const val1 = use(val1Def);
 
         return <DummyComponent value={val1} />;
@@ -487,7 +487,7 @@ describe(`use`, () => {
         };
 
         function randomScopeConfigs(num: number) {
-          return Array.from({ length: num }).map(idx => {
+          return Array.from({ length: num }).map(() => {
             return {
               isEnabled: Math.random() > 0.5,
             };

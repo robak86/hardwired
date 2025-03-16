@@ -28,7 +28,7 @@ class HomePageHandler implements IRequestHandler {
 
 const app = fn.singleton(use => {
   return createServer((req, res) => {
-    const requestScope = use.scope((reqScope, parent) => {
+    const requestScope = use.scope(reqScope => {
       reqScope.bindCascading(reqD).toValue(req);
     });
 

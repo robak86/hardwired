@@ -8,7 +8,7 @@ import type { AnyDefinition, IDefinition } from '../abstract/IDefinition.js';
 
 import { Definition } from './Definition.js';
 
-export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructorArgs extends any[]>
+export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructorArgs extends unknown[]>
   implements IDefinition<TInstance, TLifeTime, []>
 {
   private _hasOnlySyncDependencies = false; // flag for optimization, so we don't have to check every time

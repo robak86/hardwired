@@ -154,7 +154,7 @@ describe(`Scopes`, () => {
         });
         const l1 = root.scope(scope => scope.bind(def).toValue(10));
         const l2 = l1.scope(scope => scope.bind(def).toValue(100));
-        const l3 = l2.scope(scope => {});
+        const l3 = l2.scope();
 
         const l3Consumer = l3.use(consumer);
 
@@ -177,7 +177,7 @@ describe(`Scopes`, () => {
             scope.bindCascading(dep).toValue('root');
           });
 
-          const l1 = root.scope(scope => {});
+          const l1 = root.scope();
           const l2 = l1.scope(scope => {
             scope.bind(dep).toValue('l2');
           });
@@ -227,7 +227,7 @@ describe(`Scopes`, () => {
             scope.bindCascading(consumer).to(consumerReplacementV2);
           });
 
-          const l3 = l2.scope(scope => {});
+          const l3 = l2.scope();
 
           const rootConsumer = root.use(consumer);
           const l1Consumer = l1.use(consumer);
@@ -291,7 +291,7 @@ describe(`Scopes`, () => {
             scope.bindCascading(consumer).decorate((use, val) => val + '_consumer_replacement_v2');
           });
 
-          const l3 = l2.scope(scope => {});
+          const l3 = l2.scope();
 
           const rootConsumer = root.use(consumer);
           const l1Consumer = l1.use(consumer);
@@ -361,7 +361,7 @@ describe(`Scopes`, () => {
             });
           });
 
-          const l3 = l2.scope(scope => {});
+          const l3 = l2.scope();
 
           const rootConsumer = root.use(consumer);
           const l1Consumer = l1.use(consumer);
@@ -412,7 +412,7 @@ describe(`Scopes`, () => {
       it(`doesn't propagate the instance to  descendent scopes`, async () => {
         const def = fn.scoped(() => 'original');
         const l1Creator = fn.scoped(use => {
-          const configure = configureScope(scope => {});
+          const configure = configureScope(() => {});
           const scope = use.scope(configure);
 
           return scope.use(def);

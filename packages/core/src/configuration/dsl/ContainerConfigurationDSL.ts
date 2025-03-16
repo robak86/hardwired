@@ -41,23 +41,31 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   bindCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
     definition: Definition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []> {
-    return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
+    return new Binder<TInstance, TLifeTime, []>(
+      definition,
+      this._onCascadingStaticBind,
+      this._onCascadingInstantiableBind,
+    );
   }
 
-  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
+  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends unknown[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {
       throw new Error(`Singleton is not allowed for local bindings.`);
     }
 
-    return new Binder(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
+    return new Binder<TInstance, TLifeTime, TArgs>(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
   }
 
-  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends any[]>(
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
-    return new Binder(definition, this._onFrozenStaticBind, this._onFrozenInstantiableBind);
+    return new Binder<TInstance, TLifeTime, TArgs>(
+      definition,
+      this._onFrozenStaticBind,
+      this._onFrozenInstantiableBind,
+    );
   }
 
   private _onFrozenStaticBind = (newDefinition: AnyDefinition) => {
