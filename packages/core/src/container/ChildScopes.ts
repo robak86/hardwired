@@ -29,6 +29,16 @@ export class ChildScopes {
     }
   }
 
+  reduce<T>(iterFn: (acc: T, container: IContainer) => T, initialValue: T) {
+    let acc = initialValue;
+
+    this.forEach(container => {
+      acc = iterFn(acc, container);
+    });
+
+    return acc;
+  }
+
   append(container: IContainer): void {
     if (this.children[container.id]) {
       return;

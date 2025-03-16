@@ -22,6 +22,7 @@ import type {
   HasPromise,
   IContainer,
   IContainerScopes,
+  IContainerStatsAware,
   InstanceCreationAware,
   IStrategyAware,
   NewScopeReturnType,
@@ -39,7 +40,10 @@ export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerCon
 
 const containerFinalizer = new DisposablesFinalizer();
 
-export class Container extends ExtensibleFunction implements InstanceCreationAware, IContainerScopes {
+export class Container
+  extends ExtensibleFunction
+  implements InstanceCreationAware, IContainerScopes, IContainerStatsAware
+{
   static root(): Container {
     return new Container(
       null,
@@ -201,7 +205,7 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
   }
 
   /**
-   * Use instance if it is already memoized in the root scope or in the current scope. Otherwise, return null;
+   * Returns instance if it is already memoized in the root scope or in the current scope. Otherwise, returns null.
    * Cascading instances are returned only from the scope holding the instance.
    * @param definition
    */
@@ -332,8 +336,8 @@ export class Container extends ExtensibleFunction implements InstanceCreationAwa
         return sum + container.stats.childScopeCount;
       }, 0),
 
-      /*ownDisposablesCount: this._ownDisposer.count,
-      rootDisposablesCount: this._rootDisposer.count,*/
+      // TODO: ownDisposablesCount: this._ownDisposer.count,
+      // TODO: rootDisposablesCount: this._rootDisposer.count,*/
 
       // TODO: add singletons count
       // TODO: add scoped count
