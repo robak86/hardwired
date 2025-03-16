@@ -7,7 +7,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['cobertura', 'html'],
       include: ['packages/**/src'],
-      exclude: ['./packages/core/src/__test__/*', './packages/examples/'],
+      exclude: ['./packages/core/src/__test__/*', './packages/examples/', './packages/**/index.{ts,tsx}'],
       extension: ['ts', 'tsx'],
     },
   },
