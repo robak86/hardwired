@@ -69,10 +69,6 @@ export class Container extends ExtensibleFunction implements IContainer {
     );
   }
 
-  [Symbol.dispose]() {
-    this.dispose();
-  }
-
   dispose() {
     if (this._isDisposed) {
       return;
@@ -186,7 +182,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     ...args: TArgs
   ): TValue {
     if (this._isDisposed) {
-      throw new Error(`Container ${this.id} is disposed`);
+      throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
     }
 
     if (this.currentInterceptor) {
