@@ -4,12 +4,11 @@
 
 - Unify creation of scopes - remove `container.withScope`, `container.disposable` methods and `DisposableScope` class.
   - Now every scope is disposable by default.
-  - Whenever an object having `Symbol.dispose` method is created, it is automatically disposed when the scope is garbage collected.
 
 #### Features
 
-- add `useExisting` helper method for getting instances only if they are memoized in the current scope or the root
-- add **experimental** support for automatic disposal of instances which implement `Symbol.dispose` method
+- add `useExisting` helper method for getting instances only if they are memoized in the current scope or the root in case of singletons
+- add **experimental** support for batch disposal of instances which implement `Symbol.dispose` method
 
 ```typescript
 import { scoped } from 'hardwired';
@@ -24,17 +23,13 @@ class MyDisposable implements Disposable {
 
 const cnt = container.new();
 
-function runWithScope() {
-  const scope = cnt.scope();
-  scope.use(MyDisposable.instance);
-}
+const scope = cnt.scope();
+scope.use(MyDisposable.instance); // during creation of MyDisposable, it gets registered in the scope as disposable
 
-runWithScope();
-// here the scope created within the method can be garbage collected
-// and [Symbol.dispose] method of MyDisposable will be called
+scope.dispose(); // all registered disposables are disposed
 ```
 
-- add automatic lifting of asynchronicity when some of the class dependencies are async
+- `cls` - add automatic lifting of asynchronicity when some of the class dependencies are async
 
 ```typescript
 import { fn, cls, once } from 'hardwired';

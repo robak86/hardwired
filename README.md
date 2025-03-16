@@ -458,25 +458,13 @@ const id1 = scope1.use(requestId); // every time you request the requestId from 
 const id2 = scope2.use(requestId); // scope2 holds its own requestId value
 ```
 
-> **Experimental:** Every scope is disposable, which means that whenever an object created by the scope implements the `Symbol.dispose` method, that method is automatically called when the scope is being garbage collected.
+> **Experimental:** Every scope acts as a registry that collects created objects implementing `Disposable` interface. The scope provides `dispose()` method that allows calling the `[Symbol.dispose]` method on such collected objects. Additionally, it calls dispose callbacks registered during scope/container configuration.
 
-**Singleton** definitions are released only when the root container is garbage collected.
+> **Singleton** definitions are disposed only when the `dispose` method is called on the root container.
 
-**Scoped** definitions are released when the scope is garbage collected. In case of cascading definition, the instance is disposed when the owning scope is garbage collected.
+> **Scoped** definitions are disposed when the `dispose` method is called on the scope that created the instances. In case of cascading definition, the instance is disposed when the owning scope is disposed.
 
-The same mechanism also applies to **transient** definitions. The transient definitions created by a scope, even if they are not memoized, are released only when the scope is garbage collected.
-
-> **Warning**: The order of disposal is not guaranteed, so dispose methods shouldn't make any assumptions about the state of other dependencies during disposal. In general, most of the time you should explicitly dispose the resources, whenever you create a scope and don't use it anymore.
-
-```typescript
-const scope = rootContainer.scope();
-
-// ... do something with scope
-
-scope.ifCreated(myDisposableDefinition, myDisposableInstance => {
-  myDisposableInstance.destroy();
-});
-```
+> **Transient** instances are not collected for disposal, as tracking such objects could create memory leaks.
 
 ### Creating Child Scopes within the Definitions
 
