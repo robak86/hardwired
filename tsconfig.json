@@ -11,7 +11,7 @@
     "noUnusedLocals": true,
     "jsx": "react-jsx",
     "strict": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     "removeComments": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
