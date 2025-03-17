@@ -44,19 +44,19 @@ export class MaybePromise<T> {
     }
   }
 
-  tap(fn: (value: T) => void): MaybePromise<T> {
+  tap(fn: (value: Awaited<T>) => MaybePromiseValue<void>): MaybePromise<T> {
     if (isPromise(this.value)) {
       return new MaybePromise(
-        this.value.then(value => {
-          fn(value);
+        this.value.then(async value => {
+          await fn(value as Awaited<T>);
 
           return value;
         }),
       );
     } else {
-      fn(this.value);
+      const tapResult = fn(this.value as Awaited<T>);
 
-      return this;
+      return maybePromise(tapResult).flatMap(() => this.value);
     }
   }
 

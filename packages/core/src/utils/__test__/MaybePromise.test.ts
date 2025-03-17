@@ -147,8 +147,12 @@ describe('MaybePromise', () => {
 
         expect(spy).toHaveBeenCalledWith(42);
         expect(spy).toHaveBeenCalledTimes(1);
-        expect(result).toBe(mp);
+        expect(result).toEqual(mp);
         expect(result.get()).toBe(42);
+      });
+
+      it(`calls callback with a correct type`, async () => {
+        maybePromise(Promise.resolve(42)).tap((value: number) => {});
       });
 
       it('should call the function with resolved promise value', async () => {
