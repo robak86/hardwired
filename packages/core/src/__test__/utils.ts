@@ -2,7 +2,7 @@ import type { Definition } from '../definitions/impl/Definition.js';
 import { fn } from '../definitions/fn.js';
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
 
-export function buildSingletonTreeFn(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
+export function buildSingletonTreeFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -20,7 +20,7 @@ export function buildSingletonTreeFn(times: number, depth: number, currentDepth 
   return definitions;
 }
 
-export function buildTransientFn(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
+export function buildTransientFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -39,7 +39,7 @@ export function buildTransientFn(times: number, depth: number, currentDepth = 0)
   return definitions;
 }
 
-export function buildScopedFn(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
+export function buildScopedFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
   if (currentDepth > depth) {
     return [];
   }

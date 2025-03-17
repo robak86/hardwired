@@ -2,10 +2,26 @@ import { Bench } from 'tinybench';
 
 import { container } from '../container/Container.js';
 import { fn } from '../definitions/fn.js';
-import type { IContainer } from '../container/IContainer.js';
+import type { GraphNode } from '../container/interceptors/graph/DependenciesGraph.js';
 import { DependenciesGraphRoot } from '../container/interceptors/graph/DependenciesGraph.js';
+import type { IContainer } from '../container/IContainer.js';
+import type { Definition } from '../definitions/impl/Definition.js';
+import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 
 import { buildScopedFn, buildSingletonTreeFn, buildTransientFn } from './utils.js';
+
+function getInstancesCount(definition: Definition<any, LifeTime.singleton | LifeTime.scoped, []>): number {
+  const debugCnt = container.new(c => {
+    c.withInterceptor('graph', new DependenciesGraphRoot());
+  });
+
+  debugCnt.use(definition);
+
+  const interceptor = debugCnt.getInterceptor('graph') as DependenciesGraphRoot;
+  const root = interceptor.getGraphNode(definition) as GraphNode<number[]>;
+
+  return root.descendants.length;
+}
 
 const singletonDefinitions = buildSingletonTreeFn(3, 10);
 const transientDefinitions = buildTransientFn(3, 10);
@@ -25,6 +41,10 @@ const scopedD = fn.scoped(use => {
   return scope.all(...scopedDefinitions);
 });
 
+console.log(`singletonD dependencies: ${getInstancesCount(singletonD)} `);
+console.log(`scopedD dependencies: ${getInstancesCount(scopedD)} `);
+
+//
 let cnt: IContainer;
 let cntWithInterceptor: IContainer;
 
