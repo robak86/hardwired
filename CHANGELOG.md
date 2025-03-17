@@ -7,6 +7,7 @@
 
 #### Features
 
+- add optional debug name for `unbound` definitions
 - add `useExisting` helper method for getting instances only if they are memoized in the current scope or the root in case of singletons
 - add **experimental** support for batch disposal of instances which implement `Symbol.dispose` method
 
