@@ -1,6 +1,8 @@
 import type { IContainer } from '../container/IContainer.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { Definition } from '../definitions/impl/Definition.js';
+import { type MaybePromiseValue } from '../utils/MaybePromise.js';
+import { isPromise } from '../utils/IsPromise.js';
 
 export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> {
   constructor(
@@ -21,13 +23,35 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onStaticBind(newDefinition);
   }
 
-  configure(configureFn: (locator: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => void): void {
-    const newDefinition = this._definition.override((use: IContainer, ...args: TArgs) => {
+  configure(
+    configureFn: (
+      locator: IContainer<TLifeTime>,
+      instance: Awaited<TInstance>,
+      ...args: TArgs
+    ) => TInstance extends Promise<any> ? MaybePromiseValue<void> : void,
+  ): void {
+    const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TInstance => {
       const instance = this._definition.create(use, ...args);
 
-      configureFn(use, instance, ...args);
+      if (isPromise(instance)) {
+        return instance.then(value => {
+          const configureResult = configureFn(use, value as Awaited<TInstance>, ...args);
 
-      return instance;
+          if (isPromise(configureResult)) {
+            return configureResult.then(() => value);
+          } else {
+            return value;
+          }
+        }) as TInstance;
+      } else {
+        const configureResult = configureFn(use, instance as Awaited<TInstance>, ...args);
+
+        if (isPromise(configureResult)) {
+          throw new Error(`Cannot use async configure function for non-async definition: ${this._definition.name}`);
+        }
+
+        return instance;
+      }
     });
 
     this._onInstantiableBind(newDefinition);

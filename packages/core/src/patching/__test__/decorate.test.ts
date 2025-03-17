@@ -124,8 +124,6 @@ describe(`decorate`, () => {
       const scope1 = container.new(c => {
         c.freeze(instanceDef).configure((use, a) => {
           vi.spyOn(a, 'callMe');
-
-          return a;
         });
       });
 

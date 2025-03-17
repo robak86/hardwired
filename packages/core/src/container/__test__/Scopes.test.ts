@@ -41,7 +41,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bind(def).configure(() => 2));
+            const l2 = l1.scope(scope => scope.bind(def).decorate(() => 2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -93,17 +93,7 @@ describe(`Scopes`, () => {
             expect(l2.use(def)).toEqual(1);
           });
 
-          it(`overrides configured binding`, async () => {
-            const def = fn.scoped(() => Math.random());
-            const cnt = container.new(scope => scope.freeze(def).toValue(1));
-            const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindCascading(def).configure(() => 2));
-
-            expect(l1.use(def)).toEqual(1);
-            expect(l2.use(def)).toEqual(1);
-          });
-
-          it(`overrides decorated binding`, async () => {
+          it(`overrides configured binding`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
@@ -113,7 +103,17 @@ describe(`Scopes`, () => {
             expect(l2.use(def)).toEqual(1);
           });
 
-          it(`overrides bounded to different definition`, async () => {
+          it(`overrides decorated binding`, () => {
+            const def = fn.scoped(() => Math.random());
+            const cnt = container.new(scope => scope.freeze(def).toValue(1));
+            const l1 = cnt.scope();
+            const l2 = l1.scope(scope => scope.bindCascading(def).decorate(() => 2));
+
+            expect(l1.use(def)).toEqual(1);
+            expect(l2.use(def)).toEqual(1);
+          });
+
+          it(`overrides bounded to different definition`, () => {
             const def = fn.scoped(() => Math.random());
             const def2 = fn.scoped(() => 10);
 
