@@ -1,6 +1,7 @@
-import { fn } from '../../definitions/definitions.js';
-import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
+
+import { fn } from '../../definitions/fn.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { container } from '../../container/Container.js';
 
 describe(`ScopeStrategy`, () => {
@@ -9,9 +10,11 @@ describe(`ScopeStrategy`, () => {
       const a = fn.scoped(() => Math.random());
 
       const c = container.new();
+
       expect(c.use(a)).toEqual(c.use(a));
 
       const childScope = c.scope();
+
       expect(childScope.use(a)).toEqual(childScope.use(a));
       expect(c.use(a)).not.toEqual(childScope.use(a));
     });
@@ -21,6 +24,7 @@ describe(`ScopeStrategy`, () => {
       const c = container.new();
 
       const childScope = c.scope();
+
       expect(childScope.use(a)).toEqual(childScope.use(a));
       expect(c.use(a)).not.toEqual(childScope.use(a));
     });
@@ -87,6 +91,7 @@ describe(`ScopeStrategy`, () => {
       const a = fn.scoped(() => new BoxedValue('original'));
 
       const root = container.new();
+
       expect(root.use(a).value).toEqual('original');
 
       const l1 = root.scope(c => {
@@ -96,6 +101,7 @@ describe(`ScopeStrategy`, () => {
       expect(l1.use(a).value).toEqual('l1');
 
       const l3 = l1.scope();
+
       expect(l3.use(a).value).toEqual('original');
 
       expect(l1.use(a)).not.toBe(l3.use(a));
@@ -252,6 +258,7 @@ describe(`ScopeStrategy`, () => {
         const childScope = c.scope(c => {
           c.bind(k1).to(fn.scoped(async () => 2));
         });
+
         expect(await childScope.use(k1)).toEqual(1);
       });
 
@@ -269,6 +276,7 @@ describe(`ScopeStrategy`, () => {
         const childScope = c.scope(c => {
           c.bind(k2).to(fn.scoped(async () => 2));
         });
+
         expect(await childScope.use(k1)).toEqual(1);
         expect(await childScope.use(k2)).toEqual(2);
       });

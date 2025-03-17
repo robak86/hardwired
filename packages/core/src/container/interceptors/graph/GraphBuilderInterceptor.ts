@@ -1,10 +1,11 @@
-import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
-import { IInstancesStoreRead } from '../../../context/InstancesStore.js';
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { IInterceptor } from '../interceptor.js';
+import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
+import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
+import type { Definition } from '../../../definitions/impl/Definition.js';
+import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import type { IInterceptor } from '../interceptor.js';
 import { isPromise } from '../../../utils/IsPromise.js';
-import { ScopeTag } from '../../IContainer.js';
+import type { ScopeTag } from '../../IContainer.js';
+
 import { GraphNodesRegistry } from './GraphNodesRegistry.js';
 import { GraphBuilderContext } from './GraphBuilderContext.js';
 
@@ -21,6 +22,7 @@ export interface GraphBuilderInterceptorConfig<TNode extends GraphNode<any>> {
 export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements IInterceptor<T> {
   static create<TNode extends GraphNode<any>>(configuration: GraphBuilderInterceptorConfig<TNode>) {
     const context = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []);
+
     return new GraphBuilderInterceptor<never, TNode>(configuration, context);
   }
 
@@ -38,15 +40,13 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     this._context.initialize(bindingRegistry, instancesStore);
   }
 
-  onEnter<TNewInstance>(
-    definition: Definition<TNewInstance, LifeTime, any[]>,
-    args: any[],
-  ): IInterceptor<TNewInstance> {
+  onEnter<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
     const cascadingNode = this.getRootForCascading(definition);
 
     if (cascadingNode) {
       return cascadingNode.instantiate(definition);
     }
+
     return this.instantiate(definition);
   }
 
@@ -56,13 +56,13 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return this._context.nodesRegistry.getNode(definition)?.node;
   }
 
-  onLeave(instance: T, definition: Definition<T, LifeTime, any[]>): T {
+  onLeave(instance: T): T {
     if (this._node !== notInitialized) {
       return instance;
     }
 
     if (isPromise(instance)) {
-      instance.then(instanceAwaited => {
+      void instance.then(instanceAwaited => {
         this._node = this._configuration.createNode(
           this.definition,
           instanceAwaited as Awaited<T>,
@@ -123,7 +123,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
 
   private instantiate<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>) {
     const existingNode: GraphBuilderInterceptor<TNewInstance, TNode> | undefined = this._context.nodesRegistry.getOwn(
-      definition as any,
+      definition as Definition<TNewInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
     );
 
     if (existingNode) {
@@ -141,6 +141,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
 
       this._context.nodesRegistry.registerByDefinition(definition, childInterceptor);
       this._children.push(childInterceptor);
+
       return childInterceptor;
     }
   }

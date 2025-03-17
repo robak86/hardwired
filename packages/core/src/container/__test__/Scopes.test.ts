@@ -1,5 +1,6 @@
 import { describe, expect } from 'vitest';
-import { fn } from '../../definitions/definitions.js';
+
+import { fn } from '../../definitions/fn.js';
 import { container } from '../Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
@@ -10,6 +11,7 @@ describe(`Scopes`, () => {
       it(`freezes values for the root scope`, async () => {
         const def = fn.singleton(() => Math.random());
         const cnt = container.new(scope => scope.freeze(def).toValue(1));
+
         expect(cnt.use(def)).toEqual(1);
       });
 
@@ -152,15 +154,18 @@ describe(`Scopes`, () => {
         });
         const l1 = root.scope(scope => scope.bind(def).toValue(10));
         const l2 = l1.scope(scope => scope.bind(def).toValue(100));
-        const l3 = l2.scope(scope => {});
+        const l3 = l2.scope();
 
         const l3Consumer = l3.use(consumer);
+
         expect(l3Consumer).toEqual(2);
 
         const l2Consumer = l2.use(consumer);
+
         expect(l2Consumer).toEqual(2);
 
         const l2Def = l2.use(def);
+
         expect(l2Def).toEqual(100);
       });
 
@@ -172,7 +177,7 @@ describe(`Scopes`, () => {
             scope.bindCascading(dep).toValue('root');
           });
 
-          const l1 = root.scope(scope => {});
+          const l1 = root.scope();
           const l2 = l1.scope(scope => {
             scope.bind(dep).toValue('l2');
           });
@@ -194,9 +199,11 @@ describe(`Scopes`, () => {
           });
 
           const l1Consumer = l1.use(consumer);
+
           expect(l1Consumer).toEqual('root_consumer_replacement');
 
           const l1Dep = l1.use(dep);
+
           expect(l1Dep).toEqual('l1');
         });
 
@@ -220,7 +227,7 @@ describe(`Scopes`, () => {
             scope.bindCascading(consumer).to(consumerReplacementV2);
           });
 
-          const l3 = l2.scope(scope => {});
+          const l3 = l2.scope();
 
           const rootConsumer = root.use(consumer);
           const l1Consumer = l1.use(consumer);
@@ -258,9 +265,11 @@ describe(`Scopes`, () => {
           });
 
           const l1Consumer = l1.use(consumer);
+
           expect(l1Consumer).toEqual('root_consumer_replacement');
 
           const l1Dep = l1.use(dep);
+
           expect(l1Dep).toEqual('l1');
         });
 
@@ -282,7 +291,7 @@ describe(`Scopes`, () => {
             scope.bindCascading(consumer).decorate((use, val) => val + '_consumer_replacement_v2');
           });
 
-          const l3 = l2.scope(scope => {});
+          const l3 = l2.scope();
 
           const rootConsumer = root.use(consumer);
           const l1Consumer = l1.use(consumer);
@@ -322,9 +331,11 @@ describe(`Scopes`, () => {
           });
 
           const l1Consumer = l1.use(consumer);
+
           expect(l1Consumer).toEqual(new BoxedValue('root_consumer_replacement'));
 
           const l1Dep = l1.use(dep);
+
           expect(l1Dep).toEqual(new BoxedValue('l1'));
         });
 
@@ -350,7 +361,7 @@ describe(`Scopes`, () => {
             });
           });
 
-          const l3 = l2.scope(scope => {});
+          const l3 = l2.scope();
 
           const rootConsumer = root.use(consumer);
           const l1Consumer = l1.use(consumer);
@@ -385,12 +396,13 @@ describe(`Scopes`, () => {
             scope.bind(def).toValue('l1');
           });
 
-          return use.withScope(configure, use => {
-            return use(def);
-          });
+          const scope = use.scope(configure);
+
+          return scope.use(def);
         });
 
         const root = container.new();
+
         expect(root.use(l1Creator)).toEqual('l1');
         expect(root.use(def)).toEqual('original');
       });
@@ -400,11 +412,10 @@ describe(`Scopes`, () => {
       it(`doesn't propagate the instance to  descendent scopes`, async () => {
         const def = fn.scoped(() => 'original');
         const l1Creator = fn.scoped(use => {
-          const configure = configureScope(scope => {});
+          const configure = configureScope(() => {});
+          const scope = use.scope(configure);
 
-          return use.withScope(configure, use => {
-            return use(def);
-          });
+          return scope.use(def);
         });
 
         const root = container.new(scope => {

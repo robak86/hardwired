@@ -1,11 +1,11 @@
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { IInterceptor } from '../interceptor.js';
-import { isPromise } from '../../../utils/IsPromise.js';
 import prettyMilliseconds from 'pretty-ms';
 
-import { IInstancesStoreRead } from '../../../context/InstancesStore.js';
-import { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
+import type { Definition } from '../../../definitions/impl/Definition.js';
+import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import type { IInterceptor } from '../interceptor.js';
+import { isPromise } from '../../../utils/IsPromise.js';
+import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
+import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
 
 export class LoggingInterceptor<T> implements IInterceptor<T> {
   static create() {
@@ -18,7 +18,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     private _parent?: LoggingInterceptor<unknown>,
     private _definition?: Definition<T, LifeTime, any[]>,
     private _instances?: IInstancesStoreRead,
-    private _scopeLevel: number = 0,
+    private _scopeLevel = 0,
   ) {}
 
   get definition(): Definition<T, LifeTime, any[]> {
@@ -40,10 +40,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     );
   }
 
-  onEnter<TNewInstance>(
-    dependencyDefinition: Definition<TNewInstance, LifeTime, any[]>,
-    args: any[],
-  ): IInterceptor<TNewInstance> {
+  onEnter<TNewInstance>(dependencyDefinition: Definition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
     if (this.hasCached(dependencyDefinition.id)) {
       console.group(
         `Fetching cached[${this.scopeLevel}][${dependencyDefinition.strategy}]: ${dependencyDefinition.name}`,
@@ -67,13 +64,15 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     instancesStore: IInstancesStoreRead,
   ): IInterceptor<T> {
     const newScopeLevel = this._scopeLevel + 1;
+
     console.log(`Creating new scope: S${newScopeLevel}`);
+
     return new LoggingInterceptor(this, this._definition, instancesStore, newScopeLevel);
   }
 
   onLeave(instance: T, definition: Definition<T, any, any>): T {
     if (isPromise(instance)) {
-      instance.then(instanceAwaited => {
+      void instance.then(instanceAwaited => {
         console.groupEnd();
 
         return this._parent?.onDependencyInstanceCreated?.(definition, instanceAwaited, performance.now());
@@ -89,10 +88,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
 
   protected hasCached(definitionId: symbol): boolean {
     return (
-      (this._instances?.hasSingleton(definitionId) ||
-        this._instances?.hasScoped(definitionId) ||
-        this._instances?.hasFrozen(definitionId)) ??
-      false
+      (this._instances?.hasRootInstance(definitionId) || this._instances?.hasScopedInstance(definitionId)) ?? false
     );
   }
 }

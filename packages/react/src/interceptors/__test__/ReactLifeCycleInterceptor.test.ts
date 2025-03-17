@@ -1,11 +1,8 @@
-import {
-  IReactLifeCycleAware,
-  reactLifeCycleInterceptor,
-  ReactLifeCycleRootInterceptor,
-  withReactLifeCycle,
-} from '../ReactLifeCycleInterceptor.js';
 import { cls, container } from 'hardwired';
 import { expect } from 'vitest';
+
+import type { IReactLifeCycleAware, ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
+import { reactLifeCycleInterceptor, withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
 
 describe(`ReactLifeCycleInterceptor`, () => {
   class NoLifeCycles {
@@ -34,9 +31,9 @@ describe(`ReactLifeCycleInterceptor`, () => {
       private _childSvc2: ChildSvc2,
       private _noLifeCycles: NoLifeCycles,
     ) {
-      this._childSvc1;
-      this._childSvc2;
-      this._noLifeCycles;
+      void this._childSvc1;
+      void this._childSvc2;
+      void this._noLifeCycles;
     }
     onMount = vi.fn();
     onUnmount = vi.fn();
@@ -50,7 +47,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
   }
 
   describe(`returning graph node`, () => {
-    it(`caches graph nodes`, async () => {
+    it(`caches graph nodes`, () => {
       const { cnt, interceptor } = setup();
 
       cnt.use(ChildSvc1.instance);

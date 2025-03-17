@@ -1,12 +1,15 @@
-import { Definition, IContainer, LifeTime } from 'hardwired';
-import { HookValues, hookValuesD } from './hookValues.js';
+import type { IContainer } from 'hardwired';
+import { Definition, LifeTime } from 'hardwired';
+
+import type { HookValues } from './hookValues.js';
+import { hookValuesD } from './hookValues.js';
 
 export class HookDefinition<TInstance, TLifeTime extends LifeTime> extends Definition<
   HookValue<TInstance>,
   TLifeTime,
   []
 > {
-  readonly __kind = 'hook' as const;
+  readonly __kind = 'hook';
 
   constructor(
     definitionId: symbol,
@@ -39,7 +42,7 @@ export const hook = <TReturn>(hookFn: () => TReturn): HookDefinition<TReturn, Li
 
     return {
       use(): TReturn {
-        return initializedHooks.getHookValue(definitionId);
+        return initializedHooks.getHookValue(definitionId) as TReturn;
       },
     };
   });

@@ -1,6 +1,6 @@
 import { container } from '../../../Container.js';
 import { LoggingInterceptor } from '../LoggingInterceptor.js';
-import { fn } from '../../../../definitions/definitions.js';
+import { fn } from '../../../../definitions/fn.js';
 import { cls } from '../../../../definitions/cls.js';
 
 describe.skip(`LoggingInterceptor`, () => {
@@ -22,7 +22,7 @@ describe.skip(`LoggingInterceptor`, () => {
       cnt.use(c);
       cnt.use(c);
 
-      cnt.withScope(use => use(c));
+      cnt.scope().use(c);
     });
 
     it(`it prints correct messages for classes`, async () => {
@@ -81,16 +81,19 @@ describe.skip(`LoggingInterceptor`, () => {
 
       const a = fn.singleton(async () => {
         await sleep(50);
+
         return 'A';
       });
 
       const b = fn.singleton(async use => {
         await sleep(200);
+
         return { b: await use(a) };
       });
 
       const c = fn.singleton(async use => {
         await sleep(100);
+
         return { c: await use(b) };
       });
 

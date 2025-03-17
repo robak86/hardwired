@@ -1,5 +1,6 @@
-import { Definition } from '../definitions/abstract/Definition.js';
-import { IContainer } from '../container/IContainer.js';
+export function isDisposable(obj: any): obj is Disposable {
+  return typeof obj?.[Symbol.dispose] === 'function';
+}
 
 /**
  * Copy-on-write map. When a map is cloned, the new map references the same inner map as the original map.
@@ -7,7 +8,7 @@ import { IContainer } from '../container/IContainer.js';
  */
 export class COWMap<V> {
   static create<V>(): COWMap<V> {
-    return new COWMap(new Map(), true);
+    return new COWMap<V>(new Map(), true);
   }
 
   protected constructor(
@@ -34,25 +35,5 @@ export class COWMap<V> {
 
   clone(): COWMap<V> {
     return new COWMap(this._instances, false);
-  }
-}
-
-export class InstancesMap extends Map<symbol, any> {
-  static create(): InstancesMap {
-    return new InstancesMap();
-  }
-
-  upsert<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, any, TArgs>,
-    container: IContainer,
-    ...args: TArgs
-  ): TInstance {
-    if (this.has(definition.id)) {
-      return this.get(definition.id);
-    } else {
-      const instance = definition.create(container, ...args);
-      this.set(definition.id, instance);
-      return instance;
-    }
   }
 }

@@ -1,10 +1,10 @@
 import { fn } from 'hardwired';
+import { render } from '@testing-library/react';
+import { expect } from 'vitest';
+
 import { ContainerProvider } from '../ContainerProvider.js';
 import { ContainerScope } from '../ContainerScope.js';
 import { ContainerInitializer } from '../ContainerInitializer.js';
-
-import { render } from '@testing-library/react';
-import { expect } from 'vitest';
 import { use } from '../../hooks/use.js';
 
 describe(`ContainerInitializer`, () => {
@@ -17,13 +17,13 @@ describe(`ContainerInitializer`, () => {
       }
     }
 
-    const initializeMe = fn.scoped(use => new InitializeMe());
+    const initializeMe = fn.scoped(() => new InitializeMe());
 
     const initializer = fn.scoped(c => {
       return () => c.use(initializeMe).init();
     });
 
-    const ValueRenderer = ({ testId }: { testId: any }) => {
+    const ValueRenderer = ({ testId }: { testId: string }) => {
       const value = use(initializeMe);
 
       return <div data-testid={testId}>{value.value}</div>;
@@ -50,6 +50,7 @@ describe(`ContainerInitializer`, () => {
   it(`runs initializers`, async () => {
     const { TestSubject } = setup();
     const result = render(<TestSubject />);
+
     expect(result.getByTestId('scope1').textContent).toEqual('0');
     expect(result.getByTestId('scope2').textContent).toEqual('0');
     result.rerender(<TestSubject />);

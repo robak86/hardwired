@@ -1,7 +1,8 @@
 import { COWMap } from '../../../context/InstancesMap.js';
-import { Definition } from '../../../definitions/abstract/Definition.js';
+import type { Definition } from '../../../definitions/impl/Definition.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { GraphBuilderInterceptor, GraphNode } from './GraphBuilderInterceptor.js';
+
+import type { GraphBuilderInterceptor, GraphNode } from './GraphBuilderInterceptor.js';
 
 export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   constructor(

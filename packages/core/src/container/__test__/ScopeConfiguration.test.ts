@@ -1,5 +1,6 @@
 import { describe } from 'vitest';
-import { fn } from '../../definitions/definitions.js';
+
+import { fn } from '../../definitions/fn.js';
 import { container } from '../Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 
@@ -31,7 +32,7 @@ describe('ScopeConfiguration', () => {
         const dep = fn.scoped(() => new BoxedValue(Math.random()));
         const root = container.new();
 
-        const childContainer = root.scope((scope, use) => {
+        const childContainer = root.scope(scope => {
           scope.onInit(use => {
             use(dep).value = 1;
           });

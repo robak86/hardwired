@@ -1,15 +1,18 @@
 import { cls, container, fn, unbound } from 'hardwired';
 import { render } from '@testing-library/react';
-import { DummyComponent } from '../../__test__/DummyComponent.js';
+import type { TypeEqual } from 'ts-expect';
+import { expectType } from 'ts-expect';
+import { describe, expect, it } from 'vitest';
+import type { FC } from 'react';
+import { useState } from 'react';
 
+import { DummyComponent } from '../../__test__/DummyComponent.js';
 import { ContainerProvider } from '../../components/ContainerProvider.js';
 import { useAll } from '../useAll.js';
-import { expectType, TypeEqual } from 'ts-expect';
-import { describe, expect, it } from 'vitest';
 import { ContainerScope } from '../../components/ContainerScope.js';
-import { FC, useState } from 'react';
 import { useScopeConfig } from '../useScopeConfig.js';
-import { IReactLifeCycleAware, withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor.js';
+import type { IReactLifeCycleAware } from '../../interceptors/ReactLifeCycleInterceptor.js';
+import { withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor.js';
 
 /**
  * @vitest-environment happy-dom
@@ -22,8 +25,9 @@ describe(`useDefinitions`, () => {
       const val2Def = fn.scoped(() => 123);
 
       // @ts-ignore
-      const Component = () => {
+      const _Component = () => {
         const [val1, val2] = useAll(val1Def, val2Def);
+
         expectType<TypeEqual<typeof val1, string>>(true);
         expectType<TypeEqual<typeof val2, number>>(true);
       };
@@ -37,6 +41,7 @@ describe(`useDefinitions`, () => {
     function setup() {
       const Consumer = () => {
         const values = useAll(val1Def, val2Def);
+
         return <DummyComponent value={values.join(',')} />;
       };
 
@@ -51,6 +56,7 @@ describe(`useDefinitions`, () => {
 
     it(`gets dependency from the module`, async () => {
       const wrapper = setup();
+
       expect(wrapper.getByTestId('value').textContent).toEqual('val1,val2');
     });
   });
@@ -64,6 +70,7 @@ describe(`useDefinitions`, () => {
 
       const Consumer = () => {
         const [cls] = useAll(clsDef);
+
         return <DummyComponent value={cls} />;
       };
 
@@ -118,19 +125,22 @@ describe(`useDefinitions`, () => {
 
       const val1Def = fn.scoped(use => {
         const ext = use(someExternalParam);
+
         return `def:1,render:${checkoutRenderId()};value:${ext}`;
       });
 
       const val2Def = fn.scoped(use => {
         const ext = use(someExternalParam);
+
         return `def:2,render:${checkoutRenderId()};value:${ext}`;
       });
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const Consumer: FC<{ externalValue: string }> = ({ externalValue }) => {
+      const Consumer: FC<{ externalValue: string }> = () => {
         const values = useAll(val1Def, val2Def);
+
         return <DummyComponent value={values.join('|')} />;
       };
 
@@ -160,6 +170,7 @@ describe(`useDefinitions`, () => {
     it(`builds instance using external value provided by props`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject externalValue={'initialValue'} />);
+
       expect(result.getByTestId('value').textContent).toEqual(
         'def:1,render:1;value:initialValue|def:2,render:2;value:initialValue',
       );
@@ -168,6 +179,7 @@ describe(`useDefinitions`, () => {
     it(`does not revalidate instance if external parameter does not change`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject externalValue={'initialValue'} />);
+
       expect(result.getByTestId('value').textContent).toEqual(
         'def:1,render:1;value:initialValue|def:2,render:2;value:initialValue',
       );
@@ -180,6 +192,7 @@ describe(`useDefinitions`, () => {
     it(`revalidates instance on external parameter change`, async () => {
       const { TestSubject } = setup();
       const result = render(<TestSubject externalValue={'initialValue'} />);
+
       expect(result.getByTestId('value').textContent).toEqual(
         'def:1,render:1;value:initialValue|def:2,render:2;value:initialValue',
       );
@@ -251,10 +264,12 @@ describe(`useDefinitions`, () => {
         const result = render(<App />);
 
         const svc = cnt.use(MountableService.instance);
+
         expect(svc.onMount).toHaveBeenCalledTimes(1);
         expect(svc.onUnmount).not.toHaveBeenCalled();
 
         const otherSvc = cnt.use(MountableServiceOther.instance);
+
         expect(otherSvc.onMount).toHaveBeenCalledTimes(1);
         expect(otherSvc.onUnmount).not.toHaveBeenCalled();
 
@@ -272,7 +287,7 @@ describe(`useDefinitions`, () => {
         expect(svc.onUnmount).toHaveBeenCalledTimes(1);
 
         expect(otherSvc.onMount).toHaveBeenCalledTimes(1);
-        expect(otherSvc.onUnmount).toHaveBeenCalledTimes;
+        expect(otherSvc.onUnmount).toHaveBeenCalledTimes(1);
 
         const remounted = render(<App />);
 

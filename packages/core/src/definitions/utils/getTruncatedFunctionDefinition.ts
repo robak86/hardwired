@@ -14,21 +14,25 @@ export function getTruncatedFunctionDefinition(funcStr: string): string {
   }
 
   let signature = '';
+
   if (funcStr.startsWith('function')) {
     // Named or unnamed function
     const match = funcStr.match(/function\s*([^(]*)\(([^)]*)\)/);
+
     if (match) {
       signature = `function ${match[1]}(${match[2]})`;
     }
   } else if (funcStr.startsWith('(') || funcStr.startsWith('async (')) {
     // Fat arrow function
     const match = funcStr.match(/^(async\s*)?\(([^)]*)\)\s*=>/);
+
     if (match) {
       signature = `${match[1] || ''}(${match[2]}) =>`;
     }
   } else {
     // Method shorthand or other cases
     const match = funcStr.match(/([^(]+)\(([^)]*)\)/);
+
     if (match) {
       signature = `${match[1]}(${match[2]})`;
     }

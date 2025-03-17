@@ -8,7 +8,7 @@
     "target": "ESNext",
     "module": "Node16",
     "noUnusedLocals": true,
-    "jsx": "react-jsx", // support JSX
+    "jsx": "react-jsx",
     "strict": true,
     "removeComments": true,
     "esModuleInterop": true,

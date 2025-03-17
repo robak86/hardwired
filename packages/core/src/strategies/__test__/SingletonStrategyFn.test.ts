@@ -1,9 +1,9 @@
-import { all, container } from '../../container/Container.js';
 import { v4 } from 'uuid';
-import { fn } from '../../definitions/definitions.js';
-
-import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
+
+import { all, container } from '../../container/Container.js';
+import { fn } from '../../definitions/fn.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`SingletonStrategy`, () => {
   describe(`sync resolution`, () => {
@@ -24,6 +24,7 @@ describe(`SingletonStrategy`, () => {
       describe(`single module`, () => {
         it(`returns class instance`, async () => {
           const c = container.new();
+
           expect(c.use(leaf)).toHaveProperty('value');
           expect(c.use(leaf)).toHaveProperty('id');
         });
@@ -31,6 +32,7 @@ describe(`SingletonStrategy`, () => {
         it(`constructs class with correct dependencies`, async () => {
           const c = container.new();
           const instance = c.use(leaf);
+
           expect(instance.value).toEqual('someString');
         });
 
@@ -38,6 +40,7 @@ describe(`SingletonStrategy`, () => {
           const c = container.new();
           const instance = c.use(leaf);
           const instance2 = c.use(leaf);
+
           expect(instance).toBe(instance2);
         });
       });
@@ -55,6 +58,7 @@ describe(`SingletonStrategy`, () => {
           const consumerFromChild1 = c.use(child1SingletonConsumer);
           const consumerFromChild2 = c.use(child2SingletonConsumer);
           const theSingletonInstance = c.use(theSingleton);
+
           expect(consumerFromChild1.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromChild2.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromRoot.testClassInstance.id).toEqual(theSingletonInstance.id);
@@ -66,6 +70,7 @@ describe(`SingletonStrategy`, () => {
           const consumerFromChild1 = c.use(child1SingletonConsumer);
           const consumerFromChild2 = c.use(child2SingletonConsumer);
           const theSingletonInstance = c.use(theSingleton);
+
           expect(consumerFromChild1.testClassInstance.id).toEqual(theSingletonInstance.id);
           expect(consumerFromChild2.testClassInstance.id).toEqual(theSingletonInstance.id);
         });
@@ -78,6 +83,7 @@ describe(`SingletonStrategy`, () => {
 
           const c2 = container.new();
           const instanceFromC2 = c2.use(leaf);
+
           expect(instanceFromC1.id).not.toEqual(instanceFromC2.id);
         });
       });
@@ -91,7 +97,7 @@ describe(`SingletonStrategy`, () => {
           scope.bind(a).toValue(1);
         });
 
-        const child = root.scope(scope => {});
+        const child = root.scope();
 
         expect(child.use(a)).toEqual(0);
         expect(root.use(a)).toEqual(1);
@@ -105,8 +111,8 @@ describe(`SingletonStrategy`, () => {
           scope.cascade(a);
         });
 
-        const child = root.scope(scope => {});
-        const grandChild = child.scope(scope => {});
+        const child = root.scope();
+        const grandChild = child.scope();
 
         const rootVal = root.use(a);
         const childVal = child.use(a);
@@ -146,11 +152,11 @@ describe(`SingletonStrategy`, () => {
           scope.cascade(a);
         });
 
-        const l1 = root.scope(scope => {});
+        const l1 = root.scope();
         const l2 = l1.scope(scope => {
           scope.bindCascading(a).toValue(1);
         });
-        const l3 = l2.scope(scope => {});
+        const l3 = l2.scope();
 
         const l1A = l1.use(a);
         const l2A = l2.use(a);
@@ -200,6 +206,7 @@ describe(`SingletonStrategy`, () => {
 
         const req1 = childC.use(a); // important that childC is called as first
         const req2 = parentC.use(a);
+
         expect(req1).toEqual(req2);
       });
 
@@ -208,22 +215,16 @@ describe(`SingletonStrategy`, () => {
         const factory = vi.fn(() => 0);
         const a = fn.scoped(factory);
 
-        const root = container.new(scope => {});
+        const root = container.new();
         const level1 = root.scope(scope => {
-          scope.bindCascading(a).decorate((use, value) => {
+          scope.bindCascading(a).decorate(() => {
             return 1;
           });
         });
 
-        const level2 = level1.scope(scope => {
-          // scope.propagate(a).toRedefined(propagateFn);
-        });
-
-        const level3 = level2.scope(scope => {
-          // scope.propagate(a).toValue(10);
-        });
-
-        const level4 = level3.scope(scope => {});
+        const level2 = level1.scope();
+        const level3 = level2.scope();
+        const level4 = level3.scope();
 
         const l4A = level4.use(a);
         const l3A = level3.use(a);
@@ -241,7 +242,7 @@ describe(`SingletonStrategy`, () => {
       });
 
       it(`does not propagate scoped instances created in descendent scope to ascendant scopes`, async () => {
-        const randomFactorySpy = vi.fn().mockImplementation(() => Math.random());
+        const randomFactorySpy = vi.fn(() => Math.random());
         const a = fn.scoped(randomFactorySpy);
 
         const root = container.new();
@@ -282,6 +283,7 @@ describe(`SingletonStrategy`, () => {
 
         const req1 = childC.use(a); // important that childC is called as first
         const req2 = parentC.use(a);
+
         expect(req1).toEqual(req2);
       });
 
@@ -349,6 +351,7 @@ describe(`SingletonStrategy`, () => {
         const childScope = c.scope(scope => {
           scope.bindCascading(k2).toValue(2);
         });
+
         expect(childScope.use(k1)).toEqual(1);
         expect(childScope.use(k2)).toEqual(2);
       });
@@ -357,7 +360,7 @@ describe(`SingletonStrategy`, () => {
 
   describe(`async resolution`, () => {
     const resolveAfter = <T>(timeout: number, value: T): Promise<T> => {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         setTimeout(() => {
           resolve(value);
         }, timeout);
@@ -381,6 +384,7 @@ describe(`SingletonStrategy`, () => {
           const asyncDef = fn.singleton(async () => new NoArgsCls());
 
           const result = await container.new().use(asyncDef);
+
           expect(result).toBeInstanceOf(NoArgsCls);
         });
       });
@@ -390,9 +394,10 @@ describe(`SingletonStrategy`, () => {
           const asyncDep = fn.singleton(async () => 123);
           const syncDep = fn.singleton(() => 'str');
           const asyncDef = fn.singleton(async use => {
-            return new TestClassArgs2(await use(asyncDep), await use(syncDep));
+            return new TestClassArgs2(await use(asyncDep), use(syncDep));
           });
           const result = await container.new().use(asyncDef);
+
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -404,6 +409,7 @@ describe(`SingletonStrategy`, () => {
             return new TestClassArgs2(await use(asyncDep), await use(syncDep));
           });
           const result = await container.new().use(asyncDef);
+
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -415,6 +421,7 @@ describe(`SingletonStrategy`, () => {
             return new TestClassArgs2(await use(asyncDep), await use(syncDep));
           });
           const result = await container.new().use(asyncDef);
+
           expect(result.someString).toEqual('str');
           expect(result.someNumber).toEqual(123);
         });
@@ -426,6 +433,7 @@ describe(`SingletonStrategy`, () => {
         it(`returns correct value`, async () => {
           const asyncDef = fn.singleton(async () => 123);
           const result = await container.new().use(asyncDef);
+
           expect(result).toEqual(123);
         });
       });
@@ -440,6 +448,7 @@ describe(`SingletonStrategy`, () => {
               return [await use(asyncDep), use(syncDep)];
             });
             const result = await container.new().use(asyncDef);
+
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -453,6 +462,7 @@ describe(`SingletonStrategy`, () => {
               return [await use(asyncDep), use(syncDep)];
             });
             const result = await container.new().use(asyncDef);
+
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -466,6 +476,7 @@ describe(`SingletonStrategy`, () => {
               return [use(asyncDep), use(syncDep)];
             });
             const result = await container.new().use(asyncDef);
+
             expect(result).toEqual([123, 'str']);
           });
         });
@@ -499,6 +510,7 @@ describe(`SingletonStrategy`, () => {
 
           const slowSingleton = fn.singleton(use => {
             const _counter = use(counter);
+
             _counter.value++;
 
             return new BoxedValue(Math.random());
@@ -506,11 +518,13 @@ describe(`SingletonStrategy`, () => {
 
           const consumer1 = fn.singleton(async use => {
             await randomSleep();
+
             return use(slowSingleton);
           });
 
           const consumer2 = fn.singleton(async use => {
             await randomSleep();
+
             return use(slowSingleton);
           });
 
@@ -533,6 +547,7 @@ describe(`SingletonStrategy`, () => {
           });
 
           const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
+
           expect(result1.value).toEqual(123);
           expect(result2.value).toEqual(123);
         });
@@ -558,16 +573,19 @@ describe(`SingletonStrategy`, () => {
 
         const beforeConsumer1 = fn.singleton(async use => {
           const s = await use(slowSingleton);
+
           return resolveAfter(s.value, 10);
         });
 
         const beforeConsumer2 = fn.singleton(async use => {
           const s = await use(slowSingleton);
+
           return resolveAfter(s.value, 10);
         });
 
         const beforeConsumer3 = fn.singleton(async use => {
           const s = await use(slowSingleton);
+
           return resolveAfter(s.value, 10);
         });
 

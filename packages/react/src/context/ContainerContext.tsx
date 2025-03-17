@@ -1,4 +1,4 @@
-import { IContainer } from 'hardwired';
+import type { IContainer } from 'hardwired';
 import { createContext, useContext } from 'react';
 
 export type ContainerContextValue = {
@@ -15,8 +15,10 @@ export const useContainerContext = (): ContainerContextValue => {
 
 export const useContainer = (): IContainer => {
   const { container } = useContainerContext();
+
   if (!container) {
     throw new Error(`Cannot find container. Make sure that component is wrapped with ContainerProvider`);
   }
+
   return container;
 };

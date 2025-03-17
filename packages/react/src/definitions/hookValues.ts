@@ -7,20 +7,20 @@ export interface IHookValues {
 }
 
 export class HookValues implements IHookValues {
-  private initializedHooks: Record<symbol, any> = {};
+  private initializedHooks: Record<symbol, unknown> = {};
 
-  setHookValue(definitionId: symbol, value: any): void {
+  setHookValue(definitionId: symbol, value: unknown): void {
     if (!this.initializedHooks[definitionId]) {
       this.initializedHooks[definitionId] = value;
     }
   }
 
-  getHookValue(definitionId: symbol): any {
+  getHookValue(definitionId: symbol): unknown {
     return this.initializedHooks[definitionId];
   }
 
   hasValue(definitionId: symbol): boolean {
-    return this.initializedHooks[definitionId];
+    return !!this.initializedHooks[definitionId];
   }
 }
 

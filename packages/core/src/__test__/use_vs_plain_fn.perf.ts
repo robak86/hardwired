@@ -1,8 +1,9 @@
-import { container } from '../container/Container.js';
 import { Bench } from 'tinybench';
-import { IContainer } from '../container/IContainer.js';
-import { fn } from '../definitions/definitions.js';
-import { unbound } from '../definitions/sync/unbound.js';
+
+import { container } from '../container/Container.js';
+import type { IContainer } from '../container/IContainer.js';
+import { fn } from '../definitions/fn.js';
+import { unbound } from '../definitions/unbound.js';
 
 type Ctx = { value: number };
 
@@ -48,7 +49,7 @@ instantiationBench
     cnt.use(d1);
   });
 
-instantiationBench
+void instantiationBench
   .warmup()
   .then(_ => instantiationBench.run())
   .then(_ => console.table(instantiationBench.table()));

@@ -1,11 +1,11 @@
-import { ContainerProvider } from '../ContainerProvider.js';
 import { container, fn } from 'hardwired';
-
 import { createContext, useContext } from 'react';
-import { use } from '../../hooks/use.js';
 import { render } from '@testing-library/react';
-import { hook } from '../../definitions/hook.js';
 import { expect } from 'vitest';
+
+import { use } from '../../hooks/use.js';
+import { hook } from '../../definitions/hook.js';
+import { ContainerProvider } from '../ContainerProvider.js';
 
 describe(`ContainerProvider`, () => {
   function setup() {
@@ -50,6 +50,7 @@ describe(`ContainerProvider`, () => {
   it(`calls hookFn and memorizes it as singleton`, async () => {
     const { TestSubject, useSomeContext } = setup();
     const result = render(<TestSubject />);
+
     expect(useSomeContext).toHaveBeenCalledTimes(2); // calls all registered hooks on every rerender
 
     result.rerender(<TestSubject />);

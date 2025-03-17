@@ -39,7 +39,6 @@
       - [Using a Temporal Container](#using-a-temporal-container)
     - [Creating a New Container](#creating-a-new-container)
     - [Using Scoped Containers](#using-scoped-containers)
-    - [Using Disposable Scope](#using-disposable-scope)
     - [Creating Child Scopes within the Definitions](#creating-child-scopes-within-the-definitions)
   - [Definitions Binding](#definitions-binding)
     - [Scope configuration](#scope-configuration)
@@ -459,33 +458,13 @@ const id1 = scope1.use(requestId); // every time you request the requestId from 
 const id2 = scope2.use(requestId); // scope2 holds its own requestId value
 ```
 
-You can alternatively create a scoped container by utilizing the `withScope` method, which accepts a callback function as its parameter. This approach allows you to define and manage the scope of a container within the context of the provided function.
+> **Experimental:** Every scope acts as a registry that collects created objects implementing `Disposable` interface. The scope provides `dispose()` method that allows calling the `[Symbol.dispose]` method on such collected objects. Additionally, it calls dispose callbacks registered during scope/container configuration.
 
-```typescript
-const id1 = container.withScope(use => {
-  return use(requestIdDefinition);
-});
+> **Singleton** definitions are disposed only when the `dispose` method is called on the root container.
 
-const id2 = container.withScope(use => {
-  return use(requestIdDefinition);
-});
-```
+> **Scoped** definitions are disposed when the `dispose` method is called on the scope that created the instances. In case of cascading definition, the instance is disposed when the owning scope is disposed.
 
-### Using Disposable Scope
-
-Apart from the standard scopes, Hardwired provides also disposable scopes, that implements `Disposable` interface and can be used with the [using](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) keyword. Additionally, the disposable scope cannot create any child scopes. This limitation was introduced on purpose to avoid implementing complex logic related to disposing hierarchies of scopes.
-
-```typescript
-const root = container.new();
-
-using disposableScope = root.disposable(scope => {
-  scope.onDispose(use => {
-    use(wsConnection).disconnect();
-  });
-});
-```
-
-This example demonstrates also scope configurations. You can learn more about it [here](#scope-configuration).
+> **Transient** instances are not collected for disposal, as tracking such objects could create memory leaks.
 
 ### Creating Child Scopes within the Definitions
 
@@ -726,7 +705,7 @@ In this example `myObject` will return always the same instance with `someMethod
 
 #### Eager instantiation
 
-The container doesn't have access to the parent container, because such doesn't exist, but provides a mechanism for initializing the current container.
+Hardwired provides a mechanism for selective eager instantiation of dependencies. During the configuration of the root container you can register `onInit` callbacks, that will be called, when the container is created.
 
 ```typescript
 import { configureContainer, cls, container } from 'hardwired';

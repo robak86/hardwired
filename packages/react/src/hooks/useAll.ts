@@ -1,29 +1,42 @@
-import { Definition, InstancesArray } from 'hardwired';
-import { useContainer } from '../context/ContainerContext.js';
-import { useReactLifeCycleInterceptor } from '../interceptors/ReactLifeCycleInterceptor.js';
+import type { Definition, InstancesArray } from 'hardwired';
 import { useEffect } from 'react';
 
-export type UseDefinitionsHook = {
-  <TDefinitions extends Array<Definition<any, any, []>>>(
-    ...definitions: [...TDefinitions]
-  ): InstancesArray<TDefinitions>;
-};
+import { useContainer } from '../context/ContainerContext.js';
+import { useReactLifeCycleInterceptor } from '../interceptors/ReactLifeCycleInterceptor.js';
 
-export const useAll: UseDefinitionsHook = (...definitions) => {
+import { useHasArrayChanged } from './helpers/useHasArrayChanged.js';
+
+export type UseDefinitionsHook = <TDefinitions extends Array<Definition<any, any, []>>>(
+  ...definitions: [...TDefinitions]
+) => InstancesArray<TDefinitions>;
+
+export const useAll: UseDefinitionsHook = <TDefinitions extends Array<Definition<any, any, []>>>(
+  ...definitions: [...TDefinitions]
+): InstancesArray<TDefinitions> => {
   const container = useContainer();
   const interceptor = useReactLifeCycleInterceptor();
 
   const instances = container.all(...definitions);
 
-  useEffect(() => {
-    const graphNodes = definitions.map(definition => interceptor?.getGraphNode(definition));
+  const hasDependenciesChange = useHasArrayChanged(definitions);
 
-    graphNodes.forEach(graphNode => graphNode?.acquire());
+  if (hasDependenciesChange) {
+    throw new Error('useAll hook does not support changing dependencies');
+  }
 
-    return () => {
-      graphNodes.forEach(graphNode => graphNode?.release());
-    };
-  }, [interceptor]);
+  useEffect(
+    () => {
+      const graphNodes = definitions.map(definition => interceptor?.getGraphNode(definition));
 
-  return instances as any;
+      graphNodes.forEach(graphNode => graphNode?.acquire());
+
+      return () => {
+        graphNodes.forEach(graphNode => graphNode?.release());
+      };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [interceptor], // we don't check dependencies here, because if they change we throw an error
+  );
+
+  return instances as InstancesArray<TDefinitions>;
 };

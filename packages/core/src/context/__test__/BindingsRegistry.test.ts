@@ -1,6 +1,6 @@
 import { BindingsRegistry } from '../BindingsRegistry.js';
-import { fn } from '../../definitions/definitions.js';
-import { Definition } from '../../definitions/abstract/Definition.js';
+import { fn } from '../../definitions/fn.js';
+import { Definition } from '../../definitions/impl/Definition.js';
 
 describe(`BindingsRegistry`, () => {
   function setup() {
@@ -16,12 +16,14 @@ describe(`BindingsRegistry`, () => {
       const { def, defV2, defV3 } = setup();
 
       const registry = BindingsRegistry.create();
+
       expect(registry.getDefinition(def)).toBe(def);
 
       registry.addScopeBinding(defV2);
       expect(registry.getDefinition(def)).toBe(defV2);
 
       const child = registry.checkoutForScope();
+
       expect(child.getDefinition(def)).toBe(def);
 
       expect(() => registry.addCascadingBinding(defV3)).toThrow(); // Cannot override scope binding with cascading

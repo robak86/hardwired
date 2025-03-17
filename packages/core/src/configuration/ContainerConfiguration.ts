@@ -1,7 +1,7 @@
-import { InstanceCreationAware, UseFn } from '../container/IContainer.js';
-import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import type { InstanceCreationAware, UseFn } from '../container/IContainer.js';
+import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 
-import { ContainerConfigurable } from './abstract/ContainerConfigurable.js';
+import type { ContainerConfigurable } from './abstract/ContainerConfigurable.js';
 
 export type ContainerConfigureFn = (container: ContainerConfigurable) => void;
 export type AsyncContainerConfigureFn = (container: ContainerConfigurable) => Promise<void>;

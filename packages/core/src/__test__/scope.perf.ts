@@ -1,13 +1,14 @@
-import { fn } from '../definitions/definitions.js';
-
-import { buildScoped, buildSingletonTree, buildTransient } from './utils.js';
-import { IContainer } from '../container/IContainer.js';
-import { container } from '../container/Container.js';
 import { Bench } from 'tinybench';
 
-const singletonDefinitions = buildSingletonTree(3, 10);
-const transientDefinitions = buildTransient(3, 10);
-const scopedDefinitions = buildScoped(3, 10);
+import { fn } from '../definitions/fn.js';
+import type { IContainer } from '../container/IContainer.js';
+import { container } from '../container/Container.js';
+
+import { buildScopedFn, buildSingletonTreeFn, buildTransientFn } from './utils.js';
+
+const singletonDefinitions = buildSingletonTreeFn(3, 10);
+const transientDefinitions = buildTransientFn(3, 10);
+const scopedDefinitions = buildScopedFn(3, 10);
 
 const singletonD = fn.singleton(use => {
   return use.all(...singletonDefinitions);
@@ -18,9 +19,7 @@ const transientD = fn(use => {
 });
 
 const scopedD = fn.scoped(use => {
-  return use.withScope(use => {
-    return use.all(...scopedDefinitions);
-  });
+  return use.scope().all(...scopedDefinitions);
 });
 
 let cnt: IContainer;
@@ -49,7 +48,7 @@ scopesBench.add('scope without configuration', () => {
   cnt.scope();
 });
 
-scopesBench
+void scopesBench
   .warmup()
   .then(_ => scopesBench.run())
   .then(_ => console.table(scopesBench.table()));

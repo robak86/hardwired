@@ -1,5 +1,5 @@
 import { container } from '../../../Container.js';
-import { fn } from '../../../../definitions/definitions.js';
+import { fn } from '../../../../definitions/fn.js';
 import { DependenciesGraphRoot } from '../DependenciesGraph.js';
 
 describe(`DependenciesGraph`, () => {
@@ -10,8 +10,8 @@ describe(`DependenciesGraph`, () => {
 
     cnt.getInterceptor('graph');
 
-    const c1 = fn.singleton(use => 'C1');
-    const c2 = fn.singleton(use => 'C2');
+    const c1 = fn.singleton(() => 'C1');
+    const c2 = fn.singleton(() => 'C2');
     const b = fn.singleton(use => ({ B: { c1: use(c1), c2: use(c2) } }));
     const a = fn.singleton(use => ({ A: use(b) }));
 
@@ -45,8 +45,8 @@ describe(`DependenciesGraph`, () => {
 
       cnt.getInterceptor('graph');
 
-      const c1 = fn.singleton(async use => 'C1');
-      const c2 = fn.singleton(async use => 'C2');
+      const c1 = fn.singleton(async () => 'C1');
+      const c2 = fn.singleton(async () => 'C2');
       const b = fn.singleton(async use => ({ B: { c1: await use(c1), c2: await use(c2) } }));
       const a = fn.singleton(async use => ({ A: await use(b) }));
 
@@ -77,7 +77,7 @@ describe(`DependenciesGraph`, () => {
         const { cnt } = setup();
 
         let counter = 0;
-        const shared = fn(async use => (counter += 1));
+        const shared = fn(async () => (counter += 1));
         const a = fn.singleton(async use => ({ A: await use(shared) }));
         const b = fn.singleton(async use => ({ B: await use(shared) }));
 

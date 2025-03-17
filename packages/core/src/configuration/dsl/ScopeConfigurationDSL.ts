@@ -1,17 +1,23 @@
-import { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
-import { InitFn } from '../abstract/ContainerConfigurable.js';
-import { Binder } from '../../definitions/Binder.js';
+import type { Definition } from '../../definitions/impl/Definition.js';
+import type { InitFn } from '../abstract/ContainerConfigurable.js';
+import { Binder } from '../Binder.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
-import { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import { BindingsRegistry } from '../../context/BindingsRegistry.js';
+import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
+import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
+import type { AnyDefinition } from '../../definitions/abstract/IDefinition.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   constructor(
     private _currentContainer: IContainer & IStrategyAware,
     private _bindingsRegistry: BindingsRegistry,
     private _tags: (string | symbol)[],
+    private _disposeFns: Array<(scope: IContainer) => void>,
   ) {}
+
+  onDispose(callback: (scope: IContainer) => void): void {
+    this._disposeFns.push(callback);
+  }
 
   appendTag(tag: string | symbol): void {
     if (!this._tags.includes(tag)) {
@@ -30,7 +36,11 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
       throw new Error(`Cascading is allowed only for scoped.`);
     }
 
-    return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
+    return new Binder<TInstance, TLifeTime, []>(
+      definition,
+      this._onCascadingStaticBind,
+      this._onCascadingInstantiableBind,
+    );
   }
 
   onInit(initializer: InitFn): void {
@@ -44,7 +54,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
       throw new Error(`Binding singletons in for child scopes is not allowed.`);
     }
 
-    return new Binder(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
+    return new Binder<TInstance, TLifeTime, TArgs>(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
   }
 
   private _onCascadingStaticBind = (newDefinition: AnyDefinition) => {

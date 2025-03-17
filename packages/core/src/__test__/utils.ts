@@ -1,17 +1,18 @@
-import { Definition } from '../definitions/abstract/Definition.js';
-import { fn } from '../definitions/definitions.js';
+import type { Definition } from '../definitions/impl/Definition.js';
+import { fn } from '../definitions/fn.js';
+import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
 
-export function buildSingletonTree(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
+export function buildSingletonTreeFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
   if (currentDepth > depth) {
     return [];
   }
 
-  const definitions: any[] = [];
+  const definitions: AnyDefinition[] = [];
 
   for (let i = 0; i < times; i++) {
     definitions.push(
       fn.singleton(use => {
-        return use.all(...buildSingletonTree(times, depth, (currentDepth += 1)));
+        return use.all(...buildSingletonTreeFn(times, depth, (currentDepth += 1)));
       }),
     );
   }
@@ -19,7 +20,7 @@ export function buildSingletonTree(times: number, depth: number, currentDepth = 
   return definitions;
 }
 
-export function buildTransient(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
+export function buildTransientFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -29,15 +30,16 @@ export function buildTransient(times: number, depth: number, currentDepth = 0): 
   for (let i = 0; i < times; i++) {
     definitions.push(
       fn(use => {
-        return use.all(...buildTransient(times, depth, (currentDepth += 1)));
+        return use.all(...buildTransientFn(times, depth, (currentDepth += 1)));
       }),
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return definitions;
 }
 
-export function buildScoped(times: number, depth: number, currentDepth = 0): Definition<number, any, any>[] {
+export function buildScopedFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -47,10 +49,11 @@ export function buildScoped(times: number, depth: number, currentDepth = 0): Def
   for (let i = 0; i < times; i++) {
     definitions.push(
       fn.scoped(use => {
-        return use.all(...buildScoped(times, depth, (currentDepth += 1)));
+        return use.all(...buildScopedFn(times, depth, (currentDepth += 1)));
       }),
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return definitions;
 }

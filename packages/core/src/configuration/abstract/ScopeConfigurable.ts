@@ -1,16 +1,15 @@
-import { Definition } from '../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { Binder } from '../../definitions/Binder.js';
+import type { Definition } from '../../definitions/impl/Definition.js';
+import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import type { Binder } from '../Binder.js';
+import type { IContainer } from '../../container/IContainer.js';
 
-import { DisposeFn, InitFn } from './ContainerConfigurable.js';
+import type { InitFn } from './ContainerConfigurable.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
-export interface DisposableScopeConfigurable extends ScopeConfigurable {
-  onDispose(disposeFn: DisposeFn): void;
-}
-
 export interface ScopeConfigurable {
+  onDispose(callback: (scope: IContainer) => void): void;
+
   bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;

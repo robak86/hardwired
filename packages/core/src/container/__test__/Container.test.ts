@@ -1,10 +1,11 @@
-import { fn } from '../../definitions/definitions.js';
-import { container, once } from '../Container.js';
-
-import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { describe, expect, it } from 'vitest';
-import { unbound } from '../../definitions/sync/unbound.js';
-import { expectType, TypeEqual } from 'ts-expect';
+import type { TypeEqual } from 'ts-expect';
+import { expectType } from 'ts-expect';
+
+import { fn } from '../../definitions/fn.js';
+import { container, once } from '../Container.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
+import { unbound } from '../../definitions/unbound.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
@@ -13,24 +14,27 @@ describe(`Container`, () => {
       const myDef = fn.singleton(() => 123);
 
       const instance = use(myDef);
+
       expect(instance).toEqual(123);
     });
 
     describe(`additional arguments`, () => {
       it(`accepts other arguments for transient definition and works with ad-hoc resolution`, async () => {
-        const def = fn((use, userId: number) => {
+        const def = fn((_, userId: number) => {
           return userId;
         });
         const value = once(def, 123);
+
         expect(value).toEqual(123);
       });
 
       it(`works with container resolution`, async () => {
-        const def = fn((use, userId: number) => {
+        const def = fn((_, userId: number) => {
           return userId;
         });
 
         const value = container.new().use(def, 123);
+
         expect(value).toEqual(123);
       });
 
@@ -44,6 +48,7 @@ describe(`Container`, () => {
         });
 
         const value = container.new().use(consumer, 456);
+
         expect(value).toEqual(456);
       });
 
@@ -53,6 +58,7 @@ describe(`Container`, () => {
         });
 
         const remove = container.new().defer(removeUser);
+
         expect(remove).toBeInstanceOf(Function);
 
         expect(remove(123)).toEqual(123);
@@ -74,6 +80,7 @@ describe(`Container`, () => {
         const myDef1 = fn.singleton(() => 123);
 
         const val1 = use.use(myDef1);
+
         expect(val1).toEqual(123);
       });
 
@@ -118,7 +125,7 @@ describe(`Container`, () => {
         describe(`async resolution`, () => {
           it(`doesn't crash on empty object`, async () => {
             const use = container.new();
-            const result = await use.object({});
+            const result = use.object({});
 
             expect(result).toEqual({});
             expect(Object.keys(result)).toHaveLength(0);
@@ -175,21 +182,120 @@ describe(`Container`, () => {
         const use = container.new();
         const myDef = fn.scoped(() => Math.random());
         const consumer = fn.scoped(use => {
-          return [use.withScope(use => use(myDef)), use.withScope(use => use(myDef))];
+          return [use.scope().use(myDef), use.scope().use(myDef)];
         });
 
         const [val1, val2] = use(consumer);
+
         expect(val1).not.toBe(val2);
       });
     });
   });
 
-  describe(`.get`, () => {
+  describe(`.use`, () => {
     it(`returns correct value`, async () => {
       const cDef = fn.singleton(() => 'cValue');
       const c = container.new();
       const cValue = c.use(cDef);
+
       expect(cValue).toEqual('cValue');
+    });
+  });
+
+  describe(`.useExisting`, () => {
+    describe(`transient`, () => {
+      it(`doesn't allow passing transient definition on the type level`, async () => {
+        const t = fn(() => 1);
+        const cnt = container.new();
+
+        // @ts-expect-error - transient definition is not allowed
+        cnt.useExisting(t);
+      });
+    });
+
+    describe('singleton', () => {
+      describe(`from root scope`, () => {
+        it(`returns instance if exits`, async () => {
+          const a = fn.singleton(() => 1);
+          const cnt = container.new();
+
+          cnt.use(a);
+
+          expect(cnt.useExisting(a)).toEqual(1);
+        });
+
+        it(`returns if instance does not exist`, async () => {
+          const a = fn.singleton(() => 1);
+          const cnt = container.new();
+
+          expect(cnt.useExisting(a)).toEqual(null);
+        });
+      });
+
+      describe(`from child scope`, () => {
+        it(`returns instance if it was created`, async () => {
+          const a = fn.singleton(() => 1);
+          const cnt = container.new();
+
+          cnt.use(a);
+
+          const scope = cnt.scope();
+
+          expect(scope.useExisting(a)).toEqual(1);
+        });
+
+        it(`returns null if instance wasn't created`, async () => {
+          const a = fn.singleton(() => 1);
+          const cnt = container.new();
+          const scope = cnt.scope();
+
+          expect(scope.useExisting(a)).toEqual(null);
+        });
+      });
+    });
+
+    describe(`scoped`, () => {
+      describe(`cascading`, () => {
+        it(`does not return cascaded instance`, async () => {
+          const a = fn.scoped(() => 1);
+          const cnt = container.new(c => {
+            c.cascade(a);
+          });
+
+          cnt.use(a);
+
+          const scope = cnt.scope();
+
+          expect(scope.useExisting(a)).toEqual(null);
+          expect(cnt.useExisting(a)).toEqual(1);
+        });
+      });
+
+      describe(`fetching from owning scope`, () => {
+        it(`return instance if it exists`, async () => {
+          const a = fn.scoped(() => 1);
+          const cnt = container.new();
+
+          const scope = cnt.scope();
+
+          scope.use(a);
+
+          expect(scope.useExisting(a)).toEqual(1);
+        });
+      });
+
+      describe(`fetching from other scope`, () => {
+        it(`return instance if it exists`, async () => {
+          const a = fn.scoped(() => 1);
+          const cnt = container.new();
+
+          const scope = cnt.scope();
+
+          cnt.use(a);
+
+          expect(scope.useExisting(a)).toEqual(null);
+        });
+      });
     });
   });
 
@@ -238,17 +344,19 @@ describe(`Container`, () => {
       });
 
       const actual = c.use(aPlusB);
+
       expect(actual).toEqual(30);
     });
   });
 
-  describe(`getAll`, () => {
+  describe(`all`, () => {
     it(`returns array of instances`, async () => {
       const a = fn.scoped(() => 1);
       const b = fn.scoped(() => 2);
 
       const c = container.new();
       const [aInstance, bInstance] = c.all(a, b);
+
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -279,12 +387,14 @@ describe(`Container`, () => {
       const multiplyBy2D = fn.scoped(use => {
         const val = use(extD);
         const sharedVal = use(scopeSharedValD);
+
         return { result: val.value * 2, shared: sharedVal };
       });
 
       const divideBy2D = fn.scoped(use => {
         const val = use(extD);
         const sharedVal = use(scopeSharedValD);
+
         return { result: val.value / 2, shared: sharedVal };
       });
 
@@ -294,6 +404,7 @@ describe(`Container`, () => {
           c.bind(extD).toValue(new BoxedValue(10));
         })
         .all(multiplyBy2D, divideBy2D);
+
       expect(req1.result).toEqual(20);
       expect(req2.result).toEqual(5);
 
@@ -301,13 +412,14 @@ describe(`Container`, () => {
     });
   });
 
-  describe(`getAllAsync`, () => {
+  describe(`all async`, () => {
     it(`returns array of instances`, async () => {
       const a = fn.scoped(async () => 1);
       const b = fn.scoped(async () => 2);
 
       const c = container.new();
       const [aInstance, bInstance] = await c.all(a, b);
+
       expect(aInstance).toEqual(1);
       expect(bInstance).toEqual(2);
     });
@@ -326,12 +438,13 @@ describe(`Container`, () => {
 
       const c = container.new();
       const k3Instance = c.use(k3);
+
       expect(await k3Instance).toEqual(3);
     });
   });
 
   describe(`.scope`, () => {
-    it(`returns clear request scope`, async () => {
+    it(`returns request scope that doesn't share any scoped instances`, async () => {
       const scopedVal = fn.scoped(() => new BoxedValue(Math.random()));
 
       const cnt = container.new();

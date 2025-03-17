@@ -1,6 +1,6 @@
-import { AnyDefinition, Definition } from '../../definitions/abstract/Definition.js';
-import { Binder } from '../../definitions/Binder.js';
-import {
+import type { Definition } from '../../definitions/impl/Definition.js';
+import { Binder } from '../Binder.js';
+import type {
   ContainerConfigurable,
   ContainerConfigureCascadingLifeTimes,
   ContainerConfigureFreezeLifeTimes,
@@ -8,17 +8,23 @@ import {
   InitFn,
 } from '../abstract/ContainerConfigurable.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import { IInterceptor } from '../../container/interceptors/interceptor.js';
-import { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
+import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
+import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import type { IInterceptor } from '../../container/interceptors/interceptor.js';
+import type { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
+import type { AnyDefinition } from '../../definitions/abstract/IDefinition.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private _currentContainer: IContainer & IStrategyAware,
     private _interceptors: InterceptorsRegistry,
+    private _disposeFns: Array<(scope: IContainer) => void>,
   ) {}
+
+  onDispose(callback: (scope: IContainer) => void): void {
+    this._disposeFns.push(callback);
+  }
 
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
     this._interceptors.register(name, interceptor);
@@ -35,23 +41,31 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   bindCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
     definition: Definition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []> {
-    return new Binder(definition, this._onCascadingStaticBind, this._onCascadingInstantiableBind);
+    return new Binder<TInstance, TLifeTime, []>(
+      definition,
+      this._onCascadingStaticBind,
+      this._onCascadingInstantiableBind,
+    );
   }
 
-  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
+  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends unknown[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     if ((definition.strategy as LifeTime) === LifeTime.singleton) {
       throw new Error(`Singleton is not allowed for local bindings.`);
     }
 
-    return new Binder(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
+    return new Binder<TInstance, TLifeTime, TArgs>(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
   }
 
-  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends any[]>(
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
-    return new Binder(definition, this._onFrozenStaticBind, this._onFrozenInstantiableBind);
+    return new Binder<TInstance, TLifeTime, TArgs>(
+      definition,
+      this._onFrozenStaticBind,
+      this._onFrozenInstantiableBind,
+    );
   }
 
   private _onFrozenStaticBind = (newDefinition: AnyDefinition) => {

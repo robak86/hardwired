@@ -1,7 +1,11 @@
-import { container as defaultContainer, IContainer } from 'hardwired';
-import { ContainerContext, ContainerContextValue } from '../context/ContainerContext.js';
-import { FC, PropsWithChildren, useEffect, useRef } from 'react';
-import { HookDefinition } from '../definitions/hook.js';
+import type { IContainer } from 'hardwired';
+import { container as defaultContainer } from 'hardwired';
+import type { FC, PropsWithChildren } from 'react';
+import { useEffect, useRef } from 'react';
+
+import type { ContainerContextValue } from '../context/ContainerContext.js';
+import { ContainerContext } from '../context/ContainerContext.js';
+import type { HookDefinition } from '../definitions/hook.js';
 import { isShallowEqual } from '../utils/useMemoized.js';
 import { hookValuesD } from '../definitions/hookValues.js';
 
@@ -10,13 +14,16 @@ export type ContainerProviderProps = {
   hooks?: Array<HookDefinition<any, any>>;
 };
 
-const useAssertHooksNotChanged = <T extends any[]>(hooks: T = [] as unknown as T) => {
+const useAssertHooksNotChanged = <T extends unknown[]>(hooks: T = [] as unknown as T) => {
   const prevHooks = useRef<T>(hooks);
 
   useEffect(() => {
     if (!isShallowEqual(prevHooks.current, hooks)) {
-      throw new Error(`Hooks changed from ${prevHooks.current} to ${hooks}. Hooks list cannot change.`);
+      console.error('Hooks changed from', prevHooks.current, 'to', hooks);
+
+      throw new Error(`Hooks list cannot change on subsequent renders.`);
     }
+
     prevHooks.current = hooks; // Update the previous value
   }, [hooks]);
 };
@@ -45,7 +52,7 @@ export const ContainerProvider: FC<ContainerProviderProps & PropsWithChildren> =
 
     // we need to call the hook every time this component is rendered,
     // so react doesn't complain about calling fewer hooks than expected
-    const hookValue = hook.hook();
+    const hookValue: unknown = hook.hook();
 
     containerInstance.current.container.use(hookValuesD).setHookValue(hook.id, hookValue);
     containerInstance.current.container.use(hook);

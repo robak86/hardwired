@@ -1,7 +1,8 @@
-import { Definition } from '../../../definitions/abstract/Definition.js';
-import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import type { Definition } from '../../../definitions/impl/Definition.js';
+import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
+import type { ScopeTag } from '../../IContainer.js';
+
 import { GraphBuilderInterceptor } from './GraphBuilderInterceptor.js';
-import { ScopeTag } from '../../IContainer.js';
 
 interface IGraphNode<T> {
   readonly value: T;
@@ -17,6 +18,7 @@ export class GraphNode<T> implements IGraphNode<T> {
     readonly value: T,
     readonly definition: Definition<T, LifeTime, any[]>,
     readonly children: GraphNode<unknown>[],
+    readonly tags: ScopeTag[],
   ) {}
 
   get descendants(): unknown[] {
@@ -36,12 +38,12 @@ export class DependenciesGraphRoot extends GraphBuilderInterceptor<never, GraphN
   constructor() {
     super({
       createNode<T>(
-        definition: Definition<T, any, any>,
+        definition: Definition<T, LifeTime, any[]>,
         value: Awaited<T>,
         children: GraphNode<unknown>[],
         tags: ScopeTag[],
       ): GraphNode<T> {
-        return new GraphNode(value, definition, children);
+        return new GraphNode(value, definition, children, tags);
       },
     });
   }
