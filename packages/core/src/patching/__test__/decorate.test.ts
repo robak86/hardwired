@@ -12,7 +12,7 @@ describe(`decorate`, () => {
     const someValue = value(1);
 
     const c = container.new(c => {
-      c.bind(someValue).decorate(val => val + 1);
+      c.bind(someValue).decorated(val => val + 1);
     });
 
     expect(c.use(someValue)).toEqual(2);
@@ -24,10 +24,41 @@ describe(`decorate`, () => {
     expect(container.new().use(someValue)).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bind(someValue).decorate(val => val + 1);
+      c.bind(someValue).decorated(val => val + 1);
     });
 
     expect(cnt.use(someValue)).toEqual(2);
+  });
+
+  it(`calls decorate function with awaited instance in case of async definitions`, async () => {
+    const someValue = fn(async () => 1);
+
+    const c = container.new(c => {
+      c.bind(someValue).decorated(val => val + 1);
+    });
+
+    expect(await c.call(someValue)).toEqual(2);
+  });
+
+  it(`allows using async decorate Fn for async definitions`, async () => {
+    const someValue = fn(async () => 1);
+
+    const c = container.new(c => {
+      c.bind(someValue).decorated(async val => val + 1);
+    });
+
+    expect(await c.call(someValue)).toEqual(2);
+  });
+
+  it(`does not allow async decorate functions for sync definitions`, async () => {
+    const someValue = value(1);
+
+    const c = container.new(c => {
+      //@ts-expect-error - cannot return Promise<number> for number (due to async function)
+      c.bind(someValue).decorated(async val => val + 1);
+    });
+
+    expect(() => c.use(someValue)).toThrowError();
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
@@ -36,7 +67,7 @@ describe(`decorate`, () => {
     const someValue = value(10);
 
     const c = container.new(c => {
-      c.bind(someValue).decorate((val, use) => {
+      c.bind(someValue).decorated((val, use) => {
         const aVal = use(a);
         const bVal = use(b);
 
@@ -56,7 +87,7 @@ describe(`decorate`, () => {
     });
 
     const c = container.new(c => {
-      c.bind(someValue).decorate((val, use) => {
+      c.bind(someValue).decorated((val, use) => {
         return val * use(b);
       });
     });
@@ -69,7 +100,7 @@ describe(`decorate`, () => {
       const a = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(a).decorate(a => a);
+        c.bind(a).decorated(a => a);
       });
 
       expect(c.use(a)).toEqual(c.use(a));
@@ -79,7 +110,7 @@ describe(`decorate`, () => {
       const a = fn(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(a).decorate(a => a);
+        c.bind(a).decorated(a => a);
       });
 
       expect(c.call(a)).not.toEqual(c.call(a));
@@ -93,7 +124,7 @@ describe(`decorate`, () => {
       });
 
       const c = container.new(c => {
-        c.bind(a).decorate(a => a);
+        c.bind(a).decorated(a => a);
       });
 
       const obj1 = fn.scoped(use => ({

@@ -115,6 +115,8 @@ describe(`apply`, () => {
 
     expect(() => {
       const cnt = container.new(c => {
+        // @ts-expect-error - async function for non async definition
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         c.bind(a).configured(async val => {
           val.value += 1;
         });

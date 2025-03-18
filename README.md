@@ -518,7 +518,7 @@ const handler2 = fn.transient(async (use, req: Request) => {
 // so the printed string will contain the request id
 const requestScopeConfig = configureScope(scope => {
   scope.bindCascading(requestId).toValue(uuid());
-  scope.bindCascading(logger).decorate((use, originalLogger) => {
+  scope.bindCascading(logger).decorated((use, originalLogger) => {
     const label = use(requestId);
 
     return {
@@ -601,7 +601,7 @@ The assigned value is available only in the current scope.
 
 - `scope.bind(definition).toValue(value)`: Replaces a definition with a static value.
 - `scope.bind(definition).to(otherDefinition)`: Redirects a definition to another one.
-- `scope.bind(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
+- `scope.bind(definition).decorated(decoratorFn)`: Wraps the original instance with additional functionality.
 - `scope.bind(definition).configured(configureFn)`: Modifies the instance after it's created.
 - `scope.bind(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
@@ -619,7 +619,7 @@ const scopeConfig = configureScope(scope => {
   // all the following bindings make the "definition" return the Boxed object with value 1;
   scope.bind(definition).to(otherDefinition);
   scope.bind(definition).toValue(new Boxed(1));
-  scope.bind(definition).decorate((use, originalValue) => new Boxed(1));
+  scope.bind(definition).decorated((use, originalValue) => new Boxed(1));
   scope.bind(definition).configured((use, originalValue) => {
     originalValue.value = 1;
   });
@@ -642,7 +642,7 @@ The assigned value is available for the current scope and propagated to all newl
 
 - `scope.bindCascading(definition).toValue(value)`: Replaces a definition with a static value.
 - `scope.bindCascading(definition).to(otherDefinition)`: Redirects a definition to another one.
-- `scope.bindCascading(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
+- `scope.bindCascading(definition).decorated(decoratorFn)`: Wraps the original instance with additional functionality.
 - `scope.bindCascading(definition).configured(configureFn)`: Modifies the instance after it's created.
 - `scope.bindCascading(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
@@ -662,7 +662,7 @@ const rootConfig = configureContainer(container => {
   // in the container configuration we can also bind singletons
   container.bindCascading(definition).to(otherDefinition);
   container.bindCascading(definition).toValue(new Boxed(1));
-  container.bindCascading(definition).decorate((use, originalValue) => new Boxed(1));
+  container.bindCascading(definition).decorated((use, originalValue) => new Boxed(1));
   container.bindCascading(definition).configured((use, originalValue) => {
     originalValue.value = 1;
   });

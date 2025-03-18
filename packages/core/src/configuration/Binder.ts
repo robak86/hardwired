@@ -4,6 +4,22 @@ import { Definition } from '../definitions/impl/Definition.js';
 import { type MaybePromiseValue } from '../utils/MaybePromise.js';
 import { isPromise } from '../utils/IsPromise.js';
 
+// prettier-ignore
+export type ConfigureFn<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> = TInstance extends Promise<any> ?
+  (instance: Awaited<TInstance>, locator: IContainer<TLifeTime>, ...args: TArgs) => MaybePromiseValue<void> :
+  (instance: TInstance, locator: IContainer<TLifeTime>, ...args: TArgs) => void;
+
+// prettier-ignore
+export type DecorateFn<TInstance, TExtendedInstance , TLifeTime extends LifeTime, TArgs extends unknown[]> = TInstance extends Promise<any> ?
+  (instance: Awaited<TInstance>, locator: IContainer<TLifeTime>, ...args: TArgs) => MaybePromiseValue<Awaited<TExtendedInstance>> :
+  (instance: TInstance, locator: IContainer<TLifeTime>, ...args: TArgs) => TExtendedInstance;
+
+// prettier-ignore
+export type AssertAsyncCompatible<TConfigureFn extends (...args:any) => any, TInstance> =
+    TInstance extends Promise<any> ?
+    TConfigureFn: // TInstance is promise - we don't have constraints on TConfigureFn
+    ReturnType<TConfigureFn> extends Promise<any> ? never : TConfigureFn // TInstance is not promise - TConfigureFn should not return promise
+
 export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> {
   /**
    * @param _definition
@@ -32,12 +48,8 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onStaticBind(newDefinition);
   }
 
-  configured(
-    configureFn: (
-      instance: Awaited<TInstance>,
-      locator: IContainer<TLifeTime>,
-      ...args: TArgs
-    ) => TInstance extends Promise<any> ? MaybePromiseValue<void> : void,
+  configured<TConfigure extends ConfigureFn<TInstance, TLifeTime, TArgs>>(
+    configureFn: AssertAsyncCompatible<TConfigure, TInstance>,
   ): void {
     const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TInstance => {
       const instance = this._definition.create(use, ...args);
@@ -66,13 +78,25 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onInstantiableBind(newDefinition);
   }
 
-  decorate<TExtendedInstance extends TInstance>(
-    decorateFn: (instance: TInstance, use: IContainer<TLifeTime>, ...args: TArgs) => TExtendedInstance,
+  decorated<TExtendedInstance extends TInstance>(
+    decorateFn: DecorateFn<TInstance, TExtendedInstance, TLifeTime, TArgs>,
   ): void {
-    const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TInstance => {
+    const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TExtendedInstance => {
       const instance = this._definition.create(use, ...args);
 
-      return decorateFn(instance, use, ...args);
+      if (isPromise(instance)) {
+        return instance.then(value => {
+          return decorateFn(value as Awaited<TInstance>, use, ...args);
+        }) as TExtendedInstance;
+      } else {
+        const decorated = decorateFn(instance as Awaited<TInstance>, use, ...args);
+
+        if (isPromise(decorated)) {
+          throw new Error(`Cannot use async configure function for non-async definition: ${this._definition.name}`);
+        }
+
+        return decorated;
+      }
     });
 
     this._onInstantiableBind(newDefinition);
