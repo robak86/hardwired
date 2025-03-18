@@ -602,7 +602,7 @@ The assigned value is available only in the current scope.
 - `scope.bind(definition).toValue(value)`: Replaces a definition with a static value.
 - `scope.bind(definition).to(otherDefinition)`: Redirects a definition to another one.
 - `scope.bind(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
-- `scope.bind(definition).configure(configureFn)`: Modifies the instance after it's created.
+- `scope.bind(definition).configured(configureFn)`: Modifies the instance after it's created.
 - `scope.bind(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
 ```typescript
@@ -620,7 +620,7 @@ const scopeConfig = configureScope(scope => {
   scope.bind(definition).to(otherDefinition);
   scope.bind(definition).toValue(new Boxed(1));
   scope.bind(definition).decorate((use, originalValue) => new Boxed(1));
-  scope.bind(definition).configure((use, originalValue) => {
+  scope.bind(definition).configured((use, originalValue) => {
     originalValue.value = 1;
   });
   scope.bind(definition).define(use => {
@@ -643,7 +643,7 @@ The assigned value is available for the current scope and propagated to all newl
 - `scope.bindCascading(definition).toValue(value)`: Replaces a definition with a static value.
 - `scope.bindCascading(definition).to(otherDefinition)`: Redirects a definition to another one.
 - `scope.bindCascading(definition).decorate(decoratorFn)`: Wraps the original instance with additional functionality.
-- `scope.bindCascading(definition).configure(configureFn)`: Modifies the instance after it's created.
+- `scope.bindCascading(definition).configured(configureFn)`: Modifies the instance after it's created.
 - `scope.bindCascading(definition).define(factoryFn)`: Completely redefines how the instance is created.
 
 Additionally, you can make the definition cascading using `scope.cascade(definition)`.
@@ -663,7 +663,7 @@ const rootConfig = configureContainer(container => {
   container.bindCascading(definition).to(otherDefinition);
   container.bindCascading(definition).toValue(new Boxed(1));
   container.bindCascading(definition).decorate((use, originalValue) => new Boxed(1));
-  container.bindCascading(definition).configure((use, originalValue) => {
+  container.bindCascading(definition).configured((use, originalValue) => {
     originalValue.value = 1;
   });
   container.bindCascading(definition).define(use => {
@@ -695,7 +695,7 @@ Additionally, container configurations allow freezing definitions so they cannot
 const myObject = fn.scoped(() => ({ someMethod: () => null }));
 
 const root = container.new(container => {
-  container.freeze(myObject).configure((_, instance) => {
+  container.freeze(myObject).configured((_, instance) => {
     spyOn(instance, 'someMethod');
   });
 });

@@ -322,7 +322,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue(new BoxedValue('root'));
-            scope.bindCascading(consumer).configure((use, val) => {
+            scope.bindCascading(consumer).configured((use, val) => {
               val.value = val.value + '_consumer_replacement';
             });
           });
@@ -345,7 +345,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue(new BoxedValue('root'));
-            scope.bindCascading(consumer).configure((use, val) => {
+            scope.bindCascading(consumer).configured((use, val) => {
               val.value = val.value + '_consumer_replacement_v1';
             });
           });
@@ -356,7 +356,7 @@ describe(`Scopes`, () => {
 
           const l2 = l1.scope(scope => {
             scope.bind(dep).toValue(new BoxedValue('l2'));
-            scope.bindCascading(consumer).configure((use, val) => {
+            scope.bindCascading(consumer).configured((use, val) => {
               val.value = val.value + '_consumer_replacement_v2';
             });
           });

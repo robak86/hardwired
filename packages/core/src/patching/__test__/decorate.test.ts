@@ -122,7 +122,7 @@ describe(`decorate`, () => {
   describe(`globalOverrides`, () => {
     function setup(instanceDef: Definition<MyService, ScopeConfigureAllowedLifeTimes, []>) {
       const scope1 = container.new(c => {
-        c.freeze(instanceDef).configure((use, a) => {
+        c.freeze(instanceDef).configured((use, a) => {
           vi.spyOn(a, 'callMe');
         });
       });

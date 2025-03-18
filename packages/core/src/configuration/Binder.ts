@@ -32,7 +32,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onStaticBind(newDefinition);
   }
 
-  configure(
+  configured(
     configureFn: (
       locator: IContainer<TLifeTime>,
       instance: Awaited<TInstance>,

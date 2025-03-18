@@ -21,6 +21,10 @@ export type ConstructorArgsDefinitions<T extends any[], TCurrentLifeTime extends
   [K in keyof T]: Definition<T[K] | Promise<T[K]>, ValidDependenciesLifeTime<TCurrentLifeTime>, any>;
 };
 
+export type Callable<TInstance, TArgs extends any[]> = {
+  call(...args: TArgs): TInstance;
+};
+
 export const cls = {
   transient: <
     TInstance,
@@ -63,5 +67,18 @@ export const cls = {
       LifeTime.singleton,
       []
     >;
+  },
+
+  callable: <
+    TArgs extends any[],
+    TReturn,
+    TInstance extends Callable<TReturn, TArgs>,
+    TConstructorArgs extends any[],
+    TDependencies extends Thunk<ConstructorArgsDefinitions<TConstructorArgs, LifeTime.transient>>,
+  >(
+    klass: ClassType<TInstance, TConstructorArgs>,
+    ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []
+  ): Definition<WrapAsync<TDependencies, TReturn>, LifeTime.singleton, TArgs> => {
+    throw new Error('Implement me!');
   },
 };
