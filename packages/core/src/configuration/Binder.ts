@@ -5,6 +5,11 @@ import { type MaybePromiseValue } from '../utils/MaybePromise.js';
 import { isPromise } from '../utils/IsPromise.js';
 
 export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> {
+  /**
+   * @param _definition
+   * @param _onStaticBind - used for binding static values (without factory function) that doesn't need to be bound to container in case of cascading
+   * @param _onInstantiableBind - used for binding values that need to be bound to container in case of cascading
+   */
   constructor(
     private _definition: Definition<TInstance, TLifeTime, TArgs>,
     private _onStaticBind: (newDefinition: Definition<TInstance, TLifeTime, TArgs>) => void,
@@ -12,7 +17,11 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
   ) {}
 
   to(otherDefinition: Definition<TInstance, TLifeTime, TArgs>) {
-    const definition = new Definition(this._definition.id, otherDefinition.strategy, otherDefinition.create);
+    const definition = new Definition(
+      this._definition.id,
+      otherDefinition.strategy,
+      otherDefinition.create.bind(otherDefinition),
+    );
 
     this._onInstantiableBind(definition);
   }

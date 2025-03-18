@@ -52,7 +52,7 @@ describe(`decorate`, () => {
     const b = value(2);
 
     const someValue = fn.scoped(use => {
-      return use(a) + use(b);
+      return use.call(a) + use.call(b);
     });
 
     const c = container.new(c => {
@@ -82,7 +82,7 @@ describe(`decorate`, () => {
         c.bind(a).decorate((use, a) => a);
       });
 
-      expect(c.use(a)).not.toEqual(c.use(a));
+      expect(c.call(a)).not.toEqual(c.call(a));
     });
 
     it(`uses correct scope`, async () => {

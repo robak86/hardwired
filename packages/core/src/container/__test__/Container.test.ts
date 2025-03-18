@@ -33,7 +33,7 @@ describe(`Container`, () => {
           return userId;
         });
 
-        const value = container.new().use(def, 123);
+        const value = container.new().call(def, 123);
 
         expect(value).toEqual(123);
       });
@@ -44,10 +44,10 @@ describe(`Container`, () => {
         });
 
         const consumer = fn((use, userId) => {
-          return use(def, userId);
+          return use.call(def, userId);
         });
 
-        const value = container.new().use(consumer, 456);
+        const value = container.new().call(consumer, 456);
 
         expect(value).toEqual(456);
       });
@@ -325,7 +325,7 @@ describe(`Container`, () => {
   });
 
   describe(`bindings`, () => {
-    it(`merges multiple modules patches originated from the same module`, async () => {
+    it(`replaces dependencies of definition that is going to be requested`, async () => {
       const a = fn.singleton(function a() {
         return 1;
       });

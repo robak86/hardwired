@@ -16,7 +16,7 @@ describe(`ClassTransientResolver`, () => {
     const someValue = value('someString');
 
     const a = fn(use => {
-      return new TestClass(use(someValue));
+      return new TestClass(use.call(someValue));
     });
 
     it(`returns class instance`, async () => {
@@ -27,15 +27,15 @@ describe(`ClassTransientResolver`, () => {
 
     it(`constructs class with correct dependencies`, async () => {
       const c = container.new();
-      const instance = c.use(a);
+      const instance = c.call(a);
 
       expect(instance.value).toEqual('someString');
     });
 
     it(`caches class instance`, async () => {
       const c = container.new();
-      const instance = c.use(a);
-      const instance2 = c.use(a);
+      const instance = c.call(a);
+      const instance2 = c.call(a);
 
       expect(instance).not.toBe(instance2);
     });
@@ -50,26 +50,26 @@ describe(`ClassTransientResolver`, () => {
 
     const someValue = fn(async () => 'someString');
     const a = fn(async use => {
-      return new TestClass(await use(someValue));
+      return new TestClass(await use.call(someValue));
     });
 
     it(`returns class instance`, async () => {
       const c = container.new();
 
-      expect(await c.use(a)).toBeInstanceOf(TestClass);
+      expect(await c.call(a)).toBeInstanceOf(TestClass);
     });
 
     it(`constructs class with correct dependencies`, async () => {
       const c = container.new();
-      const instance = await c.use(a);
+      const instance = await c.call(a);
 
       expect(instance.value).toEqual('someString');
     });
 
     it(`caches class instance`, async () => {
       const c = container.new();
-      const instance = await c.use(a);
-      const instance2 = await c.use(a);
+      const instance = await c.call(a);
+      const instance2 = await c.call(a);
 
       expect(instance).not.toBe(instance2);
     });

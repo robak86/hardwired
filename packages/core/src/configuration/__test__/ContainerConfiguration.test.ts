@@ -1,12 +1,54 @@
 import type { TypeOf } from 'ts-expect';
 import { expectType } from 'ts-expect';
+import { describe } from 'vitest';
 
 import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
 import { fn } from '../../definitions/fn.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`ContainerConfiguration`, () => {
+  describe(`container#freeze`, () => {
+    it(`allows freezing instances before they are created`, async () => {
+      const def = fn.scoped(() => 123);
+      const cnt = container.new();
+
+      cnt.freeze(def).toValue(456);
+      expect(cnt.use(def)).toEqual(456);
+    });
+
+    it(`throws if the instances is already created`, async () => {
+      const def = fn.scoped(() => 123);
+      const cnt = container.new();
+
+      cnt.use(def);
+
+      expect(() => cnt.freeze(def).toValue(456)).toThrowError('already instantiated');
+    });
+
+    it(`works with child scopes`, async () => {
+      const def = fn.scoped(() => 123);
+      const cnt = container.new();
+      const scope = cnt.scope();
+
+      scope.freeze(def).toValue(456);
+      expect(scope.use(def)).toEqual(456);
+    });
+
+    it(`throws when cascading definition was created in ascending scope`, async () => {
+      const def = fn.scoped(() => 123);
+      const cnt = container.new();
+      const scope1 = cnt.scope(s => s.cascade(def));
+
+      scope1.use(def);
+
+      const scope2 = scope1.scope();
+
+      expect(() => scope2.freeze(def).toValue(456)).toThrowError('already instantiated');
+    });
+  });
+
   describe(`container.new`, () => {
     it(`accepts asynchronous function`, async () => {
       const cnt = container.new(
@@ -53,6 +95,20 @@ describe(`ContainerConfiguration`, () => {
 
       expect(cnt.use(def1)).toEqual(456);
       expect(cnt.use(def2)).toEqual(789);
+    });
+
+    describe(`init`, () => {
+      it(`runs init functions on passing the newly created container`, async () => {
+        const dep = fn.scoped(() => new BoxedValue(Math.random()));
+
+        const cnt = container.new(container => {
+          container.init(use => {
+            use(dep).value = 1;
+          });
+        });
+
+        expect(cnt.use(dep).value).toEqual(1);
+      });
     });
   });
 
