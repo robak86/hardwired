@@ -12,7 +12,7 @@ describe(`decorate`, () => {
     const someValue = value(1);
 
     const c = container.new(c => {
-      c.bind(someValue).decorate((_, val) => val + 1);
+      c.bind(someValue).decorate(val => val + 1);
     });
 
     expect(c.use(someValue)).toEqual(2);
@@ -24,7 +24,7 @@ describe(`decorate`, () => {
     expect(container.new().use(someValue)).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bind(someValue).decorate((_, val) => val + 1);
+      c.bind(someValue).decorate(val => val + 1);
     });
 
     expect(cnt.use(someValue)).toEqual(2);
@@ -36,7 +36,7 @@ describe(`decorate`, () => {
     const someValue = value(10);
 
     const c = container.new(c => {
-      c.bind(someValue).decorate((use, val) => {
+      c.bind(someValue).decorate((val, use) => {
         const aVal = use(a);
         const bVal = use(b);
 
@@ -56,7 +56,7 @@ describe(`decorate`, () => {
     });
 
     const c = container.new(c => {
-      c.bind(someValue).decorate((use, val) => {
+      c.bind(someValue).decorate((val, use) => {
         return val * use(b);
       });
     });
@@ -69,7 +69,7 @@ describe(`decorate`, () => {
       const a = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(a).decorate((use, a) => a);
+        c.bind(a).decorate(a => a);
       });
 
       expect(c.use(a)).toEqual(c.use(a));
@@ -79,7 +79,7 @@ describe(`decorate`, () => {
       const a = fn(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(a).decorate((use, a) => a);
+        c.bind(a).decorate(a => a);
       });
 
       expect(c.call(a)).not.toEqual(c.call(a));
@@ -93,7 +93,7 @@ describe(`decorate`, () => {
       });
 
       const c = container.new(c => {
-        c.bind(a).decorate((use, a) => a);
+        c.bind(a).decorate(a => a);
       });
 
       const obj1 = fn.scoped(use => ({
@@ -122,7 +122,7 @@ describe(`decorate`, () => {
   describe(`globalOverrides`, () => {
     function setup(instanceDef: Definition<MyService, ScopeConfigureAllowedLifeTimes, []>) {
       const scope1 = container.new(c => {
-        c.freeze(instanceDef).configured((use, a) => {
+        c.freeze(instanceDef).configured(a => {
           vi.spyOn(a, 'callMe');
         });
       });

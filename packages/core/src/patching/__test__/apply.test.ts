@@ -13,7 +13,7 @@ describe(`apply`, () => {
     const someValue = fn.scoped(() => new BoxedValue(1));
 
     const config = configureContainer(c => {
-      c.bind(someValue).configured((_, val) => {
+      c.bind(someValue).configured(val => {
         val.value += 1;
       });
     });
@@ -29,7 +29,7 @@ describe(`apply`, () => {
     expect(container.new().use(someValue).value).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bind(someValue).configured((_, val) => {
+      c.bind(someValue).configured(val => {
         val.value += 1;
       });
     });
@@ -42,10 +42,10 @@ describe(`apply`, () => {
 
     expect(() => {
       container.new(c => {
-        c.bind(someValue).configured((_, val) => {
+        c.bind(someValue).configured(val => {
           val.value += 1;
         });
-        c.bind(someValue).configured((_, val) => {
+        c.bind(someValue).configured(val => {
           val.value *= 3;
         });
       });
@@ -58,7 +58,7 @@ describe(`apply`, () => {
     const someValue = value(new BoxedValue(10));
 
     const c = container.new(c => {
-      c.bind(someValue).configured((use, val) => {
+      c.bind(someValue).configured((val, use) => {
         const aVal = use(a);
         const bVal = use(b);
 
@@ -78,7 +78,7 @@ describe(`apply`, () => {
     });
 
     const c = container.new(c => {
-      c.bind(someValue).configured((use, val) => {
+      c.bind(someValue).configured((val, use) => {
         val.value = val.value * use(b).value;
       });
     });
@@ -90,7 +90,7 @@ describe(`apply`, () => {
     const a = fn.scoped(async () => new BoxedValue(1));
 
     const c = container.new(c => {
-      c.bind(a).configured((use, val) => {
+      c.bind(a).configured(val => {
         val.value += 1;
       });
     });
@@ -102,7 +102,7 @@ describe(`apply`, () => {
     const a = fn.scoped(async () => new BoxedValue(1));
 
     const c = container.new(c => {
-      c.bind(a).configured(async (use, val) => {
+      c.bind(a).configured(async val => {
         val.value += 1;
       });
     });
@@ -115,7 +115,7 @@ describe(`apply`, () => {
 
     expect(() => {
       const cnt = container.new(c => {
-        c.bind(a).configured(async (use, val) => {
+        c.bind(a).configured(async val => {
           val.value += 1;
         });
       });
@@ -172,7 +172,7 @@ describe(`apply`, () => {
   describe(`globalOverrides`, () => {
     function setup(instanceDef: Definition<MyService, LifeTime.scoped | LifeTime.transient, any>) {
       const scope1 = container.new(c => {
-        c.freeze(instanceDef).configured((use, a) => {
+        c.freeze(instanceDef).configured(a => {
           vi.spyOn(a, 'callMe');
         });
       });

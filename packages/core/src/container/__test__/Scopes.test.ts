@@ -258,7 +258,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue('root');
-            scope.bindCascading(consumer).decorate((use, val) => val + '_consumer_replacement');
+            scope.bindCascading(consumer).decorate(val => val + '_consumer_replacement');
           });
           const l1 = root.scope(scope => {
             scope.bind(dep).toValue('l1');
@@ -279,7 +279,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue('root');
-            scope.bindCascading(consumer).decorate((use, val) => val + '_consumer_replacement_v1');
+            scope.bindCascading(consumer).decorate(val => val + '_consumer_replacement_v1');
           });
 
           const l1 = root.scope(scope => {
@@ -288,7 +288,7 @@ describe(`Scopes`, () => {
 
           const l2 = l1.scope(scope => {
             scope.bind(dep).toValue('l2');
-            scope.bindCascading(consumer).decorate((use, val) => val + '_consumer_replacement_v2');
+            scope.bindCascading(consumer).decorate(val => val + '_consumer_replacement_v2');
           });
 
           const l3 = l2.scope();
@@ -322,7 +322,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue(new BoxedValue('root'));
-            scope.bindCascading(consumer).configured((use, val) => {
+            scope.bindCascading(consumer).configured(val => {
               val.value = val.value + '_consumer_replacement';
             });
           });
@@ -345,7 +345,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue(new BoxedValue('root'));
-            scope.bindCascading(consumer).configured((use, val) => {
+            scope.bindCascading(consumer).configured(val => {
               val.value = val.value + '_consumer_replacement_v1';
             });
           });
@@ -356,7 +356,7 @@ describe(`Scopes`, () => {
 
           const l2 = l1.scope(scope => {
             scope.bind(dep).toValue(new BoxedValue('l2'));
-            scope.bindCascading(consumer).configured((use, val) => {
+            scope.bindCascading(consumer).configured(val => {
               val.value = val.value + '_consumer_replacement_v2';
             });
           });

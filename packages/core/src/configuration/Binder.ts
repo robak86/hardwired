@@ -34,8 +34,8 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
 
   configured(
     configureFn: (
-      locator: IContainer<TLifeTime>,
       instance: Awaited<TInstance>,
+      locator: IContainer<TLifeTime>,
       ...args: TArgs
     ) => TInstance extends Promise<any> ? MaybePromiseValue<void> : void,
   ): void {
@@ -44,7 +44,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
 
       if (isPromise(instance)) {
         return instance.then(value => {
-          const configureResult = configureFn(use, value as Awaited<TInstance>, ...args);
+          const configureResult = configureFn(value as Awaited<TInstance>, use, ...args);
 
           if (isPromise(configureResult)) {
             return configureResult.then(() => value);
@@ -53,7 +53,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
           }
         }) as TInstance;
       } else {
-        const configureResult = configureFn(use, instance as Awaited<TInstance>, ...args);
+        const configureResult = configureFn(instance as Awaited<TInstance>, use, ...args);
 
         if (isPromise(configureResult)) {
           throw new Error(`Cannot use async configure function for non-async definition: ${this._definition.name}`);
@@ -67,12 +67,12 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
   }
 
   decorate<TExtendedInstance extends TInstance>(
-    decorateFn: (use: IContainer<TLifeTime>, instance: TInstance, ...args: TArgs) => TExtendedInstance,
+    decorateFn: (instance: TInstance, use: IContainer<TLifeTime>, ...args: TArgs) => TExtendedInstance,
   ): void {
     const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TInstance => {
       const instance = this._definition.create(use, ...args);
 
-      return decorateFn(use, instance, ...args);
+      return decorateFn(instance, use, ...args);
     });
 
     this._onInstantiableBind(newDefinition);
