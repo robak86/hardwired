@@ -32,6 +32,15 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     private _onInstantiableBind: (newDefinition: Definition<TInstance, TLifeTime, TArgs>) => void,
   ) {}
 
+  /**
+   * Binds the definition to another one.
+   * @example
+   * const originalDef = fn(use => 1);
+   * const replacementDef = fn(use => 2);
+   *
+   * const cnt = container.new(c => c.bind(originalDef).to(replacementDef));
+   * @param otherDefinition
+   */
   to(otherDefinition: Definition<TInstance, TLifeTime, TArgs>) {
     const definition = new Definition(
       this._definition.id,
@@ -42,12 +51,26 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onInstantiableBind(definition);
   }
 
+  /**
+   * Binds the current definition to a static value.
+   * @example
+   * const cnt = container.new(c => c.bind(myRandomSeedNum).toValue(1_234_567));
+   * @param value
+   */
   toValue(value: Awaited<TInstance>) {
     const newDefinition = this._definition.override(() => value);
 
     this._onStaticBind(newDefinition);
   }
 
+  /**
+   * Allows binding the current definition to an original instance, but configured with the provided function.
+   * @example
+   * const cnt = container.new(c => c.bind(myDefinition).toConfigured((service) => {
+   *   vi.spyOn(service, 'callMe');
+   * });
+   * @param configureFn
+   */
   toConfigured<TConfigure extends ConfigureFn<TInstance, TLifeTime, TArgs>>(
     configureFn: AssertAsyncCompatible<TConfigure, TInstance>,
   ): void {
@@ -78,6 +101,36 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onInstantiableBind(newDefinition);
   }
 
+  /**
+   * Allows binding the current definition to an original instance, but decorated with the provided function.
+   * It's similar to `toConfigured`, but requires the `decorateFn` to return the instance. This effectively allows
+   * to return a decorated instance.
+   *
+   * @example
+   *
+   * const logger = fn.singlet(():ILogger => new Logger());
+   *
+   * class MyService {
+   *   callMe() {}
+   * }
+   *
+   * class MyServiceDecorator {
+   *   constructor(private service: MyService, private logger: ILogger) {}
+   *
+   *   callMe() {
+   *     // some extra behaviour
+   *     this.service.callMe();
+   *   }
+   * }
+   *
+   * const cnt = container.new(c => {
+   *  c.bind(MyService).toDecorated((service, use) => {
+   *    return new MyServiceDecorator(service, use(logger);
+   *  });
+   * });
+   *
+   * @param decorateFn
+   */
   toDecorated<TExtendedInstance extends TInstance>(
     decorateFn: DecorateFn<TInstance, TExtendedInstance, TLifeTime, TArgs>,
   ): void {
@@ -102,8 +155,13 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onInstantiableBind(newDefinition);
   }
 
-  toRedefined(create: (locator: IContainer<TLifeTime>, ...args: TArgs) => TInstance): void {
-    const newDefinition = this._definition.override(create);
+  /**
+   * Redefines the current binding with a new factory function.
+   *
+   * @param createFn - A factory function that takes an `IContainer` instance.
+   */
+  toRedefined(createFn: (use: IContainer<TLifeTime>, ...args: TArgs) => TInstance): void {
+    const newDefinition = this._definition.override(createFn);
 
     this._onInstantiableBind(newDefinition);
   }
