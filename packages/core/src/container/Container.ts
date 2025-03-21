@@ -167,37 +167,6 @@ export class Container extends ExtensibleFunction implements IContainer {
     return new Binder<TInstance, TLifeTime, TArgs>(definition, bind, bind);
   }
 
-  // apply<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
-  //   ...configureFns: TConfigureFns
-  // ): ApplyReturnType<TConfigureFns> {
-  //   this.bindingsRegistry = this.bindingsRegistry.checkoutForScope(); // TODO: really checkout ?
-  //   this.instancesStore = this.instancesStore.childScope(); // really child scope ?
-  //
-  //   this.scopeTags = [];
-  //   const disposableFns: Array<(container: IContainer) => void> = [];
-  //
-  //   const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(
-  //     this.scopeTags,
-  //     this.bindingsRegistry,
-  //     this.instancesStore,
-  //   );
-  //
-  //   this.interceptorsRegistry = scopeInterceptorsRegistry;
-  //   this.currentInterceptor = scopeInterceptorsRegistry.build() ?? null;
-  //
-  //   if (configureFns.length) {
-  //     const binder = new ScopeConfigurationDSL(this, this.bindingsRegistry, this.scopeTags, disposableFns);
-  //
-  //     const configs = configureFns.map(configureFn => {
-  //       return configureFn(binder, this);
-  //     });
-  //
-  //     return maybePromiseAllThen(configs, () => undefined) as unknown as ApplyReturnType<TConfigureFns>;
-  //   }
-  //
-  //   return undefined as unknown as ApplyReturnType<TConfigureFns>;
-  // }
-
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
     return this.interceptorsRegistry?.get(id);
   }
