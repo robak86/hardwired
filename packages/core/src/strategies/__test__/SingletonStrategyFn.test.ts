@@ -217,7 +217,7 @@ describe(`SingletonStrategy`, () => {
 
         const root = container.new();
         const level1 = root.scope(scope => {
-          scope.bindCascading(a).decorated(() => {
+          scope.bindCascading(a).toDecorated(() => {
             return 1;
           });
         });

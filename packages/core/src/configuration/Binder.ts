@@ -48,7 +48,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onStaticBind(newDefinition);
   }
 
-  configured<TConfigure extends ConfigureFn<TInstance, TLifeTime, TArgs>>(
+  toConfigured<TConfigure extends ConfigureFn<TInstance, TLifeTime, TArgs>>(
     configureFn: AssertAsyncCompatible<TConfigure, TInstance>,
   ): void {
     const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TInstance => {
@@ -78,7 +78,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onInstantiableBind(newDefinition);
   }
 
-  decorated<TExtendedInstance extends TInstance>(
+  toDecorated<TExtendedInstance extends TInstance>(
     decorateFn: DecorateFn<TInstance, TExtendedInstance, TLifeTime, TArgs>,
   ): void {
     const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TExtendedInstance => {
@@ -102,7 +102,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     this._onInstantiableBind(newDefinition);
   }
 
-  define(create: (locator: IContainer<TLifeTime>, ...args: TArgs) => TInstance): void {
+  toRedefined(create: (locator: IContainer<TLifeTime>, ...args: TArgs) => TInstance): void {
     const newDefinition = this._definition.override(create);
 
     this._onInstantiableBind(newDefinition);

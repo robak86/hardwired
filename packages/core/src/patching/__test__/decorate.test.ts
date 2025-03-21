@@ -12,7 +12,7 @@ describe(`decorate`, () => {
     const someValue = value(1);
 
     const c = container.new(c => {
-      c.bind(someValue).decorated(val => val + 1);
+      c.bind(someValue).toDecorated(val => val + 1);
     });
 
     expect(c.use(someValue)).toEqual(2);
@@ -24,7 +24,7 @@ describe(`decorate`, () => {
     expect(container.new().use(someValue)).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bind(someValue).decorated(val => val + 1);
+      c.bind(someValue).toDecorated(val => val + 1);
     });
 
     expect(cnt.use(someValue)).toEqual(2);
@@ -34,7 +34,7 @@ describe(`decorate`, () => {
     const someValue = fn(async () => 1);
 
     const c = container.new(c => {
-      c.bind(someValue).decorated(val => val + 1);
+      c.bind(someValue).toDecorated(val => val + 1);
     });
 
     expect(await c.call(someValue)).toEqual(2);
@@ -44,7 +44,7 @@ describe(`decorate`, () => {
     const someValue = fn(async () => 1);
 
     const c = container.new(c => {
-      c.bind(someValue).decorated(async val => val + 1);
+      c.bind(someValue).toDecorated(async val => val + 1);
     });
 
     expect(await c.call(someValue)).toEqual(2);
@@ -55,7 +55,7 @@ describe(`decorate`, () => {
 
     const c = container.new(c => {
       //@ts-expect-error - cannot return Promise<number> for number (due to async function)
-      c.bind(someValue).decorated(async val => val + 1);
+      c.bind(someValue).toDecorated(async val => val + 1);
     });
 
     expect(() => c.use(someValue)).toThrowError();
@@ -67,7 +67,7 @@ describe(`decorate`, () => {
     const someValue = value(10);
 
     const c = container.new(c => {
-      c.bind(someValue).decorated((val, use) => {
+      c.bind(someValue).toDecorated((val, use) => {
         const aVal = use(a);
         const bVal = use(b);
 
@@ -87,7 +87,7 @@ describe(`decorate`, () => {
     });
 
     const c = container.new(c => {
-      c.bind(someValue).decorated((val, use) => {
+      c.bind(someValue).toDecorated((val, use) => {
         return val * use(b);
       });
     });
@@ -100,7 +100,7 @@ describe(`decorate`, () => {
       const a = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(a).decorated(a => a);
+        c.bind(a).toDecorated(a => a);
       });
 
       expect(c.use(a)).toEqual(c.use(a));
@@ -110,7 +110,7 @@ describe(`decorate`, () => {
       const a = fn(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(a).decorated(a => a);
+        c.bind(a).toDecorated(a => a);
       });
 
       expect(c.call(a)).not.toEqual(c.call(a));
@@ -124,7 +124,7 @@ describe(`decorate`, () => {
       });
 
       const c = container.new(c => {
-        c.bind(a).decorated(a => a);
+        c.bind(a).toDecorated(a => a);
       });
 
       const obj1 = fn.scoped(use => ({
@@ -153,7 +153,7 @@ describe(`decorate`, () => {
   describe(`globalOverrides`, () => {
     function setup(instanceDef: Definition<MyService, ScopeConfigureAllowedLifeTimes, []>) {
       const scope1 = container.new(c => {
-        c.freeze(instanceDef).configured(a => {
+        c.freeze(instanceDef).toConfigured(a => {
           vi.spyOn(a, 'callMe');
         });
       });

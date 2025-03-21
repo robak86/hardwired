@@ -87,14 +87,14 @@ describe(`Logger`, () => {
 
       const root = container.new(scope => {
         scope.bindCascading(requestId).toValue('app');
-        scope.bindCascading(Logger.class).decorated((val, use) => {
+        scope.bindCascading(Logger.class).toDecorated((val, use) => {
           return val.withLabel(use(requestId));
         });
       });
 
       const requestScopeConfig = configureScope(scope => {
-        scope.bindCascading(requestId).define(() => nextId().toString());
-        scope.bindCascading(Logger.class).decorated((val, use) => {
+        scope.bindCascading(requestId).toRedefined(() => nextId().toString());
+        scope.bindCascading(Logger.class).toDecorated((val, use) => {
           return val.withLabel(use(requestId));
         });
       });
