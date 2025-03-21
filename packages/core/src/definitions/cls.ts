@@ -68,17 +68,4 @@ export const cls = {
       []
     >;
   },
-
-  callable: <
-    TArgs extends any[],
-    TReturn,
-    TInstance extends Callable<TReturn, TArgs>,
-    TConstructorArgs extends any[],
-    TDependencies extends Thunk<ConstructorArgsDefinitions<TConstructorArgs, LifeTime.transient>>,
-  >(
-    klass: ClassType<TInstance, TConstructorArgs>,
-    ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []
-  ): Definition<WrapAsync<TDependencies, TReturn>, LifeTime.singleton, TArgs> => {
-    throw new Error('Implement me!');
-  },
 };
