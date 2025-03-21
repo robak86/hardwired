@@ -3,9 +3,12 @@
 #### Breaking changes
 
 * introduce a separate `container#call` method for calling transient definitions accepting arguments. Now `container#use` is used only for getting instances without arguments.
-* rename `bind(someDef).configure` to `bind(someDef).configured`
-* change order of arguments in `configured` and `decorated` so the created instance is the first argument
-* `decorated` and `configured` callbacks are now called with awaited instances in case of async definitions
+* rename binder methods
+  * `bind(someDef).configure` to `bind(someDef).toConfigured`
+  * `bind(someDef).decorate` to `bind(someDef).toDecorated`
+  * `bind(someDef).define` to `bind(someDef).toRedefined`
+* change order of arguments in `toConfigured` and `toDecorated` so the created instance is the first argument
+* `toConfigured` and `toDecorated` callbacks are now called with awaited instances in case of async definitions
 
 #### Features
 * add `container#freeze` utility method for inline container configuration for tests
