@@ -116,7 +116,7 @@ describe(`apply`, () => {
     expect(() => {
       const cnt = container.new(c => {
         // @ts-expect-error - async function for non async definition
-
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         c.bind(a).toConfigured(async val => {
           val.value += 1;
         });
@@ -172,7 +172,7 @@ describe(`apply`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: Definition<MyService, LifeTime.scoped | LifeTime.transient, any>) {
+    function setup(instanceDef: Definition<MyService, LifeTime.scoped | LifeTime.transient, []>) {
       const scope1 = container.new(c => {
         c.freeze(instanceDef).toConfigured(a => {
           vi.spyOn(a, 'callMe');
