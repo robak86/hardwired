@@ -1,5 +1,4 @@
 import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
-import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
 import type { Definition } from '../../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IInterceptor } from '../interceptor.js';
@@ -36,8 +35,8 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     protected _parentScopeRootInterceptor?: GraphBuilderInterceptor<T, TNode>,
   ) {}
 
-  configureRoot(bindingRegistry: IBindingRegistryRead, instancesStore: IInstancesStoreRead) {
-    this._context.initialize(bindingRegistry, instancesStore);
+  configureRoot(bindingRegistry: IBindingRegistryRead) {
+    this._context.initialize(bindingRegistry);
   }
 
   onEnter<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
@@ -82,14 +81,10 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return instance;
   }
 
-  onScope(
-    scopeTags: ScopeTag[],
-    bindingsRegistry: IBindingRegistryRead,
-    instancesStore: IInstancesStoreRead,
-  ): IInterceptor<T> {
+  onScope(scopeTags: ScopeTag[], bindingsRegistry: IBindingRegistryRead): IInterceptor<T> {
     return new GraphBuilderInterceptor(
       this._configuration,
-      this._context.onScope(scopeTags, bindingsRegistry, instancesStore),
+      this._context.onScope(scopeTags, bindingsRegistry),
       undefined,
       this,
     );
