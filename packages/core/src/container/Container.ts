@@ -359,11 +359,7 @@ export function once<TInstance, TArgs extends any[]>(
   definition: Definition<TInstance, LifeTime, TArgs>,
   ...args: TArgs
 ): TInstance {
-  if (definition.strategy === LifeTime.transient) {
-    return Container.root().call(definition as Definition<TInstance, LifeTime.transient, TArgs>, ...args);
-  } else {
-    return Container.root().use(definition as unknown as Definition<TInstance, LifeTime, []>);
-  }
+  return Container.root().call(definition as Definition<TInstance, LifeTime.transient, TArgs>, ...args);
 }
 
 export const all = <TDefinitions extends Array<Definition<any, LifeTime, []>>>(
