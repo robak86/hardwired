@@ -863,12 +863,12 @@ const definition = fn((use, arg1: number, arg2: string) => {
 });
 
 // Using the definition with arguments
-const instance = container.use(definition, 1, '2');
+const instance = container.call(definition, 1, '2');
 console.log(instance); // { arg1: 1, arg2: '2' }
 
 // Using within another definition
 const otherDefinition = fn(use => {
-  const value = use(definition, 1, '2');
+  const value = use.call(definition, 1, '2');
   // Use value within this definition
   return value;
 });
