@@ -1,3 +1,5 @@
+export type { MaybePromise } from './utils/async.js';
+
 export type { Deferred } from './definitions/utils/Deferred.js';
 
 export type {
