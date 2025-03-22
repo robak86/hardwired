@@ -2,7 +2,7 @@ import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js'
 import type { Definition } from '../../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IInterceptor } from '../interceptor.js';
-import { isPromise } from '../../../utils/IsPromise.js';
+import { isThenable } from '../../../utils/IsThenable.js';
 import type { ScopeTag } from '../../IContainer.js';
 
 import { GraphNodesRegistry } from './GraphNodesRegistry.js';
@@ -60,7 +60,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
       return instance;
     }
 
-    if (isPromise(instance)) {
+    if (isThenable(instance)) {
       void instance.then(instanceAwaited => {
         this._node = this._configuration.createNode(
           this.definition,

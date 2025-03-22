@@ -83,11 +83,6 @@ export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
   instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>,
 ) => TValue;
 
-export type CallFn = <TValue, TArgs extends any[]>(
-  instanceDefinition: Definition<TValue, LifeTime.transient, TArgs>,
-  ...args: TArgs
-) => TValue;
-
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes,

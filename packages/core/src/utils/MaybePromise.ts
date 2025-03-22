@@ -1,4 +1,4 @@
-import { isPromise } from './IsPromise.js';
+import { isThenable } from './IsThenable.js';
 
 export type MaybePromiseValue<T> = T | Promise<T>;
 
@@ -14,14 +14,14 @@ export class MaybePromise<T> {
   }
 
   static all<T>(values: MaybePromiseValue<T>[]): MaybePromise<T[]> {
-    const hasAsync = values.some(isPromise);
+    const hasAsync = values.some(isThenable);
     const result = hasAsync ? Promise.all(values) : (values as T[]);
 
     return new MaybePromise(result);
   }
 
   map<R>(fn: (value: T) => R): MaybePromise<R> {
-    if (isPromise(this.value)) {
+    if (isThenable(this.value)) {
       return new MaybePromise(this.value.then(fn));
     } else {
       return new MaybePromise(fn(this.value));
@@ -29,12 +29,12 @@ export class MaybePromise<T> {
   }
 
   flatMap<R>(fn: (value: T) => MaybePromiseValue<R>): MaybePromise<R> {
-    if (isPromise(this.value)) {
+    if (isThenable(this.value)) {
       return new MaybePromise(
         this.value.then(value => {
           const result = fn(value);
 
-          return isPromise(result) ? result : Promise.resolve(result);
+          return isThenable(result) ? result : Promise.resolve(result);
         }),
       );
     } else {
@@ -45,7 +45,7 @@ export class MaybePromise<T> {
   }
 
   tap(fn: (value: Awaited<T>) => MaybePromiseValue<void>): MaybePromise<T> {
-    if (isPromise(this.value)) {
+    if (isThenable(this.value)) {
       return new MaybePromise(
         this.value.then(async value => {
           await fn(value as Awaited<T>);
@@ -65,7 +65,7 @@ export class MaybePromise<T> {
   }
 
   asPromise(): Promise<T> {
-    return isPromise(this.value) ? this.value : Promise.resolve(this.value);
+    return isThenable(this.value) ? this.value : Promise.resolve(this.value);
   }
 }
 

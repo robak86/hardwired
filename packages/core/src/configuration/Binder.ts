@@ -2,7 +2,7 @@ import type { IContainer } from '../container/IContainer.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { Definition } from '../definitions/impl/Definition.js';
 import { type MaybePromiseValue } from '../utils/MaybePromise.js';
-import { isPromise } from '../utils/IsPromise.js';
+import { isThenable } from '../utils/IsThenable.js';
 
 // prettier-ignore
 export type ConfigureFn<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> = TInstance extends Promise<any> ?
@@ -77,11 +77,11 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TInstance => {
       const instance = this._definition.create(use, ...args);
 
-      if (isPromise(instance)) {
+      if (isThenable(instance)) {
         return instance.then(value => {
           const configureResult = configureFn(value as Awaited<TInstance>, use, ...args);
 
-          if (isPromise(configureResult)) {
+          if (isThenable(configureResult)) {
             return configureResult.then(() => value);
           } else {
             return value;
@@ -90,7 +90,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
       } else {
         const configureResult = configureFn(instance as Awaited<TInstance>, use, ...args);
 
-        if (isPromise(configureResult)) {
+        if (isThenable(configureResult)) {
           throw new Error(`Cannot use async configure function for non-async definition: ${this._definition.name}`);
         }
 
@@ -137,14 +137,14 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
     const newDefinition = this._definition.override((use: IContainer, ...args: TArgs): TExtendedInstance => {
       const instance = this._definition.create(use, ...args);
 
-      if (isPromise(instance)) {
+      if (isThenable(instance)) {
         return instance.then(value => {
           return decorateFn(value as Awaited<TInstance>, use, ...args);
         }) as TExtendedInstance;
       } else {
         const decorated = decorateFn(instance as Awaited<TInstance>, use, ...args);
 
-        if (isPromise(decorated)) {
+        if (isThenable(decorated)) {
           throw new Error(`Cannot use async configure function for non-async definition: ${this._definition.name}`);
         }
 

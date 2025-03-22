@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { isPromise } from '../IsPromise.js';
+import { isThenable } from '../IsThenable.js';
 
 import { MaybePromise, maybePromise, maybePromiseAll } from './../MaybePromise.js';
 
@@ -11,7 +11,7 @@ describe('MaybePromise', () => {
         const mp = MaybePromise.of(42);
 
         expect(mp.get()).toBe(42);
-        expect(isPromise(mp.get())).toBe(false);
+        expect(isThenable(mp.get())).toBe(false);
       });
 
       it('should create a MaybePromise with a promise value', async () => {
@@ -19,7 +19,7 @@ describe('MaybePromise', () => {
         const mp = MaybePromise.of(promise);
 
         expect(mp.get()).toBe(promise);
-        expect(isPromise(mp.get())).toBe(true);
+        expect(isThenable(mp.get())).toBe(true);
         expect(await mp.asPromise()).toBe(42);
       });
     });
@@ -29,14 +29,14 @@ describe('MaybePromise', () => {
         const mp = MaybePromise.all([1, 2, 3]);
 
         expect(mp.get()).toEqual([1, 2, 3]);
-        expect(isPromise(mp.get())).toBe(false);
+        expect(isThenable(mp.get())).toBe(false);
       });
 
       it('should handle an array with at least one promise value', async () => {
         const values = [1, Promise.resolve(2), 3];
         const mp = MaybePromise.all(values);
 
-        expect(isPromise(mp.get())).toBe(true);
+        expect(isThenable(mp.get())).toBe(true);
         expect(await mp.asPromise()).toEqual([1, 2, 3]);
       });
 
@@ -44,7 +44,7 @@ describe('MaybePromise', () => {
         const mp = MaybePromise.all([]);
 
         expect(mp.get()).toEqual([]);
-        expect(isPromise(mp.get())).toBe(false);
+        expect(isThenable(mp.get())).toBe(false);
       });
 
       it('should reject if any promise rejects', async () => {
@@ -64,14 +64,14 @@ describe('MaybePromise', () => {
         const result = mp.map(x => x * 2);
 
         expect(result.get()).toBe(84);
-        expect(isPromise(result.get())).toBe(false);
+        expect(isThenable(result.get())).toBe(false);
       });
 
       it('should transform promise value', async () => {
         const mp = MaybePromise.of(Promise.resolve(42));
         const result = mp.map(x => x * 2);
 
-        expect(isPromise(result.get())).toBe(true);
+        expect(isThenable(result.get())).toBe(true);
         expect(await result.asPromise()).toBe(84);
       });
 
@@ -103,14 +103,14 @@ describe('MaybePromise', () => {
         const result = mp.flatMap(x => x * 2);
 
         expect(result.get()).toBe(84);
-        expect(isPromise(result.get())).toBe(false);
+        expect(isThenable(result.get())).toBe(false);
       });
 
       it('should transform non-promise value to promise result', async () => {
         const mp = MaybePromise.of(42);
         const result = mp.flatMap(x => Promise.resolve(x * 2));
 
-        expect(isPromise(result.get())).toBe(true);
+        expect(isThenable(result.get())).toBe(true);
         expect(await result.asPromise()).toBe(84);
       });
 
@@ -118,7 +118,7 @@ describe('MaybePromise', () => {
         const mp = MaybePromise.of(Promise.resolve(42));
         const result = mp.flatMap(x => x * 2);
 
-        expect(isPromise(result.get())).toBe(true);
+        expect(isThenable(result.get())).toBe(true);
         expect(await result.asPromise()).toBe(84);
       });
 
@@ -126,7 +126,7 @@ describe('MaybePromise', () => {
         const mp = MaybePromise.of(Promise.resolve(42));
         const result = mp.flatMap(x => Promise.resolve(x * 2));
 
-        expect(isPromise(result.get())).toBe(true);
+        expect(isThenable(result.get())).toBe(true);
         expect(await result.asPromise()).toBe(84);
       });
 
@@ -223,7 +223,7 @@ describe('MaybePromise', () => {
         const mp = MaybePromise.of(42);
         const result = mp.asPromise();
 
-        expect(isPromise(result)).toBe(true);
+        expect(isThenable(result)).toBe(true);
         expect(await result).toBe(42);
       });
 
@@ -244,7 +244,7 @@ describe('MaybePromise', () => {
         const mp = maybePromise(42);
 
         expect(mp.get()).toBe(42);
-        expect(isPromise(mp.get())).toBe(false);
+        expect(isThenable(mp.get())).toBe(false);
       });
 
       it('should create a MaybePromise with a promise value', async () => {
@@ -252,7 +252,7 @@ describe('MaybePromise', () => {
         const mp = maybePromise(promise);
 
         expect(mp.get()).toBe(promise);
-        expect(isPromise(mp.get())).toBe(true);
+        expect(isThenable(mp.get())).toBe(true);
         expect(await mp.asPromise()).toBe(42);
       });
     });
@@ -262,14 +262,14 @@ describe('MaybePromise', () => {
         const mp = maybePromiseAll([1, 2, 3]);
 
         expect(mp.get()).toEqual([1, 2, 3]);
-        expect(isPromise(mp.get())).toBe(false);
+        expect(isThenable(mp.get())).toBe(false);
       });
 
       it('should handle an array with at least one promise value', async () => {
         const values = [1, Promise.resolve(2), 3];
         const mp = maybePromiseAll(values);
 
-        expect(isPromise(mp.get())).toBe(true);
+        expect(isThenable(mp.get())).toBe(true);
         expect(await mp.asPromise()).toEqual([1, 2, 3]);
       });
     });

@@ -1,6 +1,6 @@
 import type { Definition } from '../definitions/impl/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
-import { isPromise } from '../utils/IsPromise.js';
+import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
 
 import { isDisposable } from './InstancesMap.js';
@@ -107,7 +107,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   private registerDisposable(instance: unknown, disposer: CompositeDisposable) {
-    if (isPromise(instance)) {
+    if (isThenable(instance)) {
       void instance.then(instanceAwaited => {
         if (isDisposable(instanceAwaited)) {
           disposer.registerDisposable(instanceAwaited);

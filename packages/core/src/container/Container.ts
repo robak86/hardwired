@@ -11,7 +11,7 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
-import { isPromise } from '../utils/IsPromise.js';
+import { isThenable } from '../utils/IsThenable.js';
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
 import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
@@ -294,7 +294,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     for (const [key, definition] of entries) {
       const instance: unknown = this.use(definition as AnyDefinition);
 
-      if (isPromise(instance)) {
+      if (isThenable(instance)) {
         promises.push(
           instance.then(value => {
             results[key] = value;
