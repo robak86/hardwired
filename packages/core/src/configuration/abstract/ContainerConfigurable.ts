@@ -22,11 +22,11 @@ export interface ContainerConfigurable {
 
   bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
-  ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
+  ): Binder<TInstance, TLifeTime, TArgs>;
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
-  ): Omit<Binder<TInstance, TLifeTime, TArgs>, 'toInheritedFrom'>;
+  ): Binder<TInstance, TLifeTime, TArgs>;
 
   init(initializer: InitFn): void;
 

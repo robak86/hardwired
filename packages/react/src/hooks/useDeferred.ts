@@ -12,7 +12,7 @@ export const useDeferred: UseDeferredHook = definition => {
 
   return useCallback(
     (...args) => {
-      return container.use(definition, ...args);
+      return container.call(definition, ...args);
     },
     [container, definition],
   );

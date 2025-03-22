@@ -13,7 +13,9 @@ describe(`apply`, () => {
     const someValue = fn.scoped(() => new BoxedValue(1));
 
     const config = configureContainer(c => {
-      c.bind(someValue).configure((_, val) => (val.value += 1));
+      c.bind(someValue).toConfigured(val => {
+        val.value += 1;
+      });
     });
 
     const c = container.new(config);
@@ -27,7 +29,9 @@ describe(`apply`, () => {
     expect(container.new().use(someValue).value).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bind(someValue).configure((_, val) => (val.value += 1));
+      c.bind(someValue).toConfigured(val => {
+        val.value += 1;
+      });
     });
 
     expect(cnt.use(someValue).value).toEqual(2);
@@ -38,8 +42,12 @@ describe(`apply`, () => {
 
     expect(() => {
       container.new(c => {
-        c.bind(someValue).configure((_, val) => (val.value += 1));
-        c.bind(someValue).configure((_, val) => (val.value *= 3));
+        c.bind(someValue).toConfigured(val => {
+          val.value += 1;
+        });
+        c.bind(someValue).toConfigured(val => {
+          val.value *= 3;
+        });
       });
     }).toThrowError();
   });
@@ -50,7 +58,7 @@ describe(`apply`, () => {
     const someValue = value(new BoxedValue(10));
 
     const c = container.new(c => {
-      c.bind(someValue).configure((use, val) => {
+      c.bind(someValue).toConfigured((val, use) => {
         const aVal = use(a);
         const bVal = use(b);
 
@@ -70,7 +78,7 @@ describe(`apply`, () => {
     });
 
     const c = container.new(c => {
-      c.bind(someValue).configure((use, val) => {
+      c.bind(someValue).toConfigured((val, use) => {
         val.value = val.value * use(b).value;
       });
     });
@@ -78,12 +86,52 @@ describe(`apply`, () => {
     expect(c.use(someValue)).toEqual(new BoxedValue(6));
   });
 
+  it(`awaits async dependencies`, async () => {
+    const a = fn.scoped(async () => new BoxedValue(1));
+
+    const c = container.new(c => {
+      c.bind(a).toConfigured(val => {
+        val.value += 1;
+      });
+    });
+
+    expect(await c.use(a)).toEqual(new BoxedValue(2));
+  });
+
+  it(`allows using async configure function for non async definitions`, async () => {
+    const a = fn.scoped(async () => new BoxedValue(1));
+
+    const c = container.new(c => {
+      c.bind(a).toConfigured(async val => {
+        val.value += 1;
+      });
+    });
+
+    expect(await c.use(a)).toEqual(new BoxedValue(2));
+  });
+
+  it(`doesn't allow using async function for non async definition`, async () => {
+    const a = fn.scoped(() => new BoxedValue(1));
+
+    expect(() => {
+      const cnt = container.new(c => {
+        // @ts-expect-error - async function for non async definition
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        c.bind(a).toConfigured(async val => {
+          val.value += 1;
+        });
+      });
+
+      cnt.use(a);
+    }).toThrowError('Cannot use async configure function for non-async definition');
+  });
+
   describe(`scopeOverrides`, () => {
     it(`preserves singleton scope of the original resolver`, async () => {
       const someValue = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(someValue).configure((use, a) => a);
+        c.bind(someValue).toConfigured((use, a) => {});
       });
 
       expect(c.use(someValue)).toEqual(c.use(someValue));
@@ -93,7 +141,7 @@ describe(`apply`, () => {
       const someValue = fn(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(someValue).configure((use, a) => a);
+        c.bind(someValue).toConfigured((use, a) => {});
       });
 
       expect(c.use(someValue)).not.toEqual(c.use(someValue));
@@ -106,7 +154,7 @@ describe(`apply`, () => {
       });
 
       const c = container.new(c => {
-        c.bind(a).configure((use, a) => a);
+        c.bind(a).toConfigured((use, a) => {});
       });
 
       const objDef = fn.scoped(use => ({
@@ -124,12 +172,10 @@ describe(`apply`, () => {
   });
 
   describe(`globalOverrides`, () => {
-    function setup(instanceDef: Definition<MyService, LifeTime.scoped | LifeTime.transient, any>) {
+    function setup(instanceDef: Definition<MyService, LifeTime.scoped | LifeTime.transient, []>) {
       const scope1 = container.new(c => {
-        c.freeze(instanceDef).configure((use, a) => {
+        c.freeze(instanceDef).toConfigured(a => {
           vi.spyOn(a, 'callMe');
-
-          return a;
         });
       });
 

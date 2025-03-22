@@ -17,7 +17,7 @@ describe('ScopeConfiguration', () => {
       const root = container.new();
 
       const childContainer = root.scope((scope, use) => {
-        scope.bind(compositionRoot).define(_ => use(compositionRoot));
+        scope.bind(compositionRoot).toRedefined(_ => use(compositionRoot));
       });
 
       // First, get the value from the child container, to check if the value will "propagate" to parent

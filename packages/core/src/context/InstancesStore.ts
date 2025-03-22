@@ -1,6 +1,6 @@
 import type { Definition } from '../definitions/impl/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
-import { isPromise } from '../utils/IsPromise.js';
+import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
 
 import { isDisposable } from './InstancesMap.js';
@@ -13,6 +13,7 @@ export interface IInstancesStoreRead {
 export class InstancesStore implements IInstancesStoreRead {
   static create(): InstancesStore {
     return new InstancesStore(
+      null,
       new Map<symbol, unknown>(),
       new Map<symbol, unknown>(),
       new CompositeDisposable(),
@@ -21,6 +22,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   private constructor(
+    private _parent: InstancesStore | null,
     private _globalInstances: Map<symbol, unknown>,
     private _scopeInstances: Map<symbol, unknown>,
     private _rootDisposer: CompositeDisposable,
@@ -36,7 +38,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   childScope(): InstancesStore {
-    return new InstancesStore(this._globalInstances, new Map(), this._rootDisposer, new CompositeDisposable());
+    return new InstancesStore(this, this._globalInstances, new Map(), this._rootDisposer, new CompositeDisposable());
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
@@ -92,12 +94,20 @@ export class InstancesStore implements IInstancesStoreRead {
     return this._globalInstances.has(definitionId);
   }
 
+  has(definitionId: symbol): boolean {
+    return this._globalInstances.has(definitionId) || this._scopeInstances.has(definitionId);
+  }
+
+  hasInherited(definitionId: symbol): boolean {
+    return this._parent?.has(definitionId) ?? this._parent?.hasInherited(definitionId) ?? false;
+  }
+
   getExisting(definitionId: symbol): unknown {
     return this._globalInstances.get(definitionId) ?? this._scopeInstances.get(definitionId);
   }
 
   private registerDisposable(instance: unknown, disposer: CompositeDisposable) {
-    if (isPromise(instance)) {
+    if (isThenable(instance)) {
       void instance.then(instanceAwaited => {
         if (isDisposable(instanceAwaited)) {
           disposer.registerDisposable(instanceAwaited);

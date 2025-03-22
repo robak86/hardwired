@@ -3,7 +3,7 @@ import prettyMilliseconds from 'pretty-ms';
 import type { Definition } from '../../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IInterceptor } from '../interceptor.js';
-import { isPromise } from '../../../utils/IsPromise.js';
+import { isThenable } from '../../../utils/IsThenable.js';
 import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
 import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
 
@@ -71,7 +71,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
   }
 
   onLeave(instance: T, definition: Definition<T, any, any>): T {
-    if (isPromise(instance)) {
+    if (isThenable(instance)) {
       void instance.then(instanceAwaited => {
         console.groupEnd();
 

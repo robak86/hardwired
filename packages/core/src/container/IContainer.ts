@@ -10,6 +10,8 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { Definition } from '../definitions/impl/Definition.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
+import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
+import type { Binder } from '../configuration/Binder.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
 
@@ -24,9 +26,17 @@ export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   ): TValue;
 }
 
+export interface IContainerConfigurationAware {
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
+    definition: Definition<TInstance, TLifeTime, TArgs>,
+  ): Binder<TInstance, TLifeTime, TArgs>;
+}
+
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue, TArgs extends any[]>(
-    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
+  use<TValue>(instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>): TValue;
+
+  call<TValue, TArgs extends any[]>(
+    instanceDefinition: Definition<TValue, LifeTime.transient, TArgs>,
     ...args: TArgs
   ): TValue;
 
@@ -47,10 +57,6 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     : InstancesRecord<TRecord>;
 }
 
-export type ContainerRunFn<TAllowedLifeTime extends LifeTime, TValue> = (
-  locator: IContainer<TAllowedLifeTime>,
-) => TValue;
-
 export type NewScopeReturnType<
   TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
   TAllowedLifeTime extends LifeTime = LifeTime,
@@ -58,6 +64,9 @@ export type NewScopeReturnType<
   HasPromise<ReturnTypes<TConfigureFns>> extends true
     ? Promise<IContainer<TAllowedLifeTime>>
     : IContainer<TAllowedLifeTime>;
+
+export type ApplyReturnType<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>> =
+  HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<void> : void;
 
 export type ContainerAllReturn<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>> =
   HasPromise<InstancesArray<TDefinitions>> extends true
@@ -70,15 +79,15 @@ export interface IContainerScopes {
   ): NewScopeReturnType<TConfigureFns>;
 }
 
-export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue, TArgs extends any[]>(
-  instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
-  ...args: TArgs
+export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
+  instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>,
 ) => TValue;
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes,
-    UseFn<TAllowedLifeTime> {
+    UseFn<TAllowedLifeTime>,
+    IContainerConfigurationAware {
   readonly id: string;
   readonly parentId: string | null;
 

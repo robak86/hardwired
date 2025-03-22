@@ -2,15 +2,14 @@ import { LifeTime } from './abstract/LifeTime.js';
 import { Definition } from './impl/Definition.js';
 
 function executeUnboundDefinition(debugName?: string): never {
-  if (debugName) {
-    throw new Error(
-      `Cannot instantiate unbound definition "${debugName}". Definition should be provided at the runtime by creating a new scope`,
-    );
-  } else {
-    throw new Error(
-      `Cannot instantiate unbound definition. Definition should be provided at the runtime by creating a new scope`,
-    );
-  }
+  const debugNameFragment = debugName ? ` "${debugName}"` : '';
+
+  throw new Error(
+    `Cannot instantiate unbound definition${debugNameFragment}.
+    You need to bind definition to a value during creation of the container or scope.
+    Example: 
+    const cnt = container.new(c => c.bind(myUnboundDefinition).toValue(1));`,
+  );
 }
 
 export class UnboundDefinition<TInstance, TLifeTime extends LifeTime> extends Definition<TInstance, TLifeTime, []> {

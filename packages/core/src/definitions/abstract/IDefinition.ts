@@ -5,8 +5,6 @@ import type { LifeTime } from './LifeTime.js';
 
 export type AnyDefinition = IDefinition<any, LifeTime, any[]>;
 
-export type UnknownDefinition = IDefinition<unknown, LifeTime, unknown[]>;
-
 export interface IDefinition<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> {
   readonly id: symbol;
   readonly strategy: TLifeTime;

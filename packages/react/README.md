@@ -218,7 +218,7 @@ describe('CounterButtons', () => {
   function setup() {
 
     const cnt = container(container => {
-      container.bind(CounterActions.class).configure((_, counterActions) => {
+      container.bind(CounterActions.class).toConfigured((_, counterActions) => {
         vi.spyOn(counterActions, 'increment');
         vi.spyOn(counterActions, 'decrement');
       })

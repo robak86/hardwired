@@ -21,14 +21,14 @@ let cnt: IContainer;
 
 const ctx = unbound<Ctx>();
 
-const d1 = fn(use => use(d2));
-const d2 = fn(use => use(d3));
-const d3 = fn(use => use(d4));
-const d4 = fn(use => use(d5));
-const d5 = fn(use => use(d6));
-const d6 = fn(use => use(d7));
-const d7 = fn(use => use(d8));
-const d8 = fn(use => use(d9));
+const d1 = fn(use => use.call(d2));
+const d2 = fn(use => use.call(d3));
+const d3 = fn(use => use.call(d4));
+const d4 = fn(use => use.call(d5));
+const d5 = fn(use => use.call(d6));
+const d6 = fn(use => use.call(d7));
+const d7 = fn(use => use.call(d8));
+const d8 = fn(use => use.call(d9));
 const d9 = fn(use => use(ctx).value);
 
 const instantiationBench = new Bench({

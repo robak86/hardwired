@@ -11,9 +11,11 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
-import { isPromise } from '../utils/IsPromise.js';
+import { isThenable } from '../utils/IsThenable.js';
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
 import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
+import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
+import { Binder } from '../configuration/Binder.js';
 
 import type {
   ContainerAllReturn,
@@ -59,11 +61,10 @@ export class Container extends ExtensibleFunction implements IContainer {
     protected readonly _disposableFns: Array<(container: IContainer) => void> = [],
   ) {
     super(
-      <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
-        definition: Definition<TInstance, TLifeTime, TArgs>,
-        ...args: TArgs
+      <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
+        definition: Definition<TInstance, TLifeTime, []>,
       ) => {
-        return this.use(definition, ...args);
+        return this.use(definition);
       },
     );
   }
@@ -143,6 +144,29 @@ export class Container extends ExtensibleFunction implements IContainer {
     return cnt as unknown as NewScopeReturnType<TConfigureFns>;
   }
 
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
+    definition: Definition<TInstance, TLifeTime, TArgs>,
+  ): Binder<TInstance, TLifeTime, TArgs> {
+    const bind = (definition: Definition<TInstance, TLifeTime, TArgs>) => {
+      if (this.instancesStore.has(definition.id)) {
+        throw new Error(`Cannot freeze binding ${definition.name} because it is already instantiated.`);
+      }
+
+      if (
+        this.bindingsRegistry.inheritsCascadingDefinition(definition.id) &&
+        this.instancesStore.hasInherited(definition.id)
+      ) {
+        throw new Error(
+          `Cannot freeze cascading binding ${definition.name} because it is already instantiated in some ascendant scope.`,
+        );
+      }
+
+      this.bindingsRegistry.addFrozenBinding(definition);
+    };
+
+    return new Binder<TInstance, TLifeTime, TArgs>(definition, bind, bind);
+  }
+
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
     return this.interceptorsRegistry?.get(id);
   }
@@ -158,10 +182,13 @@ export class Container extends ExtensibleFunction implements IContainer {
     );
   }
 
-  use<TValue, TArgs extends any[]>(
-    definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
-    ...args: TArgs
-  ): TValue {
+  use<TValue>(definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, []>): TValue {
+    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+
+    return this.buildWithStrategy(patchedDefinition);
+  }
+
+  call<TValue, TArgs extends any[]>(definition: Definition<TValue, LifeTime.transient, TArgs>, ...args: TArgs): TValue {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition, ...args);
@@ -177,7 +204,7 @@ export class Container extends ExtensibleFunction implements IContainer {
   }
 
   buildWithStrategy<TValue, TArgs extends any[]>(
-    definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
+    definition: Definition<TValue, LifeTime, TArgs>,
     ...args: TArgs
   ): TValue {
     if (this._isDisposed) {
@@ -209,7 +236,7 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   private buildWithStrategyIntercepted<TValue, TArgs extends any[]>(
     currentInterceptor: IInterceptor<any>,
-    definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, TArgs>,
+    definition: Definition<TValue, LifeTime, TArgs>,
     ...args: TArgs
   ): TValue {
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
@@ -267,7 +294,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     for (const [key, definition] of entries) {
       const instance: unknown = this.use(definition as AnyDefinition);
 
-      if (isPromise(instance)) {
+      if (isThenable(instance)) {
         promises.push(
           instance.then(value => {
             results[key] = value;
@@ -287,17 +314,22 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   defer<TInstance, TArgs extends any[]>(factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>) {
     return (...args: TArgs): TInstance => {
-      return this.use(factoryDefinition, ...args);
+      return this.call(factoryDefinition, ...args);
     };
   }
 }
 
-export const once = <TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
-  definition: Definition<TInstance, TLifeTime, TArgs>,
+export function once<TInstance>(definition: Definition<TInstance, LifeTime.singleton | LifeTime.scoped, []>): TInstance;
+export function once<TInstance, TArgs extends any[]>(
+  definition: Definition<TInstance, LifeTime.transient, TArgs>,
   ...args: TArgs
-): TInstance => {
-  return Container.root().use(definition, ...args);
-};
+): TInstance;
+export function once<TInstance, TArgs extends any[]>(
+  definition: Definition<TInstance, LifeTime, TArgs>,
+  ...args: TArgs
+): TInstance {
+  return Container.root().call(definition as Definition<TInstance, LifeTime.transient, TArgs>, ...args);
+}
 
 export const all = <TDefinitions extends Array<Definition<any, LifeTime, []>>>(
   ...definitions: [...TDefinitions]
