@@ -1,17 +1,17 @@
 import type { IContainer } from '../container/IContainer.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { Definition } from '../definitions/impl/Definition.js';
-import { type MaybePromiseValue } from '../utils/MaybePromise.js';
 import { isThenable } from '../utils/IsThenable.js';
+import type { MaybePromise } from '../utils/async.js';
 
 // prettier-ignore
 export type ConfigureFn<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> = TInstance extends Promise<any> ?
-  (instance: Awaited<TInstance>, locator: IContainer<TLifeTime>, ...args: TArgs) => MaybePromiseValue<void> :
+  (instance: Awaited<TInstance>, locator: IContainer<TLifeTime>, ...args: TArgs) => MaybePromise<void> :
   (instance: TInstance, locator: IContainer<TLifeTime>, ...args: TArgs) => void;
 
 // prettier-ignore
 export type DecorateFn<TInstance, TExtendedInstance , TLifeTime extends LifeTime, TArgs extends unknown[]> = TInstance extends Promise<any> ?
-  (instance: Awaited<TInstance>, locator: IContainer<TLifeTime>, ...args: TArgs) => MaybePromiseValue<Awaited<TExtendedInstance>> :
+  (instance: Awaited<TInstance>, locator: IContainer<TLifeTime>, ...args: TArgs) => MaybePromise<Awaited<TExtendedInstance>> :
   (instance: TInstance, locator: IContainer<TLifeTime>, ...args: TArgs) => TExtendedInstance;
 
 // prettier-ignore
