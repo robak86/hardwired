@@ -28,6 +28,8 @@ export type * from './definitions/abstract/InstanceDefinition.js';
 export type * from './definitions/abstract/InstanceDefinitionDependency.js';
 
 export { value } from './definitions/value.js';
+export * from './definitions/object.js';
+export * from './definitions/utils/derivedLifeTime.js';
 
 export * from './definitions/unbound.js';
 export * from './definitions/abstract/LifeTime.js';
