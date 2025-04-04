@@ -319,7 +319,7 @@ export class Container extends ExtensibleFunction implements IContainer {
   }
 }
 
-export function once<TInstance>(definition: Definition<TInstance, LifeTime.singleton | LifeTime.scoped, []>): TInstance;
+export function once<TInstance>(definition: Definition<TInstance, LifeTime, []>): TInstance;
 export function once<TInstance, TArgs extends any[]>(
   definition: Definition<TInstance, LifeTime.transient, TArgs>,
   ...args: TArgs
