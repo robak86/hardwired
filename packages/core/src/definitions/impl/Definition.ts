@@ -6,6 +6,14 @@ import type { IDefinition } from '../abstract/IDefinition.js';
 export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]>
   implements IDefinition<TInstance, TLifeTime, TArgs>
 {
+  readonly $type!: Awaited<TInstance>;
+  readonly $p0!: TArgs[0];
+  readonly $p1!: TArgs[1];
+  readonly $p2!: TArgs[2];
+  readonly $p3!: TArgs[3];
+  readonly $p4!: TArgs[4];
+  readonly $p5!: TArgs[5];
+
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,

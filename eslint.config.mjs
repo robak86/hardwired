@@ -79,6 +79,7 @@ export default typescriptLint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       'no-empty-pattern': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/await-thenable': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn', // or "error"
         {
