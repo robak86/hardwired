@@ -11,6 +11,14 @@ export interface IDefinition<TInstance, TLifeTime extends LifeTime, TArgs extend
   readonly create: (context: IContainer, ...args: TArgs) => TInstance;
   readonly name: string;
 
+  readonly $type: Awaited<TInstance>;
+  readonly $p0: TArgs[0];
+  readonly $p1: TArgs[1];
+  readonly $p2: TArgs[2];
+  readonly $p3: TArgs[3];
+  readonly $p4: TArgs[4];
+  readonly $p5: TArgs[5];
+
   override(createFn: (context: IContainer, ...args: TArgs) => TInstance): IDefinition<TInstance, TLifeTime, TArgs>;
 
   bind(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, TArgs>;
