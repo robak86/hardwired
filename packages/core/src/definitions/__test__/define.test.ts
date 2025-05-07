@@ -1,4 +1,3 @@
-import type { TypeOf } from 'ts-expect';
 import { expectType } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 
@@ -17,7 +16,7 @@ describe(`define`, () => {
     it(`preserves externals type`, async () => {
       const definition = fn(() => null);
 
-      expectType<TypeOf<typeof definition, Definition<null, LifeTime.transient, []>>>(true);
+      expectType<Definition<null, LifeTime.transient, []>>(definition);
     });
   });
 

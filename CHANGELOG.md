@@ -1,3 +1,25 @@
+### 1.6.2
+
+#### Features
+
+- add experimental transient definition inspired by reader monad for providing better ad hoc composability
+
+```typescript
+const createUser = fn(() => ({ firstName: 'John', lastName: 'Doe' }));
+const createAddress = fn(() => ({ city: 'New York', country: 'USA' }));
+
+const insertData = fn(async userWithAddress => {});
+
+const userWithAddress = createUser
+  .map((use, user) => {
+    return {
+      ...use.call(createAddress),
+      ...user,
+    };
+  })
+  .flatMap(userWithAddress => insertData(userWithAddress));
+```
+
 ### 1.6.1
 
 #### Features
