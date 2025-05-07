@@ -17,7 +17,7 @@ export type ObjectDefinition<TRecord extends Record<PropertyKey, Definition<any,
     ? Definition<Promise<AwaitedInstanceRecord<TRecord>>, DerivedLifeTime<RecordLifeTime<TRecord>>, []>
     : Definition<InstancesRecord<TRecord>, DerivedLifeTime<RecordLifeTime<TRecord>>, []>;
 
-export const object = <TRecord extends Record<PropertyKey, Definition<any, LifeTime, any>>>(
+export const object = <TRecord extends Record<PropertyKey, Definition<unknown, LifeTime, []>>>(
   object: TRecord,
 ): ObjectDefinition<TRecord> => {
   const entries = Object.entries(object);

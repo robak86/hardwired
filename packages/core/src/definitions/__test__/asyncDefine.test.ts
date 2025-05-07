@@ -1,4 +1,3 @@
-import type { TypeOf } from 'ts-expect';
 import { expectType } from 'ts-expect';
 import { describe, expect, it } from 'vitest';
 
@@ -17,13 +16,13 @@ describe(`asyncDefine`, () => {
     it(`preserves externals type`, async () => {
       const definition = fn(async () => null);
 
-      expectType<TypeOf<typeof definition, Definition<Promise<null>, LifeTime.transient, []>>>(true);
+      expectType<Definition<Promise<null>, LifeTime.transient, []>>(definition);
     });
 
     it(`accepts additional params`, async () => {
       const definition = fn(async (_use, _userId: number) => null);
 
-      expectType<TypeOf<typeof definition, Definition<Promise<null>, LifeTime.transient, [number]>>>(true);
+      expectType<Definition<Promise<null>, LifeTime.transient, [number]>>(definition);
     });
 
     it(`.get is typesafe`, async () => {

@@ -2,13 +2,14 @@ import type { IContainer } from '../../container/IContainer.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import type { DefineScoped, DefineSingleton, DefineTransient } from '../fn.js';
 import { Definition } from '../impl/Definition.js';
+import { ReaderDefinition } from '../impl/ReaderDefinition.js';
 
 function chainMiddlewares<T, TLifeTime extends LifeTime, TArgs extends unknown[]>(
   middlewares: Middleware[],
   next: MiddlewareNextFn<T, TArgs>,
   lifeTime: TLifeTime,
-): Definition<T, TLifeTime, TArgs> {
-  return new Definition(Symbol(), lifeTime, (use: IContainer, ...args: TArgs): T => {
+): Definition<T, TLifeTime, TArgs> | ReaderDefinition<T, TArgs> {
+  const createFn = (use: IContainer, ...args: TArgs): T => {
     let nextHandler = next;
 
     for (let i = middlewares.length - 1; i >= 0; i--) {
@@ -19,7 +20,13 @@ function chainMiddlewares<T, TLifeTime extends LifeTime, TArgs extends unknown[]
     }
 
     return nextHandler(use, ...args);
-  });
+  };
+
+  if (lifeTime === LifeTime.transient) {
+    return new ReaderDefinition<T, TArgs>(Symbol(), createFn);
+  } else {
+    return new Definition<T, TLifeTime, TArgs>(Symbol(), lifeTime, createFn);
+  }
 }
 
 export type MiddlewareNextFn<TInstance, TArgs extends any[]> = (locator: IContainer, ...args: TArgs) => TInstance;
@@ -45,22 +52,22 @@ export const withMiddleware: CustomFnFactory = {
   transient(...middleware: Middleware[]): DefineTransient {
     return <TInstance, TArgs extends unknown[]>(
       create: (locator: IContainer<LifeTime.transient>, ...args: TArgs) => TInstance,
-    ): Definition<TInstance, LifeTime.transient, TArgs> => {
-      return chainMiddlewares(middleware, create, LifeTime.transient);
+    ): ReaderDefinition<TInstance, TArgs> => {
+      return chainMiddlewares(middleware, create, LifeTime.transient) as ReaderDefinition<TInstance, TArgs>;
     };
   },
   singleton(...middleware: Middleware[]): DefineSingleton {
     return <TInstance>(
       create: (locator: IContainer<LifeTime.singleton>) => TInstance,
     ): Definition<TInstance, LifeTime.singleton, []> => {
-      return chainMiddlewares(middleware, create, LifeTime.singleton);
+      return chainMiddlewares(middleware, create, LifeTime.singleton) as Definition<TInstance, LifeTime.singleton, []>;
     };
   },
   scoped(...middleware: Middleware[]): DefineScoped {
     return <TInstance>(
       create: (locator: IContainer<LifeTime.scoped>) => TInstance,
     ): Definition<TInstance, LifeTime.scoped, []> => {
-      return chainMiddlewares(middleware, create, LifeTime.scoped);
+      return chainMiddlewares(middleware, create, LifeTime.scoped) as Definition<TInstance, LifeTime.scoped, []>;
     };
   },
 };

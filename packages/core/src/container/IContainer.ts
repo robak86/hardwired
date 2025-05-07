@@ -106,6 +106,8 @@ export type AwaitedInstanceArray<T extends Array<Definition<Promise<any>, any, a
 
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
 
+export type NextValue<TPrev, TNext> = IsAnyPromise<TPrev> extends true ? Promise<TNext> : TNext;
+
 export type ReturnTypes<T extends any[]> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? ReturnType<T[K]> : never;
 };
