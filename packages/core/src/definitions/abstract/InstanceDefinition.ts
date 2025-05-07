@@ -18,6 +18,10 @@ export type AwaitedInstanceRecord<T extends Record<PropertyKey, AnyDefinition>> 
   [K in keyof T]: AwaitedInstance<T[K]>;
 };
 
+export type AwaitedPropertiesFactories<T extends Record<PropertyKey, (...args: any[]) => any>> = {
+  [K in keyof T]: Awaited<ReturnType<T[K]>>;
+};
+
 export type InstancesArray<T extends AnyDefinition[]> = {
   [K in keyof T]: Instance<T[K]>;
 };

@@ -6,9 +6,9 @@ import { Container, once } from '../../../container/Container.js';
 import type { LifeTime } from '../../abstract/LifeTime.js';
 import type { Definition } from '../Definition.js';
 import type { IContainer } from '../../../container/IContainer.js';
-import type { ReaderDefinition } from '../ReaderDefinition.js';
+import type { TransientDefinition } from '../TransientDefinition.js';
 
-describe(`ReaderMonad`, () => {
+describe(`TransientDefinition`, () => {
   describe(`map`, () => {
     describe(`sync`, () => {
       describe(`types`, () => {
@@ -270,13 +270,13 @@ describe(`ReaderMonad`, () => {
 
           const b = a.mapArgs(async (use, def, newParam: string) => {
             expectType<IContainer<LifeTime.transient>>(use);
-            expectType<ReaderDefinition<Promise<number>, [a: number]>>(def);
+            expectType<TransientDefinition<Promise<number>, [a: number]>>(def);
             expectType<string>(newParam);
 
             return newParam;
           });
 
-          expectType<ReaderDefinition<Promise<string>, [a: string]>>(b);
+          expectType<TransientDefinition<Promise<string>, [a: string]>>(b);
         });
       });
     });
@@ -329,6 +329,86 @@ describe(`ReaderMonad`, () => {
         const result = once(a, 0);
 
         expect(result).toEqual(1);
+      });
+    });
+  });
+
+  describe(`mergeMap`, () => {
+    describe(`sync`, () => {
+      describe(`types`, () => {
+        it(`merges new properties`, async () => {
+          const a = fn(() => ({}))
+            .mergeMap({
+              prop1: () => 1,
+              prop2: () => 'str',
+            })
+            .mergeMap({ prop3: () => true });
+
+          expectType<TransientDefinition<{ prop1: number; prop2: string; prop3: boolean }, []>>(a);
+        });
+
+        it(`returns error type if current value is not an object`, async () => {
+          const a = fn(() => 1);
+
+          // @ts-expect-error mergeMap expects definition returning object type
+          a.mergeMap({
+            prop1: () => 1,
+            prop2: () => 'str',
+          });
+        });
+      });
+
+      describe(`evaluate`, () => {
+        it(`merges props with the object`, async () => {
+          const a = fn(() => ({}))
+            .mergeMap({
+              prop1: () => 1,
+              prop2: () => 'str',
+            })
+            .mergeMap({ prop3: () => true });
+
+          const result = once(a);
+
+          expect(result).toEqual({
+            prop1: 1,
+            prop2: 'str',
+            prop3: true,
+          });
+        });
+      });
+    });
+
+    describe(`async`, () => {
+      describe(`types`, () => {
+        it(`lifts definition to async if property factory is async`, async () => {
+          const a = fn(() => ({}))
+            .mergeMap({ sync: () => 123 })
+            .mergeMap({ async: async () => true });
+
+          expectType<TransientDefinition<Promise<{ sync: number; async: boolean }>, []>>(a);
+        });
+      });
+
+      describe(`evaluation`, () => {
+        it(`returns correct value`, async () => {
+          const a = fn(async () => ({ val1: 1 }))
+            .mergeMap({
+              val2: (_use, { val1 }) => val1 + 10,
+              val3: async (_use, val) => true,
+            })
+            .mergeMap({ val4: (use, obj) => false });
+
+          const result = await once(a);
+
+          result.val4;
+
+          expect(result).toEqual({
+            val1: 1,
+            val2: 11,
+            val3: true,
+            val4: false,
+          });
+        });
       });
     });
   });

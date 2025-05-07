@@ -2,7 +2,7 @@ import type { IContainer } from '../container/IContainer.js';
 
 import { LifeTime } from './abstract/LifeTime.js';
 import { Definition } from './impl/Definition.js';
-import { ReaderDefinition } from './impl/ReaderDefinition.js';
+import { TransientDefinition } from './impl/TransientDefinition.js';
 
 export const fnDefinition =
   <TLifeTime extends LifeTime>(lifeTime: TLifeTime) =>
@@ -12,13 +12,13 @@ export const fnDefinition =
 
 export function transientFn<TInstance, TLifeTime extends LifeTime, TArgs extends any[]>(
   create: (locator: IContainer<TLifeTime>, ...args: TArgs) => TInstance,
-): ReaderDefinition<TInstance, TArgs> {
-  return new ReaderDefinition(Symbol(), create);
+): TransientDefinition<TInstance, TArgs> {
+  return new TransientDefinition(Symbol(), create);
 }
 
 export type DefineTransient = <TInstance, TArgs extends any[]>(
   create: (locator: IContainer<LifeTime.transient>, ...args: TArgs) => TInstance,
-) => ReaderDefinition<TInstance, TArgs>;
+) => TransientDefinition<TInstance, TArgs>;
 
 export type DefineScoped = <TInstance>(
   create: (locator: IContainer<LifeTime.scoped>) => TInstance,

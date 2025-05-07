@@ -2,13 +2,13 @@ import type { IContainer } from '../../container/IContainer.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import type { DefineScoped, DefineSingleton, DefineTransient } from '../fn.js';
 import { Definition } from '../impl/Definition.js';
-import { ReaderDefinition } from '../impl/ReaderDefinition.js';
+import { TransientDefinition } from '../impl/TransientDefinition.js';
 
 function chainMiddlewares<T, TLifeTime extends LifeTime, TArgs extends unknown[]>(
   middlewares: Middleware[],
   next: MiddlewareNextFn<T, TArgs>,
   lifeTime: TLifeTime,
-): Definition<T, TLifeTime, TArgs> | ReaderDefinition<T, TArgs> {
+): Definition<T, TLifeTime, TArgs> | TransientDefinition<T, TArgs> {
   const createFn = (use: IContainer, ...args: TArgs): T => {
     let nextHandler = next;
 
@@ -23,7 +23,7 @@ function chainMiddlewares<T, TLifeTime extends LifeTime, TArgs extends unknown[]
   };
 
   if (lifeTime === LifeTime.transient) {
-    return new ReaderDefinition<T, TArgs>(Symbol(), createFn);
+    return new TransientDefinition<T, TArgs>(Symbol(), createFn);
   } else {
     return new Definition<T, TLifeTime, TArgs>(Symbol(), lifeTime, createFn);
   }
@@ -52,8 +52,8 @@ export const withMiddleware: CustomFnFactory = {
   transient(...middleware: Middleware[]): DefineTransient {
     return <TInstance, TArgs extends unknown[]>(
       create: (locator: IContainer<LifeTime.transient>, ...args: TArgs) => TInstance,
-    ): ReaderDefinition<TInstance, TArgs> => {
-      return chainMiddlewares(middleware, create, LifeTime.transient) as ReaderDefinition<TInstance, TArgs>;
+    ): TransientDefinition<TInstance, TArgs> => {
+      return chainMiddlewares(middleware, create, LifeTime.transient) as TransientDefinition<TInstance, TArgs>;
     };
   },
   singleton(...middleware: Middleware[]): DefineSingleton {
