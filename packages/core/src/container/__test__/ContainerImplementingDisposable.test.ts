@@ -156,7 +156,8 @@ describe(`container#[Symbol.dispose]`, () => {
       ...containerConfigFns: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({
-        use: async ({}, use: any) => {
+        // eslint-disable-next-line no-empty-pattern
+        use: async ({}, use) => {
           const scope = await container.new(...containerConfigFns);
 
           await use(scope);

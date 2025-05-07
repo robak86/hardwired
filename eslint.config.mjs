@@ -73,6 +73,9 @@ export default typescriptLint.config(
       '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/class-literal-property-style': 'off',
       '@typescript-eslint/unbound-method': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'warn',
+      '@typescript-eslint/no-unsafe-declaration-merging': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn', // or "error"
         {

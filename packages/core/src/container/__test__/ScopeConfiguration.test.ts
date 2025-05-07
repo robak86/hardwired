@@ -47,6 +47,7 @@ describe('ScopeConfiguration', () => {
         container.new(c => {
           try {
             // @ts-expect-error - inheritFrom is not available for the container configuration
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             c.bind(fn.scoped(() => 1)).toInheritedFrom(null);
           } catch (e) {
             // noop
