@@ -1,5 +1,5 @@
-import type { Definition } from '../impl/Definition.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
+import type { IDefinition } from '../abstract/IDefinition.js';
 
-export type Deferred<T extends Definition<any, LifeTime.transient, any>> =
-  T extends Definition<infer TInstance, LifeTime.transient, infer TArgs> ? (...args: TArgs) => TInstance : never;
+export type Deferred<T extends IDefinition<any, LifeTime.transient, any>> =
+  T extends IDefinition<infer TInstance, LifeTime.transient, infer TArgs> ? (...args: TArgs) => TInstance : never;

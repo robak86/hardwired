@@ -72,7 +72,7 @@ describe(`cls`, () => {
         const asyncNum = fn(async () => 123);
 
         class MyClass {
-          static instance = cls.singleton(this, [asyncNum]);
+          static instance = cls.scoped(this, [asyncNum]);
           constructor(readonly val: number) {}
         }
 

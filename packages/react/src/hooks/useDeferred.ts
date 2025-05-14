@@ -1,10 +1,10 @@
-import type { Definition, LifeTime } from 'hardwired';
+import type { TransientDefinition } from 'hardwired';
 import { useCallback } from 'react';
 
 import { useContainer } from '../context/ContainerContext.js';
 
 export type UseDeferredHook = <TInstance, TArgs extends any[]>(
-  factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
+  factoryDefinition: TransientDefinition<TInstance, TArgs>,
 ) => (...args: TArgs) => TInstance;
 
 export const useDeferred: UseDeferredHook = definition => {

@@ -1,11 +1,11 @@
 import prettyMilliseconds from 'pretty-ms';
 
-import type { Definition } from '../../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IInterceptor } from '../interceptor.js';
 import { isThenable } from '../../../utils/IsThenable.js';
 import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
 import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
+import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
 
 export class LoggingInterceptor<T> implements IInterceptor<T> {
   static create() {
@@ -16,12 +16,12 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
 
   private constructor(
     private _parent?: LoggingInterceptor<unknown>,
-    private _definition?: Definition<T, LifeTime, any[]>,
+    private _definition?: IDefinition<T, LifeTime, any[]>,
     private _instances?: IInstancesStoreRead,
     private _scopeLevel = 0,
   ) {}
 
-  get definition(): Definition<T, LifeTime, any[]> {
+  get definition(): IDefinition<T, LifeTime, any[]> {
     if (!this._definition) {
       throw new Error(`No definition associated with the graph node`);
     }
@@ -30,7 +30,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
   }
 
   private onDependencyInstanceCreated<TInstance>(
-    definition: Definition<TInstance, any, any>,
+    definition: IDefinition<TInstance, any, any>,
     instance: TInstance,
     endTime: number,
   ) {
@@ -40,7 +40,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     );
   }
 
-  onEnter<TNewInstance>(dependencyDefinition: Definition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
+  onEnter<TNewInstance>(dependencyDefinition: IDefinition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
     if (this.hasCached(dependencyDefinition.id)) {
       console.group(
         `Fetching cached[${this.scopeLevel}][${dependencyDefinition.strategy}]: ${dependencyDefinition.name}`,
@@ -70,7 +70,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     return new LoggingInterceptor(this, this._definition, instancesStore, newScopeLevel);
   }
 
-  onLeave(instance: T, definition: Definition<T, any, any>): T {
+  onLeave(instance: T, definition: IDefinition<T, any, any>): T {
     if (isThenable(instance)) {
       void instance.then(instanceAwaited => {
         console.groupEnd();

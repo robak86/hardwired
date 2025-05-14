@@ -1,5 +1,4 @@
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import type { Definition } from '../impl/Definition.js';
 
 import type { LifeTime } from './LifeTime.js';
 
@@ -11,7 +10,7 @@ export interface IDefinition<TInstance, TLifeTime extends LifeTime, TArgs extend
   readonly create: (context: IContainer, ...args: TArgs) => TInstance;
   readonly name: string;
 
-  readonly $type: Awaited<TInstance>;
+  readonly $type: NoInfer<Awaited<TInstance>>;
   readonly $p0: TArgs[0];
   readonly $p1: TArgs[1];
   readonly $p2: TArgs[2];
@@ -21,5 +20,5 @@ export interface IDefinition<TInstance, TLifeTime extends LifeTime, TArgs extend
 
   override(createFn: (context: IContainer, ...args: TArgs) => TInstance): IDefinition<TInstance, TLifeTime, TArgs>;
 
-  bind(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, TArgs>;
+  bind(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime, TArgs>;
 }

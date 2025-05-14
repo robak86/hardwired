@@ -2,10 +2,10 @@ import type { Thunk, UnwrapThunk } from '../utils/Thunk.js';
 import type { HasPromise } from '../container/IContainer.js';
 
 import { LifeTime } from './abstract/LifeTime.js';
-import type { Definition } from './impl/Definition.js';
 import { ClassDefinition } from './impl/ClassDefinition.js';
 import type { ValidDependenciesLifeTime } from './abstract/InstanceDefinitionDependency.js';
 import type { InstancesArray } from './abstract/InstanceDefinition.js';
+import type { IDefinition } from './abstract/IDefinition.js';
 
 export type ClassType<TInstance, TConstructorArgs extends any[]> = new (...args: TConstructorArgs) => TInstance;
 
@@ -18,7 +18,7 @@ type WrapAsync<TDependenciesDefinitions, TInstance> =
     never;
 
 export type ConstructorArgsDefinitions<T extends any[], TCurrentLifeTime extends LifeTime> = {
-  [K in keyof T]: Definition<T[K] | Promise<T[K]>, ValidDependenciesLifeTime<TCurrentLifeTime>, any>;
+  [K in keyof T]: IDefinition<T[K] | Promise<T[K]>, ValidDependenciesLifeTime<TCurrentLifeTime>, []>;
 };
 
 export type Callable<TInstance, TArgs extends any[]> = {
@@ -33,8 +33,8 @@ export const cls = {
   >(
     klass: ClassType<TInstance, TConstructorArgs>,
     ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []
-  ): Definition<WrapAsync<TDependencies, TInstance>, LifeTime.transient, []> => {
-    return new ClassDefinition(Symbol(), LifeTime.transient, klass, dependencies) as Definition<
+  ): IDefinition<WrapAsync<TDependencies, TInstance>, LifeTime.transient, []> => {
+    return new ClassDefinition(Symbol(), LifeTime.transient, klass, dependencies) as IDefinition<
       WrapAsync<TDependencies, TInstance>,
       LifeTime.transient,
       []
@@ -47,8 +47,8 @@ export const cls = {
   >(
     klass: ClassType<TInstance, TConstructorArgs>,
     ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []
-  ): Definition<WrapAsync<TDependencies, TInstance>, LifeTime.scoped, []> => {
-    return new ClassDefinition(Symbol(), LifeTime.scoped, klass, dependencies) as Definition<
+  ): IDefinition<WrapAsync<TDependencies, TInstance>, LifeTime.scoped, []> => {
+    return new ClassDefinition(Symbol(), LifeTime.scoped, klass, dependencies) as IDefinition<
       WrapAsync<TDependencies, TInstance>,
       LifeTime.scoped,
       []
@@ -61,8 +61,8 @@ export const cls = {
   >(
     klass: ClassType<TInstance, TConstructorArgs>,
     ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []
-  ): Definition<WrapAsync<TDependencies, TInstance>, LifeTime.singleton, []> => {
-    return new ClassDefinition(Symbol(), LifeTime.singleton, klass, dependencies) as Definition<
+  ): IDefinition<WrapAsync<TDependencies, TInstance>, LifeTime.singleton, []> => {
+    return new ClassDefinition(Symbol(), LifeTime.singleton, klass, dependencies) as IDefinition<
       WrapAsync<TDependencies, TInstance>,
       LifeTime.singleton,
       []

@@ -4,20 +4,20 @@ import { isThenable } from '../utils/IsThenable.js';
 import type { AwaitedInstanceRecord, InstancesObject, InstancesRecord } from './abstract/InstanceDefinition.js';
 import { Definition } from './impl/Definition.js';
 import type { LifeTime } from './abstract/LifeTime.js';
-import type { AnyDefinition } from './abstract/IDefinition.js';
+import type { AnyDefinition, IDefinition } from './abstract/IDefinition.js';
 import type { DerivedLifeTime } from './utils/derivedLifeTime.js';
 import { derivedLifeTime } from './utils/derivedLifeTime.js';
 
-export type RecordLifeTime<TRecord extends Record<PropertyKey, Definition<any, any, any>>> = {
-  [K in keyof TRecord]: TRecord[K] extends Definition<any, infer TLifeTime, any> ? TLifeTime : never;
+export type RecordLifeTime<TRecord extends Record<PropertyKey, IDefinition<any, any, any>>> = {
+  [K in keyof TRecord]: TRecord[K] extends IDefinition<any, infer TLifeTime, any> ? TLifeTime : never;
 }[keyof TRecord];
 
-export type ObjectDefinition<TRecord extends Record<PropertyKey, Definition<any, any, any>>> =
+export type ObjectDefinition<TRecord extends Record<PropertyKey, IDefinition<any, any, any>>> =
   HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
-    ? Definition<Promise<AwaitedInstanceRecord<TRecord>>, DerivedLifeTime<RecordLifeTime<TRecord>>, []>
-    : Definition<InstancesRecord<TRecord>, DerivedLifeTime<RecordLifeTime<TRecord>>, []>;
+    ? IDefinition<Promise<AwaitedInstanceRecord<TRecord>>, DerivedLifeTime<RecordLifeTime<TRecord>>, []>
+    : IDefinition<InstancesRecord<TRecord>, DerivedLifeTime<RecordLifeTime<TRecord>>, []>;
 
-export const object = <TRecord extends Record<PropertyKey, Definition<unknown, LifeTime, []>>>(
+export const object = <TRecord extends Record<PropertyKey, IDefinition<unknown, LifeTime, []>>>(
   object: TRecord,
 ): ObjectDefinition<TRecord> => {
   const entries = Object.entries(object);

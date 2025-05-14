@@ -6,7 +6,7 @@ import type { IDefinition } from '../abstract/IDefinition.js';
 export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]>
   implements IDefinition<TInstance, TLifeTime, TArgs>
 {
-  readonly $type!: Awaited<TInstance>;
+  readonly $type!: NoInfer<Awaited<TInstance>>;
   readonly $p0!: TArgs[0];
   readonly $p1!: TArgs[1];
   readonly $p2!: TArgs[2];

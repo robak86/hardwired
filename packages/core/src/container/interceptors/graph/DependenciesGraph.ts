@@ -1,12 +1,12 @@
-import type { Definition } from '../../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { ScopeTag } from '../../IContainer.js';
+import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
 
 import { GraphBuilderInterceptor } from './GraphBuilderInterceptor.js';
 
 interface IGraphNode<T> {
   readonly value: T;
-  readonly definition: Definition<T, LifeTime, any[]>;
+  readonly definition: IDefinition<T, LifeTime, any[]>;
   readonly children: IGraphNode<unknown>[];
   readonly descendants: unknown[];
   readonly flatten: unknown[];
@@ -16,7 +16,7 @@ interface IGraphNode<T> {
 export class GraphNode<T> implements IGraphNode<T> {
   constructor(
     readonly value: T,
-    readonly definition: Definition<T, LifeTime, any[]>,
+    readonly definition: IDefinition<T, LifeTime, any[]>,
     readonly children: GraphNode<unknown>[],
     readonly tags: ScopeTag[],
   ) {}
@@ -38,7 +38,7 @@ export class DependenciesGraphRoot extends GraphBuilderInterceptor<never, GraphN
   constructor() {
     super({
       createNode<T>(
-        definition: Definition<T, LifeTime, any[]>,
+        definition: IDefinition<T, LifeTime, any[]>,
         value: Awaited<T>,
         children: GraphNode<unknown>[],
         tags: ScopeTag[],
@@ -49,7 +49,7 @@ export class DependenciesGraphRoot extends GraphBuilderInterceptor<never, GraphN
   }
 
   getGraphNode<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
   ): GraphNode<TInstance> | undefined {
     return super.getGraphNode(definition) as GraphNode<TInstance> | undefined;
   }

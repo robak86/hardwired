@@ -3,7 +3,6 @@ import { v4 } from 'uuid';
 import type { InstancesRecord } from '../definitions/abstract/InstanceDefinition.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
-import type { Definition } from '../definitions/impl/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
@@ -12,10 +11,11 @@ import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/S
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isThenable } from '../utils/IsThenable.js';
-import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
+import type { AnyDefinition, IDefinition } from '../definitions/abstract/IDefinition.js';
 import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import { Binder } from '../configuration/Binder.js';
+import type { TransientDefinition } from '../definitions/impl/TransientDefinition.js';
 
 import type {
   ContainerAllReturn,
@@ -62,7 +62,7 @@ export class Container extends ExtensibleFunction implements IContainer {
   ) {
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
-        definition: Definition<TInstance, TLifeTime, []>,
+        definition: IDefinition<TInstance, TLifeTime, []>,
       ) => {
         return this.use(definition);
       },
@@ -145,9 +145,9 @@ export class Container extends ExtensibleFunction implements IContainer {
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
+    definition: IDefinition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
-    const bind = (definition: Definition<TInstance, TLifeTime, TArgs>) => {
+    const bind = (definition: IDefinition<TInstance, TLifeTime, TArgs>) => {
       if (this.instancesStore.has(definition.id)) {
         throw new Error(`Cannot freeze binding ${definition.name} because it is already instantiated.`);
       }
@@ -182,13 +182,13 @@ export class Container extends ExtensibleFunction implements IContainer {
     );
   }
 
-  use<TValue>(definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, []>): TValue {
+  use<TValue>(definition: IDefinition<TValue, ValidDependenciesLifeTime<LifeTime>, []>): TValue {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition);
   }
 
-  call<TValue, TArgs extends any[]>(definition: Definition<TValue, LifeTime.transient, TArgs>, ...args: TArgs): TValue {
+  call<TValue, TArgs extends any[]>(definition: TransientDefinition<TValue, TArgs>, ...args: TArgs): TValue {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition, ...args);
@@ -199,12 +199,12 @@ export class Container extends ExtensibleFunction implements IContainer {
    * Cascading instances are returned only from the scope holding the instance.
    * @param definition
    */
-  useExisting<TValue>(definition: Definition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null {
+  useExisting<TValue>(definition: IDefinition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null {
     return (this.instancesStore.getExisting(definition.id) as TValue) ?? null;
   }
 
   buildWithStrategy<TValue, TArgs extends any[]>(
-    definition: Definition<TValue, LifeTime, TArgs>,
+    definition: IDefinition<TValue, LifeTime, TArgs>,
     ...args: TArgs
   ): TValue {
     if (this._isDisposed) {
@@ -236,7 +236,7 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   private buildWithStrategyIntercepted<TValue, TArgs extends any[]>(
     currentInterceptor: IInterceptor<any>,
-    definition: Definition<TValue, LifeTime, TArgs>,
+    definition: IDefinition<TValue, LifeTime, TArgs>,
     ...args: TArgs
   ): TValue {
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
@@ -273,7 +273,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     throw new Error(`Unsupported strategy ${(definition as AnyDefinition).strategy}`);
   }
 
-  all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
+  all<TDefinitions extends Array<IDefinition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
     ...definitions: [...TDefinitions]
   ): ContainerAllReturn<TDefinitions> {
     const results = definitions.map(def => {
@@ -284,7 +284,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     return maybePromiseAll(results) as ContainerAllReturn<TDefinitions>;
   }
 
-  object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
+  object<TRecord extends Record<PropertyKey, IDefinition<any, any, []>>>(
     object: TRecord,
   ): ContainerObjectReturn<TRecord> {
     const entries = Object.entries(object);
@@ -312,26 +312,26 @@ export class Container extends ExtensibleFunction implements IContainer {
     }
   }
 
-  defer<TInstance, TArgs extends any[]>(factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>) {
+  defer<TInstance, TArgs extends any[]>(factoryDefinition: TransientDefinition<TInstance, TArgs>) {
     return (...args: TArgs): TInstance => {
       return this.call(factoryDefinition, ...args);
     };
   }
 }
 
-export function once<TInstance>(definition: Definition<TInstance, LifeTime, []>): TInstance;
+export function once<TInstance>(definition: IDefinition<TInstance, LifeTime, []>): TInstance;
 export function once<TInstance, TArgs extends any[]>(
-  definition: Definition<TInstance, LifeTime.transient, TArgs>,
+  definition: IDefinition<TInstance, LifeTime.transient, TArgs>,
   ...args: TArgs
 ): TInstance;
 export function once<TInstance, TArgs extends any[]>(
-  definition: Definition<TInstance, LifeTime, TArgs>,
+  definition: IDefinition<TInstance, LifeTime, TArgs>,
   ...args: TArgs
 ): TInstance {
-  return Container.root().call(definition as Definition<TInstance, LifeTime.transient, TArgs>, ...args);
+  return Container.root().call(definition as TransientDefinition<TInstance, TArgs>, ...args);
 }
 
-export const all = <TDefinitions extends Array<Definition<any, LifeTime, []>>>(
+export const all = <TDefinitions extends Array<IDefinition<any, LifeTime, []>>>(
   ...definitions: [...TDefinitions]
 ): ContainerAllReturn<TDefinitions> => {
   return Container.root().all(...definitions) as ContainerAllReturn<TDefinitions>;

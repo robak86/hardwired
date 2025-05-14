@@ -1,3 +1,5 @@
+export type { TransientDefinition } from './definitions/impl/TransientDefinition.js';
+
 export type { MaybePromise } from './utils/async.js';
 
 export type { Deferred } from './definitions/utils/Deferred.js';
@@ -48,4 +50,4 @@ export { ClassDefinition } from './definitions/impl/ClassDefinition.js';
 export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
 
-export type { AnyDefinition } from './definitions/abstract/IDefinition.js';
+export type { AnyDefinition, IDefinition } from './definitions/abstract/IDefinition.js';

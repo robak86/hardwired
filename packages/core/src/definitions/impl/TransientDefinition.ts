@@ -1,14 +1,14 @@
 import type { IContainer, NextValue } from '../../container/IContainer.js';
 import { LifeTime } from '../abstract/LifeTime.js';
 import { isThenable } from '../../utils/IsThenable.js';
+import type { IDefinition } from '../abstract/IDefinition.js';
 
 import { Definition } from './Definition.js';
 
-export class TransientDefinition<TInstance, TArgs extends unknown[]> extends Definition<
-  TInstance,
-  LifeTime.transient,
-  TArgs
-> {
+export class TransientDefinition<TInstance, TArgs extends unknown[]>
+  extends Definition<TInstance, LifeTime.transient, TArgs>
+  implements IDefinition<TInstance, LifeTime.transient, TArgs>
+{
   constructor(
     public readonly id: symbol,
     public readonly create: (context: IContainer, ...args: TArgs) => TInstance,

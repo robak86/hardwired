@@ -12,7 +12,7 @@ import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
-import type { AnyDefinition } from '../../definitions/abstract/IDefinition.js';
+import type { AnyDefinition, IDefinition } from '../../definitions/abstract/IDefinition.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
   constructor(
@@ -39,7 +39,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   }
 
   bindCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
-    definition: Definition<TInstance, TLifeTime, []>,
+    definition: IDefinition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []> {
     return new Binder<TInstance, TLifeTime, []>(
       definition,
