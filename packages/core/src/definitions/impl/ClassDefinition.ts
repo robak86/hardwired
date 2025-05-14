@@ -13,6 +13,14 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
 {
   private _hasOnlySyncDependencies = false; // flag for optimization, so we don't have to check every time
 
+  readonly $type!: Awaited<TInstance>;
+  readonly $p0!: never;
+  readonly $p1!: never;
+  readonly $p2!: never;
+  readonly $p3!: never;
+  readonly $p4!: never;
+  readonly $p5!: never;
+
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,

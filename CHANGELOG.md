@@ -1,4 +1,4 @@
-### 1.6.2
+### 1.6.3
 
 #### Features
 
@@ -18,6 +18,19 @@ const userWithAddress = createUser
     };
   })
   .flatMap(userWithAddress => insertData(userWithAddress));
+```
+
+### 1.6.2
+
+#### Features
+
+- add `definition.$type` and `definition.$p0-$p5` helpers for creating type aliases
+
+```typescript
+type DefResult = typeof def.$type; // number
+type DefInput = typeof def.$p0; // string
+
+const def = fn((use, input: string) => 123);
 ```
 
 ### 1.6.1
