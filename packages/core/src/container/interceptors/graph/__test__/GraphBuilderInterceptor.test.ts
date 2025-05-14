@@ -3,7 +3,7 @@ import { fn } from '../../../../definitions/fn.js';
 import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 import type { GraphNode } from '../GraphBuilderInterceptor.js';
 import { GraphBuilderInterceptor } from '../GraphBuilderInterceptor.js';
-import type { Definition } from '../../../../definitions/impl/Definition.js';
+import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 
 describe(`GraphBuildInterceptor`, () => {
   class SomeNode<T> implements GraphNode<T> {
@@ -11,7 +11,7 @@ describe(`GraphBuildInterceptor`, () => {
 
     constructor(
       readonly value: T,
-      readonly definition: Definition<T, any, any>,
+      readonly definition: IDefinition<T, any, any>,
       readonly children: GraphNode<any>[],
     ) {}
   }

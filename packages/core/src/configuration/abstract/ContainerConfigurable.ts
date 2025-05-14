@@ -1,8 +1,8 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { Definition } from '../../definitions/impl/Definition.js';
 import type { Binder } from '../Binder.js';
 import type { IContainer, UseFn } from '../../container/IContainer.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
+import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 
 export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
@@ -15,17 +15,17 @@ export interface ContainerConfigurable {
   onDispose(callback: (scope: IContainer) => void): void;
 
   bindCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
-    definition: Definition<TInstance, TLifeTime, []>,
+    definition: IDefinition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []>;
 
-  cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void;
+  cascade<TInstance>(definition: IDefinition<TInstance, LifeTime.scoped, []>): void;
 
   bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
+    definition: IDefinition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends any[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
+    definition: IDefinition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 
   init(initializer: InitFn): void;

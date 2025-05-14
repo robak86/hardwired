@@ -1,7 +1,7 @@
-import type { Definition } from '../definitions/impl/Definition.js';
 import type { IContainer } from '../container/IContainer.js';
 import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
+import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 
 import { isDisposable } from './InstancesMap.js';
 
@@ -42,7 +42,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, any, TArgs>,
+    definition: IDefinition<TInstance, any, TArgs>,
     container: IContainer,
     isCascadingInherited: boolean,
     ...args: TArgs
@@ -69,7 +69,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   upsertIntoRootInstances<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, any, TArgs>,
+    definition: IDefinition<TInstance, any, TArgs>,
     container: IContainer,
     ...args: TArgs
   ) {

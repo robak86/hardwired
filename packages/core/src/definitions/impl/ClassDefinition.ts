@@ -32,11 +32,11 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     }
   }
 
-  override(createFn: (context: IContainer) => TInstance): Definition<TInstance, TLifeTime, []> {
+  override(createFn: (context: IContainer) => TInstance): IDefinition<TInstance, TLifeTime, []> {
     return new Definition(this.id, this.strategy, createFn);
   }
 
-  bind(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, []> {
+  bind(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime, []> {
     return this.override(_use => {
       return container.buildWithStrategy(this);
     });
