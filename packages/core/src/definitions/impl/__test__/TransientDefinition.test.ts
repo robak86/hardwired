@@ -2,13 +2,28 @@ import { expectType } from 'ts-expect';
 import { describe } from 'vitest';
 
 import { fn } from '../../fn.js';
-import { Container, once } from '../../../container/Container.js';
+import { container, Container, once } from '../../../container/Container.js';
 import type { LifeTime } from '../../abstract/LifeTime.js';
 import type { Definition } from '../Definition.js';
 import type { IContainer } from '../../../container/IContainer.js';
 import type { TransientDefinition } from '../TransientDefinition.js';
 
 describe(`TransientDefinition`, () => {
+  describe(`bind`, () => {
+    it(`binds arguments`, async () => {
+      const a = fn((use, a: number) => a + 1).bind(123);
+
+      expect(a.call(container)).toEqual(124);
+    });
+
+    it(`binds to async`, async () => {
+      const a = fn(async (use, a: number) => a + 1).bind(123);
+      const result = await a.call(container);
+
+      expect(result).toEqual(124);
+    });
+  });
+
   describe(`map`, () => {
     describe(`sync`, () => {
       describe(`types`, () => {
@@ -283,7 +298,7 @@ describe(`TransientDefinition`, () => {
   });
 
   describe(`integration`, () => {
-    it(`provides features for ad hoc composition`, async () => {
+    it(`provides primitives for ad hoc composition`, async () => {
       const repo = fn(async () => {
         return {
           insertUser: async (user: UserParams) => user,

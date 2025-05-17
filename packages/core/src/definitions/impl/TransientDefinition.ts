@@ -16,6 +16,16 @@ export class TransientDefinition<TInstance, TArgs extends unknown[]>
     super(id, LifeTime.transient, create);
   }
 
+  call(container: IContainer, ...args: TArgs): TInstance {
+    return this.create(container, ...args);
+  }
+
+  bind(...args: TArgs): TransientDefinition<TInstance, []> {
+    return new TransientDefinition<TInstance, []>(this.id, (ctx): TInstance => {
+      return this.create(ctx, ...args);
+    });
+  }
+
   map<TNext>(
     fn: (instance: Awaited<TInstance>, use: IContainer<LifeTime.transient>) => TNext,
   ): TransientDefinition<NextValue<TInstance, TNext>, TArgs> {
