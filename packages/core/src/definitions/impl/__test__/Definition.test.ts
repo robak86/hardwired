@@ -51,7 +51,7 @@ describe(`Definition`, () => {
       const cnt1 = container.new();
       const cnt2 = container.new();
 
-      const bound = def.bind(cnt1);
+      const bound = def.bindToContainer(cnt1);
 
       bound.create(cnt2);
 

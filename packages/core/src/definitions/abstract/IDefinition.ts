@@ -20,5 +20,5 @@ export interface IDefinition<TInstance, TLifeTime extends LifeTime, TArgs extend
 
   override(createFn: (context: IContainer, ...args: TArgs) => TInstance): IDefinition<TInstance, TLifeTime, TArgs>;
 
-  bind(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime, TArgs>;
+  bindToContainer(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime, TArgs>;
 }

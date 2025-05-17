@@ -31,7 +31,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   }
 
   cascade<TInstance>(definition: Definition<TInstance, LifeTime.scoped, []>): void {
-    this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
+    this._bindingsRegistry.addCascadingBinding(definition.bindToContainer(this._currentContainer));
   }
 
   init(initializer: InitFn): void {
@@ -80,7 +80,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   };
 
   private _onCascadingInstantiableBind = (newDefinition: AnyDefinition) => {
-    this._bindingsRegistry.addCascadingBinding(newDefinition.bind(this._currentContainer));
+    this._bindingsRegistry.addCascadingBinding(newDefinition.bindToContainer(this._currentContainer));
   };
 
   private _onLocalStaticBind = (newDefinition: AnyDefinition) => {

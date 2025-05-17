@@ -26,7 +26,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   }
 
   cascade<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
-    this._bindingsRegistry.addCascadingBinding(definition.bind(this._currentContainer));
+    this._bindingsRegistry.addCascadingBinding(definition.bindToContainer(this._currentContainer));
   }
 
   bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
@@ -62,7 +62,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   };
 
   private _onCascadingInstantiableBind = (newDefinition: AnyDefinition) => {
-    this._bindingsRegistry.addCascadingBinding(newDefinition.bind(this._currentContainer));
+    this._bindingsRegistry.addCascadingBinding(newDefinition.bindToContainer(this._currentContainer));
   };
 
   private _onLocalStaticBind = (newDefinition: AnyDefinition) => {

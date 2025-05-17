@@ -37,7 +37,7 @@ export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends unk
    * the container will be used to resolve its dependencies.
    * @param container
    */
-  bind(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, TArgs> {
+  bindToContainer(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, TArgs> {
     return this.override((_use, ...args: TArgs) => {
       return container.buildWithStrategy(this, ...args);
     });

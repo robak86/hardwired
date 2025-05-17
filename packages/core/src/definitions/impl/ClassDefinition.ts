@@ -36,7 +36,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     return new Definition(this.id, this.strategy, createFn);
   }
 
-  bind(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime, []> {
+  bindToContainer(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime, []> {
     return this.override(_use => {
       return container.buildWithStrategy(this);
     });
