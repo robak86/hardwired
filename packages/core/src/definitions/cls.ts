@@ -21,10 +21,6 @@ export type ConstructorArgsDefinitions<T extends any[], TCurrentLifeTime extends
   [K in keyof T]: IDefinition<T[K] | Promise<T[K]>, ValidDependenciesLifeTime<TCurrentLifeTime>, []>;
 };
 
-export type Callable<TInstance, TArgs extends any[]> = {
-  call(...args: TArgs): TInstance;
-};
-
 export const cls = {
   transient: <
     TInstance,
