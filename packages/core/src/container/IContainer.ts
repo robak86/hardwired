@@ -63,9 +63,6 @@ export type NewScopeReturnType<
     ? Promise<IContainer<TAllowedLifeTime>>
     : IContainer<TAllowedLifeTime>;
 
-export type ApplyReturnType<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>> =
-  HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<void> : void;
-
 export type ContainerAllReturn<TDefinitions extends Array<IDefinition<any, ValidDependenciesLifeTime<LifeTime>, []>>> =
   HasPromise<InstancesArray<TDefinitions>> extends true
     ? Promise<AwaitedInstanceArray<TDefinitions>>
