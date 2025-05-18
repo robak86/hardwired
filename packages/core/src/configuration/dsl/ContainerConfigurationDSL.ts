@@ -15,6 +15,8 @@ import type { InterceptorsRegistry } from '../../container/interceptors/Intercep
 import type { AnyDefinition, IDefinition } from '../../definitions/abstract/IDefinition.js';
 
 export class ContainerConfigurationDSL implements ContainerConfigurable {
+  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.singleton];
+
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private _currentContainer: IContainer & IStrategyAware,
@@ -43,6 +45,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   ): Binder<TInstance, TLifeTime, []> {
     return new Binder<TInstance, TLifeTime, []>(
       definition,
+      this._allowedLifeTimes,
       this._onCascadingStaticBind,
       this._onCascadingInstantiableBind,
     );
@@ -51,11 +54,12 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends unknown[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
-    if ((definition.strategy as LifeTime) === LifeTime.singleton) {
-      throw new Error(`Singleton is not allowed for local bindings.`);
-    }
-
-    return new Binder<TInstance, TLifeTime, TArgs>(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
+    return new Binder<TInstance, TLifeTime, TArgs>(
+      definition,
+      this._allowedLifeTimes,
+      this._onLocalStaticBind,
+      this._onLocalInstantiableBind,
+    );
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
@@ -63,6 +67,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
   ): Binder<TInstance, TLifeTime, TArgs> {
     return new Binder<TInstance, TLifeTime, TArgs>(
       definition,
+      this._allowedLifeTimes,
       this._onFrozenStaticBind,
       this._onFrozenInstantiableBind,
     );

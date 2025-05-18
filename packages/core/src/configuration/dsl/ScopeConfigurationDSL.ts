@@ -6,8 +6,11 @@ import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstr
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import type { AnyDefinition } from '../../definitions/abstract/IDefinition.js';
+import { UnboundDefinition } from '../../definitions/unbound.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
+  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient];
+
   constructor(
     private _currentContainer: IContainer & IStrategyAware,
     private _bindingsRegistry: BindingsRegistry,
@@ -32,12 +35,15 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     definition: Definition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []> {
-    if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
-      throw new Error(`Cascading is allowed only for scoped.`);
+    if (!(definition instanceof UnboundDefinition)) {
+      if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
+        throw new Error(`Cascading is allowed only for scoped.`);
+      }
     }
 
     return new Binder<TInstance, TLifeTime, []>(
       definition,
+      this._allowedLifeTimes,
       this._onCascadingStaticBind,
       this._onCascadingInstantiableBind,
     );
@@ -54,7 +60,12 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
       throw new Error(`Binding singletons in for child scopes is not allowed.`);
     }
 
-    return new Binder<TInstance, TLifeTime, TArgs>(definition, this._onLocalStaticBind, this._onLocalInstantiableBind);
+    return new Binder<TInstance, TLifeTime, TArgs>(
+      definition,
+      this._allowedLifeTimes,
+      this._onLocalStaticBind,
+      this._onLocalInstantiableBind,
+    );
   }
 
   private _onCascadingStaticBind = (newDefinition: AnyDefinition) => {

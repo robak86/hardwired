@@ -12,13 +12,14 @@ function executeUnboundDefinition(debugName?: string): never {
   );
 }
 
-export class UnboundDefinition<TInstance, TLifeTime extends LifeTime> extends Definition<TInstance, TLifeTime, []> {
+export class UnboundDefinition<TInstance> extends Definition<TInstance, LifeTime, []> {
+  public readonly kind!: 'unbound'; // TODO: hack to make it distinguishable from other definitions
+
   constructor(
     id: symbol,
-    strategy: TLifeTime,
     private _debugName?: string,
   ) {
-    super(id, strategy, executeUnboundDefinition.bind(null, _debugName));
+    super(id, LifeTime.scoped, executeUnboundDefinition.bind(null, _debugName));
   }
 
   get name() {
@@ -26,6 +27,6 @@ export class UnboundDefinition<TInstance, TLifeTime extends LifeTime> extends De
   }
 }
 
-export function unbound<T>(debugName?: string): UnboundDefinition<T, LifeTime.scoped> {
-  return new UnboundDefinition<T, LifeTime.scoped>(Symbol(), LifeTime.scoped, debugName);
+export function unbound<T>(debugName?: string): UnboundDefinition<T> {
+  return new UnboundDefinition<T>(Symbol(), debugName);
 }

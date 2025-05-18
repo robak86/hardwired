@@ -2,6 +2,7 @@ import type { Definition } from '../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { Binder } from '../Binder.js';
 import type { IContainer } from '../../container/IContainer.js';
+import type { UnboundDefinition } from '../../definitions/unbound.js';
 
 import type { InitFn } from './ContainerConfigurable.js';
 
@@ -10,12 +11,16 @@ export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scope
 export interface ScopeConfigurable {
   onDispose(callback: (scope: IContainer) => void): void;
 
+  bind<Instance>(definition: UnboundDefinition<Instance>): Binder<Instance, LifeTime.transient | LifeTime.scoped, []>;
   bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 
   onInit(initializer: InitFn): void;
 
+  bindCascading<TInstance>(
+    definition: UnboundDefinition<TInstance>,
+  ): Binder<TInstance, LifeTime.transient | LifeTime.scoped, []>;
   bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     definition: Definition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []>;

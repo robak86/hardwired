@@ -194,7 +194,12 @@ export class Container extends ExtensibleFunction implements IContainer {
       this.bindingsRegistry.addFrozenBinding(definition);
     };
 
-    return new Binder<TInstance, TLifeTime, TArgs>(definition, bind, bind);
+    return new Binder<TInstance, TLifeTime, TArgs>(
+      definition,
+      [LifeTime.singleton, LifeTime.transient, LifeTime.scoped],
+      bind,
+      bind,
+    );
   }
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {

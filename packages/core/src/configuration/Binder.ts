@@ -23,11 +23,13 @@ export type AssertAsyncCompatible<TConfigureFn extends (...args:any) => any, TIn
 export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> {
   /**
    * @param _definition
+   * @param _allowedLifeTimes
    * @param _onStaticBind - used for binding static values (without factory function) that doesn't need to be bound to container in case of cascading
    * @param _onInstantiableBind - used for binding values that need to be bound to container in case of cascading
    */
   constructor(
     private _definition: Definition<TInstance, TLifeTime, TArgs>,
+    private _allowedLifeTimes: LifeTime[],
     private _onStaticBind: (newDefinition: Definition<TInstance, TLifeTime, TArgs>) => void,
     private _onInstantiableBind: (newDefinition: Definition<TInstance, TLifeTime, TArgs>) => void,
   ) {}
@@ -42,6 +44,12 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
    * @param otherDefinition
    */
   to(otherDefinition: Definition<TInstance, TLifeTime, TArgs>) {
+    if (!this._allowedLifeTimes.includes(otherDefinition.strategy)) {
+      throw new Error(
+        `Cannot bind definition to ${otherDefinition.strategy} - only ${this._allowedLifeTimes.join(', ')} are allowed`,
+      );
+    }
+
     const definition = new Definition(
       this._definition.id,
       otherDefinition.strategy,
