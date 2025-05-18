@@ -17,7 +17,8 @@ import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import { Binder } from '../configuration/Binder.js';
 import { TransientDefinition } from '../definitions/impl/TransientDefinition.js';
-import type { CallableDefinition, ObjectCallable } from '../definitions/callableDefinition.js';
+import type { CallableDefinition, CallableObject } from '../definitions/CallableDefinition.js';
+import { isCallable } from '../definitions/CallableDefinition.js';
 import { ClassDefinition } from '../definitions/impl/ClassDefinition.js';
 
 import type {
@@ -72,16 +73,16 @@ export class Container extends ExtensibleFunction implements IContainer {
     );
   }
 
-  callNew<TResult, TArgs extends any[]>(callable: CallableDefinition<TArgs, TResult>, ...args: TArgs): TResult {
+  call<TResult, TArgs extends any[]>(callable: CallableDefinition<TArgs, TResult>, ...args: TArgs): TResult {
     if (typeof callable === 'function') {
       return callable.call(this, ...args);
     }
 
     if (callable instanceof ClassDefinition) {
-      const instance = this.use(callable) as MaybePromise<ObjectCallable<TArgs, TResult>>;
+      const instance = this.use(callable) as MaybePromise<CallableObject<TArgs, TResult>>;
 
       if (isThenable(instance)) {
-        return instance.then((instance: ObjectCallable<TArgs, TResult>) => {
+        return instance.then((instance: CallableObject<TArgs, TResult>) => {
           return instance.call(...args);
         }) as TResult;
       }
@@ -95,7 +96,7 @@ export class Container extends ExtensibleFunction implements IContainer {
       return this.buildWithStrategy(patchedDefinition, ...args) as TResult;
     }
 
-    throw new Error(`Unsupported callable definition type`);
+    return this.use(callable) as TResult;
   }
 
   dispose() {
@@ -215,12 +216,6 @@ export class Container extends ExtensibleFunction implements IContainer {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition);
-  }
-
-  call<TValue, TArgs extends any[]>(definition: TransientDefinition<TValue, TArgs>, ...args: TArgs): TValue {
-    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
-
-    return this.buildWithStrategy(patchedDefinition, ...args);
   }
 
   /**
@@ -357,7 +352,11 @@ export function once<TInstance, TArgs extends any[]>(
   definition: IDefinition<TInstance, LifeTime, TArgs>,
   ...args: TArgs
 ): TInstance {
-  return Container.root().call(definition as TransientDefinition<TInstance, TArgs>, ...args);
+  if (isCallable<TArgs, TInstance>(definition)) {
+    return Container.root().call(definition, ...args);
+  } else {
+    return Container.root().use(definition as unknown as IDefinition<TInstance, LifeTime, []>);
+  }
 }
 
 export const all = <TDefinitions extends Array<IDefinition<any, LifeTime, []>>>(

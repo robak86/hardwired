@@ -11,9 +11,8 @@ import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/S
 import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import type { Binder } from '../configuration/Binder.js';
-import type { TransientDefinition } from '../definitions/impl/TransientDefinition.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { CallableDefinition } from '../definitions/callableDefinition.js';
+import type { CallableDefinition } from '../definitions/CallableDefinition.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
 
@@ -37,13 +36,7 @@ export interface IContainerConfigurationAware {
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>): TValue;
 
-  call<TValue, TArgs extends any[]>(instanceDefinition: TransientDefinition<TValue, TArgs>, ...args: TArgs): TValue;
-  call<TValue, TArgs extends any[]>(
-    instanceDefinition: IDefinition<TValue, LifeTime.transient, []>,
-    ...args: TArgs
-  ): TValue;
-
-  callNew<TResult, TArgs extends any[]>(def: CallableDefinition<TArgs, TResult>, ...args: TArgs): TResult;
+  call<TResult, TArgs extends any[]>(def: CallableDefinition<TArgs, TResult>, ...args: TArgs): TResult;
 
   useExisting<TValue>(definition: IDefinition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null;
 

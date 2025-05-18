@@ -83,7 +83,7 @@ describe(`decorate`, () => {
     const b = value(2);
 
     const someValue = fn.scoped(use => {
-      return use.call(a) + use.call(b);
+      return use(a) + use(b);
     });
 
     const c = container.new(c => {

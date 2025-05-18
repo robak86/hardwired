@@ -16,7 +16,7 @@ describe(`ClassTransientResolver`, () => {
     const someValue = value('someString');
 
     const a = fn(use => {
-      return new TestClass(use.call(someValue));
+      return new TestClass(use(someValue));
     });
 
     it(`returns class instance`, async () => {

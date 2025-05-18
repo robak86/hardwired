@@ -5,6 +5,7 @@ import { isThenable } from '../../utils/IsThenable.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { InstancesDefinitions } from '../abstract/InstanceDefinition.js';
 import type { AnyDefinition, IDefinition } from '../abstract/IDefinition.js';
+import type { CallableObject } from '../CallableDefinition.js';
 
 import { Definition } from './Definition.js';
 
@@ -40,6 +41,10 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     return this.override(_use => {
       return container.buildWithStrategy(this);
     });
+  }
+
+  isCallable(): this is ClassDefinition<CallableObject<unknown[], unknown>, TLifeTime, TConstructorArgs> {
+    return Object.prototype.hasOwnProperty.call(this._class.prototype, 'call');
   }
 
   create(use: IContainer): TInstance {
