@@ -12,10 +12,13 @@ import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDS
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
 import { isThenable } from '../utils/IsThenable.js';
 import type { AnyDefinition, IDefinition } from '../definitions/abstract/IDefinition.js';
+import type { MaybePromise } from '../utils/async.js';
 import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import { Binder } from '../configuration/Binder.js';
-import type { TransientDefinition } from '../definitions/impl/TransientDefinition.js';
+import { TransientDefinition } from '../definitions/impl/TransientDefinition.js';
+import type { CallableDefinition, ObjectCallable } from '../definitions/callableDefinition.js';
+import { ClassDefinition } from '../definitions/impl/ClassDefinition.js';
 
 import type {
   ContainerAllReturn,
@@ -67,6 +70,32 @@ export class Container extends ExtensibleFunction implements IContainer {
         return this.use(definition);
       },
     );
+  }
+
+  callNew<TResult, TArgs extends any[]>(callable: CallableDefinition<TArgs, TResult>, ...args: TArgs): TResult {
+    if (typeof callable === 'function') {
+      return callable.call(this, ...args);
+    }
+
+    if (callable instanceof ClassDefinition) {
+      const instance = this.use(callable) as MaybePromise<ObjectCallable<TArgs, TResult>>;
+
+      if (isThenable(instance)) {
+        return instance.then((instance: ObjectCallable<TArgs, TResult>) => {
+          return instance.call(...args);
+        }) as TResult;
+      }
+
+      return instance.call(...args);
+    }
+
+    if (callable instanceof TransientDefinition) {
+      const patchedDefinition = this.bindingsRegistry.getDefinition(callable);
+
+      return this.buildWithStrategy(patchedDefinition, ...args) as TResult;
+    }
+
+    throw new Error(`Unsupported callable definition type`);
   }
 
   dispose() {
