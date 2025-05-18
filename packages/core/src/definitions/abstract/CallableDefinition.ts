@@ -1,11 +1,12 @@
-import type { IContainer } from '../container/IContainer.js';
+import type { IContainer } from '../../container/IContainer.js';
+import { ClassDefinition } from '../impl/ClassDefinition.js';
+import { TransientDefinition } from '../impl/TransientDefinition.js';
 
-import type { LifeTime } from './abstract/LifeTime.js';
-import { ClassDefinition } from './impl/ClassDefinition.js';
-import { TransientDefinition } from './impl/TransientDefinition.js';
+import type { LifeTime } from './LifeTime.js';
+import type { IDefinition } from './IDefinition.js';
 
 export type CallableDefinition<TArgs extends any[], TResult> =
-  | ClassDefinition<CallableObject<TArgs, TResult>, LifeTime.transient, TArgs>
+  | IDefinition<CallableObject<TArgs, TResult>, LifeTime.transient, any>
   | TransientDefinition<TResult, TArgs>
   | CallableFn<TArgs, TResult>;
 

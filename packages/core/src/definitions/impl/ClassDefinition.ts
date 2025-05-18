@@ -5,7 +5,7 @@ import { isThenable } from '../../utils/IsThenable.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { InstancesDefinitions } from '../abstract/InstanceDefinition.js';
 import type { AnyDefinition, IDefinition } from '../abstract/IDefinition.js';
-import type { CallableObject } from '../CallableDefinition.js';
+import type { CallableObject } from '../abstract/CallableDefinition.js';
 
 import { Definition } from './Definition.js';
 

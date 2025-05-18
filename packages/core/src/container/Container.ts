@@ -17,8 +17,8 @@ import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import { Binder } from '../configuration/Binder.js';
 import { TransientDefinition } from '../definitions/impl/TransientDefinition.js';
-import type { CallableDefinition, CallableObject } from '../definitions/CallableDefinition.js';
-import { isCallable } from '../definitions/CallableDefinition.js';
+import type { CallableDefinition, CallableObject } from '../definitions/abstract/CallableDefinition.js';
+import { isCallable } from '../definitions/abstract/CallableDefinition.js';
 import { ClassDefinition } from '../definitions/impl/ClassDefinition.js';
 
 import type {
@@ -343,13 +343,18 @@ export class Container extends ExtensibleFunction implements IContainer {
   }
 }
 
+export function once<TInstance, TArgs extends any[]>(
+  callable: CallableDefinition<TArgs, TInstance>,
+  ...args: TArgs
+): TInstance;
 export function once<TInstance>(definition: IDefinition<TInstance, LifeTime, []>): TInstance;
 export function once<TInstance, TArgs extends any[]>(
   definition: IDefinition<TInstance, LifeTime.transient, TArgs>,
   ...args: TArgs
 ): TInstance;
+
 export function once<TInstance, TArgs extends any[]>(
-  definition: IDefinition<TInstance, LifeTime, TArgs>,
+  definition: IDefinition<TInstance, LifeTime, TArgs> | CallableDefinition<TArgs, TInstance>,
   ...args: TArgs
 ): TInstance {
   if (isCallable<TArgs, TInstance>(definition)) {

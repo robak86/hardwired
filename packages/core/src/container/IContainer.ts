@@ -12,7 +12,7 @@ import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import type { Binder } from '../configuration/Binder.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { CallableDefinition } from '../definitions/CallableDefinition.js';
+import type { CallableDefinition } from '../definitions/abstract/CallableDefinition.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
 
