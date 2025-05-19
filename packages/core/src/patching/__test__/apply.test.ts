@@ -117,7 +117,7 @@ describe(`apply`, () => {
       const cnt = container.new(c => {
         // @ts-expect-error - async function for non async definition
 
-        c.bind(a).toConfigured(async val => {
+        c.override(a).toConfigured(async val => {
           val.value += 1;
         });
       });

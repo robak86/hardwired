@@ -55,7 +55,7 @@ describe(`decorate`, () => {
 
     const c = container.new(c => {
       //@ts-expect-error - cannot return Promise<number> for number (due to async function)
-      c.bind(someValue).toDecorated(async val => val + 1);
+      c.override(someValue).toDecorated(async val => val + 1);
     });
 
     expect(() => c.use(someValue)).toThrowError();

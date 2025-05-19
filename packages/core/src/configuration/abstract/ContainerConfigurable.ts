@@ -3,6 +3,7 @@ import type { Binder } from '../Binder.js';
 import type { IContainer, UseFn } from '../../container/IContainer.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
+import type { UnboundDefinition } from '../../definitions/unbound.js';
 
 export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
@@ -23,6 +24,11 @@ export interface ContainerConfigurable {
   override<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: IDefinition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
+
+  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes>(
+    unboundDef: UnboundDefinition<TInstance, TLifeTime>,
+    def: IDefinition<TInstance, TLifeTime, []>,
+  ): void;
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends any[]>(
     definition: IDefinition<TInstance, TLifeTime, TArgs>,
