@@ -17,7 +17,7 @@ describe('ScopeConfiguration', () => {
       const root = container.new();
 
       const childContainer = root.scope((scope, use) => {
-        scope.bind(compositionRoot).toRedefined(_ => use(compositionRoot));
+        scope.override(compositionRoot).toRedefined(_ => use(compositionRoot));
       });
 
       // First, get the value from the child container, to check if the value will "propagate" to parent
@@ -47,7 +47,7 @@ describe('ScopeConfiguration', () => {
         container.new(c => {
           try {
             // @ts-expect-error - inheritFrom is not available for the container configuration
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
             c.bind(fn.scoped(() => 1)).toInheritedFrom(null);
           } catch (e) {
             // noop

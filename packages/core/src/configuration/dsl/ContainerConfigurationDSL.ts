@@ -51,7 +51,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     );
   }
 
-  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends unknown[]>(
+  override<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends unknown[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs> {
     return new Binder<TInstance, TLifeTime, TArgs>(

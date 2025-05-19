@@ -33,7 +33,7 @@ describe(`unbound`, () => {
             const singletonNumber = fn.singleton(() => crypto.randomUUID());
 
             const configure = configureContainer(c => {
-              c.bind(unboundDefinition).to(singletonNumber);
+              c.override(unboundDefinition).to(singletonNumber);
             });
 
             const cnt = container.new(configure);
@@ -71,7 +71,7 @@ describe(`unbound`, () => {
 
         const configure = configureContainer(c => {
           // bind only for the current scope
-          c.bind(unboundDefinition).toRedefined(() => crypto.randomUUID());
+          c.override(unboundDefinition).toRedefined(() => crypto.randomUUID());
         });
 
         const cnt = container.new(configure);
@@ -89,7 +89,7 @@ describe(`unbound`, () => {
 
         const redefinedSpy = vi.fn(() => 2);
 
-        const cnt = container.new(c => c.bind(def).toRedefined(redefinedSpy));
+        const cnt = container.new(c => c.override(def).toRedefined(redefinedSpy));
         const cntResult = cnt.use(def);
 
         const scope = cnt.scope();

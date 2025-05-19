@@ -48,7 +48,7 @@ describe(`unbound`, () => {
       const cnt = container.new();
       const result = cnt
         .scope(c => {
-          c.bind(externalParams1D).toValue({ someExternalParam: 111 });
+          c.override(externalParams1D).toValue({ someExternalParam: 111 });
         })
         .use(defUsingExternals1);
 
@@ -60,8 +60,8 @@ describe(`unbound`, () => {
       const cnt = container.new();
       const result = cnt
         .scope(c => {
-          c.bind(externalParams1D).toValue({ someExternalParam: 111 });
-          c.bind(externalParams2D).toValue({ otherExternalParam: 456 });
+          c.override(externalParams1D).toValue({ someExternalParam: 111 });
+          c.override(externalParams2D).toValue({ otherExternalParam: 456 });
         })
         .use(defUsingBothExternals);
 

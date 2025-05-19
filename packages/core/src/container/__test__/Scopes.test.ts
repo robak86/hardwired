@@ -31,7 +31,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bind(def).toValue(2));
+            const l2 = l1.scope(scope => scope.override(def).toValue(2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -41,7 +41,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bind(def).toDecorated(() => 2));
+            const l2 = l1.scope(scope => scope.override(def).toDecorated(() => 2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -51,7 +51,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bind(def).toDecorated(() => 2));
+            const l2 = l1.scope(scope => scope.override(def).toDecorated(() => 2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -63,7 +63,7 @@ describe(`Scopes`, () => {
 
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bind(def).to(def2));
+            const l2 = l1.scope(scope => scope.override(def).to(def2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -131,7 +131,7 @@ describe(`Scopes`, () => {
     describe('bind', () => {
       it(`binds definition for all descendant scopes, but each scope keeps its own instance`, async () => {
         const def = fn.scoped(() => new BoxedValue('original'));
-        const root = container.new(scope => scope.bind(def).toRedefined(() => new BoxedValue('root')));
+        const root = container.new(scope => scope.override(def).toRedefined(() => new BoxedValue('root')));
         const l1 = root.scope();
         const l2 = l1.scope();
 
@@ -152,11 +152,11 @@ describe(`Scopes`, () => {
         });
 
         const root = container.new(scope => {
-          scope.bind(def).toValue(1);
+          scope.override(def).toValue(1);
           scope.overrideCascading(consumer).toValue(2);
         });
-        const l1 = root.scope(scope => scope.bind(def).toValue(10));
-        const l2 = l1.scope(scope => scope.bind(def).toValue(100));
+        const l1 = root.scope(scope => scope.override(def).toValue(10));
+        const l2 = l1.scope(scope => scope.override(def).toValue(100));
         const l3 = l2.scope();
 
         const l3Consumer = l3.use(consumer);
@@ -182,7 +182,7 @@ describe(`Scopes`, () => {
 
           const l1 = root.scope();
           const l2 = l1.scope(scope => {
-            scope.bind(dep).toValue('l2');
+            scope.override(dep).toValue('l2');
           });
 
           expect(l2.use(dep)).toEqual('l2');
@@ -194,11 +194,11 @@ describe(`Scopes`, () => {
           const consumerReplacement = fn.scoped(use => use(dep) + '_consumer_replacement');
 
           const root = container.new(scope => {
-            scope.bind(dep).toValue('root');
+            scope.override(dep).toValue('root');
             scope.overrideCascading(consumer).to(consumerReplacement);
           });
           const l1 = root.scope(scope => {
-            scope.bind(dep).toValue('l1');
+            scope.override(dep).toValue('l1');
           });
 
           const l1Consumer = l1.use(consumer);
@@ -217,16 +217,16 @@ describe(`Scopes`, () => {
           const consumerReplacementV2 = fn.scoped(use => new BoxedValue(use(dep).value + '_consumer_replacement_v2'));
 
           const root = container.new(scope => {
-            scope.bind(dep).toRedefined(() => new BoxedValue('root'));
+            scope.override(dep).toRedefined(() => new BoxedValue('root'));
             scope.overrideCascading(consumer).to(consumerReplacementV1);
           });
 
           const l1 = root.scope(scope => {
-            scope.bind(dep).toRedefined(() => new BoxedValue('l1'));
+            scope.override(dep).toRedefined(() => new BoxedValue('l1'));
           });
 
           const l2 = l1.scope(scope => {
-            scope.bind(dep).toRedefined(() => new BoxedValue('l2'));
+            scope.override(dep).toRedefined(() => new BoxedValue('l2'));
             scope.overrideCascading(consumer).to(consumerReplacementV2);
           });
 
@@ -264,11 +264,11 @@ describe(`Scopes`, () => {
           const consumer = fn.scoped(use => use(dep));
 
           const root = container.new(scope => {
-            scope.bind(dep).toValue('root');
+            scope.override(dep).toValue('root');
             scope.overrideCascading(consumer).toDecorated(val => val + '_consumer_replacement');
           });
           const l1 = root.scope(scope => {
-            scope.bind(dep).toValue('l1');
+            scope.override(dep).toValue('l1');
           });
 
           const l1Consumer = l1.use(consumer);
@@ -285,16 +285,16 @@ describe(`Scopes`, () => {
           const consumer = fn.scoped(use => use(dep));
 
           const root = container.new(scope => {
-            scope.bind(dep).toValue('root');
+            scope.override(dep).toValue('root');
             scope.overrideCascading(consumer).toDecorated(val => val + '_consumer_replacement_v1');
           });
 
           const l1 = root.scope(scope => {
-            scope.bind(dep).toValue('l1');
+            scope.override(dep).toValue('l1');
           });
 
           const l2 = l1.scope(scope => {
-            scope.bind(dep).toValue('l2');
+            scope.override(dep).toValue('l2');
             scope.overrideCascading(consumer).toDecorated(val => val + '_consumer_replacement_v2');
           });
 
@@ -328,13 +328,13 @@ describe(`Scopes`, () => {
           const consumer = fn.scoped(use => use(dep));
 
           const root = container.new(scope => {
-            scope.bind(dep).toValue(new BoxedValue('root'));
+            scope.override(dep).toValue(new BoxedValue('root'));
             scope.overrideCascading(consumer).toConfigured(val => {
               val.value = val.value + '_consumer_replacement';
             });
           });
           const l1 = root.scope(scope => {
-            scope.bind(dep).toValue(new BoxedValue('l1'));
+            scope.override(dep).toValue(new BoxedValue('l1'));
           });
 
           const l1Consumer = l1.use(consumer);
@@ -351,18 +351,18 @@ describe(`Scopes`, () => {
           const consumer = fn.scoped(use => use(dep));
 
           const root = container.new(scope => {
-            scope.bind(dep).toValue(new BoxedValue('root'));
+            scope.override(dep).toValue(new BoxedValue('root'));
             scope.overrideCascading(consumer).toConfigured(val => {
               val.value = val.value + '_consumer_replacement_v1';
             });
           });
 
           const l1 = root.scope(scope => {
-            scope.bind(dep).toValue(new BoxedValue('l1'));
+            scope.override(dep).toValue(new BoxedValue('l1'));
           });
 
           const l2 = l1.scope(scope => {
-            scope.bind(dep).toValue(new BoxedValue('l2'));
+            scope.override(dep).toValue(new BoxedValue('l2'));
             scope.overrideCascading(consumer).toConfigured(val => {
               val.value = val.value + '_consumer_replacement_v2';
             });
@@ -400,7 +400,7 @@ describe(`Scopes`, () => {
         const def = fn.scoped(() => 'original');
         const l1Creator = fn.scoped(use => {
           const configure = configureScope(scope => {
-            scope.bind(def).toValue('l1');
+            scope.override(def).toValue('l1');
           });
 
           const scope = use.scope(configure);

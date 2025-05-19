@@ -126,11 +126,11 @@ describe(`ContainerScope`, () => {
       };
 
       const scope1Config = useScopeConfig(scope => {
-        scope.bind(baseD).toValue(10);
+        scope.override(baseD).toValue(10);
       });
 
       const scope2Config = useScopeConfig(scope => {
-        scope.bind(baseD).toValue(100);
+        scope.override(baseD).toValue(100);
       });
 
       const TestSubject = () => (

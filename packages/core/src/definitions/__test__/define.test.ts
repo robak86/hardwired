@@ -29,8 +29,8 @@ describe(`define`, () => {
       const result = container
         .new()
         .scope(c => {
-          c.bind(ext1).toValue(1);
-          c.bind(ext2).toValue('str');
+          c.override(ext1).toValue(1);
+          c.override(ext2).toValue('str');
         })
         .use(definition);
 

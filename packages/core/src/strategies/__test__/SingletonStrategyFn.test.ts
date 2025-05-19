@@ -97,7 +97,7 @@ describe(`SingletonStrategy`, () => {
         const override = fn.scoped(overrideSpy);
 
         const root = container.new(scope => {
-          scope.bind(a).to(override);
+          scope.override(a).to(override);
         });
 
         expect(root.use(a)).toEqual(0);
@@ -141,7 +141,7 @@ describe(`SingletonStrategy`, () => {
         });
 
         const child = root.scope(scope => {
-          scope.bind(a).toValue(1);
+          scope.override(a).toValue(1);
         });
 
         const childA = child.use(a);

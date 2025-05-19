@@ -10,7 +10,7 @@ export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scope
 export interface ScopeConfigurable {
   onDispose(callback: (scope: IContainer) => void): void;
 
-  bind<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
+  override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
     definition: Definition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 

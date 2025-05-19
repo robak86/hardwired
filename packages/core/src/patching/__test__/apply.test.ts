@@ -13,7 +13,7 @@ describe(`apply`, () => {
     const someValue = fn.scoped(() => new BoxedValue(1));
 
     const config = configureContainer(c => {
-      c.bind(someValue).toConfigured(val => {
+      c.override(someValue).toConfigured(val => {
         val.value += 1;
       });
     });
@@ -29,7 +29,7 @@ describe(`apply`, () => {
     expect(container.new().use(someValue).value).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bind(someValue).toConfigured(val => {
+      c.override(someValue).toConfigured(val => {
         val.value += 1;
       });
     });
@@ -42,10 +42,10 @@ describe(`apply`, () => {
 
     expect(() => {
       container.new(c => {
-        c.bind(someValue).toConfigured(val => {
+        c.override(someValue).toConfigured(val => {
           val.value += 1;
         });
-        c.bind(someValue).toConfigured(val => {
+        c.override(someValue).toConfigured(val => {
           val.value *= 3;
         });
       });
@@ -58,7 +58,7 @@ describe(`apply`, () => {
     const someValue = value(new BoxedValue(10));
 
     const c = container.new(c => {
-      c.bind(someValue).toConfigured((val, use) => {
+      c.override(someValue).toConfigured((val, use) => {
         const aVal = use(a);
         const bVal = use(b);
 
@@ -78,7 +78,7 @@ describe(`apply`, () => {
     });
 
     const c = container.new(c => {
-      c.bind(someValue).toConfigured((val, use) => {
+      c.override(someValue).toConfigured((val, use) => {
         val.value = val.value * use(b).value;
       });
     });
@@ -90,7 +90,7 @@ describe(`apply`, () => {
     const a = fn.scoped(async () => new BoxedValue(1));
 
     const c = container.new(c => {
-      c.bind(a).toConfigured(val => {
+      c.override(a).toConfigured(val => {
         val.value += 1;
       });
     });
@@ -102,7 +102,7 @@ describe(`apply`, () => {
     const a = fn.scoped(async () => new BoxedValue(1));
 
     const c = container.new(c => {
-      c.bind(a).toConfigured(async val => {
+      c.override(a).toConfigured(async val => {
         val.value += 1;
       });
     });
@@ -116,7 +116,7 @@ describe(`apply`, () => {
     expect(() => {
       const cnt = container.new(c => {
         // @ts-expect-error - async function for non async definition
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+
         c.bind(a).toConfigured(async val => {
           val.value += 1;
         });
@@ -131,7 +131,7 @@ describe(`apply`, () => {
       const someValue = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(someValue).toConfigured((use, a) => {});
+        c.override(someValue).toConfigured((use, a) => {});
       });
 
       expect(c.use(someValue)).toEqual(c.use(someValue));
@@ -141,7 +141,7 @@ describe(`apply`, () => {
       const someValue = fn(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(someValue).toConfigured((use, a) => {});
+        c.override(someValue).toConfigured((use, a) => {});
       });
 
       expect(c.use(someValue)).not.toEqual(c.use(someValue));
@@ -154,7 +154,7 @@ describe(`apply`, () => {
       });
 
       const c = container.new(c => {
-        c.bind(a).toConfigured((use, a) => {});
+        c.override(a).toConfigured((use, a) => {});
       });
 
       const objDef = fn.scoped(use => ({
@@ -180,7 +180,7 @@ describe(`apply`, () => {
       });
 
       const scope2 = scope1.scope(scope => {
-        scope.bind(instanceDef).toValue({ callMe: () => {} });
+        scope.override(instanceDef).toValue({ callMe: () => {} });
       });
 
       const instance1 = scope1.use(instanceDef);

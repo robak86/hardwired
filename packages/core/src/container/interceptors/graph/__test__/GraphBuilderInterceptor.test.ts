@@ -82,7 +82,7 @@ describe(`GraphBuildInterceptor`, () => {
         expect(rootValue).toEqual(1);
 
         const childScope = cnt.scope(c => {
-          return c.bind(def).toValue(123);
+          return c.override(def).toValue(123);
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
@@ -194,7 +194,7 @@ describe(`GraphBuildInterceptor`, () => {
         expect(rootValue).toEqual(1);
 
         const childScope = await cnt.scope(async c => {
-          return c.bind(def).toValue(123);
+          return c.override(def).toValue(123);
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;

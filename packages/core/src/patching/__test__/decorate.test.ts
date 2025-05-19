@@ -12,7 +12,7 @@ describe(`decorate`, () => {
     const someValue = value(1);
 
     const c = container.new(c => {
-      c.bind(someValue).toDecorated(val => val + 1);
+      c.override(someValue).toDecorated(val => val + 1);
     });
 
     expect(c.use(someValue)).toEqual(2);
@@ -24,7 +24,7 @@ describe(`decorate`, () => {
     expect(container.new().use(someValue)).toEqual(1);
 
     const cnt = container.new(c => {
-      c.bind(someValue).toDecorated(val => val + 1);
+      c.override(someValue).toDecorated(val => val + 1);
     });
 
     expect(cnt.use(someValue)).toEqual(2);
@@ -34,7 +34,7 @@ describe(`decorate`, () => {
     const someValue = fn(async () => 1);
 
     const c = container.new(c => {
-      c.bind(someValue).toDecorated(val => val + 1);
+      c.override(someValue).toDecorated(val => val + 1);
     });
 
     expect(await c.call(someValue)).toEqual(2);
@@ -44,7 +44,7 @@ describe(`decorate`, () => {
     const someValue = fn(async () => 1);
 
     const c = container.new(c => {
-      c.bind(someValue).toDecorated(async val => val + 1);
+      c.override(someValue).toDecorated(async val => val + 1);
     });
 
     expect(await c.call(someValue)).toEqual(2);
@@ -67,7 +67,7 @@ describe(`decorate`, () => {
     const someValue = value(10);
 
     const c = container.new(c => {
-      c.bind(someValue).toDecorated((val, use) => {
+      c.override(someValue).toDecorated((val, use) => {
         const aVal = use(a);
         const bVal = use(b);
 
@@ -87,7 +87,7 @@ describe(`decorate`, () => {
     });
 
     const c = container.new(c => {
-      c.bind(someValue).toDecorated((val, use) => {
+      c.override(someValue).toDecorated((val, use) => {
         return val * use(b);
       });
     });
@@ -100,7 +100,7 @@ describe(`decorate`, () => {
       const a = fn.scoped(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(a).toDecorated(a => a);
+        c.override(a).toDecorated(a => a);
       });
 
       expect(c.use(a)).toEqual(c.use(a));
@@ -110,7 +110,7 @@ describe(`decorate`, () => {
       const a = fn(() => Math.random());
 
       const c = container.new(c => {
-        c.bind(a).toDecorated(a => a);
+        c.override(a).toDecorated(a => a);
       });
 
       expect(c.call(a)).not.toEqual(c.call(a));
@@ -124,7 +124,7 @@ describe(`decorate`, () => {
       });
 
       const c = container.new(c => {
-        c.bind(a).toDecorated(a => a);
+        c.override(a).toDecorated(a => a);
       });
 
       const obj1 = fn.scoped(use => ({
@@ -159,7 +159,7 @@ describe(`decorate`, () => {
       });
 
       const scope2 = scope1.scope(scope => {
-        scope.bind(instanceDef).toValue({ callMe: () => {} });
+        scope.override(instanceDef).toValue({ callMe: () => {} });
       });
 
       const instance1 = scope1.use(instanceDef);

@@ -20,7 +20,7 @@ export interface ContainerConfigurable {
 
   cascade<TInstance>(definition: IDefinition<TInstance, LifeTime.scoped, []>): void;
 
-  bind<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
+  override<TInstance, TLifeTime extends ContainerConfigureLocalLifeTimes, TArgs extends any[]>(
     definition: IDefinition<TInstance, TLifeTime, TArgs>,
   ): Binder<TInstance, TLifeTime, TArgs>;
 
