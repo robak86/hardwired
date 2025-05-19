@@ -1,4 +1,5 @@
-import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
+import type { AnyDefinition, IDefinition } from '../definitions/abstract/IDefinition.js';
+import type { DefinitionSymbol } from '../definitions/def-symbol.js';
 
 import { COWMap } from './COWMap.js';
 
@@ -63,6 +64,16 @@ export class BindingsRegistry implements IBindingRegistryRead {
     this._frozenDefinitions.set(definition.id, definition);
   }
 
+  addScopeDefinition<TInstance>(symbol: DefinitionSymbol<TInstance, any>, definition: AnyDefinition) {
+    if (this._scopeDefinitions.has(symbol.id)) {
+      throw new Error(
+        `Cannot bind definition for the current scope. The scope has already other binding for the definition.`,
+      );
+    }
+
+    this._scopeDefinitions.set(symbol.id, definition);
+  }
+
   addScopeBinding(definition: AnyDefinition) {
     if (this._scopeDefinitions.hasOwn(definition.id)) {
       throw new Error(
@@ -91,5 +102,18 @@ export class BindingsRegistry implements IBindingRegistryRead {
 
     this._cascadingDefinitions.set(definition.id, definition);
     this._ownCascadingDefinitions.set(definition.id, definition);
+  }
+
+  addCascadingDefinition<TInstance>(
+    symbol: DefinitionSymbol<TInstance, any>,
+    definition: IDefinition<TInstance, any, any>,
+  ) {
+    if (this._scopeDefinitions.has(symbol.id)) {
+      throw new Error(
+        `Cannot bind definition for the current scope. The scope has already other binding for the definition.`,
+      );
+    }
+
+    this._cascadingDefinitions.set(symbol.id, definition);
   }
 }
