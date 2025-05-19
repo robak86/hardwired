@@ -31,7 +31,6 @@ describe(`Testing`, () => {
       ...containerConfigFns: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({
-        // eslint-disable-next-line no-empty-pattern
         use: async ({}, use) => {
           const scope = await container.new(...containerConfigFns);
 
@@ -67,7 +66,7 @@ describe(`Testing`, () => {
 describe(`Logger`, () => {
   describe(`branding logger with an id for a request`, () => {
     it(`return correct output`, async () => {
-      const requestId = unbound<string>();
+      const requestId = unbound.scoped<string>();
 
       let id = 0;
       const nextId = () => (id += 1);

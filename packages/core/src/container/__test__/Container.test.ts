@@ -362,7 +362,7 @@ describe(`Container`, () => {
     });
 
     it(`allows using external params`, async () => {
-      const extD = unbound<BoxedValue<number>>();
+      const extD = unbound.scoped<BoxedValue<number>>();
 
       const multiplyBy2D = fn.scoped(use => use(extD).value * 2);
       const divideBy2D = fn.scoped(use => use(extD).value / 2);
@@ -379,7 +379,7 @@ describe(`Container`, () => {
     });
 
     it(`allows using external params ex.2`, async () => {
-      const extD = unbound<BoxedValue<number>>();
+      const extD = unbound.scoped<BoxedValue<number>>();
 
       let count = 0;
       const scopeSharedValD = fn.scoped(() => (count += 1));

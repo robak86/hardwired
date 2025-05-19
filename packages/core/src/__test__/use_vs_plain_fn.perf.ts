@@ -19,7 +19,7 @@ const f9 = (ctx: Ctx) => ctx.value;
 
 let cnt: IContainer;
 
-const ctx = unbound<Ctx>();
+const ctx = unbound.scoped<Ctx>();
 
 const d1 = fn(use => use.call(d2));
 const d2 = fn(use => use.call(d3));

@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage } from 'node:http';
 
 import { cls, fn, once, unbound } from 'hardwired';
 
-const reqD = unbound<IncomingMessage>();
+const reqD = unbound.scoped<IncomingMessage>();
 
 interface IRequestHandler {
   handle(req: IncomingMessage): object;

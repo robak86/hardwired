@@ -6,13 +6,13 @@ import { fn } from '../fn.js';
 describe(`asyncFn`, () => {
   describe(`types`, () => {
     describe(`allowed dependencies life times`, () => {
-      const implDef = unbound<number>();
+      const implDef = unbound.scoped<number>();
 
       describe(`singleton`, () => {
         describe(`compile-time`, () => {
           it(`does not accept unbound definitions`, async () => {
             const someScoped = fn.scoped(() => 123);
-            // const someScoped = unbound<number>('someValue')
+            // const someScoped = unbound.scoped<number>('someValue')
 
             try {
               fn.singleton(use => {

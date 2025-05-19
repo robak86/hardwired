@@ -121,7 +121,7 @@ describe(`useDefinitions`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = unbound<string>();
+      const someExternalParam = unbound.scoped<string>();
 
       const val1Def = fn.scoped(use => {
         const ext = use(someExternalParam);

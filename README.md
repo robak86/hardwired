@@ -485,7 +485,7 @@ const logger = fn.scoped(() => {
   };
 });
 
-const requestId = unbound<string>();
+const requestId = unbound.scoped<string>();
 
 const command = fn.scoped(use => {
   const _logger = use(logger);
@@ -748,7 +748,7 @@ interface Config {
   apiUrl: string;
 }
 
-const config = unbound<Config>();
+const config = unbound.scoped<Config>();
 ```
 
 ### Providing a Value
@@ -795,13 +795,13 @@ By using unbound definitions, you can decouple the interface from the actual imp
 ```typescript
 import { unbound, cls } from 'hardwired';
 
-const logger = unbound<ILogger>();
+const logger = unbound.scoped<ILogger>();
 
 interface ILogger {
   info(msg: string);
 }
 
-const transport = unbound<ITransport>();
+const transport = unbound.scoped<ITransport>();
 
 interface ITransport {
   write(msg: string);

@@ -11,7 +11,7 @@ describe(`unbound`, () => {
     describe(`bindCascading`, () => {
       describe(`binding to value`, () => {
         it(`acts as scoped`, async () => {
-          const unboundDefinition = unbound<string>();
+          const unboundDefinition = unbound.scoped<string>();
 
           const configure = configureContainer(c => {
             c.bindCascading(unboundDefinition).toRedefined(() => crypto.randomUUID());
@@ -29,7 +29,7 @@ describe(`unbound`, () => {
       describe(`binding to definition`, () => {
         describe(`singleton`, () => {
           it(`acts as singleton`, async () => {
-            const unboundDefinition = unbound<string>();
+            const unboundDefinition = unbound.singleton<string>();
             const singletonNumber = fn.singleton(() => crypto.randomUUID());
 
             const configure = configureContainer(c => {
@@ -47,7 +47,7 @@ describe(`unbound`, () => {
 
         describe(`scoped`, () => {
           it(`acts as scoped`, async () => {
-            const unboundDefinition = unbound<string>();
+            const unboundDefinition = unbound.scoped<string>();
             const singletonNumber = fn.scoped(() => crypto.randomUUID());
 
             const configure = configureContainer(c => {
@@ -67,7 +67,7 @@ describe(`unbound`, () => {
 
     describe(`bind`, () => {
       it(`acts as scoped`, async () => {
-        const unboundDefinition = unbound<string>();
+        const unboundDefinition = unbound.scoped<string>();
 
         const configure = configureContainer(c => {
           // bind only for the current scope
@@ -103,7 +103,9 @@ describe(`unbound`, () => {
   });
 
   describe(`injecting implementation for an interface`, () => {
-    const IMyInterface = unbound<IMyInterface>();
+    const IMyInterfaceSingleton = unbound.singleton<IMyInterface>();
+    const IMyInterfaceScoped = unbound.scoped<IMyInterface>();
+    const IMyInterfaceTransient = unbound.transient<IMyInterface>();
 
     interface IMyInterface {
       multiply(a: number, b: number): number;
@@ -125,23 +127,23 @@ describe(`unbound`, () => {
 
     it(`provides implementation for the interface`, async () => {
       const configure = configureContainer(c => {
-        c.bindCascading(IMyInterface).to(MyClass.singletonInstance);
+        c.bindCascading(IMyInterfaceSingleton).to(MyClass.singletonInstance);
       });
 
       const cnt = container.new(configure);
 
-      const result = cnt.use(IMyInterface);
+      const result = cnt.use(IMyInterfaceSingleton);
 
       expect(result).toBeInstanceOf(MyClass);
     });
 
     it(`prevents assigning singleton definitions in `, async () => {
       configureScope(c => {
-        c.bindCascading(IMyInterface).to(MyClass.scopedInstance);
-        c.bindCascading(IMyInterface).to(MyClass.transientInstance);
+        c.bindCascading(IMyInterfaceScoped).to(MyClass.scopedInstance);
+        c.bindCascading(IMyInterfaceTransient).to(MyClass.transientInstance);
 
         // @ts-expect-error - cannot bind singletons in scope configuration
-        c.bindCascading(IMyInterface).to(MyClass.singletonInstance);
+        c.bindCascading(IMyInterfaceSingleton).to(MyClass.singletonInstance);
       });
     });
   });

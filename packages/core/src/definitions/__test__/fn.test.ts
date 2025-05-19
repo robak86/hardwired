@@ -26,7 +26,7 @@ describe(`fn`, () => {
   });
 
   describe(`allowed dependencies life times`, () => {
-    const implDef = unbound<number>();
+    const implDef = unbound.scoped<number>();
 
     describe(`singleton`, () => {
       describe(`compile-time`, () => {

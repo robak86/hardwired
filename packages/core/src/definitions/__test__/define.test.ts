@@ -9,8 +9,8 @@ import { BoxedValue } from '../../__test__/BoxedValue.js';
 import type { Definition } from '../impl/Definition.js';
 
 describe(`define`, () => {
-  const ext1 = unbound<number>();
-  const ext2 = unbound<string>();
+  const ext1 = unbound.scoped<number>();
+  const ext2 = unbound.scoped<string>();
 
   describe(`types`, () => {
     it(`preserves externals type`, async () => {
