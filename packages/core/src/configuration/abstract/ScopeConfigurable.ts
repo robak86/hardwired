@@ -16,7 +16,7 @@ export interface ScopeConfigurable {
 
   onInit(initializer: InitFn): void;
 
-  bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+  overrideCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     definition: Definition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []>;
 

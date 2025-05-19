@@ -86,15 +86,15 @@ describe(`Logger`, () => {
       }
 
       const root = container.new(scope => {
-        scope.bindCascading(requestId).toValue('app');
-        scope.bindCascading(Logger.class).toDecorated((val, use) => {
+        scope.overrideCascading(requestId).toValue('app');
+        scope.overrideCascading(Logger.class).toDecorated((val, use) => {
           return val.withLabel(use(requestId));
         });
       });
 
       const requestScopeConfig = configureScope(scope => {
-        scope.bindCascading(requestId).toRedefined(() => nextId().toString());
-        scope.bindCascading(Logger.class).toDecorated((val, use) => {
+        scope.overrideCascading(requestId).toRedefined(() => nextId().toString());
+        scope.overrideCascading(Logger.class).toDecorated((val, use) => {
           return val.withLabel(use(requestId));
         });
       });

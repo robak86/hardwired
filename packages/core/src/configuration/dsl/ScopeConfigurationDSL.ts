@@ -32,7 +32,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     this._bindingsRegistry.addCascadingBinding(definition.bindToContainer(this._currentContainer));
   }
 
-  bindCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+  overrideCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     definition: Definition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []> {
     if (!(definition instanceof UnboundDefinition)) {

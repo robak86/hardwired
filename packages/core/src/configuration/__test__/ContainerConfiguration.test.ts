@@ -74,7 +74,7 @@ describe(`ContainerConfiguration`, () => {
     it(`correctly configures the container`, async () => {
       const def = fn.scoped(() => 123);
       const cnt = await container.new(async container => {
-        container.bindCascading(def).toValue(456);
+        container.overrideCascading(def).toValue(456);
       });
 
       expect(cnt.use(def)).toEqual(456);
@@ -86,10 +86,10 @@ describe(`ContainerConfiguration`, () => {
 
       const cnt = await container.new(
         async container => {
-          container.bindCascading(def1).toValue(456);
+          container.overrideCascading(def1).toValue(456);
         },
         async container => {
-          container.bindCascading(def2).toValue(789);
+          container.overrideCascading(def2).toValue(789);
         },
       );
 
@@ -138,7 +138,7 @@ describe(`ContainerConfiguration`, () => {
       const def = fn.scoped(() => 123);
       const cnt = container.new();
       const scope = await cnt.scope(async scope => {
-        scope.bindCascading(def).toValue(456);
+        scope.overrideCascading(def).toValue(456);
       });
 
       expect(scope.use(def)).toEqual(456);
@@ -150,7 +150,7 @@ describe(`ContainerConfiguration`, () => {
       const def = fn.scoped(() => 'original');
       const cnt = container.new();
       const scope = await cnt.scope(async (scope, use) => {
-        scope.bindCascading(def).toValue(await use(fromParent));
+        scope.overrideCascading(def).toValue(await use(fromParent));
       });
 
       expect(scope.use(def)).toEqual('fromParent');
@@ -162,7 +162,7 @@ describe(`ContainerConfiguration`, () => {
       const def = fn.scoped(() => 123);
       const cnt = container.new();
       const scope = await cnt.scope(async scope => {
-        scope.bindCascading(def).toValue(456);
+        scope.overrideCascading(def).toValue(456);
       });
 
       expect(scope.use(def)).toEqual(456);
@@ -174,7 +174,7 @@ describe(`ContainerConfiguration`, () => {
       const def = fn.scoped(() => 'original');
       const cnt = container.new();
       const scope = await cnt.scope(async (scope, use) => {
-        scope.bindCascading(def).toValue(await use(fromParent));
+        scope.overrideCascading(def).toValue(await use(fromParent));
       });
 
       expect(scope.use(def)).toEqual('fromParent');

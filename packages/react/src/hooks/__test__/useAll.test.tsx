@@ -149,7 +149,7 @@ describe(`useDefinitions`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         const config = useScopeConfig(
           scope => {
-            scope.bindCascading(someExternalParam).toValue(externalValue);
+            scope.overrideCascading(someExternalParam).toValue(externalValue);
           },
           [externalValue],
         );

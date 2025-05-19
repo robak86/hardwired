@@ -8,13 +8,13 @@ import { fn } from '../fn.js';
 
 describe(`unbound`, () => {
   describe(`scopes`, () => {
-    describe(`bindCascading`, () => {
+    describe(`overrideCascading`, () => {
       describe(`binding to value`, () => {
         it(`acts as scoped`, async () => {
           const unboundDefinition = unbound.scoped<string>();
 
           const configure = configureContainer(c => {
-            c.bindCascading(unboundDefinition).toRedefined(() => crypto.randomUUID());
+            c.overrideCascading(unboundDefinition).toRedefined(() => crypto.randomUUID());
           });
 
           const cnt = container.new(configure);
@@ -51,7 +51,7 @@ describe(`unbound`, () => {
             const singletonNumber = fn.scoped(() => crypto.randomUUID());
 
             const configure = configureContainer(c => {
-              c.bindCascading(unboundDefinition).to(singletonNumber);
+              c.overrideCascading(unboundDefinition).to(singletonNumber);
             });
 
             const cnt = container.new(configure);
@@ -127,7 +127,7 @@ describe(`unbound`, () => {
 
     it(`provides implementation for the interface`, async () => {
       const configure = configureContainer(c => {
-        c.bindCascading(IMyInterfaceSingleton).to(MyClass.singletonInstance);
+        c.overrideCascading(IMyInterfaceSingleton).to(MyClass.singletonInstance);
       });
 
       const cnt = container.new(configure);
@@ -139,11 +139,11 @@ describe(`unbound`, () => {
 
     it(`prevents assigning singleton definitions in `, async () => {
       configureScope(c => {
-        c.bindCascading(IMyInterfaceScoped).to(MyClass.scopedInstance);
-        c.bindCascading(IMyInterfaceTransient).to(MyClass.transientInstance);
+        c.overrideCascading(IMyInterfaceScoped).to(MyClass.scopedInstance);
+        c.overrideCascading(IMyInterfaceTransient).to(MyClass.transientInstance);
 
         // @ts-expect-error - cannot bind singletons in scope configuration
-        c.bindCascading(IMyInterfaceSingleton).to(MyClass.singletonInstance);
+        c.overrideCascading(IMyInterfaceSingleton).to(MyClass.singletonInstance);
       });
     });
   });

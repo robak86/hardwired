@@ -14,7 +14,7 @@ export type DisposeFn = (container: UseFn<any>) => void;
 export interface ContainerConfigurable {
   onDispose(callback: (scope: IContainer) => void): void;
 
-  bindCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
+  overrideCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
     definition: IDefinition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []>;
 

@@ -34,7 +34,7 @@ const d9 = fn(use => use(ctx).value);
 const instantiationBench = new Bench({
   time: 100,
   setup: () => {
-    cnt = container.new(scope => scope.bindCascading(ctx).to(fn.scoped(() => ({ value: Math.random() }))));
+    cnt = container.new(scope => scope.overrideCascading(ctx).to(fn.scoped(() => ({ value: Math.random() }))));
   },
   teardown: () => {
     cnt = container.new();

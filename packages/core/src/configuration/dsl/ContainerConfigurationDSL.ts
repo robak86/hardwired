@@ -40,7 +40,7 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     initializer(this._currentContainer);
   }
 
-  bindCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
+  overrideCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(
     definition: IDefinition<TInstance, TLifeTime, []>,
   ): Binder<TInstance, TLifeTime, []> {
     return new Binder<TInstance, TLifeTime, []>(

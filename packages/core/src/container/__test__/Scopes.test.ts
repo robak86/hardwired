@@ -75,7 +75,7 @@ describe(`Scopes`, () => {
 
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindCascading(def).to(def2));
+            const l2 = l1.scope(scope => scope.overrideCascading(def).to(def2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -87,7 +87,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindCascading(def).toValue(2));
+            const l2 = l1.scope(scope => scope.overrideCascading(def).toValue(2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -97,7 +97,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindCascading(def).toDecorated(() => 2));
+            const l2 = l1.scope(scope => scope.overrideCascading(def).toDecorated(() => 2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -107,7 +107,7 @@ describe(`Scopes`, () => {
             const def = fn.scoped(() => Math.random());
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindCascading(def).toDecorated(() => 2));
+            const l2 = l1.scope(scope => scope.overrideCascading(def).toDecorated(() => 2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -119,7 +119,7 @@ describe(`Scopes`, () => {
 
             const cnt = container.new(scope => scope.freeze(def).toValue(1));
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.bindCascading(def).to(def2));
+            const l2 = l1.scope(scope => scope.overrideCascading(def).to(def2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -153,7 +153,7 @@ describe(`Scopes`, () => {
 
         const root = container.new(scope => {
           scope.bind(def).toValue(1);
-          scope.bindCascading(consumer).toValue(2);
+          scope.overrideCascading(consumer).toValue(2);
         });
         const l1 = root.scope(scope => scope.bind(def).toValue(10));
         const l2 = l1.scope(scope => scope.bind(def).toValue(100));
@@ -177,7 +177,7 @@ describe(`Scopes`, () => {
           const dep = fn.scoped(() => 'original');
 
           const root = container.new(scope => {
-            scope.bindCascading(dep).toValue('root');
+            scope.overrideCascading(dep).toValue('root');
           });
 
           const l1 = root.scope();
@@ -195,7 +195,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue('root');
-            scope.bindCascading(consumer).to(consumerReplacement);
+            scope.overrideCascading(consumer).to(consumerReplacement);
           });
           const l1 = root.scope(scope => {
             scope.bind(dep).toValue('l1');
@@ -218,7 +218,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toRedefined(() => new BoxedValue('root'));
-            scope.bindCascading(consumer).to(consumerReplacementV1);
+            scope.overrideCascading(consumer).to(consumerReplacementV1);
           });
 
           const l1 = root.scope(scope => {
@@ -227,7 +227,7 @@ describe(`Scopes`, () => {
 
           const l2 = l1.scope(scope => {
             scope.bind(dep).toRedefined(() => new BoxedValue('l2'));
-            scope.bindCascading(consumer).to(consumerReplacementV2);
+            scope.overrideCascading(consumer).to(consumerReplacementV2);
           });
 
           const l3 = l2.scope();
@@ -265,7 +265,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue('root');
-            scope.bindCascading(consumer).toDecorated(val => val + '_consumer_replacement');
+            scope.overrideCascading(consumer).toDecorated(val => val + '_consumer_replacement');
           });
           const l1 = root.scope(scope => {
             scope.bind(dep).toValue('l1');
@@ -286,7 +286,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue('root');
-            scope.bindCascading(consumer).toDecorated(val => val + '_consumer_replacement_v1');
+            scope.overrideCascading(consumer).toDecorated(val => val + '_consumer_replacement_v1');
           });
 
           const l1 = root.scope(scope => {
@@ -295,7 +295,7 @@ describe(`Scopes`, () => {
 
           const l2 = l1.scope(scope => {
             scope.bind(dep).toValue('l2');
-            scope.bindCascading(consumer).toDecorated(val => val + '_consumer_replacement_v2');
+            scope.overrideCascading(consumer).toDecorated(val => val + '_consumer_replacement_v2');
           });
 
           const l3 = l2.scope();
@@ -329,7 +329,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue(new BoxedValue('root'));
-            scope.bindCascading(consumer).toConfigured(val => {
+            scope.overrideCascading(consumer).toConfigured(val => {
               val.value = val.value + '_consumer_replacement';
             });
           });
@@ -352,7 +352,7 @@ describe(`Scopes`, () => {
 
           const root = container.new(scope => {
             scope.bind(dep).toValue(new BoxedValue('root'));
-            scope.bindCascading(consumer).toConfigured(val => {
+            scope.overrideCascading(consumer).toConfigured(val => {
               val.value = val.value + '_consumer_replacement_v1';
             });
           });
@@ -363,7 +363,7 @@ describe(`Scopes`, () => {
 
           const l2 = l1.scope(scope => {
             scope.bind(dep).toValue(new BoxedValue('l2'));
-            scope.bindCascading(consumer).toConfigured(val => {
+            scope.overrideCascading(consumer).toConfigured(val => {
               val.value = val.value + '_consumer_replacement_v2';
             });
           });
@@ -426,7 +426,7 @@ describe(`Scopes`, () => {
         });
 
         const root = container.new(scope => {
-          scope.bindCascading(def).toValue('l1');
+          scope.overrideCascading(def).toValue('l1');
         });
 
         expect(root.use(l1Creator)).toEqual('l1');

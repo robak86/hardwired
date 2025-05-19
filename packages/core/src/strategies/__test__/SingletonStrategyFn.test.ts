@@ -160,7 +160,7 @@ describe(`SingletonStrategy`, () => {
 
         const l1 = root.scope();
         const l2 = l1.scope(scope => {
-          scope.bindCascading(a).toValue(1);
+          scope.overrideCascading(a).toValue(1);
         });
         const l3 = l2.scope();
 
@@ -181,7 +181,7 @@ describe(`SingletonStrategy`, () => {
         const c = container.new();
 
         const childC = c.scope(scope => {
-          scope.bindCascading(a).toValue(2);
+          scope.overrideCascading(a).toValue(2);
         });
 
         expect(childC.use(a)).toEqual(2);
@@ -194,7 +194,7 @@ describe(`SingletonStrategy`, () => {
         const root = container.new();
 
         const level1 = root.scope(scope => {
-          scope.bindCascading(a).toValue(2);
+          scope.overrideCascading(a).toValue(2);
         });
 
         const level2 = level1.scope();
@@ -223,7 +223,7 @@ describe(`SingletonStrategy`, () => {
 
         const root = container.new();
         const level1 = root.scope(scope => {
-          scope.bindCascading(a).toDecorated(() => {
+          scope.overrideCascading(a).toDecorated(() => {
             return 1;
           });
         });
@@ -252,8 +252,8 @@ describe(`SingletonStrategy`, () => {
         const a = fn.scoped(randomFactorySpy);
 
         const root = container.new();
-        const level1 = root.scope(scope => scope.bindCascading(a).toValue(1));
-        const level2 = level1.scope(scope => scope.bindCascading(a).toValue(2));
+        const level1 = root.scope(scope => scope.overrideCascading(a).toValue(1));
+        const level2 = level1.scope(scope => scope.overrideCascading(a).toValue(2));
         const level3 = level2.scope();
 
         const level3Call = level3.use(a);
@@ -338,7 +338,7 @@ describe(`SingletonStrategy`, () => {
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.scope(scope => {
-          scope.bindCascading(k1).toValue(2);
+          scope.overrideCascading(k1).toValue(2);
         });
 
         expect(childScope.use(k1)).toEqual(1);
@@ -355,7 +355,7 @@ describe(`SingletonStrategy`, () => {
         expect(c.use(k1)).toEqual(1);
 
         const childScope = c.scope(scope => {
-          scope.bindCascading(k2).toValue(2);
+          scope.overrideCascading(k2).toValue(2);
         });
 
         expect(childScope.use(k1)).toEqual(1);

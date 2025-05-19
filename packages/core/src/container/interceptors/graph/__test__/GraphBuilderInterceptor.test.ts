@@ -124,7 +124,7 @@ describe(`GraphBuildInterceptor`, () => {
         const consumer = fn.scoped(use => ({ c: use(shared), value: 0 }));
 
         const { cnt } = setup(c => {
-          c.bindCascading(consumer).to(fn.scoped(use => ({ c: use(shared), value: 1 })));
+          c.overrideCascading(consumer).to(fn.scoped(use => ({ c: use(shared), value: 1 })));
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
@@ -231,12 +231,12 @@ describe(`GraphBuildInterceptor`, () => {
         expect(scope2ConsumerNode?.children).toEqual([sharedDefNode]);
       });
 
-      it(`works with bindCascading`, async () => {
+      it(`works with overrideCascading`, async () => {
         const shared = fn.singleton(async () => 1);
         const consumer = fn.scoped(async use => ({ c: await use(shared), value: 0 }));
 
         const { cnt } = setup(c => {
-          c.bindCascading(consumer).to(fn.scoped(async use => ({ c: await use(shared), value: 1 })));
+          c.overrideCascading(consumer).to(fn.scoped(async use => ({ c: await use(shared), value: 1 })));
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
