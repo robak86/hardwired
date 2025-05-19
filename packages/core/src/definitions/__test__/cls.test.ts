@@ -3,6 +3,10 @@ import { expectType } from 'ts-expect';
 import { cls } from '../cls.js';
 import { fn } from '../fn.js';
 import { container, once } from '../../container/Container.js';
+import type { Definition } from '../impl/Definition.js';
+import type { LifeTime } from '../abstract/LifeTime.js';
+import { unbound } from '../unbound.js';
+import type { IDefinition } from '../abstract/IDefinition.js';
 
 describe(`cls`, () => {
   const num = fn(() => 123);
@@ -33,6 +37,36 @@ describe(`cls`, () => {
       const myClass = await once(MyClass.instance);
 
       expect(myClass.val).toBe(123);
+    });
+
+    it(`returns async definition and creates class after awaiting all dependencies where some of them are async`, async () => {
+      const asyncNum = fn(async () => 123);
+      const syncNum = fn(() => 123);
+
+      class MyClass {
+        static instance = cls.singleton(this, [asyncNum, syncNum]);
+        constructor(
+          readonly val: number,
+          readonly otherVal: number,
+        ) {}
+      }
+
+      expectType<Definition<Promise<MyClass>, LifeTime.singleton, []>>(MyClass.instance);
+    });
+
+    it(`works with unbound`, async () => {
+      const asyncNum = unbound.scoped<Promise<number>>();
+      const syncNum = unbound.scoped<number>();
+
+      class MyClass {
+        static instance = cls.scoped(this, [asyncNum, syncNum]);
+        constructor(
+          readonly val: number,
+          readonly otherVal: number,
+        ) {}
+      }
+
+      expectType<IDefinition<Promise<MyClass>, LifeTime.scoped, []>>(MyClass.instance);
     });
 
     describe(`multiple async and non-async dependencies`, () => {
