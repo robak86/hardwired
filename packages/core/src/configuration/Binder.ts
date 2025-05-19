@@ -1,4 +1,4 @@
-import type { IContainer } from '../container/IContainer.js';
+import type { IContainer, IsAnyPromise } from '../container/IContainer.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { Definition } from '../definitions/impl/Definition.js';
 import { isThenable } from '../utils/IsThenable.js';
@@ -65,7 +65,7 @@ export class Binder<TInstance, TLifeTime extends LifeTime, TArgs extends unknown
    * const cnt = container.new(c => c.bind(myRandomSeedNum).toValue(1_234_567));
    * @param value
    */
-  toValue(value: Awaited<TInstance>) {
+  toValue(value: IsAnyPromise<TInstance> extends true ? Awaited<TInstance> : TInstance) {
     const newDefinition = this._definition.override(() => value);
 
     this._onStaticBind(newDefinition);
