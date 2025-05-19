@@ -12,7 +12,7 @@ export { GraphBuilderInterceptor } from './container/interceptors/graph/GraphBui
 export * from './container/interceptors/graph/GraphBuilderContext.js';
 export * from './container/interceptors/graph/GraphNodesRegistry.js';
 
-export { COWMap } from './context/InstancesMap.js';
+export { COWMap } from './context/COWMap.js';
 
 export * from './container/interceptors/graph/DependenciesGraph.js';
 

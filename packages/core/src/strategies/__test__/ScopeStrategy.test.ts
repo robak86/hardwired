@@ -87,7 +87,7 @@ describe(`ScopeStrategy`, () => {
       expect(childC.use(a).value).toEqual(2);
     });
 
-    it(`new scope doesn't inherit the local bindings`, async () => {
+    it(`new scope inherits non cascading bindings, but gets its own instance`, async () => {
       const a = fn.scoped(() => new BoxedValue('original'));
 
       const root = container.new();
@@ -102,7 +102,7 @@ describe(`ScopeStrategy`, () => {
 
       const l3 = l1.scope();
 
-      expect(l3.use(a).value).toEqual('original');
+      expect(l3.use(a).value).toEqual('l1');
 
       expect(l1.use(a)).not.toBe(l3.use(a));
     });

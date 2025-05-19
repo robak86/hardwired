@@ -11,6 +11,8 @@ export class COWMap<V> {
     return new COWMap<V>(new Map(), true);
   }
 
+  private _inheritedKeys = new Set<symbol>();
+
   protected constructor(
     protected _instances: Map<symbol, V>,
     protected _pristine: boolean,
@@ -20,12 +22,18 @@ export class COWMap<V> {
     return this._instances.has(definitionId);
   }
 
+  hasOwn(definitionId: symbol): boolean {
+    return this._pristine && this._instances.has(definitionId) && !this._inheritedKeys.has(definitionId);
+  }
+
   set(definitionId: symbol, instance: V): void {
     if (!this._pristine) {
+      this._inheritedKeys = new Set(this._instances.keys());
       this._instances = new Map(this._instances);
       this._pristine = true;
     }
 
+    this._inheritedKeys.delete(definitionId);
     this._instances.set(definitionId, instance);
   }
 

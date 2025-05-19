@@ -90,17 +90,23 @@ describe(`SingletonStrategy`, () => {
     });
 
     describe(`scope overrides`, () => {
-      it(`doesn't inherit scope bindings`, async () => {
+      it(`inherits scope binding, but not the memoized instance`, async () => {
         const a = fn.scoped(() => 0);
 
+        const overrideSpy = vi.fn(() => 0);
+        const override = fn.scoped(overrideSpy);
+
         const root = container.new(scope => {
-          scope.bind(a).toValue(1);
+          scope.bind(a).to(override);
         });
+
+        expect(root.use(a)).toEqual(0);
 
         const child = root.scope();
 
         expect(child.use(a)).toEqual(0);
-        expect(root.use(a)).toEqual(1);
+
+        expect(overrideSpy).toHaveBeenCalledTimes(2); // each scope still has its own instance.
       });
 
       it(`inherits values if definition is bound is propagate`, async () => {

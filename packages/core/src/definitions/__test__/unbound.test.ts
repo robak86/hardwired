@@ -81,8 +81,23 @@ describe(`unbound`, () => {
 
         expect(result).toBe(sameScopeResult);
 
-        // it's not cascading to the child scope, so the error is thrown
-        expect(() => cnt.scope().use(unboundDefinition)).toThrowError(`Cannot instantiate unbound definition`);
+        cnt.scope().use(unboundDefinition);
+      });
+
+      it(`keeps override for the child scope`, async () => {
+        const def = fn.scoped(() => 1);
+
+        const redefinedSpy = vi.fn(() => 2);
+
+        const cnt = container.new(c => c.bind(def).toRedefined(redefinedSpy));
+        const cntResult = cnt.use(def);
+
+        const scope = cnt.scope();
+        const scopeDef = scope.use(def);
+
+        expect(redefinedSpy).toHaveBeenCalledTimes(2);
+        expect(cntResult).toBe(2);
+        expect(scopeDef).toBe(2);
       });
     });
   });

@@ -187,7 +187,7 @@ export class Container extends ExtensibleFunction implements IContainer {
         this.instancesStore.hasInherited(definition.id)
       ) {
         throw new Error(
-          `Cannot freeze cascading binding ${definition.name} because it is already instantiated in some ascendant scope.`,
+          `Cannot freeze cascading binding ${definition.name} because it is already instantiated in some higher scope.`,
         );
       }
 

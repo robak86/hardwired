@@ -1,6 +1,6 @@
 import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
 
-import { COWMap } from './InstancesMap.js';
+import { COWMap } from './COWMap.js';
 
 export interface IBindingRegistryRead {
   hasFrozenBinding(definitionId: symbol): boolean;
@@ -22,7 +22,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
 
   checkoutForScope(): BindingsRegistry {
     return new BindingsRegistry(
-      COWMap.create(),
+      this._scopeDefinitions.clone(),
       this._frozenDefinitions.clone(),
       this._cascadingDefinitions.clone(),
       new Map(),
@@ -64,7 +64,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   addScopeBinding(definition: AnyDefinition) {
-    if (this._scopeDefinitions.has(definition.id)) {
+    if (this._scopeDefinitions.hasOwn(definition.id)) {
       throw new Error(
         `Cannot bind definition for the current scope. The scope has already other binding for the definition.`,
       );

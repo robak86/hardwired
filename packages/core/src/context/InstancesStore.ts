@@ -3,7 +3,7 @@ import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 
-import { isDisposable } from './InstancesMap.js';
+import { isDisposable } from './COWMap.js';
 
 export interface IInstancesStoreRead {
   hasRootInstance(definitionId: symbol): boolean;

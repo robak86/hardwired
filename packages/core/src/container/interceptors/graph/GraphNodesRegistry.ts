@@ -1,4 +1,4 @@
-import { COWMap } from '../../../context/InstancesMap.js';
+import { COWMap } from '../../../context/COWMap.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
 

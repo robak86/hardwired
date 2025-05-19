@@ -128,16 +128,19 @@ describe(`Scopes`, () => {
       });
     });
 
-    describe('setting local bindings', () => {
-      it(`doesn't propagate the instance to  descendent scopes`, async () => {
-        const def = fn.scoped(() => 'original');
-        const root = container.new(scope => scope.bind(def).toValue('root'));
+    describe('bind', () => {
+      it(`binds definition for all descendant scopes, but each scope keeps its own instance`, async () => {
+        const def = fn.scoped(() => new BoxedValue('original'));
+        const root = container.new(scope => scope.bind(def).toRedefined(() => new BoxedValue('root')));
         const l1 = root.scope();
         const l2 = l1.scope();
 
-        expect(l2.use(def)).toEqual('original');
-        expect(l1.use(def)).toEqual('original');
-        expect(root.use(def)).toEqual('root');
+        expect(l2.use(def).value).toEqual('root');
+        expect(l1.use(def).value).toEqual('root');
+        expect(root.use(def).value).toEqual('root');
+
+        expect(l2.use(def)).not.toBe(l1.use(def));
+        expect(root.use(def)).not.toBe(l1.use(def));
       });
     });
 
@@ -208,22 +211,22 @@ describe(`Scopes`, () => {
         });
 
         it(`can be overridden in descendant scopes`, async () => {
-          const dep = fn.scoped(() => 'original');
+          const dep = fn.scoped(() => new BoxedValue('original'));
           const consumer = fn.scoped(use => use(dep));
-          const consumerReplacementV1 = fn.scoped(use => use(dep) + '_consumer_replacement_v1');
-          const consumerReplacementV2 = fn.scoped(use => use(dep) + '_consumer_replacement_v2');
+          const consumerReplacementV1 = fn.scoped(use => new BoxedValue(use(dep).value + '_consumer_replacement_v1'));
+          const consumerReplacementV2 = fn.scoped(use => new BoxedValue(use(dep).value + '_consumer_replacement_v2'));
 
           const root = container.new(scope => {
-            scope.bind(dep).toValue('root');
+            scope.bind(dep).toRedefined(() => new BoxedValue('root'));
             scope.bindCascading(consumer).to(consumerReplacementV1);
           });
 
           const l1 = root.scope(scope => {
-            scope.bind(dep).toValue('l1');
+            scope.bind(dep).toRedefined(() => new BoxedValue('l1'));
           });
 
           const l2 = l1.scope(scope => {
-            scope.bind(dep).toValue('l2');
+            scope.bind(dep).toRedefined(() => new BoxedValue('l2'));
             scope.bindCascading(consumer).to(consumerReplacementV2);
           });
 
@@ -239,15 +242,19 @@ describe(`Scopes`, () => {
           const l2Dep = l2.use(dep);
           const l3Dep = l3.use(dep);
 
-          expect(rootConsumer).toEqual('root_consumer_replacement_v1');
-          expect(l1Consumer).toEqual('root_consumer_replacement_v1');
-          expect(l2Consumer).toEqual('l2_consumer_replacement_v2');
-          expect(l3Consumer).toEqual('l2_consumer_replacement_v2');
+          expect(rootConsumer.value).toEqual('root_consumer_replacement_v1');
+          expect(l1Consumer.value).toEqual('root_consumer_replacement_v1');
+          expect(l2Consumer.value).toEqual('l2_consumer_replacement_v2');
+          expect(l3Consumer.value).toEqual('l2_consumer_replacement_v2');
 
-          expect(rootDep).toEqual('root');
-          expect(l1Dep).toEqual('l1');
-          expect(l2Dep).toEqual('l2');
-          expect(l3Dep).toEqual('original');
+          expect(rootDep.value).toEqual('root');
+          expect(l1Dep.value).toEqual('l1');
+          expect(l2Dep.value).toEqual('l2');
+          expect(l3Dep.value).toEqual('l2');
+
+          expect(rootDep).not.toBe(l1Dep);
+          expect(l1Dep).not.toBe(l2Dep);
+          expect(l3Dep).not.toBe(l2Dep);
         });
       });
 
@@ -311,7 +318,7 @@ describe(`Scopes`, () => {
           expect(rootDep).toEqual('root');
           expect(l1Dep).toEqual('l1');
           expect(l2Dep).toEqual('l2');
-          expect(l3Dep).toEqual('original');
+          expect(l3Dep).toEqual('l2');
         });
       });
 
@@ -381,7 +388,7 @@ describe(`Scopes`, () => {
           expect(rootDep).toEqual(new BoxedValue('root_consumer_replacement_v1')); // configured received a reference to rootDep and modified it
           expect(l1Dep).toEqual(new BoxedValue('l1'));
           expect(l2Dep).toEqual(new BoxedValue('l2_consumer_replacement_v2')); // configured received a reference to rootDep and modified it
-          expect(l3Dep).toEqual(new BoxedValue('original'));
+          expect(l3Dep).toEqual(new BoxedValue('l2_consumer_replacement_v2'));
         });
       });
     });

@@ -15,19 +15,19 @@ describe(`BindingsRegistry`, () => {
     it(`scoped takes precedence over cascading`, async () => {
       const { def, defV2, defV3 } = setup();
 
-      const registry = BindingsRegistry.create();
+      const root = BindingsRegistry.create();
 
-      expect(registry.getDefinition(def)).toBe(def);
+      expect(root.getDefinition(def)).toBe(def);
 
-      registry.addScopeBinding(defV2);
-      expect(registry.getDefinition(def)).toBe(defV2);
+      root.addScopeBinding(defV2);
+      expect(root.getDefinition(def)).toBe(defV2);
 
-      const child = registry.checkoutForScope();
+      const child = root.checkoutForScope();
 
-      expect(child.getDefinition(def)).toBe(def);
+      expect(child.getDefinition(def)).toBe(defV2);
 
-      expect(() => registry.addCascadingBinding(defV3)).toThrow(); // Cannot override scope binding with cascading
-      expect(registry.getDefinition(def)).toBe(defV2);
+      expect(() => root.addCascadingBinding(defV3)).toThrow(); // Cannot override scope binding with cascading
+      expect(root.getDefinition(def)).toBe(defV2);
     });
   });
 });
