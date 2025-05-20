@@ -16,7 +16,7 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   }
 
   getOwn<TInstance>(
-    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     switch (definition.strategy) {
       case LifeTime.singleton:
@@ -27,7 +27,7 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   }
 
   getNode<TInstance>(
-    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     switch (definition.strategy) {
       case LifeTime.singleton:
@@ -38,7 +38,7 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   }
 
   getScoped<TInstance>(
-    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     return (
       (this._scopedNodes.get(definition.id) as GraphBuilderInterceptor<TInstance, TNode>) ??
@@ -46,7 +46,7 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
     );
   }
 
-  registerByDefinition<T>(definition: IDefinition<T, any, any[]>, builderNode: GraphBuilderInterceptor<T, TNode>) {
+  registerByDefinition<T>(definition: IDefinition<T, LifeTime>, builderNode: GraphBuilderInterceptor<T, TNode>) {
     if (definition.strategy === LifeTime.singleton) {
       if (this._singletonNodes.has(definition.id)) {
         throw new Error(`Node already registered`);

@@ -5,7 +5,11 @@ import type { ContainerSymbolBinder } from '../dsl/new/ContainerSymbolBinder.js'
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { OverridesConfigBuilder } from '../dsl/new/shared/OverridesConfigBuilder.js';
 
-export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
+export type ContainerConfigureFreezeLifeTimes =
+  | LifeTime.transient
+  | LifeTime.scoped
+  | LifeTime.singleton
+  | LifeTime.cascading;
 export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureCascadingLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 

@@ -1,17 +1,14 @@
 import { test } from 'vitest';
 
-import { cls } from '../../definitions/utils/class-type.js';
 import { container } from '../Container.js';
-import { value } from '../../definitions/value.js';
-import { unbound } from '../../definitions/unbound.js';
-import { configureScope } from '../../configuration/ScopeConfiguration.js';
-import { fn } from '../../definitions/fn.js';
 import type { IContainer } from '../IContainer.js';
 import {
   type AsyncContainerConfigureFn,
   configureContainer,
   type ContainerConfigureFn,
 } from '../../configuration/ContainerConfiguration.js';
+import { cascading } from '../../definitions/def-symbol.js';
+import { configureScope } from '../../configuration/ScopeConfiguration.js';
 
 describe(`Testing`, () => {
   describe(`using container in vitest context with custom cleaning of resources`, () => {
@@ -19,13 +16,11 @@ describe(`Testing`, () => {
       isDestroyed: false,
     };
 
-    const dbConnection = fn.scoped(() => {
-      return {
-        destroy() {
-          status.isDestroyed = true;
-        },
-      };
-    });
+    interface IDbConnection {
+      destroy(): void;
+    }
+
+    const dbConnection = cascading<IDbConnection>();
 
     const withContainer = <TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
       ...containerConfigFns: TConfigureFns
@@ -42,7 +37,13 @@ describe(`Testing`, () => {
     };
 
     const setupDB = configureContainer(c => {
-      c.cascade(dbConnection);
+      c.add(dbConnection).fn(() => {
+        return {
+          destroy() {
+            status.isDestroyed = true;
+          },
+        };
+      });
 
       c.onDispose(scope => {
         scope.useExisting(dbConnection)?.destroy();
@@ -54,7 +55,7 @@ describe(`Testing`, () => {
     it(`uses container`, async ({ use }) => {
       const scope = use.scope();
 
-      scope.use(dbConnection);
+      await scope.use(dbConnection);
     });
 
     it(`has cleaned resources from the previous run`, async () => {
@@ -66,14 +67,13 @@ describe(`Testing`, () => {
 describe(`Logger`, () => {
   describe(`branding logger with an id for a request`, () => {
     it(`return correct output`, async () => {
-      const requestId = unbound.scoped<string>();
+      const requestId = cascading<string>();
+      const loggerD = cascading<Logger>();
 
       let id = 0;
       const nextId = () => (id += 1);
 
       class Logger {
-        static class = cls.scoped(this, [value('')]);
-
         constructor(private label: string) {}
 
         print(msg: string): string {
@@ -86,21 +86,17 @@ describe(`Logger`, () => {
       }
 
       const root = container.new(scope => {
-        scope.overrideCascading(requestId).toValue('app');
-        scope.overrideCascading(Logger.class).toDecorated((val, use) => {
-          return val.withLabel(use(requestId));
-        });
+        scope.add(requestId).static('app');
+        scope.add(loggerD).class(Logger, requestId);
       });
 
       const requestScopeConfig = configureScope(scope => {
-        scope.overrideCascading(requestId).toRedefined(() => nextId().toString());
-        scope.overrideCascading(Logger.class).toDecorated((val, use) => {
-          return val.withLabel(use(requestId));
-        });
+        scope.own(requestId).redefine(() => nextId().toString());
+        scope.own(loggerD);
       });
 
       expect(root.use(requestId)).toEqual('app');
-      expect(root.use(Logger.class).print('msg')).toEqual('appmsg');
+      expect((await root.use(loggerD)).print('msg')).toEqual('appmsg');
 
       const req1 = root.scope(requestScopeConfig);
       const req2 = root.scope(requestScopeConfig);
@@ -111,11 +107,11 @@ describe(`Logger`, () => {
       expect(req2.use(requestId)).toEqual('2');
       expect(req2.use(requestId)).toEqual(req2.use(requestId));
 
-      expect(req1.use(Logger.class).print('msg')).toEqual('1msg');
-      expect(req1.use(Logger.class).print('msg')).toEqual('1msg');
+      expect((await req1.use(loggerD)).print('msg')).toEqual('1msg');
+      expect((await req1.use(loggerD)).print('msg')).toEqual('1msg');
 
-      expect(req2.use(Logger.class).print('msg')).toEqual('2msg');
-      expect(req2.use(Logger.class).print('msg')).toEqual('2msg');
+      expect((await req2.use(loggerD)).print('msg')).toEqual('2msg');
+      expect((await req2.use(loggerD)).print('msg')).toEqual('2msg');
     });
   });
 });

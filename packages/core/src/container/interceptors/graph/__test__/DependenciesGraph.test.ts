@@ -1,28 +1,35 @@
-import { container } from '../../../Container.js';
-import { fn } from '../../../../definitions/fn.js';
 import { DependenciesGraphRoot } from '../DependenciesGraph.js';
+import { singleton } from '../../../../definitions/def-symbol.js';
+import { container } from '../../../Container.js';
 
 describe(`DependenciesGraph`, () => {
   function setup() {
     const interceptor = new DependenciesGraphRoot();
 
-    const cnt = container.new(c => c.withInterceptor('graph', interceptor));
+    const c1Def = singleton<string>();
+    const c2Def = singleton<string>();
+    const bDef = singleton<{ B: { c1: string; c2: string } }>();
+    const aDef = singleton<{ A: { B: { c1: string; c2: string } } }>();
+
+    const cnt = container.new(c => {
+      c.add(c1Def).fn(() => 'C1');
+      c.add(c2Def).fn(() => 'C2');
+      c.add(bDef).fn((c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
+      c.add(aDef).fn(b => ({ A: b }), bDef);
+
+      c.withInterceptor('graph', interceptor);
+    });
 
     cnt.getInterceptor('graph');
 
-    const c1 = fn.singleton(() => 'C1');
-    const c2 = fn.singleton(() => 'C2');
-    const b = fn.singleton(use => ({ B: { c1: use(c1), c2: use(c2) } }));
-    const a = fn.singleton(use => ({ A: use(b) }));
-
-    return { interceptor, cnt, a, b, c1, c2 };
+    return { interceptor, cnt, a: aDef, b: bDef, c1: c1Def, c2: c2Def };
   }
 
   describe(`getGraphNode`, () => {
     it(`returns node holding corresponding value`, async () => {
       const { cnt, a, b, c1, c2 } = setup();
 
-      cnt.use(a);
+      await cnt.use(a);
 
       const interceptor = cnt.getInterceptor('graph') as DependenciesGraphRoot;
 

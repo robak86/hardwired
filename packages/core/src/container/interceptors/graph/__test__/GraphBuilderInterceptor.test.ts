@@ -1,9 +1,9 @@
 import { container } from '../../../Container.js';
-import { fn } from '../../../../definitions/fn.js';
 import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 import type { GraphNode } from '../GraphBuilderInterceptor.js';
 import { GraphBuilderInterceptor } from '../GraphBuilderInterceptor.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
+import { cascading, scoped, singleton } from '../../../../definitions/def-symbol.js';
 
 describe(`GraphBuildInterceptor`, () => {
   class SomeNode<T> implements GraphNode<T> {
@@ -11,7 +11,7 @@ describe(`GraphBuildInterceptor`, () => {
 
     constructor(
       readonly value: T,
-      readonly definition: IDefinition<T, any, any>,
+      readonly definition: IDefinition<T, any>,
       readonly children: GraphNode<any>[],
     ) {}
   }
@@ -43,16 +43,20 @@ describe(`GraphBuildInterceptor`, () => {
   describe(`sync`, () => {
     describe(`getNode`, () => {
       it(`caches node instances`, async () => {
-        const { cnt, interceptor } = setup();
-        const def = fn.singleton(() => 1);
+        const def = singleton<number>();
 
-        cnt.use(def);
+        const { cnt, interceptor } = setup(c => {
+          c.add(def).fn(() => 1);
+        });
+
+        await cnt.use(def);
 
         const nodeReq1 = interceptor.getGraphNode(def);
 
         expect(nodeReq1?.value).toBe(1);
 
-        cnt.use(def);
+        await cnt.use(def);
+
         const nodeReq2 = interceptor.getGraphNode(def);
 
         expect(nodeReq2).toBe(nodeReq1);
@@ -61,12 +65,15 @@ describe(`GraphBuildInterceptor`, () => {
 
     describe(`scopes`, () => {
       it('propagates singletons to the root', async () => {
-        const { cnt, interceptor } = setup();
-        const def = fn.singleton(() => 1);
+        const def = singleton<number>();
+
+        const { cnt, interceptor } = setup(c => {
+          c.add(def).fn(() => 1);
+        });
 
         const childScope = cnt.scope();
 
-        childScope.use(def);
+        await childScope.use(def);
 
         const node = interceptor.getGraphNode(def);
 
@@ -74,30 +81,37 @@ describe(`GraphBuildInterceptor`, () => {
       });
 
       it(`doesn't propagate scoped definitions`, async () => {
-        const { cnt } = setup();
-        const def = fn.scoped(() => 1);
+        const def = scoped<number>();
 
-        const rootValue = cnt.use(def);
+        const { cnt, interceptor } = setup(c => {
+          c.add(def).fn(() => 1);
+        });
+
+        const rootValue = await cnt.use(def);
 
         expect(rootValue).toEqual(1);
 
         const childScope = cnt.scope(c => {
-          return c.override(def).toValue(123);
+          return c.override(def).static(123);
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
         const childInterceptor = childScope.getInterceptor('graph') as TestInterceptor;
 
-        childScope.use(def); // memoize scoped in the child container and child interceptor
+        await childScope.use(def); // memoize scoped in the child container and child interceptor
 
         expect(childInterceptor.getGraphNode(def)?.value).toEqual(123);
         expect(rootInterceptor.getGraphNode(def)?.value).toEqual(1);
       });
 
       it(`has correct children`, async () => {
-        const { cnt } = setup();
-        const shared = fn.singleton(() => 1);
-        const consumer = fn.scoped(use => ({ c: use(shared) }));
+        const shared = singleton<number>();
+        const consumer = scoped<{ c: number }>();
+
+        const { cnt } = setup(c => {
+          c.add(shared).fn(() => 1);
+          c.add(consumer).fn(val => ({ c: val }), shared);
+        });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
 
@@ -107,8 +121,8 @@ describe(`GraphBuildInterceptor`, () => {
         const scope2 = cnt.scope();
         const scope2Interceptor = scope2.getInterceptor('graph') as TestInterceptor;
 
-        scope1.use(consumer);
-        scope2.use(consumer);
+        await scope1.use(consumer);
+        await scope2.use(consumer);
 
         const sharedDefNode = rootInterceptor.getGraphNode(shared);
 
@@ -120,11 +134,12 @@ describe(`GraphBuildInterceptor`, () => {
       });
 
       it(`works with cascading`, async () => {
-        const shared = fn.singleton(() => 1);
-        const consumer = fn.scoped(use => ({ c: use(shared), value: 0 }));
+        const shared = singleton<number>();
+        const consumer = cascading<{ c: number; value: number }>();
 
         const { cnt } = setup(c => {
-          c.overrideCascading(consumer).to(fn.scoped(use => ({ c: use(shared), value: 1 })));
+          c.add(shared).fn(() => 1);
+          c.add(consumer).fn(val => ({ c: val, value: 1 }), shared);
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;

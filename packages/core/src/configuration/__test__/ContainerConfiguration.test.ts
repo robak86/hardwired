@@ -5,47 +5,60 @@ import { describe } from 'vitest';
 import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
-import { fn } from '../../definitions/fn.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
+import { cascading, scoped } from '../../definitions/def-symbol.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`container#freeze`, () => {
     it(`allows freezing instances before they are created`, async () => {
-      const def = fn.scoped(() => 123);
+      // const def = fn.scoped(() => 123);
+
+      const def = scoped<number>();
       const cnt = container.new();
 
-      cnt.freeze(def).toValue(456);
+      cnt.freeze(def).static(456);
       expect(cnt.use(def)).toEqual(456);
     });
 
     it(`throws if the instances is already created`, async () => {
-      const def = fn.scoped(() => 123);
-      const cnt = container.new();
+      const def = scoped<number>();
 
-      cnt.use(def);
+      const cnt = container.new(c => {
+        c.add(def).static(123);
+      });
 
-      expect(() => cnt.freeze(def).toValue(456)).toThrowError('already instantiated');
+      await cnt.use(def);
+
+      expect(() => cnt.freeze(def).static(456)).toThrowError('already instantiated');
     });
 
     it(`works with child scopes`, async () => {
-      const def = fn.scoped(() => 123);
-      const cnt = container.new();
+      const def = scoped<number>();
+
+      const cnt = container.new(c => {
+        c.add(def).static(123);
+      });
+
       const scope = cnt.scope();
 
-      scope.freeze(def).toValue(456);
+      scope.freeze(def).static(456);
       expect(scope.use(def)).toEqual(456);
     });
 
-    it(`throws when cascading definition was created in ascending scope`, async () => {
-      const def = fn.scoped(() => 123);
-      const cnt = container.new();
-      const scope1 = cnt.scope(s => s.cascade(def));
+    it(`throws when cascading definition was created in child scope`, async () => {
+      const def = cascading<number>();
 
-      scope1.use(def);
+      const cnt = container.new(c => {
+        c.add(def).static(123);
+      });
+
+      const scope1 = cnt.scope(s => s.own(def));
+
+      await scope1.use(def);
 
       const scope2 = scope1.scope();
 
-      expect(() => scope2.freeze(def).toValue(456)).toThrowError('already instantiated');
+      expect(() => scope2.freeze(def).static(456)).toThrowError('already instantiated');
     });
   });
 

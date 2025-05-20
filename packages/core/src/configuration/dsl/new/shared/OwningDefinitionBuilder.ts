@@ -4,6 +4,8 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
 import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
+import { Definition } from '../../../../definitions/impl/Definition.js';
+import type { IContainer } from '../../../../container/IContainer.js';
 
 export class OwningDefinitionBuilder<TInstance, TLifeTime extends LifeTime> {
   constructor(
@@ -21,5 +23,17 @@ export class OwningDefinitionBuilder<TInstance, TLifeTime extends LifeTime> {
     const decoratedDefinition = createDecoratedDefinition(this._registry, this.definitionSymbol, decorateFn, []);
 
     this._registry.override(decoratedDefinition);
+  }
+
+  static(value: TInstance) {
+    const definition = new Definition(this.definitionSymbol.id, this.definitionSymbol.strategy, () => value);
+
+    this._registry.override(definition);
+  }
+
+  redefine(fn: (container: IContainer) => MaybePromise<TInstance>) {
+    const definition = new Definition(this.definitionSymbol.id, this.definitionSymbol.strategy, fn);
+
+    this._registry.override(definition);
   }
 }

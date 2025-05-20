@@ -4,6 +4,7 @@ import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IInterceptor } from '../interceptor.js';
 import { isThenable } from '../../../utils/IsThenable.js';
 import type { ScopeTag } from '../../IContainer.js';
+import type { IDefinitionSymbol } from '../../../definitions/def-symbol.js';
 
 import { GraphNodesRegistry } from './GraphNodesRegistry.js';
 import { GraphBuilderContext } from './GraphBuilderContext.js';
@@ -15,7 +16,7 @@ export interface GraphNode<T> {
 }
 
 export interface GraphBuilderInterceptorConfig<TNode extends GraphNode<any>> {
-  createNode<T>(definition: Definition<T, any, any>, value: Awaited<T>, children: TNode[], tags: ScopeTag[]): TNode;
+  createNode<T>(definition: Definition<T, any>, value: Awaited<T>, children: TNode[], tags: ScopeTag[]): TNode;
 }
 
 export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements IInterceptor<T> {
@@ -31,7 +32,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
   constructor(
     protected _configuration: GraphBuilderInterceptorConfig<TNode>,
     protected _context: GraphBuilderContext<TNode> = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []),
-    protected _definition?: Definition<T, LifeTime, any[]>,
+    protected _definition?: Definition<T, LifeTime>,
     protected _parentScopeRootInterceptor?: GraphBuilderInterceptor<T, TNode>,
   ) {}
 
@@ -39,7 +40,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     this._context.initialize(bindingRegistry);
   }
 
-  onEnter<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
+  onEnter<TNewInstance>(definition: IDefinitionSymbol<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {
     const cascadingNode = this.getRootForCascading(definition);
 
     if (cascadingNode) {
@@ -50,7 +51,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
   }
 
   getGraphNode<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+    definition: IDefinitionSymbol<TInstance, LifeTime.scoped | LifeTime.singleton>,
   ): TNode | undefined {
     return this._context.nodesRegistry.getNode(definition)?.node;
   }
@@ -91,7 +92,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
   }
 
   private getRootForCascading<T>(
-    definition: Definition<T, any, any[]>,
+    definition: IDefinitionSymbol<T, any>,
   ): GraphBuilderInterceptor<unknown, TNode> | undefined {
     const parentCascading = this._parentScopeRootInterceptor?.getRootForCascading(definition);
 
@@ -108,7 +109,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return this._node as TNode;
   }
 
-  private get definition(): Definition<T, LifeTime, any[]> {
+  private get definition(): Definition<T, LifeTime> {
     if (!this._definition) {
       throw new Error(`No definition associated with the graph node`);
     }
@@ -116,9 +117,9 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return this._definition;
   }
 
-  private instantiate<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>) {
+  private instantiate<TNewInstance>(definition: Definition<TNewInstance, LifeTime>) {
     const existingNode: GraphBuilderInterceptor<TNewInstance, TNode> | undefined = this._context.nodesRegistry.getOwn(
-      definition as Definition<TNewInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+      definition as Definition<TNewInstance, LifeTime.scoped | LifeTime.singleton>,
     );
 
     if (existingNode) {

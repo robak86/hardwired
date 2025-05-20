@@ -11,15 +11,19 @@ import type { IInterceptor } from '../../../../container/interceptors/intercepto
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import { ContainerSymbolBinder } from '../ContainerSymbolBinder.js';
 import { OverridesConfigBuilder } from '../shared/OverridesConfigBuilder.js';
+import type { MaybePromise } from '../../../../utils/async.js';
+import { maybePromiseThen } from '../../../../utils/async.js';
+import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
 
 export class ContainerConfigurationBuilder implements ContainerConfigurable {
-  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.singleton];
+  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.singleton, LifeTime.cascading];
 
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private _currentContainer: IContainer & IStrategyAware,
     private _interceptors: InterceptorsRegistry,
     private _disposeFns: Array<(scope: IContainer) => void>,
+    private _initializationFns: Array<(scope: unknown) => MaybePromise<void>> = [],
   ) {}
 
   override<TInstance, TLifeTime extends LifeTime>(
@@ -33,6 +37,28 @@ export class ContainerConfigurationBuilder implements ContainerConfigurable {
         this._bindingsRegistry.override(def);
       },
     );
+  }
+
+  configure<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    configureFn: (instance: TInstance) => MaybePromise<void>,
+  ) {
+    const configuredDefinition = createConfiguredDefinition(this._bindingsRegistry, symbol, configureFn, []);
+
+    this._bindingsRegistry.override(configuredDefinition);
+  }
+
+  eager<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    configureFn: (instance: TInstance) => MaybePromise<void>,
+  ) {
+    this._initializationFns.push(() => {
+      const instance = this._currentContainer.use(symbol);
+
+      return maybePromiseThen(instance, awaitedInstance => {
+        return configureFn(awaitedInstance);
+      });
+    });
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(

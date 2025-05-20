@@ -61,6 +61,10 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   override(newDef: IDefinition<any, LifeTime>) {
+    if (this._frozenDefinitions.has(newDef.id)) {
+      return;
+    }
+
     // TODO: replace this switch case with proper delegation/polymorphism
     switch (newDef.strategy) {
       case LifeTime.singleton:
@@ -86,6 +90,12 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   ownCascading(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: IContainer) {
+    const hasFrozenBinding = this._frozenDefinitions.has(defSymbol.id);
+
+    if (hasFrozenBinding) {
+      return;
+    }
+
     const cascadingDefinition = this._cascadingDefinitions.get(defSymbol.id);
 
     if (!cascadingDefinition) {
@@ -130,35 +140,35 @@ export class BindingsRegistry implements IBindingRegistryRead {
     return definition;
   }
 
-  registerSingletonBinding<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, TLifeTime>,
-    definition: IDefinition<TInstance, TLifeTime>,
-  ) {
-    if (this._singletonDefinitions.has(symbol.id)) {
-      throw new Error(`Cannot bind singleton definition. The definition was already bound.`);
-    }
-
-    this._singletonDefinitions.set(symbol.id, definition);
-  }
+  // registerSingletonBinding<TInstance, TLifeTime extends LifeTime>(
+  //   symbol: DefinitionSymbol<TInstance, TLifeTime>,
+  //   definition: IDefinition<TInstance, TLifeTime>,
+  // ) {
+  //   if (this._singletonDefinitions.has(symbol.id)) {
+  //     throw new Error(`Cannot bind singleton definition. The definition was already bound.`);
+  //   }
+  //
+  //   this._singletonDefinitions.set(symbol.id, definition);
+  // }
 
   hasFrozenBinding(definitionId: symbol): boolean {
     return this._frozenDefinitions.has(definitionId);
   }
 
-  getFrozenBinding<TInstance, TLifeTime extends LifeTime>(
-    definition: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IDefinition<TInstance, TLifeTime> | undefined {
-    return this._frozenDefinitions.get(definition.id);
-  }
+  // getFrozenBinding<TInstance, TLifeTime extends LifeTime>(
+  //   definition: IDefinitionSymbol<TInstance, TLifeTime>,
+  // ): IDefinition<TInstance, TLifeTime> | undefined {
+  //   return this._frozenDefinitions.get(definition.id);
+  // }
 
   hasScopeDefinition(definitionId: symbol): boolean {
     return this._scopeDefinitions.has(definitionId);
   }
 
   inheritsCascadingDefinition(definitionId: symbol): boolean {
-    // return this._cascadingDefinitions.has(definitionId) && !this._ownCascadingDefinitions.has(definitionId);
+    return this._cascadingDefinitions.has(definitionId) && !this._ownCascadingDefinitions.has(definitionId);
 
-    return this._cascadingDefinitions.hasOwn(definitionId);
+    // return this._cascadingDefinitions.hasOwn(definitionId);
   }
 
   hasCascadingDefinition(definitionId: symbol): boolean {
@@ -188,29 +198,6 @@ export class BindingsRegistry implements IBindingRegistryRead {
 
     this._scopeDefinitions.set(symbol.id, definition);
   }
-
-  // /**
-  //  * Registers cascading binding for the current scope and all child scopes.
-  //  * Cascading definition is a definition that is bound to scope (Definition#bind(container)).
-  //  * When we register cascading definition here, it gets inherited by all child binding registries, so effectively
-  //  * whenever we try to resolve the definition in some child scope, we will get the definition instantiated in
-  //  * the scope that is bound to the definition override.
-  //  *
-  //  * @param definition - definition bound to some particular scope
-  //  */
-  // addCascadingBinding<TInstance, TLifeTime extends LifeTime>(
-  //   symbol: DefinitionSymbol<TInstance, TLifeTime>,
-  //   definition: IDefinition<TInstance, TLifeTime>,
-  // ) {
-  //   if (this._scopeDefinitions.has(symbol.id)) {
-  //     throw new Error(
-  //       `Cannot bind cascading definition for the current scope. The scope has already other binding for the definition.`,
-  //     );
-  //   }
-  //
-  //   this._cascadingDefinitions.set(symbol.id, definition);
-  //   this._ownCascadingDefinitions.set(symbol.id, definition);
-  // }
 
   private registerSingleton<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
@@ -255,6 +242,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
     }
 
     this._cascadingDefinitions.set(symbol.id, iDefinition);
+    this._ownCascadingDefinitions.set(symbol.id, iDefinition);
   }
 
   private overrideCascading<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
@@ -263,10 +251,11 @@ export class BindingsRegistry implements IBindingRegistryRead {
     }
 
     this._cascadingDefinitions.set(definition.id, definition);
+    this._ownCascadingDefinitions.set(definition.id, definition);
   }
 
   private overrideSingleton<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (!this._singletonDefinitions.has(definition.id)) {
+    if (!this._singletonDefinitions.has(definition.id) && !this._frozenDefinitions.has(definition.id)) {
       throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
     }
 
@@ -274,7 +263,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   private overrideTransient<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (this._transientDefinitions.has(definition.id)) {
+    if (this._transientDefinitions.has(definition.id) && !this._frozenDefinitions.has(definition.id)) {
       throw new Error(`Cannot bind transient definition. The definition was already bound.`);
     }
 
@@ -282,7 +271,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   private overrideScoped<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (!this._scopeDefinitions.has(definition.id)) {
+    if (!this._scopeDefinitions.has(definition.id) && !this._frozenDefinitions.has(definition.id)) {
       throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
     }
 

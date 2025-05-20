@@ -6,7 +6,7 @@ import type { OwningDefinitionBuilder } from '../dsl/new/shared/OwningDefinition
 import type { MaybePromise } from '../../utils/async.js';
 import type { OverridesConfigBuilder } from '../dsl/new/shared/OverridesConfigBuilder.js';
 
-export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
+export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped; // | LifeTime.cascading;
 
 export interface ScopeConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(

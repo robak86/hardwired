@@ -35,7 +35,9 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
   ): Promise<TValue>;
 
-  useExisting<TValue>(definition: IDefinitionSymbol<TValue, LifeTime.scoped | LifeTime.singleton>): TValue | null;
+  useExisting<TValue>(
+    definition: IDefinitionSymbol<TValue, LifeTime.scoped | LifeTime.singleton | LifeTime.cascading>,
+  ): TValue | null;
 
   all<TDefinitions extends Array<IDefinitionSymbol<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
     ...definitions: [...TDefinitions]

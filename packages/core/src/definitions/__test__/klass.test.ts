@@ -19,9 +19,11 @@ describe(`cls`, () => {
   }
 
   describe('singleton consumer', () => {
-    it(`allows any other definitions`, async () => {
+    it(`allows only other singletons`, async () => {
       configureContainer(c => {
         c.add(consumerSingleton).class(Consumer, singletonDefinition);
+
+        // @ts-expect-error forbid scoped dependencies
         c.add(consumerSingleton).class(Consumer, transientDefinition);
 
         // @ts-expect-error forbid scoped dependencies
@@ -37,9 +39,13 @@ describe(`cls`, () => {
     it(`forbids?`, async () => {
       configureContainer(c => {
         c.add(consumerCascading).class(Consumer, singletonDefinition);
-        c.add(consumerCascading).class(Consumer, transientDefinition);
-        c.add(consumerCascading).class(Consumer, scopedDefinition);
         c.add(consumerCascading).class(Consumer, cascadingDefinition);
+
+        // @ts-expect-error forbid transient dependencies
+        c.add(consumerCascading).class(Consumer, transientDefinition);
+
+        // @ts-expect-error forbid scoped dependencies
+        c.add(consumerCascading).class(Consumer, scopedDefinition);
       });
     });
   });
@@ -59,9 +65,11 @@ describe(`cls`, () => {
     it(`allows all dependencies`, async () => {
       configureContainer(c => {
         c.add(consumerScoped).class(Consumer, singletonDefinition);
-        c.add(consumerScoped).class(Consumer, transientDefinition);
         c.add(consumerScoped).class(Consumer, scopedDefinition);
         c.add(consumerScoped).class(Consumer, cascadingDefinition);
+
+        // @ts-expect-error forbid transient dependencies
+        c.add(consumerScoped).class(Consumer, transientDefinition);
       });
     });
   });
