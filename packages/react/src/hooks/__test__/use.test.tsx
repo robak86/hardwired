@@ -1,4 +1,4 @@
-import { cls, container, fn, unbound } from 'hardwired';
+import { configureContainer, container, scoped, singleton } from 'hardwired';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { FC } from 'react';
@@ -18,7 +18,7 @@ import { withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor
 
 describe(`use`, () => {
   describe(`instantiating dependencies`, () => {
-    const val1Def = fn.singleton(() => 'val1');
+    const val1Def = singleton<string>('val1');
 
     function setup() {
       const Consumer = () => {
@@ -27,7 +27,9 @@ describe(`use`, () => {
         return <DummyComponent value={val1} />;
       };
 
-      const c = container.new();
+      const c = container.new(c => {
+        c.add(val1Def).static('val1');
+      });
 
       return render(
         <ContainerProvider container={c}>
@@ -48,7 +50,7 @@ describe(`use`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const clsDef = fn.scoped(checkoutRenderId);
+      const clsDef = scoped<number>('clsDef');
 
       const Consumer = () => {
         const cls = use(clsDef);
@@ -56,7 +58,9 @@ describe(`use`, () => {
         return <DummyComponent value={cls} />;
       };
 
-      const c = container.new();
+      const c = container.new(c => {
+        c.add(clsDef).fn(checkoutRenderId);
+      });
 
       const TestSubject = () => {
         return (
@@ -103,13 +107,8 @@ describe(`use`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = unbound.scoped<string>();
-
-      const val1Def = fn.scoped(use => {
-        const ext = use(someExternalParam);
-
-        return `render:${checkoutRenderId()};value:${ext}`;
-      });
+      const someExternalParam = scoped<string>();
+      const val1Def = scoped<string>('val1Def');
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
@@ -120,12 +119,15 @@ describe(`use`, () => {
         return <DummyComponent value={val1} />;
       };
 
-      const c = container.new();
+      const c = container.new(c => {
+        c.add(someExternalParam).static('val1');
+        c.add(val1Def).fn(ext => `render:${checkoutRenderId()};value:${ext}`, someExternalParam);
+      });
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         const config = useScopeConfig(
           scope => {
-            scope.overrideCascading(someExternalParam).toValue(externalValue);
+            scope.override(someExternalParam).static(externalValue);
           },
           [externalValue],
         );
@@ -169,8 +171,11 @@ describe(`use`, () => {
   });
 
   describe(`lifecycle interceptor`, () => {
+    const mountableServiceD = singleton<MountableService>('mountableServiceD');
+    const mountableServiceConsumerD = scoped<MountableServiceConsumer>('mountableServiceConsumerD');
+
     class MountableService implements IReactLifeCycleAware {
-      static instance = cls.singleton(this);
+      // static instance = cls.singleton(this);
 
       id = Math.random();
 
@@ -179,7 +184,7 @@ describe(`use`, () => {
     }
 
     class MountableServiceConsumer {
-      static instance = cls.scoped(this, [MountableService.instance]);
+      // static instance = cls.scoped(this, [mountableServiceD]);
 
       id = Math.random();
 
@@ -193,18 +198,23 @@ describe(`use`, () => {
       onUnmount = vi.fn();
     }
 
+    const configure = configureContainer(c => {
+      c.add(mountableServiceD).class(MountableService);
+      c.add(mountableServiceConsumerD).class(MountableServiceConsumer, mountableServiceD);
+    });
+
     describe(`single scope`, () => {
       it(`calls mount on component mount`, async () => {
-        const cnt = container.new(withReactLifeCycle());
+        const cnt = container.new(configure, withReactLifeCycle());
 
         const OtherConsumer = () => {
-          use(MountableService.instance);
+          use(mountableServiceD);
 
           return <DummyComponent value={'irrelevant'} />;
         };
 
         const Consumer = () => {
-          use(MountableService.instance);
+          use(mountableServiceD);
 
           return <OtherConsumer />;
         };
@@ -219,7 +229,7 @@ describe(`use`, () => {
 
         const result = render(<App />);
 
-        const svc = cnt.use(MountableService.instance);
+        const svc = await cnt.use(mountableServiceD);
 
         expect(svc.onMount).toHaveBeenCalledTimes(1);
         expect(svc.onUnmount).not.toHaveBeenCalled();
@@ -247,17 +257,17 @@ describe(`use`, () => {
 
       describe(`forceMount`, () => {
         it(`forces mount of already mounted component`, async () => {
-          const cnt = container.new(withReactLifeCycle());
+          const cnt = container.new(configure, withReactLifeCycle());
 
           const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
-            use(MountableServiceConsumer.instance);
+            use(mountableServiceConsumerD);
 
             return renderChild && <Consumer />;
           };
 
           const Consumer = () => {
             const [id] = useState(Math.random());
-            const svc = use(MountableServiceConsumer.instance, { forceMount: true });
+            const svc = use(mountableServiceConsumerD, { forceMount: true });
 
             return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
           };
@@ -272,42 +282,42 @@ describe(`use`, () => {
 
           const result = render(<App renderChild={false} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={true} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={true} other={'rerender on prop change'} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={false} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.unmount();
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
         });
       });
 
       describe(`forceReMount`, () => {
         it(`forces mount of already mounted component`, async () => {
-          const cnt = container.new(withReactLifeCycle());
+          const cnt = container.new(configure, withReactLifeCycle());
 
           const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
-            use(MountableServiceConsumer.instance);
+            use(mountableServiceConsumerD);
 
             return renderChild && <Consumer />;
           };
 
           const Consumer = () => {
             const [id] = useState(Math.random());
-            const svc = use(MountableServiceConsumer.instance, { forceRemount: true });
+            const svc = use(mountableServiceConsumerD, { forceRemount: true });
 
             return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
           };
@@ -322,42 +332,42 @@ describe(`use`, () => {
 
           const result = render(<App renderChild={false} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={true} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
 
           result.rerender(<App renderChild={true} other={'rerender on prop change'} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
 
           result.rerender(<App renderChild={false} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(2);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(2);
 
           result.unmount();
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(2);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(2);
         });
       });
 
       describe(`skipLifecycle`, () => {
         it(`skips calling mount/unmount callbacks`, async () => {
-          const cnt = container.new(withReactLifeCycle());
+          const cnt = container.new(configure, withReactLifeCycle());
 
           const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
-            use(MountableServiceConsumer.instance);
+            use(mountableServiceConsumerD);
 
             return renderChild && <Consumer />;
           };
 
           const Consumer = () => {
             const [id] = useState(Math.random());
-            const svc = use(MountableServiceConsumer.instance, { skipLifecycle: true });
+            const svc = use(mountableServiceConsumerD, { skipLifecycle: true });
 
             return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
           };
@@ -372,37 +382,37 @@ describe(`use`, () => {
 
           const result = render(<App renderChild={false} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={true} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={true} other={'rerender on prop change'} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={false} />);
 
-          expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
           result.unmount();
-          expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
         });
       });
     });
 
     describe(`scoped instances`, () => {
       it(`correctly calls mount/unmount for shared singleton used from scoped definition used in multiple scopes`, async () => {
-        const cnt = container.new(withReactLifeCycle());
+        const cnt = container.new(configure, withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());
-          const svc = use(MountableServiceConsumer.instance);
+          const svc = use(mountableServiceConsumerD);
 
           return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
         };
@@ -430,36 +440,36 @@ describe(`use`, () => {
 
         const result = render(<App renderScope1={false} renderScope2={false} />);
 
-        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(0);
-        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(0);
+        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
         result.rerender(<App renderScope1={true} renderScope2={true} />);
 
-        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
         result.rerender(<App renderScope1={true} renderScope2={false} />);
 
-        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
         result.rerender(<App renderScope1={false} renderScope2={false} />);
 
-        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
 
         result.rerender(<App renderScope1={true} renderScope2={false} />);
 
-        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(2);
-        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
+        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
       });
 
       it(`calls correctly callbacks when service is used within list item`, async () => {
-        const cnt = container.new(withReactLifeCycle());
+        const cnt = container.new(configure, withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());
-          const svc = use(MountableServiceConsumer.instance);
+          const svc = use(mountableServiceConsumerD);
 
           return <DummyComponent value={id} optionalValue={svc.dependencyId} />;
         };
@@ -498,20 +508,20 @@ describe(`use`, () => {
 
         const result = render(<App scopes={scopes} />);
 
-        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
         for (let i = 0; i < 20; i++) {
           result.rerender(<App scopes={[{ isEnabled: true }, ...randomScopeConfigs(20)]} />);
         }
 
-        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(0);
+        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
 
         result.rerender(<App scopes={[]} />);
 
-        expect(cnt.use(MountableService.instance).onMount).toBeCalledTimes(1);
-        expect(cnt.use(MountableService.instance).onUnmount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
+        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
       });
     });
   });

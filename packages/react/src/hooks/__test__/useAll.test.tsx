@@ -129,18 +129,6 @@ describe(`useDefinitions`, () => {
       const val1Def = scoped<string>();
       const val2Def = scoped<string>();
 
-      // const val1Def = fn.scoped(use => {
-      //   const ext = use(someExternalParam);
-      //
-      //   return `def:1,render:${checkoutRenderId()};value:${ext}`;
-      // });
-      //
-      // const val2Def = fn.scoped(use => {
-      //   const ext = use(someExternalParam);
-      //
-      //   return `def:2,render:${checkoutRenderId()};value:${ext}`;
-      // });
-
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
@@ -322,7 +310,7 @@ describe(`useDefinitions`, () => {
 
     describe(`scoped instances`, () => {
       it(`correctly calls mount/unmount for shared singleton used from scoped definition used in multiple scopes`, async () => {
-        const cnt = container.new(withReactLifeCycle());
+        const cnt = container.new(configure, withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());

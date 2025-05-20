@@ -9,7 +9,7 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
-import type { AnyDefinitionSymbol, IDefinition } from '../definitions/abstract/IDefinition.js';
+import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { MaybePromise } from '../utils/async.js';
 import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
@@ -241,55 +241,43 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   private buildWithStrategyIntercepted<TValue>(
     currentInterceptor: IInterceptor<any>,
-    symbol: IDefinition<TValue, LifeTime>,
-  ): TValue {
+    definition: IDefinition<TValue, LifeTime>,
+  ): MaybePromise<TValue> {
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
 
-    const frozenDefinition = this.bindingsRegistry.getFrozenBinding(symbol);
+    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor);
 
-    if (frozenDefinition) {
-      const instance = this.instancesStore.upsertIntoRootInstances(frozenDefinition, withChildInterceptor);
-
-      return currentInterceptor.onLeave(instance, symbol) as TValue;
+      return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
-    if (symbol.strategy === LifeTime.transient) {
-      const transientDef = this.instancesStore.getTransientDefinition(symbol);
+    if (definition.strategy === LifeTime.transient) {
+      const instance = definition.create(this);
 
-      if (!transientDef) {
-        throw new Error(`Cannot find definition for transient binding ${symbol.toString()}.`);
-      }
-
-      const instance = transientDef.create(this);
-
-      return currentInterceptor.onLeave(instance, transientDef) as TValue;
+      return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
-    if (symbol.strategy === LifeTime.singleton) {
-      const singletonDef = this.instancesStore.getSingletonDefinition(symbol);
+    if (definition.strategy === LifeTime.singleton) {
+      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor);
 
-      if (!singletonDef) {
-        throw new Error(`Cannot find definition for singleton binding ${symbol.toString()}.`);
-      }
-
-      const instance = this.instancesStore.upsertIntoRootInstances(singletonDef, withChildInterceptor);
-
-      return currentInterceptor.onLeave(instance, symbol) as TValue;
+      return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
-    if (symbol.strategy === LifeTime.scoped) {
-      // const scopedDef = this.instancesStore.getScopedDefinition(symbol);
-
+    if (definition.strategy === LifeTime.scoped) {
       const instance = this.instancesStore.upsertIntoScopeInstances(
-        symbol,
+        definition,
         withChildInterceptor,
-        this.bindingsRegistry.inheritsCascadingDefinition(symbol.id),
+        this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
       );
 
-      return currentInterceptor.onLeave(instance, symbol) as TValue;
+      return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
-    throw new Error(`Unsupported strategy ${(symbol as AnyDefinitionSymbol).strategy}`);
+    if (definition.strategy === LifeTime.cascading) {
+      const instance = (this.bindingsRegistry.getOwningContainer(definition) ?? this).resolveCascading(definition);
+
+      return currentInterceptor.onLeave(instance, definition) as TValue;
+    }
   }
 
   all<TDefinitions extends Array<IDefinitionSymbol<any, ValidDependenciesLifeTime<LifeTime>>>>(
