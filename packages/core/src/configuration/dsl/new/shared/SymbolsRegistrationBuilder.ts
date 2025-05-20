@@ -18,7 +18,7 @@ export interface IBindingsRegistryRead {
   ): IDefinition<TInstance, TLifeTime> | undefined;
 }
 
-export class ScopeSymbolBinder<TInstance, TLifeTime extends LifeTime> {
+export class SymbolsRegistrationBuilder<TInstance, TLifeTime extends LifeTime> {
   constructor(
     protected readonly _defSymbol: IDefinitionSymbol<TInstance, TLifeTime>,
     protected readonly _registry: IBindingsRegistryRead,

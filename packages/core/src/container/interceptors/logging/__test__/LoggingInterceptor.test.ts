@@ -1,33 +1,35 @@
+import { singleton } from '../../../../definitions/def-symbol.js';
 import { container } from '../../../Container.js';
 import { LoggingInterceptor } from '../LoggingInterceptor.js';
-import { fn } from '../../../../definitions/fn.js';
-import { cls } from '../../../../definitions/utils/class-type.js';
 
 describe.skip(`LoggingInterceptor`, () => {
   describe(`sync`, () => {
     it(`it prints correct messages`, async () => {
       const logger = LoggingInterceptor.create();
-      const cnt = container.new(c => c.withInterceptor('logging', logger));
 
-      const a1 = fn.singleton(() => 'A1');
-      const a2 = fn.singleton(() => 'A2');
+      const a1 = singleton<string>('a1');
+      const a2 = singleton<string>('a2');
 
-      const b = fn.scoped(use => {
-        return { a1: use(a1), a2: use(a2) };
+      const b = singleton<{ a1: string; a2: string }>('b');
+      const c = singleton<{ b: { a1: string; a2: string }; a1: string }>('c');
+
+      const cnt = container.new(configure => {
+        configure.add(a1).fn(() => 'A1');
+        configure.add(a2).fn(() => 'A2');
+        configure.add(b).fn((a1, a2) => ({ a1, a2 }), a1, a2);
+        configure.add(c).fn((b, a1) => ({ b, a1 }), b, a1);
+
+        configure.withInterceptor('logging', logger);
       });
-      const c = fn.scoped(use => {
-        return { c: use(b), a1: use(a1) };
-      });
 
-      cnt.use(c);
-      cnt.use(c);
+      await cnt.use(c);
+      await cnt.use(c);
 
-      cnt.scope().use(c);
+      await cnt.scope().use(c);
     });
 
     it(`it prints correct messages for classes`, async () => {
       const logger = LoggingInterceptor.create();
-      const cnt = container.new(c => c.withInterceptor('logging', logger));
 
       class A1 {}
       class A2 {}
@@ -61,14 +63,21 @@ describe.skip(`LoggingInterceptor`, () => {
         }
       }
 
-      const a1 = cls.singleton(A1);
-      const a2 = cls.singleton(A2);
+      const a1 = singleton<A1>('A1');
+      const a2 = singleton<A2>('A2');
+      const b = singleton<B>('B');
+      const cDef = singleton<C>('C');
 
-      const b = cls.scoped(B, [a1, a2]);
+      const cnt = container.new(c => {
+        c.add(a1).class(A1);
+        c.add(a2).class(A2);
+        c.add(b).class(B, a1, a2);
+        c.add(cDef).class(C, b, a1);
 
-      const c = cls.scoped(C, [b, a1]);
+        c.withInterceptor('logging', logger);
+      });
 
-      cnt.use(c);
+      await cnt.use(cDef);
     });
   });
 
@@ -77,27 +86,34 @@ describe.skip(`LoggingInterceptor`, () => {
 
     it(`it prints correct messages`, async () => {
       const logger = LoggingInterceptor.create();
-      const cnt = container.new(c => c.withInterceptor('logging', logger));
 
-      const a = fn.singleton(async () => {
-        await sleep(50);
+      const aDef = singleton<string>('aDef');
+      const bDef = singleton<{ a: string }>('bDef');
+      const cDef = singleton<{ b: { a: string } }>('cDef');
 
-        return 'A';
+      const cnt = container.new(c => {
+        c.add(aDef).fn(async () => {
+          await sleep(50);
+
+          return 'A';
+        });
+
+        c.add(bDef).fn(async aDefVal => {
+          await sleep(200);
+
+          return { a: aDefVal };
+        }, aDef);
+
+        c.add(cDef).fn(async bDefVal => {
+          await sleep(100);
+
+          return { b: bDefVal };
+        }, bDef);
+
+        c.withInterceptor('logging', logger);
       });
 
-      const b = fn.singleton(async use => {
-        await sleep(200);
-
-        return { b: await use(a) };
-      });
-
-      const c = fn.singleton(async use => {
-        await sleep(100);
-
-        return { c: await use(b) };
-      });
-
-      await cnt.use(c);
+      await cnt.use(cDef);
     });
   });
 });

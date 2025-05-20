@@ -1,18 +1,17 @@
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
-import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-symbol.js';
-import type { MaybePromise } from '../../utils/async.js';
-import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
+import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/ScopeConfigurable.js';
+import type { IContainer, IStrategyAware } from '../../../../container/IContainer.js';
+import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
+import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { MaybePromise } from '../../../../utils/async.js';
+import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
+import { SymbolsRegistrationBuilder } from '../shared/SymbolsRegistrationBuilder.js';
+import { OwningDefinitionBuilder } from '../shared/OwningDefinitionBuilder.js';
+import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
+import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
+import { OverridesConfigBuilder } from '../shared/OverridesConfigBuilder.js';
 
-import { ScopeSymbolBinder } from './new/scope/ScopeSymbolBinder.js';
-import { OwningDefinitionBuilder } from './new/scope/OwningDefinitionBuilder.js';
-import { createConfiguredDefinition } from './new/utils/create-configured-definition.js';
-import { createDecoratedDefinition } from './new/utils/create-decorated-definition.js';
-import { ScopeOverridesBinder } from './new/scope/ScopeOverridesBinder.js';
-
-export class ScopeConfigurationDSL implements ScopeConfigurable {
+export class ScopeConfigurationBuilder implements ScopeConfigurable {
   private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
 
   constructor(
@@ -24,8 +23,8 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
 
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeSymbolBinder<TInstance, TLifeTime> {
-    return new ScopeSymbolBinder(
+  ): SymbolsRegistrationBuilder<TInstance, TLifeTime> {
+    return new SymbolsRegistrationBuilder(
       symbol,
       this._bindingsRegistry,
       this._allowedLifeTimes,
@@ -67,8 +66,8 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
 
   override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeOverridesBinder<TInstance, TLifeTime> {
-    return new ScopeOverridesBinder(
+  ): OverridesConfigBuilder<TInstance, TLifeTime> {
+    return new OverridesConfigBuilder(
       symbol,
       this._bindingsRegistry,
       this._allowedLifeTimes,

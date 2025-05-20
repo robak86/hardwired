@@ -1,20 +1,16 @@
-import { unbound } from '../unbound.js';
-import { cls } from '../utils/class-type.js';
-import { value } from '../value.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
-import { configureScope } from '../../configuration/ScopeConfiguration.js';
 import { container } from '../../container/Container.js';
-import { fn } from '../fn.js';
+import { cascading, scoped, singleton, transient } from '../def-symbol.js';
 
 describe(`unbound`, () => {
   describe(`scopes`, () => {
     describe(`overrideCascading`, () => {
       describe(`binding to value`, () => {
         it(`acts as scoped`, async () => {
-          const unboundDefinition = unbound.scoped<string>();
+          const unboundDefinition = cascading<string>();
 
           const configure = configureContainer(c => {
-            c.overrideCascading(unboundDefinition).toRedefined(() => crypto.randomUUID());
+            c.add(unboundDefinition).fn(() => crypto.randomUUID());
           });
 
           const cnt = container.new(configure);
@@ -29,11 +25,27 @@ describe(`unbound`, () => {
       describe(`binding to definition`, () => {
         describe(`singleton`, () => {
           it(`acts as singleton`, async () => {
-            const unboundDefinition = unbound.singleton<string>();
-            const singletonNumber = fn.singleton(() => crypto.randomUUID());
+            const unboundDefinition = singleton<string>('unboundDefinition');
 
             const configure = configureContainer(c => {
-              c.override(unboundDefinition).to(singletonNumber);
+              c.add(unboundDefinition).fn(() => crypto.randomUUID());
+            });
+
+            const cnt = container.new(configure);
+
+            const result = cnt.use(unboundDefinition);
+            const scopeResult = cnt.scope().use(unboundDefinition);
+
+            expect(result).toBe(scopeResult);
+          });
+        });
+
+        describe(`cascading`, () => {
+          it(`acts as scoped`, async () => {
+            const unboundDefinition = cascading<string>();
+
+            const configure = configureContainer(c => {
+              c.add(unboundDefinition).fn(() => crypto.randomUUID());
             });
 
             const cnt = container.new(configure);
@@ -47,11 +59,10 @@ describe(`unbound`, () => {
 
         describe(`scoped`, () => {
           it(`acts as scoped`, async () => {
-            const unboundDefinition = unbound.scoped<string>();
-            const singletonNumber = fn.scoped(() => crypto.randomUUID());
+            const unboundDefinition = scoped<string>();
 
             const configure = configureContainer(c => {
-              c.overrideCascading(unboundDefinition).to(singletonNumber);
+              c.add(unboundDefinition).fn(() => crypto.randomUUID());
             });
 
             const cnt = container.new(configure);
@@ -59,7 +70,7 @@ describe(`unbound`, () => {
             const result = cnt.use(unboundDefinition);
             const scopeResult = cnt.scope().use(unboundDefinition);
 
-            expect(result).toBe(scopeResult);
+            expect(result).not.toBe(scopeResult);
           });
         });
       });
@@ -67,11 +78,11 @@ describe(`unbound`, () => {
 
     describe(`bind`, () => {
       it(`acts as scoped`, async () => {
-        const unboundDefinition = unbound.scoped<string>();
+        const unboundDefinition = scoped<string>();
 
         const configure = configureContainer(c => {
           // bind only for the current scope
-          c.override(unboundDefinition).toRedefined(() => crypto.randomUUID());
+          c.add(unboundDefinition).fn(() => crypto.randomUUID());
         });
 
         const cnt = container.new(configure);
@@ -85,11 +96,11 @@ describe(`unbound`, () => {
       });
 
       it(`keeps override for the child scope`, async () => {
-        const def = fn.scoped(() => 1);
+        const def = scoped<number>();
 
         const redefinedSpy = vi.fn(() => 2);
 
-        const cnt = container.new(c => c.override(def).toRedefined(redefinedSpy));
+        const cnt = container.new(c => c.add(def).fn(redefinedSpy));
         const cntResult = cnt.use(def);
 
         const scope = cnt.scope();
@@ -103,21 +114,17 @@ describe(`unbound`, () => {
   });
 
   describe(`injecting implementation for an interface`, () => {
-    const IMyInterfaceSingleton = unbound.singleton<IMyInterface>();
-    const IMyInterfaceScoped = unbound.scoped<IMyInterface>();
-    const IMyInterfaceTransient = unbound.transient<IMyInterface>();
+    const IMyInterfaceSingleton = singleton<IMyInterface>();
+    const IMyInterfaceScoped = scoped<IMyInterface>();
+    const IMyInterfaceTransient = transient<IMyInterface>();
 
     interface IMyInterface {
       multiply(a: number, b: number): number;
     }
 
-    const scalingFactor = value(10);
+    const scalingFactor = singleton<number>();
 
     class MyClass implements IMyInterface {
-      static scopedInstance = cls.scoped(this, [scalingFactor]);
-      static transientInstance = cls.transient(this, [scalingFactor]);
-      static singletonInstance = cls.singleton(this, [scalingFactor]);
-
       constructor(private _scalingFactor: number) {}
 
       multiply(a: number, b: number) {
@@ -127,7 +134,10 @@ describe(`unbound`, () => {
 
     it(`provides implementation for the interface`, async () => {
       const configure = configureContainer(c => {
-        c.overrideCascading(IMyInterfaceSingleton).to(MyClass.singletonInstance);
+        c.add(scalingFactor).static(10);
+        c.add(IMyInterfaceSingleton).class(MyClass, scalingFactor);
+        c.add(IMyInterfaceScoped).class(MyClass, scalingFactor);
+        c.add(IMyInterfaceTransient).class(MyClass, scalingFactor);
       });
 
       const cnt = container.new(configure);
@@ -135,16 +145,6 @@ describe(`unbound`, () => {
       const result = cnt.use(IMyInterfaceSingleton);
 
       expect(result).toBeInstanceOf(MyClass);
-    });
-
-    it(`prevents assigning singleton definitions in `, async () => {
-      configureScope(c => {
-        c.overrideCascading(IMyInterfaceScoped).to(MyClass.scopedInstance);
-        c.overrideCascading(IMyInterfaceTransient).to(MyClass.transientInstance);
-
-        // @ts-expect-error - cannot bind singletons in scope configuration
-        c.overrideCascading(IMyInterfaceSingleton).to(MyClass.singletonInstance);
-      });
     });
   });
 });

@@ -3,7 +3,7 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import { maybePromiseThen } from '../../../../utils/async.js';
-import type { IBindingsRegistryRead } from '../scope/ScopeSymbolBinder.js';
+import type { IBindingsRegistryRead } from '../shared/SymbolsRegistrationBuilder.js';
 import type { ConstructorArgsSymbols } from '../ContainerSymbolBinder.js';
 
 export function createDecoratedDefinition<TInstance, TLifetime extends LifeTime, TArgs extends any[]>(

@@ -1,16 +1,18 @@
-import type { ContainerConfigurable, ContainerConfigureFreezeLifeTimes } from '../abstract/ContainerConfigurable.js';
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import type { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
-import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-symbol.js';
-import type { IInterceptor } from '../../container/interceptors/interceptor.js';
-import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
+import type {
+  ContainerConfigurable,
+  ContainerConfigureFreezeLifeTimes,
+} from '../../../abstract/ContainerConfigurable.js';
+import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
+import type { IContainer, IStrategyAware } from '../../../../container/IContainer.js';
+import type { InterceptorsRegistry } from '../../../../container/interceptors/InterceptorsRegistry.js';
+import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { IInterceptor } from '../../../../container/interceptors/interceptor.js';
+import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
+import { ContainerSymbolBinder } from '../ContainerSymbolBinder.js';
+import { OverridesConfigBuilder } from '../shared/OverridesConfigBuilder.js';
 
-import { ContainerSymbolBinder } from './new/ContainerSymbolBinder.js';
-import { ScopeOverridesBinder } from './new/scope/ScopeOverridesBinder.js';
-
-export class ContainerConfigurationDSL implements ContainerConfigurable {
+export class ContainerConfigurationBuilder implements ContainerConfigurable {
   private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.singleton];
 
   constructor(
@@ -22,8 +24,8 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
 
   override<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeOverridesBinder<TInstance, TLifeTime> {
-    return new ScopeOverridesBinder(
+  ): OverridesConfigBuilder<TInstance, TLifeTime> {
+    return new OverridesConfigBuilder(
       symbol,
       this._bindingsRegistry,
       this._allowedLifeTimes,
@@ -35,8 +37,8 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeOverridesBinder<TInstance, TLifeTime> {
-    return new ScopeOverridesBinder(
+  ): OverridesConfigBuilder<TInstance, TLifeTime> {
+    return new OverridesConfigBuilder(
       symbol,
       this._bindingsRegistry,
       this._allowedLifeTimes,

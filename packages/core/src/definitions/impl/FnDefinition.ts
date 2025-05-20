@@ -48,4 +48,8 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
       return this.createFn(...deps);
     }
   }
+
+  toString() {
+    return this.id.toString();
+  }
 }

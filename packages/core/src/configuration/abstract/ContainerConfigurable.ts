@@ -3,7 +3,7 @@ import type { IContainer, UseFn } from '../../container/IContainer.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-symbol.js';
 import type { ContainerSymbolBinder } from '../dsl/new/ContainerSymbolBinder.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
-import type { ScopeOverridesBinder } from '../dsl/new/scope/ScopeOverridesBinder.js';
+import type { OverridesConfigBuilder } from '../dsl/new/shared/OverridesConfigBuilder.js';
 
 export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
@@ -23,11 +23,11 @@ export interface ContainerConfigurable {
 
   override<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeOverridesBinder<TInstance, TLifeTime>;
+  ): OverridesConfigBuilder<TInstance, TLifeTime>;
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeOverridesBinder<TInstance, TLifeTime>;
+  ): OverridesConfigBuilder<TInstance, TLifeTime>;
 
   //
   // overrideCascading<TInstance, TLifeTime extends ContainerConfigureCascadingLifeTimes>(

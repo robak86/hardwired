@@ -1,7 +1,7 @@
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { IBindingsRegistryRead } from '../scope/ScopeSymbolBinder.js';
+import type { IBindingsRegistryRead } from '../shared/SymbolsRegistrationBuilder.js';
 import type { ConstructorArgsSymbols } from '../ContainerSymbolBinder.js';
 import { maybePromiseThen } from '../../../../utils/async.js';
 
@@ -21,16 +21,26 @@ export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime
   }
 
   return def.override(container => {
-    const deps = container.all(...dependencies);
+    if (dependencies.length) {
+      const deps = container.all(...dependencies);
 
-    return maybePromiseThen(deps, (awaitedDependencies: TArgs) => {
+      return maybePromiseThen(deps, (awaitedDependencies: TArgs) => {
+        const instance = def.create(container);
+
+        return maybePromiseThen(instance, awaitedInstance => {
+          return maybePromiseThen(configFn(awaitedInstance, ...awaitedDependencies), () => {
+            return instance;
+          });
+        });
+      });
+    } else {
       const instance = def.create(container);
 
       return maybePromiseThen(instance, awaitedInstance => {
-        return maybePromiseThen(configFn(awaitedInstance, ...awaitedDependencies), () => {
+        return maybePromiseThen((configFn as any)(awaitedInstance), () => {
           return instance;
         });
       });
-    });
+    }
   });
 }

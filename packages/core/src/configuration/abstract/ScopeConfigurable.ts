@@ -1,17 +1,17 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-symbol.js';
-import type { ScopeSymbolBinder } from '../dsl/new/scope/ScopeSymbolBinder.js';
+import type { SymbolsRegistrationBuilder } from '../dsl/new/shared/SymbolsRegistrationBuilder.js';
 import type { IContainer } from '../../container/IContainer.js';
-import type { OwningDefinitionBuilder } from '../dsl/new/scope/OwningDefinitionBuilder.js';
+import type { OwningDefinitionBuilder } from '../dsl/new/shared/OwningDefinitionBuilder.js';
 import type { MaybePromise } from '../../utils/async.js';
-import type { ScopeOverridesBinder } from '../dsl/new/scope/ScopeOverridesBinder.js';
+import type { OverridesConfigBuilder } from '../dsl/new/shared/OverridesConfigBuilder.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
 export interface ScopeConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeSymbolBinder<TInstance, TLifeTime>;
+  ): SymbolsRegistrationBuilder<TInstance, TLifeTime>;
 
   onDispose(callback: (scope: IContainer) => void): void;
 
@@ -33,5 +33,5 @@ export interface ScopeConfigurable {
 
   override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeOverridesBinder<TInstance, TLifeTime>;
+  ): OverridesConfigBuilder<TInstance, TLifeTime>;
 }

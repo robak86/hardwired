@@ -54,8 +54,15 @@ export const ContainerProvider: FC<ContainerProviderProps & PropsWithChildren> =
     // so react doesn't complain about calling fewer hooks than expected
     const hookValue: unknown = hook.hook();
 
-    containerInstance.current.container.use(hookValuesD).setHookValue(hook.id, hookValue);
-    containerInstance.current.container.use(hook);
+    const registry = containerInstance.current.container.use(hookValuesD);
+
+    if (registry instanceof Promise) {
+      throw new Error('Hook values registry is not initialized');
+    }
+
+    registry.setHookValue(hook.id, hookValue);
+
+    void containerInstance.current.container.use(hook);
   });
 
   // eslint-disable-next-line react/no-children-prop

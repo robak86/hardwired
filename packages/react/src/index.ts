@@ -5,9 +5,6 @@ export type { ContainerProviderProps } from './components/ContainerProvider.js';
 export { ContainerScope } from './components/ContainerScope.js';
 export type { ContainerScopeProps } from './components/ContainerScope.js';
 
-export { ContainerInitializer } from './components/ContainerInitializer.js';
-export type { ContainerInitializerProps } from './components/ContainerInitializer.js';
-
 // hooks
 export { useContainer } from './context/ContainerContext.js';
 export { use } from './hooks/use.js';

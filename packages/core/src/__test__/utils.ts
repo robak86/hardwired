@@ -1,8 +1,7 @@
 import type { Definition } from '../definitions/impl/Definition.js';
-import { fn } from '../definitions/fn.js';
 import type { AnyDefinitionSymbol } from '../definitions/abstract/IDefinition.js';
 
-export function buildSingletonTreeFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
+export function buildSingletonTreeFn(times: number, depth: number, currentDepth = 0): Definition<number, any>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -10,6 +9,7 @@ export function buildSingletonTreeFn(times: number, depth: number, currentDepth 
   const definitions: AnyDefinitionSymbol[] = [];
 
   for (let i = 0; i < times; i++) {
+    x;
     definitions.push(
       fn.singleton(use => {
         return use.all(...buildSingletonTreeFn(times, depth, (currentDepth += 1)));
@@ -20,7 +20,7 @@ export function buildSingletonTreeFn(times: number, depth: number, currentDepth 
   return definitions;
 }
 
-export function buildTransientFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
+export function buildTransientFn(times: number, depth: number, currentDepth = 0): Definition<number, any>[] {
   if (currentDepth > depth) {
     return [];
   }
@@ -39,7 +39,7 @@ export function buildTransientFn(times: number, depth: number, currentDepth = 0)
   return definitions;
 }
 
-export function buildScopedFn(times: number, depth: number, currentDepth = 0): Definition<number, any, []>[] {
+export function buildScopedFn(times: number, depth: number, currentDepth = 0): Definition<number, any>[] {
   if (currentDepth > depth) {
     return [];
   }

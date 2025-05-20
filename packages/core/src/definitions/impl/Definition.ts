@@ -15,4 +15,8 @@ export class Definition<TInstance, TLifeTime extends LifeTime> implements IDefin
   override(createFn: (context: IContainer) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.id, this.strategy, createFn);
   }
+
+  toString() {
+    return this.id.toString();
+  }
 }

@@ -4,10 +4,10 @@ import { createConfiguredDefinition } from '../utils/create-configured-definitio
 import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
 import type { ConstructorArgsSymbols } from '../ContainerSymbolBinder.js';
 
-import { ScopeSymbolBinder } from './ScopeSymbolBinder.js';
+import { SymbolsRegistrationBuilder } from './SymbolsRegistrationBuilder.js';
 
 // TODO: we need to constraint allowed types that can be injected to configure and decorate functions
-export class ScopeOverridesBinder<TInstance, TLifeTime extends LifeTime> extends ScopeSymbolBinder<
+export class OverridesConfigBuilder<TInstance, TLifeTime extends LifeTime> extends SymbolsRegistrationBuilder<
   TInstance,
   TLifeTime
 > {

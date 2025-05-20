@@ -1,16 +1,18 @@
 import { container } from '../../Container.js';
 import type { IInterceptor } from '../interceptor.js';
-import { fn } from '../../../definitions/fn.js';
+import { singleton } from '../../../definitions/def-symbol.js';
+import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
+import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 
 describe(`interceptor`, () => {
   class TestInterceptor implements IInterceptor<any> {
     constructor() {}
 
-    onEnter<TNewInstance>(): IInterceptor<TNewInstance> {
+    onEnter<TNewInstance>(_definition: IDefinition<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {
       return this as IInterceptor<TNewInstance>;
     }
 
-    onLeave(instance: unknown) {
+    onLeave(instance: unknown, _definition: IDefinition<unknown, LifeTime>) {
       return instance;
     }
 
@@ -32,78 +34,101 @@ describe(`interceptor`, () => {
   });
 
   describe(`sync`, () => {
-    it(`Calls interceptor methods with correct arguments`, () => {
-      const cnt = container.new(c => c.withInterceptor('test', new TestInterceptor()));
-      const interceptor = cnt.getInterceptor('test') as TestInterceptor;
-
-      vi.spyOn(interceptor, 'onEnter');
-      vi.spyOn(interceptor, 'onLeave');
-
+    it(`Calls interceptor methods with correct arguments`, async () => {
       /*
         A -> B  -> C1
                 -> C2
-       */
-      const c1 = fn.singleton(() => 'C1');
-      const c2 = fn.singleton(() => 'C2');
-      const b = fn.singleton(use => ['B', use(c1), use(c2)]);
-      const a = fn.singleton(use => ['A', use(b)]);
+      */
 
-      cnt.use(a);
+      const c1Def = singleton<string>();
+      const c2Def = singleton<string>();
+      const bDef = singleton<[string, string, string]>();
+      const aDef = singleton<[string, [string, string, string]]>();
+
+      const cnt = container.new(c => {
+        c.add(c1Def).fn(() => 'C1');
+        c.add(c2Def).fn(() => 'C2');
+        c.add(bDef).fn((c1, c2) => ['B', c1, c2], c1Def, c2Def);
+        c.add(aDef).fn(b => ['A', b], bDef);
+
+        c.withInterceptor('test', new TestInterceptor());
+      });
+      const interceptor = cnt.getInterceptor('test') as TestInterceptor;
+
+      const onEnterSpy = vi.spyOn(interceptor, 'onEnter');
+      const onLeaveSpy = vi.spyOn(interceptor, 'onLeave');
+
+      await cnt.use(aDef);
 
       expect(interceptor.onEnter).toHaveBeenCalledTimes(4);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(1, a, []);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(2, b, []);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(3, c1, []);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(4, c2, []);
 
-      expect(interceptor.onLeave).toHaveBeenCalledTimes(4);
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(1, 'C1', c1);
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(2, 'C2', c2);
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], b);
-      expect(interceptor.onLeave).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], a);
+      expect(onEnterSpy.mock.calls[0][0].id).toEqual(aDef.id);
+      expect(onEnterSpy.mock.calls[1][0].id).toEqual(bDef.id);
+      expect(onEnterSpy.mock.calls[2][0].id).toEqual(c1Def.id);
+      expect(onEnterSpy.mock.calls[3][0].id).toEqual(c2Def.id);
+
+      expect(onLeaveSpy.mock.calls[0][0]).toEqual('C1');
+      expect(onLeaveSpy.mock.calls[0][1].id).toEqual(c1Def.id);
+
+      expect(onLeaveSpy.mock.calls[1][0]).toEqual('C2');
+      expect(onLeaveSpy.mock.calls[1][1].id).toEqual(c2Def.id);
+
+      expect(onLeaveSpy.mock.calls[2][0]).toEqual(['B', 'C1', 'C2']);
+      expect(onLeaveSpy.mock.calls[2][1].id).toEqual(bDef.id);
+
+      expect(onLeaveSpy.mock.calls[3][0]).toEqual(['A', ['B', 'C1', 'C2']]);
+      expect(onLeaveSpy.mock.calls[3][1].id).toEqual(aDef.id);
     });
   });
 
   describe(`async`, () => {
     it(`Calls interceptor methods with correct arguments`, async () => {
-      const interceptor = new TestInterceptor();
-      const cnt = container.new(c => c.withInterceptor('test', interceptor));
-
-      vi.spyOn(interceptor, 'onEnter');
-      const onLeaveSpy = vi.spyOn(interceptor, 'onLeave');
+      // const interceptor = new TestInterceptor();
 
       /*
         A -> B  -> C1
                 -> C2
        */
-      const c1 = fn.singleton(async () => 'C1');
-      const c2 = fn.singleton(async () => 'C2');
-      const b = fn.singleton(async use => ['B', await use(c1), await use(c2)]);
-      const a = fn.singleton(async use => ['A', await use(b)]);
 
-      await cnt.use(a);
+      const c1Def = singleton<string>();
+      const c2Def = singleton<string>();
+      const bDef = singleton<[string, string, string]>();
+      const aDef = singleton<[string, [string, string, string]]>();
+
+      const cnt = container.new(c => {
+        c.add(c1Def).fn(async () => 'C1');
+        c.add(c2Def).fn(async () => 'C2');
+        c.add(bDef).fn(async (c1, c2) => ['B', c1, c2], c1Def, c2Def);
+        c.add(aDef).fn(async b => ['A', b], bDef);
+
+        c.withInterceptor('test', new TestInterceptor());
+      });
+
+      const interceptor = cnt.getInterceptor('test') as TestInterceptor;
+
+      const onEnterSpy = vi.spyOn(interceptor, 'onEnter');
+      const onLeaveSpy = vi.spyOn(interceptor, 'onLeave');
+
+      await cnt.use(aDef);
 
       expect(interceptor.onEnter).toHaveBeenCalledTimes(4);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(1, a, []);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(2, b, []);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(3, c1, []);
-      expect(interceptor.onEnter).toHaveBeenNthCalledWith(4, c2, []);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const onLeaveCalls = onLeaveSpy.mock.calls as any;
+      expect(onEnterSpy.mock.calls[0][0].id).toEqual(aDef.id);
+      expect(onEnterSpy.mock.calls[1][0].id).toEqual(bDef.id);
+      expect(onEnterSpy.mock.calls[2][0].id).toEqual(c1Def.id);
+      expect(onEnterSpy.mock.calls[3][0].id).toEqual(c2Def.id);
 
-      expect(onLeaveCalls).toHaveLength(4);
-      expect(await onLeaveCalls[0][0]).toEqual('C1');
-      expect(await onLeaveCalls[0][1]).toEqual(c1);
+      expect(await onLeaveSpy.mock.calls[0][0]).toEqual('C1');
+      expect(onLeaveSpy.mock.calls[0][1].id).toEqual(c1Def.id);
 
-      expect(await onLeaveCalls[1][0]).toEqual(['B', 'C1', 'C2']);
-      expect(await onLeaveCalls[1][1]).toEqual(b);
+      expect(await onLeaveSpy.mock.calls[1][0]).toEqual('C2');
+      expect(onLeaveSpy.mock.calls[1][1].id).toEqual(c2Def.id);
 
-      expect(await onLeaveCalls[2][0]).toEqual(['A', ['B', 'C1', 'C2']]);
-      expect(await onLeaveCalls[2][1]).toEqual(a);
+      expect(await onLeaveSpy.mock.calls[2][0]).toEqual(['B', 'C1', 'C2']);
+      expect(onLeaveSpy.mock.calls[2][1].id).toEqual(bDef.id);
 
-      expect(await onLeaveCalls[3][0]).toEqual('C2');
-      expect(await onLeaveCalls[3][1]).toEqual(c2);
+      expect(await onLeaveSpy.mock.calls[3][0]).toEqual(['A', ['B', 'C1', 'C2']]);
+      expect(onLeaveSpy.mock.calls[3][1].id).toEqual(aDef.id);
     });
   });
 });

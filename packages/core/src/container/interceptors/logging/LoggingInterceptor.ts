@@ -16,12 +16,12 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
 
   private constructor(
     private _parent?: LoggingInterceptor<unknown>,
-    private _definition?: IDefinition<T, LifeTime, any[]>,
+    private _definition?: IDefinition<T, LifeTime>,
     private _instances?: IInstancesStoreRead,
     private _scopeLevel = 0,
   ) {}
 
-  get definition(): IDefinition<T, LifeTime, any[]> {
+  get definition(): IDefinition<T, LifeTime> {
     if (!this._definition) {
       throw new Error(`No definition associated with the graph node`);
     }
@@ -30,7 +30,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
   }
 
   private onDependencyInstanceCreated<TInstance>(
-    definition: IDefinition<TInstance, any, any>,
+    definition: IDefinition<TInstance, any>,
     instance: TInstance,
     endTime: number,
   ) {
@@ -40,13 +40,15 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     );
   }
 
-  onEnter<TNewInstance>(dependencyDefinition: IDefinition<TNewInstance, LifeTime, any[]>): IInterceptor<TNewInstance> {
+  onEnter<TNewInstance>(dependencyDefinition: IDefinition<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {
     if (this.hasCached(dependencyDefinition.id)) {
       console.group(
-        `Fetching cached[${this.scopeLevel}][${dependencyDefinition.strategy}]: ${dependencyDefinition.name}`,
+        `Fetching cached[${this.scopeLevel}][${dependencyDefinition.strategy}]: ${dependencyDefinition.toString()}`,
       );
     } else {
-      console.group(`Creating[${this.scopeLevel}][${dependencyDefinition.strategy}]: ${dependencyDefinition.name}`);
+      console.group(
+        `Creating[${this.scopeLevel}][${dependencyDefinition.strategy}]: ${dependencyDefinition.toString()}`,
+      );
     }
 
     this._start = performance.now();
@@ -70,7 +72,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     return new LoggingInterceptor(this, this._definition, instancesStore, newScopeLevel);
   }
 
-  onLeave(instance: T, definition: IDefinition<T, any, any>): T {
+  onLeave(instance: T, definition: IDefinition<T, any>): T {
     if (isThenable(instance)) {
       void instance.then(instanceAwaited => {
         console.groupEnd();

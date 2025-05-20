@@ -12,13 +12,13 @@ export class OwningDefinitionBuilder<TInstance, TLifeTime extends LifeTime> {
   ) {}
 
   configure(configFn: (instance: TInstance) => MaybePromise<void>) {
-    const configuredDefinition = createConfiguredDefinition(this._registry, this.definitionSymbol, configFn);
+    const configuredDefinition = createConfiguredDefinition(this._registry, this.definitionSymbol, configFn, []);
 
     this._registry.override(configuredDefinition);
   }
 
-  decorate<TInstance>(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {
-    const decoratedDefinition = createDecoratedDefinition(this._registry, this.definitionSymbol, decorateFn);
+  decorate(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {
+    const decoratedDefinition = createDecoratedDefinition(this._registry, this.definitionSymbol, decorateFn, []);
 
     this._registry.override(decoratedDefinition);
   }

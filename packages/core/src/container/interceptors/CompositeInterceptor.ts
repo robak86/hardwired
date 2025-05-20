@@ -9,14 +9,11 @@ import type { IInterceptor } from './interceptor.js';
 export class CompositeInterceptor<TInstance> implements IInterceptor<TInstance> {
   constructor(private _interceptors: IInterceptor<TInstance>[]) {}
 
-  onEnter<TNewInstance>(
-    definition: IDefinition<TNewInstance, LifeTime, any[]>,
-    args: any[],
-  ): IInterceptor<TNewInstance> {
-    return new CompositeInterceptor(this._interceptors.map(interceptor => interceptor.onEnter(definition, args)));
+  onEnter<TNewInstance>(definition: IDefinition<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {
+    return new CompositeInterceptor(this._interceptors.map(interceptor => interceptor.onEnter(definition)));
   }
 
-  onLeave(instance: TInstance, definition: IDefinition<TInstance, LifeTime, any[]>): TInstance {
+  onLeave(instance: TInstance, definition: IDefinition<TInstance, LifeTime>): TInstance {
     return this._interceptors.reduce((acc, interceptor) => interceptor.onLeave(acc, definition), instance);
   }
 

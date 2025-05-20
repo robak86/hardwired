@@ -7,15 +7,15 @@ import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
-import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
+import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
+import { ContainerConfigurationBuilder } from '../configuration/dsl/new/container/ContainerConfigurationBuilder.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { MaybePromise } from '../utils/async.js';
 import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
-import { ScopeOverridesBinder } from '../configuration/dsl/new/scope/ScopeOverridesBinder.js';
+import { OverridesConfigBuilder } from '../configuration/dsl/new/shared/OverridesConfigBuilder.js';
 
 import type { HasPromise, IContainer, IStrategyAware, NewScopeReturnType, ReturnTypes, UseFn } from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
@@ -89,7 +89,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, [], disposableFns);
 
     if (configureFns.length) {
-      const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry, disposableFns);
+      const binder = new ContainerConfigurationBuilder(bindingsRegistry, cnt, interceptorsRegistry, disposableFns);
       const configs = configureFns.map(configureFn => configureFn(binder));
 
       return maybePromiseAllThen(configs, () => {
@@ -125,7 +125,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     );
 
     if (configureFns.length) {
-      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposableFns);
+      const binder = new ScopeConfigurationBuilder(cnt, bindingsRegistry, tags, disposableFns);
 
       const configs = configureFns.map(configureFn => {
         return configureFn(binder, this);
@@ -139,7 +139,7 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeOverridesBinder<TInstance, TLifeTime> {
+  ): OverridesConfigBuilder<TInstance, TLifeTime> {
     const bind = (definition: IDefinition<TInstance, TLifeTime>) => {
       if (this.instancesStore.has(definition.id)) {
         throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
@@ -157,7 +157,7 @@ export class Container extends ExtensibleFunction implements IContainer {
       this.bindingsRegistry.freeze(definition);
     };
 
-    return new ScopeOverridesBinder<TInstance, TLifeTime>(
+    return new OverridesConfigBuilder<TInstance, TLifeTime>(
       definition,
       this.bindingsRegistry,
       containerAllowedScopes,

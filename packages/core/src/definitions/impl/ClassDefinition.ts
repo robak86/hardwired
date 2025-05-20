@@ -26,6 +26,10 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     return new Definition(this.id, this.strategy, createFn);
   }
 
+  toString() {
+    return `${this.id.toString()}:${this._class.name}`;
+  }
+
   create(use: IContainer): MaybePromise<TInstance> {
     // no dependencies
     if (this._dependencies === undefined) {

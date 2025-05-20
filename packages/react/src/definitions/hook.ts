@@ -4,11 +4,7 @@ import { Definition, LifeTime } from 'hardwired';
 import type { HookValues } from './hookValues.js';
 import { hookValuesD } from './hookValues.js';
 
-export class HookDefinition<TInstance, TLifeTime extends LifeTime> extends Definition<
-  HookValue<TInstance>,
-  TLifeTime,
-  []
-> {
+export class HookDefinition<TInstance, TLifeTime extends LifeTime> extends Definition<HookValue<TInstance>, TLifeTime> {
   readonly __kind = 'hook';
 
   constructor(

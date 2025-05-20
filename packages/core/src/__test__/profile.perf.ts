@@ -1,16 +1,16 @@
 import { Bench } from 'tinybench';
 
 import { container } from '../container/Container.js';
-import { fn } from '../definitions/fn.js';
 import type { GraphNode } from '../container/interceptors/graph/DependenciesGraph.js';
 import { DependenciesGraphRoot } from '../container/interceptors/graph/DependenciesGraph.js';
 import type { IContainer } from '../container/IContainer.js';
 import type { Definition } from '../definitions/impl/Definition.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { scoped, singleton, transient } from '../definitions/def-symbol.js';
 
 import { buildScopedFn, buildSingletonTreeFn, buildTransientFn } from './utils.js';
 
-function getInstancesCount(definition: Definition<any, LifeTime.singleton | LifeTime.scoped, []>): number {
+function getInstancesCount(definition: Definition<any, LifeTime.singleton | LifeTime.scoped>): number {
   const debugCnt = container.new(c => {
     c.withInterceptor('graph', new DependenciesGraphRoot());
   });
@@ -27,19 +27,25 @@ const singletonDefinitions = buildSingletonTreeFn(3, 10);
 const transientDefinitions = buildTransientFn(3, 10);
 const scopedDefinitions = buildScopedFn(3, 10);
 
-const singletonD = fn.singleton(use => {
-  return use.all(...singletonDefinitions);
-});
+// const singletonD = fn.singleton(use => {
+//   return use.all(...singletonDefinitions);
+// });
 
-const transientD = fn(use => {
-  return use.all(...transientDefinitions);
-});
+const singletonD = singleton<any>();
 
-const scopedD = fn.scoped(use => {
-  const scope = use.scope();
+const transientD = transient<any>();
 
-  return scope.all(...scopedDefinitions);
-});
+const scopedD = scoped<any>();
+
+// const transientD = fn(use => {
+//   return use.all(...transientDefinitions);
+// });
+
+// const scopedD = fn.scoped(use => {
+//   const scope = use.scope();
+//
+//   return scope.all(...scopedDefinitions);
+// });
 
 console.log(`singletonD dependencies: ${getInstancesCount(singletonD)} `);
 console.log(`scopedD dependencies: ${getInstancesCount(scopedD)} `);
