@@ -1,4 +1,4 @@
-import { cls } from 'hardwired';
+import { singleton } from 'hardwired';
 
 export interface IHookValues {
   setHookValue(definitionId: symbol, value: any): void;
@@ -24,4 +24,4 @@ export class HookValues implements IHookValues {
   }
 }
 
-export const hookValuesD = cls.singleton(HookValues);
+export const hookValuesD = singleton<HookValues>('Hook values registry');

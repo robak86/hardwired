@@ -13,7 +13,7 @@ import { createDecoratedDefinition } from './new/utils/create-decorated-definiti
 import { ScopeOverridesBinder } from './new/scope/ScopeOverridesBinder.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
-  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient];
+  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
 
   constructor(
     private _currentContainer: IContainer & IStrategyAware,
@@ -25,9 +25,14 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
   ): ScopeSymbolBinder<TInstance, TLifeTime> {
-    return new ScopeSymbolBinder(symbol, this._bindingsRegistry, (definition: IDefinition<TInstance, TLifeTime>) => {
-      this._bindingsRegistry.register(symbol, definition, this._currentContainer);
-    });
+    return new ScopeSymbolBinder(
+      symbol,
+      this._bindingsRegistry,
+      this._allowedLifeTimes,
+      (definition: IDefinition<TInstance, TLifeTime>) => {
+        this._bindingsRegistry.register(symbol, definition, this._currentContainer);
+      },
+    );
   }
 
   own<TInstance>(
@@ -46,7 +51,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     symbol: IDefinitionSymbol<TInstance, ScopeConfigureAllowedLifeTimes>,
     configFn: (instance: TInstance) => MaybePromise<void>,
   ): void {
-    const configuredDefinition = createConfiguredDefinition(this._bindingsRegistry, symbol, configFn);
+    const configuredDefinition = createConfiguredDefinition(this._bindingsRegistry, symbol, configFn, []);
 
     this._bindingsRegistry.override(configuredDefinition);
   }
@@ -55,7 +60,7 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
     symbol: IDefinitionSymbol<TInstance, ScopeConfigureAllowedLifeTimes>,
     configFn: (instance: TInstance) => MaybePromise<TInstance>,
   ): void {
-    const configuredDefinition = createDecoratedDefinition(this._bindingsRegistry, symbol, configFn);
+    const configuredDefinition = createDecoratedDefinition(this._bindingsRegistry, symbol, configFn, []);
 
     this._bindingsRegistry.override(configuredDefinition);
   }
@@ -63,9 +68,14 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ScopeOverridesBinder<TInstance, TLifeTime> {
-    return new ScopeOverridesBinder(symbol, this._bindingsRegistry, (definition: IDefinition<TInstance, TLifeTime>) => {
-      this._bindingsRegistry.override(definition);
-    });
+    return new ScopeOverridesBinder(
+      symbol,
+      this._bindingsRegistry,
+      this._allowedLifeTimes,
+      (definition: IDefinition<TInstance, TLifeTime>) => {
+        this._bindingsRegistry.override(definition);
+      },
+    );
   }
 
   //

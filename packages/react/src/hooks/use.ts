@@ -1,4 +1,4 @@
-import type { Definition, LifeTime } from 'hardwired';
+import type { LifeTime, IDefinitionSymbol } from 'hardwired';
 import { useEffect, useRef } from 'react';
 
 import { useContainer } from '../context/ContainerContext.js';
@@ -22,7 +22,7 @@ export type UseDefinitionHookOptions =
     };
 
 export type UseDefinitionHook = <TInstance>(
-  factoryDefinition: Definition<TInstance, LifeTime.singleton | LifeTime.scoped, []>,
+  factoryDefinition: IDefinitionSymbol<TInstance, LifeTime.singleton | LifeTime.scoped>,
   options?: UseDefinitionHookOptions,
 ) => TInstance;
 
@@ -53,6 +53,13 @@ function useAssertValidOptions(options: UseDefinitionHookOptions | undefined) {
 export const use: UseDefinitionHook = (definition, options) => {
   const container = useContainer();
   const instance = container.use(definition);
+
+  if (instance instanceof Promise) {
+    throw new Error(
+      `Definition ${definition.toString()} requires async resolution. It's currently not supported in use() hook.`,
+    );
+  }
+
   const interceptor = useReactLifeCycleInterceptor();
 
   useAssertValidOptions(options);

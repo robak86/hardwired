@@ -1,5 +1,5 @@
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
-import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ClassType } from '../../../../definitions/utils/class-type.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
 import type { MaybePromise } from '../../../../utils/async.js';
@@ -19,11 +19,10 @@ export interface IBindingsRegistryRead {
 }
 
 export class ScopeSymbolBinder<TInstance, TLifeTime extends LifeTime> {
-  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
-
   constructor(
     protected readonly _defSymbol: IDefinitionSymbol<TInstance, TLifeTime>,
     protected readonly _registry: IBindingsRegistryRead,
+    protected readonly _allowedLifeTimes: LifeTime[],
     protected readonly _onDefinition: (definition: IDefinition<TInstance, TLifeTime>) => void,
   ) {
     this.assertValidLifeTime();
@@ -57,7 +56,7 @@ export class ScopeSymbolBinder<TInstance, TLifeTime extends LifeTime> {
     this._onDefinition(fnDefinition as IDefinition<TInstance, TLifeTime>);
   }
 
-  static<TInstance>(value: TInstance) {
+  static(value: TInstance) {
     const definition = new Definition(this._defSymbol.id, this._defSymbol.strategy, () => value);
 
     this._onDefinition(definition);

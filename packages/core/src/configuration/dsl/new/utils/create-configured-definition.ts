@@ -1,13 +1,15 @@
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import { isThenable } from '../../../../utils/IsThenable.js';
 import type { IBindingsRegistryRead } from '../scope/ScopeSymbolBinder.js';
+import type { ConstructorArgsSymbols } from '../ContainerSymbolBinder.js';
+import { maybePromiseThen } from '../../../../utils/async.js';
 
-export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime>(
+export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime, TArgs extends any[]>(
   registry: IBindingsRegistryRead,
   defSymbol: IDefinitionSymbol<TInstance, TLifetime>,
-  configFn: (instance: TInstance) => void | Promise<void>,
+  configFn: (instance: TInstance, ...args: TArgs) => void | Promise<void>,
+  dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
 ): IDefinition<TInstance, TLifetime> {
   const def = registry.getDefinition(defSymbol) as IDefinition<TInstance, TLifetime> | undefined;
 
@@ -19,26 +21,16 @@ export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime
   }
 
   return def.override(container => {
-    const instance = def.create(container);
+    const deps = container.all(...dependencies);
 
-    if (isThenable(instance)) {
-      return instance.then(instance => {
-        const configured = configFn(instance);
+    return maybePromiseThen(deps, (awaitedDependencies: TArgs) => {
+      const instance = def.create(container);
 
-        if (isThenable(configured)) {
-          return configured.then(() => instance);
-        }
-
-        return instance;
+      return maybePromiseThen(instance, awaitedInstance => {
+        return maybePromiseThen(configFn(awaitedInstance, ...awaitedDependencies), () => {
+          return instance;
+        });
       });
-    } else {
-      const configured = configFn(instance);
-
-      if (isThenable(configured)) {
-        return configured.then(() => instance);
-      }
-
-      return instance;
-    }
+    });
   });
 }

@@ -258,16 +258,16 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   private overrideCascading<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (this._cascadingDefinitions.has(definition.id)) {
-      throw new Error(`Cannot bind cascading definition. The definition was already bound.`);
+    if (!this._cascadingDefinitions.has(definition.id)) {
+      throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
     }
 
     this._cascadingDefinitions.set(definition.id, definition);
   }
 
   private overrideSingleton<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (this._singletonDefinitions.has(definition.id)) {
-      throw new Error(`Cannot bind singleton definition. The definition was already bound.`);
+    if (!this._singletonDefinitions.has(definition.id)) {
+      throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
     }
 
     this._singletonDefinitions.set(definition.id, definition);
@@ -282,8 +282,8 @@ export class BindingsRegistry implements IBindingRegistryRead {
   }
 
   private overrideScoped<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (this._scopeDefinitions.has(definition.id)) {
-      throw new Error(`Cannot bind scoped definition. The definition was already bound.`);
+    if (!this._scopeDefinitions.has(definition.id)) {
+      throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
     }
 
     this._scopeDefinitions.set(definition.id, definition);

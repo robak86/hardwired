@@ -26,6 +26,8 @@ export interface Container extends UseFn<LifeTime> {}
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
   HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
 
+const containerAllowedScopes = [LifeTime.scoped, LifeTime.singleton, LifeTime.transient, LifeTime.cascading];
+
 export class Container extends ExtensibleFunction implements IContainer {
   static root(): Container {
     return new Container(
@@ -155,7 +157,12 @@ export class Container extends ExtensibleFunction implements IContainer {
       this.bindingsRegistry.freeze(definition);
     };
 
-    return new ScopeOverridesBinder<TInstance, TLifeTime>(definition, this.bindingsRegistry, bind);
+    return new ScopeOverridesBinder<TInstance, TLifeTime>(
+      definition,
+      this.bindingsRegistry,
+      containerAllowedScopes,
+      bind,
+    );
   }
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
@@ -271,7 +278,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     }
 
     if (symbol.strategy === LifeTime.scoped) {
-      const scopedDef = this.instancesStore.getScopedDefinition(symbol);
+      // const scopedDef = this.instancesStore.getScopedDefinition(symbol);
 
       const instance = this.instancesStore.upsertIntoScopeInstances(
         symbol,

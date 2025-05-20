@@ -5,7 +5,6 @@ import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { InterceptorsRegistry } from '../../container/interceptors/InterceptorsRegistry.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-symbol.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
-import type { ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 
 import { ContainerSymbolBinder } from './new/ContainerSymbolBinder.js';
@@ -21,20 +20,30 @@ export class ContainerConfigurationDSL implements ContainerConfigurable {
     private _disposeFns: Array<(scope: IContainer) => void>,
   ) {}
 
-  override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+  override<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ScopeOverridesBinder<TInstance, TLifeTime> {
-    return new ScopeOverridesBinder(symbol, this._bindingsRegistry, (def: IDefinition<TInstance, TLifeTime>) => {
-      this._bindingsRegistry.override(def);
-    });
+    return new ScopeOverridesBinder(
+      symbol,
+      this._bindingsRegistry,
+      this._allowedLifeTimes,
+      (def: IDefinition<TInstance, TLifeTime>) => {
+        this._bindingsRegistry.override(def);
+      },
+    );
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ScopeOverridesBinder<TInstance, TLifeTime> {
-    return new ScopeOverridesBinder(symbol, this._bindingsRegistry, (def: IDefinition<TInstance, TLifeTime>) => {
-      this._bindingsRegistry.freeze(def);
-    });
+    return new ScopeOverridesBinder(
+      symbol,
+      this._bindingsRegistry,
+      this._allowedLifeTimes,
+      (def: IDefinition<TInstance, TLifeTime>) => {
+        this._bindingsRegistry.freeze(def);
+      },
+    );
   }
 
   add<TInstance, TLifeTime extends LifeTime>(
