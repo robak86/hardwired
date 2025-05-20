@@ -1,18 +1,12 @@
-import type {
-  AwaitedInstanceRecord,
-  Instance,
-  InstancesArray,
-  InstancesObject,
-  InstancesRecord,
-} from '../definitions/abstract/InstanceDefinition.js';
+import type { AwaitedInstanceRecord, Instance, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { type LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import type { Binder } from '../configuration/Binder.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { CallableDefinition } from '../definitions/abstract/CallableDefinition.js';
+import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
+import type { MaybePromise } from '../utils/async.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
 
@@ -21,38 +15,33 @@ export type ScopeTag = string | symbol;
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;
 
-  buildWithStrategy<TValue, TArgs extends any[]>(
-    instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
-    ...args: TArgs
-  ): TValue;
+  buildWithStrategy<TValue>(
+    instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+  ): MaybePromise<TValue>;
 }
 
 export interface IContainerConfigurationAware {
-  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
-    definition: IDefinition<TInstance, TLifeTime, TArgs>,
-  ): Binder<TInstance, TLifeTime, TArgs>;
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
+    definition: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): Binder<TInstance, TLifeTime>;
 }
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue>(instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>): TValue;
+  use<TValue>(
+    instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+  ): MaybePromise<TValue>;
 
-  call<TResult, TArgs extends any[]>(def: CallableDefinition<TArgs, TResult>, ...args: TArgs): TResult;
+  useExisting<TValue>(definition: IDefinitionSymbol<TValue, LifeTime.scoped | LifeTime.singleton>): TValue | null;
 
-  useExisting<TValue>(definition: IDefinition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null;
-
-  defer<TInstance, TArgs extends any[]>(
-    factoryDefinition: IDefinition<TInstance, LifeTime.transient, TArgs>,
-  ): (...args: TArgs) => TInstance;
-
-  all<TDefinitions extends Array<IDefinition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
+  all<TDefinitions extends Array<IDefinitionSymbol<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
     ...definitions: [...TDefinitions]
-  ): ContainerAllReturn<TDefinitions>;
+  ): MaybePromise<InstancesArray<TDefinitions>>;
 
-  object<TRecord extends Record<PropertyKey, IDefinition<any, any, []>>>(
-    object: TRecord,
-  ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
-    ? Promise<AwaitedInstanceRecord<TRecord>>
-    : InstancesRecord<TRecord>;
+  // object<TRecord extends Record<PropertyKey, IDefinition<any, any>>>(
+  //   object: TRecord,
+  // ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
+  //   ? Promise<AwaitedInstanceRecord<TRecord>>
+  //   : InstancesRecord<TRecord>;
 }
 
 export type NewScopeReturnType<
@@ -63,11 +52,6 @@ export type NewScopeReturnType<
     ? Promise<IContainer<TAllowedLifeTime>>
     : IContainer<TAllowedLifeTime>;
 
-export type ContainerAllReturn<TDefinitions extends Array<IDefinition<any, ValidDependenciesLifeTime<LifeTime>, []>>> =
-  HasPromise<InstancesArray<TDefinitions>> extends true
-    ? Promise<AwaitedInstanceArray<TDefinitions>>
-    : InstancesArray<TDefinitions>;
-
 export interface IContainerScopes {
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
@@ -75,14 +59,15 @@ export interface IContainerScopes {
 }
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
-  instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>,
+  instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
 ) => TValue;
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes,
     UseFn<TAllowedLifeTime>,
-    IContainerConfigurationAware {
+    IContainerConfigurationAware,
+    IStrategyAware {
   readonly id: string;
   readonly parentId: string | null;
 
@@ -92,10 +77,10 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
 }
 
 // prettier-ignore
-export type AwaitedInstance<T extends IDefinition<Promise<any>, any, any>> =
-  T extends IDefinition<Promise<infer TInstance>, any, any> ? TInstance : Instance<T>;
+export type AwaitedInstance<T extends IDefinitionSymbol<Promise<any>, any>> =
+  T extends IDefinitionSymbol<Promise<infer TInstance>, any> ? TInstance : Instance<T>;
 
-export type AwaitedInstanceArray<T extends Array<IDefinition<Promise<any>, any, any>>> = {
+export type AwaitedInstanceArray<T extends Array<IDefinition<Promise<any>, any>>> = {
   [K in keyof T]: AwaitedInstance<T[K]>;
 };
 
@@ -113,7 +98,6 @@ export type HasPromise<T extends any[]> =
     IsAnyPromise<First> extends true ? true : HasPromise<Rest>:
       false;
 
-export type ContainerObjectReturn<TRecord extends Record<PropertyKey, IDefinition<any, any, any>>> =
-  HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
-    ? Promise<AwaitedInstanceRecord<TRecord>>
-    : InstancesRecord<TRecord>;
+export type ContainerObjectReturn<TRecord extends Record<PropertyKey, IDefinition<any, any>>> = Promise<
+  AwaitedInstanceRecord<TRecord>
+>;

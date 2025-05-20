@@ -1,60 +1,47 @@
-import type { ClassType } from '../cls.js';
-import { type Thunk, unwrapThunk } from '../../utils/Thunk.js';
+import type { ClassType } from '../utils/class-type.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import { isThenable } from '../../utils/IsThenable.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
-import type { InstancesDefinitions } from '../abstract/InstanceDefinition.js';
-import type { AnyDefinition, IDefinition } from '../abstract/IDefinition.js';
-import type { CallableObject } from '../abstract/CallableDefinition.js';
+import type { IDefinition } from '../abstract/IDefinition.js';
+import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/ContainerSymbolBinder.js';
+import type { MaybePromise } from '../../utils/async.js';
 
 import { Definition } from './Definition.js';
 
 export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructorArgs extends unknown[]>
-  implements IDefinition<TInstance, TLifeTime, []>
+  implements IDefinition<TInstance, TLifeTime>
 {
   private _hasOnlySyncDependencies = false; // flag for optimization, so we don't have to check every time
 
-  readonly $type!: Awaited<TInstance>;
-  readonly $p0!: never;
-  readonly $p1!: never;
-  readonly $p2!: never;
-  readonly $p3!: never;
-  readonly $p4!: never;
-  readonly $p5!: never;
+  readonly $type!: TInstance;
+
+  protected _container?: IStrategyAware;
 
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
     protected readonly _class: ClassType<TInstance, TConstructorArgs>,
-    protected readonly _dependencies?: Thunk<InstancesDefinitions<TConstructorArgs, TLifeTime>>,
-  ) {
-    if (Array.isArray(_dependencies)) {
-      this.assertValidDependencies(_dependencies);
-    }
-  }
+    protected readonly _dependencies?: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>,
+  ) {}
 
-  override(createFn: (context: IContainer) => TInstance): IDefinition<TInstance, TLifeTime, []> {
+  override(createFn: (context: IContainer) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.id, this.strategy, createFn);
   }
 
-  bindToContainer(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime, []> {
+  bindToContainer(container: IStrategyAware): IDefinition<TInstance, TLifeTime> {
     return this.override(_use => {
-      return container.buildWithStrategy(this);
+      return container.buildWithStrategy(this) as MaybePromise<TInstance>;
     });
   }
 
-  isCallable(): this is ClassDefinition<CallableObject<unknown[], unknown>, TLifeTime, TConstructorArgs> {
-    return Object.prototype.hasOwnProperty.call(this._class.prototype, 'call');
-  }
-
-  create(use: IContainer): TInstance {
+  create(use: IContainer): MaybePromise<TInstance> {
     // no dependencies
     if (this._dependencies === undefined) {
       // @ts-ignore
       return new this._class();
     }
 
-    const deps = use.all(...unwrapThunk(this._dependencies)) as TConstructorArgs | Promise<TConstructorArgs>;
+    const deps = use.all(...this._dependencies) as TConstructorArgs | Promise<TConstructorArgs>;
 
     if (this._hasOnlySyncDependencies) {
       return new this._class(...(deps as TConstructorArgs));
@@ -68,20 +55,6 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
       this._hasOnlySyncDependencies = true;
 
       return new this._class(...deps);
-    }
-  }
-
-  get name() {
-    return this._class.name;
-  }
-
-  private assertValidDependencies(dependencies: AnyDefinition[]) {
-    if (dependencies.some(dep => dep === undefined)) {
-      throw new Error(
-        `Some dependencies are undefined. Perhaps your modules have some circular dependencies.
-         Try wrapping all dependencies in a function, e.g.:
-         cls(this, () => [dependency1, dependency2])`,
-      );
     }
   }
 }

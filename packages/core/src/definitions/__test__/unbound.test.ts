@@ -1,5 +1,5 @@
 import { unbound } from '../unbound.js';
-import { cls } from '../cls.js';
+import { cls } from '../utils/class-type.js';
 import { value } from '../value.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';

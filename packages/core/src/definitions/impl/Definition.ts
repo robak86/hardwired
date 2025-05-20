@@ -1,45 +1,28 @@
-import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import { getTruncatedFunctionDefinition } from '../utils/getTruncatedFunctionDefinition.js';
+import type { IContainer } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
+import type { MaybePromise } from '../../utils/async.js';
 
-export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]>
-  implements IDefinition<TInstance, TLifeTime, TArgs>
-{
-  readonly $type!: NoInfer<Awaited<TInstance>>;
-  readonly $p0!: TArgs[0];
-  readonly $p1!: TArgs[1];
-  readonly $p2!: TArgs[2];
-  readonly $p3!: TArgs[3];
-  readonly $p4!: TArgs[4];
-  readonly $p5!: TArgs[5];
+export class Definition<TInstance, TLifeTime extends LifeTime> implements IDefinition<TInstance, TLifeTime> {
+  readonly $type!: TInstance;
 
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
-    public readonly create: (context: IContainer, ...args: TArgs) => TInstance,
+    public readonly create: (context: IContainer) => MaybePromise<TInstance>,
+    // public readonly dependencies:
   ) {}
 
-  get name() {
-    if (this.create.name !== '') {
-      return this.create.name;
-    } else {
-      return getTruncatedFunctionDefinition(this.create.toString());
-    }
-  }
-
-  override(createFn: (context: IContainer, ...args: TArgs) => TInstance): Definition<TInstance, TLifeTime, TArgs> {
+  override(createFn: (context: IContainer) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.id, this.strategy, createFn);
   }
 
-  /**
-   * Binds the definition to the container. Whenever the definition is instantiated,
-   * the container will be used to resolve its dependencies.
-   * @param container
-   */
-  bindToContainer(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, TArgs> {
-    return this.override((_use, ...args: TArgs) => {
-      return container.buildWithStrategy(this, ...args);
-    });
-  }
+  // /**
+  //  * Binds the definition to the container. Whenever the definition is instantiated,
+  //  * the container will be used to resolve its dependencies.
+  //  * @param container
+  //  */
+  // bindToContainer(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime> {
+  //   return this.override(_use => container.buildWithStrategy(this) as MaybePromise<TInstance>);
+  // }
 }

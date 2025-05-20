@@ -1,6 +1,5 @@
 import { v4 } from 'uuid';
 
-import type { InstancesRecord } from '../definitions/abstract/InstanceDefinition.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
@@ -10,27 +9,15 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
 import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
-import { isThenable } from '../utils/IsThenable.js';
-import type { AnyDefinition, IDefinition } from '../definitions/abstract/IDefinition.js';
+import type { AnyDefinitionSymbol, IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { MaybePromise } from '../utils/async.js';
 import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
 import { Binder } from '../configuration/Binder.js';
-import { TransientDefinition } from '../definitions/impl/TransientDefinition.js';
-import type { CallableDefinition, CallableObject } from '../definitions/abstract/CallableDefinition.js';
-import { isCallable } from '../definitions/abstract/CallableDefinition.js';
-import { ClassDefinition } from '../definitions/impl/ClassDefinition.js';
+import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
+import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 
-import type {
-  ContainerAllReturn,
-  ContainerObjectReturn,
-  HasPromise,
-  IContainer,
-  IStrategyAware,
-  NewScopeReturnType,
-  ReturnTypes,
-  UseFn,
-} from './IContainer.js';
+import type { HasPromise, IContainer, IStrategyAware, NewScopeReturnType, ReturnTypes, UseFn } from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 
@@ -66,38 +53,38 @@ export class Container extends ExtensibleFunction implements IContainer {
   ) {
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
-        definition: IDefinition<TInstance, TLifeTime, []>,
+        definition: IDefinition<TInstance, TLifeTime>,
       ) => {
         return this.use(definition);
       },
     );
   }
 
-  call<TResult, TArgs extends any[]>(callable: CallableDefinition<TArgs, TResult>, ...args: TArgs): TResult {
-    if (typeof callable === 'function') {
-      return callable.call(this, ...args);
-    }
-
-    if (callable instanceof ClassDefinition) {
-      const instance = this.use(callable) as MaybePromise<CallableObject<TArgs, TResult>>;
-
-      if (isThenable(instance)) {
-        return instance.then((instance: CallableObject<TArgs, TResult>) => {
-          return instance.call(...args);
-        }) as TResult;
-      }
-
-      return instance.call(...args);
-    }
-
-    if (callable instanceof TransientDefinition) {
-      const patchedDefinition = this.bindingsRegistry.getDefinition(callable);
-
-      return this.buildWithStrategy(patchedDefinition, ...args) as TResult;
-    }
-
-    return this.use(callable) as TResult;
-  }
+  // call<TResult, TArgs extends any[]>(callable: CallableDefinition<TArgs, TResult>): TResult {
+  //   if (typeof callable === 'function') {
+  //     return callable.call(this);
+  //   }
+  //
+  //   if (callable instanceof ClassDefinition) {
+  //     const instance = this.use(callable) as MaybePromise<CallableObject<TArgs, TResult>>;
+  //
+  //     if (isThenable(instance)) {
+  //       return instance.then((instance: CallableObject<TArgs, TResult>) => {
+  //         return instance.call();
+  //       }) as TResult;
+  //     }
+  //
+  //     return instance.call();
+  //   }
+  //
+  //   if (callable instanceof TransientDefinition) {
+  //     const patchedDefinition = this.bindingsRegistry.getDefinition(callable);
+  //
+  //     return this.buildWithStrategy(patchedDefinition) as TResult;
+  //   }
+  //
+  //   return this.use(callable) as TResult;
+  // }
 
   dispose() {
     if (this._isDisposed) {
@@ -174,10 +161,10 @@ export class Container extends ExtensibleFunction implements IContainer {
     return cnt as unknown as NewScopeReturnType<TConfigureFns>;
   }
 
-  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
-    definition: IDefinition<TInstance, TLifeTime, TArgs>,
-  ): Binder<TInstance, TLifeTime, TArgs> {
-    const bind = (definition: IDefinition<TInstance, TLifeTime, TArgs>) => {
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
+    definition: IDefinition<TInstance, TLifeTime>,
+  ): Binder<TInstance, TLifeTime> {
+    const bind = (definition: IDefinition<TInstance, TLifeTime>) => {
       if (this.instancesStore.has(definition.id)) {
         throw new Error(`Cannot freeze binding ${definition.name} because it is already instantiated.`);
       }
@@ -194,7 +181,7 @@ export class Container extends ExtensibleFunction implements IContainer {
       this.bindingsRegistry.addFrozenBinding(definition);
     };
 
-    return new Binder<TInstance, TLifeTime, TArgs>(
+    return new Binder<TInstance, TLifeTime>(
       definition,
       [LifeTime.singleton, LifeTime.transient, LifeTime.scoped],
       bind,
@@ -217,7 +204,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     );
   }
 
-  use<TValue>(definition: IDefinition<TValue, ValidDependenciesLifeTime<LifeTime>, []>): TValue {
+  use<TValue>(definition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybePromise<TValue> {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition);
@@ -228,151 +215,136 @@ export class Container extends ExtensibleFunction implements IContainer {
    * Cascading instances are returned only from the scope holding the instance.
    * @param definition
    */
-  useExisting<TValue>(definition: IDefinition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null {
+  useExisting<TValue>(definition: IDefinitionSymbol<TValue, LifeTime.scoped | LifeTime.singleton>): TValue | null {
     return (this.instancesStore.getExisting(definition.id) as TValue) ?? null;
   }
 
-  buildWithStrategy<TValue, TArgs extends any[]>(
-    definition: IDefinition<TValue, LifeTime, TArgs>,
-    ...args: TArgs
-  ): TValue {
+  buildWithStrategy<TValue>(defSymbol: IDefinition<TValue, LifeTime>): MaybePromise<TValue> {
     if (this._isDisposed) {
       throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
     }
 
     if (this.currentInterceptor) {
-      return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition, args), definition, ...args);
+      return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(defSymbol), defSymbol);
     } else {
-      if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-        return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
+      if (this.bindingsRegistry.hasFrozenBinding(defSymbol.id)) {
+        return this.instancesStore.upsertIntoRootInstances(defSymbol, this);
       }
 
-      switch (definition.strategy) {
+      switch (defSymbol.strategy) {
         case LifeTime.transient:
-          return definition.create(this, ...args);
+          return defSymbol.create(this);
         case LifeTime.singleton:
-          return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
+          return this.instancesStore.upsertIntoRootInstances(defSymbol, this);
         case LifeTime.scoped:
           return this.instancesStore.upsertIntoScopeInstances(
-            definition,
+            defSymbol,
             this,
-            this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
-            ...args,
+            this.bindingsRegistry.inheritsCascadingDefinition(defSymbol.id),
+          );
+
+        case LifeTime.cascading:
+          this.bindingsRegistry.getOwningContainer(defSymbol) ?? this;
+
+          return this.instancesStore.upsertIntoScopeInstances(
+            defSymbol,
+            this.bindingsRegistry.getOwningContainer(defSymbol) ?? this,
+            this.bindingsRegistry.inheritsCascadingDefinition(defSymbol.id),
           );
       }
     }
   }
 
-  private buildWithStrategyIntercepted<TValue, TArgs extends any[]>(
+  private buildWithStrategyIntercepted<TValue>(
     currentInterceptor: IInterceptor<any>,
-    definition: IDefinition<TValue, LifeTime, TArgs>,
-    ...args: TArgs
+    symbol: IDefinitionSymbol<TValue, LifeTime>,
   ): TValue {
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
 
-    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor, ...args);
+    const frozenDefinition = this.bindingsRegistry.getFrozenBinding(symbol);
 
-      return currentInterceptor.onLeave(instance, definition) as TValue;
+    if (frozenDefinition) {
+      const instance = this.instancesStore.upsertIntoRootInstances(frozenDefinition, withChildInterceptor);
+
+      return currentInterceptor.onLeave(instance, symbol) as TValue;
     }
 
-    if (definition.strategy === LifeTime.transient) {
-      const instance = definition.create(this, ...args);
+    if (symbol.strategy === LifeTime.transient) {
+      const transientDef = this.instancesStore.getTransientDefinition(symbol);
 
-      return currentInterceptor.onLeave(instance, definition) as TValue;
+      if (!transientDef) {
+        throw new Error(`Cannot find definition for transient binding ${symbol.name}.`);
+      }
+
+      const instance = transientDef.create(this);
+
+      return currentInterceptor.onLeave(instance, transientDef) as TValue;
     }
 
-    if (definition.strategy === LifeTime.singleton) {
-      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor, ...args);
+    if (symbol.strategy === LifeTime.singleton) {
+      const singletonDef = this.instancesStore.getSingletonDefinition(symbol);
 
-      return currentInterceptor.onLeave(instance, definition) as TValue;
+      if (!singletonDef) {
+        throw new Error(`Cannot find definition for singleton binding ${symbol.name}.`);
+      }
+
+      const instance = this.instancesStore.upsertIntoRootInstances(singletonDef, withChildInterceptor);
+
+      return currentInterceptor.onLeave(instance, symbol) as TValue;
     }
 
-    if (definition.strategy === LifeTime.scoped) {
+    if (symbol.strategy === LifeTime.scoped) {
+      const scopedDef = this.instancesStore.getScopedDefinition(symbol);
+
       const instance = this.instancesStore.upsertIntoScopeInstances(
-        definition,
+        symbol,
         withChildInterceptor,
-        this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
-        ...args,
+        this.bindingsRegistry.inheritsCascadingDefinition(symbol.id),
       );
 
-      return currentInterceptor.onLeave(instance, definition) as TValue;
+      return currentInterceptor.onLeave(instance, symbol) as TValue;
     }
 
-    throw new Error(`Unsupported strategy ${(definition as AnyDefinition).strategy}`);
+    throw new Error(`Unsupported strategy ${(symbol as AnyDefinitionSymbol).strategy}`);
   }
 
-  all<TDefinitions extends Array<IDefinition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
+  all<TDefinitions extends Array<IDefinitionSymbol<any, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
-  ): ContainerAllReturn<TDefinitions> {
+  ): MaybePromise<InstancesArray<TDefinitions>> {
     const results = definitions.map(def => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return this.use(def);
     });
 
-    return maybePromiseAll(results) as ContainerAllReturn<TDefinitions>;
+    return maybePromiseAll(results) as MaybePromise<InstancesArray<TDefinitions>>;
   }
 
-  object<TRecord extends Record<PropertyKey, IDefinition<any, any, []>>>(
-    object: TRecord,
-  ): ContainerObjectReturn<TRecord> {
-    const entries = Object.entries(object);
-    const results = {} as InstancesRecord<any>;
-    const promises: Promise<void>[] = [];
-
-    for (const [key, definition] of entries) {
-      const instance: unknown = this.use(definition as AnyDefinition);
-
-      if (isThenable(instance)) {
-        promises.push(
-          instance.then(value => {
-            results[key] = value;
-          }),
-        );
-      } else {
-        results[key] = instance;
-      }
-    }
-
-    if (promises.length > 0) {
-      return Promise.all(promises).then(() => results) as ContainerObjectReturn<TRecord>;
-    } else {
-      return results as ContainerObjectReturn<TRecord>;
-    }
-  }
-
-  defer<TInstance, TArgs extends any[]>(factoryDefinition: TransientDefinition<TInstance, TArgs>) {
-    return (...args: TArgs): TInstance => {
-      return this.call(factoryDefinition, ...args);
-    };
-  }
+  // object<TRecord extends Record<PropertyKey, IDefinitionSymbol<any, any>>>(
+  //   object: TRecord,
+  // ): ContainerObjectReturn<TRecord> {
+  //   const entries = Object.entries(object);
+  //   const results = {} as InstancesRecord<any>;
+  //   const promises: Promise<void>[] = [];
+  //
+  //   for (const [key, definition] of entries) {
+  //     const instance: unknown = this.use(definition as AnyDefinition);
+  //
+  //     if (isThenable(instance)) {
+  //       promises.push(
+  //         instance.then(value => {
+  //           results[key] = value;
+  //         }),
+  //       );
+  //     } else {
+  //       results[key] = instance;
+  //     }
+  //   }
+  //
+  //   if (promises.length > 0) {
+  //     return Promise.all(promises).then(() => results) as ContainerObjectReturn<TRecord>;
+  //   } else {
+  //     return results as ContainerObjectReturn<TRecord>;
+  //   }
+  // }
 }
-
-export function once<TInstance, TArgs extends any[]>(
-  callable: CallableDefinition<TArgs, TInstance>,
-  ...args: TArgs
-): TInstance;
-export function once<TInstance>(definition: IDefinition<TInstance, LifeTime, []>): TInstance;
-export function once<TInstance, TArgs extends any[]>(
-  definition: IDefinition<TInstance, LifeTime.transient, TArgs>,
-  ...args: TArgs
-): TInstance;
-
-export function once<TInstance, TArgs extends any[]>(
-  definition: IDefinition<TInstance, LifeTime, TArgs> | CallableDefinition<TArgs, TInstance>,
-  ...args: TArgs
-): TInstance {
-  if (isCallable<TArgs, TInstance>(definition)) {
-    return Container.root().call(definition, ...args);
-  } else {
-    return Container.root().use(definition as unknown as IDefinition<TInstance, LifeTime, []>);
-  }
-}
-
-export const all = <TDefinitions extends Array<IDefinition<any, LifeTime, []>>>(
-  ...definitions: [...TDefinitions]
-): ContainerAllReturn<TDefinitions> => {
-  return Container.root().all(...definitions) as ContainerAllReturn<TDefinitions>;
-};
 
 export const container = Container.root();

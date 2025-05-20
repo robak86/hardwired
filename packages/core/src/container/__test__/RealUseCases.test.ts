@@ -1,6 +1,6 @@
 import { test } from 'vitest';
 
-import { cls } from '../../definitions/cls.js';
+import { cls } from '../../definitions/utils/class-type.js';
 import { container } from '../Container.js';
 import { value } from '../../definitions/value.js';
 import { unbound } from '../../definitions/unbound.js';

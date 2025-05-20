@@ -1,7 +1,7 @@
 import { container } from '../../../Container.js';
 import { LoggingInterceptor } from '../LoggingInterceptor.js';
 import { fn } from '../../../../definitions/fn.js';
-import { cls } from '../../../../definitions/cls.js';
+import { cls } from '../../../../definitions/utils/class-type.js';
 
 describe.skip(`LoggingInterceptor`, () => {
   describe(`sync`, () => {

@@ -1,24 +1,16 @@
-import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import type { IContainer } from '../../container/IContainer.js';
+import type { IDefinitionSymbol } from '../def-symbol.js';
+import type { MaybePromise } from '../../utils/async.js';
 
 import type { LifeTime } from './LifeTime.js';
 
-export type AnyDefinition = IDefinition<any, LifeTime, any[]>;
+export type AnyDefinitionSymbol = IDefinitionSymbol<any, LifeTime>;
 
-export interface IDefinition<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]> {
-  readonly id: symbol;
-  readonly strategy: TLifeTime;
-  readonly create: (context: IContainer, ...args: TArgs) => TInstance;
-  readonly name: string;
+// TODO: don't inherit from IDefinitionSymbol. Just implement property: readonly symbol: IDefinitionSymbol<TInstance, TLifeTime>;
+export interface IDefinition<TInstance, TLifeTime extends LifeTime> extends IDefinitionSymbol<TInstance, TLifeTime> {
+  create(context: IContainer): MaybePromise<TInstance>;
 
-  readonly $type: NoInfer<Awaited<TInstance>>;
-  readonly $p0: TArgs[0];
-  readonly $p1: TArgs[1];
-  readonly $p2: TArgs[2];
-  readonly $p3: TArgs[3];
-  readonly $p4: TArgs[4];
-  readonly $p5: TArgs[5];
+  override(createFn: (context: IContainer) => TInstance): IDefinition<TInstance, TLifeTime>;
 
-  override(createFn: (context: IContainer, ...args: TArgs) => TInstance): IDefinition<TInstance, TLifeTime, TArgs>;
-
-  bindToContainer(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime, TArgs>;
+  // bindToContainer(container: IStrategyAware): IDefinition<TInstance, TLifeTime>;
 }

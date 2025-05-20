@@ -7,9 +7,9 @@ import type { ScopeTag } from '../IContainer.js';
 export interface IInterceptor<TInstance> {
   configureRoot?(bindingRegistry: IBindingRegistryRead, instancesStore: IInstancesStoreRead): void;
 
-  onEnter<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>, args: any[]): IInterceptor<TNewInstance>; // before create (definition becomes our origin)
+  onEnter<TNewInstance>(definition: Definition<TNewInstance, LifeTime>): IInterceptor<TNewInstance>; // before create (definition becomes our origin)
 
-  onLeave(instance: TInstance, definition: Definition<TInstance, LifeTime, any[]>): TInstance;
+  onLeave(instance: TInstance, definition: Definition<TInstance, LifeTime>): TInstance;
 
   onScope(
     tags: ScopeTag[],

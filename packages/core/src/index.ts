@@ -42,12 +42,12 @@ export type * from './container/IContainer.js';
 
 export type { Middleware, MiddlewareNextFn } from './definitions/composition/withMiddleware.js';
 export { withMiddleware, createMiddleware } from './definitions/composition/withMiddleware.js';
-export type { ClassType } from './definitions/cls.js';
-export { cls } from './definitions/cls.js';
+export type { ClassType } from './definitions/utils/class-type.js';
+export { cls } from './definitions/utils/class-type.js';
 export { Definition } from './definitions/impl/Definition.js';
 export { ClassDefinition } from './definitions/impl/ClassDefinition.js';
 
 export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
 
-export type { AnyDefinition, IDefinition } from './definitions/abstract/IDefinition.js';
+export type { AnyDefinitionSymbol, IDefinition } from './definitions/abstract/IDefinition.js';

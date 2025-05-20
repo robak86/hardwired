@@ -2,6 +2,8 @@ import type { IContainer } from '../container/IContainer.js';
 import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
+import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 
 import { isDisposable } from './COWMap.js';
 
@@ -41,16 +43,15 @@ export class InstancesStore implements IInstancesStoreRead {
     return new InstancesStore(this, this._globalInstances, new Map(), this._rootDisposer, new CompositeDisposable());
   }
 
-  upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
-    definition: IDefinition<TInstance, any, TArgs>,
+  upsertIntoScopeInstances<TInstance>(
+    definition: IDefinition<TInstance, any>,
     container: IContainer,
     isCascadingInherited: boolean,
-    ...args: TArgs
   ) {
     if (this._scopeInstances.has(definition.id)) {
       return this._scopeInstances.get(definition.id) as TInstance;
     } else {
-      const instance = definition.create(container, ...args);
+      const instance = definition.create(container);
 
       // If the definition is bound to the current container then after calling definition.create
       // we already have the instance in the store, hence we should not register it for duplicated disposal.
@@ -68,15 +69,14 @@ export class InstancesStore implements IInstancesStoreRead {
     }
   }
 
-  upsertIntoRootInstances<TInstance, TArgs extends any[]>(
-    definition: IDefinition<TInstance, any, TArgs>,
+  upsertIntoRootInstances<TInstance, TLifeTime extends LifeTime>(
+    definition: IDefinition<TInstance, TLifeTime>,
     container: IContainer,
-    ...args: TArgs
   ) {
     if (this._globalInstances.has(definition.id)) {
       return this._globalInstances.get(definition.id) as TInstance;
     } else {
-      const instance = definition.create(container, ...args);
+      const instance = definition.create(container);
 
       this._globalInstances.set(definition.id, instance);
 
@@ -84,6 +84,13 @@ export class InstancesStore implements IInstancesStoreRead {
 
       return instance;
     }
+  }
+
+  getTransientDefinition<TInstance>(
+    symbol: IDefinitionSymbol<TInstance, LifeTime.transient>,
+  ): IDefinition<TInstance, LifeTime.transient> | undefined {
+    // TODO: we probably need a separate store for transient definitions ? or maybe not
+    return this._globalInstances.get(symbol.id) as IDefinition<TInstance, LifeTime.transient>;
   }
 
   hasScopedInstance(definitionId: symbol): boolean {
@@ -118,5 +125,17 @@ export class InstancesStore implements IInstancesStoreRead {
     if (isDisposable(instance)) {
       disposer.registerDisposable(instance);
     }
+  }
+
+  getSingletonDefinition<TInstance>(
+    symbol: IDefinitionSymbol<TInstance, LifeTime>,
+  ): IDefinition<TInstance, LifeTime.singleton> | undefined {
+    return this._globalInstances.get(symbol.id) as IDefinition<TInstance, LifeTime.singleton>;
+  }
+
+  getScopedDefinition<TInstance>(
+    symbol: IDefinitionSymbol<TInstance, LifeTime>,
+  ): IDefinition<TInstance, LifeTime.scoped> | undefined {
+    return this._globalInstances.get(symbol.id) as IDefinition<TInstance, LifeTime.scoped>;
   }
 }

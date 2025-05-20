@@ -2,7 +2,7 @@ import { expect } from 'vitest';
 
 import type { IContainer } from '../../container/IContainer.js';
 import { once } from '../../container/Container.js';
-import { cls } from '../cls.js';
+import { cls } from '../utils/class-type.js';
 import { value } from '../value.js';
 import { fn } from '../fn.js';
 
