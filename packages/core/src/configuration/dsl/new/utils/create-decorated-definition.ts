@@ -1,14 +1,16 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
-import { isThenable } from '../../../../utils/IsThenable.js';
 import type { MaybePromise } from '../../../../utils/async.js';
+import { maybePromiseThen } from '../../../../utils/async.js';
 import type { IBindingsRegistryRead } from '../scope/ScopeSymbolBinder.js';
+import type { ConstructorArgsSymbols } from '../ContainerSymbolBinder.js';
 
-export function createDecoratedDefinition<TInstance, TLifetime extends LifeTime>(
+export function createDecoratedDefinition<TInstance, TLifetime extends LifeTime, TArgs extends any[]>(
   registry: IBindingsRegistryRead,
   defSymbol: IDefinitionSymbol<TInstance, TLifetime>,
-  decorateFn: (instance: TInstance) => MaybePromise<TInstance>,
+  decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
+  dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
 ): IDefinition<TInstance, TLifetime> {
   const def = registry.getDefinition(defSymbol) as IDefinition<TInstance, TLifetime> | undefined;
 
@@ -20,12 +22,14 @@ export function createDecoratedDefinition<TInstance, TLifetime extends LifeTime>
   }
 
   return def.override(container => {
-    const instance = def.create(container);
+    const deps = container.all(...dependencies);
 
-    if (isThenable(instance)) {
-      return instance.then(decorateFn);
-    } else {
-      return decorateFn(instance);
-    }
+    return maybePromiseThen(deps, (awaitedDependencies: TArgs) => {
+      const instance = def.create(container);
+
+      return maybePromiseThen(instance, awaitedInstance => {
+        return decorateFn(awaitedInstance, ...awaitedDependencies);
+      });
+    });
   });
 }

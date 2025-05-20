@@ -1,78 +1,50 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { container } from '../../container/Container.js';
-import { fn } from '../../definitions/fn.js';
 import { value } from '../../definitions/value.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { Definition } from '../../definitions/impl/Definition.js';
 import type { ScopeConfigureAllowedLifeTimes } from '../../configuration/abstract/ScopeConfigurable.js';
+import { singleton } from '../../definitions/def-symbol.js';
 
 describe(`decorate`, () => {
-  it(`decorates original value`, async () => {
-    const someValue = value(1);
+  const someValue = singleton<number>();
 
+  it(`decorates original value`, async () => {
     const c = container.new(c => {
-      c.override(someValue).toDecorated(val => val + 1);
+      c.add(someValue).static(1);
+      c.override(someValue).decorate(val => val + 1);
     });
 
     expect(c.use(someValue)).toEqual(2);
   });
 
-  it(`does not affect original module`, async () => {
-    const someValue = value(1);
-
-    expect(container.new().use(someValue)).toEqual(1);
-
-    const cnt = container.new(c => {
-      c.override(someValue).toDecorated(val => val + 1);
-    });
-
-    expect(cnt.use(someValue)).toEqual(2);
-  });
-
-  it(`calls decorate function with awaited instance in case of async definitions`, async () => {
-    const someValue = fn(async () => 1);
-
+  it(`is evaluated with awaited value`, async () => {
     const c = container.new(c => {
-      c.override(someValue).toDecorated(val => val + 1);
+      c.add(someValue).fn(async () => 1);
+      c.override(someValue).decorate(val => val + 1);
     });
 
-    expect(await c.call(someValue)).toEqual(2);
-  });
-
-  it(`allows using async decorate Fn for async definitions`, async () => {
-    const someValue = fn(async () => 1);
-
-    const c = container.new(c => {
-      c.override(someValue).toDecorated(async val => val + 1);
-    });
-
-    expect(await c.call(someValue)).toEqual(2);
-  });
-
-  it(`does not allow async decorate functions for sync definitions`, async () => {
-    const someValue = value(1);
-
-    const c = container.new(c => {
-      //@ts-expect-error - cannot return Promise<number> for number (due to async function)
-      c.override(someValue).toDecorated(async val => val + 1);
-    });
-
-    expect(() => c.use(someValue)).toThrowError();
+    expect(c.use(someValue)).toEqual(2);
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
-    const a = value(1);
-    const b = value(2);
-    const someValue = value(10);
+    const a = singleton<number>();
+    const b = singleton<number>();
+    const someValue = singleton<number>();
 
     const c = container.new(c => {
-      c.override(someValue).toDecorated((val, use) => {
-        const aVal = use(a);
-        const bVal = use(b);
+      c.add(a).static(1);
+      c.add(b).static(2);
+      c.add(someValue).fn(async () => 1);
 
-        return val + aVal + bVal;
-      });
+      c.override(someValue).decorate(
+        (val, aVal, bVal) => {
+          return val + aVal + bVal;
+        },
+        a,
+        b,
+      );
     });
 
     expect(c.use(someValue)).toEqual(13);

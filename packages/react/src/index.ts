@@ -12,7 +12,7 @@ export type { ContainerInitializerProps } from './components/ContainerInitialize
 export { useContainer } from './context/ContainerContext.js';
 export { use } from './hooks/use.js';
 export { useAll } from './hooks/useAll.js';
-export { useDeferred } from './hooks/useDeferred.js';
+
 export * from './hooks/useInitializers.js';
 
 export * from './hooks/useScopeConfig.js';

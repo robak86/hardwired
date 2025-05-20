@@ -58,9 +58,9 @@ export class ContainerSymbolBinder<TInstance, TLifeTime extends LifeTime> {
     this._bindingsRegistry.register(this._defSymbol, definition, this._container);
   }
 
-  static<TInstance>(symbol: DefinitionSymbol<TInstance, TLifeTime>, staticValue: TInstance) {
-    const definition = new Definition(symbol.id, symbol.strategy, () => staticValue);
+  static(staticValue: TInstance) {
+    const definition = new Definition(this._defSymbol.id, this._defSymbol.strategy, () => staticValue);
 
-    this._bindingsRegistry.register(symbol, definition, this._container);
+    this._bindingsRegistry.register(this._defSymbol, definition, this._container);
   }
 }

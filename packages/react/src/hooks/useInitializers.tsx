@@ -1,9 +1,9 @@
-import type { Definition, LifeTime } from 'hardwired';
+import type { IDefinition, LifeTime } from 'hardwired';
 import { useEffect } from 'react';
 
 import { useAll } from './useAll.js';
 
-export type ContainerInitializerDefinition = Definition<() => void, LifeTime, any>;
+export type ContainerInitializerDefinition = IDefinition<() => void, LifeTime>;
 
 export function useInitializers(...initializers: ContainerInitializerDefinition[]) {
   const initializerFns = useAll(...initializers);

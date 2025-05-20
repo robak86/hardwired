@@ -5,8 +5,6 @@ import type { ContainerSymbolBinder } from '../dsl/new/ContainerSymbolBinder.js'
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { ScopeOverridesBinder } from '../dsl/new/scope/ScopeOverridesBinder.js';
 
-import type { ScopeConfigureAllowedLifeTimes } from './ScopeConfigurable.js';
-
 export type ContainerConfigureFreezeLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureCascadingLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
@@ -23,7 +21,7 @@ export interface ContainerConfigurable {
 
   withInterceptor(id: string | symbol, interceptor: IInterceptor<unknown>): void;
 
-  override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+  override<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ScopeOverridesBinder<TInstance, TLifeTime>;
 

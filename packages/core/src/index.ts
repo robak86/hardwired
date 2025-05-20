@@ -1,5 +1,3 @@
-export type { TransientDefinition } from './definitions/impl/TransientDefinition.js';
-
 export type { MaybePromise } from './utils/async.js';
 
 export type { Deferred } from './definitions/utils/Deferred.js';
@@ -40,8 +38,6 @@ export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
 
 export type * from './container/IContainer.js';
 
-export type { Middleware, MiddlewareNextFn } from './definitions/composition/withMiddleware.js';
-export { withMiddleware, createMiddleware } from './definitions/composition/withMiddleware.js';
 export type { ClassType } from './definitions/utils/class-type.js';
 
 export { Definition } from './definitions/impl/Definition.js';
