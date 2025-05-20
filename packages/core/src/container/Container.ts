@@ -233,7 +233,7 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   private buildWithStrategyIntercepted<TValue>(
     currentInterceptor: IInterceptor<any>,
-    symbol: IDefinitionSymbol<TValue, LifeTime>,
+    symbol: IDefinition<TValue, LifeTime>,
   ): TValue {
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
 
@@ -249,7 +249,7 @@ export class Container extends ExtensibleFunction implements IContainer {
       const transientDef = this.instancesStore.getTransientDefinition(symbol);
 
       if (!transientDef) {
-        throw new Error(`Cannot find definition for transient binding ${symbol.name}.`);
+        throw new Error(`Cannot find definition for transient binding ${symbol.toString()}.`);
       }
 
       const instance = transientDef.create(this);
@@ -261,7 +261,7 @@ export class Container extends ExtensibleFunction implements IContainer {
       const singletonDef = this.instancesStore.getSingletonDefinition(symbol);
 
       if (!singletonDef) {
-        throw new Error(`Cannot find definition for singleton binding ${symbol.name}.`);
+        throw new Error(`Cannot find definition for singleton binding ${symbol.toString()}.`);
       }
 
       const instance = this.instancesStore.upsertIntoRootInstances(singletonDef, withChildInterceptor);

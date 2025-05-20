@@ -4,13 +4,17 @@ import { container } from '../../container/Container.js';
 import { cascading, scoped, singleton, transient } from '../def-symbol.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { MaybePromise } from '../../utils/async.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`class`, () => {
-  const numDef = transient<number>('num');
-  const strDef = transient<string>('str');
+  const numDef = transient<BoxedValue<number>>('num');
+  const strDef = transient<BoxedValue<string>>('str');
 
-  const numDefScoped = scoped<number>('num');
-  const strDefScoped = scoped<string>('str');
+  const numDefScoped = scoped<BoxedValue<number>>('num');
+  const strDefScoped = scoped<BoxedValue<string>>('str');
+
+  const numDefCascading = cascading<BoxedValue<number>>('num');
+  const strDefCascading = cascading<BoxedValue<string>>('str');
 
   const myClassTransient = transient<MyClass>('MyClassTransient');
   const myClassSingleton = singleton<MyClass>('MyClassSingleton');
@@ -21,14 +25,14 @@ describe(`class`, () => {
     readonly value = Math.random();
 
     constructor(
-      public readonly a: number,
-      public readonly b: string,
+      public readonly num: BoxedValue<number>,
+      public readonly str: BoxedValue<string>,
     ) {}
   }
 
   const syncConfig = configureContainer(c => {
-    c.add(numDef).fn(() => 123);
-    c.add(strDef).fn(() => '123');
+    c.add(numDef).fn(() => new BoxedValue(123));
+    c.add(strDef).fn(() => new BoxedValue('123'));
 
     c.add(myClassTransient).class(MyClass, numDef, strDef);
     c.add(myClassSingleton).class(MyClass, numDef, strDef);
@@ -37,8 +41,8 @@ describe(`class`, () => {
   });
 
   const asyncConfig = configureContainer(c => {
-    c.add(numDef).fn(async () => 123);
-    c.add(strDef).fn(async () => '123');
+    c.add(numDef).fn(async () => new BoxedValue(123));
+    c.add(strDef).fn(async () => new BoxedValue('123'));
 
     c.add(myClassTransient).class(MyClass, numDef, strDef);
     c.add(myClassSingleton).class(MyClass, numDef, strDef);
@@ -74,8 +78,8 @@ describe(`class`, () => {
 
         const awaited = await cnt.use(myClassTransient);
 
-        expect(awaited.a).toBe(123);
-        expect(awaited.b).toBe('123');
+        expect(awaited.num.value).toBe(123);
+        expect(awaited.str.value).toBe('123');
       });
 
       it(`throws when definition symbol is not registered`, async () => {
@@ -97,8 +101,8 @@ describe(`class`, () => {
 
         const awaited = await cnt.use(myClassTransient);
 
-        expect(awaited.a).toBe(123);
-        expect(awaited.b).toBe('123');
+        expect(awaited.num.value).toBe(123);
+        expect(awaited.str.value).toBe('123');
       });
     });
   });
@@ -159,8 +163,14 @@ describe(`class`, () => {
     });
 
     describe(`cascading`, () => {
+      const config = configureContainer(c => {
+        c.add(numDefCascading).fn(() => new BoxedValue(123));
+        c.add(strDefCascading).fn(() => new BoxedValue('123'));
+        c.add(myClassCascading).class(MyClass, numDefCascading, strDefCascading);
+      });
+
       it(`is inherited by child scope`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container.new(config);
 
         const childScope = cnt.scope();
 
@@ -171,22 +181,27 @@ describe(`class`, () => {
       });
 
       it(`is inherited until a child scope makes owning the definition`, async () => {
-        const root = container.new(syncConfig);
+        const root = container.new(config);
 
-        const scopeL1 = root.scope();
+        const scopeL1 = root.scope(s => s.own(numDefCascading));
         const scopeL2 = scopeL1.scope(s => s.own(myClassCascading));
         const scopeL3 = scopeL2.scope();
 
-        const rootInstance = await root.use(myClassCascading);
-        const l1Instance = await scopeL1.use(myClassCascading);
+        expect(await root.use(numDefCascading)).toBe(await root.use(numDefCascading));
 
-        expect(rootInstance).toBe(l1Instance);
+        // L1 owns numDefCascading
+        expect(await root.use(numDefCascading)).not.toBe(await scopeL1.use(numDefCascading));
+        expect(await scopeL1.use(numDefCascading)).toBe(await scopeL2.use(numDefCascading));
+        expect(await scopeL2.use(numDefCascading)).toBe(await scopeL3.use(numDefCascading));
 
-        const l2Instance = await scopeL2.use(myClassCascading);
-        const l3Instance = await scopeL3.use(myClassCascading);
+        // only root owns strDefCascading
+        expect(await root.use(strDefCascading)).toBe(await scopeL1.use(strDefCascading));
+        expect(await scopeL1.use(strDefCascading)).toBe(await scopeL2.use(strDefCascading));
+        expect(await scopeL2.use(strDefCascading)).toBe(await scopeL3.use(strDefCascading));
 
-        expect(l2Instance).not.toBe(rootInstance);
-        expect(l3Instance).toBe(l2Instance);
+        expect(await root.use(myClassCascading)).toBe(await scopeL1.use(myClassCascading));
+        expect(await scopeL1.use(myClassCascading)).not.toBe(await scopeL2.use(myClassCascading));
+        expect(await scopeL2.use(myClassCascading)).toBe(await scopeL3.use(myClassCascading));
       });
     });
   });

@@ -87,7 +87,7 @@ export class InstancesStore implements IInstancesStoreRead {
   }
 
   getTransientDefinition<TInstance>(
-    symbol: IDefinitionSymbol<TInstance, LifeTime.transient>,
+    symbol: IDefinitionSymbol<TInstance, LifeTime>,
   ): IDefinition<TInstance, LifeTime.transient> | undefined {
     // TODO: we probably need a separate store for transient definitions ? or maybe not
     return this._globalInstances.get(symbol.id) as IDefinition<TInstance, LifeTime.transient>;
