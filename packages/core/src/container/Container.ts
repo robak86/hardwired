@@ -13,9 +13,9 @@ import type { AnyDefinitionSymbol, IDefinition } from '../definitions/abstract/I
 import type { MaybePromise } from '../utils/async.js';
 import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
-import { Binder } from '../configuration/Binder.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
+import { ScopeOverridesBinder } from '../configuration/dsl/new/scope/ScopeOverridesBinder.js';
 
 import type { HasPromise, IContainer, IStrategyAware, NewScopeReturnType, ReturnTypes, UseFn } from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
@@ -136,11 +136,11 @@ export class Container extends ExtensibleFunction implements IContainer {
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
-    definition: IDefinition<TInstance, TLifeTime>,
-  ): Binder<TInstance, TLifeTime> {
+    definition: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): ScopeOverridesBinder<TInstance, TLifeTime> {
     const bind = (definition: IDefinition<TInstance, TLifeTime>) => {
       if (this.instancesStore.has(definition.id)) {
-        throw new Error(`Cannot freeze binding ${definition.name} because it is already instantiated.`);
+        throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
       }
 
       if (
@@ -148,19 +148,14 @@ export class Container extends ExtensibleFunction implements IContainer {
         this.instancesStore.hasInherited(definition.id)
       ) {
         throw new Error(
-          `Cannot freeze cascading binding ${definition.name} because it is already instantiated in some higher scope.`,
+          `Cannot freeze cascading binding ${definition.toString()} because it is already instantiated in some higher scope.`,
         );
       }
 
-      this.bindingsRegistry.addFrozenBinding(definition);
+      this.bindingsRegistry.freeze(definition);
     };
 
-    return new Binder<TInstance, TLifeTime>(
-      definition,
-      [LifeTime.singleton, LifeTime.transient, LifeTime.scoped],
-      bind,
-      bind,
-    );
+    return new ScopeOverridesBinder<TInstance, TLifeTime>(definition, this.bindingsRegistry, bind);
   }
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
@@ -182,6 +177,12 @@ export class Container extends ExtensibleFunction implements IContainer {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition);
+  }
+
+  useAsync<TValue>(definition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<LifeTime>>): Promise<TValue> {
+    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+
+    return Promise.resolve(this.buildWithStrategy(patchedDefinition));
   }
 
   /**

@@ -1,12 +1,12 @@
-import type { BindingsRegistry } from '../../../context/BindingsRegistry.js';
-import type { IDefinitionSymbol } from '../../../definitions/def-symbol.js';
-import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
-import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { isThenable } from '../../../utils/IsThenable.js';
+import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
+import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import { isThenable } from '../../../../utils/IsThenable.js';
+import type { IBindingsRegistryRead } from '../scope/ScopeSymbolBinder.js';
 
 export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime>(
-  registry: BindingsRegistry,
-  defSymbol: IDefinitionSymbol<TInstance, any>,
+  registry: IBindingsRegistryRead,
+  defSymbol: IDefinitionSymbol<TInstance, TLifetime>,
   configFn: (instance: TInstance) => void | Promise<void>,
 ): IDefinition<TInstance, TLifetime> {
   const def = registry.getDefinition(defSymbol) as IDefinition<TInstance, TLifetime> | undefined;

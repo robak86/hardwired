@@ -52,23 +52,15 @@ export class ContainerSymbolBinder<TInstance, TLifeTime extends LifeTime> {
     this._bindingsRegistry.register(this._defSymbol, fnDefinition, this._container);
   }
 
+  locator(fn: (container: IContainer) => MaybePromise<TInstance>) {
+    const definition = new Definition(this._defSymbol.id, this._defSymbol.strategy, fn);
+
+    this._bindingsRegistry.register(this._defSymbol, definition, this._container);
+  }
+
   static<TInstance>(symbol: DefinitionSymbol<TInstance, TLifeTime>, staticValue: TInstance) {
     const definition = new Definition(symbol.id, symbol.strategy, () => staticValue);
 
     this._bindingsRegistry.register(symbol, definition, this._container);
   }
-
-  configure(defSymbol: IDefinitionSymbol<any, any>) {
-    throw new Error('Implement me!');
-  }
-
-  decorate<TInstance>(
-    defSymbol: IDefinitionSymbol<TInstance, any>,
-    configureFn: (container: IContainer) => MaybePromise<TInstance>,
-  ) {
-    throw new Error('Implement me!');
-  }
-
-  // TODO: function(this: IContainer, ...args: any[]): TInstance;
-  // locator()
 }

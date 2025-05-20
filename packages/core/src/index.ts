@@ -23,17 +23,17 @@ export type { ContainerConfigurable } from './configuration/abstract/ContainerCo
 export type { IInterceptor } from './container/interceptors/interceptor.js';
 
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
-export { Container, container, once, all } from './container/Container.js';
+export { Container, container } from './container/Container.js';
 
-export * from './definitions/fn.js';
+export * from './definitions/def-symbol.js';
+
 export type * from './definitions/abstract/InstanceDefinition.js';
 export type * from './definitions/abstract/InstanceDefinitionDependency.js';
 
 export { value } from './definitions/value.js';
-export * from './definitions/object.js';
+
 export * from './definitions/utils/derivedLifeTime.js';
 
-export * from './definitions/unbound.js';
 export * from './definitions/abstract/LifeTime.js';
 
 export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
@@ -43,7 +43,7 @@ export type * from './container/IContainer.js';
 export type { Middleware, MiddlewareNextFn } from './definitions/composition/withMiddleware.js';
 export { withMiddleware, createMiddleware } from './definitions/composition/withMiddleware.js';
 export type { ClassType } from './definitions/utils/class-type.js';
-export { cls } from './definitions/utils/class-type.js';
+
 export { Definition } from './definitions/impl/Definition.js';
 export { ClassDefinition } from './definitions/impl/ClassDefinition.js';
 

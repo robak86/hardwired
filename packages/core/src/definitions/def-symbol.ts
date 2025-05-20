@@ -16,7 +16,7 @@ export class DefinitionSymbol<TInstance, TLifeTime extends LifeTime> {
 
   constructor(
     public readonly strategy: TLifeTime,
-    name: string,
+    name?: string,
   ) {
     this.id = Symbol(name);
   }
@@ -26,14 +26,14 @@ export class DefinitionSymbol<TInstance, TLifeTime extends LifeTime> {
   }
 }
 
-export const singleton = <TInstance>(name: string) =>
+export const singleton = <TInstance>(name?: string) =>
   new DefinitionSymbol<TInstance, LifeTime.singleton>(LifeTime.singleton, name);
 
-export const transient = <TInstance>(name: string) =>
+export const transient = <TInstance>(name?: string) =>
   new DefinitionSymbol<TInstance, LifeTime.transient>(LifeTime.transient, name);
 
-export const scoped = <TInstance>(name: string) =>
+export const scoped = <TInstance>(name?: string) =>
   new DefinitionSymbol<TInstance, LifeTime.scoped>(LifeTime.scoped, name);
 
-export const cascading = <TInstance>(name: string) =>
+export const cascading = <TInstance>(name?: string) =>
   new DefinitionSymbol<TInstance, LifeTime.cascading>(LifeTime.cascading, name);

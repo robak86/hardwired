@@ -6,10 +6,11 @@ import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-
 import type { MaybePromise } from '../../utils/async.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 
-import { ScopeSymbolBinder } from './new/ScopeSymbolBinder.js';
-import { OwningDefinitionBuilder } from './new/OwningDefinitionBuilder.js';
-import { createConfiguredDefinition } from './new/create-configured-definition.js';
-import { createDecoratedDefinition } from './new/create-decorated-definition.js';
+import { ScopeSymbolBinder } from './new/scope/ScopeSymbolBinder.js';
+import { OwningDefinitionBuilder } from './new/scope/OwningDefinitionBuilder.js';
+import { createConfiguredDefinition } from './new/utils/create-configured-definition.js';
+import { createDecoratedDefinition } from './new/utils/create-decorated-definition.js';
+import { ScopeOverridesBinder } from './new/scope/ScopeOverridesBinder.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient];
@@ -24,12 +25,14 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
   ): ScopeSymbolBinder<TInstance, TLifeTime> {
-    return new ScopeSymbolBinder(symbol, (definition: IDefinition<TInstance, TLifeTime>) => {
+    return new ScopeSymbolBinder(symbol, this._bindingsRegistry, (definition: IDefinition<TInstance, TLifeTime>) => {
       this._bindingsRegistry.register(symbol, definition, this._currentContainer);
     });
   }
 
-  own<TInstance>(symbol: DefinitionSymbol<TInstance, LifeTime.cascading>): OwningDefinitionBuilder<TInstance> {
+  own<TInstance>(
+    symbol: DefinitionSymbol<TInstance, LifeTime.cascading>,
+  ): OwningDefinitionBuilder<TInstance, LifeTime.cascading> {
     this._bindingsRegistry.ownCascading(symbol, this._currentContainer);
 
     return new OwningDefinitionBuilder(symbol, this._bindingsRegistry);
@@ -59,8 +62,10 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
 
   override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ScopeSymbolBinder<TInstance, TLifeTime> {
-    throw new Error('Method not implemented.');
+  ): ScopeOverridesBinder<TInstance, TLifeTime> {
+    return new ScopeOverridesBinder(symbol, this._bindingsRegistry, (definition: IDefinition<TInstance, TLifeTime>) => {
+      this._bindingsRegistry.override(definition);
+    });
   }
 
   //

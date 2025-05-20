@@ -128,6 +128,17 @@ describe(`class`, () => {
 
         expect(instance1).toBe(instance2);
       });
+
+      it(`propagates singleton to the root container`, async () => {
+        const cnt = container.new(syncConfig);
+
+        const childScope = cnt.scope();
+
+        const instance2 = await childScope.use(myClassSingleton);
+        const instance1 = await cnt.use(myClassSingleton);
+
+        expect(instance1).toBe(instance2);
+      });
     });
 
     describe(`transient`, () => {

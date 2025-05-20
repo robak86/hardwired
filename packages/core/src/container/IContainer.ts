@@ -3,10 +3,10 @@ import { type LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
-import type { Binder } from '../configuration/Binder.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { MaybePromise } from '../utils/async.js';
+import type { ScopeOverridesBinder } from '../configuration/dsl/new/scope/ScopeOverridesBinder.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
 
@@ -23,13 +23,17 @@ export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
 export interface IContainerConfigurationAware {
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): Binder<TInstance, TLifeTime>;
+  ): ScopeOverridesBinder<TInstance, TLifeTime>;
 }
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(
     instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
   ): MaybePromise<TValue>;
+
+  useAsync<TValue>(
+    instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+  ): Promise<TValue>;
 
   useExisting<TValue>(definition: IDefinitionSymbol<TValue, LifeTime.scoped | LifeTime.singleton>): TValue | null;
 

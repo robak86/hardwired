@@ -1,12 +1,12 @@
-import type { BindingsRegistry } from '../../../context/BindingsRegistry.js';
-import type { IDefinitionSymbol } from '../../../definitions/def-symbol.js';
-import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
-import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import { isThenable } from '../../../utils/IsThenable.js';
-import type { MaybePromise } from '../../../utils/async.js';
+import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
+import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import { isThenable } from '../../../../utils/IsThenable.js';
+import type { MaybePromise } from '../../../../utils/async.js';
+import type { IBindingsRegistryRead } from '../scope/ScopeSymbolBinder.js';
 
 export function createDecoratedDefinition<TInstance, TLifetime extends LifeTime>(
-  registry: BindingsRegistry,
+  registry: IBindingsRegistryRead,
   defSymbol: IDefinitionSymbol<TInstance, TLifetime>,
   decorateFn: (instance: TInstance) => MaybePromise<TInstance>,
 ): IDefinition<TInstance, TLifetime> {

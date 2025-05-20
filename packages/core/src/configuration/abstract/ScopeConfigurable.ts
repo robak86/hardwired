@@ -1,10 +1,10 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-symbol.js';
-import type { ScopeSymbolBinder } from '../dsl/new/ScopeSymbolBinder.js';
+import type { ScopeSymbolBinder } from '../dsl/new/scope/ScopeSymbolBinder.js';
 import type { IContainer } from '../../container/IContainer.js';
-import type { OwningDefinitionBuilder } from '../dsl/new/OwningDefinitionBuilder.js';
+import type { OwningDefinitionBuilder } from '../dsl/new/scope/OwningDefinitionBuilder.js';
 import type { MaybePromise } from '../../utils/async.js';
-import type { ScopeOverridesBinder } from '../dsl/new/ScopeOverridesBinder.js';
+import type { ScopeOverridesBinder } from '../dsl/new/scope/ScopeOverridesBinder.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
@@ -15,7 +15,9 @@ export interface ScopeConfigurable {
 
   onDispose(callback: (scope: IContainer) => void): void;
 
-  own<TInstance>(symbol: DefinitionSymbol<TInstance, LifeTime.cascading>): OwningDefinitionBuilder<TInstance>;
+  own<TInstance>(
+    symbol: DefinitionSymbol<TInstance, LifeTime.cascading>,
+  ): OwningDefinitionBuilder<TInstance, LifeTime.cascading>;
 
   // onInit(initializer: InitFn): void;
 

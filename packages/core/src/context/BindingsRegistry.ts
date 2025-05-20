@@ -288,4 +288,8 @@ export class BindingsRegistry implements IBindingRegistryRead {
 
     this._scopeDefinitions.set(definition.id, definition);
   }
+
+  freeze<TInstance, TLifetime extends LifeTime>(def: IDefinition<TInstance, TLifetime>) {
+    this.addFrozenBinding(def, def);
+  }
 }

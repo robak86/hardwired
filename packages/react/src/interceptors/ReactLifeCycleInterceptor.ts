@@ -32,7 +32,7 @@ export class ReactLifeCycleRootInterceptor extends GraphBuilderInterceptor<never
 
   constructor(_config: WithReactLifeCycleConfig) {
     const createNode = <T>(
-      _definition: Definition<T, any, any>,
+      _definition: Definition<T, any>,
       value: Awaited<T>,
       children: ReactLifeCycleNode<unknown>[],
       _tags: ScopeTag[],
@@ -57,13 +57,13 @@ export class ReactLifeCycleRootInterceptor extends GraphBuilderInterceptor<never
   }
 
   getGraphNode<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
+    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton>,
   ): ReactLifeCycleNode<TInstance> | undefined {
     const graphNode = super.getGraphNode(definition);
 
     if (!graphNode) {
       console.warn(
-        `React lifecycles interceptor node not found for definition: ${definition.name.toString()}.
+        `React lifecycles interceptor node not found for definition: ${definition.toString()}.
          This means that you try to instantiate transient dependency or there is a bug in the container.`,
       );
     }
