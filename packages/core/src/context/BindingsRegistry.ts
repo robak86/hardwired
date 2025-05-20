@@ -39,6 +39,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
     definition: IDefinition<TInstance, TLifeTime>,
     buildAware: IContainer,
   ) {
+    // TODO: replace this switch case with proper delegation/polymorphism
     switch (symbol.strategy) {
       case LifeTime.singleton:
         this.registerSingleton(symbol, definition);
@@ -55,6 +56,27 @@ export class BindingsRegistry implements IBindingRegistryRead {
       case LifeTime.cascading:
         this._owningScopes.set(symbol.id, buildAware);
         this.registerCascading(symbol, definition);
+        break;
+    }
+  }
+
+  override(newDef: IDefinition<any, LifeTime>) {
+    // TODO: replace this switch case with proper delegation/polymorphism
+    switch (newDef.strategy) {
+      case LifeTime.singleton:
+        this.overrideSingleton(newDef);
+        break;
+
+      case LifeTime.scoped:
+        this.overrideScoped(newDef);
+        break;
+
+      case LifeTime.transient:
+        this.overrideTransient(newDef);
+        break;
+
+      case LifeTime.cascading:
+        this.overrideCascading(newDef);
         break;
     }
   }
@@ -167,28 +189,28 @@ export class BindingsRegistry implements IBindingRegistryRead {
     this._scopeDefinitions.set(symbol.id, definition);
   }
 
-  /**
-   * Registers cascading binding for the current scope and all child scopes.
-   * Cascading definition is a definition that is bound to scope (Definition#bind(container)).
-   * When we register cascading definition here, it gets inherited by all child binding registries, so effectively
-   * whenever we try to resolve the definition in some child scope, we will get the definition instantiated in
-   * the scope that is bound to the definition override.
-   *
-   * @param definition - definition bound to some particular scope
-   */
-  addCascadingBinding<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, TLifeTime>,
-    definition: IDefinition<TInstance, TLifeTime>,
-  ) {
-    if (this._scopeDefinitions.has(symbol.id)) {
-      throw new Error(
-        `Cannot bind cascading definition for the current scope. The scope has already other binding for the definition.`,
-      );
-    }
-
-    this._cascadingDefinitions.set(symbol.id, definition);
-    this._ownCascadingDefinitions.set(symbol.id, definition);
-  }
+  // /**
+  //  * Registers cascading binding for the current scope and all child scopes.
+  //  * Cascading definition is a definition that is bound to scope (Definition#bind(container)).
+  //  * When we register cascading definition here, it gets inherited by all child binding registries, so effectively
+  //  * whenever we try to resolve the definition in some child scope, we will get the definition instantiated in
+  //  * the scope that is bound to the definition override.
+  //  *
+  //  * @param definition - definition bound to some particular scope
+  //  */
+  // addCascadingBinding<TInstance, TLifeTime extends LifeTime>(
+  //   symbol: DefinitionSymbol<TInstance, TLifeTime>,
+  //   definition: IDefinition<TInstance, TLifeTime>,
+  // ) {
+  //   if (this._scopeDefinitions.has(symbol.id)) {
+  //     throw new Error(
+  //       `Cannot bind cascading definition for the current scope. The scope has already other binding for the definition.`,
+  //     );
+  //   }
+  //
+  //   this._cascadingDefinitions.set(symbol.id, definition);
+  //   this._ownCascadingDefinitions.set(symbol.id, definition);
+  // }
 
   private registerSingleton<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
@@ -233,5 +255,37 @@ export class BindingsRegistry implements IBindingRegistryRead {
     }
 
     this._cascadingDefinitions.set(symbol.id, iDefinition);
+  }
+
+  private overrideCascading<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
+    if (this._cascadingDefinitions.has(definition.id)) {
+      throw new Error(`Cannot bind cascading definition. The definition was already bound.`);
+    }
+
+    this._cascadingDefinitions.set(definition.id, definition);
+  }
+
+  private overrideSingleton<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
+    if (this._singletonDefinitions.has(definition.id)) {
+      throw new Error(`Cannot bind singleton definition. The definition was already bound.`);
+    }
+
+    this._singletonDefinitions.set(definition.id, definition);
+  }
+
+  private overrideTransient<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
+    if (this._transientDefinitions.has(definition.id)) {
+      throw new Error(`Cannot bind transient definition. The definition was already bound.`);
+    }
+
+    this._transientDefinitions.set(definition.id, definition);
+  }
+
+  private overrideScoped<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
+    if (this._scopeDefinitions.has(definition.id)) {
+      throw new Error(`Cannot bind scoped definition. The definition was already bound.`);
+    }
+
+    this._scopeDefinitions.set(definition.id, definition);
   }
 }

@@ -1,10 +1,15 @@
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { ScopeConfigurable } from '../abstract/ScopeConfigurable.js';
+import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../abstract/ScopeConfigurable.js';
 import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
 import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import type { DefinitionSymbol } from '../../definitions/def-symbol.js';
+import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-symbol.js';
+import type { MaybePromise } from '../../utils/async.js';
+import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 
 import { ScopeSymbolBinder } from './new/ScopeSymbolBinder.js';
+import { OwningDefinitionBuilder } from './new/OwningDefinitionBuilder.js';
+import { createConfiguredDefinition } from './new/create-configured-definition.js';
+import { createDecoratedDefinition } from './new/create-decorated-definition.js';
 
 export class ScopeConfigurationDSL implements ScopeConfigurable {
   private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient];
@@ -19,15 +24,43 @@ export class ScopeConfigurationDSL implements ScopeConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
   ): ScopeSymbolBinder<TInstance, TLifeTime> {
-    return new ScopeSymbolBinder(symbol, this._bindingsRegistry, this._currentContainer);
+    return new ScopeSymbolBinder(symbol, (definition: IDefinition<TInstance, TLifeTime>) => {
+      this._bindingsRegistry.register(symbol, definition, this._currentContainer);
+    });
   }
 
-  own<TInstance>(symbol: DefinitionSymbol<TInstance, LifeTime.cascading>): void {
+  own<TInstance>(symbol: DefinitionSymbol<TInstance, LifeTime.cascading>): OwningDefinitionBuilder<TInstance> {
     this._bindingsRegistry.ownCascading(symbol, this._currentContainer);
+
+    return new OwningDefinitionBuilder(symbol, this._bindingsRegistry);
   }
 
   onDispose(callback: (scope: IContainer) => void): void {
     this._disposeFns.push(callback);
+  }
+
+  configure<TInstance>(
+    symbol: IDefinitionSymbol<TInstance, ScopeConfigureAllowedLifeTimes>,
+    configFn: (instance: TInstance) => MaybePromise<void>,
+  ): void {
+    const configuredDefinition = createConfiguredDefinition(this._bindingsRegistry, symbol, configFn);
+
+    this._bindingsRegistry.override(configuredDefinition);
+  }
+
+  decorate<TInstance>(
+    symbol: IDefinitionSymbol<TInstance, ScopeConfigureAllowedLifeTimes>,
+    configFn: (instance: TInstance) => MaybePromise<TInstance>,
+  ): void {
+    const configuredDefinition = createDecoratedDefinition(this._bindingsRegistry, symbol, configFn);
+
+    this._bindingsRegistry.override(configuredDefinition);
+  }
+
+  override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): ScopeSymbolBinder<TInstance, TLifeTime> {
+    throw new Error('Method not implemented.');
   }
 
   //

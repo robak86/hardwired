@@ -10,5 +10,5 @@ export type AnyDefinitionSymbol = IDefinitionSymbol<any, LifeTime>;
 export interface IDefinition<TInstance, TLifeTime extends LifeTime> extends IDefinitionSymbol<TInstance, TLifeTime> {
   create(context: IContainer): MaybePromise<TInstance>;
 
-  override(createFn: (context: IContainer) => TInstance): IDefinition<TInstance, TLifeTime>;
+  override(createFn: (context: IContainer) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime>;
 }

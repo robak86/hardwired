@@ -1,32 +1,35 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { DefinitionSymbol } from '../../definitions/def-symbol.js';
+import type { DefinitionSymbol, IDefinitionSymbol } from '../../definitions/def-symbol.js';
 import type { ScopeSymbolBinder } from '../dsl/new/ScopeSymbolBinder.js';
 import type { IContainer } from '../../container/IContainer.js';
-
-import type { InitFn } from './ContainerConfigurable.js';
+import type { OwningDefinitionBuilder } from '../dsl/new/OwningDefinitionBuilder.js';
+import type { MaybePromise } from '../../utils/async.js';
+import type { ScopeOverridesBinder } from '../dsl/new/ScopeOverridesBinder.js';
 
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped;
 
 export interface ScopeConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ScopeSymbolBinder<TInstance, TLifeTime>;
 
   onDispose(callback: (scope: IContainer) => void): void;
 
-  own<TInstance>(symbol: DefinitionSymbol<TInstance, LifeTime.cascading>): void;
+  own<TInstance>(symbol: DefinitionSymbol<TInstance, LifeTime.cascading>): OwningDefinitionBuilder<TInstance>;
 
-  onInit(initializer: InitFn): void;
+  // onInit(initializer: InitFn): void;
 
-  // override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
-  //   definition: Definition<TInstance, TLifeTime, TArgs>,
-  // ): Binder<TInstance, TLifeTime, TArgs>;
-  //
+  configure<TInstance>(
+    symbol: IDefinitionSymbol<TInstance, ScopeConfigureAllowedLifeTimes>,
+    configFn: (instance: TInstance) => MaybePromise<void>,
+  ): void;
 
-  //
-  // overrideCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
-  //   definition: Definition<TInstance, TLifeTime, []>,
-  // ): Binder<TInstance, TLifeTime, []>;
-  //
-  // cascade<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void;
+  decorate<TInstance>(
+    symbol: IDefinitionSymbol<TInstance, ScopeConfigureAllowedLifeTimes>,
+    configFn: (instance: TInstance) => MaybePromise<TInstance>,
+  ): void;
+
+  override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): ScopeOverridesBinder<TInstance, TLifeTime>;
 }
