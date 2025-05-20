@@ -16,8 +16,8 @@ describe(`define`, () => {
           c.add(composite).fn((v1, v2) => [v1, v2], ext1, ext2);
         })
         .scope(c => {
-          c.override(ext1).static(1);
-          c.override(ext2).static('str');
+          c.add(ext1).static(1);
+          c.add(ext2).static('str');
         })
         .use(composite);
 

@@ -19,7 +19,14 @@ export class ScopeConfigurationBuilder implements ScopeConfigurable {
     private _bindingsRegistry: BindingsRegistry,
     private _tags: (string | symbol)[],
     private _disposeFns: Array<(scope: IContainer) => void>,
+    private _scopeInitializationFns: Array<(scope: IContainer) => MaybePromise<void>> = [],
   ) {}
+
+  eager<TInstance, TLifeTime extends LifeTime>(def: IDefinitionSymbol<TInstance, TLifeTime>): unknown {
+    this._scopeInitializationFns.push(use => {
+      use(def);
+    });
+  }
 
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
@@ -76,67 +83,4 @@ export class ScopeConfigurationBuilder implements ScopeConfigurable {
       },
     );
   }
-
-  //
-  // appendTag(tag: string | symbol): void {
-  //   if (!this._tags.includes(tag)) {
-  //     this._tags.push(tag);
-  //   }
-  // }
-  //
-  // cascade<TInstance>(definition: Definition<TInstance, ScopeConfigureAllowedLifeTimes, []>): void {
-  //   this._bindingsRegistry.addCascadingBinding(definition.bindToContainer(this._currentContainer));
-  // }
-  //
-  // overrideCascading<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
-  //   definition: Definition<TInstance, TLifeTime, []>,
-  // ): Binder<TInstance, TLifeTime, []> {
-  //   if (!(definition instanceof UnboundDefinition)) {
-  //     if ((definition.strategy as LifeTime) !== LifeTime.scoped) {
-  //       throw new Error(`Cascading is allowed only for scoped.`);
-  //     }
-  //   }
-  //
-  //   return new Binder<TInstance, TLifeTime, []>(
-  //     definition,
-  //     this._allowedLifeTimes,
-  //     this._onCascadingStaticBind,
-  //     this._onCascadingInstantiableBind,
-  //   );
-  // }
-  //
-  // onInit(initializer: InitFn): void {
-  //   initializer(this._currentContainer);
-  // }
-  //
-  // override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes, TArgs extends any[]>(
-  //   definition: Definition<TInstance, TLifeTime>,
-  // ): Binder<TInstance, TLifeTime, TArgs> {
-  //   if ((definition.strategy as LifeTime) === LifeTime.singleton) {
-  //     throw new Error(`Binding singletons in for child scopes is not allowed.`);
-  //   }
-  //
-  //   return new Binder<TInstance, TLifeTime, TArgs>(
-  //     definition,
-  //     this._allowedLifeTimes,
-  //     this._onLocalStaticBind,
-  //     this._onLocalInstantiableBind,
-  //   );
-  // }
-  //
-  // private _onCascadingStaticBind = (newDefinition: AnyDefinitionSymbol) => {
-  //   this._bindingsRegistry.addCascadingBinding(newDefinition);
-  // };
-  //
-  // private _onCascadingInstantiableBind = (newDefinition: AnyDefinitionSymbol) => {
-  //   this._bindingsRegistry.addCascadingBinding(newDefinition.bindToContainer(this._currentContainer));
-  // };
-  //
-  // private _onLocalStaticBind = (newDefinition: AnyDefinitionSymbol) => {
-  //   this._bindingsRegistry.addScopeBinding(newDefinition);
-  // };
-  //
-  // private _onLocalInstantiableBind = (newDefinition: AnyDefinitionSymbol) => {
-  //   this._bindingsRegistry.addScopeBinding(newDefinition);
-  // };
 }

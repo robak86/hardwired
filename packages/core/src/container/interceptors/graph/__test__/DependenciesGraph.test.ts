@@ -1,6 +1,7 @@
 import { DependenciesGraphRoot } from '../DependenciesGraph.js';
-import { singleton } from '../../../../definitions/def-symbol.js';
+import { scoped, singleton, transient } from '../../../../definitions/def-symbol.js';
 import { container } from '../../../Container.js';
+import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 
 describe(`DependenciesGraph`, () => {
   function setup() {
@@ -37,27 +38,37 @@ describe(`DependenciesGraph`, () => {
       expect(interceptor.getGraphNode(b)?.value).toEqual({ B: { c1: 'C1', c2: 'C2' } });
       expect(interceptor.getGraphNode(b)?.descendants).toEqual(['C1', 'C2']);
 
-      expect(interceptor.getGraphNode(a)?.definition).toBe(a);
-      expect(interceptor.getGraphNode(b)?.definition).toBe(b);
-      expect(interceptor.getGraphNode(c1)?.definition).toBe(c1);
-      expect(interceptor.getGraphNode(c2)?.definition).toBe(c2);
+      expect(interceptor.getGraphNode(a)?.definition.id).toBe(a.id);
+      expect(interceptor.getGraphNode(b)?.definition.id).toBe(b.id);
+      expect(interceptor.getGraphNode(c1)?.definition.id).toBe(c1.id);
+      expect(interceptor.getGraphNode(c2)?.definition.id).toBe(c2.id);
     });
   });
 
   describe(`async`, () => {
-    function setup() {
+    function setup(...configureFns: ContainerConfigureFn[]) {
       const interceptor = new DependenciesGraphRoot();
 
-      const cnt = container.new(c => c.withInterceptor('graph', interceptor));
+      const c1Def = singleton<string>();
+      const c2Def = singleton<string>();
+      const bDef = singleton<{ B: { c1: string; c2: string } }>();
+      const aDef = singleton<{ A: { B: { c1: string; c2: string } } }>();
+
+      const cnt = container.new(
+        c => {
+          c.add(c1Def).fn(async () => 'C1');
+          c.add(c2Def).fn(async () => 'C2');
+          c.add(bDef).fn(async (c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
+          c.add(aDef).fn(async b => ({ A: b }), bDef);
+
+          c.withInterceptor('graph', interceptor);
+        },
+        ...configureFns,
+      );
 
       cnt.getInterceptor('graph');
 
-      const c1 = fn.singleton(async () => 'C1');
-      const c2 = fn.singleton(async () => 'C2');
-      const b = fn.singleton(async use => ({ B: { c1: await use(c1), c2: await use(c2) } }));
-      const a = fn.singleton(async use => ({ A: await use(b) }));
-
-      return { interceptor, cnt, a, b, c1, c2 };
+      return { interceptor, cnt, a: aDef, b: bDef, c1: c1Def, c2: c2Def };
     }
 
     describe(`getGraphNode`, () => {
@@ -72,21 +83,29 @@ describe(`DependenciesGraph`, () => {
         expect(interceptor.getGraphNode(b)?.value).toEqual({ B: { c1: 'C1', c2: 'C2' } });
         expect(interceptor.getGraphNode(b)?.descendants).toEqual(['C1', 'C2']);
 
-        expect(interceptor.getGraphNode(a)?.definition).toBe(a);
-        expect(interceptor.getGraphNode(b)?.definition).toBe(b);
-        expect(interceptor.getGraphNode(c1)?.definition).toBe(c1);
-        expect(interceptor.getGraphNode(c2)?.definition).toBe(c2);
+        expect(interceptor.getGraphNode(a)?.definition.id).toBe(a.id);
+        expect(interceptor.getGraphNode(b)?.definition.id).toBe(b.id);
+        expect(interceptor.getGraphNode(c1)?.definition.id).toBe(c1.id);
+        expect(interceptor.getGraphNode(c2)?.definition.id).toBe(c2.id);
       });
     });
 
     describe(`definition referenced by two others`, () => {
       it(`returns node holding corresponding value`, async () => {
-        const { cnt } = setup();
-
         let counter = 0;
-        const shared = fn(async () => (counter += 1));
-        const a = fn.singleton(async use => ({ A: await use(shared) }));
-        const b = fn.singleton(async use => ({ B: await use(shared) }));
+
+        const shared = singleton<number>();
+        const a = scoped<{ A: number }>();
+        const b = scoped<{ B: number }>();
+        const c = transient<{ C: number }>();
+
+        const { cnt } = setup(config => {
+          config.add(shared).fn(async () => (counter += 1));
+
+          config.add(a).fn(async val => ({ A: val }), shared);
+          config.add(b).fn(async val => ({ B: val }), shared);
+          config.add(c).fn(async val => ({ C: val }), shared);
+        });
 
         await cnt.use(a);
         await cnt.use(b);
@@ -94,11 +113,11 @@ describe(`DependenciesGraph`, () => {
         const interceptor = cnt.getInterceptor('graph') as DependenciesGraphRoot;
 
         expect(interceptor.getGraphNode(a)?.value).toEqual({ A: 1 });
-        expect(interceptor.getGraphNode(b)?.value).toEqual({ B: 2 });
+        expect(interceptor.getGraphNode(b)?.value).toEqual({ B: 1 });
 
         // keeps the last value, which is confusing, therefore getting transient definitions is forbidden on the type level
         // @ts-expect-error cannot access transient definitions
-        expect(interceptor.getGraphNode(shared))?.toEqual(undefined); // we don't register transient definitions in the graph root
+        expect(interceptor.getGraphNode(c))?.toEqual(undefined); // we don't register transient definitions in the graph root
       });
     });
   });

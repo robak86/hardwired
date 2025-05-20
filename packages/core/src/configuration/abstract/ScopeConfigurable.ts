@@ -9,6 +9,8 @@ import type { OverridesConfigBuilder } from '../dsl/new/shared/OverridesConfigBu
 export type ScopeConfigureAllowedLifeTimes = LifeTime.transient | LifeTime.scoped; // | LifeTime.cascading;
 
 export interface ScopeConfigurable {
+  eager<TInstance, TLifeTime extends LifeTime>(def: IDefinitionSymbol<TInstance, TLifeTime>): unknown;
+
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): SymbolsRegistrationBuilder<TInstance, TLifeTime>;
