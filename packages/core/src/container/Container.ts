@@ -60,32 +60,6 @@ export class Container extends ExtensibleFunction implements IContainer {
     );
   }
 
-  // call<TResult, TArgs extends any[]>(callable: CallableDefinition<TArgs, TResult>): TResult {
-  //   if (typeof callable === 'function') {
-  //     return callable.call(this);
-  //   }
-  //
-  //   if (callable instanceof ClassDefinition) {
-  //     const instance = this.use(callable) as MaybePromise<CallableObject<TArgs, TResult>>;
-  //
-  //     if (isThenable(instance)) {
-  //       return instance.then((instance: CallableObject<TArgs, TResult>) => {
-  //         return instance.call();
-  //       }) as TResult;
-  //     }
-  //
-  //     return instance.call();
-  //   }
-  //
-  //   if (callable instanceof TransientDefinition) {
-  //     const patchedDefinition = this.bindingsRegistry.getDefinition(callable);
-  //
-  //     return this.buildWithStrategy(patchedDefinition) as TResult;
-  //   }
-  //
-  //   return this.use(callable) as TResult;
-  // }
-
   dispose() {
     if (this._isDisposed) {
       return;
@@ -219,40 +193,42 @@ export class Container extends ExtensibleFunction implements IContainer {
     return (this.instancesStore.getExisting(definition.id) as TValue) ?? null;
   }
 
-  buildWithStrategy<TValue>(defSymbol: IDefinition<TValue, LifeTime>): MaybePromise<TValue> {
+  buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybePromise<TValue> {
     if (this._isDisposed) {
       throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
     }
 
     if (this.currentInterceptor) {
-      return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(defSymbol), defSymbol);
+      return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition), definition);
     } else {
-      if (this.bindingsRegistry.hasFrozenBinding(defSymbol.id)) {
-        return this.instancesStore.upsertIntoRootInstances(defSymbol, this);
+      if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+        return this.instancesStore.upsertIntoRootInstances(definition, this);
       }
 
-      switch (defSymbol.strategy) {
+      switch (definition.strategy) {
         case LifeTime.transient:
-          return defSymbol.create(this);
+          return definition.create(this);
         case LifeTime.singleton:
-          return this.instancesStore.upsertIntoRootInstances(defSymbol, this);
+          return this.instancesStore.upsertIntoRootInstances(definition, this);
         case LifeTime.scoped:
           return this.instancesStore.upsertIntoScopeInstances(
-            defSymbol,
+            definition,
             this,
-            this.bindingsRegistry.inheritsCascadingDefinition(defSymbol.id),
+            this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
           );
 
         case LifeTime.cascading:
-          this.bindingsRegistry.getOwningContainer(defSymbol) ?? this;
-
-          return this.instancesStore.upsertIntoScopeInstances(
-            defSymbol,
-            this.bindingsRegistry.getOwningContainer(defSymbol) ?? this,
-            this.bindingsRegistry.inheritsCascadingDefinition(defSymbol.id),
-          );
+          return (this.bindingsRegistry.getOwningContainer(definition) ?? this).resolveCascading(definition);
       }
     }
+  }
+
+  protected resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
+    return this.instancesStore.upsertIntoScopeInstances(
+      definition,
+      this,
+      this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
+    );
   }
 
   private buildWithStrategyIntercepted<TValue>(

@@ -1,5 +1,5 @@
 import type { ClassType } from '../utils/class-type.js';
-import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import type { IContainer } from '../../container/IContainer.js';
 import { isThenable } from '../../utils/IsThenable.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
@@ -15,8 +15,6 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
 
   readonly $type!: TInstance;
 
-  protected _container?: IStrategyAware;
-
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
@@ -26,12 +24,6 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
 
   override(createFn: (context: IContainer) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.id, this.strategy, createFn);
-  }
-
-  bindToContainer(container: IStrategyAware): IDefinition<TInstance, TLifeTime> {
-    return this.override(_use => {
-      return container.buildWithStrategy(this) as MaybePromise<TInstance>;
-    });
   }
 
   create(use: IContainer): MaybePromise<TInstance> {

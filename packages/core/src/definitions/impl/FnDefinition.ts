@@ -1,4 +1,4 @@
-import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
+import type { IContainer } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
 import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/ContainerSymbolBinder.js';
@@ -21,19 +21,8 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
     public readonly _dependencies?: ConstructorArgsSymbols<TDeps, TLifeTime>,
   ) {}
 
-  override(createFn: (context: IContainer) => TInstance): IDefinition<TInstance, TLifeTime> {
+  override(createFn: (context: IContainer) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.id, this.strategy, createFn);
-  }
-
-  /**
-   * Binds the definition to the container. Whenever the definition is instantiated,
-   * the container will be used to resolve its dependencies.
-   * @param container
-   */
-  bindToContainer(container: IContainer & IStrategyAware): IDefinition<TInstance, TLifeTime> {
-    return this.override(_use => {
-      return container.buildWithStrategy(this);
-    });
   }
 
   create(context: IContainer): MaybePromise<TInstance> {

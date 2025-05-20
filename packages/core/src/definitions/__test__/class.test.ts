@@ -183,8 +183,10 @@ describe(`class`, () => {
         expect(rootInstance).toBe(l1Instance);
 
         const l2Instance = await scopeL2.use(myClassCascading);
+        const l3Instance = await scopeL3.use(myClassCascading);
 
         expect(l2Instance).not.toBe(rootInstance);
+        expect(l3Instance).toBe(l2Instance);
       });
     });
   });

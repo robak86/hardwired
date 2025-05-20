@@ -11,6 +11,4 @@ export interface IDefinition<TInstance, TLifeTime extends LifeTime> extends IDef
   create(context: IContainer): MaybePromise<TInstance>;
 
   override(createFn: (context: IContainer) => TInstance): IDefinition<TInstance, TLifeTime>;
-
-  // bindToContainer(container: IStrategyAware): IDefinition<TInstance, TLifeTime>;
 }
