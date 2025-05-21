@@ -81,6 +81,8 @@ export default typescriptLint.config(
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/await-thenable': 'warn',
       '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn', // or "error"
         {
