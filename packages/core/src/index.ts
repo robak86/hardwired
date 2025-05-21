@@ -14,8 +14,8 @@ export * from './container/interceptors/graph/DependenciesGraph.js';
 
 export { LoggingInterceptor } from './container/interceptors/logging/LoggingInterceptor.js';
 
-export type { ScopeConfigurable } from './configuration/abstract/ScopeConfigurable.js';
-export type { ContainerConfigurable } from './configuration/abstract/ContainerConfigurable.js';
+export type { IScopeConfigurable } from './configuration/abstract/IScopeConfigurable.js';
+export type { IContainerConfigurable } from './configuration/abstract/IContainerConfigurable.js';
 export type { IInterceptor } from './container/interceptors/interceptor.js';
 
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';

@@ -25,6 +25,10 @@ export class OwningDefinitionBuilder<TInstance, TLifeTime extends LifeTime> {
     this._registry.override(decoratedDefinition);
   }
 
+  inherit(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {
+    throw new Error('Implement me!');
+  }
+
   static(value: TInstance) {
     const definition = new Definition(this.definitionSymbol.id, this.definitionSymbol.strategy, () => value);
 

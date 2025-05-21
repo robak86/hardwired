@@ -1,7 +1,7 @@
 import type {
-  ContainerConfigurable,
+  IContainerConfigurable,
   ContainerConfigureFreezeLifeTimes,
-} from '../../../abstract/ContainerConfigurable.js';
+} from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
 import type { IContainer, IStrategyAware } from '../../../../container/IContainer.js';
@@ -9,13 +9,13 @@ import type { InterceptorsRegistry } from '../../../../container/interceptors/In
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IInterceptor } from '../../../../container/interceptors/interceptor.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
-import { ContainerSymbolBinder } from '../ContainerSymbolBinder.js';
 import { OverridesConfigBuilder } from '../shared/OverridesConfigBuilder.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import { maybePromiseThen } from '../../../../utils/async.js';
 import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
+import { SymbolsRegistrationBuilder } from '../shared/SymbolsRegistrationBuilder.js';
 
-export class ContainerConfigurationBuilder implements ContainerConfigurable {
+export class ContainerConfigurationBuilder implements IContainerConfigurable {
   private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.singleton, LifeTime.cascading];
 
   constructor(
@@ -76,8 +76,15 @@ export class ContainerConfigurationBuilder implements ContainerConfigurable {
 
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
-  ): ContainerSymbolBinder<TInstance, TLifeTime> {
-    return new ContainerSymbolBinder(symbol, this._bindingsRegistry, this._currentContainer);
+  ): SymbolsRegistrationBuilder<TInstance, TLifeTime> {
+    return new SymbolsRegistrationBuilder(
+      symbol,
+      this._bindingsRegistry,
+      this._allowedLifeTimes,
+      (definition: IDefinition<TInstance, TLifeTime>) => {
+        this._bindingsRegistry.register(symbol, definition, this._currentContainer);
+      },
+    );
   }
 
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {

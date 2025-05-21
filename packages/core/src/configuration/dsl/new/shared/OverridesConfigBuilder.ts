@@ -2,8 +2,8 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
 import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
-import type { ConstructorArgsSymbols } from '../ContainerSymbolBinder.js';
 
+import type { ConstructorArgsSymbols } from './SymbolsRegistrationBuilder.js';
 import { SymbolsRegistrationBuilder } from './SymbolsRegistrationBuilder.js';
 
 // TODO: we need to constraint allowed types that can be injected to configure and decorate functions

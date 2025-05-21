@@ -1,9 +1,9 @@
 import type { IContainer } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
-import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/ContainerSymbolBinder.js';
 import type { MaybePromise } from '../../utils/async.js';
 import { isThenable } from '../../utils/IsThenable.js';
+import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/SymbolsRegistrationBuilder.js';
 
 import { Definition } from './Definition.js';
 

@@ -5,8 +5,8 @@ import { describe } from 'vitest';
 import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
-import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { cascading, scoped } from '../../definitions/def-symbol.js';
+import type { BoxedValue } from '../../__test__/BoxedValue.js';
+import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`container#freeze`, () => {
@@ -84,25 +84,16 @@ describe(`ContainerConfiguration`, () => {
       expectType<TypeOf<typeof cnt, Container>>(true);
     });
 
-    it(`correctly configures the container`, async () => {
-      const def = fn.scoped(() => 123);
-      const cnt = await container.new(async container => {
-        container.overrideCascading(def).toValue(456);
-      });
-
-      expect(cnt.use(def)).toEqual(456);
-    });
-
     it(`accepts multiple config functions`, async () => {
-      const def1 = fn.scoped(() => 123);
-      const def2 = fn.scoped(() => 123);
+      const def1 = scoped<number>();
+      const def2 = scoped<number>();
 
       const cnt = await container.new(
         async container => {
-          container.overrideCascading(def1).toValue(456);
+          container.add(def1).static(456);
         },
         async container => {
-          container.overrideCascading(def2).toValue(789);
+          container.add(def2).static(789);
         },
       );
 
@@ -112,12 +103,14 @@ describe(`ContainerConfiguration`, () => {
 
     describe(`init`, () => {
       it(`runs init functions on passing the newly created container`, async () => {
-        const dep = fn.scoped(() => new BoxedValue(Math.random()));
+        // const dep = fn.scoped(() => new BoxedValue(Math.random()));
+
+        const dep = scoped<BoxedValue<number>>();
 
         const cnt = container.new(container => {
-          container.init(use => {
-            use(dep).value = 1;
-          });
+          // container.init(use => {
+          //   use(dep).value = 1;
+          // });
         });
 
         expect(cnt.use(dep).value).toEqual(1);
@@ -148,19 +141,22 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`correctly configures the scope`, async () => {
-      const def = fn.scoped(() => 123);
+      const def = cascading<number>();
       const cnt = container.new();
       const scope = await cnt.scope(async scope => {
-        scope.overrideCascading(def).toValue(456);
+        scope.add(def).static(456);
       });
 
       expect(scope.use(def)).toEqual(456);
     });
 
     it(`allows to asynchronously get instance from the parent container`, async () => {
-      const fromParent = fn.singleton(async () => 'fromParent');
+      const fromParent = singleton<string>();
 
-      const def = fn.scoped(() => 'original');
+      // const def = fn.scoped(() => 'original');
+
+      const def = scoped<string>();
+
       const cnt = container.new();
       const scope = await cnt.scope(async (scope, use) => {
         scope.overrideCascading(def).toValue(await use(fromParent));

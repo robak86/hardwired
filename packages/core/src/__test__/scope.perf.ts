@@ -1,25 +1,33 @@
 import { Bench } from 'tinybench';
 
-import { fn } from '../definitions/fn.js';
 import type { IContainer } from '../container/IContainer.js';
 import { container } from '../container/Container.js';
+import { configureScope } from '../configuration/ScopeConfiguration.js';
 
-import { buildScopedDefs, buildSingletonDefs, buildTransientDefs } from './utils.js';
+import {
+  buildCascadingDefs,
+  buildScopedDefs,
+  buildTransientDefs,
+  countDependenciesTreeCount,
+  registerTestDefinitions,
+} from './utils.js';
 
-const singletonDefinitions = buildSingletonDefs(3, 10);
-const transientDefinitions = buildTransientDefs(3, 10);
-const scopedDefinitions = buildScopedDefs(3, 10);
+const transientDefs = buildTransientDefs(3, 10);
+const scopedDefs = buildScopedDefs(3, 10);
+const cascadingDefs = buildCascadingDefs(3, 10);
 
-const singletonD = fn.singleton(use => {
-  return use.all(...singletonDefinitions);
-});
+const transientD = transientDefs[0].def;
+const scopedD = scopedDefs[0].def;
+const cascadingD = cascadingDefs[0].def;
 
-const transientD = fn(use => {
-  return use.all(...transientDefinitions);
-});
+console.log('Transients deps count:', countDependenciesTreeCount(transientDefs[0]));
+console.log('Scoped deps count:', countDependenciesTreeCount(scopedDefs[0]));
+console.log('Cascading deps count:', countDependenciesTreeCount(cascadingDefs[0]));
 
-const scopedD = fn.scoped(use => {
-  return use.scope().all(...scopedDefinitions);
+const configure = configureScope(c => {
+  registerTestDefinitions(transientDefs, c);
+  registerTestDefinitions(scopedDefs, c);
+  registerTestDefinitions(cascadingDefs, c);
 });
 
 let cnt: IContainer;
@@ -29,24 +37,26 @@ const scopesBench = new Bench({
   time: 100,
   setup: () => {
     cnt = container.new();
-    cnt.use(singletonD);
-    cnt.use(scopedD);
-    cnt.use(transientD);
 
-    childScope = cnt.scope();
-    childScope.use(singletonD);
-    childScope.use(scopedD);
-    childScope.use(transientD);
+    childScope = cnt.scope(configure);
+
+    // void childScope.use(singletonD);
+    void childScope.use(scopedD);
+    void childScope.use(transientD);
+    void childScope.use(cascadingD);
   },
   teardown: () => {
     cnt = container.new();
-    // childScope = container.new();
   },
 });
 
-scopesBench.add('scope without configuration', () => {
-  cnt.scope();
-});
+scopesBench
+  .add('scope without configuration', () => {
+    cnt.scope();
+  })
+  .add('scope with configuration', () => {
+    cnt.scope(configure); // TODO: slow as hell. Configuration needs to be eagerly evaluated and ready to use when scope is created
+  });
 
 void scopesBench
   .warmup()

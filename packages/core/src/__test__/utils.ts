@@ -1,8 +1,8 @@
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import { cascading, scoped, singleton, transient } from '../definitions/def-symbol.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
-import type { ContainerConfigurable } from '../configuration/abstract/ContainerConfigurable.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
+import type { IRegisterAware } from '../configuration/abstract/IRegisterAware.js';
 
 export type TestDefinition<T, TLifetime extends LifeTime> = {
   def: IDefinitionSymbol<T, TLifetime>;
@@ -11,7 +11,7 @@ export type TestDefinition<T, TLifetime extends LifeTime> = {
 
 export function registerTestDefinitions<T, TLifetime extends LifeTime>(
   defs: TestDefinition<T, TLifetime>[],
-  config: ContainerConfigurable,
+  config: IRegisterAware<LifeTime>,
 ) {
   for (const def of defs) {
     const dependencies = def.children.map(d => d.def) as unknown as Array<

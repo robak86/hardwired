@@ -7,6 +7,7 @@ import { ClassDefinition } from '../../../../definitions/impl/ClassDefinition.js
 import { FnDefinition } from '../../../../definitions/impl/FnDefinition.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import { Definition } from '../../../../definitions/impl/Definition.js';
+import type { IContainer } from '../../../../container/IContainer.js';
 
 export type ConstructorArgsSymbols<T extends any[], TCurrentLifeTime extends LifeTime> = {
   [K in keyof T]: IDefinitionSymbol<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
@@ -58,6 +59,12 @@ export class SymbolsRegistrationBuilder<TInstance, TLifeTime extends LifeTime> {
 
   static(value: TInstance) {
     const definition = new Definition(this._defSymbol.id, this._defSymbol.strategy, () => value);
+
+    this._onDefinition(definition);
+  }
+
+  locator(fn: (container: IContainer) => MaybePromise<TInstance>) {
+    const definition = new Definition(this._defSymbol.id, this._defSymbol.strategy, fn);
 
     this._onDefinition(definition);
   }

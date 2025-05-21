@@ -1,5 +1,9 @@
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { ScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/ScopeConfigurable.js';
+import type {
+  IScopeConfigurable,
+  ScopeConfigureAllowedLifeTimes,
+  ScopeOverrideAllowedLifeTimes,
+} from '../../../abstract/IScopeConfigurable.js';
 import type { IContainer, IStrategyAware } from '../../../../container/IContainer.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
@@ -11,8 +15,9 @@ import { createConfiguredDefinition } from '../utils/create-configured-definitio
 import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
 import { OverridesConfigBuilder } from '../shared/OverridesConfigBuilder.js';
 
-export class ScopeConfigurationBuilder implements ScopeConfigurable {
-  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
+export class ScopeConfigurationBuilder implements IScopeConfigurable {
+  private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
+  private readonly _allowedOverrideLifeTimes = [LifeTime.scoped, LifeTime.transient];
 
   constructor(
     private _currentContainer: IContainer & IStrategyAware,
@@ -34,7 +39,7 @@ export class ScopeConfigurationBuilder implements ScopeConfigurable {
     return new SymbolsRegistrationBuilder(
       symbol,
       this._bindingsRegistry,
-      this._allowedLifeTimes,
+      this._allowedRegistrationLifeTimes,
       (definition: IDefinition<TInstance, TLifeTime>) => {
         this._bindingsRegistry.register(symbol, definition, this._currentContainer);
       },
@@ -71,13 +76,13 @@ export class ScopeConfigurationBuilder implements ScopeConfigurable {
     this._bindingsRegistry.override(configuredDefinition);
   }
 
-  override<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+  override<TInstance, TLifeTime extends ScopeOverrideAllowedLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): OverridesConfigBuilder<TInstance, TLifeTime> {
     return new OverridesConfigBuilder(
       symbol,
       this._bindingsRegistry,
-      this._allowedLifeTimes,
+      this._allowedOverrideLifeTimes,
       (definition: IDefinition<TInstance, TLifeTime>) => {
         this._bindingsRegistry.override(definition);
       },

@@ -112,7 +112,7 @@ export class BindingsRegistry implements IBindingRegistryRead {
   checkoutForScope(): BindingsRegistry {
     return new BindingsRegistry(
       this._singletonDefinitions,
-      this._transientDefinitions,
+      this._transientDefinitions.clone(),
       this._scopeDefinitions.clone(),
       this._frozenDefinitions.clone(),
       this._cascadingDefinitions.clone(),

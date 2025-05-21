@@ -5,12 +5,19 @@ import { DependenciesGraphRoot } from '../container/interceptors/graph/Dependenc
 import type { IContainer } from '../container/IContainer.js';
 import { configureContainer } from '../configuration/ContainerConfiguration.js';
 
-import { buildSingletonDefs, countDependenciesTreeCount, registerTestDefinitions } from './utils.js';
+import {
+  buildCascadingDefs,
+  buildScopedDefs,
+  buildSingletonDefs,
+  buildTransientDefs,
+  countDependenciesTreeCount,
+  registerTestDefinitions,
+} from './utils.js';
 
 const singletonDefs = buildSingletonDefs(3, 10);
-const transientDefs = buildSingletonDefs(3, 10);
-const scopedDefs = buildSingletonDefs(3, 10);
-const cascadingDefs = buildSingletonDefs(3, 10);
+const transientDefs = buildTransientDefs(3, 10);
+const scopedDefs = buildScopedDefs(3, 10);
+const cascadingDefs = buildCascadingDefs(3, 10);
 
 const singletonD = singletonDefs[0].def;
 const transientD = transientDefs[0].def;
