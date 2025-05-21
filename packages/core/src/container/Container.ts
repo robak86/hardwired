@@ -128,7 +128,7 @@ export class Container extends ExtensibleFunction implements IContainer {
       const binder = new ScopeConfigurationBuilder(cnt, bindingsRegistry, tags, disposableFns);
 
       const configs = configureFns.map(configureFn => {
-        return configureFn(binder, this);
+        return configureFn(binder);
       });
 
       return maybePromiseAllThen(configs, () => cnt) as unknown as NewScopeReturnType<TConfigureFns>;

@@ -1,4 +1,4 @@
-import type { AwaitedInstanceRecord, Instance, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
+import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { type LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
@@ -80,17 +80,7 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
 }
 
-// prettier-ignore
-export type AwaitedInstance<T extends IDefinitionSymbol<Promise<any>, any>> =
-  T extends IDefinitionSymbol<Promise<infer TInstance>, any> ? TInstance : Instance<T>;
-
-export type AwaitedInstanceArray<T extends Array<IDefinition<Promise<any>, any>>> = {
-  [K in keyof T]: AwaitedInstance<T[K]>;
-};
-
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
-
-export type NextValue<TPrev, TNext> = IsAnyPromise<TPrev> extends true ? Promise<TNext> : TNext;
 
 export type ReturnTypes<T extends any[]> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any ? ReturnType<T[K]> : never;
@@ -101,7 +91,3 @@ export type HasPromise<T extends any[]> =
   T extends [infer First, ...infer Rest] ?
     IsAnyPromise<First> extends true ? true : HasPromise<Rest>:
       false;
-
-export type ContainerObjectReturn<TRecord extends Record<PropertyKey, IDefinition<any, any>>> = Promise<
-  AwaitedInstanceRecord<TRecord>
->;
