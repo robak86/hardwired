@@ -135,11 +135,11 @@ describe(`ContainerScope`, () => {
       };
 
       const scope1Config = useScopeConfig(scope => {
-        scope.override(baseD).static(10);
+        scope.modify(baseD).static(10);
       });
 
       const scope2Config = useScopeConfig(scope => {
-        scope.override(baseD).static(100);
+        scope.modify(baseD).static(100);
       });
 
       const TestSubject = () => (

@@ -1,11 +1,11 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IDefinitionSymbol } from '../../definitions/def-symbol.js';
-import type { ConstructorArgsSymbols } from '../dsl/new/shared/SymbolsRegistrationBuilder.js';
+import type { ConstructorArgsSymbols } from '../dsl/new/shared/AddDefinitionBuilder.js';
 import type { ClassType } from '../../definitions/utils/class-type.js';
 import type { MaybePromise } from '../../utils/async.js';
 import type { IContainer } from '../../container/IContainer.js';
 
-export interface IRegistrationBuilder<TInstance, TAllowedLifeTime extends LifeTime> {
+export interface IAddDefinitionBuilder<TInstance, TAllowedLifeTime extends LifeTime> {
   class<TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
     ...dependencies: ConstructorArgsSymbols<TConstructorArgs, TAllowedLifeTime>
@@ -24,5 +24,5 @@ export interface IRegistrationBuilder<TInstance, TAllowedLifeTime extends LifeTi
 export interface IRegisterAware<TAllowedLifeTime extends LifeTime> {
   add<TInstance, TLifeTime extends TAllowedLifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IRegistrationBuilder<TInstance, TLifeTime>;
+  ): IAddDefinitionBuilder<TInstance, TLifeTime>;
 }

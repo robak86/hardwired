@@ -9,7 +9,7 @@ describe(`decorate`, () => {
   it(`decorates original value`, async () => {
     const c = container.new(c => {
       c.add(someValue).static(1);
-      c.override(someValue).decorate(val => val + 1);
+      c.modify(someValue).decorate(val => val + 1);
     });
 
     expect(c.use(someValue)).toEqual(2);
@@ -18,7 +18,7 @@ describe(`decorate`, () => {
   it(`is evaluated with awaited value`, async () => {
     const c = container.new(c => {
       c.add(someValue).fn(async () => 1);
-      c.override(someValue).decorate(val => val + 1);
+      c.modify(someValue).decorate(val => val + 1);
     });
 
     expect(await c.use(someValue)).toEqual(2);
@@ -34,7 +34,7 @@ describe(`decorate`, () => {
       c.add(b).static(2);
       c.add(someValue).fn(async () => 10);
 
-      c.override(someValue).decorate([a, b], (val, aVal, bVal) => {
+      c.modify(someValue).decorate([a, b], (val, aVal, bVal) => {
         return val + aVal + bVal;
       });
     });

@@ -1,6 +1,7 @@
 import type {
   IContainerConfigurable,
   ContainerConfigureFreezeLifeTimes,
+  ContainerConfigurationAllowedRegistrationLifeTimes,
 } from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
@@ -9,14 +10,28 @@ import type { InterceptorsRegistry } from '../../../../container/interceptors/In
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IInterceptor } from '../../../../container/interceptors/interceptor.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
-import { OverridesConfigBuilder } from '../shared/OverridesConfigBuilder.js';
+import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import type { MaybePromise } from '../../../../utils/async.js';
-import { maybePromiseThen } from '../../../../utils/async.js';
-import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
-import { SymbolsRegistrationBuilder } from '../shared/SymbolsRegistrationBuilder.js';
+import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
+import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
+import type { IConfigureBuilder, IModifyBuilderType } from '../../../abstract/IModifyAware.js';
+import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 
 export class ContainerConfigurationBuilder implements IContainerConfigurable {
-  private readonly _allowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.singleton, LifeTime.cascading];
+  private readonly _allowedRegisterLifeTimes = [
+    LifeTime.scoped,
+    LifeTime.transient,
+    LifeTime.singleton,
+    LifeTime.cascading,
+  ];
+  private readonly _allowedModifyLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.singleton];
+
+  private readonly _allowedCascadingModifyLifeTimes = [
+    LifeTime.scoped,
+    LifeTime.transient,
+    LifeTime.singleton,
+    LifeTime.cascading,
+  ];
 
   constructor(
     private _bindingsRegistry: BindingsRegistry,
@@ -26,48 +41,70 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     private _initializationFns: Array<(scope: unknown) => MaybePromise<void>> = [],
   ) {}
 
-  override<TInstance, TLifeTime extends LifeTime>(
+  // TODO: replace this callback functions with some minimal interface
+  modify<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): OverridesConfigBuilder<TInstance, TLifeTime> {
-    return new OverridesConfigBuilder(
-      symbol,
-      this._bindingsRegistry,
-      this._allowedLifeTimes,
-      (def: IDefinition<TInstance, TLifeTime>) => {
-        this._bindingsRegistry.override(def);
-      },
-    );
+  ): IModifyBuilderType<TInstance, TLifeTime> {
+    if (symbol.strategy === LifeTime.cascading) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return new CascadingModifyBuilder<TInstance>(
+        symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
+        this._bindingsRegistry,
+        this._allowedCascadingModifyLifeTimes,
+        (definition: IDefinition<TInstance, LifeTime.cascading>) => {
+          // this._bindingsRegistry.ownCascading(symbol, this._currentContainer);
+          this._bindingsRegistry.override(definition);
+        },
+        (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {
+          this._bindingsRegistry.ownCascading(cascadingSymbol, this._currentContainer);
+        },
+      ) as any;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+        symbol,
+        this._bindingsRegistry,
+        this._allowedModifyLifeTimes,
+        (definition: IDefinition<TInstance, TLifeTime>) => {
+          this._bindingsRegistry.override(definition);
+        },
+      ) as any;
+    }
   }
 
-  configure<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-    configureFn: (instance: TInstance) => MaybePromise<void>,
-  ) {
-    const configuredDefinition = createConfiguredDefinition(this._bindingsRegistry, symbol, configureFn, []);
-
-    this._bindingsRegistry.override(configuredDefinition);
+  eager<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
+    def: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): IConfigureBuilder<TInstance, TLifeTime> {
+    throw new Error('Implement me!');
+    // this._initializationFns.push(() => {
+    //   const instance = this._currentContainer.use(symbol);
+    //
+    //   return maybePromiseThen(instance, awaitedInstance => {
+    //     return configureFn(awaitedInstance);
+    //   });
+    // });
   }
 
-  eager<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-    configureFn: (instance: TInstance) => MaybePromise<void>,
-  ) {
-    this._initializationFns.push(() => {
-      const instance = this._currentContainer.use(symbol);
-
-      return maybePromiseThen(instance, awaitedInstance => {
-        return configureFn(awaitedInstance);
-      });
-    });
+  lazy<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
+    def: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): IConfigureBuilder<TInstance, TLifeTime> {
+    throw new Error('Implement me!');
+    // this._initializationFns.push(() => {
+    //   const instance = this._currentContainer.use(symbol);
+    //
+    //   return maybePromiseThen(instance, awaitedInstance => {
+    //     return configureFn(awaitedInstance);
+    //   });
+    // });
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): OverridesConfigBuilder<TInstance, TLifeTime> {
-    return new OverridesConfigBuilder(
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
+    return new ModifyDefinitionBuilder(
       symbol,
       this._bindingsRegistry,
-      this._allowedLifeTimes,
+      this._allowedRegisterLifeTimes,
       (def: IDefinition<TInstance, TLifeTime>) => {
         this._bindingsRegistry.freeze(def);
       },
@@ -76,11 +113,11 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
-  ): SymbolsRegistrationBuilder<TInstance, TLifeTime> {
-    return new SymbolsRegistrationBuilder(
+  ): IAddDefinitionBuilder<TInstance, TLifeTime> {
+    return new AddDefinitionBuilder(
       symbol,
       this._bindingsRegistry,
-      this._allowedLifeTimes,
+      this._allowedRegisterLifeTimes,
       (definition: IDefinition<TInstance, TLifeTime>) => {
         this._bindingsRegistry.register(symbol, definition, this._currentContainer);
       },

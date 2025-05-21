@@ -2,15 +2,16 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
 import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
+import type { IModifyBuilder } from '../../../abstract/IModifyAware.js';
 
-import type { ConstructorArgsSymbols } from './SymbolsRegistrationBuilder.js';
-import { SymbolsRegistrationBuilder } from './SymbolsRegistrationBuilder.js';
+import type { ConstructorArgsSymbols } from './AddDefinitionBuilder.js';
+import { AddDefinitionBuilder } from './AddDefinitionBuilder.js';
 
 // TODO: we need to constraint allowed types that can be injected to configure and decorate functions
-export class OverridesConfigBuilder<TInstance, TLifeTime extends LifeTime> extends SymbolsRegistrationBuilder<
-  TInstance,
-  TLifeTime
-> {
+export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
+  extends AddDefinitionBuilder<TInstance, TLifeTime>
+  implements IModifyBuilder<TInstance, TLifeTime>
+{
   configure<TArgs extends any[]>(configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>): void;
   configure<TArgs extends any[]>(
     dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>,

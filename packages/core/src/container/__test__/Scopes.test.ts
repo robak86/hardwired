@@ -53,7 +53,7 @@ describe(`Scopes`, () => {
             const cnt = container.new(scope => scope.freeze(def).static(1));
 
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.own(def).static(2));
+            const l2 = l1.scope(scope => scope.modify(def).static(2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);
@@ -73,13 +73,13 @@ describe(`Scopes`, () => {
         });
 
         const l1 = root.scope(scope => {
-          scope.own(def).static(10);
-          scope.own(consumer);
+          scope.modify(def).static(10);
+          scope.modify(consumer).cascade();
         });
 
         const l2 = l1.scope(scope => {
-          scope.own(def).static(100);
-          scope.own(consumer);
+          scope.modify(def).static(100);
+          scope.modify(consumer).cascade();
         });
         const l3 = l2.scope();
 

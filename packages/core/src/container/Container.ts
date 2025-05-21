@@ -15,7 +15,7 @@ import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
-import { OverridesConfigBuilder } from '../configuration/dsl/new/shared/OverridesConfigBuilder.js';
+import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 
 import type { HasPromise, IContainer, IStrategyAware, NewScopeReturnType, ReturnTypes, UseFn } from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
@@ -139,7 +139,7 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): OverridesConfigBuilder<TInstance, TLifeTime> {
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
     const bind = (definition: IDefinition<TInstance, TLifeTime>) => {
       if (this.instancesStore.has(definition.id)) {
         throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
@@ -157,7 +157,7 @@ export class Container extends ExtensibleFunction implements IContainer {
       this.bindingsRegistry.freeze(definition);
     };
 
-    return new OverridesConfigBuilder<TInstance, TLifeTime>(
+    return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
       definition,
       this.bindingsRegistry,
       containerAllowedScopes,
@@ -235,7 +235,8 @@ export class Container extends ExtensibleFunction implements IContainer {
     return this.instancesStore.upsertIntoScopeInstances(
       definition,
       this,
-      this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
+      false,
+      // this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
     );
   }
 

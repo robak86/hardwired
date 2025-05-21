@@ -13,10 +13,6 @@ export { useAll } from './hooks/useAll.js';
 export * from './hooks/useInitializers.js';
 
 export * from './hooks/useScopeConfig.js';
-export * from './definitions/hook.js';
-
-export type { IHookValues } from './definitions/hookValues.js';
-export { hookValuesD } from './definitions/hookValues.js';
 
 // interceptors
 export * from './interceptors/ReactLifeCycleInterceptor.js';

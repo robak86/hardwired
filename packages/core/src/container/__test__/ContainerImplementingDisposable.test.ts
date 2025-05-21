@@ -1,19 +1,20 @@
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 
 import { container } from '../Container.js';
-import { fn } from '../../definitions/fn.js';
-import {
-  type AsyncContainerConfigureFn,
-  configureContainer,
-  type ContainerConfigureFn,
-} from '../../configuration/ContainerConfiguration.js';
+import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
+import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
+import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';
 
 describe(`container#[Symbol.dispose]`, () => {
-  class Disposable {
+  class DisposableImpl {
     constructor(private _disposeFn: (...args: any[]) => unknown) {}
 
     [Symbol.dispose]() {
+      this._disposeFn();
+    }
+
+    dispose() {
       this._disposeFn();
     }
   }
@@ -22,13 +23,16 @@ describe(`container#[Symbol.dispose]`, () => {
     describe(`scoped`, () => {
       it(`can be disposed only from the owning scope`, async () => {
         const disposeSpy = vi.fn();
-        const def = fn.scoped(() => new Disposable(disposeSpy));
-        const cnt = container.new();
+        const def = scoped<DisposableImpl>();
+
+        const cnt = container.new(c => {
+          c.add(def).fn(() => new DisposableImpl(disposeSpy));
+        });
 
         const scope = cnt.scope();
         const siblingScope = cnt.scope();
 
-        scope.use(def);
+        await scope.use(def);
 
         siblingScope.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(0);
@@ -39,18 +43,22 @@ describe(`container#[Symbol.dispose]`, () => {
 
       it(`doesn't dispose scoped instance cascaded from the parent scope`, async () => {
         const disposeSpy = vi.fn();
-        const def = fn.scoped(() => new Disposable(disposeSpy));
-        const cnt = container.new();
+        const def = cascading<DisposableImpl>();
+
+        const cnt = container.new(c => {
+          c.add(def).fn(() => new DisposableImpl(disposeSpy));
+        });
 
         const scope1 = cnt.scope(s => {
-          s.cascade(def);
+          s.modify(def).cascade();
         });
 
         const scope2 = scope1.scope();
 
-        scope2.use(def);
+        await scope2.use(def);
         scope2.dispose();
 
+        // we tried to dispose from scope2, but also scope1 references the same instance
         expect(disposeSpy).toHaveBeenCalledTimes(0);
 
         scope1.dispose();
@@ -61,13 +69,15 @@ describe(`container#[Symbol.dispose]`, () => {
     describe(`singletons`, () => {
       it(`can be disposed only from the root scope`, async () => {
         const disposeSpy = vi.fn();
+        const def = singleton<DisposableImpl>();
 
-        const def = fn.singleton(() => new Disposable(disposeSpy));
+        const cnt = container.new(c => {
+          c.add(def).fn(() => new DisposableImpl(disposeSpy));
+        });
 
-        const cnt = container.new();
         const scope = cnt.scope();
 
-        scope.use(def);
+        await scope.use(def);
 
         scope.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(0);
@@ -81,11 +91,12 @@ describe(`container#[Symbol.dispose]`, () => {
   describe('custom dispose callbacks', () => {
     it(`it's called correctly`, async () => {
       const disposeSpy = vi.fn();
-      const def = fn.singleton(() => ({
-        dispose: disposeSpy,
-      }));
 
-      const cnt = container.new();
+      const def = singleton<DisposableImpl>();
+
+      const cnt = container.new(c => {
+        c.add(def).fn(() => new DisposableImpl(disposeSpy));
+      });
 
       const scope = cnt.scope(s => {
         s.onDispose(use => {
@@ -93,7 +104,7 @@ describe(`container#[Symbol.dispose]`, () => {
         });
       });
 
-      scope.use(def);
+      await scope.use(def);
       scope.dispose();
 
       expect(disposeSpy).toHaveBeenCalledTimes(1);
@@ -125,15 +136,15 @@ describe(`container#[Symbol.dispose]`, () => {
       });
 
       it(`throws when container is used after manual disposal`, async () => {
-        const def = fn.singleton(() => 123);
+        const def = singleton<number>();
 
-        const cnt = container.new();
+        const cnt = container.new(c => c.add(def).static(1));
 
         cnt.dispose();
 
-        expect(() => {
-          cnt.use(def);
-        }).toThrowError();
+        await expect(async () => {
+          await cnt.use(def);
+        }).rejects.toThrowError();
       });
     });
   });
@@ -144,19 +155,12 @@ describe(`container#[Symbol.dispose]`, () => {
       customDisposeCalled: false,
     };
 
-    const dbConnection = fn.scoped(() => {
-      return {
-        [Symbol.dispose]() {
-          status.isDisposed = true;
-        },
-      };
-    });
+    const dbConnection = cascading<Disposable>();
 
     const withContainer = <TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
       ...containerConfigFns: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({
-        // eslint-disable-next-line no-empty-pattern
         use: async ({}, use) => {
           const scope = await container.new(...containerConfigFns);
 
@@ -168,7 +172,13 @@ describe(`container#[Symbol.dispose]`, () => {
     };
 
     const setupDB = configureContainer(c => {
-      c.cascade(dbConnection);
+      c.add(dbConnection).fn(() => {
+        return {
+          [Symbol.dispose]() {
+            status.isDisposed = true;
+          },
+        };
+      });
 
       c.onDispose(() => {
         status.customDisposeCalled = true;
@@ -180,7 +190,7 @@ describe(`container#[Symbol.dispose]`, () => {
     it(`uses container`, async ({ use }) => {
       const scope = use.scope();
 
-      scope.use(dbConnection);
+      await scope.use(dbConnection);
     });
 
     it(`has cleaned resources from the previous run`, async () => {

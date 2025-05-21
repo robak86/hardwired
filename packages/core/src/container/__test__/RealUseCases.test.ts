@@ -91,8 +91,8 @@ describe(`Logger`, () => {
       });
 
       const requestScopeConfig = configureScope(scope => {
-        scope.own(requestId).redefine(() => nextId().toString());
-        scope.own(loggerD);
+        scope.modify(requestId).fn(() => nextId().toString());
+        scope.modify(loggerD).cascade();
       });
 
       expect(root.use(requestId)).toEqual('app');

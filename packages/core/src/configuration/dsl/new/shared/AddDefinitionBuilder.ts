@@ -8,6 +8,8 @@ import { FnDefinition } from '../../../../definitions/impl/FnDefinition.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import { Definition } from '../../../../definitions/impl/Definition.js';
 import type { IContainer } from '../../../../container/IContainer.js';
+import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
+import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
 
 export type ConstructorArgsSymbols<T extends any[], TCurrentLifeTime extends LifeTime> = {
   [K in keyof T]: IDefinitionSymbol<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
@@ -19,10 +21,12 @@ export interface IBindingsRegistryRead {
   ): IDefinition<TInstance, TLifeTime> | undefined;
 }
 
-export class SymbolsRegistrationBuilder<TInstance, TLifeTime extends LifeTime> {
+export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
+  implements IAddDefinitionBuilder<TInstance, TLifeTime>
+{
   constructor(
     protected readonly _defSymbol: IDefinitionSymbol<TInstance, TLifeTime>,
-    protected readonly _registry: IBindingsRegistryRead,
+    protected readonly _registry: BindingsRegistry,
     protected readonly _allowedLifeTimes: LifeTime[],
     protected readonly _onDefinition: (definition: IDefinition<TInstance, TLifeTime>) => void,
   ) {

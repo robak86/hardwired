@@ -10,7 +10,7 @@ describe(`configure`, () => {
   it(`decorates original value`, async () => {
     const c = container.new(c => {
       c.add(someValue).static(new BoxedValue(1));
-      c.override(someValue).configure(val => {
+      c.modify(someValue).configure(val => {
         val.value = 10;
       });
     });
@@ -21,7 +21,7 @@ describe(`configure`, () => {
   it(`is evaluated with awaited value`, async () => {
     const c = container.new(c => {
       c.add(someValue).fn(async () => new BoxedValue(1));
-      c.override(someValue).configure(val => {
+      c.modify(someValue).configure(val => {
         val.value = 10;
       });
     });
@@ -39,7 +39,7 @@ describe(`configure`, () => {
       c.add(b).static(new BoxedValue(2));
       c.add(someValue).fn(async () => new BoxedValue(10));
 
-      c.override(someValue).configure([a, b], (val, aVal, bVal) => {
+      c.modify(someValue).configure([a, b], (val, aVal, bVal) => {
         val.value = val.value + aVal.value + bVal.value;
       });
     });

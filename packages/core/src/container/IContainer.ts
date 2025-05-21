@@ -6,7 +6,7 @@ import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstrac
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { MaybePromise } from '../utils/async.js';
-import type { OverridesConfigBuilder } from '../configuration/dsl/new/shared/OverridesConfigBuilder.js';
+import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
 
@@ -23,7 +23,7 @@ export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
 export interface IContainerConfigurationAware {
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): OverridesConfigBuilder<TInstance, TLifeTime>;
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
 }
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {

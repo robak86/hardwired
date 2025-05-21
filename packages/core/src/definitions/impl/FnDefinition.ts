@@ -3,7 +3,7 @@ import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
 import { isThenable } from '../../utils/IsThenable.js';
-import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/SymbolsRegistrationBuilder.js';
+import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 
 import { Definition } from './Definition.js';
 

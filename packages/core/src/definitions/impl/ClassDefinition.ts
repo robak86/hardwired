@@ -3,8 +3,8 @@ import type { IContainer } from '../../container/IContainer.js';
 import { isThenable } from '../../utils/IsThenable.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
-import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/ContainerSymbolBinder.js';
 import type { MaybePromise } from '../../utils/async.js';
+import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 
 import { Definition } from './Definition.js';
 

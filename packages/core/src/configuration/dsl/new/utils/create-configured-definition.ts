@@ -1,7 +1,7 @@
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { ConstructorArgsSymbols, IBindingsRegistryRead } from '../shared/SymbolsRegistrationBuilder.js';
+import type { ConstructorArgsSymbols, IBindingsRegistryRead } from '../shared/AddDefinitionBuilder.js';
 import { maybePromiseThen } from '../../../../utils/async.js';
 
 export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime, TArgs extends any[]>(
@@ -14,7 +14,7 @@ export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime
 
   if (!def) {
     throw new Error(
-      `Cannot configure: ${defSymbol.toString()}. 
+      `Cannot modify: ${defSymbol.toString()}. 
         Definition not found`,
     );
   }

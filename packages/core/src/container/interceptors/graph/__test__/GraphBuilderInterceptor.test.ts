@@ -83,7 +83,7 @@ describe(`GraphBuildInterceptor`, () => {
       it(`doesn't propagate scoped definitions`, async () => {
         const def = scoped<number>();
 
-        const { cnt, interceptor } = setup(c => {
+        const { cnt } = setup(c => {
           c.add(def).fn(() => 1);
         });
 
@@ -92,7 +92,7 @@ describe(`GraphBuildInterceptor`, () => {
         expect(rootValue).toEqual(1);
 
         const childScope = cnt.scope(c => {
-          return c.override(def).static(123);
+          return c.modify(def).static(123);
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
@@ -209,7 +209,7 @@ describe(`GraphBuildInterceptor`, () => {
       it(`doesn't propagate scoped definitions`, async () => {
         const def = scoped<number>();
 
-        const { cnt, interceptor } = setup(c => {
+        const { cnt } = setup(c => {
           c.add(def).static(1);
         });
 
@@ -218,7 +218,7 @@ describe(`GraphBuildInterceptor`, () => {
         expect(rootValue).toEqual(1);
 
         const childScope = await cnt.scope(async c => {
-          return c.override(def).static(123);
+          return c.modify(def).static(123);
         });
 
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
@@ -303,7 +303,7 @@ describe(`GraphBuildInterceptor`, () => {
         const rootInterceptor = cnt.getInterceptor('graph') as TestInterceptor;
         const scope1 = cnt.scope();
         const scope2 = cnt.scope();
-        const scope3 = cnt.scope(s => s.own(consumer));
+        const scope3 = cnt.scope(s => s.modify(consumer).cascade());
 
         expect(await scope3.use(consumer)).not.toBe(await scope2.use(consumer));
         expect(await scope1.use(consumer)).toBe(await scope2.use(consumer));

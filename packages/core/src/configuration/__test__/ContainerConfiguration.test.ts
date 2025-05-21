@@ -6,7 +6,7 @@ import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
 import type { BoxedValue } from '../../__test__/BoxedValue.js';
-import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
+import { cascading, scoped } from '../../definitions/def-symbol.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`container#freeze`, () => {
@@ -52,7 +52,7 @@ describe(`ContainerConfiguration`, () => {
         c.add(def).static(123);
       });
 
-      const scope1 = cnt.scope(s => s.own(def));
+      const scope1 = cnt.scope(s => s.modify(def).cascade());
 
       await scope1.use(def);
 
@@ -113,7 +113,7 @@ describe(`ContainerConfiguration`, () => {
           // });
         });
 
-        expect(cnt.use(dep).value).toEqual(1);
+        expect((await cnt.use(dep)).value).toEqual(1);
       });
     });
   });
@@ -148,45 +148,6 @@ describe(`ContainerConfiguration`, () => {
       });
 
       expect(scope.use(def)).toEqual(456);
-    });
-
-    it(`allows to asynchronously get instance from the parent container`, async () => {
-      const fromParent = singleton<string>();
-
-      // const def = fn.scoped(() => 'original');
-
-      const def = scoped<string>();
-
-      const cnt = container.new();
-      const scope = await cnt.scope(async (scope, use) => {
-        scope.overrideCascading(def).toValue(await use(fromParent));
-      });
-
-      expect(scope.use(def)).toEqual('fromParent');
-    });
-  });
-
-  describe(`container.disposable`, () => {
-    it(`correctly configures the scope`, async () => {
-      const def = fn.scoped(() => 123);
-      const cnt = container.new();
-      const scope = await cnt.scope(async scope => {
-        scope.overrideCascading(def).toValue(456);
-      });
-
-      expect(scope.use(def)).toEqual(456);
-    });
-
-    it(`allows to asynchronously get instance from the parent container`, async () => {
-      const fromParent = fn.singleton(async () => 'fromParent');
-
-      const def = fn.scoped(() => 'original');
-      const cnt = container.new();
-      const scope = await cnt.scope(async (scope, use) => {
-        scope.overrideCascading(def).toValue(await use(fromParent));
-      });
-
-      expect(scope.use(def)).toEqual('fromParent');
     });
   });
 });

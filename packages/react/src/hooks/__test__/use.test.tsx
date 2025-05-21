@@ -127,7 +127,7 @@ describe(`use`, () => {
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
         const config = useScopeConfig(
           scope => {
-            scope.override(someExternalParam).static(externalValue);
+            scope.modify(someExternalParam).static(externalValue);
           },
           [externalValue],
         );

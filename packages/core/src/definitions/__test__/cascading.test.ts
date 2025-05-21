@@ -30,19 +30,19 @@ describe(`cascading definition`, () => {
       const cnt = container.new(syncConfig);
 
       const scope1 = cnt.scope(c =>
-        c.own(numDefCascading).configure(b => {
+        c.modify(numDefCascading).configure(b => {
           b.value = 1;
         }),
       );
 
       const scope2 = cnt.scope(c =>
-        c.own(numDefCascading).configure(b => {
+        c.modify(numDefCascading).configure(b => {
           b.value = 2;
         }),
       );
 
       const scope3 = cnt.scope(c =>
-        c.own(numDefCascading).configure(b => {
+        c.modify(numDefCascading).configure(b => {
           b.value = 3;
         }),
       );

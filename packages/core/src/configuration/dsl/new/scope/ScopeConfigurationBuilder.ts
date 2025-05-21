@@ -1,23 +1,19 @@
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type {
-  IScopeConfigurable,
-  ScopeConfigureAllowedLifeTimes,
-  ScopeOverrideAllowedLifeTimes,
-} from '../../../abstract/IScopeConfigurable.js';
+import type { IScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
 import type { IContainer, IStrategyAware } from '../../../../container/IContainer.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
-import { SymbolsRegistrationBuilder } from '../shared/SymbolsRegistrationBuilder.js';
-import { OwningDefinitionBuilder } from '../shared/OwningDefinitionBuilder.js';
-import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
-import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
-import { OverridesConfigBuilder } from '../shared/OverridesConfigBuilder.js';
+import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
+import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
+import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
+import type { IConfigureBuilder, IModifyBuilderType } from '../../../abstract/IModifyAware.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
-  private readonly _allowedOverrideLifeTimes = [LifeTime.scoped, LifeTime.transient];
+  private readonly _modifyAllowedLifeTimes = [LifeTime.scoped, LifeTime.transient];
+  private readonly _cascadingModifyAllowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
 
   constructor(
     private _currentContainer: IContainer & IStrategyAware,
@@ -27,16 +23,55 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
     private _scopeInitializationFns: Array<(scope: IContainer) => MaybePromise<void>> = [],
   ) {}
 
-  eager<TInstance, TLifeTime extends LifeTime>(def: IDefinitionSymbol<TInstance, TLifeTime>): unknown {
-    this._scopeInitializationFns.push(use => {
-      use(def);
-    });
+  setTags(tags: (string | symbol)[]): void {
+    this._tags.push(...tags);
+  }
+
+  // TODO: replace this callback functions with some minimal interface
+  modify<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): IModifyBuilderType<TInstance, TLifeTime> {
+    if (symbol.strategy === LifeTime.cascading) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return new CascadingModifyBuilder<TInstance>(
+        symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
+        this._bindingsRegistry,
+        this._cascadingModifyAllowedLifeTimes,
+        (definition: IDefinition<TInstance, LifeTime.cascading>) => {
+          this._bindingsRegistry.ownCascading(symbol, this._currentContainer);
+          this._bindingsRegistry.override(definition);
+        },
+        (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {
+          this._bindingsRegistry.ownCascading(cascadingSymbol, this._currentContainer);
+        },
+      ) as any;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+        symbol,
+        this._bindingsRegistry,
+        this._modifyAllowedLifeTimes,
+        (definition: IDefinition<TInstance, TLifeTime>) => {
+          this._bindingsRegistry.override(definition);
+        },
+      ) as any;
+    }
+  }
+
+  eager<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
+    def: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): IConfigureBuilder<TInstance, TLifeTime> {
+    // this._scopeInitializationFns.push(use => {
+    //   use(def);
+    // });
+
+    throw new Error('Implement me!');
   }
 
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
-  ): SymbolsRegistrationBuilder<TInstance, TLifeTime> {
-    return new SymbolsRegistrationBuilder(
+  ): AddDefinitionBuilder<TInstance, TLifeTime> {
+    return new AddDefinitionBuilder(
       symbol,
       this._bindingsRegistry,
       this._allowedRegistrationLifeTimes,
@@ -46,46 +81,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
     );
   }
 
-  own<TInstance>(
-    symbol: DefinitionSymbol<TInstance, LifeTime.cascading>,
-  ): OwningDefinitionBuilder<TInstance, LifeTime.cascading> {
-    this._bindingsRegistry.ownCascading(symbol, this._currentContainer);
-
-    return new OwningDefinitionBuilder(symbol, this._bindingsRegistry);
-  }
-
   onDispose(callback: (scope: IContainer) => void): void {
     this._disposeFns.push(callback);
-  }
-
-  configure<TInstance>(
-    symbol: IDefinitionSymbol<TInstance, ScopeConfigureAllowedLifeTimes>,
-    configFn: (instance: TInstance) => MaybePromise<void>,
-  ): void {
-    const configuredDefinition = createConfiguredDefinition(this._bindingsRegistry, symbol, configFn, []);
-
-    this._bindingsRegistry.override(configuredDefinition);
-  }
-
-  decorate<TInstance>(
-    symbol: IDefinitionSymbol<TInstance, ScopeConfigureAllowedLifeTimes>,
-    configFn: (instance: TInstance) => MaybePromise<TInstance>,
-  ): void {
-    const configuredDefinition = createDecoratedDefinition(this._bindingsRegistry, symbol, configFn, []);
-
-    this._bindingsRegistry.override(configuredDefinition);
-  }
-
-  override<TInstance, TLifeTime extends ScopeOverrideAllowedLifeTimes>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): OverridesConfigBuilder<TInstance, TLifeTime> {
-    return new OverridesConfigBuilder(
-      symbol,
-      this._bindingsRegistry,
-      this._allowedOverrideLifeTimes,
-      (definition: IDefinition<TInstance, TLifeTime>) => {
-        this._bindingsRegistry.override(definition);
-      },
-    );
   }
 }
