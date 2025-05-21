@@ -29,12 +29,10 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     private _transientDefinitions: ScopeRegistry<IDefinition<any, any>>,
     private _scopeDefinitions: ScopeRegistry<IDefinition<any, any>>,
     private _frozenDefinitions: COWMap<IDefinition<any, any>>,
-
     private _cascadingDefinitions: ScopeRegistry<IDefinition<any, any>>, // registered cascading definitions, inherited
     // private _ownCascadingDefinitions: Map<symbol, IDefinition<any, any>>,
 
     private _owningScopes: COWMap<ICascadingDefinitionResolver>,
-
     // private _parent: BindingsRegistry | undefined = undefined,
   ) {}
 
@@ -130,7 +128,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     return this._owningScopes.get(defSymbol.id);
   }
 
-  ownCascading(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
+  setCascadeRoot(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
     const hasFrozenBinding = this._frozenDefinitions.has(defSymbol.id);
 
     if (hasFrozenBinding) {
@@ -146,6 +144,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   getDefinition<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, any>,
   ): IDefinition<TInstance, TLifeTime> {
+    //TODO: instead of probing all registries, we could switch by strategy
     const definition =
       (this._frozenDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
       (this._singletonDefinitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
@@ -162,30 +161,9 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     return definition;
   }
 
-  // registerSingletonBinding<TInstance, TLifeTime extends LifeTime>(
-  //   symbol: DefinitionSymbol<TInstance, TLifeTime>,
-  //   definition: IDefinition<TInstance, TLifeTime>,
-  // ) {
-  //   if (this._singletonDefinitions.has(symbol.id)) {
-  //     throw new Error(`Cannot bind singleton definition. The definition was already bound.`);
-  //   }
-  //
-  //   this._singletonDefinitions.set(symbol.id, definition);
-  // }
-
   hasFrozenBinding(definitionId: symbol): boolean {
     return this._frozenDefinitions.has(definitionId);
   }
-
-  // getFrozenBinding<TInstance, TLifeTime extends LifeTime>(
-  //   definition: IDefinitionSymbol<TInstance, TLifeTime>,
-  // ): IDefinition<TInstance, TLifeTime> | undefined {
-  //   return this._frozenDefinitions.get(definition.id);
-  // }
-
-  // hasScopeDefinition(definitionId: symbol): boolean {
-  //   return this._scopeDefinitions.has(definitionId);
-  // }
 
   inheritsCascadingDefinition(definitionId: symbol): boolean {
     return (
@@ -193,11 +171,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     );
   }
 
-  // hasCascadingDefinition(definitionId: symbol): boolean {
-  //   return this._cascadingDefinitions.has(definitionId);
-  // }
-
-  addFrozenBinding<TInstance, TLifeTime extends LifeTime>(
+  private addFrozenBinding<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
     definition: IDefinition<TInstance, TLifeTime>,
   ) {
@@ -251,6 +225,13 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   }
 
   private overrideCascading<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
+    if (!this._owningScopes.has(definition.id)) {
+      throw new Error(
+        `Cannot override cascading definition ${definition.toString()}.
+        The registry is missing container that will be used as cascade root.`,
+      );
+    }
+
     this._cascadingDefinitions.override(definition.id, definition);
   }
 
