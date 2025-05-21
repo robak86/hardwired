@@ -51,6 +51,85 @@ describe(`ContainerConfiguration`, () => {
           }).toThrow('No definition registered');
         });
       });
+
+      describe(`inherit`, () => {
+        it(`inherits value from the parent scope`, async () => {
+          const def = cascading<number>('testCascadingDef');
+
+          const cnt = container.new(c => {
+            c.add(def).static(0);
+          });
+
+          const child = cnt.scope(c => {
+            c.modify(def).inherit(val => val + 1);
+          });
+
+          expect(await cnt.use(def)).toEqual(0);
+          expect(await child.use(def)).toEqual(1);
+        });
+
+        it(`throws when definition is not registered in the parent scope`, async () => {
+          const def = cascading<number>('testCascadingDef');
+
+          const cnt = container.new(c => {
+            c.modify(def).inherit(val => val);
+          });
+        });
+
+        it(`throws when there is already modification for the current scope`, async () => {
+          const def = cascading<number>('testCascadingDef');
+
+          const cnt = container.new(c => {
+            c.add(def).static(0);
+          });
+
+          const createScope = () =>
+            cnt.scope(c => {
+              c.modify(def).static(10);
+              c.modify(def).inherit(val => val);
+            });
+
+          expect(createScope).toThrowError(
+            'Cannot inherit cascading definition. Current scope already provides own definition',
+          );
+        });
+
+        it(`memorizes inherit factory result`, async () => {
+          const def = cascading<number>('testCascadingDef');
+
+          const inheritFactorySpy = vi.fn((val: number) => val + 1);
+
+          const cnt = container.new(c => {
+            c.add(def).static(0);
+          });
+
+          const child = cnt.scope(c => {
+            c.modify(def).inherit(inheritFactorySpy);
+          });
+
+          await child.use(def);
+          await child.use(def);
+          await child.use(def);
+
+          expect(inheritFactorySpy).toHaveBeenCalledTimes(1);
+        });
+
+        it(`can be combined with modify`, async () => {
+          const def = cascading<number>('testCascadingDef');
+
+          const cnt = container.new(c => {
+            c.add(def).static(0);
+          });
+
+          const child = cnt.scope(c => {
+            c.modify(def).inherit(val => val + 1);
+            c.modify(def).decorate(val => val + 1);
+          });
+
+          expect(await cnt.use(def)).toEqual(0);
+          expect(await child.use(def)).toEqual(2);
+        });
+      });
     });
 
     describe(`scoped`, () => {
@@ -153,7 +232,7 @@ describe(`ContainerConfiguration`, () => {
             container.new(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('Cannot find definition for');
+          }).toThrow('No definition registered');
         });
       });
     });

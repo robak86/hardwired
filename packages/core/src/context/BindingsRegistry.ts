@@ -38,23 +38,28 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     return this._cascadingRoots.hasOwn(id);
   }
 
+  getDefinitionForInheritance<TInstance>(
+    symbol: IDefinitionSymbol<TInstance, LifeTime.cascading>,
+  ): IDefinition<TInstance, LifeTime.cascading> {
+    return this._cascadingDefinitions.getForInheriting(symbol.id);
+  }
+
   getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IDefinition<TInstance, TLifeTime> | undefined {
+  ): IDefinition<TInstance, TLifeTime> {
     if (symbol.strategy === LifeTime.cascading) {
       return this._cascadingDefinitions.getForOverride(symbol.id);
     }
 
     if (symbol.strategy === LifeTime.scoped) {
       return this._scopeDefinitions.getForOverride(symbol.id);
-      // if (this._scopeDefinitions.hasOwn(symbol.id)) {
-      //   return this._scopeDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>;
-      // } else {
-      //   const parentOwn = this._parent?.getDefinitionForOverride(symbol);
-      //
-      //   return parentOwn ?? (this._scopeDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>);
-      // }
     }
+
+    if (symbol.strategy === LifeTime.transient) {
+      return this._transientDefinitions.getForOverride(symbol.id);
+    }
+
+    // TODO: what about other strategies?
 
     return this.getDefinition(symbol);
   }
@@ -118,6 +123,12 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
         this.overrideCascading(newDef);
         break;
     }
+  }
+
+  getInheritedCascadingDefinition<TInstance, TLifeTime extends LifeTime>(
+    symbol: DefinitionSymbol<TInstance, TLifeTime>,
+  ): IDefinition<TInstance, TLifeTime> {
+    return this._cascadingDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>;
   }
 
   getOwningContainer(defSymbol: IDefinitionSymbol<any, any>): ICascadingDefinitionResolver | undefined {

@@ -4,6 +4,7 @@ import type { ICascadeModifyBuilder } from '../../../abstract/IModifyAware.js';
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
+import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
 
 import { ModifyDefinitionBuilder } from './ModifyDefinitionBuilder.js';
 
@@ -26,6 +27,16 @@ export class CascadingModifyBuilder<TInstance>
   }
 
   inherit(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {
-    throw new Error('Implement me!');
+    if (this._registry.hasCascadingRoot(this._defSymbol.id)) {
+      throw new Error('Cannot inherit cascading definition. Current scope already provides own definition.');
+    }
+
+    const baseDefinition = this._registry.getDefinitionForOverride(this._defSymbol);
+
+    const decorate = createDecoratedDefinition(baseDefinition, decorateFn, []);
+
+    // throw new Error('Implement me!');
+
+    this._onDefinition(decorate);
   }
 }

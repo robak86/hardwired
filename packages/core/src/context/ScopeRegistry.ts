@@ -7,7 +7,10 @@ export class ScopeRegistry<V> {
 
   private _overrides = new Map<symbol, V>();
 
-  constructor(private _registrations: COWMap<V>) {}
+  constructor(
+    private _registrations: COWMap<V>,
+    private _parent?: ScopeRegistry<V>,
+  ) {}
 
   hasRegistration(definitionId: symbol): boolean {
     return this._registrations.has(definitionId);
@@ -23,6 +26,26 @@ export class ScopeRegistry<V> {
 
   get(definitionId: symbol): V {
     return this._overrides.get(definitionId) ?? this.getRegistered(definitionId);
+  }
+
+  getForInheriting(definitionId: symbol): V {
+    const definition = this._parent?.getForOverride(definitionId) ?? this._parent?.getForInheriting(definitionId);
+
+    if (!definition) {
+      throw new Error(`No definition for ${definitionId.toString()}`);
+    }
+
+    return definition;
+
+    // if (this._overrides.has(definitionId)) {
+    //   return this._overrides.get(definitionId)!;
+    // }
+    //
+    // if (this._parent) {
+    //   return this._parent.getForInheriting(definitionId);
+    // }
+    //
+    // throw new Error(`No definition registered for ${definitionId.toString()}`);
   }
 
   getForOverride(definitionId: symbol): V {
@@ -64,6 +87,6 @@ export class ScopeRegistry<V> {
   }
 
   checkoutForScope() {
-    return new ScopeRegistry(this._registrations.clone());
+    return new ScopeRegistry(this._registrations.clone(), this);
   }
 }
