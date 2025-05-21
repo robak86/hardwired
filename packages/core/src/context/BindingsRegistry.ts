@@ -5,11 +5,9 @@ import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
 import type { IBindingsRegistryRead } from '../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 
 import { COWMap } from './COWMap.js';
+import { ScopeRegistry } from './ScopeRegistry.js';
 
 export interface IBindingRegistryRead {
-  hasFrozenBinding(definitionId: symbol): boolean;
-  hasScopeDefinition(definitionId: symbol): boolean;
-  hasCascadingDefinition(definitionId: symbol): boolean;
   isCascadingDefinitionRoot(definitionId: symbol): boolean;
 }
 
@@ -18,10 +16,10 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     return new BindingsRegistry(
       COWMap.create(),
       COWMap.create(),
+      ScopeRegistry.create(),
       COWMap.create(),
-      COWMap.create(),
-      COWMap.create(),
-      new Map(),
+      ScopeRegistry.create(),
+      // new Map(),
       COWMap.create(),
     );
   }
@@ -29,44 +27,33 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   constructor(
     private _singletonDefinitions: COWMap<IDefinition<any, any>>,
     private _transientDefinitions: COWMap<IDefinition<any, any>>,
-    private _scopeDefinitions: COWMap<IDefinition<any, any>>,
+    private _scopeDefinitions: ScopeRegistry<IDefinition<any, any>>,
     private _frozenDefinitions: COWMap<IDefinition<any, any>>,
 
-    private _cascadingDefinitions: COWMap<IDefinition<any, any>>, // registered cascading definitions, inherited
-    private _ownCascadingDefinitions: Map<symbol, IDefinition<any, any>>,
+    private _cascadingDefinitions: ScopeRegistry<IDefinition<any, any>>, // registered cascading definitions, inherited
+    // private _ownCascadingDefinitions: Map<symbol, IDefinition<any, any>>,
 
     private _owningScopes: COWMap<ICascadingDefinitionResolver>,
 
-    private _parent: BindingsRegistry | undefined = undefined,
+    // private _parent: BindingsRegistry | undefined = undefined,
   ) {}
 
   getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> | undefined {
     if (symbol.strategy === LifeTime.cascading) {
-      if (this._ownCascadingDefinitions.has(symbol.id)) {
-        return this._ownCascadingDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>;
-      } else {
-        const definition = this._cascadingDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>;
-
-        if (!definition) {
-          throw new Error(
-            `Cannot find definition: ${symbol.toString()}. Make sure the definition symbol is registered.`,
-          );
-        }
-
-        return definition;
-      }
+      return this._cascadingDefinitions.getForOverride(symbol.id);
     }
 
     if (symbol.strategy === LifeTime.scoped) {
-      if (this._scopeDefinitions.hasOwn(symbol.id)) {
-        return this._scopeDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>;
-      } else {
-        const parentOwn = this._parent?.getDefinitionForOverride(symbol);
-
-        return parentOwn ?? (this._scopeDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>);
-      }
+      return this._scopeDefinitions.getForOverride(symbol.id);
+      // if (this._scopeDefinitions.hasOwn(symbol.id)) {
+      //   return this._scopeDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>;
+      // } else {
+      //   const parentOwn = this._parent?.getDefinitionForOverride(symbol);
+      //
+      //   return parentOwn ?? (this._scopeDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>);
+      // }
     }
 
     return this.getDefinition(symbol);
@@ -76,17 +63,17 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     return new BindingsRegistry(
       this._singletonDefinitions,
       this._transientDefinitions.clone(),
-      this._scopeDefinitions.clone(),
+      this._scopeDefinitions.checkoutForScope(),
       this._frozenDefinitions.clone(),
-      this._cascadingDefinitions.clone(),
-      new Map(),
+      this._cascadingDefinitions.checkoutForScope(),
       this._owningScopes.clone(),
-      this,
     );
   }
 
   isCascadingDefinitionRoot(definitionId: symbol): boolean {
-    return this._ownCascadingDefinitions.has(definitionId);
+    // return this._cascadingDefinitions.hasOwn(definitionId);
+
+    return this._owningScopes.has(definitionId);
   }
 
   register<TInstance, TLifeTime extends LifeTime>(
@@ -153,15 +140,8 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
 
     const cascadingDefinition = this._cascadingDefinitions.get(defSymbol.id);
 
-    if (!cascadingDefinition) {
-      throw new Error(
-        `Cannot modify cascading definition: ${defSymbol.toString()}. 
-        The definition needs to be registered in the current or some ascending scope.`,
-      );
-    }
-
     this._owningScopes.set(defSymbol.id, container);
-    this._ownCascadingDefinitions.set(defSymbol.id, cascadingDefinition);
+    this._cascadingDefinitions.override(defSymbol.id, cascadingDefinition);
   }
 
   getDefinition<TInstance, TLifeTime extends LifeTime>(
@@ -171,9 +151,8 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
       (this._frozenDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
       (this._singletonDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
       (this._transientDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
-      (this._scopeDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
-      (this._ownCascadingDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
-      (this._cascadingDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>);
+      (this._scopeDefinitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
+      (this._cascadingDefinitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>);
 
     if (!definition) {
       throw new Error(
@@ -205,19 +184,19 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   //   return this._frozenDefinitions.get(definition.id);
   // }
 
-  hasScopeDefinition(definitionId: symbol): boolean {
-    return this._scopeDefinitions.has(definitionId);
-  }
+  // hasScopeDefinition(definitionId: symbol): boolean {
+  //   return this._scopeDefinitions.has(definitionId);
+  // }
 
   inheritsCascadingDefinition(definitionId: symbol): boolean {
-    return this._cascadingDefinitions.has(definitionId) && !this._ownCascadingDefinitions.has(definitionId);
-
-    // return this._cascadingDefinitions.hasOwn(definitionId);
+    return (
+      this._cascadingDefinitions.hasRegistration(definitionId) && !this._cascadingDefinitions.hasOverride(definitionId)
+    );
   }
 
-  hasCascadingDefinition(definitionId: symbol): boolean {
-    return this._cascadingDefinitions.has(definitionId);
-  }
+  // hasCascadingDefinition(definitionId: symbol): boolean {
+  //   return this._cascadingDefinitions.has(definitionId);
+  // }
 
   addFrozenBinding<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
@@ -234,13 +213,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
     definition: IDefinition<TInstance, TLifeTime>,
   ) {
-    if (this._scopeDefinitions.hasOwn(symbol.id)) {
-      throw new Error(
-        `Cannot bind definition for the current scope. The scope has already other binding for the definition.`,
-      );
-    }
-
-    this._scopeDefinitions.set(symbol.id, definition);
+    this._scopeDefinitions.register(symbol.id, definition);
   }
 
   private registerSingleton<TInstance, TLifeTime extends LifeTime>(
@@ -281,23 +254,27 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
       throw new Error(`Cannot register singleton binding. The definition is not singleton.`);
     }
 
-    if (this._cascadingDefinitions.has(symbol.id)) {
-      throw new Error(`Cannot bind cascading definition. The definition was already bound.`);
-    }
+    // if (this._cascadingDefinitions.has(symbol.id)) {
+    //   throw new Error(`Cannot bind cascading definition. The definition was already bound.`);
+    // }
 
-    this._cascadingDefinitions.set(symbol.id, iDefinition);
-    this._ownCascadingDefinitions.set(symbol.id, iDefinition);
+    // this._cascadingDefinitions.set(symbol.id, iDefinition);
+    // this._ownCascadingDefinitions.set(symbol.id, iDefinition);
+
+    this._cascadingDefinitions.register(symbol.id, iDefinition);
   }
 
   private overrideCascading<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (!this._cascadingDefinitions.has(definition.id)) {
-      throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
-    }
+    // if (!this._cascadingDefinitions.has(definition.id)) {
+    //   throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
+    // }
 
     // this._cascadingDefinitions.set(definition.id, definition);
-    this._ownCascadingDefinitions.set(definition.id, definition);
+    // this._ownCascadingDefinitions.set(definition.id, definition);
 
     // this.ownCascading();
+
+    this._cascadingDefinitions.override(definition.id, definition);
   }
 
   private overrideSingleton<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
@@ -317,11 +294,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   }
 
   private overrideScoped<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (!this._scopeDefinitions.has(definition.id) && !this._frozenDefinitions.has(definition.id)) {
-      throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
-    }
-
-    this._scopeDefinitions.set(definition.id, definition);
+    this._scopeDefinitions.override(definition.id, definition);
   }
 
   freeze<TInstance, TLifetime extends LifeTime>(def: IDefinition<TInstance, TLifetime>) {

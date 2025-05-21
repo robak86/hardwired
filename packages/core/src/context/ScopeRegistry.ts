@@ -9,11 +9,35 @@ export class ScopeRegistry<V> {
 
   constructor(private _registrations: COWMap<V>) {}
 
-  get(definitionId: symbol): V | undefined {
+  hasRegistration(definitionId: symbol): boolean {
+    return this._registrations.has(definitionId);
+  }
+
+  hasOverride(definitionId: symbol): boolean {
+    return this._overrides.has(definitionId);
+  }
+
+  find(definitionId: symbol): V | undefined {
+    return this._overrides.get(definitionId) ?? this._registrations.get(definitionId);
+  }
+
+  get(definitionId: symbol): V {
     return this._overrides.get(definitionId) ?? this.getRegistered(definitionId);
   }
 
-  getRegistered(definitionId: symbol): V {
+  getForOverride(definitionId: symbol): V {
+    if (this._overrides.has(definitionId)) {
+      return this._overrides.get(definitionId)!;
+    }
+
+    if (this._registrations.has(definitionId)) {
+      return this._registrations.get(definitionId)!;
+    }
+
+    throw new Error(`No definition registered for ${definitionId.toString()}`);
+  }
+
+  protected getRegistered(definitionId: symbol): V {
     const definition = this._registrations.get(definitionId);
 
     if (!definition) {
@@ -36,10 +60,10 @@ export class ScopeRegistry<V> {
       throw new Error(`Instance with id ${definitionId.toString()} not registered. Try using .register() instead.`);
     }
 
-    this._registrations.set(definitionId, instance);
+    this._overrides.set(definitionId, instance);
   }
 
   checkoutForScope() {
-    return new ScopeRegistry(this._registrations);
+    return new ScopeRegistry(this._registrations.clone());
   }
 }
