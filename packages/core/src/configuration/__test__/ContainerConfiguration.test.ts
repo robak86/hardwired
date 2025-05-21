@@ -6,7 +6,7 @@ import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
 import type { BoxedValue } from '../../__test__/BoxedValue.js';
-import { cascading, scoped } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`modify`, () => {
@@ -70,24 +70,51 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).decorate(val => val + 10);
           });
 
-          // const child2 = child.scope(c => {
-          //   c.modify(def).decorate(val => val + 1);
-          //   c.modify(def).decorate(val => val + 1);
-          // });
+          const child2 = child.scope(c => {
+            c.modify(def).decorate(val => val + 1);
+            c.modify(def).decorate(val => val + 1);
+          });
 
           expect(await cnt.use(def)).toEqual(2);
           expect(await child.use(def)).toEqual(11);
-          // expect(await child2.use(def)).toEqual(2);
+          expect(await child2.use(def)).toEqual(2);
         });
 
         it(`throws when definition wasn't registered`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = scoped<number>('testCascadingDef');
 
           expect(() => {
             container.new(c => {
               c.modify(def).decorate(val => val + 1);
             });
           }).toThrow('No definition registered');
+        });
+      });
+    });
+
+    describe(`singleton`, () => {
+      describe(`decorate`, () => {
+        it(`modify is applicative`, async () => {
+          const def = singleton<number>('testCascadingDef');
+
+          const cnt = container.new(c => {
+            c.add(def).static(0);
+
+            c.modify(def).decorate(val => val + 1);
+            c.modify(def).decorate(val => val + 1);
+          });
+
+          expect(await cnt.use(def)).toEqual(2);
+        });
+
+        it(`throws when definition wasn't registered`, async () => {
+          const def = singleton<number>('testCascadingDef');
+
+          expect(() => {
+            container.new(c => {
+              c.modify(def).decorate(val => val + 1);
+            });
+          }).toThrow('Cannot override');
         });
       });
     });

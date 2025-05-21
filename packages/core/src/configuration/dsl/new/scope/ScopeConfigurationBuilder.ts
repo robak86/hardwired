@@ -38,7 +38,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
         this._bindingsRegistry,
         this._cascadingModifyAllowedLifeTimes,
         (definition: IDefinition<TInstance, LifeTime.cascading>) => {
-          this._bindingsRegistry.ownCascading(definition, this._currentContainer);
+          // this._bindingsRegistry.ownCascading(definition, this._currentContainer);
           this._bindingsRegistry.override(definition);
         },
         (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {

@@ -14,8 +14,8 @@ export interface IBindingRegistryRead {
 export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistryRead {
   static create(): BindingsRegistry {
     return new BindingsRegistry(
-      COWMap.create(),
-      COWMap.create(),
+      ScopeRegistry.create(),
+      ScopeRegistry.create(),
       ScopeRegistry.create(),
       COWMap.create(),
       ScopeRegistry.create(),
@@ -25,8 +25,8 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   }
 
   constructor(
-    private _singletonDefinitions: COWMap<IDefinition<any, any>>,
-    private _transientDefinitions: COWMap<IDefinition<any, any>>,
+    private _singletonDefinitions: ScopeRegistry<IDefinition<any, any>>,
+    private _transientDefinitions: ScopeRegistry<IDefinition<any, any>>,
     private _scopeDefinitions: ScopeRegistry<IDefinition<any, any>>,
     private _frozenDefinitions: COWMap<IDefinition<any, any>>,
 
@@ -62,7 +62,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   checkoutForScope(): BindingsRegistry {
     return new BindingsRegistry(
       this._singletonDefinitions,
-      this._transientDefinitions.clone(),
+      this._transientDefinitions.checkoutForScope(),
       this._scopeDefinitions.checkoutForScope(),
       this._frozenDefinitions.clone(),
       this._cascadingDefinitions.checkoutForScope(),
@@ -96,8 +96,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
         break;
 
       case LifeTime.cascading:
-        this._owningScopes.set(symbol.id, buildAware);
-        this.registerCascading(symbol, definition);
+        this.registerCascading(symbol, definition, buildAware);
         break;
     }
   }
@@ -149,8 +148,8 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   ): IDefinition<TInstance, TLifeTime> {
     const definition =
       (this._frozenDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
-      (this._singletonDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
-      (this._transientDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
+      (this._singletonDefinitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
+      (this._transientDefinitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
       (this._scopeDefinitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
       (this._cascadingDefinitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>);
 
@@ -224,11 +223,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
       throw new Error(`Cannot register singleton binding. The definition is not singleton.`);
     }
 
-    if (this._singletonDefinitions.has(symbol.id)) {
-      throw new Error(`Cannot bind singleton definition. The definition was already bound.`);
-    }
-
-    this._singletonDefinitions.set(symbol.id, definition);
+    this._singletonDefinitions.register(symbol.id, definition);
   }
 
   private registerTransient<TInstance, TLifeTime extends LifeTime>(
@@ -239,58 +234,32 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
       throw new Error(`Cannot register transient binding. The definition is not transient.`);
     }
 
-    if (this._transientDefinitions.has(symbol.id)) {
-      throw new Error(`Cannot bind transient definition. The definition was already bound.`);
-    }
-
-    this._transientDefinitions.set(symbol.id, definition);
+    this._transientDefinitions.register(symbol.id, definition);
   }
 
   private registerCascading<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
-    iDefinition: IDefinition<TInstance, TLifeTime>,
+    definition: IDefinition<TInstance, TLifeTime>,
+    buildAware: ICascadingDefinitionResolver,
   ) {
     if (symbol.strategy !== LifeTime.cascading) {
       throw new Error(`Cannot register singleton binding. The definition is not singleton.`);
     }
 
-    // if (this._cascadingDefinitions.has(symbol.id)) {
-    //   throw new Error(`Cannot bind cascading definition. The definition was already bound.`);
-    // }
-
-    // this._cascadingDefinitions.set(symbol.id, iDefinition);
-    // this._ownCascadingDefinitions.set(symbol.id, iDefinition);
-
-    this._cascadingDefinitions.register(symbol.id, iDefinition);
+    this._cascadingDefinitions.register(symbol.id, definition);
+    this._owningScopes.set(symbol.id, buildAware);
   }
 
   private overrideCascading<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    // if (!this._cascadingDefinitions.has(definition.id)) {
-    //   throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
-    // }
-
-    // this._cascadingDefinitions.set(definition.id, definition);
-    // this._ownCascadingDefinitions.set(definition.id, definition);
-
-    // this.ownCascading();
-
     this._cascadingDefinitions.override(definition.id, definition);
   }
 
   private overrideSingleton<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (!this._singletonDefinitions.has(definition.id) && !this._frozenDefinitions.has(definition.id)) {
-      throw new Error(`Cannot override ${definition.toString()}. The definition was not registered.`);
-    }
-
-    this._singletonDefinitions.set(definition.id, definition);
+    this._singletonDefinitions.override(definition.id, definition);
   }
 
   private overrideTransient<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (this._transientDefinitions.has(definition.id) && !this._frozenDefinitions.has(definition.id)) {
-      throw new Error(`Cannot bind transient definition. The definition was already bound.`);
-    }
-
-    this._transientDefinitions.set(definition.id, definition);
+    this._transientDefinitions.override(definition.id, definition);
   }
 
   private overrideScoped<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
