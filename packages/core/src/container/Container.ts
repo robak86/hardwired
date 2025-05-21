@@ -210,16 +210,16 @@ export class Container extends ExtensibleFunction implements IContainer {
       return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition), definition);
     } else {
       if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-        return this.instancesStore.upsertIntoRootInstances(definition, this);
+        return this.upsertIntoRootInstances(definition, this);
       }
 
       switch (definition.strategy) {
         case LifeTime.transient:
           return definition.create(this);
         case LifeTime.singleton:
-          return this.instancesStore.upsertIntoRootInstances(definition, this);
+          return this.upsertIntoRootInstances(definition, this);
         case LifeTime.scoped:
-          return this.instancesStore.upsertIntoScopeInstances(
+          return this.upsertIntoScopeInstances(
             definition,
             this,
             this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
@@ -231,8 +231,46 @@ export class Container extends ExtensibleFunction implements IContainer {
     }
   }
 
+  protected upsertIntoRootInstances<TInstance, TLifeTime extends LifeTime>(
+    definition: IDefinition<TInstance, TLifeTime>,
+    container: IContainer,
+  ) {
+    if (this.instancesStore.hasRootInstance(definition.id)) {
+      return this.instancesStore.getRootInstance(definition.id) as TInstance;
+    } else {
+      const instance = definition.create(container);
+
+      this.instancesStore.setRootInstance(definition.id, instance);
+
+      return instance;
+    }
+  }
+
+  protected upsertIntoScopeInstances<TInstance>(
+    definition: IDefinition<TInstance, any>,
+    container: IContainer,
+    isCascadingInherited: boolean,
+  ) {
+    if (this.instancesStore.hasScopedInstance(definition.id)) {
+      return this.instancesStore.getScopedInstance(definition.id) as TInstance;
+    } else {
+      const instance = definition.create(container);
+
+      // If the definition is bound to the current container then after calling definition.create
+      // we already have the instance in the store, hence we should not register it for duplicated disposal.
+      // TODO: remove this abomination
+      if (this.instancesStore.hasScopedInstance(definition.id)) {
+        return this.instancesStore.getScopedInstance(definition.id) as TInstance;
+      }
+
+      this.instancesStore.setScopedInstance(definition.id, instance, isCascadingInherited);
+
+      return instance;
+    }
+  }
+
   protected resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
-    return this.instancesStore.upsertIntoScopeInstances(
+    return this.upsertIntoScopeInstances(
       definition,
       this,
       false,
@@ -247,7 +285,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
 
     if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor);
+      const instance = this.upsertIntoRootInstances(definition, withChildInterceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
@@ -259,13 +297,13 @@ export class Container extends ExtensibleFunction implements IContainer {
     }
 
     if (definition.strategy === LifeTime.singleton) {
-      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor);
+      const instance = this.upsertIntoRootInstances(definition, withChildInterceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
     if (definition.strategy === LifeTime.scoped) {
-      const instance = this.instancesStore.upsertIntoScopeInstances(
+      const instance = this.upsertIntoScopeInstances(
         definition,
         withChildInterceptor,
         this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
