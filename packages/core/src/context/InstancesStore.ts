@@ -8,6 +8,8 @@ export interface IInstancesStoreRead {
   hasScopedInstance(definitionId: symbol): boolean;
 }
 
+// TODO: reduce the number of public methods by accepting IDefinitionSymbol as a parameter
+// That will allow hiding the implementation details related to lifetimes
 export class InstancesStore implements IInstancesStoreRead {
   static create(): InstancesStore {
     return new InstancesStore(
