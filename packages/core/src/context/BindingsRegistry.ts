@@ -8,7 +8,7 @@ import { COWMap } from './COWMap.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
 
 export interface IBindingRegistryRead {
-  isCascadingDefinitionRoot(definitionId: symbol): boolean;
+  hasCascadingRoot(id: symbol): boolean;
 }
 
 export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistryRead {
@@ -30,11 +30,13 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     private _scopeDefinitions: ScopeRegistry<IDefinition<any, any>>,
     private _frozenDefinitions: COWMap<IDefinition<any, any>>,
     private _cascadingDefinitions: ScopeRegistry<IDefinition<any, any>>, // registered cascading definitions, inherited
-    // private _ownCascadingDefinitions: Map<symbol, IDefinition<any, any>>,
 
-    private _owningScopes: COWMap<ICascadingDefinitionResolver>,
-    // private _parent: BindingsRegistry | undefined = undefined,
+    private _cascadingRoots: COWMap<ICascadingDefinitionResolver>,
   ) {}
+
+  hasCascadingRoot(id: symbol): boolean {
+    return this._cascadingRoots.has(id);
+  }
 
   getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
@@ -64,14 +66,8 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
       this._scopeDefinitions.checkoutForScope(),
       this._frozenDefinitions.clone(),
       this._cascadingDefinitions.checkoutForScope(),
-      this._owningScopes.clone(),
+      this._cascadingRoots.clone(),
     );
-  }
-
-  isCascadingDefinitionRoot(definitionId: symbol): boolean {
-    // return this._cascadingDefinitions.hasOwn(definitionId);
-
-    return this._owningScopes.has(definitionId);
   }
 
   register<TInstance, TLifeTime extends LifeTime>(
@@ -125,7 +121,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   }
 
   getOwningContainer(defSymbol: IDefinitionSymbol<any, any>): ICascadingDefinitionResolver | undefined {
-    return this._owningScopes.get(defSymbol.id);
+    return this._cascadingRoots.get(defSymbol.id);
   }
 
   setCascadeRoot(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
@@ -137,7 +133,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
 
     const cascadingDefinition = this._cascadingDefinitions.get(defSymbol.id);
 
-    this._owningScopes.set(defSymbol.id, container);
+    this._cascadingRoots.set(defSymbol.id, container);
     this._cascadingDefinitions.override(defSymbol.id, cascadingDefinition);
   }
 
@@ -221,11 +217,11 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     }
 
     this._cascadingDefinitions.register(symbol.id, definition);
-    this._owningScopes.set(symbol.id, buildAware);
+    this._cascadingRoots.set(symbol.id, buildAware);
   }
 
   private overrideCascading<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
-    if (!this._owningScopes.has(definition.id)) {
+    if (!this._cascadingRoots.has(definition.id)) {
       throw new Error(
         `Cannot override cascading definition ${definition.toString()}.
         The registry is missing container that will be used as cascade root.`,

@@ -99,7 +99,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
   private getRootForCascading<T>(
     definition: IDefinitionSymbol<T, any>,
   ): GraphBuilderInterceptor<unknown, TNode> | undefined {
-    if (this._context.bindingRegistry.isCascadingDefinitionRoot(definition.id)) {
+    if (this._context.bindingRegistry.hasCascadingRoot(definition.id)) {
       return this;
     } else {
       return this._parentScopeRootInterceptor?.getRootForCascading(definition);
@@ -107,9 +107,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
 
     // const parentCascading = this._parentScopeRootInterceptor?.getRootForCascading(definition);
     //
-    // return this._context.bindingRegistry.hasCascadingDefinition(definition.id) && !parentCascading
-    //   ? this
-    //   : parentCascading;
+    // return this._context.bindingRegistry.hasCascadingRoot(definition.id) && !parentCascading ? this : parentCascading;
   }
 
   private get node() {
