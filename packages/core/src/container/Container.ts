@@ -153,13 +153,13 @@ export class Container
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
     const bind = (definition: IDefinition<TInstance, TLifeTime>) => {
-      if (this.instancesStore.has(definition.id)) {
+      if (this.instancesStore.has(definition)) {
         throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
       }
 
       if (
         this.bindingsRegistry.inheritsCascadingDefinition(definition.id) &&
-        this.instancesStore.hasInherited(definition.id)
+        this.instancesStore.hasInherited(definition)
       ) {
         throw new Error(
           `Cannot freeze cascading binding ${definition.toString()} because it is already instantiated in some higher scope.`,
@@ -210,7 +210,7 @@ export class Container
    * @param definition
    */
   useExisting<TValue>(definition: IDefinitionSymbol<TValue, LifeTime.scoped | LifeTime.singleton>): TValue | null {
-    return (this.instancesStore.getExisting(definition.id) as TValue) ?? null;
+    return (this.instancesStore.getExisting(definition) as TValue) ?? null;
   }
 
   protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybePromise<TValue> {
