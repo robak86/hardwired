@@ -1,8 +1,9 @@
 import { COWMap } from '../../../context/COWMap.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
+import type { IDefinitionSymbol } from '../../../definitions/def-symbol.js';
 
-import type { GraphBuilderInterceptor, GraphNode } from './GraphBuilderInterceptor.js';
+import type { GraphBuilderInterceptor, GraphBuilderMemoizableLifeTime, GraphNode } from './GraphBuilderInterceptor.js';
 
 export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   constructor(
@@ -16,29 +17,35 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   }
 
   getOwn<TInstance>(
-    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton>,
+    definition: IDefinition<TInstance, GraphBuilderMemoizableLifeTime>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     switch (definition.strategy) {
       case LifeTime.singleton:
         return this._singletonNodes.get(definition.id) as GraphBuilderInterceptor<TInstance, TNode>;
       case LifeTime.scoped:
         return this._scopedNodes.get(definition.id) as GraphBuilderInterceptor<TInstance, TNode>;
+      case LifeTime.cascading:
+        // TODO: currently cascading definitions are also registered as scoped
+        return this._scopedNodes.get(definition.id) as GraphBuilderInterceptor<TInstance, TNode>;
     }
   }
 
   getNode<TInstance>(
-    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton>,
+    definition: IDefinitionSymbol<TInstance, GraphBuilderMemoizableLifeTime>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     switch (definition.strategy) {
       case LifeTime.singleton:
         return this._singletonNodes.get(definition.id) as GraphBuilderInterceptor<TInstance, TNode>;
       case LifeTime.scoped:
         return this.getScoped(definition);
+      case LifeTime.cascading:
+        // TODO: currently cascading definitions are also registered as scoped
+        return this.getScoped(definition);
     }
   }
 
   getScoped<TInstance>(
-    definition: IDefinition<TInstance, LifeTime.scoped | LifeTime.singleton>,
+    definition: IDefinitionSymbol<TInstance, GraphBuilderMemoizableLifeTime>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     return (
       (this._scopedNodes.get(definition.id) as GraphBuilderInterceptor<TInstance, TNode>) ??
@@ -53,6 +60,8 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
       } else {
         this._singletonNodes.set(definition.id, builderNode);
       }
+
+      return;
     }
 
     if (definition.strategy === LifeTime.scoped) {
@@ -61,6 +70,20 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
       } else {
         this._scopedNodes.set(definition.id, builderNode);
       }
+
+      return;
     }
+
+    if (definition.strategy === LifeTime.cascading) {
+      if (this._scopedNodes.has(definition.id)) {
+        throw new Error(`Node already registered`);
+      } else {
+        this._scopedNodes.set(definition.id, builderNode);
+      }
+
+      return;
+    }
+
+    throw new Error(`Cannot register given lifetime: ${definition.strategy}`);
   }
 }

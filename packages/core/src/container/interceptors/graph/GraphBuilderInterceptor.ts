@@ -5,6 +5,7 @@ import type { IInterceptor } from '../interceptor.js';
 import { isThenable } from '../../../utils/IsThenable.js';
 import type { ScopeTag } from '../../IContainer.js';
 import type { IDefinitionSymbol } from '../../../definitions/def-symbol.js';
+import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
 
 import { GraphNodesRegistry } from './GraphNodesRegistry.js';
 import { GraphBuilderContext } from './GraphBuilderContext.js';
@@ -14,6 +15,8 @@ const notInitialized = Symbol('notInitialized');
 export interface GraphNode<T> {
   value: T;
 }
+
+export type GraphBuilderMemoizableLifeTime = LifeTime.scoped | LifeTime.singleton | LifeTime.cascading;
 
 export interface GraphBuilderInterceptorConfig<TNode extends GraphNode<any>> {
   createNode<T>(definition: Definition<T, any>, value: Awaited<T>, children: TNode[], tags: ScopeTag[]): TNode;
@@ -40,7 +43,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     this._context.initialize(bindingRegistry);
   }
 
-  onEnter<TNewInstance>(definition: IDefinitionSymbol<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {
+  onEnter<TNewInstance>(definition: IDefinition<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {
     const cascadingNode = this.getRootForCascading(definition);
 
     if (cascadingNode) {
@@ -50,9 +53,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return this.instantiate(definition);
   }
 
-  getGraphNode<TInstance>(
-    definition: IDefinitionSymbol<TInstance, LifeTime.scoped | LifeTime.singleton>,
-  ): TNode | undefined {
+  getGraphNode<TInstance>(definition: IDefinitionSymbol<TInstance, GraphBuilderMemoizableLifeTime>): TNode | undefined {
     return this._context.nodesRegistry.getNode(definition)?.node;
   }
 
@@ -117,7 +118,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return this._definition;
   }
 
-  private instantiate<TNewInstance>(definition: Definition<TNewInstance, LifeTime>) {
+  private instantiate<TNewInstance>(definition: IDefinition<TNewInstance, LifeTime>) {
     const existingNode: GraphBuilderInterceptor<TNewInstance, TNode> | undefined = this._context.nodesRegistry.getOwn(
       definition as Definition<TNewInstance, LifeTime.scoped | LifeTime.singleton>,
     );

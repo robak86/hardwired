@@ -1,59 +1,78 @@
-import type { Definition } from '../definitions/impl/Definition.js';
-import type { AnyDefinitionSymbol } from '../definitions/abstract/IDefinition.js';
+import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../definitions/def-symbol.js';
+import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import type { ContainerConfigurable } from '../configuration/abstract/ContainerConfigurable.js';
+import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 
-export function buildSingletonTreeFn(times: number, depth: number, currentDepth = 0): Definition<number, any>[] {
+export type TestDefinition<T, TLifetime extends LifeTime> = {
+  def: IDefinitionSymbol<T, TLifetime>;
+  children: TestDefinition<T, TLifetime>[];
+};
+
+export function registerTestDefinitions<T, TLifetime extends LifeTime>(
+  defs: TestDefinition<T, TLifetime>[],
+  config: ContainerConfigurable,
+) {
+  for (const def of defs) {
+    const dependencies = def.children.map(d => d.def) as unknown as Array<
+      IDefinitionSymbol<T, ValidDependenciesLifeTime<TLifetime>>
+    >;
+
+    config.add(def.def).fn((...args: T[]) => args[0], ...dependencies);
+
+    if (def.children.length > 0) {
+      registerTestDefinitions(def.children, config);
+    }
+  }
+}
+
+export function countDependenciesTreeCount(testDef: TestDefinition<unknown, LifeTime>): number {
+  let count = 1;
+
+  for (const child of testDef.children) {
+    count += countDependenciesTreeCount(child);
+  }
+
+  return count;
+}
+
+export function buildDefinitions<T, TLifetime extends LifeTime>(
+  times: number,
+  depth: number,
+
+  createDefinition: (key: string) => IDefinitionSymbol<T, TLifetime>,
+  currentDepth = 0,
+): TestDefinition<T, TLifetime>[] {
   if (currentDepth > depth) {
     return [];
   }
 
-  const definitions: AnyDefinitionSymbol[] = [];
+  const definitions: TestDefinition<T, TLifetime>[] = [];
 
   for (let i = 0; i < times; i++) {
-    x;
-    definitions.push(
-      fn.singleton(use => {
-        return use.all(...buildSingletonTreeFn(times, depth, (currentDepth += 1)));
-      }),
-    );
+    const key = `${currentDepth}:${i}`;
+
+    definitions.push({
+      def: createDefinition(key),
+      children: buildDefinitions(times, depth, createDefinition, currentDepth + 1),
+    });
   }
 
   return definitions;
 }
 
-export function buildTransientFn(times: number, depth: number, currentDepth = 0): Definition<number, any>[] {
-  if (currentDepth > depth) {
-    return [];
-  }
-
-  const definitions: any[] = [];
-
-  for (let i = 0; i < times; i++) {
-    definitions.push(
-      fn(use => {
-        return use.all(...buildTransientFn(times, depth, (currentDepth += 1)));
-      }),
-    );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return definitions;
+export function buildSingletonDefs(times: number, depth: number): TestDefinition<number, LifeTime.singleton>[] {
+  return buildDefinitions(times, depth, key => singleton<number>(`singleton:${key}`));
 }
 
-export function buildScopedFn(times: number, depth: number, currentDepth = 0): Definition<number, any>[] {
-  if (currentDepth > depth) {
-    return [];
-  }
+export function buildTransientDefs(times: number, depth: number): TestDefinition<number, LifeTime.transient>[] {
+  return buildDefinitions(times, depth, key => transient<number>(`transient:${key}`));
+}
 
-  const definitions: any[] = [];
+export function buildScopedDefs(times: number, depth: number): TestDefinition<number, LifeTime.scoped>[] {
+  return buildDefinitions(times, depth, key => scoped<number>(`scoped:${key}`));
+}
 
-  for (let i = 0; i < times; i++) {
-    definitions.push(
-      fn.scoped(use => {
-        return use.all(...buildScopedFn(times, depth, (currentDepth += 1)));
-      }),
-    );
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return definitions;
+export function buildCascadingDefs(times: number, depth: number): TestDefinition<number, LifeTime.cascading>[] {
+  return buildDefinitions(times, depth, key => cascading<number>(`cascading:${key}`));
 }

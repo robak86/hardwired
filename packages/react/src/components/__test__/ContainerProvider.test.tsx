@@ -1,4 +1,4 @@
-import { container, fn } from 'hardwired';
+import { container } from 'hardwired';
 import { createContext, useContext } from 'react';
 import { render } from '@testing-library/react';
 import { expect } from 'vitest';

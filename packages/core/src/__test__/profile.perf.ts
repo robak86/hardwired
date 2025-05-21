@@ -1,56 +1,34 @@
 import { Bench } from 'tinybench';
 
 import { container } from '../container/Container.js';
-import type { GraphNode } from '../container/interceptors/graph/DependenciesGraph.js';
 import { DependenciesGraphRoot } from '../container/interceptors/graph/DependenciesGraph.js';
 import type { IContainer } from '../container/IContainer.js';
-import type { Definition } from '../definitions/impl/Definition.js';
-import type { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { scoped, singleton, transient } from '../definitions/def-symbol.js';
+import { configureContainer } from '../configuration/ContainerConfiguration.js';
 
-import { buildScopedFn, buildSingletonTreeFn, buildTransientFn } from './utils.js';
+import { buildSingletonDefs, countDependenciesTreeCount, registerTestDefinitions } from './utils.js';
 
-function getInstancesCount(definition: Definition<any, LifeTime.singleton | LifeTime.scoped>): number {
-  const debugCnt = container.new(c => {
-    c.withInterceptor('graph', new DependenciesGraphRoot());
-  });
+const singletonDefs = buildSingletonDefs(3, 10);
+const transientDefs = buildSingletonDefs(3, 10);
+const scopedDefs = buildSingletonDefs(3, 10);
+const cascadingDefs = buildSingletonDefs(3, 10);
 
-  debugCnt.use(definition);
+const singletonD = singletonDefs[0].def;
+const transientD = transientDefs[0].def;
+const scopedD = scopedDefs[0].def;
+const cascadingD = cascadingDefs[0].def;
 
-  const interceptor = debugCnt.getInterceptor('graph') as DependenciesGraphRoot;
-  const root = interceptor.getGraphNode(definition) as GraphNode<number[]>;
+console.log('Singletons deps count:', countDependenciesTreeCount(singletonDefs[0]));
+console.log('Transients deps count:', countDependenciesTreeCount(transientDefs[0]));
+console.log('Scoped deps count:', countDependenciesTreeCount(scopedDefs[0]));
+console.log('Cascading deps count:', countDependenciesTreeCount(cascadingDefs[0]));
 
-  return root.descendants.length;
-}
+const configure = configureContainer(c => {
+  registerTestDefinitions(singletonDefs, c);
+  registerTestDefinitions(transientDefs, c);
+  registerTestDefinitions(scopedDefs, c);
+  registerTestDefinitions(cascadingDefs, c);
+});
 
-const singletonDefinitions = buildSingletonTreeFn(3, 10);
-const transientDefinitions = buildTransientFn(3, 10);
-const scopedDefinitions = buildScopedFn(3, 10);
-
-// const singletonD = fn.singleton(use => {
-//   return use.all(...singletonDefinitions);
-// });
-
-const singletonD = singleton<any>();
-
-const transientD = transient<any>();
-
-const scopedD = scoped<any>();
-
-// const transientD = fn(use => {
-//   return use.all(...transientDefinitions);
-// });
-
-// const scopedD = fn.scoped(use => {
-//   const scope = use.scope();
-//
-//   return scope.all(...scopedDefinitions);
-// });
-
-console.log(`singletonD dependencies: ${getInstancesCount(singletonD)} `);
-console.log(`scopedD dependencies: ${getInstancesCount(scopedD)} `);
-
-//
 let cnt: IContainer;
 let cntWithInterceptor: IContainer;
 
@@ -59,11 +37,11 @@ let c3: IContainer;
 const instantiationBench = new Bench({
   time: 200,
   setup: () => {
-    cnt = container.new();
+    cnt = container.new(configure);
 
     c3 = cnt.scope();
 
-    cntWithInterceptor = container.new(c => {
+    cntWithInterceptor = container.new(configure, c => {
       c.withInterceptor('graph', new DependenciesGraphRoot());
     });
   },
@@ -72,44 +50,53 @@ const instantiationBench = new Bench({
 
 instantiationBench
   .add('singletonD', () => {
-    cnt.use(singletonD);
+    void cnt.use(singletonD);
   })
   .add('singletonD + new scope', () => {
-    cnt.scope().use(singletonD);
+    void cnt.scope().use(singletonD);
   })
   .add('transientD', () => {
-    cnt.use(transientD);
+    void cnt.use(transientD);
   })
   .add('transientD + new scope', () => {
-    cnt.scope().use(transientD);
+    void cnt.scope().use(transientD);
   })
   .add('scopedD', () => {
-    cnt.use(scopedD);
+    void cnt.use(scopedD);
   })
   .add('scopedD + new scope', () => {
-    cnt.scope().use(scopedD);
+    void cnt.scope().use(scopedD);
   })
   .add('scopedD cascaded to lower scope', () => {
-    c3.use(scopedD);
+    void c3.use(scopedD);
+  })
+  .add('cascadingD', () => {
+    void cnt.use(cascadingD);
+  })
+  .add('cascadingD + new scope', () => {
+    void cnt.scope().use(cascadingD);
+  })
+  .add('cascadingD cascaded to lower scope', () => {
+    void c3.use(cascadingD);
   })
   // with interceptor
   .add('[DependencyGraphInterceptor] singletonD', () => {
-    cntWithInterceptor.use(singletonD);
+    void cntWithInterceptor.use(singletonD);
   })
   .add('[DependencyGraphInterceptor] singletonD + new scope', () => {
-    cntWithInterceptor.scope().use(singletonD);
+    void cntWithInterceptor.scope().use(singletonD);
   })
   .add('[DependencyGraphInterceptor] transientD', () => {
-    cntWithInterceptor.use(transientD);
+    void cntWithInterceptor.use(transientD);
   })
   .add('[DependencyGraphInterceptor] transientD + new scope', () => {
-    cntWithInterceptor.scope().use(transientD);
+    void cntWithInterceptor.scope().use(transientD);
   })
   .add('[DependencyGraphInterceptor] scopedD', () => {
-    cntWithInterceptor.use(scopedD);
+    void cntWithInterceptor.use(scopedD);
   })
   .add('[DependencyGraphInterceptor] scopedD + new scope', () => {
-    cntWithInterceptor.scope().use(scopedD);
+    void cntWithInterceptor.scope().use(scopedD);
   });
 
 void instantiationBench

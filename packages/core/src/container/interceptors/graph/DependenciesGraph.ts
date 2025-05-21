@@ -50,7 +50,7 @@ export class DependenciesGraphRoot extends GraphBuilderInterceptor<never, GraphN
   }
 
   getGraphNode<TInstance>(
-    definition: IDefinitionSymbol<TInstance, LifeTime.scoped | LifeTime.singleton>,
+    definition: IDefinitionSymbol<TInstance, LifeTime.scoped | LifeTime.singleton | LifeTime.cascading>,
   ): GraphNode<TInstance> | undefined {
     return super.getGraphNode(definition) as GraphNode<TInstance> | undefined;
   }

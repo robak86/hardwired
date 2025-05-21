@@ -4,11 +4,11 @@ import { fn } from '../definitions/fn.js';
 import type { IContainer } from '../container/IContainer.js';
 import { container } from '../container/Container.js';
 
-import { buildScopedFn, buildSingletonTreeFn, buildTransientFn } from './utils.js';
+import { buildScopedDefs, buildSingletonDefs, buildTransientDefs } from './utils.js';
 
-const singletonDefinitions = buildSingletonTreeFn(3, 10);
-const transientDefinitions = buildTransientFn(3, 10);
-const scopedDefinitions = buildScopedFn(3, 10);
+const singletonDefinitions = buildSingletonDefs(3, 10);
+const transientDefinitions = buildTransientDefs(3, 10);
+const scopedDefinitions = buildScopedDefs(3, 10);
 
 const singletonD = fn.singleton(use => {
   return use.all(...singletonDefinitions);
