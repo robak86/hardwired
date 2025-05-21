@@ -35,7 +35,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
   ) {}
 
   hasCascadingRoot(id: symbol): boolean {
-    return this._cascadingRoots.has(id);
+    return this._cascadingRoots.hasOwn(id);
   }
 
   getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
@@ -131,10 +131,14 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
       return;
     }
 
-    const cascadingDefinition = this._cascadingDefinitions.get(defSymbol.id);
+    // if (this._cascadingRoots.hasOwn(defSymbol.id)) {
+    //   throw new Error(`Cascading root was already set. Cannot override it.`);
+    // }
+
+    // const cascadingDefinition = this._cascadingDefinitions.get(defSymbol.id);
 
     this._cascadingRoots.set(defSymbol.id, container);
-    this._cascadingDefinitions.override(defSymbol.id, cascadingDefinition);
+    // this._cascadingDefinitions.override(defSymbol.id, cascadingDefinition);
   }
 
   getDefinition<TInstance, TLifeTime extends LifeTime>(

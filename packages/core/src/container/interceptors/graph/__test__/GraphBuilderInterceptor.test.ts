@@ -303,31 +303,25 @@ describe(`GraphBuildInterceptor`, () => {
         const scope2 = scope1.scope();
         const scope3 = scope2.scope(s => s.modify(consumer).cascade());
 
-        console.log('hasRoot', cnt.bindingsRegistry.hasCascadingRoot(consumer.id));
-        console.log('hasRoot', scope1.bindingsRegistry.hasCascadingRoot(consumer.id));
-        console.log('hasRoot', scope2.bindingsRegistry.hasCascadingRoot(consumer.id));
-        console.log('hasRoot', scope3.bindingsRegistry.hasCascadingRoot(consumer.id));
+        const scope3Consumer = await scope3.use(consumer);
+        const scope2Consumer = await scope2.use(consumer);
 
-        // const scope3Consumer = await scope3.use(consumer);
-        // const scope2Consumer = await scope2.use(consumer);
-
-        // expect(scope3Consumer).not.toBe(scope2Consumer);
+        expect(scope3Consumer).not.toBe(scope2Consumer);
         expect(await scope1.use(consumer)).toBe(await scope2.use(consumer));
         expect(await cnt.use(consumer)).toBe(await scope1.use(consumer));
 
         const scope1Interceptor = scope1.getInterceptor('graph') as RootTestInterceptor;
+        const scope2Interceptor = scope2.getInterceptor('graph') as RootTestInterceptor;
+        const scope3Interceptor = scope3.getInterceptor('graph') as RootTestInterceptor;
 
-        // const scope2Interceptor = scope2.getInterceptor('graph') as RootTestInterceptor;
-        // const scope3Interceptor = scope3.getInterceptor('graph') as RootTestInterceptor;
-        //
         expect(rootInterceptor.getGraphNode(consumer)).toBe(scope1Interceptor.getGraphNode(consumer));
-        // expect(rootInterceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
-        // expect(scope2Interceptor.getGraphNode(consumer)).toBe(scope1Interceptor.getGraphNode(consumer));
-        //
-        // const scope3node = scope3Interceptor.getGraphNode(consumer);
-        // const scope2Node = scope2Interceptor.getGraphNode(consumer);
-        //
-        // expect(scope3node).not.toBe(scope2Node);
+        expect(rootInterceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
+        expect(scope2Interceptor.getGraphNode(consumer)).toBe(scope1Interceptor.getGraphNode(consumer));
+
+        const scope3node = scope3Interceptor.getGraphNode(consumer);
+        const scope2Node = scope2Interceptor.getGraphNode(consumer);
+
+        expect(scope3node).not.toBe(scope2Node);
       });
 
       it(`works with cascading modify`, async () => {
@@ -344,10 +338,10 @@ describe(`GraphBuildInterceptor`, () => {
 
         expect(rootInstance).not.toBe(childInstance);
 
-        // const rootInterceptor = cnt.getInterceptor('graph') as RootTestInterceptor;
-        // const scope1Interceptor = scope1.getInterceptor('graph') as RootTestInterceptor;
-        //
-        // expect(rootInterceptor.getGraphNode(cascadingDef)).not.toBe(scope1Interceptor.getGraphNode(cascadingDef));
+        const rootInterceptor = cnt.getInterceptor('graph') as RootTestInterceptor;
+        const scope1Interceptor = scope1.getInterceptor('graph') as RootTestInterceptor;
+
+        expect(rootInterceptor.getGraphNode(cascadingDef)).not.toBe(scope1Interceptor.getGraphNode(cascadingDef));
       });
     });
   });

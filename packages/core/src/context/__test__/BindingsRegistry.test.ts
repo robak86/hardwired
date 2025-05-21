@@ -21,6 +21,25 @@ describe(`BindingsRegistry`, () => {
     };
   }
 
+  describe(`hasCascading root`, () => {
+    it(`returns true when setCascadeRoot was called on the current registry`, async () => {
+      const { registry, symbol, container } = setup();
+
+      expect(registry.hasCascadingRoot(symbol.id)).toEqual(false);
+
+      registry.setCascadeRoot(symbol, container);
+
+      expect(registry.hasCascadingRoot(symbol.id)).toEqual(true);
+
+      const childRegistry = registry.checkoutForScope();
+
+      expect(childRegistry.hasCascadingRoot(symbol.id)).toEqual(false);
+      childRegistry.setCascadeRoot(symbol, container);
+
+      expect(childRegistry.hasCascadingRoot(symbol.id)).toEqual(true);
+    });
+  });
+
   describe(`register`, () => {
     describe(`cascading`, () => {
       describe(`register`, () => {

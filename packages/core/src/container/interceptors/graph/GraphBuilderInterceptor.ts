@@ -39,9 +39,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     protected _context: GraphBuilderContext<TNode> = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []),
     protected _definition?: Definition<T, LifeTime>,
     protected _parentScopeRootInterceptor?: GraphBuilderInterceptor<T, TNode>,
-  ) {
-    console.log('GraphBuilderInterceptor', _definition?.toString(), _parentScopeRootInterceptor);
-  }
+  ) {}
 
   configureRoot(bindingRegistry: IBindingRegistryRead) {
     this._context.initialize(bindingRegistry);
@@ -104,10 +102,6 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     } else {
       return this._parentScopeRootInterceptor?.getRootForCascading(definition);
     }
-
-    // const parentCascading = this._parentScopeRootInterceptor?.getRootForCascading(definition);
-    //
-    // return this._context.bindingRegistry.hasCascadingRoot(definition.id) && !parentCascading ? this : parentCascading;
   }
 
   private get node() {

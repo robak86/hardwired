@@ -61,7 +61,7 @@ describe(`SingletonStrategy`, () => {
       });
     };
 
-    describe(`class`, () => {
+    describe.skip(`class`, () => {
       describe(`no dependencies`, () => {});
 
       describe(`dependencies`, () => {});
@@ -71,8 +71,6 @@ describe(`SingletonStrategy`, () => {
       describe(`no dependencies`, () => {
         it(`returns correct value`, async () => {});
       });
-
-      describe(`dependencies`, () => {});
 
       describe(`race condition`, () => {
         it(`does not create singleton duplicates`, async () => {
