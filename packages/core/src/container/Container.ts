@@ -290,34 +290,6 @@ export class Container extends ExtensibleFunction implements IContainer {
 
     return maybePromiseAll(results) as MaybePromise<InstancesArray<TDefinitions>>;
   }
-
-  // object<TRecord extends Record<PropertyKey, IDefinitionSymbol<any, any>>>(
-  //   object: TRecord,
-  // ): ContainerObjectReturn<TRecord> {
-  //   const entries = Object.entries(object);
-  //   const results = {} as InstancesRecord<any>;
-  //   const promises: Promise<void>[] = [];
-  //
-  //   for (const [key, definition] of entries) {
-  //     const instance: unknown = this.use(definition as AnyDefinition);
-  //
-  //     if (isThenable(instance)) {
-  //       promises.push(
-  //         instance.then(value => {
-  //           results[key] = value;
-  //         }),
-  //       );
-  //     } else {
-  //       results[key] = instance;
-  //     }
-  //   }
-  //
-  //   if (promises.length > 0) {
-  //     return Promise.all(promises).then(() => results) as ContainerObjectReturn<TRecord>;
-  //   } else {
-  //     return results as ContainerObjectReturn<TRecord>;
-  //   }
-  // }
 }
 
 export const container = Container.root();

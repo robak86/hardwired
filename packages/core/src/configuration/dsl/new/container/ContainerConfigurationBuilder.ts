@@ -14,7 +14,7 @@ import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
-import type { IConfigureBuilder, IModifyBuilderType } from '../../../abstract/IModifyAware.js';
+import type { IConfigureBuilder, ModifyBuilderType } from '../../../abstract/IModifyAware.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 
 export class ContainerConfigurationBuilder implements IContainerConfigurable {
@@ -38,13 +38,14 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     private _currentContainer: IContainer & IStrategyAware,
     private _interceptors: InterceptorsRegistry,
     private _disposeFns: Array<(scope: IContainer) => void>,
+    // @ts-ignore
     private _initializationFns: Array<(scope: unknown) => MaybePromise<void>> = [],
   ) {}
 
   // TODO: replace this callback functions with some minimal interface
   modify<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IModifyBuilderType<TInstance, TLifeTime> {
+  ): ModifyBuilderType<TInstance, TLifeTime> {
     if (symbol.strategy === LifeTime.cascading) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return new CascadingModifyBuilder<TInstance>(

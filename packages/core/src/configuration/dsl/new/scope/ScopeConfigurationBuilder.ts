@@ -8,7 +8,7 @@ import type { IDefinition } from '../../../../definitions/abstract/IDefinition.j
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
-import type { IConfigureBuilder, IModifyBuilderType } from '../../../abstract/IModifyAware.js';
+import type { IConfigureBuilder, ModifyBuilderType } from '../../../abstract/IModifyAware.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
@@ -20,6 +20,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
     private _bindingsRegistry: BindingsRegistry,
     private _tags: (string | symbol)[],
     private _disposeFns: Array<(scope: IContainer) => void>,
+    // @ts-ignore
     private _scopeInitializationFns: Array<(scope: IContainer) => MaybePromise<void>> = [],
   ) {}
 
@@ -30,15 +31,17 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   // TODO: replace this callback functions with some minimal interface
   modify<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IModifyBuilderType<TInstance, TLifeTime> {
+  ): ModifyBuilderType<TInstance, TLifeTime> {
     if (symbol.strategy === LifeTime.cascading) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return new CascadingModifyBuilder<TInstance>(
         symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
         this._bindingsRegistry,
         this._cascadingModifyAllowedLifeTimes,
         (definition: IDefinition<TInstance, LifeTime.cascading>) => {
-          this._bindingsRegistry.ownCascading(symbol, this._currentContainer);
+          this._bindingsRegistry.ownCascading(
+            symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
+            this._currentContainer,
+          );
           this._bindingsRegistry.override(definition);
         },
         (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {
@@ -46,7 +49,6 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
         },
       ) as any;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
         symbol,
         this._bindingsRegistry,

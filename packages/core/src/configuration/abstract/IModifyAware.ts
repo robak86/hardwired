@@ -28,12 +28,12 @@ export interface ICascadeModifyBuilder<TInstance> extends IModifyBuilder<TInstan
   inherit(factory: (instance: TInstance) => MaybePromise<TInstance>): void;
 }
 
-export type IModifyBuilderType<TInstance, TLifeTime extends LifeTime> = TLifeTime extends LifeTime.cascading
+export type ModifyBuilderType<TInstance, TLifeTime extends LifeTime> = TLifeTime extends LifeTime.cascading
   ? ICascadeModifyBuilder<TInstance>
   : IModifyBuilder<TInstance, TLifeTime>;
 
 export interface IModifyAware<TAllowedLifeTime extends LifeTime> {
   modify<TInstance, TLifeTime extends TAllowedLifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IModifyBuilderType<TInstance, TLifeTime>;
+  ): ModifyBuilderType<TInstance, TLifeTime>;
 }
