@@ -7,7 +7,7 @@ import { ClassDefinition } from '../../../../definitions/impl/ClassDefinition.js
 import { FnDefinition } from '../../../../definitions/impl/FnDefinition.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import { Definition } from '../../../../definitions/impl/Definition.js';
-import type { IContainer } from '../../../../container/IContainer.js';
+import type { IServiceLocator } from '../../../../container/IContainer.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
 
@@ -67,7 +67,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     this._onDefinition(definition);
   }
 
-  locator(fn: (container: IContainer) => MaybePromise<TInstance>) {
+  locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>) {
     const definition = new Definition(this._defSymbol.id, this._defSymbol.strategy, fn);
 
     this._onDefinition(definition);

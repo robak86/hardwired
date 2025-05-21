@@ -3,7 +3,7 @@ import type { IDefinitionSymbol } from '../../definitions/def-symbol.js';
 import type { ConstructorArgsSymbols } from '../dsl/new/shared/AddDefinitionBuilder.js';
 import type { ClassType } from '../../definitions/utils/class-type.js';
 import type { MaybePromise } from '../../utils/async.js';
-import type { IContainer } from '../../container/IContainer.js';
+import type { IServiceLocator } from '../../container/IContainer.js';
 
 export interface IAddDefinitionBuilder<TInstance, TAllowedLifeTime extends LifeTime> {
   class<TConstructorArgs extends any[]>(
@@ -18,7 +18,7 @@ export interface IAddDefinitionBuilder<TInstance, TAllowedLifeTime extends LifeT
 
   static(value: TInstance): void;
 
-  locator(fn: (container: IContainer) => MaybePromise<TInstance>): void;
+  locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>): void;
 }
 
 export interface IRegisterAware<TAllowedLifeTime extends LifeTime> {

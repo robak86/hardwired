@@ -39,7 +39,7 @@ describe(`Scopes`, () => {
               return scope.freeze(def).static(1);
             });
             const l1 = cnt.scope();
-            const l2 = l1.scope(scope => scope.override(def).static(2));
+            const l2 = l1.scope(scope => scope.modify(def).static(2));
 
             expect(l1.use(def)).toEqual(1);
             expect(l2.use(def)).toEqual(1);

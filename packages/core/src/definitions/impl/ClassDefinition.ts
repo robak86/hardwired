@@ -1,5 +1,5 @@
 import type { ClassType } from '../utils/class-type.js';
-import type { IContainer } from '../../container/IContainer.js';
+import type { IServiceLocator } from '../../container/IContainer.js';
 import { isThenable } from '../../utils/IsThenable.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
@@ -22,7 +22,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     protected readonly _dependencies?: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>,
   ) {}
 
-  override(createFn: (context: IContainer) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
+  override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.id, this.strategy, createFn);
   }
 
@@ -30,7 +30,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     return `${this.id.toString()}:${this._class.name}`;
   }
 
-  create(use: IContainer): MaybePromise<TInstance> {
+  create(use: IServiceLocator): MaybePromise<TInstance> {
     // no dependencies
     if (this._dependencies === undefined) {
       // @ts-ignore

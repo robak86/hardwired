@@ -26,6 +26,10 @@ export interface IContainerConfigurationAware {
   ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
 }
 
+export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
+  extends IContainerScopes,
+    InstanceCreationAware<TAllowedLifeTime> {}
+
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(
     instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
@@ -42,12 +46,6 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   all<TDefinitions extends Array<IDefinitionSymbol<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): MaybePromise<InstancesArray<TDefinitions>>;
-
-  // object<TRecord extends Record<PropertyKey, IDefinition<any, any>>>(
-  //   object: TRecord,
-  // ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
-  //   ? Promise<AwaitedInstanceRecord<TRecord>>
-  //   : InstancesRecord<TRecord>;
 }
 
 export type NewScopeReturnType<

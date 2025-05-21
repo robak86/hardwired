@@ -1,4 +1,4 @@
-import type { IContainer } from '../../container/IContainer.js';
+import type { IServiceLocator } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
@@ -21,11 +21,11 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
     public readonly _dependencies?: ConstructorArgsSymbols<TDeps, TLifeTime>,
   ) {}
 
-  override(createFn: (context: IContainer) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
+  override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.id, this.strategy, createFn);
   }
 
-  create(context: IContainer): MaybePromise<TInstance> {
+  create(context: IServiceLocator): MaybePromise<TInstance> {
     // no dependencies
     if (this._dependencies === undefined) {
       // @ts-ignore
