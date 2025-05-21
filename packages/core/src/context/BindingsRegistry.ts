@@ -1,7 +1,7 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../definitions/def-symbol.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import type { IContainer } from '../container/IContainer.js';
+import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
 
 import { COWMap } from './COWMap.js';
 
@@ -31,13 +31,13 @@ export class BindingsRegistry implements IBindingRegistryRead {
     private _frozenDefinitions: COWMap<IDefinition<any, any>>,
     private _cascadingDefinitions: COWMap<IDefinition<any, any>>,
     private _ownCascadingDefinitions: Map<symbol, IDefinition<any, any>>,
-    private _owningScopes: COWMap<IContainer>,
+    private _owningScopes: COWMap<ICascadingDefinitionResolver>,
   ) {}
 
   register<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
     definition: IDefinition<TInstance, TLifeTime>,
-    buildAware: IContainer,
+    buildAware: ICascadingDefinitionResolver,
   ) {
     // TODO: replace this switch case with proper delegation/polymorphism
     switch (symbol.strategy) {
@@ -85,11 +85,11 @@ export class BindingsRegistry implements IBindingRegistryRead {
     }
   }
 
-  getOwningContainer(defSymbol: IDefinitionSymbol<any, any>): IContainer | undefined {
+  getOwningContainer(defSymbol: IDefinitionSymbol<any, any>): ICascadingDefinitionResolver | undefined {
     return this._owningScopes.get(defSymbol.id);
   }
 
-  ownCascading(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: IContainer) {
+  ownCascading(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
     const hasFrozenBinding = this._frozenDefinitions.has(defSymbol.id);
 
     if (hasFrozenBinding) {

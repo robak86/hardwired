@@ -5,7 +5,7 @@ import type {
 } from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
-import type { IContainer, IStrategyAware } from '../../../../container/IContainer.js';
+import type { ICascadingDefinitionResolver, IContainer, IStrategyAware } from '../../../../container/IContainer.js';
 import type { InterceptorsRegistry } from '../../../../container/interceptors/InterceptorsRegistry.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IInterceptor } from '../../../../container/interceptors/interceptor.js';
@@ -35,7 +35,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   constructor(
     private _bindingsRegistry: BindingsRegistry,
-    private _currentContainer: IContainer & IStrategyAware,
+    private _currentContainer: IContainer & IStrategyAware & ICascadingDefinitionResolver,
     private _interceptors: InterceptorsRegistry,
     private _disposeFns: Array<(scope: IContainer) => void>,
     // @ts-ignore

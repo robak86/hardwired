@@ -17,18 +17,30 @@ import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 
-import type { HasPromise, IContainer, IStrategyAware, NewScopeReturnType, ReturnTypes, UseFn } from './IContainer.js';
+import type {
+  HasPromise,
+  ICascadingDefinitionResolver,
+  IContainer,
+  IContainerFactory,
+  IStrategyAware,
+  NewScopeReturnType,
+  ReturnTypes,
+  UseFn,
+} from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
 export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
-  HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
+  HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<IContainer> : IContainer;
 
 const containerAllowedScopes = [LifeTime.scoped, LifeTime.singleton, LifeTime.transient, LifeTime.cascading];
 
-export class Container extends ExtensibleFunction implements IContainer {
+export class Container
+  extends ExtensibleFunction
+  implements IContainer, ICascadingDefinitionResolver, IContainerFactory
+{
   static root(): Container {
     return new Container(
       null,
@@ -44,7 +56,7 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   private _isDisposed = false;
 
-  constructor(
+  protected constructor(
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
@@ -98,10 +110,10 @@ export class Container extends ExtensibleFunction implements IContainer {
         interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
 
         return interceptor ? cnt.withInterceptor(interceptor) : cnt;
-      }) as ContainerNewReturnType<TConfigureFns>;
+      }) as unknown as ContainerNewReturnType<TConfigureFns>;
     }
 
-    return cnt as ContainerNewReturnType<TConfigureFns>;
+    return cnt as unknown as ContainerNewReturnType<TConfigureFns>;
   }
 
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
@@ -201,7 +213,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     return (this.instancesStore.getExisting(definition.id) as TValue) ?? null;
   }
 
-  buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybePromise<TValue> {
+  protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybePromise<TValue> {
     if (this._isDisposed) {
       throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
     }
@@ -269,7 +281,7 @@ export class Container extends ExtensibleFunction implements IContainer {
     }
   }
 
-  protected resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
+  resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
     return this.upsertIntoScopeInstances(
       definition,
       this,
@@ -317,6 +329,8 @@ export class Container extends ExtensibleFunction implements IContainer {
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
+
+    throw new Error(`Unknown strategy: ${definition.strategy}`);
   }
 
   all<TDefinitions extends Array<IDefinitionSymbol<any, ValidDependenciesLifeTime<LifeTime>>>>(
@@ -330,4 +344,4 @@ export class Container extends ExtensibleFunction implements IContainer {
   }
 }
 
-export const container = Container.root();
+export const container: IContainer & IContainerFactory = Container.root();

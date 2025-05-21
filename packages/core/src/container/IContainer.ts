@@ -7,23 +7,29 @@ import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { MaybePromise } from '../utils/async.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
+import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
+import type { ContainerNewReturnType } from './Container.js';
 
 export type ScopeTag = string | symbol;
 
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;
 
-  buildWithStrategy<TValue>(
-    instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
-  ): MaybePromise<TValue>;
+  // buildWithStrategy<TValue>(
+  //   instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+  // ): MaybePromise<TValue>;
 }
 
 export interface IContainerConfigurationAware {
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
+}
+
+export interface ICascadingDefinitionResolver {
+  resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>): MaybePromise<TValue>;
 }
 
 export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
@@ -79,6 +85,12 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
 }
+
+export type IContainerFactory = {
+  new: <TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ) => ContainerNewReturnType<TConfigureFns>;
+};
 
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
 

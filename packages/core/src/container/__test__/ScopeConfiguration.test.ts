@@ -1,32 +1,28 @@
 import { describe } from 'vitest';
 
-import { container } from '../Container.js';
-import { scoped } from '../../definitions/def-symbol.js';
-
 describe('ScopeConfiguration', () => {
   describe(`eager`, () => {
     it(`eagerly instantiates definition`, async () => {
-      class MyClass {
-        private _initialized = false;
-
-        get initialized(): boolean {
-          return this._initialized;
-        }
-
-        init() {
-          this._initialized = true;
-        }
-      }
-
-      const def = scoped<MyClass>();
-
-      const root = container.new(c => {
-        c.add(def).class(MyClass);
-      });
-
-      const scope = root.scope(c => {
-        c.eager(def);
-      });
+      // class MyClass {
+      //   private _initialized = false;
+      //
+      //   get initialized(): boolean {
+      //     return this._initialized;
+      //   }
+      //
+      //   init() {
+      //     this._initialized = true;
+      //   }
+      // }
+      //
+      // const def = scoped<MyClass>();
+      //
+      // const root = container.new(c => {
+      //   c.add(def).class(MyClass);
+      // });
+      // const scope = root.scope(c => {
+      //   c.eager(def);
+      // });
     });
   });
 

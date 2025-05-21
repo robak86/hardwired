@@ -1,6 +1,6 @@
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
-import type { IContainer, IStrategyAware } from '../../../../container/IContainer.js';
+import type { ICascadingDefinitionResolver, IContainer, IStrategyAware } from '../../../../container/IContainer.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { MaybePromise } from '../../../../utils/async.js';
@@ -16,7 +16,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _cascadingModifyAllowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
 
   constructor(
-    private _currentContainer: IContainer & IStrategyAware,
+    private _currentContainer: IContainer & IStrategyAware & ICascadingDefinitionResolver,
     private _bindingsRegistry: BindingsRegistry,
     private _tags: (string | symbol)[],
     private _disposeFns: Array<(scope: IContainer) => void>,
