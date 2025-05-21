@@ -1,14 +1,14 @@
-import { configureContainer, container, scoped } from 'hardwired';
+import { configureContainer, container, scoped, singleton } from 'hardwired';
 import { expect } from 'vitest';
 
 import type { IReactLifeCycleAware, ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
 import { reactLifeCycleInterceptor, withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
 
 describe(`ReactLifeCycleInterceptor`, () => {
-  const noLifeCyclesD = scoped<NoLifeCycles>();
-  const childSvc1D = scoped<ChildSvc1>();
-  const childSvc2D = scoped<ChildSvc2>();
-  const service1D = scoped<Service1>();
+  const noLifeCyclesD = scoped<NoLifeCycles>('NoLifeCycles');
+  const childSvc1D = singleton<ChildSvc1>('ChildSvc1');
+  const childSvc2D = singleton<ChildSvc2>('ChildSvc2');
+  const service1D = scoped<Service1>('Service1');
 
   class NoLifeCycles {}
 
