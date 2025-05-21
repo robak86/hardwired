@@ -14,8 +14,7 @@ import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
-import type { IConfigureBuilder, ModifyBuilderType } from '../../../abstract/IModifyAware.js';
-import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
+import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 
 export class ContainerConfigurationBuilder implements IContainerConfigurable {
   private readonly _allowedRegisterLifeTimes = [
@@ -45,10 +44,10 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   // TODO: replace this callback functions with some minimal interface
   modify<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ModifyBuilderType<TInstance, TLifeTime> {
+  ): IModifyBuilder<TInstance, TLifeTime> {
     if (symbol.strategy === LifeTime.cascading) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return new CascadingModifyBuilder<TInstance>(
+      return new ModifyDefinitionBuilder(
         symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
         this._bindingsRegistry,
         this._allowedCascadingModifyLifeTimes,
@@ -56,9 +55,9 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
           this._bindingsRegistry.setCascadeRoot(definition, this._currentContainer);
           this._bindingsRegistry.override(definition);
         },
-        (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {
-          this._bindingsRegistry.setCascadeRoot(cascadingSymbol, this._currentContainer);
-        },
+        // (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {
+        //   this._bindingsRegistry.setCascadeRoot(cascadingSymbol, this._currentContainer);
+        // },
       ) as any;
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return

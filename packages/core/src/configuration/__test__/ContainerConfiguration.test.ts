@@ -7,6 +7,7 @@ import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
 import type { BoxedValue } from '../../__test__/BoxedValue.js';
 import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
+import { configureContainer } from '../ContainerConfiguration.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`modify`, () => {
@@ -71,7 +72,8 @@ describe(`ContainerConfiguration`, () => {
         it(`throws when definition is not registered in the parent scope`, async () => {
           const def = cascading<number>('testCascadingDef');
 
-          const cnt = container.new(c => {
+          configureContainer(c => {
+            // @ts-expect-error inherit is not available from the root configuration
             c.modify(def).inherit(val => val);
           });
         });
@@ -128,6 +130,17 @@ describe(`ContainerConfiguration`, () => {
 
           expect(await cnt.use(def)).toEqual(0);
           expect(await child.use(def)).toEqual(2);
+        });
+      });
+
+      describe(`cascade`, () => {
+        it(`is not available from the container config`, async () => {
+          const def = cascading<number>('testCascadingDef');
+
+          configureContainer(c => {
+            // @ts-expect-error cascade is not available from the root configuration
+            c.modify(def).cascade();
+          });
         });
       });
     });

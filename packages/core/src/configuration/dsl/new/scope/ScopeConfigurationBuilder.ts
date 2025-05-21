@@ -8,7 +8,7 @@ import type { IDefinition } from '../../../../definitions/abstract/IDefinition.j
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
-import type { IConfigureBuilder, ModifyBuilderType } from '../../../abstract/IModifyAware.js';
+import type { IConfigureBuilder, ScopeModifyBuilderType } from '../../../abstract/IModifyAware.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
@@ -31,7 +31,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   // TODO: replace this callback functions with some minimal interface
   modify<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ModifyBuilderType<TInstance, TLifeTime> {
+  ): ScopeModifyBuilderType<TInstance, TLifeTime> {
     if (symbol.strategy === LifeTime.cascading) {
       return new CascadingModifyBuilder<TInstance>(
         symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,

@@ -5,7 +5,7 @@ import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { ModifyDefinitionBuilder } from '../dsl/new/shared/ModifyDefinitionBuilder.js';
 
 import type { IRegisterAware } from './IRegisterAware.js';
-import type { IModifyAware } from './IModifyAware.js';
+import type { IContainerModifyAware } from './IModifyAware.js';
 import type { IEagerInstantiationAware } from './IEagerInstantiationAware.js';
 import type { ILazyInstantiationAware } from './ILazyInstantiationAware.js';
 
@@ -29,7 +29,7 @@ export type DisposeFn = (container: UseFn<any>) => void;
 
 export interface IContainerConfigurable
   extends IRegisterAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
-    IModifyAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
+    IContainerModifyAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
     IEagerInstantiationAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
     ILazyInstantiationAware<ContainerConfigurationAllowedRegistrationLifeTimes> {
   onDispose(callback: (scope: IContainer) => void): void;
