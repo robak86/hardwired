@@ -6,7 +6,7 @@ import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
 import type { BoxedValue } from '../../__test__/BoxedValue.js';
-import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
 
 describe(`ContainerConfiguration`, () => {
   describe(`modify`, () => {
@@ -114,7 +114,46 @@ describe(`ContainerConfiguration`, () => {
             container.new(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('Cannot override');
+          }).toThrow('Cannot find definition for');
+        });
+      });
+    });
+
+    describe(`transient`, () => {
+      describe(`decorate`, () => {
+        it(`modify is applicative`, async () => {
+          const def = transient<number>('testCascadingDef');
+
+          const cnt = container.new(c => {
+            c.add(def).static(0);
+
+            c.modify(def).decorate(val => val + 1);
+            c.modify(def).decorate(val => val + 1);
+          });
+
+          const child = cnt.scope(c => {
+            c.modify(def).decorate(val => val + 1);
+            c.modify(def).decorate(val => val + 10);
+          });
+
+          const child2 = child.scope(c => {
+            c.modify(def).decorate(val => val + 1);
+            c.modify(def).decorate(val => val + 1);
+          });
+
+          expect(await cnt.use(def)).toEqual(2);
+          expect(await child.use(def)).toEqual(11);
+          expect(await child2.use(def)).toEqual(2);
+        });
+
+        it(`throws when definition wasn't registered`, async () => {
+          const def = transient<number>('testCascadingDef');
+
+          expect(() => {
+            container.new(c => {
+              c.modify(def).decorate(val => val + 1);
+            });
+          }).toThrow('Cannot find definition for');
         });
       });
     });
@@ -214,8 +253,6 @@ describe(`ContainerConfiguration`, () => {
 
     describe(`init`, () => {
       it.skip(`runs init functions on passing the newly created container`, async () => {
-        // const dep = fn.scoped(() => new BoxedValue(Math.random()));
-
         const dep = scoped<BoxedValue<number>>();
 
         const cnt = container.new(container => {
