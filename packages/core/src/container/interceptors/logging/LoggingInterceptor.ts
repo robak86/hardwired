@@ -12,6 +12,8 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
     return new LoggingInterceptor();
   }
 
+  readonly id = crypto.randomUUID();
+
   private _start?: number;
 
   private constructor(

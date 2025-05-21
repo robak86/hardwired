@@ -10,7 +10,7 @@ export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime
   configFn: (instance: TInstance, ...args: TArgs) => void | Promise<void>,
   dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
 ): IDefinition<TInstance, TLifetime> {
-  const def = registry.getDefinition(defSymbol) as IDefinition<TInstance, TLifetime> | undefined;
+  const def = registry.getDefinitionForOverride(defSymbol) as IDefinition<TInstance, TLifetime> | undefined;
 
   if (!def) {
     throw new Error(

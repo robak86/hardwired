@@ -42,6 +42,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
             symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
             this._currentContainer,
           );
+          this._bindingsRegistry.ownCascading(definition, this._currentContainer);
           this._bindingsRegistry.override(definition);
         },
         (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {

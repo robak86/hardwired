@@ -6,6 +6,8 @@ import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 
 describe(`interceptor`, () => {
   class TestInterceptor implements IInterceptor<any> {
+    readonly id = crypto.randomUUID();
+
     constructor() {}
 
     onEnter<TNewInstance>(_definition: IDefinition<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {

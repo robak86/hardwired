@@ -5,6 +5,8 @@ import type { ScopeTag } from '../IContainer.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 
 export interface IInterceptor<TInstance> {
+  readonly id: string;
+
   configureRoot?(bindingRegistry: IBindingRegistryRead, instancesStore: IInstancesStoreRead): void;
 
   onEnter<TNewInstance>(definition: IDefinition<TNewInstance, LifeTime>): IInterceptor<TNewInstance>; // before create (definition becomes our origin)

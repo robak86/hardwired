@@ -29,6 +29,8 @@ import type {
 } from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
+import { SingletonStrategy } from './strategies/SingletonStrategy.js';
+import { ScopedStrategy } from './strategies/ScopedStrategy.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -56,6 +58,9 @@ export class Container
 
   private _isDisposed = false;
 
+  private _singletonStrategy: SingletonStrategy;
+  private _scopedStrategy: ScopedStrategy;
+
   protected constructor(
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
@@ -72,6 +77,9 @@ export class Container
         return this.use(definition);
       },
     );
+
+    this._singletonStrategy = new SingletonStrategy(instancesStore, bindingsRegistry);
+    this._scopedStrategy = new ScopedStrategy(instancesStore, bindingsRegistry);
   }
 
   dispose() {
@@ -222,19 +230,20 @@ export class Container
       return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition), definition);
     } else {
       if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-        return this.upsertIntoRootInstances(definition, this);
+        return this._singletonStrategy.build(definition, this);
       }
 
       switch (definition.strategy) {
         case LifeTime.transient:
           return definition.create(this);
         case LifeTime.singleton:
-          return this.upsertIntoRootInstances(definition, this);
+          return this._singletonStrategy.build(definition, this);
         case LifeTime.scoped:
-          return this.upsertIntoScopeInstances(
+          return this._scopedStrategy.build(
             definition,
             this,
-            this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
+            false,
+            // this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
           );
 
         case LifeTime.cascading:
@@ -243,46 +252,8 @@ export class Container
     }
   }
 
-  protected upsertIntoRootInstances<TInstance, TLifeTime extends LifeTime>(
-    definition: IDefinition<TInstance, TLifeTime>,
-    container: IContainer,
-  ) {
-    if (this.instancesStore.hasRootInstance(definition.id)) {
-      return this.instancesStore.getRootInstance(definition.id) as TInstance;
-    } else {
-      const instance = definition.create(container);
-
-      this.instancesStore.setRootInstance(definition.id, instance);
-
-      return instance;
-    }
-  }
-
-  protected upsertIntoScopeInstances<TInstance>(
-    definition: IDefinition<TInstance, any>,
-    container: IContainer,
-    isCascadingInherited: boolean,
-  ) {
-    if (this.instancesStore.hasScopedInstance(definition.id)) {
-      return this.instancesStore.getScopedInstance(definition.id) as TInstance;
-    } else {
-      const instance = definition.create(container);
-
-      // If the definition is bound to the current container then after calling definition.create
-      // we already have the instance in the store, hence we should not register it for duplicated disposal.
-      // TODO: remove this abomination
-      if (this.instancesStore.hasScopedInstance(definition.id)) {
-        return this.instancesStore.getScopedInstance(definition.id) as TInstance;
-      }
-
-      this.instancesStore.setScopedInstance(definition.id, instance, isCascadingInherited);
-
-      return instance;
-    }
-  }
-
   resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
-    return this.upsertIntoScopeInstances(
+    return this._scopedStrategy.build(
       definition,
       this,
       false,
@@ -297,7 +268,7 @@ export class Container
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
 
     if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-      const instance = this.upsertIntoRootInstances(definition, withChildInterceptor);
+      const instance = this._singletonStrategy.build(definition, withChildInterceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
@@ -309,13 +280,13 @@ export class Container
     }
 
     if (definition.strategy === LifeTime.singleton) {
-      const instance = this.upsertIntoRootInstances(definition, withChildInterceptor);
+      const instance = this._singletonStrategy.build(definition, withChildInterceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
     if (definition.strategy === LifeTime.scoped) {
-      const instance = this.upsertIntoScopeInstances(
+      const instance = this._scopedStrategy.build(
         definition,
         withChildInterceptor,
         this.bindingsRegistry.inheritsCascadingDefinition(definition.id),

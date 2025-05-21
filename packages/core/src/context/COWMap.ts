@@ -26,6 +26,10 @@ export class COWMap<V> {
     return this._pristine && this._instances.has(definitionId) && !this._inheritedKeys.has(definitionId);
   }
 
+  hasInherited(definitionId: symbol): boolean {
+    return this.has(definitionId) && !this.hasOwn(definitionId);
+  }
+
   set(definitionId: symbol, instance: V): void {
     if (!this._pristine) {
       this._inheritedKeys = new Set(this._instances.keys());

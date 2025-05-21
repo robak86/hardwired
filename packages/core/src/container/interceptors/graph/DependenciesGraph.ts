@@ -36,6 +36,8 @@ export class GraphNode<T> implements IGraphNode<T> {
 }
 
 export class DependenciesGraphRoot extends GraphBuilderInterceptor<never, GraphNode<unknown>> {
+  readonly id = crypto.randomUUID();
+
   constructor() {
     super({
       createNode<T>(

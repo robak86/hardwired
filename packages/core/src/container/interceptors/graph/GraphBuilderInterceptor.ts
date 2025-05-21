@@ -29,6 +29,8 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return new GraphBuilderInterceptor<never, TNode>(configuration, context);
   }
 
+  readonly id = crypto.randomUUID();
+
   private _node: TNode | symbol = notInitialized;
   protected _children: GraphBuilderInterceptor<unknown, TNode>[] = [];
 
@@ -37,7 +39,9 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     protected _context: GraphBuilderContext<TNode> = new GraphBuilderContext(new GraphNodesRegistry<TNode>(), []),
     protected _definition?: Definition<T, LifeTime>,
     protected _parentScopeRootInterceptor?: GraphBuilderInterceptor<T, TNode>,
-  ) {}
+  ) {
+    console.log('GraphBuilderInterceptor', _definition?.toString(), _parentScopeRootInterceptor);
+  }
 
   configureRoot(bindingRegistry: IBindingRegistryRead) {
     this._context.initialize(bindingRegistry);
@@ -95,11 +99,17 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
   private getRootForCascading<T>(
     definition: IDefinitionSymbol<T, any>,
   ): GraphBuilderInterceptor<unknown, TNode> | undefined {
-    const parentCascading = this._parentScopeRootInterceptor?.getRootForCascading(definition);
+    if (this._context.bindingRegistry.isCascadingDefinitionRoot(definition.id)) {
+      return this;
+    } else {
+      return this._parentScopeRootInterceptor?.getRootForCascading(definition);
+    }
 
-    return this._context.bindingRegistry.hasCascadingDefinition(definition.id) && !parentCascading
-      ? this
-      : parentCascading;
+    // const parentCascading = this._parentScopeRootInterceptor?.getRootForCascading(definition);
+    //
+    // return this._context.bindingRegistry.hasCascadingDefinition(definition.id) && !parentCascading
+    //   ? this
+    //   : parentCascading;
   }
 
   private get node() {

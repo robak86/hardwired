@@ -11,7 +11,7 @@ export function createDecoratedDefinition<TInstance, TLifetime extends LifeTime,
   decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
 ): IDefinition<TInstance, TLifetime> {
-  const def = registry.getDefinition(defSymbol) as IDefinition<TInstance, TLifetime> | undefined;
+  const def = registry.getDefinitionForOverride(defSymbol) as IDefinition<TInstance, TLifetime> | undefined;
 
   if (!def) {
     throw new Error(

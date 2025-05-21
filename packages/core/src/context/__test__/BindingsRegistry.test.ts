@@ -1,3 +1,0 @@
-describe(`BindingsRegistry`, () => {
-  describe(`ownCascading`, () => {});
-});

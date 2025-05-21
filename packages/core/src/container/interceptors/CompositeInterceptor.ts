@@ -7,6 +7,8 @@ import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import type { IInterceptor } from './interceptor.js';
 
 export class CompositeInterceptor<TInstance> implements IInterceptor<TInstance> {
+  readonly id = crypto.randomUUID();
+
   constructor(private _interceptors: IInterceptor<TInstance>[]) {}
 
   onEnter<TNewInstance>(definition: IDefinition<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {

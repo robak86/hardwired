@@ -19,6 +19,10 @@ export interface IBindingsRegistryRead {
   getDefinition<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> | undefined;
+
+  getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): IDefinition<TInstance, TLifeTime> | undefined;
 }
 
 export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
