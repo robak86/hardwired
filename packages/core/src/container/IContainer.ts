@@ -1,13 +1,16 @@
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { type LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
-import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { MaybePromise } from '../utils/async.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
-import type { ContainerConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type {
+  ContainerConfiguration,
+  ScopeConfiguration,
+} from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
@@ -54,18 +57,8 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   ): MaybePromise<InstancesArray<TDefinitions>>;
 }
 
-export type NewScopeReturnType<
-  TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
-  TAllowedLifeTime extends LifeTime = LifeTime,
-> =
-  HasPromise<ReturnTypes<TConfigureFns>> extends true
-    ? Promise<IContainer<TAllowedLifeTime>>
-    : IContainer<TAllowedLifeTime>;
-
 export interface IContainerScopes {
-  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
-    ...configureFns: TConfigureFns
-  ): NewScopeReturnType<TConfigureFns>;
+  scope<TConfigureFns extends Array<ScopeConfigureFn | ScopeConfiguration>>(...configureFns: TConfigureFns): IContainer;
 }
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(

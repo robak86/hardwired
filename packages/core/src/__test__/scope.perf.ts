@@ -40,7 +40,6 @@ const scopesBench = new Bench({
 
     childScope = cnt.scope(configure);
 
-    // void childScope.use(singletonD);
     void childScope.use(scopedD);
     void childScope.use(transientD);
     void childScope.use(cascadingD);

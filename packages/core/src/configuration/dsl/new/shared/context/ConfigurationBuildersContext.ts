@@ -115,6 +115,8 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
   }
 
+  // TODO: still slow as hell. We shouldn't apply anything, but produce already BindingsRegistry allowing treating
+  // multiple of them as linked list
   applyBindings(
     bindingsRegistry: BindingsRegistry,
     container: ICascadingDefinitionResolver,

@@ -7,17 +7,20 @@ import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import { configureContainer } from '../configuration/ContainerConfiguration.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
-import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
+import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import { configureScope } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { MaybePromise } from '../utils/async.js';
-import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
+import { maybePromiseAll } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { EagerContainerConfigurationContext } from '../configuration/dsl/new/shared/context/EagerContainerConfigurationContext.js';
-import type { ContainerConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type {
+  ContainerConfiguration,
+  ScopeConfiguration,
+} from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 
@@ -26,7 +29,6 @@ import type {
   IContainer,
   IContainerFactory,
   IStrategyAware,
-  NewScopeReturnType,
   UseFn,
 } from './IContainer.js';
 import type { IInterceptor } from './interceptors/interceptor.js';
@@ -139,9 +141,9 @@ export class Container
     return cnt;
   }
 
-  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
+  scope<TConfigureFns extends Array<ScopeConfigureFn | ScopeConfiguration>>(
     ...configureFns: TConfigureFns
-  ): NewScopeReturnType<TConfigureFns> {
+  ): IContainer {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
     const tags: (string | symbol)[] = [];
@@ -160,20 +162,22 @@ export class Container
     );
 
     if (configureFns.length) {
-      const binder = new ScopeConfigurationBuilder(); // TODO: configuration shouldn't take any arguments
-
-      const configs = configureFns.map(configureFn => {
-        return configureFn(binder);
+      const configs = configureFns.map(configOrConfigureFn => {
+        if (configOrConfigureFn instanceof Function) {
+          return configureScope(configOrConfigureFn);
+        } else {
+          return configOrConfigureFn;
+        }
       });
 
-      return maybePromiseAllThen(configs, () => {
-        binder.toConfig().apply(bindingsRegistry, cnt, scopeInterceptorsRegistry, lifeCycleRegistry); // TODO: probably shouldn't pass scopeInterceptorsRegistry here
+      configs.forEach(config => {
+        config.apply(bindingsRegistry, cnt, scopeInterceptorsRegistry, lifeCycleRegistry);
+      });
 
-        return cnt;
-      }) as unknown as NewScopeReturnType<TConfigureFns>;
+      return cnt;
     }
 
-    return cnt as unknown as NewScopeReturnType<TConfigureFns>;
+    return cnt;
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
@@ -295,12 +299,10 @@ export class Container
     throw new Error(`Unknown strategy: ${definition.strategy}`);
   }
 
-  all<TDefinitions extends Array<IDefinitionSymbol<any, ValidDependenciesLifeTime<LifeTime>>>>(
+  all<TDefinitions extends Array<IDefinitionSymbol<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): MaybePromise<InstancesArray<TDefinitions>> {
-    const results = definitions.map(def => {
-      return this.use(def);
-    });
+    const results = definitions.map(def => this.use(def));
 
     return maybePromiseAll(results) as MaybePromise<InstancesArray<TDefinitions>>;
   }

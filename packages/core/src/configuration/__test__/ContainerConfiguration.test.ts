@@ -401,13 +401,6 @@ describe(`ContainerConfiguration`, () => {
   });
 
   describe(`container.scope`, () => {
-    it(`accepts asynchronous function`, async () => {
-      const cnt = container.new();
-      const scope = cnt.scope(async () => {});
-
-      expectType<TypeOf<typeof scope, Promise<IContainer>>>(true);
-    });
-
     it(`accepts synchronous function`, async () => {
       const cnt = container.new();
       const scope = cnt.scope();
@@ -425,7 +418,7 @@ describe(`ContainerConfiguration`, () => {
     it(`correctly configures the scope`, async () => {
       const def = cascading<number>();
       const cnt = container.new();
-      const scope = await cnt.scope(async scope => {
+      const scope = cnt.scope(scope => {
         scope.add(def).static(456);
       });
 
