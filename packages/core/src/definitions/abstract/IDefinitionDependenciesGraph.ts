@@ -1,8 +1,8 @@
 import type { LifeTime } from './LifeTime.js';
 import type { IDefinition } from './IDefinition.js';
 
-export type DependenciesGraphNode = {
-  definition: IDefinition<unknown, LifeTime>;
+export type DependenciesGraphNode<TInstance> = {
+  definition: IDefinition<TInstance, LifeTime>;
   dependencies: IDefinition<unknown, LifeTime>[];
 };
 
@@ -14,6 +14,6 @@ export interface IDefinitionDependenciesGraph {
 
   reduce<TAccumulator>(
     accumulator: TAccumulator,
-    reducer: (accumulator: TAccumulator, definition: DependenciesGraphNode) => TAccumulator,
+    reducer: (accumulator: TAccumulator, definition: DependenciesGraphNode<unknown>) => TAccumulator,
   ): TAccumulator;
 }

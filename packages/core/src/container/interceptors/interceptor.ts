@@ -3,6 +3,7 @@ import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
 import type { ScopeTag } from '../IContainer.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
+import type { DependenciesGraphNode } from '../../definitions/abstract/IDefinitionDependenciesGraph.js';
 
 export interface IInterceptor<TInstance> {
   readonly id: string;
@@ -18,4 +19,12 @@ export interface IInterceptor<TInstance> {
     bindingsRegistry: IBindingsRegistryRead,
     instancesStore: IInstancesStoreRead,
   ): IInterceptor<TInstance>;
+}
+
+export interface INewInterceptor {
+  shouldAccept?(definition: DependenciesGraphNode<unknown>): boolean;
+
+  onInstance?<TInstance>(instance: TInstance, dependencies: unknown[]): TInstance;
+
+  onScope(): INewInterceptor;
 }

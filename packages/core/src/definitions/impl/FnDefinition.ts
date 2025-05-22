@@ -4,6 +4,7 @@ import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
 import { isThenable } from '../../utils/IsThenable.js';
 import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
+import type { INewInterceptor } from '../../container/interceptors/interceptor.js';
 
 import { Definition } from './Definition.js';
 
@@ -17,7 +18,7 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
   constructor(
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
-    public readonly createFn: (...deps: TDeps) => TInstance,
+    public readonly createFn: (...deps: TDeps) => MaybePromise<TInstance>,
     public readonly _dependencies?: ConstructorArgsSymbols<TDeps, TLifeTime>,
   ) {}
 
@@ -25,27 +26,61 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
     return new Definition(this.id, this.strategy, createFn);
   }
 
-  create(context: IServiceLocator): MaybePromise<TInstance> {
+  create(context: IServiceLocator, interceptor?: INewInterceptor): MaybePromise<TInstance> {
     // no dependencies
     if (this._dependencies === undefined) {
       // @ts-ignore
-      return this.createFn();
+      const instance = this.createFn();
+
+      if (isThenable(instance)) {
+        return instance.then(instance => {
+          return interceptor?.onInstance?.(instance, []) ?? instance;
+        }) as TInstance;
+      } else {
+        this._hasOnlySyncDependencies = true;
+
+        return instance;
+      }
     }
 
     const deps = context.all(...this._dependencies);
 
     if (this._hasOnlySyncDependencies) {
-      return this.createFn(...(deps as TDeps));
+      const instance = this.createFn(...(deps as TDeps));
+
+      if (isThenable(instance)) {
+        return instance.then(instance => {
+          return interceptor?.onInstance?.(instance, []) ?? instance;
+        }) as TInstance;
+      } else {
+        return instance;
+      }
     }
 
     if (isThenable(deps)) {
       return deps.then(deps => {
-        return this.createFn(...deps);
+        const instance = this.createFn(...deps);
+
+        if (isThenable(instance)) {
+          return instance.then(instance => {
+            return interceptor?.onInstance?.(instance, []) ?? instance;
+          }) as TInstance;
+        } else {
+          return instance;
+        }
       }) as TInstance;
     } else {
       this._hasOnlySyncDependencies = true;
 
-      return this.createFn(...deps);
+      const instance = this.createFn(...(deps as TDeps));
+
+      if (isThenable(instance)) {
+        return instance.then(instance => {
+          return interceptor?.onInstance?.(instance, []) ?? instance;
+        }) as TInstance;
+      } else {
+        return instance;
+      }
     }
   }
 
