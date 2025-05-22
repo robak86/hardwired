@@ -13,10 +13,7 @@ export class EagerContainerConfigurationContext implements IConfigurationContext
     private instancesStore: InstancesStore,
   ) {}
 
-  onCascadingDefinition(
-    configType: ConfigurationType,
-    definition: IDefinitionSymbol<unknown, LifeTime.cascading>,
-  ): void {
+  onCascadingDefinition(definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void {
     throw new Error('Implement me!');
     // this._cascadeDefinitions.set(definition.id, definition);
 

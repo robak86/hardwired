@@ -22,10 +22,7 @@ export class ContainerConfigurationContext implements IConfigurationContext {
     private _cascadeDefinitions: Map<symbol, IDefinitionSymbol<any, LifeTime.cascading>>,
   ) {}
 
-  onCascadingDefinition(
-    configType: ConfigurationType,
-    definition: IDefinitionSymbol<unknown, LifeTime.cascading>,
-  ): void {
+  onCascadingDefinition(definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void {
     this._cascadeDefinitions.set(definition.id, definition);
   }
 

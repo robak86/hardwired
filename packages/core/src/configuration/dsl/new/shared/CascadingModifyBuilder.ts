@@ -24,7 +24,7 @@ export class CascadingModifyBuilder<TInstance>
   }
 
   claimNew() {
-    this._configurationContext.onCascadingDefinition(this._configType, this._defSymbol);
+    this._configurationContext.onCascadingDefinition(this._defSymbol);
   }
 
   inherit(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {

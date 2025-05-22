@@ -5,7 +5,7 @@ import { describe } from 'vitest';
 import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
-import type { BoxedValue } from '../../__test__/BoxedValue.js';
+import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
 import { configureContainer } from '../ContainerConfiguration.js';
 
@@ -262,13 +262,40 @@ describe(`ContainerConfiguration`, () => {
 
   describe(`container#freeze`, () => {
     it(`allows freezing instances before they are created`, async () => {
-      // const def = fn.scoped(() => 123);
-
       const def = scoped<number>();
       const cnt = container.new();
 
       cnt.freeze(def).static(456);
       expect(cnt.use(def)).toEqual(456);
+    });
+
+    it(`supports configure`, async () => {
+      const def = scoped<BoxedValue<number>>();
+      const cnt = container.new(c => c.add(def).static(new BoxedValue(123)));
+
+      cnt.freeze(def).configure(c => {
+        c.value = 456;
+      });
+      expect(cnt.use(def)).toMatchObject({ value: 456 });
+    });
+
+    it(`supports decorate`, async () => {
+      const def = scoped<BoxedValue<number>>();
+      const cnt = container.new(c => c.add(def).static(new BoxedValue(123)));
+
+      cnt.freeze(def).decorate(c => {
+        return new BoxedValue(456);
+      });
+      expect(cnt.use(def)).toMatchObject({ value: 456 });
+    });
+
+    it(`does not support inherit`, async () => {
+      const def = scoped<BoxedValue<number>>();
+      const cnt = container.new(c => c.add(def).static(new BoxedValue(123)));
+
+      // @ts-expect-error inherit is not available from the root configuration
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      cnt.freeze(def).inherit;
     });
 
     it(`throws if the instances is already created`, async () => {

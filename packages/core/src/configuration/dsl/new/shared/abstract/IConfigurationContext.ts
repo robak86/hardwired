@@ -10,8 +10,5 @@ export interface IConfigurationContext {
   onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void;
-  onCascadingDefinition(
-    configType: ConfigurationType,
-    definition: IDefinitionSymbol<unknown, LifeTime.cascading>,
-  ): void;
+  onCascadingDefinition(definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void;
 }
