@@ -24,12 +24,9 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     configureFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
   ) {
     if (configureFn && Array.isArray(dependencies)) {
-      const configuredDefinition = createConfiguredDefinition(
-        this._registry,
-        this._defSymbol,
-        configureFn,
-        dependencies,
-      );
+      const def = this._registry.getDefinitionForOverride(this._defSymbol);
+
+      const configuredDefinition = createConfiguredDefinition(def, configureFn, dependencies);
 
       this._onDefinition(configuredDefinition);
 
@@ -37,9 +34,10 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     }
 
     if (typeof dependencies === 'function') {
+      const def = this._registry.getDefinitionForOverride(this._defSymbol);
+
       const configuredDefinition = createConfiguredDefinition(
-        this._registry,
-        this._defSymbol,
+        def,
         dependencies,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
       );

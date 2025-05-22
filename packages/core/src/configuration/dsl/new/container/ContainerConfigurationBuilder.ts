@@ -55,9 +55,6 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
           this._bindingsRegistry.setCascadeRoot(definition, this._currentContainer);
           this._bindingsRegistry.override(definition);
         },
-        // (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {
-        //   this._bindingsRegistry.setCascadeRoot(cascadingSymbol, this._currentContainer);
-        // },
       ) as any;
     } else {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
