@@ -8,7 +8,7 @@ import type { ConfigurationType, IConfigurationContext } from '../abstract/IConf
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
 
-export class EagerContainerConfigurationContext implements IConfigurationContext {
+export class ContainerFreezeConfigurationContext implements IConfigurationContext {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private instancesStore: InstancesStore,

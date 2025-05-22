@@ -8,6 +8,7 @@ import { ScopeRegistry } from './ScopeRegistry.js';
 import type { ICascadeRootsRegistry } from './abstract/ICascadeRootsRegistry.js';
 import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js';
 
+// TODO: do I really need so many separate maps? Why cannot I just use one map?
 export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsRegistry {
   static create(): BindingsRegistry {
     return new BindingsRegistry(

@@ -16,7 +16,7 @@ import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstrac
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
-import { EagerContainerConfigurationContext } from '../configuration/dsl/new/shared/context/EagerContainerConfigurationContext.js';
+import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
 import type {
   ContainerConfiguration,
   ScopeConfiguration,
@@ -183,7 +183,7 @@ export class Container
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
-    const configurationContext = new EagerContainerConfigurationContext(this.bindingsRegistry, this.instancesStore);
+    const configurationContext = new ContainerFreezeConfigurationContext(this.bindingsRegistry, this.instancesStore);
 
     return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
       'freeze',

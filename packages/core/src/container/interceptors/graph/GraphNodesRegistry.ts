@@ -83,7 +83,5 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
 
       return;
     }
-
-    throw new Error(`Cannot register given lifetime: ${definition.strategy}`);
   }
 }
