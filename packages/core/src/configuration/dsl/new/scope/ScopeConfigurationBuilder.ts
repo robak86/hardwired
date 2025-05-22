@@ -2,7 +2,6 @@ import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
 import type { IContainer } from '../../../../container/IContainer.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
-import type { MaybePromise } from '../../../../utils/async.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
@@ -16,17 +15,6 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _cascadingModifyAllowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
 
   private _context = ConfigurationBuildersContext.create();
-
-  constructor(
-    private _tags: (string | symbol)[],
-    private _disposeFns: Array<(scope: IContainer) => void>,
-    // @ts-ignore
-    private _scopeInitializationFns: Array<(scope: IContainer) => MaybePromise<void>> = [],
-  ) {}
-
-  setTags(tags: (string | symbol)[]): void {
-    this._tags.push(...tags);
-  }
 
   toConfig(): ScopeConfiguration {
     return new ScopeConfiguration(this._context);
@@ -70,6 +58,6 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   }
 
   onDispose(callback: (scope: IContainer) => void): void {
-    this._disposeFns.push(callback);
+    this._context.onDispose(callback);
   }
 }

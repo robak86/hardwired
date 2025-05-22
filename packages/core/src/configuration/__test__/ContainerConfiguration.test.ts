@@ -83,7 +83,7 @@ describe(`ContainerConfiguration`, () => {
 
           configureContainer(c => {
             // @ts-expect-error inherit is not available from the root configuration
-            c.modify(def).inherit(val => val);
+            c.modify(def).inherit;
           });
         });
 
@@ -148,7 +148,8 @@ describe(`ContainerConfiguration`, () => {
 
           configureContainer(c => {
             // @ts-expect-error cascade is not available from the root configuration
-            c.modify(def).cascade();
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            c.modify(def).cascade;
           });
         });
       });
@@ -355,15 +356,6 @@ describe(`ContainerConfiguration`, () => {
   });
 
   describe(`container.new`, () => {
-    it(`accepts asynchronous function`, async () => {
-      const cnt = container.new(
-        async _c => {},
-        _c => {},
-      );
-
-      expectType<TypeOf<typeof cnt, Promise<Container>>>(true);
-    });
-
     it(`accepts synchronous function`, async () => {
       const cnt = container.new(_c => {});
 
@@ -380,11 +372,11 @@ describe(`ContainerConfiguration`, () => {
       const def1 = scoped<number>();
       const def2 = scoped<number>();
 
-      const cnt = await container.new(
-        async container => {
+      const cnt = container.new(
+        container => {
           container.add(def1).static(456);
         },
-        async container => {
+        container => {
           container.add(def2).static(789);
         },
       );

@@ -5,12 +5,21 @@ import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.j
 import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
 import type { InstancesStore } from '../../../../../context/InstancesStore.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
+import type { IContainer } from '../../../../../container/IContainer.js';
+import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
 
 export class EagerContainerConfigurationContext implements IConfigurationContext {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private instancesStore: InstancesStore,
   ) {}
+
+  withInterceptor(_name: string | symbol, _interceptor: IInterceptor<unknown>): void {
+    throw new Error('Modifying interceptors is not supported in eager mode.');
+  }
+  onDispose(_callback: (scope: IContainer) => void): void {
+    throw new Error('Adding dispose callbacks is not supported in eager mode.');
+  }
 
   onCascadingDefinition(_definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void {
     throw new Error('Cascading definitions are not supported in eager mode.');

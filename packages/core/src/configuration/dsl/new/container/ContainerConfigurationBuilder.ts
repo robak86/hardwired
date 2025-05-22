@@ -5,11 +5,9 @@ import type {
 } from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { InterceptorsRegistry } from '../../../../container/interceptors/InterceptorsRegistry.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IInterceptor } from '../../../../container/interceptors/interceptor.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
-import type { MaybePromise } from '../../../../utils/async.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
@@ -35,13 +33,6 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   private _context = ConfigurationBuildersContext.create();
 
-  constructor(
-    private _interceptors: InterceptorsRegistry,
-    private _disposeFns: Array<(scope: IContainer) => void>,
-    // @ts-ignore
-    private _initializationFns: Array<(scope: unknown) => MaybePromise<void>> = [],
-  ) {}
-
   toConfig(): ContainerConfiguration {
     return new ContainerConfiguration(this._context);
   }
@@ -50,21 +41,31 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   modify<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): IModifyBuilder<TInstance, TLifeTime> {
-    if (symbol.strategy === LifeTime.cascading) {
-      return new ModifyDefinitionBuilder(
-        'modify',
-        symbol,
-        this._allowedCascadingModifyLifeTimes,
-        this._context,
-      ) as IModifyBuilder<TInstance, TLifeTime>;
-    } else {
-      return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
-        'modify',
-        symbol,
-        this._allowedModifyLifeTimes,
-        this._context,
-      ) as IModifyBuilder<TInstance, TLifeTime>;
-    }
+    const allowedLifeTimes =
+      symbol.strategy === LifeTime.cascading ? this._allowedCascadingModifyLifeTimes : this._allowedModifyLifeTimes;
+
+    return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+      'modify',
+      symbol,
+      allowedLifeTimes,
+      this._context,
+    ) as IModifyBuilder<TInstance, TLifeTime>;
+
+    // if (symbol.strategy === LifeTime.cascading) {
+    //   return new ModifyDefinitionBuilder(
+    //     'modify',
+    //     symbol,
+    //     this._allowedCascadingModifyLifeTimes,
+    //     this._context,
+    //   ) as IModifyBuilder<TInstance, TLifeTime>;
+    // } else {
+    //   return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+    //     'modify',
+    //     symbol,
+    //     this._allowedModifyLifeTimes,
+    //     this._context,
+    //   ) as IModifyBuilder<TInstance, TLifeTime>;
+    // }
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
@@ -80,11 +81,11 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   }
 
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
-    this._interceptors.register(name, interceptor);
+    this._context.withInterceptor(name, interceptor);
   }
 
   onDispose(callback: (scope: IContainer) => void): void {
-    this._disposeFns.push(callback);
+    this._context.onDispose(callback);
   }
 
   eager<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(

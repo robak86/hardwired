@@ -2,9 +2,10 @@ import { describe, expect, vi } from 'vitest';
 
 import { container } from '../Container.js';
 import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
-import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
+import type { ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';
+import type { ContainerConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
 
 describe(`container#[Symbol.dispose]`, () => {
   class DisposableImpl {
@@ -157,12 +158,12 @@ describe(`container#[Symbol.dispose]`, () => {
 
     const dbConnection = cascading<Disposable>();
 
-    const withContainer = <TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
+    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | ContainerConfiguration>>(
       ...containerConfigFns: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use) => {
-          const scope = await container.new(...containerConfigFns);
+          const scope = container.new(...containerConfigFns);
 
           await use(scope);
 

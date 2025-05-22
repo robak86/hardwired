@@ -2,14 +2,20 @@ import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitio
 import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
-import type { ICascadingDefinitionResolver } from '../../../../../container/IContainer.js';
+import type { ICascadingDefinitionResolver, IContainer } from '../../../../../container/IContainer.js';
 import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
+import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
+import type { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
+import type { ILifeCycleRegistry } from '../../../../../lifecycle/ILifeCycleRegistry.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
     return new ConfigurationBuildersContext([], [], [], new Map(), new Map(), new Map(), new Map());
   }
+
+  private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
+  private _disposeFns: Array<(scope: IContainer) => void> = [];
 
   protected constructor(
     private _lazyDefinitionsRegister: ILazyDefinitionBuilder<unknown, LifeTime>[],
@@ -20,6 +26,18 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     private _freezeDefinitions: Map<symbol, IDefinition<any, any>>,
     private _cascadeDefinitions: Map<symbol, IDefinitionSymbol<any, LifeTime.cascading>>,
   ) {}
+
+  withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
+    if (this._interceptors.get(name)) {
+      throw new Error(`Interceptor with name ${name.toString()} already exists.`);
+    }
+
+    this._interceptors.set(name, interceptor);
+  }
+
+  onDispose(callback: (scope: IContainer) => void): void {
+    this._disposeFns.push(callback);
+  }
 
   onCascadingDefinition(definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void {
     this._cascadeDefinitions.set(definition.id, definition);
@@ -97,7 +115,12 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
   }
 
-  applyBindings(bindingsRegistry: BindingsRegistry, container: ICascadingDefinitionResolver): void {
+  applyBindings(
+    bindingsRegistry: BindingsRegistry,
+    container: ICascadingDefinitionResolver,
+    interceptorsRegistry: InterceptorsRegistry,
+    lifecycleRegistry: ILifeCycleRegistry,
+  ): void {
     this._registerDefinitions.forEach(definition => {
       bindingsRegistry.register(definition, definition, container);
     });
@@ -127,5 +150,11 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
       bindingsRegistry.override(bindingsRegistry.getDefinition(symbol));
     });
+
+    this._interceptors.forEach((interceptor, name) => {
+      interceptorsRegistry.register(name, interceptor);
+    });
+
+    lifecycleRegistry.setDisposeFns(this._disposeFns);
   }
 }

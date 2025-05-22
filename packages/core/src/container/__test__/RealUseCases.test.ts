@@ -2,13 +2,10 @@ import { test } from 'vitest';
 
 import { container } from '../Container.js';
 import type { IContainer } from '../IContainer.js';
-import {
-  type AsyncContainerConfigureFn,
-  configureContainer,
-  type ContainerConfigureFn,
-} from '../../configuration/ContainerConfiguration.js';
+import { configureContainer, type ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { cascading } from '../../definitions/def-symbol.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
+import type { ContainerConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
 
 describe(`Testing`, () => {
   describe(`using container in vitest context with custom cleaning of resources`, () => {
@@ -22,12 +19,12 @@ describe(`Testing`, () => {
 
     const dbConnection = cascading<IDbConnection>();
 
-    const withContainer = <TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
-      ...containerConfigFns: TConfigureFns
+    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | ContainerConfiguration>>(
+      ...containerConfigurations: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use) => {
-          const scope = await container.new(...containerConfigFns);
+          const scope = container.new(...containerConfigurations);
 
           await use(scope);
 

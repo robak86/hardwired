@@ -12,7 +12,5 @@ export interface IScopeConfigurable
   extends IRegisterAware<ScopeConfigureAllowedLifeTimes>,
     IScopeModifyAware<ScopeConfigureAllowedLifeTimes>,
     IEagerInstantiationAware<ScopeConfigureAllowedLifeTimes> {
-  setTags(tags: (string | symbol)[]): void;
-
   onDispose(callback: (scope: IContainer) => void): void;
 }

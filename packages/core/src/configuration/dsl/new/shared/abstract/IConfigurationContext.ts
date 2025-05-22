@@ -2,6 +2,8 @@ import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitio
 import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
+import type { IContainer } from '../../../../../container/IContainer.js';
+import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
 
 export type ConfigurationType = 'add' | 'modify' | 'freeze';
 
@@ -11,4 +13,8 @@ export interface IConfigurationContext {
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void;
   onCascadingDefinition(definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void;
+
+  // TODO: most likely these should be rewritten
+  withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void;
+  onDispose(callback: (scope: IContainer) => void): void;
 }

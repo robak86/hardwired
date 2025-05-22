@@ -7,10 +7,10 @@ import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { MaybePromise } from '../utils/async.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
-import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import type { ContainerConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
-import type { ContainerNewReturnType } from './Container.js';
 
 export type ScopeTag = string | symbol;
 
@@ -87,9 +87,7 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
 }
 
 export type IContainerFactory = {
-  new: <TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
-    ...configureFns: TConfigureFns
-  ) => ContainerNewReturnType<TConfigureFns>;
+  new: (...configurations: Array<ContainerConfiguration | ContainerConfigureFn>) => IContainer;
 };
 
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
