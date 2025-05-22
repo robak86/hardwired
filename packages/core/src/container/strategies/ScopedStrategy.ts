@@ -11,19 +11,11 @@ export class ScopedStrategy {
     protected bindingsRegistry: BindingsRegistry,
   ) {}
 
-  build<TValue>(
-    definition: IDefinition<TValue, LifeTime>,
-    locator: IServiceLocator,
-    isCascadingInherited: boolean,
-  ): MaybePromise<TValue> {
-    return this.upsertIntoScopeInstances(definition, locator, false);
+  build<TValue>(definition: IDefinition<TValue, LifeTime>, locator: IServiceLocator): MaybePromise<TValue> {
+    return this.upsertIntoScopeInstances(definition, locator);
   }
 
-  protected upsertIntoScopeInstances<TInstance>(
-    definition: IDefinition<TInstance, any>,
-    container: IServiceLocator,
-    isCascadingInherited: boolean,
-  ) {
+  protected upsertIntoScopeInstances<TInstance>(definition: IDefinition<TInstance, any>, container: IServiceLocator) {
     if (this.instancesStore.hasScopedInstance(definition.id)) {
       return this.instancesStore.getScopedInstance(definition.id) as TInstance;
     } else {
@@ -36,7 +28,7 @@ export class ScopedStrategy {
       //   return this.instancesStore.getScopedInstance(definition.id) as TInstance;
       // }
 
-      this.instancesStore.setScopedInstance(definition.id, instance, isCascadingInherited);
+      this.instancesStore.setScopedInstance(definition.id, instance);
 
       return instance;
     }

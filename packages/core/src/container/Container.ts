@@ -236,12 +236,7 @@ export class Container
         case LifeTime.singleton:
           return this._singletonStrategy.build(definition, this);
         case LifeTime.scoped:
-          return this._scopedStrategy.build(
-            definition,
-            this,
-            false,
-            // this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
-          );
+          return this._scopedStrategy.build(definition, this);
 
         case LifeTime.cascading:
           return (this.bindingsRegistry.getOwningContainer(definition) ?? this).resolveCascading(definition);
@@ -250,12 +245,7 @@ export class Container
   }
 
   resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
-    return this._scopedStrategy.build(
-      definition,
-      this,
-      false,
-      // this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
-    );
+    return this._scopedStrategy.build(definition, this);
   }
 
   private buildWithStrategyIntercepted<TValue>(
@@ -283,11 +273,7 @@ export class Container
     }
 
     if (definition.strategy === LifeTime.scoped) {
-      const instance = this._scopedStrategy.build(
-        definition,
-        withChildInterceptor,
-        this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
-      );
+      const instance = this._scopedStrategy.build(definition, withChildInterceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }

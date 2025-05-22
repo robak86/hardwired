@@ -59,12 +59,10 @@ export class InstancesStore implements IInstancesStoreRead {
     return this._scopeInstances.get(definitionId);
   }
 
-  setScopedInstance(definitionId: symbol, instance: unknown, isCascadingInherited: boolean): void {
+  setScopedInstance(definitionId: symbol, instance: unknown): void {
     this._scopeInstances.set(definitionId, instance);
 
-    if (!isCascadingInherited) {
-      this.registerDisposable(instance, this._currentDisposer);
-    }
+    this.registerDisposable(instance, this._currentDisposer);
   }
 
   hasRootInstance(definitionId: symbol): boolean {

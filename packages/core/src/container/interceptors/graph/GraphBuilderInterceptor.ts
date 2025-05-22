@@ -1,4 +1,3 @@
-import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
 import type { Definition } from '../../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IInterceptor } from '../interceptor.js';
@@ -6,6 +5,7 @@ import { isThenable } from '../../../utils/IsThenable.js';
 import type { ScopeTag } from '../../IContainer.js';
 import type { IDefinitionSymbol } from '../../../definitions/def-symbol.js';
 import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
+import type { IBindingsRegistryRead } from '../../../context/abstract/IBindingsRegistryRead.js';
 
 import { GraphNodesRegistry } from './GraphNodesRegistry.js';
 import { GraphBuilderContext } from './GraphBuilderContext.js';
@@ -41,7 +41,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     protected _parentScopeRootInterceptor?: GraphBuilderInterceptor<T, TNode>,
   ) {}
 
-  configureRoot(bindingRegistry: IBindingRegistryRead) {
+  configureRoot(bindingRegistry: IBindingsRegistryRead) {
     this._context.initialize(bindingRegistry);
   }
 
@@ -85,7 +85,7 @@ export class GraphBuilderInterceptor<T, TNode extends GraphNode<any>> implements
     return instance;
   }
 
-  onScope(scopeTags: ScopeTag[], bindingsRegistry: IBindingRegistryRead): IInterceptor<T> {
+  onScope(scopeTags: ScopeTag[], bindingsRegistry: IBindingsRegistryRead): IInterceptor<T> {
     return new GraphBuilderInterceptor(
       this._configuration,
       this._context.onScope(scopeTags, bindingsRegistry),

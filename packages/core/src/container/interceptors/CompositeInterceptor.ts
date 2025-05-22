@@ -1,8 +1,8 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IBindingRegistryRead } from '../../context/BindingsRegistry.js';
 import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
 import type { ScopeTag } from '../IContainer.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
+import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
 
 import type { IInterceptor } from './interceptor.js';
 
@@ -21,7 +21,7 @@ export class CompositeInterceptor<TInstance> implements IInterceptor<TInstance> 
 
   onScope(
     tags: ScopeTag[],
-    bindingsRegistry: IBindingRegistryRead,
+    bindingsRegistry: IBindingsRegistryRead,
     instancesStore: IInstancesStoreRead,
   ): IInterceptor<TInstance> {
     return new CompositeInterceptor(

@@ -1,6 +1,6 @@
 import type { ScopeTag } from '../IContainer.js';
-import type { IBindingRegistryRead } from '../../context/BindingsRegistry.js';
 import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
+import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
 
 import { CompositeInterceptor } from './CompositeInterceptor.js';
 import type { IInterceptor } from './interceptor.js';
@@ -18,7 +18,7 @@ export class InterceptorsRegistry {
 
   scope(
     tags: ScopeTag[],
-    bindingsRegistry: IBindingRegistryRead,
+    bindingsRegistry: IBindingsRegistryRead,
     instancesStore: IInstancesStoreRead,
   ): InterceptorsRegistry {
     const _childScopeInterceptors = new Map<symbol | string, IInterceptor<any>>();

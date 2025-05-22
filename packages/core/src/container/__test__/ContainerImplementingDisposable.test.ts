@@ -56,8 +56,8 @@ describe(`container#[Symbol.dispose]`, () => {
         const scope2 = scope1.scope();
 
         await scope2.use(def);
-        scope2.dispose();
 
+        scope2.dispose();
         // we tried to dispose from scope2, but also scope1 references the same instance
         expect(disposeSpy).toHaveBeenCalledTimes(0);
 

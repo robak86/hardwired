@@ -4,8 +4,8 @@ import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IInterceptor } from '../interceptor.js';
 import { isThenable } from '../../../utils/IsThenable.js';
 import type { IInstancesStoreRead } from '../../../context/InstancesStore.js';
-import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
 import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
+import type { IBindingsRegistryRead } from '../../../context/abstract/IBindingsRegistryRead.js';
 
 export class LoggingInterceptor<T> implements IInterceptor<T> {
   static create() {
@@ -64,7 +64,7 @@ export class LoggingInterceptor<T> implements IInterceptor<T> {
 
   onScope(
     tags: string[],
-    bindingsRegistry: IBindingRegistryRead,
+    bindingsRegistry: IBindingsRegistryRead,
     instancesStore: IInstancesStoreRead,
   ): IInterceptor<T> {
     const newScopeLevel = this._scopeLevel + 1;

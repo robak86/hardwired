@@ -1,8 +1,9 @@
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { ConstructorArgsSymbols, IBindingsRegistryRead } from '../shared/AddDefinitionBuilder.js';
+import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
 import { maybePromiseThen } from '../../../../utils/async.js';
+import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 
 export function createConfiguredDefinition<TInstance, TLifetime extends LifeTime, TArgs extends any[]>(
   registry: IBindingsRegistryRead,

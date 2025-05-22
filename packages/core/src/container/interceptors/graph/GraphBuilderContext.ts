@@ -1,5 +1,5 @@
 import type { ScopeTag } from '../../IContainer.js';
-import type { IBindingRegistryRead } from '../../../context/BindingsRegistry.js';
+import type { IBindingsRegistryRead } from '../../../context/abstract/IBindingsRegistryRead.js';
 
 import type { GraphNodesRegistry } from './GraphNodesRegistry.js';
 import type { GraphNode } from './GraphBuilderInterceptor.js';
@@ -8,10 +8,10 @@ export class GraphBuilderContext<TNode extends GraphNode<any>> {
   constructor(
     protected _nodesRegistry: GraphNodesRegistry<TNode>,
     protected _scopeTags: ScopeTag[], // can use defaults
-    protected _bindingRegistry?: IBindingRegistryRead, // can use empty store
+    protected _bindingRegistry?: IBindingsRegistryRead, // can use empty store
   ) {}
 
-  initialize(bindingRegistry: IBindingRegistryRead) {
+  initialize(bindingRegistry: IBindingsRegistryRead) {
     this._bindingRegistry = bindingRegistry;
   }
 
@@ -19,7 +19,7 @@ export class GraphBuilderContext<TNode extends GraphNode<any>> {
     return this._scopeTags;
   }
 
-  get bindingRegistry(): IBindingRegistryRead {
+  get bindingRegistry(): IBindingsRegistryRead {
     if (!this._bindingRegistry) {
       throw new Error(`BindingRegistry not initialized`);
     }
@@ -31,7 +31,7 @@ export class GraphBuilderContext<TNode extends GraphNode<any>> {
     return this._nodesRegistry;
   }
 
-  onScope(scopeTags: ScopeTag[], bindingsRegistry: IBindingRegistryRead): GraphBuilderContext<TNode> {
+  onScope(scopeTags: ScopeTag[], bindingsRegistry: IBindingsRegistryRead): GraphBuilderContext<TNode> {
     return new GraphBuilderContext(this._nodesRegistry.scope(), scopeTags, bindingsRegistry);
   }
 }

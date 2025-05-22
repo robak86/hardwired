@@ -15,16 +15,6 @@ export type ConstructorArgsSymbols<T extends any[], TCurrentLifeTime extends Lif
   [K in keyof T]: IDefinitionSymbol<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
 };
 
-export interface IBindingsRegistryRead {
-  getDefinition<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IDefinition<TInstance, TLifeTime> | undefined;
-
-  getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IDefinition<TInstance, TLifeTime> | undefined;
-}
-
 export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   implements IAddDefinitionBuilder<TInstance, TLifeTime>
 {

@@ -2,16 +2,13 @@ import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../definitions/def-symbol.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
-import type { IBindingsRegistryRead } from '../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 
 import { COWMap } from './COWMap.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
+import type { ICascadeRootsRegistry } from './abstract/ICascadeRootsRegistry.js';
+import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js';
 
-export interface IBindingRegistryRead {
-  hasCascadingRoot(id: symbol): boolean;
-}
-
-export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistryRead {
+export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsRegistry {
   static create(): BindingsRegistry {
     return new BindingsRegistry(
       ScopeRegistry.create(),
@@ -38,10 +35,14 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     return this._cascadingRoots.hasOwn(id);
   }
 
-  getDefinitionForInheritance<TInstance>(
-    symbol: IDefinitionSymbol<TInstance, LifeTime.cascading>,
-  ): IDefinition<TInstance, LifeTime.cascading> {
-    return this._cascadingDefinitions.getForInheriting(symbol.id);
+  setCascadeRoot(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
+    const hasFrozenBinding = this._frozenDefinitions.has(defSymbol.id);
+
+    if (hasFrozenBinding) {
+      return;
+    }
+
+    this._cascadingRoots.set(defSymbol.id, container);
   }
 
   getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
@@ -125,24 +126,8 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     }
   }
 
-  getInheritedCascadingDefinition<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, TLifeTime>,
-  ): IDefinition<TInstance, TLifeTime> {
-    return this._cascadingDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>;
-  }
-
   getOwningContainer(defSymbol: IDefinitionSymbol<any, any>): ICascadingDefinitionResolver | undefined {
     return this._cascadingRoots.get(defSymbol.id);
-  }
-
-  setCascadeRoot(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
-    const hasFrozenBinding = this._frozenDefinitions.has(defSymbol.id);
-
-    if (hasFrozenBinding) {
-      return;
-    }
-
-    this._cascadingRoots.set(defSymbol.id, container);
   }
 
   getDefinition<TInstance, TLifeTime extends LifeTime>(
@@ -167,12 +152,6 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
 
   hasFrozenBinding(definitionId: symbol): boolean {
     return this._frozenDefinitions.has(definitionId);
-  }
-
-  inheritsCascadingDefinition(definitionId: symbol): boolean {
-    return (
-      this._cascadingDefinitions.hasRegistration(definitionId) && !this._cascadingDefinitions.hasOverride(definitionId)
-    );
   }
 
   freeze<TInstance, TLifetime extends LifeTime>(def: IDefinition<TInstance, TLifetime>) {
