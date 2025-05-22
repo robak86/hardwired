@@ -74,12 +74,12 @@ describe(`Scopes`, () => {
 
         const l1 = root.scope(scope => {
           scope.modify(def).static(10);
-          scope.modify(consumer).cascade();
+          scope.modify(consumer).claimNew();
         });
 
         const l2 = l1.scope(scope => {
           scope.modify(def).static(100);
-          scope.modify(consumer).cascade();
+          scope.modify(consumer).claimNew();
         });
         const l3 = l2.scope();
 

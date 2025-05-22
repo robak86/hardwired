@@ -23,7 +23,7 @@ export class CascadingModifyBuilder<TInstance>
     super(_configType, defSymbol, registry, allowedLifeTimes, context);
   }
 
-  cascade() {
+  claimNew() {
     this._configurationContext.onCascadingDefinition(this._configType, this._defSymbol);
   }
 

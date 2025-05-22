@@ -50,7 +50,7 @@ describe(`container#[Symbol.dispose]`, () => {
         });
 
         const scope1 = cnt.scope(s => {
-          s.modify(def).cascade();
+          s.modify(def).claimNew();
         });
 
         const scope2 = scope1.scope();

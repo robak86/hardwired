@@ -92,7 +92,7 @@ describe(`Logger`, () => {
 
       const requestScopeConfig = configureScope(scope => {
         scope.modify(requestId).fn(() => nextId().toString());
-        scope.modify(loggerD).cascade();
+        scope.modify(loggerD).claimNew();
       });
 
       expect(root.use(requestId)).toEqual('app');

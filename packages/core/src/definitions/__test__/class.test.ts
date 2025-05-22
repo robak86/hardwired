@@ -204,8 +204,8 @@ describe(`class`, () => {
       it(`is inherited until a child scope makes owning the definition`, async () => {
         const root = container.new(config);
 
-        const scopeL1 = root.scope(s => s.modify(numDefCascading).cascade());
-        const scopeL2 = scopeL1.scope(s => s.modify(myClassCascading).cascade());
+        const scopeL1 = root.scope(s => s.modify(numDefCascading).claimNew());
+        const scopeL2 = scopeL1.scope(s => s.modify(myClassCascading).claimNew());
         const scopeL3 = scopeL2.scope();
 
         expect(await root.use(numDefCascading)).toBe(await root.use(numDefCascading));
@@ -371,8 +371,8 @@ describe(`class`, () => {
       it(`is inherited until a child scope makes owning the definition`, async () => {
         const root = container.new(config);
 
-        const scopeL1 = root.scope(s => s.modify(numDefCascading).cascade());
-        const scopeL2 = scopeL1.scope(s => s.modify(myClassCascading).cascade());
+        const scopeL1 = root.scope(s => s.modify(numDefCascading).claimNew());
+        const scopeL2 = scopeL1.scope(s => s.modify(myClassCascading).claimNew());
         const scopeL3 = scopeL2.scope();
 
         expect(await root.use(numDefCascading)).toBe(await root.use(numDefCascading));

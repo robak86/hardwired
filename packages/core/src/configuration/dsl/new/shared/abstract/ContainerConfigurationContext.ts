@@ -1,5 +1,5 @@
 import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitionBuilder.js';
-import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
+import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
 import type { ICascadingDefinitionResolver } from '../../../../../container/IContainer.js';
@@ -41,6 +41,10 @@ export class ContainerConfigurationContext implements IConfigurationContext {
         this._lazyDefinitionsFreeze.push(builder);
         break;
     }
+
+    if (builder.symbol.strategy === LifeTime.cascading) {
+      this._cascadeDefinitions.set(builder.symbol.id, builder.symbol as IDefinitionSymbol<unknown, LifeTime.cascading>);
+    }
   }
 
   onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
@@ -54,6 +58,10 @@ export class ContainerConfigurationContext implements IConfigurationContext {
       case 'freeze':
         this._lazyDefinitionsFreeze.push(builder);
         break;
+    }
+
+    if (builder.symbol.strategy === LifeTime.cascading) {
+      this._cascadeDefinitions.set(builder.symbol.id, builder.symbol as IDefinitionSymbol<unknown, LifeTime.cascading>);
     }
   }
 
@@ -81,6 +89,10 @@ export class ContainerConfigurationContext implements IConfigurationContext {
         this._registerDefinitions.set(definition.id, definition);
         break;
       case 'modify':
+        if (definition.strategy === LifeTime.cascading) {
+          this._cascadeDefinitions.set(definition.id, definition as IDefinitionSymbol<unknown, LifeTime.cascading>);
+        }
+
         this._overrideDefinitions.set(definition.id, definition);
         break;
       case 'freeze':

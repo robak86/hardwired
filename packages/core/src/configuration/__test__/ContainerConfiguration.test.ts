@@ -29,18 +29,18 @@ describe(`ContainerConfiguration`, () => {
           });
 
           const child2 = child.scope(c => {
-            c.modify(def).cascade();
+            c.modify(def).claimNew();
           });
-          //
-          // const child3 = child2.scope(c => {
-          //   c.modify(def).decorate(val => val + 1);
-          //   c.modify(def).decorate(val => val + 1);
-          // });
 
-          // expect(await cnt.use(def)).toEqual(2);
+          const child3 = child2.scope(c => {
+            c.modify(def).decorate(val => val + 1);
+            c.modify(def).decorate(val => val + 1);
+          });
+
+          expect(await cnt.use(def)).toEqual(2);
           expect(await child.use(def)).toEqual(11);
-          expect(await child2.use(def)).toEqual(11);
-          // expect(await child3.use(def)).toEqual(2);
+          expect(await child2.use(def)).toEqual(0);
+          expect(await child3.use(def)).toEqual(2);
         });
 
         it(`throws when definition wasn't registered`, async () => {
@@ -317,7 +317,7 @@ describe(`ContainerConfiguration`, () => {
         c.add(def).static(123);
       });
 
-      const scope1 = cnt.scope(s => s.modify(def).cascade());
+      const scope1 = cnt.scope(s => s.modify(def).claimNew());
 
       await scope1.use(def);
 

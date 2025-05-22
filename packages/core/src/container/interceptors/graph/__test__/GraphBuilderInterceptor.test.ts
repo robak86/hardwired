@@ -301,7 +301,7 @@ describe(`GraphBuildInterceptor`, () => {
         const rootInterceptor = cnt.getInterceptor('graph') as RootTestInterceptor;
         const scope1 = cnt.scope();
         const scope2 = scope1.scope();
-        const scope3 = scope2.scope(s => s.modify(consumer).cascade());
+        const scope3 = scope2.scope(s => s.modify(consumer).claimNew());
 
         const scope3Consumer = await scope3.use(consumer);
         const scope2Consumer = await scope2.use(consumer);
@@ -331,7 +331,7 @@ describe(`GraphBuildInterceptor`, () => {
           c.add(cascadingDef).fn(() => new BoxedValue(1));
         });
 
-        const scope1 = cnt.scope(c => c.modify(cascadingDef).cascade());
+        const scope1 = cnt.scope(c => c.modify(cascadingDef).claimNew());
 
         const rootInstance = await cnt.use(cascadingDef);
         const childInstance = await scope1.use(cascadingDef);

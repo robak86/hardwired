@@ -24,7 +24,7 @@ export interface IModifyBuilder<TInstance, TLifeTime extends LifeTime>
 }
 
 export interface ICascadeModifyBuilder<TInstance> extends IModifyBuilder<TInstance, LifeTime.cascading> {
-  cascade(): void;
+  claimNew(): void;
   inherit(factory: (instance: TInstance) => MaybePromise<TInstance>): void;
 }
 
