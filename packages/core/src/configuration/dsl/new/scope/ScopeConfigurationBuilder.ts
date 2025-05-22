@@ -8,17 +8,16 @@ import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import type { IConfigureBuilder, ScopeModifyBuilderType } from '../../../abstract/IModifyAware.js';
-import { ContainerConfigurationContext } from '../shared/abstract/ContainerConfigurationContext.js';
+import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
   private readonly _modifyAllowedLifeTimes = [LifeTime.scoped, LifeTime.transient];
   private readonly _cascadingModifyAllowedLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
 
-  private _context = ContainerConfigurationContext.create();
+  private _context = ConfigurationBuildersContext.create();
 
   constructor(
-    private _bindingsRegistry: BindingsRegistry,
     private _tags: (string | symbol)[],
     private _disposeFns: Array<(scope: IContainer) => void>,
     // @ts-ignore
@@ -41,27 +40,15 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
       return new CascadingModifyBuilder<TInstance>(
         'modify',
         symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
-        this._bindingsRegistry,
         this._cascadingModifyAllowedLifeTimes,
         this._context,
-        // (definition: IDefinition<TInstance, LifeTime.cascading>) => {
-        //   this._bindingsRegistry.setCascadeRoot(definition, this._currentContainer);
-        //   this._bindingsRegistry.override(definition);
-        // },
-        // (cascadingSymbol: DefinitionSymbol<TInstance, LifeTime.cascading>) => {
-        //   this._bindingsRegistry.setCascadeRoot(cascadingSymbol, this._currentContainer);
-        // },
       ) as any;
     } else {
       return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
         'modify',
         symbol,
-        this._bindingsRegistry,
         this._modifyAllowedLifeTimes,
         this._context,
-        // (definition: IDefinition<TInstance, TLifeTime>) => {
-        //   this._bindingsRegistry.override(definition);
-        // },
       ) as any;
     }
   }
@@ -79,16 +66,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
   ): AddDefinitionBuilder<TInstance, TLifeTime> {
-    return new AddDefinitionBuilder(
-      'add',
-      symbol,
-      this._bindingsRegistry,
-      this._allowedRegistrationLifeTimes,
-      this._context,
-      // (definition: IDefinition<TInstance, TLifeTime>) => {
-      //   this._bindingsRegistry.register(symbol, definition, this._currentContainer);
-      // },
-    );
+    return new AddDefinitionBuilder('add', symbol, this._allowedRegistrationLifeTimes, this._context);
   }
 
   onDispose(callback: (scope: IContainer) => void): void {

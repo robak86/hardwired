@@ -25,7 +25,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   ) {
     if (configureFn && Array.isArray(dependenciesOrConfigureFn)) {
       const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
-        this._defSymbol,
+        this._symbol,
         dependenciesOrConfigureFn,
         configureFn,
       );
@@ -37,7 +37,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 
     if (typeof dependenciesOrConfigureFn === 'function') {
       const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
-        this._defSymbol,
+        this._symbol,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
         dependenciesOrConfigureFn,
       );
@@ -63,7 +63,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   ) {
     if (decorateFn && Array.isArray(dependenciesOrDecorateFn)) {
       const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
-        this._defSymbol,
+        this._symbol,
         dependenciesOrDecorateFn,
         decorateFn,
       );
@@ -75,7 +75,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 
     if (typeof dependenciesOrDecorateFn === 'function') {
       const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
-        this._defSymbol,
+        this._symbol,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
         dependenciesOrDecorateFn,
       );

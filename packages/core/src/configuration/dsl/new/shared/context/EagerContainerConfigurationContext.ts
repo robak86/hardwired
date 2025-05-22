@@ -4,8 +4,7 @@ import type { IDefinition } from '../../../../../definitions/abstract/IDefinitio
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
 import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
 import type { InstancesStore } from '../../../../../context/InstancesStore.js';
-
-import type { ConfigurationType, IConfigurationContext } from './IConfigurationContext.js';
+import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 
 export class EagerContainerConfigurationContext implements IConfigurationContext {
   constructor(
@@ -13,11 +12,8 @@ export class EagerContainerConfigurationContext implements IConfigurationContext
     private instancesStore: InstancesStore,
   ) {}
 
-  onCascadingDefinition(definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void {
-    throw new Error('Implement me!');
-    // this._cascadeDefinitions.set(definition.id, definition);
-
-    // this._bindingsRegistry.setCascadeRoot()
+  onCascadingDefinition(_definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void {
+    throw new Error('Cascading definitions are not supported in eager mode.');
   }
 
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
@@ -38,7 +34,7 @@ export class EagerContainerConfigurationContext implements IConfigurationContext
     this.onDefinition(configType, def);
   }
 
-  onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
+  onDefinition(_configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
     if (this.instancesStore.hasInherited(definition)) {
       throw new Error(
         `Cannot freeze binding ${definition.toString()} because it is already instantiated in some higher scope.`,

@@ -4,12 +4,11 @@ import type { IDefinition } from '../../../../../definitions/abstract/IDefinitio
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
 import type { ICascadingDefinitionResolver } from '../../../../../container/IContainer.js';
 import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
+import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 
-import type { ConfigurationType, IConfigurationContext } from './IConfigurationContext.js';
-
-export class ContainerConfigurationContext implements IConfigurationContext {
-  static create(): ContainerConfigurationContext {
-    return new ContainerConfigurationContext([], [], [], new Map(), new Map(), new Map(), new Map());
+export class ConfigurationBuildersContext implements IConfigurationContext {
+  static create(): ConfigurationBuildersContext {
+    return new ConfigurationBuildersContext([], [], [], new Map(), new Map(), new Map(), new Map());
   }
 
   protected constructor(

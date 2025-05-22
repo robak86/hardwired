@@ -16,7 +16,7 @@ import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstrac
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
-import { EagerContainerConfigurationContext } from '../configuration/dsl/new/shared/abstract/EagerContainerConfigurationContext.js';
+import { EagerContainerConfigurationContext } from '../configuration/dsl/new/shared/context/EagerContainerConfigurationContext.js';
 
 import type {
   HasPromise,
@@ -110,7 +110,7 @@ export class Container
     const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, [], disposableFns);
 
     if (configureFns.length) {
-      const binder = new ContainerConfigurationBuilder(bindingsRegistry, interceptorsRegistry, disposableFns);
+      const binder = new ContainerConfigurationBuilder(interceptorsRegistry, disposableFns);
       const configs = configureFns.map(configureFn => configureFn(binder));
 
       return maybePromiseAllThen(configs, () => {
@@ -148,7 +148,7 @@ export class Container
     );
 
     if (configureFns.length) {
-      const binder = new ScopeConfigurationBuilder(bindingsRegistry, tags, disposableFns);
+      const binder = new ScopeConfigurationBuilder(tags, disposableFns);
 
       const configs = configureFns.map(configureFn => {
         return configureFn(binder);
@@ -172,7 +172,6 @@ export class Container
     return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
       'freeze',
       definition,
-      this.bindingsRegistry,
       containerAllowedScopes,
       configurationContext,
     );

@@ -14,7 +14,7 @@ import type { MaybePromise } from '../../../../utils/async.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
-import { ContainerConfigurationContext } from '../shared/abstract/ContainerConfigurationContext.js';
+import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 
 export class ContainerConfigurationBuilder implements IContainerConfigurable {
   private readonly _allowedRegisterLifeTimes = [
@@ -32,10 +32,9 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     LifeTime.cascading,
   ];
 
-  private _context = ContainerConfigurationContext.create();
+  private _context = ConfigurationBuildersContext.create();
 
   constructor(
-    private _bindingsRegistry: BindingsRegistry,
     private _interceptors: InterceptorsRegistry,
     private _disposeFns: Array<(scope: IContainer) => void>,
     // @ts-ignore
@@ -51,31 +50,40 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): IModifyBuilder<TInstance, TLifeTime> {
     if (symbol.strategy === LifeTime.cascading) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return new ModifyDefinitionBuilder(
         'modify',
-        symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
-        this._bindingsRegistry,
+        symbol,
         this._allowedCascadingModifyLifeTimes,
         this._context,
-        // (definition: IDefinition<TInstance, LifeTime.cascading>) => {
-        //   this._bindingsRegistry.setCascadeRoot(definition, this._currentContainer);
-        //   this._bindingsRegistry.override(definition);
-        // },
-      ) as any;
+      ) as IModifyBuilder<TInstance, TLifeTime>;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
         'modify',
         symbol,
-        this._bindingsRegistry,
         this._allowedModifyLifeTimes,
         this._context,
-        // (definition: IDefinition<TInstance, TLifeTime>) => {
-        //   this._bindingsRegistry.override(definition);
-        // },
-      ) as any;
+      ) as IModifyBuilder<TInstance, TLifeTime>;
     }
+  }
+
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
+    return new ModifyDefinitionBuilder('freeze', symbol, this._allowedRegisterLifeTimes, this._context);
+  }
+
+  add<TInstance, TLifeTime extends LifeTime>(
+    symbol: DefinitionSymbol<TInstance, TLifeTime>,
+  ): IAddDefinitionBuilder<TInstance, TLifeTime> {
+    return new AddDefinitionBuilder('add', symbol, this._allowedRegisterLifeTimes, this._context);
+  }
+
+  withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
+    this._interceptors.register(name, interceptor);
+  }
+
+  onDispose(callback: (scope: IContainer) => void): void {
+    this._disposeFns.push(callback);
   }
 
   eager<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
@@ -102,43 +110,5 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     //     return configureFn(awaitedInstance);
     //   });
     // });
-  }
-
-  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
-    return new ModifyDefinitionBuilder(
-      'freeze',
-      symbol,
-      this._bindingsRegistry,
-      this._allowedRegisterLifeTimes,
-      this._context,
-      // (def: IDefinition<TInstance, TLifeTime>) => {
-      //   this._bindingsRegistry.freeze(def);
-      // },
-    );
-  }
-
-  add<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, TLifeTime>,
-  ): IAddDefinitionBuilder<TInstance, TLifeTime> {
-    return new AddDefinitionBuilder(
-      'add',
-      symbol,
-      this._bindingsRegistry,
-      this._allowedRegisterLifeTimes,
-      this._context,
-      // (definition: IDefinition<TInstance, TLifeTime>) => {
-      //   this._bindingsRegistry.register(symbol, definition, this._currentContainer);
-      // },
-    );
-  }
-
-  withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
-    this._interceptors.register(name, interceptor);
-  }
-
-  onDispose(callback: (scope: IContainer) => void): void {
-    this._disposeFns.push(callback);
   }
 }
