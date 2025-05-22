@@ -8,8 +8,7 @@ import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import type { IConfigureBuilder, ScopeModifyBuilderType } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
-import type { IContainerConfiguration } from '../container/ContainerConfiguration.js';
-import { ContainerConfiguration } from '../container/ContainerConfiguration.js';
+import { ScopeConfiguration } from '../container/ContainerConfiguration.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
@@ -29,8 +28,8 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
     this._tags.push(...tags);
   }
 
-  toConfig(): IContainerConfiguration {
-    return new ContainerConfiguration(this._context);
+  toConfig(): ScopeConfiguration {
+    return new ScopeConfiguration(this._context);
   }
 
   // TODO: replace this callback functions with some minimal interface

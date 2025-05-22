@@ -13,3 +13,11 @@ export class ContainerConfiguration implements IContainerConfiguration {
     this.context.applyBindings(bindingsRegistry, container);
   }
 }
+
+export class ScopeConfiguration implements IContainerConfiguration {
+  constructor(private context: ConfigurationBuildersContext) {}
+
+  apply(bindingsRegistry: BindingsRegistry, container: ICascadingDefinitionResolver) {
+    this.context.applyBindings(bindingsRegistry, container);
+  }
+}

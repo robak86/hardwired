@@ -15,7 +15,6 @@ import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js'
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 
-import type { IContainerConfiguration } from './ContainerConfiguration.js';
 import { ContainerConfiguration } from './ContainerConfiguration.js';
 
 export class ContainerConfigurationBuilder implements IContainerConfigurable {
@@ -43,7 +42,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     private _initializationFns: Array<(scope: unknown) => MaybePromise<void>> = [],
   ) {}
 
-  toConfig(): IContainerConfiguration {
+  toConfig(): ContainerConfiguration {
     return new ContainerConfiguration(this._context);
   }
 
