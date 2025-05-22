@@ -6,7 +6,11 @@ import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 
-export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, TArgs extends any[]> {
+import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
+
+export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, TArgs extends any[]>
+  implements ILazyDefinitionBuilder<TInstance, TLifetime>
+{
   constructor(
     public readonly defSymbol: IDefinitionSymbol<TInstance, TLifetime>,
     protected readonly _decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,

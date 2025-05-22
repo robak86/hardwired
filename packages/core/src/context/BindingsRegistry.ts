@@ -77,7 +77,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
   }
 
   register<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
     definition: IDefinition<TInstance, TLifeTime>,
     buildAware: ICascadingDefinitionResolver,
   ) {
