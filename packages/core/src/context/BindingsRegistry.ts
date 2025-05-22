@@ -142,14 +142,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
       return;
     }
 
-    // if (this._cascadingRoots.hasOwn(defSymbol.id)) {
-    //   throw new Error(`Cascading root was already set. Cannot override it.`);
-    // }
-
-    // const cascadingDefinition = this._cascadingDefinitions.get(defSymbol.id);
-
     this._cascadingRoots.set(defSymbol.id, container);
-    // this._cascadingDefinitions.override(defSymbol.id, cascadingDefinition);
   }
 
   getDefinition<TInstance, TLifeTime extends LifeTime>(
@@ -182,6 +175,10 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     );
   }
 
+  freeze<TInstance, TLifetime extends LifeTime>(def: IDefinition<TInstance, TLifetime>) {
+    this.addFrozenBinding(def, def);
+  }
+
   private addFrozenBinding<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
     definition: IDefinition<TInstance, TLifeTime>,
@@ -193,7 +190,7 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
     this._frozenDefinitions.set(symbol.id, definition);
   }
 
-  addScopeBinding<TInstance, TLifeTime extends LifeTime>(
+  private addScopeBinding<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
     definition: IDefinition<TInstance, TLifeTime>,
   ) {
@@ -256,9 +253,5 @@ export class BindingsRegistry implements IBindingRegistryRead, IBindingsRegistry
 
   private overrideScoped<TInstance, TLifeTime extends LifeTime>(definition: IDefinition<TInstance, TLifeTime>) {
     this._scopeDefinitions.override(definition.id, definition);
-  }
-
-  freeze<TInstance, TLifetime extends LifeTime>(def: IDefinition<TInstance, TLifetime>) {
-    this.addFrozenBinding(def, def);
   }
 }

@@ -161,17 +161,14 @@ export class Container
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
     const bind = (definition: IDefinition<TInstance, TLifeTime>) => {
-      if (this.instancesStore.has(definition)) {
-        throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
+      if (this.instancesStore.hasInherited(definition)) {
+        throw new Error(
+          `Cannot freeze binding ${definition.toString()} because it is already instantiated in some higher scope.`,
+        );
       }
 
-      if (
-        this.bindingsRegistry.inheritsCascadingDefinition(definition.id) &&
-        this.instancesStore.hasInherited(definition)
-      ) {
-        throw new Error(
-          `Cannot freeze cascading binding ${definition.toString()} because it is already instantiated in some higher scope.`,
-        );
+      if (this.instancesStore.has(definition)) {
+        throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
       }
 
       this.bindingsRegistry.freeze(definition);
