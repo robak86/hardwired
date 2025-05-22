@@ -24,13 +24,11 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     configureFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
   ) {
     if (configureFn && Array.isArray(dependenciesOrConfigureFn)) {
-      const def = this._registry.getDefinitionForOverride(this._defSymbol);
-
       const configuredDefinition = new ConfiguredDefinitionBuilder(
         this._defSymbol,
         dependenciesOrConfigureFn,
         configureFn,
-      ).build(def);
+      ).build(this._registry);
 
       this._onDefinition(configuredDefinition);
 
@@ -38,13 +36,11 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     }
 
     if (typeof dependenciesOrConfigureFn === 'function') {
-      const def = this._registry.getDefinitionForOverride(this._defSymbol);
-
       const configuredDefinition = new ConfiguredDefinitionBuilder(
         this._defSymbol,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
         dependenciesOrConfigureFn,
-      ).build(def);
+      ).build(this._registry);
 
       this._onDefinition(configuredDefinition);
 
@@ -66,13 +62,11 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     decorateFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ) {
     if (decorateFn && Array.isArray(dependenciesOrDecorateFn)) {
-      const definition = this._registry.getDefinitionForOverride(this._defSymbol);
-
       const decoratedDefinition = new DecoratedDefinitionBuilder(
         this._defSymbol,
         dependenciesOrDecorateFn,
         decorateFn,
-      ).build(definition);
+      ).build(this._registry);
 
       this._onDefinition(decoratedDefinition);
 
@@ -80,13 +74,11 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     }
 
     if (typeof dependenciesOrDecorateFn === 'function') {
-      const definition = this._registry.getDefinitionForOverride(this._defSymbol);
-
       const decoratedDefinition = new DecoratedDefinitionBuilder(
         this._defSymbol,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
         dependenciesOrDecorateFn,
-      ).build(definition);
+      ).build(this._registry);
 
       this._onDefinition(decoratedDefinition);
 

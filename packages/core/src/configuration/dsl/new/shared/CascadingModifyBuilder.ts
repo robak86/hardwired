@@ -27,13 +27,7 @@ export class CascadingModifyBuilder<TInstance>
   }
 
   inherit(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {
-    if (this._registry.hasCascadingRoot(this._defSymbol.id)) {
-      throw new Error('Cannot inherit cascading definition. Current scope already provides own definition.');
-    }
-
-    const baseDefinition = this._registry.getDefinitionForOverride(this._defSymbol);
-
-    const decorate = new InheritedDefinitionBuilder(this._defSymbol, decorateFn, []).build(baseDefinition);
+    const decorate = new InheritedDefinitionBuilder(this._defSymbol, decorateFn, []).build(this._registry);
 
     this._onDefinition(decorate);
   }

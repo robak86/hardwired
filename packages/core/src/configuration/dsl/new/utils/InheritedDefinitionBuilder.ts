@@ -4,6 +4,7 @@ import type { MaybePromise } from '../../../../utils/async.js';
 import { maybePromiseThen } from '../../../../utils/async.js';
 import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 
 export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, TArgs extends any[]> {
   constructor(
@@ -12,7 +13,13 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
     protected readonly _dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
   ) {}
 
-  build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {
+  build(registry: IBindingsRegistryRead): IDefinition<TInstance, TLifetime> {
+    if (registry.hasCascadingRoot(this.defSymbol.id)) {
+      throw new Error('Cannot inherit cascading definition. Current scope already provides own definition.');
+    }
+
+    const def = registry.getDefinitionForOverride(this.defSymbol);
+
     return def.override(container => {
       const deps = container.all(...this._dependencies);
 

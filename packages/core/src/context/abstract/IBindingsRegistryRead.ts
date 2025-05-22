@@ -7,9 +7,9 @@ import type { ICascadeRootsRegistryRead } from './ICascadeRootsRegistry.js';
 export interface IBindingsRegistryRead extends ICascadeRootsRegistryRead {
   getDefinition<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IDefinition<TInstance, TLifeTime> | undefined;
+  ): IDefinition<TInstance, TLifeTime>;
 
   getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
-  ): IDefinition<TInstance, TLifeTime> | undefined;
+  ): IDefinition<TInstance, TLifeTime>;
 }
