@@ -4,7 +4,7 @@ import type { ICascadeModifyBuilder } from '../../../abstract/IModifyAware.js';
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
-import { createInheritedDefinition } from '../utils/create-inherited-definition.js';
+import { InheritedDefinitionBuilder } from '../utils/InheritedDefinitionBuilder.js';
 
 import { ModifyDefinitionBuilder } from './ModifyDefinitionBuilder.js';
 
@@ -33,7 +33,7 @@ export class CascadingModifyBuilder<TInstance>
 
     const baseDefinition = this._registry.getDefinitionForOverride(this._defSymbol);
 
-    const decorate = createInheritedDefinition(baseDefinition, decorateFn, []);
+    const decorate = new InheritedDefinitionBuilder(this._defSymbol, decorateFn, []).build(baseDefinition);
 
     this._onDefinition(decorate);
   }

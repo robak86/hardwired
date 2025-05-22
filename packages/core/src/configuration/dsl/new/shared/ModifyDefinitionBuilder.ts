@@ -1,8 +1,8 @@
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
-import { createConfiguredDefinition } from '../utils/create-configured-definition.js';
-import { createDecoratedDefinition } from '../utils/create-decorated-definition.js';
 import type { IModifyBuilder } from '../../../abstract/IModifyAware.js';
+import { ConfiguredDefinitionBuilder } from '../utils/ConfiguredDefinitionBuilder.js';
+import { DecoratedDefinitionBuilder } from '../utils/DecoratedDefinitionBuilder.js';
 
 import type { ConstructorArgsSymbols } from './AddDefinitionBuilder.js';
 import { AddDefinitionBuilder } from './AddDefinitionBuilder.js';
@@ -18,29 +18,33 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
   ): void;
   configure<TArgs extends any[]>(
-    dependencies:
+    dependenciesOrConfigureFn:
       | ConstructorArgsSymbols<TArgs, TLifeTime>
       | ((instance: TInstance, ...args: TArgs) => MaybePromise<void>),
     configureFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
   ) {
-    if (configureFn && Array.isArray(dependencies)) {
+    if (configureFn && Array.isArray(dependenciesOrConfigureFn)) {
       const def = this._registry.getDefinitionForOverride(this._defSymbol);
 
-      const configuredDefinition = createConfiguredDefinition(def, configureFn, dependencies);
+      const configuredDefinition = new ConfiguredDefinitionBuilder(
+        this._defSymbol,
+        dependenciesOrConfigureFn,
+        configureFn,
+      ).build(def);
 
       this._onDefinition(configuredDefinition);
 
       return;
     }
 
-    if (typeof dependencies === 'function') {
+    if (typeof dependenciesOrConfigureFn === 'function') {
       const def = this._registry.getDefinitionForOverride(this._defSymbol);
 
-      const configuredDefinition = createConfiguredDefinition(
-        def,
-        dependencies,
+      const configuredDefinition = new ConfiguredDefinitionBuilder(
+        this._defSymbol,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
-      );
+        dependenciesOrConfigureFn,
+      ).build(def);
 
       this._onDefinition(configuredDefinition);
 
@@ -56,28 +60,33 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ): void;
   decorate<TArgs extends any[]>(
-    dependencies:
+    dependenciesOrDecorateFn:
       | ConstructorArgsSymbols<TArgs, TLifeTime>
       | ((instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>),
     decorateFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ) {
-    if (decorateFn && Array.isArray(dependencies)) {
+    if (decorateFn && Array.isArray(dependenciesOrDecorateFn)) {
       const definition = this._registry.getDefinitionForOverride(this._defSymbol);
-      const decoratedDefinition = createDecoratedDefinition(definition, decorateFn, dependencies);
+
+      const decoratedDefinition = new DecoratedDefinitionBuilder(
+        this._defSymbol,
+        dependenciesOrDecorateFn,
+        decorateFn,
+      ).build(definition);
 
       this._onDefinition(decoratedDefinition);
 
       return;
     }
 
-    if (typeof dependencies === 'function') {
+    if (typeof dependenciesOrDecorateFn === 'function') {
       const definition = this._registry.getDefinitionForOverride(this._defSymbol);
 
-      const decoratedDefinition = createDecoratedDefinition(
-        definition,
-        dependencies,
+      const decoratedDefinition = new DecoratedDefinitionBuilder(
+        this._defSymbol,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
-      );
+        dependenciesOrDecorateFn,
+      ).build(definition);
 
       this._onDefinition(decoratedDefinition);
 
