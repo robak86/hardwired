@@ -34,7 +34,8 @@ export class ScopeRegistry<V> {
       return this._registrations.get(definitionId)!;
     }
 
-    throw new Error(`No definition registered for ${definitionId.toString()}`);
+    throw new Error(`No definition registered for ${definitionId.toString()}.
+     If you want to modify definition make sure it's registered first using .add(...) method.`);
   }
 
   protected getRegistered(definitionId: symbol): V {

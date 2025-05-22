@@ -216,7 +216,7 @@ describe(`ContainerConfiguration`, () => {
             container.new(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('Cannot find definition for');
+          }).toThrow('No definition registered for Symbol(testCascadingDef)');
         });
       });
     });
