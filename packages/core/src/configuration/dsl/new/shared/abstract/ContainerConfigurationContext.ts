@@ -3,68 +3,90 @@ import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
 import type { ICascadingDefinitionResolver } from '../../../../../container/IContainer.js';
+import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
 
-import type { IConfigurationContext } from './IConfigurationContext.js';
+import type { ConfigurationType, IConfigurationContext } from './IConfigurationContext.js';
 
 export class ContainerConfigurationContext implements IConfigurationContext {
-  static forAdding(): ContainerConfigurationContext {
-    return new ContainerConfigurationContext(false, [], [], new Map(), new Map(), new Map());
+  static create(): ContainerConfigurationContext {
+    return new ContainerConfigurationContext([], [], [], new Map(), new Map(), new Map(), new Map());
   }
 
-  constructor(
-    private _asOverride: boolean,
+  protected constructor(
     private _lazyDefinitionsRegister: ILazyDefinitionBuilder<unknown, LifeTime>[],
     private _lazyDefinitionsOverride: ILazyDefinitionBuilder<unknown, LifeTime>[],
+    private _lazyDefinitionsFreeze: ILazyDefinitionBuilder<unknown, LifeTime>[],
     private _registerDefinitions: Map<symbol, IDefinition<any, any>>,
     private _overrideDefinitions: Map<symbol, IDefinition<any, any>>,
-    private _cascadeDefinitions: Map<symbol, IDefinition<any, LifeTime.cascading>>,
+    private _freezeDefinitions: Map<symbol, IDefinition<any, any>>,
+    private _cascadeDefinitions: Map<symbol, IDefinitionSymbol<any, LifeTime.cascading>>,
   ) {}
 
-  onCascadingDefinition(definition: IDefinition<unknown, LifeTime.cascading>): void {
+  onCascadingDefinition(
+    configType: ConfigurationType,
+    definition: IDefinitionSymbol<unknown, LifeTime.cascading>,
+  ): void {
     this._cascadeDefinitions.set(definition.id, definition);
   }
 
-  onConfigureBuilder(builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
-    if (this._asOverride) {
-      this._lazyDefinitionsOverride.push(builder);
-    } else {
-      this._lazyDefinitionsRegister.push(builder);
+  onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
+    switch (configType) {
+      case 'add':
+        this._lazyDefinitionsRegister.push(builder);
+        break;
+      case 'modify':
+        this._lazyDefinitionsOverride.push(builder);
+        break;
+      case 'freeze':
+        this._lazyDefinitionsFreeze.push(builder);
+        break;
     }
   }
 
-  onDecorateBuilder(builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
-    if (this._asOverride) {
-      this._lazyDefinitionsOverride.push(builder);
-    } else {
-      this._lazyDefinitionsRegister.push(builder);
+  onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
+    switch (configType) {
+      case 'add':
+        this._lazyDefinitionsRegister.push(builder);
+        break;
+      case 'modify':
+        this._lazyDefinitionsOverride.push(builder);
+        break;
+      case 'freeze':
+        this._lazyDefinitionsFreeze.push(builder);
+        break;
     }
   }
 
-  onInheritBuilder(builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void {
-    if (this._asOverride) {
-      this._lazyDefinitionsOverride.push(builder);
-    } else {
-      this._lazyDefinitionsRegister.push(builder);
+  onInheritBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void {
+    if (this._overrideDefinitions.has(builder.symbol.id)) {
+      throw new Error(`Cannot inherit from ${builder.symbol.toString()}. It is already modified in the current scope.`);
+    }
+
+    switch (configType) {
+      case 'add':
+        this._lazyDefinitionsRegister.push(builder);
+        break;
+      case 'modify':
+        this._lazyDefinitionsOverride.push(builder);
+        break;
+      case 'freeze':
+        this._lazyDefinitionsFreeze.push(builder);
+        break;
     }
   }
 
-  onDefinition(definition: IDefinition<unknown, LifeTime>): void {
-    if (this._asOverride) {
-      this._overrideDefinitions.set(definition.id, definition);
-    } else {
-      this._registerDefinitions.set(definition.id, definition);
+  onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
+    switch (configType) {
+      case 'add':
+        this._registerDefinitions.set(definition.id, definition);
+        break;
+      case 'modify':
+        this._overrideDefinitions.set(definition.id, definition);
+        break;
+      case 'freeze':
+        this._freezeDefinitions.set(definition.id, definition);
+        break;
     }
-  }
-
-  asModify(): IConfigurationContext {
-    return new ContainerConfigurationContext(
-      true,
-      this._lazyDefinitionsOverride,
-      this._lazyDefinitionsRegister,
-      this._overrideDefinitions,
-      this._registerDefinitions,
-      this._cascadeDefinitions,
-    );
   }
 
   applyBindings(bindingsRegistry: BindingsRegistry, container: ICascadingDefinitionResolver): void {
@@ -77,16 +99,25 @@ export class ContainerConfigurationContext implements IConfigurationContext {
     });
 
     this._lazyDefinitionsRegister.forEach(builder => {
-      builder.build(bindingsRegistry);
+      const def = builder.build(bindingsRegistry);
+
+      bindingsRegistry.override(def);
     });
 
     this._lazyDefinitionsOverride.forEach(builder => {
-      builder.build(bindingsRegistry);
+      const def = builder.build(bindingsRegistry);
+
+      bindingsRegistry.override(def);
     });
 
-    this._cascadeDefinitions.forEach(definition => {
-      bindingsRegistry.setCascadeRoot(definition, container);
-      bindingsRegistry.override(definition);
+    this._freezeDefinitions.forEach(def => {
+      bindingsRegistry.freeze(def);
+    });
+
+    this._cascadeDefinitions.forEach(symbol => {
+      bindingsRegistry.setCascadeRoot(symbol, container);
+
+      bindingsRegistry.override(bindingsRegistry.getDefinition(symbol));
     });
   }
 }

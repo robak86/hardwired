@@ -12,17 +12,17 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
   implements ILazyDefinitionBuilder<TInstance, TLifetime>
 {
   constructor(
-    public readonly defSymbol: IDefinitionSymbol<TInstance, TLifetime>,
+    public readonly symbol: IDefinitionSymbol<TInstance, TLifetime>,
     protected readonly _decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
     protected readonly _dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
   ) {}
 
   build(registry: IBindingsRegistryRead): IDefinition<TInstance, TLifetime> {
-    if (registry.hasCascadingRoot(this.defSymbol.id)) {
+    if (registry.hasCascadingRoot(this.symbol.id)) {
       throw new Error('Cannot inherit cascading definition. Current scope already provides own definition.');
     }
 
-    const def = registry.getDefinitionForOverride(this.defSymbol);
+    const def = registry.getDefinitionForOverride(this.symbol);
 
     return def.override(container => {
       const deps = container.all(...this._dependencies);

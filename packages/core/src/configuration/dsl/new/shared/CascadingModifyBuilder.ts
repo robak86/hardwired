@@ -3,32 +3,33 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ICascadeModifyBuilder } from '../../../abstract/IModifyAware.js';
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
-import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import { InheritedDefinitionBuilder } from '../utils/InheritedDefinitionBuilder.js';
 
 import { ModifyDefinitionBuilder } from './ModifyDefinitionBuilder.js';
+import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';
 
 export class CascadingModifyBuilder<TInstance>
   extends ModifyDefinitionBuilder<TInstance, LifeTime.cascading>
   implements ICascadeModifyBuilder<TInstance>
 {
   constructor(
+    protected readonly _configType: ConfigurationType,
+
     defSymbol: IDefinitionSymbol<TInstance, LifeTime.cascading>,
     registry: BindingsRegistry,
     allowedLifeTimes: LifeTime[],
-    onDefinition: (definition: IDefinition<TInstance, LifeTime.cascading>) => void,
-    protected _onCascadingDefinition: (definition: IDefinitionSymbol<TInstance, LifeTime.cascading>) => void,
+    context: IConfigurationContext,
   ) {
-    super(defSymbol, registry, allowedLifeTimes, onDefinition);
+    super(_configType, defSymbol, registry, allowedLifeTimes, context);
   }
 
   cascade() {
-    this._onCascadingDefinition(this._defSymbol);
+    this._configurationContext.onCascadingDefinition(this._configType, this._defSymbol);
   }
 
   inherit(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {
-    const decorate = new InheritedDefinitionBuilder(this._defSymbol, decorateFn, []).build(this._registry);
+    const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(this._defSymbol, decorateFn, []);
 
-    this._onDefinition(decorate);
+    this._configurationContext.onInheritBuilder(this._configType, inheritedDefinitionBuilder);
   }
 }

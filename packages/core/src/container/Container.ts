@@ -16,6 +16,7 @@ import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstrac
 import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
+import { EagerContainerConfigurationContext } from '../configuration/dsl/new/shared/abstract/EagerContainerConfigurationContext.js';
 
 import type {
   HasPromise,
@@ -109,13 +110,15 @@ export class Container
     const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, [], disposableFns);
 
     if (configureFns.length) {
-      const binder = new ContainerConfigurationBuilder(bindingsRegistry, cnt, interceptorsRegistry, disposableFns);
+      const binder = new ContainerConfigurationBuilder(bindingsRegistry, interceptorsRegistry, disposableFns);
       const configs = configureFns.map(configureFn => configureFn(binder));
 
       return maybePromiseAllThen(configs, () => {
         const interceptor = interceptorsRegistry.build();
 
         interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
+
+        binder._apply(bindingsRegistry, cnt);
 
         return interceptor ? cnt.withInterceptor(interceptor) : cnt;
       }) as unknown as ContainerNewReturnType<TConfigureFns>;
@@ -145,13 +148,17 @@ export class Container
     );
 
     if (configureFns.length) {
-      const binder = new ScopeConfigurationBuilder(cnt, bindingsRegistry, tags, disposableFns);
+      const binder = new ScopeConfigurationBuilder(bindingsRegistry, tags, disposableFns);
 
       const configs = configureFns.map(configureFn => {
         return configureFn(binder);
       });
 
-      return maybePromiseAllThen(configs, () => cnt) as unknown as NewScopeReturnType<TConfigureFns>;
+      return maybePromiseAllThen(configs, () => {
+        binder._apply(bindingsRegistry, cnt);
+
+        return cnt;
+      }) as unknown as NewScopeReturnType<TConfigureFns>;
     }
 
     return cnt as unknown as NewScopeReturnType<TConfigureFns>;
@@ -160,25 +167,14 @@ export class Container
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionSymbol<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
-    const bind = (definition: IDefinition<TInstance, TLifeTime>) => {
-      if (this.instancesStore.hasInherited(definition)) {
-        throw new Error(
-          `Cannot freeze binding ${definition.toString()} because it is already instantiated in some higher scope.`,
-        );
-      }
-
-      if (this.instancesStore.has(definition)) {
-        throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
-      }
-
-      this.bindingsRegistry.freeze(definition);
-    };
+    const configurationContext = new EagerContainerConfigurationContext(this.bindingsRegistry, this.instancesStore);
 
     return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+      'freeze',
       definition,
       this.bindingsRegistry,
       containerAllowedScopes,
-      bind,
+      configurationContext,
     );
   }
 

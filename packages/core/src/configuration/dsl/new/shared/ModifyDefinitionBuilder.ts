@@ -24,25 +24,25 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     configureFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
   ) {
     if (configureFn && Array.isArray(dependenciesOrConfigureFn)) {
-      const configuredDefinition = new ConfiguredDefinitionBuilder(
+      const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
         this._defSymbol,
         dependenciesOrConfigureFn,
         configureFn,
-      ).build(this._registry);
+      );
 
-      this._onDefinition(configuredDefinition);
+      this._configurationContext.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
 
       return;
     }
 
     if (typeof dependenciesOrConfigureFn === 'function') {
-      const configuredDefinition = new ConfiguredDefinitionBuilder(
+      const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
         this._defSymbol,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
         dependenciesOrConfigureFn,
-      ).build(this._registry);
+      );
 
-      this._onDefinition(configuredDefinition);
+      this._configurationContext.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
 
       return;
     }
@@ -62,25 +62,25 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     decorateFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ) {
     if (decorateFn && Array.isArray(dependenciesOrDecorateFn)) {
-      const decoratedDefinition = new DecoratedDefinitionBuilder(
+      const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
         this._defSymbol,
         dependenciesOrDecorateFn,
         decorateFn,
-      ).build(this._registry);
+      );
 
-      this._onDefinition(decoratedDefinition);
+      this._configurationContext.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
 
       return;
     }
 
     if (typeof dependenciesOrDecorateFn === 'function') {
-      const decoratedDefinition = new DecoratedDefinitionBuilder(
+      const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
         this._defSymbol,
         [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
         dependenciesOrDecorateFn,
-      ).build(this._registry);
+      );
 
-      this._onDefinition(decoratedDefinition);
+      this._configurationContext.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
 
       return;
     }

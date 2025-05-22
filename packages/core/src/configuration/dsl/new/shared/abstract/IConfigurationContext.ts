@@ -1,17 +1,17 @@
 import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitionBuilder.js';
 import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
-import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
-import { type ICascadingDefinitionResolver } from '../../../../../container/IContainer.js';
+import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
+
+export type ConfigurationType = 'add' | 'modify' | 'freeze';
 
 export interface IConfigurationContext {
-  onInheritBuilder(builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void;
-  onDecorateBuilder(builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
-  onConfigureBuilder(builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
-  onDefinition(definition: IDefinition<unknown, LifeTime>): void;
-  onCascadingDefinition(definition: IDefinition<unknown, LifeTime.cascading>): void;
-
-  asModify(): IConfigurationContext;
-
-  applyBindings(bindingsRegistry: BindingsRegistry, container: ICascadingDefinitionResolver): void;
+  onInheritBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void;
+  onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
+  onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
+  onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void;
+  onCascadingDefinition(
+    configType: ConfigurationType,
+    definition: IDefinitionSymbol<unknown, LifeTime.cascading>,
+  ): void;
 }

@@ -5,11 +5,12 @@ import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract
 import type { MaybePromise } from '../../../../utils/async.js';
 import { ClassDefinition } from '../../../../definitions/impl/ClassDefinition.js';
 import { FnDefinition } from '../../../../definitions/impl/FnDefinition.js';
-import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import { Definition } from '../../../../definitions/impl/Definition.js';
 import type { IServiceLocator } from '../../../../container/IContainer.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
+
+import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';
 
 export type ConstructorArgsSymbols<T extends any[], TCurrentLifeTime extends LifeTime> = {
   [K in keyof T]: IDefinitionSymbol<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
@@ -19,10 +20,11 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   implements IAddDefinitionBuilder<TInstance, TLifeTime>
 {
   constructor(
+    protected readonly _configType: ConfigurationType,
     protected readonly _defSymbol: IDefinitionSymbol<TInstance, TLifeTime>,
     protected readonly _registry: BindingsRegistry,
     protected readonly _allowedLifeTimes: LifeTime[],
-    protected readonly _onDefinition: (definition: IDefinition<TInstance, TLifeTime>) => void,
+    protected readonly _configurationContext: IConfigurationContext,
   ) {
     this.assertValidLifeTime();
   }
@@ -43,7 +45,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   ) {
     const definition = new ClassDefinition(this._defSymbol.id, this._defSymbol.strategy, klass, dependencies);
 
-    this._onDefinition(definition);
+    this._configurationContext.onDefinition(this._configType, definition);
   }
 
   fn<TArgs extends any[]>(
@@ -52,18 +54,18 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   ) {
     const fnDefinition = new FnDefinition(this._defSymbol.id, this._defSymbol.strategy, fn, dependencies);
 
-    this._onDefinition(fnDefinition as IDefinition<TInstance, TLifeTime>);
+    this._configurationContext.onDefinition(this._configType, fnDefinition);
   }
 
   static(value: TInstance) {
     const definition = new Definition(this._defSymbol.id, this._defSymbol.strategy, () => value);
 
-    this._onDefinition(definition);
+    this._configurationContext.onDefinition(this._configType, definition);
   }
 
   locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>) {
     const definition = new Definition(this._defSymbol.id, this._defSymbol.strategy, fn);
 
-    this._onDefinition(definition);
+    this._configurationContext.onDefinition(this._configType, definition);
   }
 }
