@@ -65,6 +65,14 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).inherit(val => val + 1);
           });
 
+          // TODO:
+
+          const child = cnt.scope(c => {
+            c.modify(def)
+              .inherit(val => val + 1)
+              .onDispose(val => {});
+          });
+
           expect(await cnt.use(def)).toEqual(0);
           expect(await child.use(def)).toEqual(1);
         });

@@ -18,8 +18,8 @@ export function createInheritedDefinition<TInstance, TLifetime extends LifeTime,
       return maybePromiseThen(instance, awaitedInstance => {
         return maybePromiseThen(decorateFn(awaitedInstance, ...awaitedDependencies), awaitedInstance => {
           if (instance === awaitedInstance) {
-            console.warn(
-              `Inherited definition "${def.toString()}" returned the same instance. This may lead to unexpected behavior.`,
+            throw new Error(
+              `Callback for returning a new instance based on the inherited value from ${def.toString()} must return a new object.`,
             );
           }
 
