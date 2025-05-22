@@ -4,8 +4,7 @@ import type {
   IContainerConfigurable,
 } from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
-import type { ICascadingDefinitionResolver, IContainer } from '../../../../container/IContainer.js';
+import type { IContainer } from '../../../../container/IContainer.js';
 import type { InterceptorsRegistry } from '../../../../container/interceptors/InterceptorsRegistry.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { IInterceptor } from '../../../../container/interceptors/interceptor.js';
@@ -15,6 +14,9 @@ import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
+
+import type { IContainerConfiguration } from './ContainerConfiguration.js';
+import { ContainerConfiguration } from './ContainerConfiguration.js';
 
 export class ContainerConfigurationBuilder implements IContainerConfigurable {
   private readonly _allowedRegisterLifeTimes = [
@@ -41,8 +43,8 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     private _initializationFns: Array<(scope: unknown) => MaybePromise<void>> = [],
   ) {}
 
-  _apply(bindingsRegistry: BindingsRegistry, container: ICascadingDefinitionResolver) {
-    this._context.applyBindings(bindingsRegistry, container);
+  toConfig(): IContainerConfiguration {
+    return new ContainerConfiguration(this._context);
   }
 
   // TODO: replace this callback functions with some minimal interface

@@ -1,7 +1,6 @@
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
-import type { ICascadingDefinitionResolver, IContainer } from '../../../../container/IContainer.js';
-import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
+import type { IContainer } from '../../../../container/IContainer.js';
 import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
@@ -9,6 +8,8 @@ import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import type { IConfigureBuilder, ScopeModifyBuilderType } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
+import type { IContainerConfiguration } from '../container/ContainerConfiguration.js';
+import { ContainerConfiguration } from '../container/ContainerConfiguration.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
@@ -28,8 +29,8 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
     this._tags.push(...tags);
   }
 
-  _apply(bindingsRegistry: BindingsRegistry, container: ICascadingDefinitionResolver) {
-    this._context.applyBindings(bindingsRegistry, container);
+  toConfig(): IContainerConfiguration {
+    return new ContainerConfiguration(this._context);
   }
 
   // TODO: replace this callback functions with some minimal interface

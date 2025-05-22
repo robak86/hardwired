@@ -118,7 +118,7 @@ export class Container
 
         interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
 
-        binder._apply(bindingsRegistry, cnt);
+        binder.toConfig().apply(bindingsRegistry, cnt);
 
         return interceptor ? cnt.withInterceptor(interceptor) : cnt;
       }) as unknown as ContainerNewReturnType<TConfigureFns>;
@@ -155,7 +155,7 @@ export class Container
       });
 
       return maybePromiseAllThen(configs, () => {
-        binder._apply(bindingsRegistry, cnt);
+        binder.toConfig().apply(bindingsRegistry, cnt);
 
         return cnt;
       }) as unknown as NewScopeReturnType<TConfigureFns>;
