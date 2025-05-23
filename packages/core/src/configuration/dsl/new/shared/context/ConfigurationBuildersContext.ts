@@ -13,7 +13,7 @@ import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
-    return new ConfigurationBuildersContext([], new Map());
+    return new ConfigurationBuildersContext([]);
   }
 
   private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
@@ -24,11 +24,9 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
   private _lazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
 
-  protected constructor(
-    private _lazyDefinitionsFreeze: ILazyDefinitionBuilder<unknown, LifeTime>[],
+  private _cascadeDefinitions = new Set<IDefinitionToken<any, LifeTime.cascading>>();
 
-    private _cascadeDefinitions: Map<symbol, IDefinitionToken<any, LifeTime.cascading>>,
-  ) {}
+  protected constructor(private _lazyDefinitionsFreeze: ILazyDefinitionBuilder<unknown, LifeTime>[]) {}
 
   addDefinitionDisposeFn<TInstance>(
     _symbol: IDefinitionToken<TInstance, LifeTime>,
@@ -49,8 +47,8 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     this._disposeFns.push(callback);
   }
 
-  onCascadingDefinition(definition: IDefinitionToken<unknown, LifeTime.cascading>): void {
-    this._cascadeDefinitions.set(definition.id, definition);
+  onCascadingDefinition(token: IDefinitionToken<unknown, LifeTime.cascading>): void {
+    this._cascadeDefinitions.add(token);
   }
 
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
@@ -66,8 +64,8 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         break;
     }
 
-    if (builder.symbol.strategy === LifeTime.cascading) {
-      this._cascadeDefinitions.set(builder.symbol.id, builder.symbol as IDefinitionToken<unknown, LifeTime.cascading>);
+    if (builder.token.strategy === LifeTime.cascading) {
+      this._cascadeDefinitions.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
     }
   }
 
@@ -84,14 +82,14 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         break;
     }
 
-    if (builder.symbol.strategy === LifeTime.cascading) {
-      this._cascadeDefinitions.set(builder.symbol.id, builder.symbol as IDefinitionToken<unknown, LifeTime.cascading>);
+    if (builder.token.strategy === LifeTime.cascading) {
+      this._cascadeDefinitions.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
     }
   }
 
   onInheritBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void {
-    if (this._definitions.has(builder.symbol.id)) {
-      throw new Error(`Cannot inherit from ${builder.symbol.toString()}. It is already modified in the current scope.`);
+    if (this._definitions.has(builder.token.id)) {
+      throw new Error(`Cannot inherit from ${builder.token.toString()}. It is already modified in the current scope.`);
     }
 
     switch (configType) {
@@ -114,10 +112,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         break;
       case 'modify':
         if (definition.strategy === LifeTime.cascading) {
-          this._cascadeDefinitions.set(
-            definition.id,
-            definition.token as IDefinitionToken<unknown, LifeTime.cascading>,
-          );
+          this._cascadeDefinitions.add(definition.token as IDefinitionToken<unknown, LifeTime.cascading>);
         }
 
         this._definitions.register(definition.token.id, definition);

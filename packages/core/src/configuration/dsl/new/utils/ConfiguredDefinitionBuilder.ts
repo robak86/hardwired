@@ -11,13 +11,13 @@ export class ConfiguredDefinitionBuilder<TInstance, TLifetime extends LifeTime, 
   implements ILazyDefinitionBuilder<TInstance, TLifetime>
 {
   constructor(
-    public readonly symbol: IDefinitionToken<TInstance, TLifetime>,
+    public readonly token: IDefinitionToken<TInstance, TLifetime>,
     private dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
     private configFn: (instance: TInstance, ...args: TArgs) => void | Promise<void>,
   ) {}
 
   build(registry: IBindingsRegistryRead): IDefinition<TInstance, TLifetime> {
-    const def = registry.getForOverride(this.symbol);
+    const def = registry.getForOverride(this.token);
 
     return def.override(container => {
       if (this.dependencies.length) {

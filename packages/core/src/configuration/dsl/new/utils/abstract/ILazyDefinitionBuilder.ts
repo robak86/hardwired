@@ -4,7 +4,7 @@ import type { IDefinition } from '../../../../../definitions/abstract/IDefinitio
 import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 
 export interface ILazyDefinitionBuilder<TInstance, TLifetime extends LifeTime> {
-  readonly symbol: IDefinitionToken<TInstance, TLifetime>;
+  readonly token: IDefinitionToken<TInstance, TLifetime>;
 
   build(registry: IBindingsRegistryRead): IDefinition<TInstance, TLifetime>;
 }
