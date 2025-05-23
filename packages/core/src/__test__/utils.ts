@@ -1,11 +1,11 @@
-import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/def-symbol.js';
 import { cascading, scoped, singleton, transient } from '../definitions/def-symbol.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { IRegisterAware } from '../configuration/abstract/IRegisterAware.js';
 
 export type TestDefinition<T, TLifetime extends LifeTime> = {
-  def: IDefinitionSymbol<T, TLifetime>;
+  def: IDefinitionToken<T, TLifetime>;
   children: TestDefinition<T, TLifetime>[];
 };
 
@@ -15,7 +15,7 @@ export function registerTestDefinitions<T, TLifetime extends LifeTime>(
 ) {
   for (const def of defs) {
     const dependencies = def.children.map(d => d.def) as unknown as Array<
-      IDefinitionSymbol<T, ValidDependenciesLifeTime<TLifetime>>
+      IDefinitionToken<T, ValidDependenciesLifeTime<TLifetime>>
     >;
 
     config.add(def.def).fn((...args: T[]) => args[0], ...dependencies);
@@ -40,7 +40,7 @@ export function buildDefinitions<T, TLifetime extends LifeTime>(
   times: number,
   depth: number,
 
-  createDefinition: (key: string) => IDefinitionSymbol<T, TLifetime>,
+  createDefinition: (key: string) => IDefinitionToken<T, TLifetime>,
   currentDepth = 0,
 ): TestDefinition<T, TLifetime>[] {
   if (currentDepth > depth) {

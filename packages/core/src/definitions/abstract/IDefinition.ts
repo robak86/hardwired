@@ -1,18 +1,25 @@
 import type { IServiceLocator } from '../../container/IContainer.js';
-import type { IDefinitionSymbol } from '../def-symbol.js';
+import type { IDefinitionToken } from '../def-symbol.js';
 import type { MaybePromise } from '../../utils/async.js';
 import type { INewInterceptor } from '../../container/interceptors/interceptor.js';
 
 import type { LifeTime } from './LifeTime.js';
 
-export type AnyDefinitionSymbol = IDefinitionSymbol<any, LifeTime>;
+export type AnyDefinitionSymbol = IDefinitionToken<any, LifeTime>;
 
 // TODO: don't inherit from IDefinitionSymbol. Just implement property: readonly symbol: IDefinitionSymbol<TInstance, TLifeTime>;
 // IDefinition that can implicitly be used as IDefinitionSymbol is error-prone.
-export interface IDefinition<TInstance, TLifeTime extends LifeTime> extends IDefinitionSymbol<TInstance, TLifeTime> {
+export interface IDefinition<TInstance, TLifeTime extends LifeTime> {
+  readonly token: IDefinitionToken<TInstance, TLifeTime>;
+
+  readonly id: symbol;
+  readonly strategy: LifeTime;
+
   create(context: IServiceLocator, interceptor?: INewInterceptor): MaybePromise<TInstance>;
 
   override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime>;
+
+  toString(): string;
 
   // getGraph(instancesRegistry: BindingsRegistry): IDependenciesGraph<TInstance, TLifeTime>;
 }

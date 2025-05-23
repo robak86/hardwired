@@ -1,5 +1,5 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { DefinitionSymbol, IDefinitionSymbol } from '../definitions/def-symbol.js';
+import type { DefinitionSymbol, IDefinitionToken } from '../definitions/def-symbol.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
 
@@ -12,7 +12,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
   static create(): BindingsRegistry {
     return new BindingsRegistry(
       COWMap.create(),
-      ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy),
+      ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.token.strategy),
       COWMap.create(),
     );
   }
@@ -27,16 +27,16 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     return this._cascadingRoots.hasOwn(id);
   }
 
-  setCascadeRoot(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
+  setCascadeRoot(defSymbol: IDefinitionToken<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
     this._cascadingRoots.set(defSymbol.id, container);
   }
 
-  getOwningContainer(defSymbol: IDefinitionSymbol<any, any>): ICascadingDefinitionResolver | undefined {
+  getOwningContainer(defSymbol: IDefinitionToken<any, any>): ICascadingDefinitionResolver | undefined {
     return this._cascadingRoots.get(defSymbol.id);
   }
 
   getForOverride<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> {
     return this._definitions.getForOverride(symbol.id) as IDefinition<TInstance, TLifeTime>;
   }
@@ -50,7 +50,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
   }
 
   register<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
     definition: IDefinition<TInstance, TLifeTime>,
     buildAware: ICascadingDefinitionResolver,
   ) {

@@ -1,5 +1,5 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IDefinitionSymbol } from '../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 import type { MaybePromise } from '../../utils/async.js';
 import type { ConstructorArgsSymbols } from '../dsl/new/shared/AddDefinitionBuilder.js';
 
@@ -34,12 +34,12 @@ export type ScopeModifyBuilderType<TInstance, TLifeTime extends LifeTime> = TLif
 
 export interface IScopeModifyAware<TAllowedLifeTime extends LifeTime> {
   modify<TInstance, TLifeTime extends TAllowedLifeTime>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): ScopeModifyBuilderType<TInstance, TLifeTime>;
 }
 
 export interface IContainerModifyAware<TAllowedLifeTime extends LifeTime> {
   modify<TInstance, TLifeTime extends TAllowedLifeTime>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): IModifyBuilder<TInstance, TLifeTime>;
 }

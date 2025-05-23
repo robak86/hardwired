@@ -3,7 +3,7 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import { maybePromiseThen } from '../../../../utils/async.js';
 import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
-import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 
 import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
@@ -12,7 +12,7 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
   implements ILazyDefinitionBuilder<TInstance, TLifetime>
 {
   constructor(
-    public readonly symbol: IDefinitionSymbol<TInstance, TLifetime>,
+    public readonly symbol: IDefinitionToken<TInstance, TLifetime>,
     protected readonly _decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
     protected readonly _dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
   ) {}

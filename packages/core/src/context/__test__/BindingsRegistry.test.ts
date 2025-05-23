@@ -9,8 +9,8 @@ describe(`BindingsRegistry`, () => {
 
     const symbol = cascading<number>();
 
-    const definition = new Definition(symbol.id, symbol.strategy, () => 1);
-    const otherDefinition = new Definition(symbol.id, symbol.strategy, () => 1);
+    const definition = new Definition(symbol, () => 1);
+    const otherDefinition = new Definition(symbol, () => 1);
 
     return {
       registry,

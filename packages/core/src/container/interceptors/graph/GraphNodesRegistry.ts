@@ -1,7 +1,7 @@
 import { COWMap } from '../../../context/COWMap.js';
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
-import type { IDefinitionSymbol } from '../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../definitions/def-symbol.js';
 
 import type { GraphBuilderInterceptor, GraphBuilderMemoizableLifeTime, GraphNode } from './GraphBuilderInterceptor.js';
 
@@ -17,7 +17,7 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   }
 
   getOwn<TInstance>(
-    definition: IDefinition<TInstance, GraphBuilderMemoizableLifeTime>,
+    definition: IDefinitionToken<TInstance, GraphBuilderMemoizableLifeTime>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     switch (definition.strategy) {
       case LifeTime.singleton:
@@ -31,7 +31,7 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   }
 
   getNode<TInstance>(
-    definition: IDefinitionSymbol<TInstance, GraphBuilderMemoizableLifeTime>,
+    definition: IDefinitionToken<TInstance, GraphBuilderMemoizableLifeTime>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     switch (definition.strategy) {
       case LifeTime.singleton:
@@ -45,7 +45,7 @@ export class GraphNodesRegistry<TNode extends GraphNode<any>> {
   }
 
   getScoped<TInstance>(
-    definition: IDefinitionSymbol<TInstance, GraphBuilderMemoizableLifeTime>,
+    definition: IDefinitionToken<TInstance, GraphBuilderMemoizableLifeTime>,
   ): GraphBuilderInterceptor<TInstance, TNode> {
     return (
       (this._scopedNodes.get(definition.id) as GraphBuilderInterceptor<TInstance, TNode>) ??

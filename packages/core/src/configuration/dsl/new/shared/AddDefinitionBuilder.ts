@@ -1,4 +1,4 @@
-import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ClassType } from '../../../../definitions/utils/class-type.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
@@ -14,7 +14,7 @@ import type { ConfigurationType, IConfigurationContext } from './abstract/IConfi
 import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
 
 export type ConstructorArgsSymbols<T extends any[], TCurrentLifeTime extends LifeTime> = {
-  [K in keyof T]: IDefinitionSymbol<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
+  [K in keyof T]: IDefinitionToken<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
 };
 
 export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
@@ -22,7 +22,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 {
   constructor(
     protected readonly _configType: ConfigurationType,
-    protected readonly _symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    protected readonly _symbol: IDefinitionToken<TInstance, TLifeTime>,
     protected readonly _allowedLifeTimes: LifeTime[],
     protected readonly _configurationContext: IConfigurationContext,
   ) {
@@ -43,7 +43,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     klass: ClassType<TInstance, TConstructorArgs>,
     ...dependencies: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new ClassDefinition(this._symbol.id, this._symbol.strategy, klass, dependencies);
+    const definition = new ClassDefinition(this._symbol, klass, dependencies);
 
     this._configurationContext.onDefinition(this._configType, definition);
 
@@ -54,7 +54,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     fn: (...args: TArgs) => MaybePromise<TInstance>,
     ...dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const fnDefinition = new FnDefinition(this._symbol.id, this._symbol.strategy, fn, dependencies);
+    const fnDefinition = new FnDefinition(this._symbol, fn, dependencies);
 
     this._configurationContext.onDefinition(this._configType, fnDefinition);
 
@@ -62,7 +62,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   static(value: TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new Definition(this._symbol.id, this._symbol.strategy, () => value);
+    const definition = new Definition(this._symbol, () => value);
 
     this._configurationContext.onDefinition(this._configType, definition);
 
@@ -70,7 +70,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new Definition(this._symbol.id, this._symbol.strategy, fn);
+    const definition = new Definition(this._symbol, fn);
 
     this._configurationContext.onDefinition(this._configType, definition);
 

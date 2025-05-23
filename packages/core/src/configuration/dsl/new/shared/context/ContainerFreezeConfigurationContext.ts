@@ -2,7 +2,7 @@ import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitio
 import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
-import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { InstancesStore } from '../../../../../context/InstancesStore.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
@@ -16,7 +16,7 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
   ) {}
 
   addDefinitionDisposeFn<TInstance>(
-    _symbol: IDefinitionSymbol<TInstance, LifeTime>,
+    _symbol: IDefinitionToken<TInstance, LifeTime>,
     disposeFn: (instance: TInstance) => MaybePromise<void>,
   ): void {
     throw new Error('Method not implemented.');
@@ -29,7 +29,7 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
     throw new Error('Adding dispose callbacks is not supported in eager mode.');
   }
 
-  onCascadingDefinition(_definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void {
+  onCascadingDefinition(_definition: IDefinitionToken<unknown, LifeTime.cascading>): void {
     throw new Error('Cascading definitions are not supported in eager mode.');
   }
 
@@ -52,14 +52,14 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
   }
 
   onDefinition(_configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
-    if (this.instancesStore.hasInherited(definition)) {
+    if (this.instancesStore.hasInherited(definition.token)) {
       throw new Error(
-        `Cannot freeze binding ${definition.toString()} because it is already instantiated in some higher scope.`,
+        `Cannot freeze binding ${definition.token.toString()} because it is already instantiated in some higher scope.`,
       );
     }
 
-    if (this.instancesStore.has(definition)) {
-      throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
+    if (this.instancesStore.has(definition.token)) {
+      throw new Error(`Cannot freeze binding ${definition.token.toString()} because it is already instantiated.`);
     }
 
     this._bindingsRegistry.freeze(definition);

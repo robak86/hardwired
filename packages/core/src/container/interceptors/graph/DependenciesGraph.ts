@@ -1,7 +1,7 @@
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 import type { ScopeTag } from '../../IContainer.js';
 import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
-import type { IDefinitionSymbol } from '../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../definitions/def-symbol.js';
 
 import { GraphBuilderInterceptor } from './GraphBuilderInterceptor.js';
 
@@ -52,7 +52,7 @@ export class DependenciesGraphRoot extends GraphBuilderInterceptor<never, GraphN
   }
 
   getGraphNode<TInstance>(
-    definition: IDefinitionSymbol<TInstance, LifeTime.scoped | LifeTime.singleton | LifeTime.cascading>,
+    definition: IDefinitionToken<TInstance, LifeTime.scoped | LifeTime.singleton | LifeTime.cascading>,
   ): GraphNode<TInstance> | undefined {
     return super.getGraphNode(definition) as GraphNode<TInstance> | undefined;
   }

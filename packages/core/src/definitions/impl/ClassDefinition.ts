@@ -6,6 +6,7 @@ import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
 import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 import type { INewInterceptor } from '../../container/interceptors/interceptor.js';
+import type { IDefinitionToken } from '../def-symbol.js';
 
 import { Definition } from './Definition.js';
 
@@ -14,21 +15,26 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
 {
   private _hasOnlySyncDependencies = false; // flag for optimization, so we don't have to check every time
 
-  readonly $type!: TInstance;
-
   constructor(
-    public readonly id: symbol,
-    public readonly strategy: TLifeTime,
+    public readonly token: IDefinitionToken<TInstance, TLifeTime>,
     protected readonly _class: ClassType<TInstance, TConstructorArgs>,
     protected readonly _dependencies?: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>,
   ) {}
 
+  get id() {
+    return this.token.id;
+  }
+
+  get strategy() {
+    return this.token.strategy;
+  }
+
   override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
-    return new Definition(this.id, this.strategy, createFn);
+    return new Definition(this.token, createFn);
   }
 
   toString() {
-    return `${this.id.toString()}:${this._class.name}`;
+    return `${this.token.toString()}:${this._class.name}`;
   }
 
   create(use: IServiceLocator, interceptor?: INewInterceptor): MaybePromise<TInstance> {

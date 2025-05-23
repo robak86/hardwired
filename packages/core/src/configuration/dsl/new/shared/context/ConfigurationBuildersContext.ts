@@ -3,7 +3,7 @@ import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
 import type { ICascadingDefinitionResolver, IContainer } from '../../../../../container/IContainer.js';
-import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
 import type { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
@@ -27,11 +27,11 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   protected constructor(
     private _lazyDefinitionsFreeze: ILazyDefinitionBuilder<unknown, LifeTime>[],
 
-    private _cascadeDefinitions: Map<symbol, IDefinitionSymbol<any, LifeTime.cascading>>,
+    private _cascadeDefinitions: Map<symbol, IDefinitionToken<any, LifeTime.cascading>>,
   ) {}
 
   addDefinitionDisposeFn<TInstance>(
-    _symbol: IDefinitionSymbol<TInstance, LifeTime>,
+    _symbol: IDefinitionToken<TInstance, LifeTime>,
     disposeFn: (instance: TInstance) => MaybePromise<void>,
   ): void {
     throw new Error('Method not implemented.');
@@ -49,7 +49,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     this._disposeFns.push(callback);
   }
 
-  onCascadingDefinition(definition: IDefinitionSymbol<unknown, LifeTime.cascading>): void {
+  onCascadingDefinition(definition: IDefinitionToken<unknown, LifeTime.cascading>): void {
     this._cascadeDefinitions.set(definition.id, definition);
   }
 
@@ -67,7 +67,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
 
     if (builder.symbol.strategy === LifeTime.cascading) {
-      this._cascadeDefinitions.set(builder.symbol.id, builder.symbol as IDefinitionSymbol<unknown, LifeTime.cascading>);
+      this._cascadeDefinitions.set(builder.symbol.id, builder.symbol as IDefinitionToken<unknown, LifeTime.cascading>);
     }
   }
 
@@ -85,7 +85,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
 
     if (builder.symbol.strategy === LifeTime.cascading) {
-      this._cascadeDefinitions.set(builder.symbol.id, builder.symbol as IDefinitionSymbol<unknown, LifeTime.cascading>);
+      this._cascadeDefinitions.set(builder.symbol.id, builder.symbol as IDefinitionToken<unknown, LifeTime.cascading>);
     }
   }
 
@@ -110,17 +110,20 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._definitions.register(definition.id, definition);
+        this._definitions.register(definition.token.id, definition);
         break;
       case 'modify':
         if (definition.strategy === LifeTime.cascading) {
-          this._cascadeDefinitions.set(definition.id, definition as IDefinitionSymbol<unknown, LifeTime.cascading>);
+          this._cascadeDefinitions.set(
+            definition.id,
+            definition.token as IDefinitionToken<unknown, LifeTime.cascading>,
+          );
         }
 
-        this._definitions.register(definition.id, definition);
+        this._definitions.register(definition.token.id, definition);
         break;
       case 'freeze':
-        this._frozenDefinitions.register(definition.id, definition);
+        this._frozenDefinitions.register(definition.token.id, definition);
         break;
     }
   }
@@ -134,7 +137,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     lifecycleRegistry: ILifeCycleRegistry,
   ): void {
     this._definitions.forEach(definition => {
-      bindingsRegistry.register(definition, definition, container);
+      bindingsRegistry.register(definition.token, definition, container);
     });
 
     this._frozenDefinitions.forEach(def => {

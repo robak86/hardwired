@@ -5,7 +5,7 @@ import type {
 } from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { DefinitionSymbol, IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import type { IInterceptor } from '../../../../container/interceptors/interceptor.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
@@ -39,7 +39,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   // TODO: replace this callback functions with some minimal interface
   modify<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): IModifyBuilder<TInstance, TLifeTime> {
     const allowedLifeTimes =
       symbol.strategy === LifeTime.cascading ? this._allowedCascadingModifyLifeTimes : this._allowedModifyLifeTimes;
@@ -69,7 +69,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
     return new ModifyDefinitionBuilder('freeze', symbol, this._allowedRegisterLifeTimes, this._context);
   }
@@ -89,7 +89,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   }
 
   eager<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
-    def: IDefinitionSymbol<TInstance, TLifeTime>,
+    def: IDefinitionToken<TInstance, TLifeTime>,
   ): IConfigureBuilder<TInstance, TLifeTime> {
     throw new Error('Implement me!');
     // this._initializationFns.push(() => {
@@ -102,7 +102,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   }
 
   lazy<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
-    def: IDefinitionSymbol<TInstance, TLifeTime>,
+    def: IDefinitionToken<TInstance, TLifeTime>,
   ): IConfigureBuilder<TInstance, TLifeTime> {
     throw new Error('Implement me!');
     // this._initializationFns.push(() => {

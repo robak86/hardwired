@@ -10,8 +10,6 @@ export { useContainer } from './context/ContainerContext.js';
 export { use } from './hooks/use.js';
 export { useAll } from './hooks/useAll.js';
 
-export * from './hooks/useInitializers.js';
-
 export * from './hooks/useScopeConfig.js';
 
 // interceptors

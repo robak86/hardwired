@@ -1,6 +1,6 @@
 import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
-import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/def-symbol.js';
 
 import { isDisposable } from './COWMap.js';
 
@@ -69,15 +69,15 @@ export class InstancesStore implements IInstancesStoreRead {
     return this._globalInstances.has(definitionId);
   }
 
-  has(symbol: IDefinitionSymbol<any, any>): boolean {
+  has(symbol: IDefinitionToken<any, any>): boolean {
     return this._globalInstances.has(symbol.id) || this._scopeInstances.has(symbol.id);
   }
 
-  hasInherited(symbol: IDefinitionSymbol<any, any>): boolean {
+  hasInherited(symbol: IDefinitionToken<any, any>): boolean {
     return this._parent?.has(symbol) ?? this._parent?.hasInherited(symbol) ?? false;
   }
 
-  getExisting(symbol: IDefinitionSymbol<any, any>): unknown {
+  getExisting(symbol: IDefinitionToken<any, any>): unknown {
     return this._globalInstances.get(symbol.id) ?? this._scopeInstances.get(symbol.id);
   }
 

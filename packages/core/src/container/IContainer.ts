@@ -4,7 +4,7 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/def-symbol.js';
 import type { MaybePromise } from '../utils/async.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import type {
@@ -27,7 +27,7 @@ export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
 
 export interface IContainerConfigurationAware {
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
-    definition: IDefinitionSymbol<TInstance, TLifeTime>,
+    definition: IDefinitionToken<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
 }
 
@@ -41,18 +41,18 @@ export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(
-    instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+    instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
   ): MaybePromise<TValue>;
 
   useAsync<TValue>(
-    instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+    instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
   ): Promise<TValue>;
 
   useExisting<TValue>(
-    definition: IDefinitionSymbol<TValue, LifeTime.scoped | LifeTime.singleton | LifeTime.cascading>,
+    definition: IDefinitionToken<TValue, LifeTime.scoped | LifeTime.singleton | LifeTime.cascading>,
   ): TValue | null;
 
-  all<TDefinitions extends Array<IDefinitionSymbol<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
+  all<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): MaybePromise<InstancesArray<TDefinitions>>;
 }
@@ -62,7 +62,7 @@ export interface IContainerScopes {
 }
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
-  instanceDefinition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+  instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
 ) => TValue;
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>

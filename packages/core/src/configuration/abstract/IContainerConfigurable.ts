@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IContainer, UseFn } from '../../container/IContainer.js';
-import type { IDefinitionSymbol } from '../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { ModifyDefinitionBuilder } from '../dsl/new/shared/ModifyDefinitionBuilder.js';
 
@@ -37,6 +37,6 @@ export interface IContainerConfigurable
   withInterceptor(id: string | symbol, interceptor: IInterceptor<unknown>): void;
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
 }

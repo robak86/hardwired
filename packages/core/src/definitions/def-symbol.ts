@@ -1,7 +1,7 @@
 import { LifeTime } from './abstract/LifeTime.js';
 
 // TODO: use just IDefinitionSymbol = symbol & {};
-export interface IDefinitionSymbol<TInstance, TLifeTime extends LifeTime> {
+export interface IDefinitionToken<TInstance, TLifeTime extends LifeTime> {
   readonly id: symbol;
   readonly strategy: TLifeTime;
   readonly $type: TInstance;

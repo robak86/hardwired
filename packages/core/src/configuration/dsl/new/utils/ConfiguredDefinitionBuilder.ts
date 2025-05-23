@@ -2,7 +2,7 @@ import type { IDefinition } from '../../../../definitions/abstract/IDefinition.j
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
 import { maybePromiseThen } from '../../../../utils/async.js';
-import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 
 import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
@@ -11,7 +11,7 @@ export class ConfiguredDefinitionBuilder<TInstance, TLifetime extends LifeTime, 
   implements ILazyDefinitionBuilder<TInstance, TLifetime>
 {
   constructor(
-    public readonly symbol: IDefinitionSymbol<TInstance, TLifetime>,
+    public readonly symbol: IDefinitionToken<TInstance, TLifetime>,
     private dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
     private configFn: (instance: TInstance, ...args: TArgs) => void | Promise<void>,
   ) {}

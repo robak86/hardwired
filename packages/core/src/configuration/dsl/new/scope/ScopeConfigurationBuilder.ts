@@ -1,7 +1,7 @@
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { DefinitionSymbol, IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
+import type { DefinitionSymbol, IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
@@ -22,12 +22,12 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
 
   // TODO: replace this callback functions with some minimal interface
   modify<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
-    symbol: IDefinitionSymbol<TInstance, TLifeTime>,
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): ScopeModifyBuilderType<TInstance, TLifeTime> {
     if (symbol.strategy === LifeTime.cascading) {
       return new CascadingModifyBuilder<TInstance>(
         'modify',
-        symbol as IDefinitionSymbol<TInstance, LifeTime.cascading>,
+        symbol as IDefinitionToken<TInstance, LifeTime.cascading>,
         this._cascadingModifyAllowedLifeTimes,
         this._context,
       ) as any;
@@ -42,7 +42,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   }
 
   eager<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
-    def: IDefinitionSymbol<TInstance, TLifeTime>,
+    def: IDefinitionToken<TInstance, TLifeTime>,
   ): IConfigureBuilder<TInstance, TLifeTime> {
     // this._scopeInitializationFns.push(use => {
     //   use(def);

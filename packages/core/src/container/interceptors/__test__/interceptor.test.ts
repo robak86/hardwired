@@ -64,22 +64,22 @@ describe(`interceptor`, () => {
 
       expect(interceptor.onEnter).toHaveBeenCalledTimes(4);
 
-      expect(onEnterSpy.mock.calls[0][0].id).toEqual(aDef.id);
-      expect(onEnterSpy.mock.calls[1][0].id).toEqual(bDef.id);
-      expect(onEnterSpy.mock.calls[2][0].id).toEqual(c1Def.id);
-      expect(onEnterSpy.mock.calls[3][0].id).toEqual(c2Def.id);
+      expect(onEnterSpy.mock.calls[0][0].token).toEqual(aDef);
+      expect(onEnterSpy.mock.calls[1][0].token).toEqual(bDef);
+      expect(onEnterSpy.mock.calls[2][0].token).toEqual(c1Def);
+      expect(onEnterSpy.mock.calls[3][0].token).toEqual(c2Def);
 
       expect(onLeaveSpy.mock.calls[0][0]).toEqual('C1');
-      expect(onLeaveSpy.mock.calls[0][1].id).toEqual(c1Def.id);
+      expect(onLeaveSpy.mock.calls[0][1].token).toEqual(c1Def);
 
       expect(onLeaveSpy.mock.calls[1][0]).toEqual('C2');
-      expect(onLeaveSpy.mock.calls[1][1].id).toEqual(c2Def.id);
+      expect(onLeaveSpy.mock.calls[1][1].token).toEqual(c2Def);
 
       expect(onLeaveSpy.mock.calls[2][0]).toEqual(['B', 'C1', 'C2']);
-      expect(onLeaveSpy.mock.calls[2][1].id).toEqual(bDef.id);
+      expect(onLeaveSpy.mock.calls[2][1].token).toEqual(bDef);
 
       expect(onLeaveSpy.mock.calls[3][0]).toEqual(['A', ['B', 'C1', 'C2']]);
-      expect(onLeaveSpy.mock.calls[3][1].id).toEqual(aDef.id);
+      expect(onLeaveSpy.mock.calls[3][1].token).toEqual(aDef);
     });
   });
 
@@ -115,22 +115,22 @@ describe(`interceptor`, () => {
 
       expect(interceptor.onEnter).toHaveBeenCalledTimes(4);
 
-      expect(onEnterSpy.mock.calls[0][0].id).toEqual(aDef.id);
-      expect(onEnterSpy.mock.calls[1][0].id).toEqual(bDef.id);
-      expect(onEnterSpy.mock.calls[2][0].id).toEqual(c1Def.id);
-      expect(onEnterSpy.mock.calls[3][0].id).toEqual(c2Def.id);
+      expect(onEnterSpy.mock.calls[0][0].token).toEqual(aDef);
+      expect(onEnterSpy.mock.calls[1][0].token).toEqual(bDef);
+      expect(onEnterSpy.mock.calls[2][0].token).toEqual(c1Def);
+      expect(onEnterSpy.mock.calls[3][0].token).toEqual(c2Def);
 
       expect(await onLeaveSpy.mock.calls[0][0]).toEqual('C1');
-      expect(onLeaveSpy.mock.calls[0][1].id).toEqual(c1Def.id);
+      expect(onLeaveSpy.mock.calls[0][1].token).toEqual(c1Def);
 
       expect(await onLeaveSpy.mock.calls[1][0]).toEqual('C2');
-      expect(onLeaveSpy.mock.calls[1][1].id).toEqual(c2Def.id);
+      expect(onLeaveSpy.mock.calls[1][1].token).toEqual(c2Def);
 
       expect(await onLeaveSpy.mock.calls[2][0]).toEqual(['B', 'C1', 'C2']);
-      expect(onLeaveSpy.mock.calls[2][1].id).toEqual(bDef.id);
+      expect(onLeaveSpy.mock.calls[2][1].token).toEqual(bDef);
 
       expect(await onLeaveSpy.mock.calls[3][0]).toEqual(['A', ['B', 'C1', 'C2']]);
-      expect(onLeaveSpy.mock.calls[3][1].id).toEqual(aDef.id);
+      expect(onLeaveSpy.mock.calls[3][1].token).toEqual(aDef);
     });
   });
 });

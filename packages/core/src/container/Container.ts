@@ -13,7 +13,7 @@ import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { MaybePromise } from '../utils/async.js';
 import { maybePromiseAll } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
-import type { IDefinitionSymbol } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
@@ -74,7 +74,7 @@ export class Container
   ) {
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
-        definition: IDefinition<TInstance, TLifeTime>,
+        definition: IDefinitionToken<TInstance, TLifeTime>,
       ) => {
         return this.use(definition);
       },
@@ -181,7 +181,7 @@ export class Container
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
-    definition: IDefinitionSymbol<TInstance, TLifeTime>,
+    definition: IDefinitionToken<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
     const configurationContext = new ContainerFreezeConfigurationContext(this.bindingsRegistry, this.instancesStore);
 
@@ -209,13 +209,13 @@ export class Container
     );
   }
 
-  use<TValue>(definition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybePromise<TValue> {
+  use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybePromise<TValue> {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition);
   }
 
-  useAsync<TValue>(definition: IDefinitionSymbol<TValue, ValidDependenciesLifeTime<LifeTime>>): Promise<TValue> {
+  useAsync<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): Promise<TValue> {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return Promise.resolve(this.buildWithStrategy(patchedDefinition));
@@ -226,7 +226,7 @@ export class Container
    * Cascading instances are returned only from the scope holding the instance.
    * @param definition
    */
-  useExisting<TValue>(definition: IDefinitionSymbol<TValue, LifeTime.scoped | LifeTime.singleton>): TValue | null {
+  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime.scoped | LifeTime.singleton>): TValue | null {
     return (this.instancesStore.getExisting(definition) as TValue) ?? null;
   }
 
@@ -238,7 +238,7 @@ export class Container
     if (this.currentInterceptor) {
       return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition), definition);
     } else {
-      if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+      if (this.bindingsRegistry.hasFrozenBinding(definition.token.id)) {
         return this._singletonStrategy.build(definition, this);
       }
 
@@ -251,7 +251,7 @@ export class Container
           return this._scopedStrategy.build(definition, this);
 
         case LifeTime.cascading:
-          return (this.bindingsRegistry.getOwningContainer(definition) ?? this).resolveCascading(definition);
+          return (this.bindingsRegistry.getOwningContainer(definition.token) ?? this).resolveCascading(definition);
       }
     }
   }
@@ -266,7 +266,7 @@ export class Container
   ): MaybePromise<TValue> {
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
 
-    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+    if (this.bindingsRegistry.hasFrozenBinding(definition.token.id)) {
       const instance = this._singletonStrategy.build(definition, withChildInterceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
@@ -291,15 +291,17 @@ export class Container
     }
 
     if (definition.strategy === LifeTime.cascading) {
-      const instance = (this.bindingsRegistry.getOwningContainer(definition) ?? this).resolveCascading(definition);
+      const instance = (this.bindingsRegistry.getOwningContainer(definition.token) ?? this).resolveCascading(
+        definition,
+      );
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
-    throw new Error(`Unknown strategy: ${definition.strategy}`);
+    throw new Error(`Unknown strategy: ${definition.token.strategy}`);
   }
 
-  all<TDefinitions extends Array<IDefinitionSymbol<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): MaybePromise<InstancesArray<TDefinitions>> {
     const results = definitions.map(def => this.use(def));
