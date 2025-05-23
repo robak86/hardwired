@@ -39,6 +39,13 @@ export class ScopeRegistry<V> {
 
     return definition;
   }
+  has(definitionId: symbol): boolean {
+    return (
+      this._overrides.has(definitionId) ||
+      this._registrations.has(definitionId) ||
+      Boolean(this._prev?.has(definitionId))
+    );
+  }
 
   getForOverride(definitionId: symbol): V {
     const def = this.findOverride(definitionId) || this.findRegistration(definitionId);
@@ -127,5 +134,12 @@ export class ScopeRegistry<V> {
     }
 
     return new ScopeRegistry(freeze, this._registrations, _prev);
+  }
+
+  forEach(iterFn: (value: V) => void) {
+    this._prev?.forEach(iterFn);
+
+    this._registrations.forEach(iterFn);
+    this._overrides.forEach(iterFn);
   }
 }

@@ -9,23 +9,25 @@ import type { IInterceptor } from '../../../../../container/interceptors/interce
 import type { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
 import type { ILifeCycleRegistry } from '../../../../../lifecycle/ILifeCycleRegistry.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
+import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
-    return new ConfigurationBuildersContext([], [], [], new Map(), new Map(), new Map());
+    return new ConfigurationBuildersContext([], [], [], new Map(), new Map());
   }
 
   private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
   private _disposeFns: Array<(scope: IContainer) => void> = [];
 
-  // private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>> = ScopeRegistry.create();
+  private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>> = ScopeRegistry.create();
+  private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>> = ScopeRegistry.create();
 
   protected constructor(
     private _lazyDefinitionsRegister: ILazyDefinitionBuilder<unknown, LifeTime>[],
     private _lazyDefinitionsOverride: ILazyDefinitionBuilder<unknown, LifeTime>[],
     private _lazyDefinitionsFreeze: ILazyDefinitionBuilder<unknown, LifeTime>[],
 
-    private _definitions: Map<symbol, IDefinition<any, any>>,
+    // private _definitions: Map<symbol, IDefinition<any, any>>,
     private _cascadeDefinitions: Map<symbol, IDefinitionSymbol<any, LifeTime.cascading>>,
 
     private _freezeDefinitions: Map<symbol, IDefinition<any, any>>,
@@ -111,14 +113,14 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._definitions.set(definition.id, definition);
+        this._definitions.register(definition.id, definition);
         break;
       case 'modify':
         if (definition.strategy === LifeTime.cascading) {
           this._cascadeDefinitions.set(definition.id, definition as IDefinitionSymbol<unknown, LifeTime.cascading>);
         }
 
-        this._definitions.set(definition.id, definition);
+        this._definitions.register(definition.id, definition);
         break;
       case 'freeze':
         this._freezeDefinitions.set(definition.id, definition);

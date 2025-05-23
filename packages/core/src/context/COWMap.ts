@@ -48,4 +48,8 @@ export class COWMap<V> {
   clone(): COWMap<V> {
     return new COWMap(this._instances, false);
   }
+
+  forEach(callback: (value: V, key: symbol) => void): void {
+    this._instances.forEach(callback);
+  }
 }
