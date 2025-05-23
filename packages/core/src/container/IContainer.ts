@@ -7,10 +7,7 @@ import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionToken } from '../definitions/def-symbol.js';
 import type { MaybePromise } from '../utils/async.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
-import type {
-  ContainerConfiguration,
-  ScopeConfiguration,
-} from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 
 import type { IInterceptor } from './interceptors/interceptor.js';
@@ -58,7 +55,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 }
 
 export interface IContainerScopes {
-  scope<TConfigureFns extends Array<ScopeConfigureFn | ScopeConfiguration>>(...configureFns: TConfigureFns): IContainer;
+  scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configureFns: TConfigureFns): IContainer;
 }
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
@@ -74,13 +71,13 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   readonly id: string;
   readonly parentId: string | null;
 
-  dispose(): void;
+  dispose(): MaybePromise<void>;
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
 }
 
 export type IContainerFactory = {
-  new: (...configurations: Array<ContainerConfiguration | ContainerConfigureFn>) => IContainer;
+  new: (...configurations: Array<IConfiguration | ContainerConfigureFn>) => IContainer;
 };
 
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;

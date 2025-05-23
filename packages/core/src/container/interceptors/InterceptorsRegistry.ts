@@ -16,6 +16,16 @@ export class InterceptorsRegistry {
     return this._interceptors.get(id);
   }
 
+  apply(registry: InterceptorsRegistry) {
+    registry._interceptors.forEach((interceptor, id) => {
+      if (this._interceptors.has(id)) {
+        throw new Error(`Interceptor with name ${id.toString()} already exists.`);
+      }
+
+      this._interceptors.set(id, interceptor);
+    });
+  }
+
   scope(
     tags: ScopeTag[],
     bindingsRegistry: IBindingsRegistryRead,

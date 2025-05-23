@@ -8,12 +8,17 @@ import type { ConfigurationType, IConfigurationContext } from '../abstract/IConf
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
+import type { IConfiguration } from '../../container/ContainerConfiguration.js';
 
 export class ContainerFreezeConfigurationContext implements IConfigurationContext {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private instancesStore: InstancesStore,
   ) {}
+
+  toConfig(): IConfiguration {
+    throw new Error('Returning container configuration is not supported in eager mode.');
+  }
 
   addDefinitionDisposeFn<TInstance>(
     _symbol: IDefinitionToken<TInstance, LifeTime>,

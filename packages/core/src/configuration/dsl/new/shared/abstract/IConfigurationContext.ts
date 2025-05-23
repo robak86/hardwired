@@ -5,6 +5,7 @@ import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js'
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
+import type { IConfiguration } from '../../container/ContainerConfiguration.js';
 
 export type ConfigurationType = 'add' | 'modify' | 'freeze';
 
@@ -23,4 +24,6 @@ export interface IConfigurationContext {
     _symbol: IDefinitionToken<TInstance, LifeTime>,
     disposeFn: (instance: TInstance) => MaybePromise<void>,
   ): void;
+
+  toConfig(): IConfiguration;
 }

@@ -13,7 +13,7 @@ import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js'
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 
-import { ContainerConfiguration } from './ContainerConfiguration.js';
+import { type IConfiguration } from './ContainerConfiguration.js';
 
 export class ContainerConfigurationBuilder implements IContainerConfigurable {
   private readonly _allowedRegisterLifeTimes = [
@@ -33,8 +33,8 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   private _context = ConfigurationBuildersContext.create();
 
-  toConfig(): ContainerConfiguration {
-    return new ContainerConfiguration(this._context);
+  toConfig(): IConfiguration {
+    return this._context.toConfig();
   }
 
   // TODO: replace this callback functions with some minimal interface

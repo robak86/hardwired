@@ -5,7 +5,7 @@ import type { IContainer } from '../IContainer.js';
 import { configureContainer, type ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { cascading } from '../../definitions/def-symbol.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
-import type { ContainerConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { IConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
 
 describe(`Testing`, () => {
   describe(`using container in vitest context with custom cleaning of resources`, () => {
@@ -19,7 +19,7 @@ describe(`Testing`, () => {
 
     const dbConnection = cascading<IDbConnection>();
 
-    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | ContainerConfiguration>>(
+    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | IConfiguration>>(
       ...containerConfigurations: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({

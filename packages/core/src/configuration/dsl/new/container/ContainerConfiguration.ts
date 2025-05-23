@@ -1,43 +1,40 @@
-import type { BindingsRegistry } from '../../../../context/BindingsRegistry.js';
-import type { ICascadingDefinitionResolver } from '../../../../container/IContainer.js';
-import type { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 import type { InterceptorsRegistry } from '../../../../container/interceptors/InterceptorsRegistry.js';
 import type { ILifeCycleRegistry } from '../../../../lifecycle/ILifeCycleRegistry.js';
+import type { IReadonlyScopeRegistry } from '../../../../context/ScopeRegistry.js';
+import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
+import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import type { ILazyDefinitionBuilder } from '../utils/abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
 
-export interface IContainerConfiguration {
-  // TODO: it shouldn't apply anything. It should return objects that can be linked
-  //  to the corresponding structures from the parent scope
-  //  By linking we trade time required for scope initialization for a little bit slower resolution
-  apply(
-    bindingsRegistry: BindingsRegistry,
-    container: ICascadingDefinitionResolver,
-    interceptorsRegistry: InterceptorsRegistry,
-    lifecycleRegistry: ILifeCycleRegistry,
-  ): void;
+export interface IBindingsRegistryConfiguration {
+  readonly definitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>;
+  readonly frozenDefinitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>;
+  readonly lazyDefinitions: ReadonlyArray<ILazyDefinitionBuilder<unknown, LifeTime>>;
+  readonly frozenLazyDefinitions: ReadonlyArray<ILazyDefinitionBuilder<unknown, LifeTime>>;
+  readonly cascadingTokens: Set<IDefinitionToken<any, LifeTime.cascading>>;
 }
 
-export class ContainerConfiguration implements IContainerConfiguration {
-  constructor(private context: ConfigurationBuildersContext) {}
-
-  apply(
-    bindingsRegistry: BindingsRegistry,
-    container: ICascadingDefinitionResolver,
-    interceptorsRegistry: InterceptorsRegistry,
-    lifecycleRegistry: ILifeCycleRegistry,
-  ) {
-    this.context.applyBindings(bindingsRegistry, container, interceptorsRegistry, lifecycleRegistry);
-  }
+export interface ILifecycleConfiguration {
+  readonly lifeCycleRegistry: ILifeCycleRegistry;
 }
 
-export class ScopeConfiguration implements IContainerConfiguration {
-  constructor(private context: ConfigurationBuildersContext) {}
+export interface IInterceptorsConfiguration {
+  readonly interceptors: InterceptorsRegistry;
+}
 
-  apply(
-    bindingsRegistry: BindingsRegistry,
-    container: ICascadingDefinitionResolver,
-    interceptorsRegistry: InterceptorsRegistry,
-    lifecycleRegistry: ILifeCycleRegistry,
-  ) {
-    this.context.applyBindings(bindingsRegistry, container, interceptorsRegistry, lifecycleRegistry);
-  }
+export interface IConfiguration
+  extends IBindingsRegistryConfiguration,
+    ILifecycleConfiguration,
+    IInterceptorsConfiguration {}
+
+export class ContainerConfiguration implements IConfiguration {
+  constructor(
+    public readonly definitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>,
+    public readonly frozenDefinitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>,
+    public readonly lazyDefinitions: ReadonlyArray<ILazyDefinitionBuilder<unknown, LifeTime>>,
+    public readonly frozenLazyDefinitions: ReadonlyArray<ILazyDefinitionBuilder<unknown, LifeTime>>,
+    public readonly cascadingTokens: Set<IDefinitionToken<any, LifeTime.cascading>>,
+    public readonly lifeCycleRegistry: ILifeCycleRegistry,
+    public readonly interceptors: InterceptorsRegistry,
+  ) {}
 }

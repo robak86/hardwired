@@ -2,6 +2,7 @@ import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { DefinitionSymbol, IDefinitionToken } from '../definitions/def-symbol.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
+import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 
 import { COWMap } from './COWMap.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
@@ -22,6 +23,37 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>,
     private _cascadingRoots: COWMap<ICascadingDefinitionResolver>,
   ) {}
+
+  applyConfig(config: IBindingsRegistryConfiguration, container: ICascadingDefinitionResolver) {
+    config.definitions.forEach(definition => {
+      this.register(definition.token, definition, container);
+    });
+
+    config.frozenDefinitions.forEach(def => {
+      this.freeze(def);
+    });
+
+    //! lazy
+    config.lazyDefinitions.forEach(builder => {
+      const def = builder.build(this);
+
+      this.override(def);
+    });
+
+    //! lazy
+    config.frozenLazyDefinitions.forEach(def => {
+      const frozenDef = def.build(this);
+
+      this.freeze(frozenDef);
+    });
+
+    //! lazy
+    config.cascadingTokens.forEach(symbol => {
+      this.setCascadeRoot(symbol, container);
+
+      this.override(this.getDefinition(symbol));
+    });
+  }
 
   hasCascadingRoot(id: symbol): boolean {
     return this._cascadingRoots.hasOwn(id);

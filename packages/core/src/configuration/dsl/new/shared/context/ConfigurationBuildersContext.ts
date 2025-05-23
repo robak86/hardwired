@@ -1,32 +1,52 @@
 import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitionBuilder.js';
 import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
-import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
-import type { ICascadingDefinitionResolver, IContainer } from '../../../../../container/IContainer.js';
+import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
-import type { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
-import type { ILifeCycleRegistry } from '../../../../../lifecycle/ILifeCycleRegistry.js';
+import { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
+import { ContainerLifeCycleRegistry, DisposeFunctions } from '../../../../../lifecycle/ILifeCycleRegistry.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
 import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
+import type { IConfiguration } from '../../container/ContainerConfiguration.js';
+import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
-    return new ConfigurationBuildersContext([]);
+    return new ConfigurationBuildersContext();
   }
 
   private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
-  private _disposeFns: Array<(scope: IContainer) => void> = [];
 
   private _definitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
   private _frozenDefinitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
-
   private _lazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
-
   private _cascadeDefinitions = new Set<IDefinitionToken<any, LifeTime.cascading>>();
+  private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
+  private _disposeFunctions = new DisposeFunctions();
 
-  protected constructor(private _lazyDefinitionsFreeze: ILazyDefinitionBuilder<unknown, LifeTime>[]) {}
+  toConfig(): IConfiguration {
+    const interceptorsRegistry = InterceptorsRegistry.create();
+
+    this._interceptors.forEach((interceptor, name) => {
+      interceptorsRegistry.register(name, interceptor);
+    });
+
+    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
+
+    lifeCycleRegistry.append(this._disposeFunctions);
+
+    return new ContainerConfiguration(
+      this._definitions,
+      this._frozenDefinitions,
+      this._lazyDefinitions,
+      this._frozenLazyDefinitions,
+      this._cascadeDefinitions,
+      lifeCycleRegistry,
+      interceptorsRegistry,
+    );
+  }
 
   addDefinitionDisposeFn<TInstance>(
     _symbol: IDefinitionToken<TInstance, LifeTime>,
@@ -44,7 +64,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   }
 
   onDispose(callback: (scope: IContainer) => void): void {
-    this._disposeFns.push(callback);
+    this._disposeFunctions.append(callback);
   }
 
   onCascadingDefinition(token: IDefinitionToken<unknown, LifeTime.cascading>): void {
@@ -60,7 +80,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         this._lazyDefinitions.push(builder);
         break;
       case 'freeze':
-        this._lazyDefinitionsFreeze.push(builder);
+        this._frozenLazyDefinitions.push(builder);
         break;
     }
 
@@ -78,7 +98,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         this._lazyDefinitions.push(builder);
         break;
       case 'freeze':
-        this._lazyDefinitionsFreeze.push(builder);
+        this._frozenLazyDefinitions.push(builder);
         break;
     }
 
@@ -100,7 +120,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         this._lazyDefinitions.push(builder);
         break;
       case 'freeze':
-        this._lazyDefinitionsFreeze.push(builder);
+        this._frozenLazyDefinitions.push(builder);
         break;
     }
   }
@@ -121,49 +141,5 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         this._frozenDefinitions.register(definition.token.id, definition);
         break;
     }
-  }
-
-  // TODO: still slow as hell. We shouldn't apply anything, but produce already BindingsRegistry allowing treating
-  // multiple of them as linked list
-  applyBindings(
-    bindingsRegistry: BindingsRegistry,
-    container: ICascadingDefinitionResolver,
-    interceptorsRegistry: InterceptorsRegistry,
-    lifecycleRegistry: ILifeCycleRegistry,
-  ): void {
-    this._definitions.forEach(definition => {
-      bindingsRegistry.register(definition.token, definition, container);
-    });
-
-    this._frozenDefinitions.forEach(def => {
-      bindingsRegistry.freeze(def);
-    });
-
-    //! lazy
-    this._lazyDefinitions.forEach(builder => {
-      const def = builder.build(bindingsRegistry);
-
-      bindingsRegistry.override(def);
-    });
-
-    //! lazy
-    this._lazyDefinitionsFreeze.forEach(def => {
-      const frozenDef = def.build(bindingsRegistry);
-
-      bindingsRegistry.freeze(frozenDef);
-    });
-
-    //! lazy
-    this._cascadeDefinitions.forEach(symbol => {
-      bindingsRegistry.setCascadeRoot(symbol, container);
-
-      bindingsRegistry.override(bindingsRegistry.getDefinition(symbol));
-    });
-
-    this._interceptors.forEach((interceptor, name) => {
-      interceptorsRegistry.register(name, interceptor);
-    });
-
-    lifecycleRegistry.setDisposeFns(this._disposeFns);
   }
 }

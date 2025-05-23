@@ -11,16 +11,13 @@ import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { configureScope } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { MaybePromise } from '../utils/async.js';
-import { maybePromiseAll } from '../utils/async.js';
+import { maybePromiseAll, maybePromiseThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinitionToken } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
-import type {
-  ContainerConfiguration,
-  ScopeConfiguration,
-} from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 
@@ -84,23 +81,23 @@ export class Container
     this._scopedStrategy = new ScopedStrategy(instancesStore, bindingsRegistry);
   }
 
-  dispose() {
+  dispose(): MaybePromise<void> {
     if (this._isDisposed) {
       return;
     }
 
     this._isDisposed = true;
 
-    this.lifecycleRegistry.dispose(this);
+    return maybePromiseThen(this.lifecycleRegistry.dispose(this), () => {
+      if (this.parentId === null) {
+        this.instancesStore.disposeRoot();
+      }
 
-    if (this.parentId === null) {
-      this.instancesStore.disposeRoot();
-    }
-
-    this.instancesStore.disposeCurrent();
+      this.instancesStore.disposeCurrent();
+    });
   }
 
-  new(...configurations: Array<ContainerConfiguration | ContainerConfigureFn>): IContainer {
+  new(...configurations: Array<IConfiguration | ContainerConfigureFn>): IContainer {
     const bindingsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
     const interceptorsRegistry = new InterceptorsRegistry();
@@ -125,15 +122,15 @@ export class Container
         }
       });
 
-      configs.forEach((config: ContainerConfiguration) =>
-        config.apply(bindingsRegistry, cnt, interceptorsRegistry, lifeCycleRegistry),
-      );
+      configs.forEach((config: IConfiguration) => {
+        bindingsRegistry.applyConfig(config, cnt);
+        lifeCycleRegistry.append(config.lifeCycleRegistry);
+        interceptorsRegistry.apply(config.interceptors);
+      });
 
       const interceptor = interceptorsRegistry.build();
 
       interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
-
-      // binder.toConfig().apply(bindingsRegistry, cnt);
 
       return interceptor ? cnt.withInterceptor(interceptor) : cnt;
     }
@@ -141,9 +138,7 @@ export class Container
     return cnt;
   }
 
-  scope<TConfigureFns extends Array<ScopeConfigureFn | ScopeConfiguration>>(
-    ...configureFns: TConfigureFns
-  ): IContainer {
+  scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configureFns: TConfigureFns): IContainer {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
     const tags: (string | symbol)[] = [];
@@ -171,7 +166,9 @@ export class Container
       });
 
       configs.forEach(config => {
-        config.apply(bindingsRegistry, cnt, scopeInterceptorsRegistry, lifeCycleRegistry);
+        bindingsRegistry.applyConfig(config, cnt);
+        lifeCycleRegistry.append(config.lifeCycleRegistry);
+        scopeInterceptorsRegistry.apply(config.interceptors);
       });
 
       return cnt;

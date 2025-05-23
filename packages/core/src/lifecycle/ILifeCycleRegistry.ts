@@ -1,24 +1,47 @@
 import type { IContainer } from '../container/IContainer.js';
+import type { MaybePromise } from '../utils/async.js';
+import { maybePromiseAll } from '../utils/async.js';
 
 export interface ILifeCycleRegistry {
-  setDisposeFns(disposeFns: Array<(scope: IContainer) => void>): void;
-  dispose(container: IContainer): void;
+  dispose(container: IContainer): MaybePromise<void>;
+}
+
+export class DisposeFunctions implements ILifeCycleRegistry {
+  private _disposeFunctions: Array<(container: IContainer) => MaybePromise<void>> = [];
+
+  append(fn: (container: IContainer) => MaybePromise<void>) {
+    this._disposeFunctions.push(fn);
+  }
+
+  dispose(container: IContainer): MaybePromise<void> {
+    const disposed = this._disposeFunctions.map(fn => {
+      try {
+        return fn(container);
+      } catch (err) {
+        console.error((err as any).message);
+      }
+    });
+
+    return maybePromiseAll(disposed) as unknown as MaybePromise<void>;
+  }
 }
 
 export class ContainerLifeCycleRegistry implements ILifeCycleRegistry {
-  private _disposeFns: Array<(scope: IContainer) => void> = [];
+  protected _lifeCycles: Array<ILifeCycleRegistry> = [];
 
-  setDisposeFns(disposeFns: Array<(scope: IContainer) => void>): void {
-    this._disposeFns = disposeFns;
+  append(config: ILifeCycleRegistry) {
+    this._lifeCycles.push(config);
   }
 
-  dispose(container: IContainer) {
-    for (const disposeFn of this._disposeFns) {
+  dispose(container: IContainer): MaybePromise<void> {
+    const disposed = this._lifeCycles.map(registry => {
       try {
-        disposeFn(container);
-      } catch (error) {
-        console.error((error as any).message);
+        return registry.dispose(container);
+      } catch (err) {
+        console.error((err as any).message);
       }
-    }
+    });
+
+    return maybePromiseAll(disposed) as unknown as MaybePromise<void>;
   }
 }

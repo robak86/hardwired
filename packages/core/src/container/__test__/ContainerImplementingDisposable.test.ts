@@ -5,7 +5,7 @@ import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
 import type { ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';
-import type { ContainerConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { IConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
 
 describe(`container#[Symbol.dispose]`, () => {
   class DisposableImpl {
@@ -106,7 +106,7 @@ describe(`container#[Symbol.dispose]`, () => {
       });
 
       await scope.use(def);
-      scope.dispose();
+      await scope.dispose();
 
       expect(disposeSpy).toHaveBeenCalledTimes(1);
     });
@@ -158,7 +158,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
     const dbConnection = cascading<Disposable>();
 
-    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | ContainerConfiguration>>(
+    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | IConfiguration>>(
       ...containerConfigFns: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({
