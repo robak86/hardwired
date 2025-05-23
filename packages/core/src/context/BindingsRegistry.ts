@@ -54,7 +54,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
       this._cascadingRoots.set(symbol.id, buildAware);
     }
 
-    this._definitions.register(symbol.id, definition);
+    this._definitions.append(symbol.id, definition);
   }
 
   override(definition: IDefinition<any, LifeTime>) {

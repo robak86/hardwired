@@ -12,20 +12,23 @@ import type { MaybePromise } from '../../../../../utils/async.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
-    return new ConfigurationBuildersContext([], [], [], new Map(), new Map(), new Map(), new Map());
+    return new ConfigurationBuildersContext([], [], [], new Map(), new Map(), new Map());
   }
 
   private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
   private _disposeFns: Array<(scope: IContainer) => void> = [];
 
+  // private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>> = ScopeRegistry.create();
+
   protected constructor(
     private _lazyDefinitionsRegister: ILazyDefinitionBuilder<unknown, LifeTime>[],
     private _lazyDefinitionsOverride: ILazyDefinitionBuilder<unknown, LifeTime>[],
     private _lazyDefinitionsFreeze: ILazyDefinitionBuilder<unknown, LifeTime>[],
-    private _registerDefinitions: Map<symbol, IDefinition<any, any>>,
-    private _overrideDefinitions: Map<symbol, IDefinition<any, any>>,
-    private _freezeDefinitions: Map<symbol, IDefinition<any, any>>,
+
+    private _definitions: Map<symbol, IDefinition<any, any>>,
     private _cascadeDefinitions: Map<symbol, IDefinitionSymbol<any, LifeTime.cascading>>,
+
+    private _freezeDefinitions: Map<symbol, IDefinition<any, any>>,
   ) {}
 
   addDefinitionDisposeFn<TInstance>(
@@ -88,7 +91,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   }
 
   onInheritBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void {
-    if (this._overrideDefinitions.has(builder.symbol.id)) {
+    if (this._definitions.has(builder.symbol.id)) {
       throw new Error(`Cannot inherit from ${builder.symbol.toString()}. It is already modified in the current scope.`);
     }
 
@@ -108,14 +111,14 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._registerDefinitions.set(definition.id, definition);
+        this._definitions.set(definition.id, definition);
         break;
       case 'modify':
         if (definition.strategy === LifeTime.cascading) {
           this._cascadeDefinitions.set(definition.id, definition as IDefinitionSymbol<unknown, LifeTime.cascading>);
         }
 
-        this._overrideDefinitions.set(definition.id, definition);
+        this._definitions.set(definition.id, definition);
         break;
       case 'freeze':
         this._freezeDefinitions.set(definition.id, definition);
@@ -131,12 +134,8 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     interceptorsRegistry: InterceptorsRegistry,
     lifecycleRegistry: ILifeCycleRegistry,
   ): void {
-    this._registerDefinitions.forEach(definition => {
+    this._definitions.forEach(definition => {
       bindingsRegistry.register(definition, definition, container);
-    });
-
-    this._overrideDefinitions.forEach(definition => {
-      bindingsRegistry.override(definition);
     });
 
     this._lazyDefinitionsRegister.forEach(builder => {

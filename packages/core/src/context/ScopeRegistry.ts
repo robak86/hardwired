@@ -80,6 +80,18 @@ export class ScopeRegistry<V> {
     this._overrides.set(definitionId, instance);
   }
 
+  append(definitionId: symbol, instance: V) {
+    this.assertMutable(definitionId);
+
+    const current = this._registrations.get(definitionId);
+
+    if (current) {
+      this._overrides.set(definitionId, instance);
+    } else {
+      this._registrations.set(definitionId, instance);
+    }
+  }
+
   register(definitionId: symbol, instance: V) {
     if (this._registrations.has(definitionId)) {
       throw new Error(`Instance with id ${definitionId.toString()} already registered. Try using .modify() instead.`);
