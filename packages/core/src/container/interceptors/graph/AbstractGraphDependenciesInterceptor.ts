@@ -1,11 +1,11 @@
 import { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import type { INewInterceptor } from '../interceptor.js';
+import type { IInterceptor } from '../interceptor.js';
 import type { IDefinitionToken } from '../../../definitions/def-symbol.js';
 import type { COWMap } from '../../../context/COWMap.js';
 
 export type GraphBuilderMemoizableLifeTime = LifeTime.scoped | LifeTime.singleton | LifeTime.cascading;
 
-export abstract class AbstractGraphDependenciesInterceptor<TNode> implements INewInterceptor {
+export abstract class AbstractGraphDependenciesInterceptor<TNode> implements IInterceptor {
   protected constructor(
     protected _globalInstances: Map<symbol, TNode>,
     protected _scopeInstances: Map<symbol, TNode>,

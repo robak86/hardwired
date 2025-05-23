@@ -1,9 +1,9 @@
 import { container } from '../../Container.js';
-import type { INewInterceptor } from '../interceptor.js';
+import type { IInterceptor } from '../interceptor.js';
 import { singleton } from '../../../definitions/def-symbol.js';
 
-describe(`interceptor?`, () => {
-  class TestInterceptor implements INewInterceptor {
+describe(`interceptor`, () => {
+  class TestInterceptor implements IInterceptor {
     static create() {
       return new TestInterceptor();
     }
@@ -32,9 +32,9 @@ describe(`interceptor?`, () => {
   describe(`container configuration`, () => {
     describe(`getInterceptor`, () => {
       it(`returns correct instance of interceptor`, async () => {
-        const cnt = container.new(c => c.withNewInterceptor(TestInterceptor));
+        const cnt = container.new(c => c.withInterceptor(TestInterceptor));
 
-        expect(cnt.getInterceptorNew(TestInterceptor)).toBeInstanceOf(TestInterceptor);
+        expect(cnt.getInterceptor(TestInterceptor)).toBeInstanceOf(TestInterceptor);
       });
     });
   });
@@ -47,9 +47,9 @@ describe(`interceptor?`, () => {
         c.add(bDef).fn((c1, c2) => ['B', c1, c2], c1Def, c2Def);
         c.add(aDef).fn(b => ['A', b], bDef);
 
-        c.withNewInterceptor(TestInterceptor);
+        c.withInterceptor(TestInterceptor);
       });
-      const interceptor = cnt.getInterceptorNew(TestInterceptor);
+      const interceptor = cnt.getInterceptor(TestInterceptor);
 
       expect(interceptor).toBeInstanceOf(TestInterceptor);
 
@@ -74,10 +74,10 @@ describe(`interceptor?`, () => {
         c.add(bDef).fn(async (c1, c2) => ['B', c1, c2], c1Def, c2Def);
         c.add(aDef).fn(async b => ['A', b], bDef);
 
-        c.withNewInterceptor(TestInterceptor);
+        c.withInterceptor(TestInterceptor);
       });
 
-      const interceptor = cnt.getInterceptorNew(TestInterceptor);
+      const interceptor = cnt.getInterceptor(TestInterceptor);
 
       expect(interceptor).toBeInstanceOf(TestInterceptor);
 

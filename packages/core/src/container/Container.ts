@@ -28,10 +28,10 @@ import type {
   IStrategyAware,
   UseFn,
 } from './IContainer.js';
-import type { INewInterceptor, NewInterceptorClass } from './interceptors/interceptor.js';
+import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
-import { NewCompositeInterceptor } from './interceptors/CompositeInterceptor.js';
+import { CompositeInterceptor } from './interceptors/CompositeInterceptor.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -65,7 +65,7 @@ export class Container
     protected readonly instancesStore: InstancesStore,
     protected readonly scopeTags: (string | symbol)[],
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
-    private _interceptor?: NewCompositeInterceptor,
+    private _interceptor?: CompositeInterceptor,
   ) {
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
@@ -115,8 +115,8 @@ export class Container
         bindingsRegistry.applyConfig(config, cnt);
         lifeCycleRegistry.append(config.lifeCycleRegistry);
 
-        if (config.interceptorsNew) {
-          cnt.applyInterceptors(config.interceptorsNew);
+        if (config.interceptors) {
+          cnt.applyInterceptors(config.interceptors);
         }
       });
 
@@ -126,8 +126,8 @@ export class Container
     return cnt;
   }
 
-  protected applyInterceptors(interceptor: Set<NewInterceptorClass<INewInterceptor>>): void {
-    const containerInterceptor = this._interceptor ?? (this._interceptor = new NewCompositeInterceptor());
+  protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
+    const containerInterceptor = this._interceptor ?? (this._interceptor = new CompositeInterceptor());
 
     interceptor.forEach(interceptorClass => {
       const interceptorInstance = interceptorClass.create();
@@ -164,8 +164,8 @@ export class Container
         bindingsRegistry.applyConfig(config, cnt);
         lifeCycleRegistry.append(config.lifeCycleRegistry);
 
-        if (config.interceptorsNew) {
-          cnt.applyInterceptors(config.interceptorsNew);
+        if (config.interceptors) {
+          cnt.applyInterceptors(config.interceptors);
         }
       });
 
@@ -188,11 +188,11 @@ export class Container
     );
   }
 
-  hasInterceptor(interceptorClass: NewInterceptorClass<INewInterceptor>): boolean {
+  hasInterceptor(interceptorClass: InterceptorClass<IInterceptor>): boolean {
     return this._interceptor?.findInstance(interceptorClass) !== undefined;
   }
 
-  getInterceptorNew<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance {
+  getInterceptor<TInstance extends IInterceptor>(cls: InterceptorClass<TInstance>): TInstance {
     const interceptorInstance = this._interceptor?.findInstance(cls);
 
     if (!interceptorInstance) {
@@ -239,7 +239,6 @@ export class Container
         return this._singletonStrategy.build(definition, this, this._interceptor);
       case LifeTime.scoped:
         return this._scopedStrategy.build(definition, this, this._interceptor);
-
       case LifeTime.cascading:
         return (this.bindingsRegistry.getOwningContainer(definition.token) ?? this).resolveCascading(definition);
     }

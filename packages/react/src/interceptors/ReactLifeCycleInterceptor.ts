@@ -11,14 +11,14 @@ export interface IReactLifeCycleAware {
 }
 
 export const withReactLifeCycle = (): ContainerConfigureFn => c => {
-  c.withNewInterceptor(ReactLifeCycleRootInterceptor);
+  c.withInterceptor(ReactLifeCycleRootInterceptor);
 };
 
 export const useReactLifeCycleInterceptor = () => {
   const container = useContainer();
 
   if (container.hasInterceptor(ReactLifeCycleRootInterceptor)) {
-    return container.getInterceptorNew(ReactLifeCycleRootInterceptor);
+    return container.getInterceptor(ReactLifeCycleRootInterceptor);
   }
 };
 

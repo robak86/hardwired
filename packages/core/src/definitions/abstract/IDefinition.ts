@@ -1,7 +1,7 @@
 import type { IServiceLocator } from '../../container/IContainer.js';
 import type { IDefinitionToken } from '../def-symbol.js';
 import type { MaybePromise } from '../../utils/async.js';
-import type { INewInterceptor } from '../../container/interceptors/interceptor.js';
+import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 
 import type { LifeTime } from './LifeTime.js';
 
@@ -15,7 +15,7 @@ export interface IDefinition<TInstance, TLifeTime extends LifeTime> {
   readonly id: symbol;
   readonly strategy: LifeTime;
 
-  create(context: IServiceLocator, interceptor?: INewInterceptor): MaybePromise<TInstance>;
+  create(context: IServiceLocator, interceptor?: IInterceptor): MaybePromise<TInstance>;
 
   override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime>;
 

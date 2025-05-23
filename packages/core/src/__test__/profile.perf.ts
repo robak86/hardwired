@@ -49,7 +49,7 @@ const instantiationBench = new Bench({
     c3 = cnt.scope();
 
     cntWithInterceptor = container.new(configure, c => {
-      c.withNewInterceptor(DependenciesGraphInterceptor);
+      c.withInterceptor(DependenciesGraphInterceptor);
     });
   },
   teardown: () => {},

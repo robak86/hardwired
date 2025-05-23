@@ -4,7 +4,7 @@ import type { IDefinition } from '../../../../../definitions/abstract/IDefinitio
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
-import type { INewInterceptor, NewInterceptorClass } from '../../../../../container/interceptors/interceptor.js';
+import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import {
   ContainerLifeCycleRegistry,
   DefinitionsDisposeFunctions,
@@ -20,7 +20,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     return new ConfigurationBuildersContext();
   }
 
-  private _newInterceptors = new Set<NewInterceptorClass<INewInterceptor>>();
+  private _newInterceptors = new Set<InterceptorClass<IInterceptor>>();
 
   private _definitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
   private _frozenDefinitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
@@ -55,7 +55,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     this._definitionDisposeFns.append(token, disposeFn);
   }
 
-  withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void {
+  withInterceptor(interceptor: InterceptorClass<IInterceptor>): void {
     if (this._newInterceptors.has(interceptor)) {
       throw new Error(`Interceptor with name ${(interceptor as any).name} already exists.`);
     }

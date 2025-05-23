@@ -49,11 +49,11 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
   function setup(...setupFns: ContainerConfigureFn[]) {
     const cnt = container.new(
       c => {
-        c.withNewInterceptor(RootTestInterceptor);
+        c.withInterceptor(RootTestInterceptor);
       },
       ...setupFns,
     );
-    const interceptor = cnt.getInterceptorNew(RootTestInterceptor);
+    const interceptor = cnt.getInterceptor(RootTestInterceptor);
 
     return { cnt, interceptor };
   }
@@ -115,8 +115,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
         await childScope.use(def); // memoize scoped in the child container and child interceptor
 
-        const rootInterceptor = cnt.getInterceptorNew(RootTestInterceptor);
-        const childInterceptor = childScope.getInterceptorNew(RootTestInterceptor);
+        const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
+        const childInterceptor = childScope.getInterceptor(RootTestInterceptor);
 
         expect(rootInterceptor.getGraphNode(def).value).toEqual(1);
 
@@ -132,13 +132,13 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
           c.add(consumer).fn(val => ({ c: val }), shared);
         });
 
-        const rootInterceptor = cnt.getInterceptorNew(RootTestInterceptor);
+        const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
 
         const scope1 = cnt.scope();
-        const scope1Interceptor = scope1.getInterceptorNew(RootTestInterceptor);
+        const scope1Interceptor = scope1.getInterceptor(RootTestInterceptor);
 
         const scope2 = cnt.scope();
-        const scope2Interceptor = scope2.getInterceptorNew(RootTestInterceptor);
+        const scope2Interceptor = scope2.getInterceptor(RootTestInterceptor);
 
         await scope1.use(consumer);
         await scope2.use(consumer);
@@ -161,7 +161,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
           c.add(consumer).fn(val => ({ c: val, value: 1 }), shared);
         });
 
-        const rootInterceptor = cnt.getInterceptorNew(RootTestInterceptor);
+        const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
         const scope1 = cnt.scope();
         const scope2 = cnt.scope();
 
@@ -170,8 +170,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
         expect(scope1.use(consumer)).toBe(scope2.use(consumer));
         expect(cnt.use(consumer)).toBe(scope1.use(consumer));
 
-        const scope1Interceptor = scope1.getInterceptorNew(RootTestInterceptor);
-        const scope2Interceptor = scope2.getInterceptorNew(RootTestInterceptor);
+        const scope1Interceptor = scope1.getInterceptor(RootTestInterceptor);
+        const scope2Interceptor = scope2.getInterceptor(RootTestInterceptor);
 
         expect(scope1Interceptor.getGraphNode(consumer).value).toEqual({ c: 1, value: 1 });
         expect(scope2Interceptor.getGraphNode(consumer).value).toEqual({ c: 1, value: 1 });
@@ -237,8 +237,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
           return c.modify(def).static(123);
         });
 
-        const rootInterceptor = cnt.getInterceptorNew(RootTestInterceptor);
-        const childInterceptor = childScope.getInterceptorNew(RootTestInterceptor);
+        const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
+        const childInterceptor = childScope.getInterceptor(RootTestInterceptor);
 
         await childScope.use(def); // memoize scoped in the child container and child interceptor
 
@@ -255,13 +255,13 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
           c.add(consumer).fn(val => ({ c: val }), shared);
         });
 
-        const rootInterceptor = cnt.getInterceptorNew(RootTestInterceptor);
+        const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
 
         const scope1 = cnt.scope();
-        const scope1Interceptor = scope1.getInterceptorNew(RootTestInterceptor);
+        const scope1Interceptor = scope1.getInterceptor(RootTestInterceptor);
 
         const scope2 = cnt.scope();
-        const scope2Interceptor = scope2.getInterceptorNew(RootTestInterceptor);
+        const scope2Interceptor = scope2.getInterceptor(RootTestInterceptor);
 
         await scope1.use(consumer);
         await scope2.use(consumer);
@@ -284,7 +284,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
           c.add(consumer).fn(val => ({ c: val, value: 1 }), shared);
         });
 
-        const rootInterceptor = cnt.getInterceptorNew(RootTestInterceptor);
+        const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
         const scope1 = cnt.scope();
         const scope2 = cnt.scope();
 
@@ -293,11 +293,11 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
         expect(await scope1.use(consumer)).toBe(await scope2.use(consumer));
         expect(await cnt.use(consumer)).toBe(await scope1.use(consumer));
 
-        const scope1Interceptor = scope1.getInterceptorNew(RootTestInterceptor);
+        const scope1Interceptor = scope1.getInterceptor(RootTestInterceptor);
 
         expect(scope1Interceptor.getGraphNode(consumer)?.value).toEqual({ c: 1, value: 1 });
 
-        const scope2Interceptor = scope2.getInterceptorNew(RootTestInterceptor);
+        const scope2Interceptor = scope2.getInterceptor(RootTestInterceptor);
 
         expect(scope2Interceptor.getGraphNode(consumer)?.value).toEqual({ c: 1, value: 1 });
 
@@ -316,7 +316,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
           c.add(consumer).fn(val => ({ c: val, value: 1 }), shared);
         });
 
-        const rootInterceptor = cnt.getInterceptorNew(RootTestInterceptor);
+        const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
         const scope1 = cnt.scope();
         const scope2 = scope1.scope();
         const scope3 = scope2.scope(s => s.modify(consumer).claimNew());
@@ -328,9 +328,9 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
         expect(await scope1.use(consumer)).toBe(await scope2.use(consumer));
         expect(await cnt.use(consumer)).toBe(await scope1.use(consumer));
 
-        const scope1Interceptor = scope1.getInterceptorNew(RootTestInterceptor);
-        const scope2Interceptor = scope2.getInterceptorNew(RootTestInterceptor);
-        const scope3Interceptor = scope3.getInterceptorNew(RootTestInterceptor);
+        const scope1Interceptor = scope1.getInterceptor(RootTestInterceptor);
+        const scope2Interceptor = scope2.getInterceptor(RootTestInterceptor);
+        const scope3Interceptor = scope3.getInterceptor(RootTestInterceptor);
 
         expect(rootInterceptor.getGraphNode(consumer)).toBe(scope1Interceptor.getGraphNode(consumer));
         expect(rootInterceptor.getGraphNode(consumer)).toBe(scope2Interceptor.getGraphNode(consumer));
@@ -356,8 +356,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
         expect(rootInstance).not.toBe(childInstance);
 
-        const rootInterceptor = cnt.getInterceptorNew(RootTestInterceptor);
-        const scope1Interceptor = scope1.getInterceptorNew(RootTestInterceptor);
+        const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
+        const scope1Interceptor = scope1.getInterceptor(RootTestInterceptor);
 
         expect(rootInterceptor.getGraphNode(cascadingDef)).not.toBe(scope1Interceptor.getGraphNode(cascadingDef));
       });

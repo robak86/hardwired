@@ -16,7 +16,7 @@ describe(`DependenciesGraph`, () => {
       c.add(bDef).fn((c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
       c.add(aDef).fn(b => ({ A: b }), bDef);
 
-      c.withNewInterceptor(DependenciesGraphInterceptor);
+      c.withInterceptor(DependenciesGraphInterceptor);
     });
 
     return { cnt, a: aDef, b: bDef, c1: c1Def, c2: c2Def };
@@ -28,7 +28,7 @@ describe(`DependenciesGraph`, () => {
 
       await cnt.use(a);
 
-      const interceptor = cnt.getInterceptorNew(DependenciesGraphInterceptor);
+      const interceptor = cnt.getInterceptor(DependenciesGraphInterceptor);
 
       expect(interceptor.getGraphNode(a).value).toEqual({ A: { B: { c1: 'C1', c2: 'C2' } } });
       expect(interceptor.getGraphNode(b).value).toEqual({ B: { c1: 'C1', c2: 'C2' } });
@@ -55,7 +55,7 @@ describe(`DependenciesGraph`, () => {
           c.add(bDef).fn(async (c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
           c.add(aDef).fn(async b => ({ A: b }), bDef);
 
-          c.withNewInterceptor(DependenciesGraphInterceptor);
+          c.withInterceptor(DependenciesGraphInterceptor);
         },
         ...configureFns,
       );
@@ -69,7 +69,7 @@ describe(`DependenciesGraph`, () => {
 
         await cnt.use(a);
 
-        const interceptor = cnt.getInterceptorNew(DependenciesGraphInterceptor);
+        const interceptor = cnt.getInterceptor(DependenciesGraphInterceptor);
 
         expect(interceptor.getGraphNode(a)?.value).toEqual({ A: { B: { c1: 'C1', c2: 'C2' } } });
         expect(interceptor.getGraphNode(b)?.value).toEqual({ B: { c1: 'C1', c2: 'C2' } });
@@ -102,7 +102,7 @@ describe(`DependenciesGraph`, () => {
         await cnt.use(a);
         await cnt.use(b);
 
-        const interceptor = cnt.getInterceptorNew(DependenciesGraphInterceptor);
+        const interceptor = cnt.getInterceptor(DependenciesGraphInterceptor);
 
         expect(interceptor.getGraphNode(a).value).toEqual({ A: 1 });
         expect(interceptor.getGraphNode(b).value).toEqual({ B: 1 });

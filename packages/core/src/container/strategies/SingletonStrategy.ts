@@ -4,7 +4,7 @@ import type { IServiceLocator } from '../IContainer.js';
 import type { InstancesStore } from '../../context/InstancesStore.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import type { INewInterceptor } from '../interceptors/interceptor.js';
+import type { IInterceptor } from '../interceptors/interceptor.js';
 
 export class SingletonStrategy {
   constructor(
@@ -15,7 +15,7 @@ export class SingletonStrategy {
   build<TValue>(
     definition: IDefinition<TValue, LifeTime>,
     locator: IServiceLocator,
-    interceptor?: INewInterceptor,
+    interceptor?: IInterceptor,
   ): MaybePromise<TValue> {
     return this.upsertIntoRootInstances(definition, locator, interceptor);
   }
@@ -23,7 +23,7 @@ export class SingletonStrategy {
   protected upsertIntoRootInstances<TInstance>(
     definition: IDefinition<TInstance, LifeTime>,
     container: IServiceLocator,
-    interceptor?: INewInterceptor,
+    interceptor?: IInterceptor,
   ) {
     if (this.instancesStore.hasRootInstance(definition.id)) {
       return this.instancesStore.getRootInstance(definition.id) as TInstance;

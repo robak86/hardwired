@@ -4,7 +4,7 @@ import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
 import { isThenable } from '../../utils/IsThenable.js';
 import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
-import type { INewInterceptor } from '../../container/interceptors/interceptor.js';
+import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { IDefinitionToken } from '../def-symbol.js';
 
 import { Definition } from './Definition.js';
@@ -36,7 +36,7 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
   }
 
   // TODO: it's a mess with this MaybePromise and interceptor
-  create(context: IServiceLocator, interceptor?: INewInterceptor): MaybePromise<TInstance> {
+  create(context: IServiceLocator, interceptor?: IInterceptor): MaybePromise<TInstance> {
     // no dependencies
     if (this._dependencies === undefined) {
       // @ts-ignore

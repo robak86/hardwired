@@ -5,7 +5,7 @@ import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
 import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
-import type { INewInterceptor } from '../../container/interceptors/interceptor.js';
+import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { IDefinitionToken } from '../def-symbol.js';
 
 import { Definition } from './Definition.js';
@@ -37,7 +37,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     return `${this.token.toString()}:${this._class.name}`;
   }
 
-  create(use: IServiceLocator, interceptor?: INewInterceptor): MaybePromise<TInstance> {
+  create(use: IServiceLocator, interceptor?: IInterceptor): MaybePromise<TInstance> {
     // no dependencies
     if (this._dependencyTokens.length === 0) {
       // @ts-ignore - mute error about missing args

@@ -1,17 +1,17 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 
-import type { INewInterceptor, NewInterceptorClass } from './interceptor.js';
+import type { IInterceptor, InterceptorClass } from './interceptor.js';
 
-export class NewCompositeInterceptor implements INewInterceptor {
-  constructor(private _interceptors: INewInterceptor[] = []) {}
+export class CompositeInterceptor implements IInterceptor {
+  constructor(private _interceptors: IInterceptor[] = []) {}
 
   // TODO: slow for a lot interceptors!
-  findInstance<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance {
+  findInstance<TInstance extends IInterceptor>(cls: InterceptorClass<TInstance>): TInstance {
     return this._interceptors.find(interceptor => interceptor instanceof (cls as any)) as TInstance;
   }
 
-  append(interceptor: INewInterceptor) {
+  append(interceptor: IInterceptor) {
     // throw if _interceptors already have interceptor which is instance of the same class
     if (this._interceptors.some(existingInterceptor => existingInterceptor instanceof interceptor.constructor)) {
       throw new Error(`Interceptor of type ${interceptor.constructor.name} already registered.`);
@@ -32,7 +32,7 @@ export class NewCompositeInterceptor implements INewInterceptor {
     );
   }
 
-  onScope(): NewCompositeInterceptor {
-    return new NewCompositeInterceptor(this._interceptors.map(interceptor => interceptor.onScope()));
+  onScope(): CompositeInterceptor {
+    return new CompositeInterceptor(this._interceptors.map(interceptor => interceptor.onScope()));
   }
 }

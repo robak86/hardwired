@@ -1,11 +1,11 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 
-export type NewInterceptorClass<TInstance extends INewInterceptor> = {
+export type InterceptorClass<TInstance extends IInterceptor> = {
   create(): TInstance;
 };
 
-export interface INewInterceptor {
+export interface IInterceptor {
   // TODO: ideally dependencies:unknown[] should be factory function, so interceptor can cancel dependencies creation
   onInstance?<TInstance>(
     instance: TInstance,
@@ -14,5 +14,5 @@ export interface INewInterceptor {
     dependenciesTokens: IDefinitionToken<unknown, LifeTime>[],
   ): TInstance;
 
-  onScope(): INewInterceptor;
+  onScope(): IInterceptor;
 }

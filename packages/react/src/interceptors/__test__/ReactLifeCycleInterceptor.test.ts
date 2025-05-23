@@ -47,7 +47,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
 
   function setup() {
     const cnt = container.new(registerServices, withReactLifeCycle());
-    const interceptor = cnt.getInterceptorNew(ReactLifeCycleRootInterceptor);
+    const interceptor = cnt.getInterceptor(ReactLifeCycleRootInterceptor);
 
     return { cnt, interceptor };
   }
@@ -160,10 +160,10 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const { cnt, interceptor } = setup();
 
       const childScope1 = cnt.scope();
-      const childScope1Interceptor = childScope1.getInterceptorNew(ReactLifeCycleRootInterceptor);
+      const childScope1Interceptor = childScope1.getInterceptor(ReactLifeCycleRootInterceptor);
 
       const childScope2 = cnt.scope();
-      const childScope2Interceptor = childScope2.getInterceptorNew(ReactLifeCycleRootInterceptor);
+      const childScope2Interceptor = childScope2.getInterceptor(ReactLifeCycleRootInterceptor);
 
       await childScope1.use(service1D);
       await childScope2.use(service1D);
