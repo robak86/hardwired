@@ -14,18 +14,34 @@ export interface IMaybePromiseLike<T> extends PromiseLike<T> {
   finally(onFinally?: (() => void) | null): IMaybePromiseLike<T>;
 }
 
+type UnwrapMaybePromise<T> = T extends MaybePromise<infer U> ? U : T extends Promise<infer U> ? U : T;
+
 export class MaybePromise<T> implements IMaybePromiseLike<T> {
-  static all<T extends readonly unknown[]>(values: [...{ [K in keyof T]: T[K] | Promise<T[K]> }]): MaybePromise<T> {
-    const hasAsync = values.some(v => isThenable(v));
+  static all<T extends readonly unknown[]>(values: [...T]): MaybePromise<{ [K in keyof T]: UnwrapMaybePromise<T[K]> }> {
+    let hasAsync = false;
+    const unwrapped = values.map(v => {
+      if (v instanceof MaybePromise) {
+        if (!v.isSync) hasAsync = true;
+
+        return v.value as UnwrapMaybePromise<T[number]>;
+      }
+
+      if (isThenable(v)) hasAsync = true;
+
+      return v;
+    });
 
     if (!hasAsync) {
-      return new MaybePromise(values as T);
+      return new MaybePromise(unwrapped as any); // fully sync
     }
 
-    return new MaybePromise(Promise.all(values) as Promise<T>);
+    return new MaybePromise(Promise.all(unwrapped) as any);
   }
 
   private readonly value: T | Promise<T>;
+
+  // TODO: this can be used to trivially optimize definitions. If the final result isSync, we can skip
+  //       MaybePromise completely an in next resolution use fully synchronous value.
   public readonly isSync: boolean;
 
   constructor(value: T | Promise<T>) {

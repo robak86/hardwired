@@ -23,9 +23,7 @@ describe('MaybePromise', () => {
         .then(() => {
           throw new Error('fail');
         })
-        .catch(e => {
-          return 999;
-        });
+        .catch(e => 999);
 
       expect(mp.trySync()).toBe(999);
     });
@@ -120,6 +118,69 @@ describe('MaybePromise', () => {
 
       expect(orig.trySync()).toBe(10);
       expect(mapped.trySync()).toBe(20);
+    });
+  });
+
+  describe('MaybePromise.all', () => {
+    it(`doesnt lift to async when MaybePromise is sync`, async () => {
+      const result = MaybePromise.all([new MaybePromise(1)]);
+
+      expect(result.trySync()).toEqual([1]);
+    });
+
+    it('should return a sync MaybePromise if all inputs are sync', () => {
+      const result = MaybePromise.all([1, 'two', true] as const);
+
+      expect(result.trySync()).toEqual([1, 'two', true]);
+    });
+
+    it('should return an async MaybePromise if any input is a Promise', async () => {
+      const result = MaybePromise.all([1, Promise.resolve('two'), true] as const);
+
+      expect(() => result.trySync()).toThrowError('Value is asynchronous');
+      expect(await result).toEqual([1, 'two', true]);
+    });
+
+    it('should preserve tuple structure and types', async () => {
+      const a = 1;
+      const b = Promise.resolve('x');
+      const c = true;
+
+      const result = MaybePromise.all([a, b, c] as const);
+      const resolved = await result;
+
+      expect(resolved).toEqual([1, 'x', true]);
+      expect(resolved[1].toUpperCase()).toBe('X'); // static type is string
+    });
+
+    it('should reject if any input Promise rejects', async () => {
+      const error = new Error('fail');
+      const result = MaybePromise.all([1, Promise.reject(error), 3]);
+
+      await expect(Promise.resolve(result)).rejects.toThrow(error);
+    });
+
+    it('should resolve an empty tuple to empty array', () => {
+      const result = MaybePromise.all([] as const);
+
+      expect(result.trySync()).toEqual([]);
+    });
+
+    it('should handle multiple async inputs', async () => {
+      const result = MaybePromise.all([Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)] as const);
+
+      expect(await result).toEqual([1, 2, 3]);
+    });
+
+    it('should preserve the order of results', async () => {
+      const slow = new Promise(res => setTimeout(() => res('slow'), 50));
+      const fast = Promise.resolve('fast');
+
+      const result = MaybePromise.all(['first', slow, fast, 'last'] as const);
+
+      const resolved = await result;
+
+      expect(resolved).toEqual(['first', 'slow', 'fast', 'last']);
     });
   });
 });

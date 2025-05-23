@@ -1,6 +1,7 @@
 import { Bench } from 'tinybench';
 
-import { maybePromiseThen } from '../utils/async.js';
+import { maybePromiseAllThen, maybePromiseThen } from '../utils/async.js';
+import { MaybePromise } from '../utils/MaybePromise.js';
 
 function a() {
   return Math.random();
@@ -26,6 +27,20 @@ async function cAsync() {
   return (await aAsync()) * (await bAsync());
 }
 
+function aMaybePromise() {
+  return new MaybePromise(Math.random());
+}
+
+function bMaybePromise() {
+  return new MaybePromise(Math.random());
+}
+
+function cMaybePromise() {
+  return MaybePromise.all([aMaybePromise(), bMaybePromise()]).then(([a, b]) => a * b);
+}
+
+// cMaybePromise().trySync();
+
 const instantiationBench = new Bench({
   time: 200,
   setup: () => {},
@@ -47,6 +62,19 @@ const instantiationBench = new Bench({
         return a * b;
       });
     });
+  })
+  .add('maybePromiseAllThen', () => {
+    return maybePromiseAllThen([a(), b()], ([a, b]) => {
+      return a * b;
+    });
+  })
+
+  .add('monadic maybePromise trySync', () => {
+    cMaybePromise().trySync();
+  })
+
+  .add('monadic maybePromise awaited', async () => {
+    await cMaybePromise();
   });
 
 void instantiationBench
