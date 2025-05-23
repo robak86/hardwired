@@ -31,7 +31,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     return this._cascadingRoots.get(defSymbol.id);
   }
 
-  getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
+  getForOverride<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> {
     return this._definitions.getForOverride(symbol.id) as IDefinition<TInstance, TLifeTime>;

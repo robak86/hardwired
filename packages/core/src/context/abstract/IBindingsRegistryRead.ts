@@ -9,7 +9,7 @@ export interface IBindingsRegistryRead extends ICascadeRootsRegistryRead {
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime>;
 
-  getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
+  getForOverride<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionSymbol<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime>;
 }

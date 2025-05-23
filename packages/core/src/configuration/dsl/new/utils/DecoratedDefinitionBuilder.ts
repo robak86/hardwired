@@ -18,7 +18,7 @@ export class DecoratedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
   ) {}
 
   build(registry: IBindingsRegistryRead): IDefinition<TInstance, TLifetime> {
-    const def = registry.getDefinitionForOverride(this.symbol);
+    const def = registry.getForOverride(this.symbol);
 
     return def.override(container => {
       const deps = container.all(...this.dependencies);

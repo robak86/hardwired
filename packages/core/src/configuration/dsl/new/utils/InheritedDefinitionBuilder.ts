@@ -22,7 +22,7 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
       throw new Error('Cannot inherit cascading definition. Current scope already provides own definition.');
     }
 
-    const def = registry.getDefinitionForOverride(this.symbol);
+    const def = registry.getForOverride(this.symbol);
 
     return def.override(container => {
       const deps = container.all(...this._dependencies);
