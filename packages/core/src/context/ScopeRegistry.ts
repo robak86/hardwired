@@ -9,6 +9,7 @@ export interface IReadonlyScopeRegistry<V, TType> {
   getForOverride(definitionId: symbol): V;
   forEach(iterFn: (value: V) => void): void;
   forEachType(type: TType, iterFn: (value: V) => void): void;
+  withParent(_prev: IReadonlyScopeRegistry<V, TType>, freeze: boolean): ScopeRegistry<V, TType>;
 }
 
 export class ScopeRegistry<V, TType> implements IReadonlyScopeRegistry<V, TType> {

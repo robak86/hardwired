@@ -6,7 +6,11 @@ import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js'
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
 import { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
-import { ContainerLifeCycleRegistry, DisposeFunctions } from '../../../../../lifecycle/ILifeCycleRegistry.js';
+import {
+  ContainerLifeCycleRegistry,
+  DefinitionsDisposeFunctions,
+  DisposeFunctions,
+} from '../../../../../lifecycle/ILifeCycleRegistry.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
 import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
@@ -24,7 +28,9 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   private _lazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
   private _cascadeDefinitions = new Set<IDefinitionToken<any, LifeTime.cascading>>();
   private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
+
   private _disposeFunctions = new DisposeFunctions();
+  private _definitionDisposeFns = new DefinitionsDisposeFunctions();
 
   toConfig(): IConfiguration {
     const interceptorsRegistry = InterceptorsRegistry.create();
@@ -36,6 +42,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
 
     lifeCycleRegistry.append(this._disposeFunctions);
+    lifeCycleRegistry.append(this._definitionDisposeFns);
 
     return new ContainerConfiguration(
       this._definitions,
@@ -49,10 +56,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   }
 
   addDefinitionDisposeFn<TInstance>(
-    _symbol: IDefinitionToken<TInstance, LifeTime>,
+    token: IDefinitionToken<TInstance, LifeTime>,
     disposeFn: (instance: TInstance) => MaybePromise<void>,
   ): void {
-    throw new Error('Method not implemented.');
+    this._definitionDisposeFns.append(token, disposeFn);
   }
 
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {

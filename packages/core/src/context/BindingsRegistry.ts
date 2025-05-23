@@ -29,6 +29,9 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
       this.register(definition.token, definition, container);
     });
 
+    // TODO: don't copy all definitions. Just link them.
+    // this._definitions = config.definitions.withParent(this._definitions, false);
+
     config.frozenDefinitions.forEach(def => {
       this.freeze(def);
     });

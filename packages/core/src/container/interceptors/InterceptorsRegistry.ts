@@ -16,6 +16,7 @@ export class InterceptorsRegistry {
     return this._interceptors.get(id);
   }
 
+  // TODO: don't copy interceptors, just use composition and hold original collection
   apply(registry: InterceptorsRegistry) {
     registry._interceptors.forEach((interceptor, id) => {
       if (this._interceptors.has(id)) {

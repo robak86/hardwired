@@ -3,7 +3,7 @@ import EventEmitter from 'node:events';
 import { describe, expect, it } from 'vitest';
 
 import { container } from '../Container.js';
-import { cascading, singleton, transient } from '../../definitions/def-symbol.js';
+import { cascading, singleton } from '../../definitions/def-symbol.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
@@ -101,19 +101,6 @@ describe(`Container`, () => {
 
           pubSubInstance.emit('req', 1);
         });
-      });
-    });
-  });
-
-  describe(`.useExisting`, () => {
-    describe(`transient`, () => {
-      it(`doesn't allow passing transient definition on the type level`, async () => {
-        const t = transient<number>();
-
-        const cnt = container.new();
-
-        // @ts-expect-error - transient definition is not allowed
-        cnt.useExisting(t);
       });
     });
   });

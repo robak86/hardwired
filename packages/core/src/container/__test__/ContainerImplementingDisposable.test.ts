@@ -1,11 +1,12 @@
 import { describe, expect, vi } from 'vitest';
 
 import { container } from '../Container.js';
-import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
 import type { ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';
 import type { IConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
+import { configureScope } from '../../configuration/ScopeConfiguration.js';
 
 describe(`container#[Symbol.dispose]`, () => {
   class DisposableImpl {
@@ -35,10 +36,10 @@ describe(`container#[Symbol.dispose]`, () => {
 
         await scope.use(def);
 
-        siblingScope.dispose();
+        await siblingScope.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(0);
 
-        scope.dispose();
+        await scope.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(1);
       });
 
@@ -58,11 +59,11 @@ describe(`container#[Symbol.dispose]`, () => {
 
         await scope2.use(def);
 
-        scope2.dispose();
+        await scope2.dispose();
         // we tried to dispose from scope2, but also scope1 references the same instance
         expect(disposeSpy).toHaveBeenCalledTimes(0);
 
-        scope1.dispose();
+        await scope1.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(1);
       });
     });
@@ -80,10 +81,10 @@ describe(`container#[Symbol.dispose]`, () => {
 
         await scope.use(def);
 
-        scope.dispose();
+        await scope.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(0);
 
-        cnt.dispose();
+        await cnt.dispose();
         expect(disposeSpy).toHaveBeenCalledTimes(1);
       });
     });
@@ -124,14 +125,14 @@ describe(`container#[Symbol.dispose]`, () => {
           c.onDispose(scopeDispose);
         });
 
-        cnt.dispose();
-        cnt.dispose();
+        await cnt.dispose();
+        await cnt.dispose();
 
         expect(rootDispose).toHaveBeenCalledTimes(1);
         expect(scopeDispose).toHaveBeenCalledTimes(0);
 
-        scope.dispose();
-        scope.dispose();
+        await scope.dispose();
+        await scope.dispose();
 
         expect(scopeDispose).toHaveBeenCalledTimes(1);
       });
@@ -141,11 +142,226 @@ describe(`container#[Symbol.dispose]`, () => {
 
         const cnt = container.new(c => c.add(def).static(1));
 
-        cnt.dispose();
+        await cnt.dispose();
 
         await expect(async () => {
           await cnt.use(def);
         }).rejects.toThrowError();
+      });
+    });
+  });
+
+  describe(`onDispose finalizer`, () => {
+    const singletonDef = singleton<number>();
+    const cascadingDef = cascading<number>();
+    const scopedDef = scoped<number>();
+    const transientDef = transient<number>();
+
+    describe(`scope configuration`, () => {
+      describe(`types`, () => {
+        it(`only allows registering callbacks for scoped and cascading definitions `, async () => {
+          configureScope(c => {
+            c.add(cascadingDef)
+              .fn(() => 1)
+              .onDispose(_val => {});
+
+            c.add(scopedDef)
+              .fn(() => 1)
+              .onDispose(_val => {});
+
+            expect(() => {
+              c.add(transientDef)
+                .fn(() => 1)
+                // @ts-expect-error - onDispose is not available for transient definitions
+                .onDispose(_val => {});
+            }).toThrowError();
+          });
+        });
+      });
+
+      describe(`evaluation`, () => {
+        it(`calls onDispose with instance if it exists`, async () => {
+          const scopedSpy = vi.fn();
+          const cascadingSpy = vi.fn();
+
+          const config = configureScope(c => {
+            c.add(cascadingDef)
+              .fn(() => 2)
+              .onDispose(cascadingSpy);
+
+            c.add(scopedDef)
+              .fn(() => 3)
+              .onDispose(scopedSpy);
+          });
+
+          const cnt = container.new();
+
+          const scope = cnt.scope(config);
+
+          await scope.all(cascadingDef, scopedDef);
+
+          await scope.dispose();
+
+          expect(cascadingSpy).toHaveBeenCalledTimes(1);
+          expect(cascadingSpy).toHaveBeenCalledWith(2);
+
+          expect(scopedSpy).toHaveBeenCalledTimes(1);
+          expect(scopedSpy).toHaveBeenCalledWith(3);
+        });
+
+        it(`supports async dispose fn`, async () => {
+          let disposed = false;
+
+          const config = configureScope(c => {
+            c.add(cascadingDef)
+              .fn(() => 2)
+              .onDispose(async () => {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                disposed = true;
+              });
+          });
+
+          const cnt = container.new(config);
+
+          await cnt.use(cascadingDef);
+
+          expect(disposed).toBe(false);
+
+          await cnt.dispose();
+          expect(disposed).toBe(true);
+        });
+
+        // TODO: add container configuration like .onDisposeError()
+        it(`catches all errors related to disposal`, async () => {
+          const config = configureScope(c => {
+            c.add(cascadingDef)
+              .fn(() => 2)
+              .onDispose(async () => {
+                throw new Error('error');
+              });
+          });
+
+          const cnt = container.new(config);
+
+          await cnt.use(cascadingDef);
+
+          expect(() => cnt.dispose()).not.toThrowError();
+        });
+
+        it(`doesn't call instance if the scope doesn't have instance created`, async () => {
+          const scopedSpy = vi.fn();
+          const cascadingSpy = vi.fn();
+
+          const config = configureScope(c => {
+            c.add(cascadingDef)
+              .fn(() => 2)
+              .onDispose(cascadingSpy);
+
+            c.add(scopedDef)
+              .fn(() => 3)
+              .onDispose(scopedSpy);
+          });
+
+          const cnt = container.new();
+          const scope = cnt.scope(config);
+
+          await scope.dispose();
+
+          expect(cascadingSpy).toHaveBeenCalledTimes(0);
+          expect(scopedSpy).toHaveBeenCalledTimes(0);
+        });
+      });
+    });
+
+    describe(`container configuration`, () => {
+      describe(`types`, () => {
+        it(`allows registering onDispose for all definitions except for transient`, async () => {
+          configureContainer(c => {
+            c.add(singletonDef)
+              .fn(() => 1)
+              .onDispose(_val => {});
+
+            c.add(cascadingDef)
+              .fn(() => 1)
+              .onDispose(_val => {});
+
+            c.add(scopedDef)
+              .fn(() => 1)
+              .onDispose(_val => {});
+
+            expect(() => {
+              c.add(transientDef)
+                .fn(() => 1)
+                // @ts-expect-error - onDispose is not available for transient definitions
+                .onDispose(_val => {});
+            }).toThrowError();
+          });
+        });
+      });
+
+      describe(`evaluation`, () => {
+        it(`calls onDispose with instance if exist`, async () => {
+          const singletonSpy = vi.fn();
+          const scopedSpy = vi.fn();
+          const cascadingSpy = vi.fn();
+
+          const config = configureContainer(c => {
+            c.add(singletonDef)
+              .fn(() => 1)
+              .onDispose(singletonSpy);
+
+            c.add(cascadingDef)
+              .fn(() => 2)
+              .onDispose(cascadingSpy);
+
+            c.add(scopedDef)
+              .fn(() => 3)
+              .onDispose(scopedSpy);
+          });
+
+          const cnt = container.new(config);
+
+          await cnt.all(singletonDef, cascadingDef, scopedDef);
+
+          await cnt.dispose();
+
+          expect(singletonSpy).toHaveBeenCalledTimes(1);
+          expect(singletonSpy).toHaveBeenCalledWith(1);
+
+          expect(cascadingSpy).toHaveBeenCalledTimes(1);
+          expect(cascadingSpy).toHaveBeenCalledWith(2);
+
+          expect(scopedSpy).toHaveBeenCalledTimes(1);
+          expect(scopedSpy).toHaveBeenCalledWith(3);
+        });
+
+        it(`doesn't call onDispose if container doesn't have instance of definition`, async () => {
+          const singletonSpy = vi.fn();
+          const scopedSpy = vi.fn();
+          const cascadingSpy = vi.fn();
+
+          const config = configureContainer(c => {
+            c.add(singletonDef)
+              .fn(() => 1)
+              .onDispose(singletonSpy);
+
+            c.add(cascadingDef)
+              .fn(() => 2)
+              .onDispose(cascadingSpy);
+
+            c.add(scopedDef)
+              .fn(() => 3)
+              .onDispose(scopedSpy);
+          });
+
+          const cnt = container.new(config);
+
+          await cnt.dispose();
+
+          expect(singletonSpy).toHaveBeenCalledTimes(0);
+          expect(cascadingSpy).toHaveBeenCalledTimes(0);
+          expect(scopedSpy).toHaveBeenCalledTimes(0);
+        });
       });
     });
   });
@@ -167,7 +383,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
           await use(scope);
 
-          scope.dispose();
+          await scope.dispose();
         },
       });
     };

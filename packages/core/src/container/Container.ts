@@ -223,7 +223,7 @@ export class Container
    * Cascading instances are returned only from the scope holding the instance.
    * @param definition
    */
-  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime.scoped | LifeTime.singleton>): TValue | null {
+  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): TValue | null {
     return (this.instancesStore.getExisting(definition) as TValue) ?? null;
   }
 
