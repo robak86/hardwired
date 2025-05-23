@@ -29,7 +29,7 @@ import type {
   IStrategyAware,
   UseFn,
 } from './IContainer.js';
-import type { IInterceptor, INewInterceptor } from './interceptors/interceptor.js';
+import type { IInterceptor, INewInterceptor, NewInterceptorClass } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
@@ -216,7 +216,7 @@ export class Container
     return this.interceptorsRegistry?.get(id);
   }
 
-  getInterceptorNew<TInstance>(cls: ClassType<TInstance, []>): TInstance {
+  getInterceptorNew<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance {
     const interceptorInstance = this._interceptor?.getInstance(cls);
 
     if (!interceptorInstance) {

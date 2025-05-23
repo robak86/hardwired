@@ -6,10 +6,13 @@ import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js'
 import type { InstancesStore } from '../../../../../context/InstancesStore.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
-import type { IInterceptor, INewInterceptor } from '../../../../../container/interceptors/interceptor.js';
+import type {
+  IInterceptor,
+  INewInterceptor,
+  NewInterceptorClass,
+} from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
-import type { ClassType } from '../../../../../definitions/utils/class-type.js';
 
 export class ContainerFreezeConfigurationContext implements IConfigurationContext {
   constructor(
@@ -17,7 +20,7 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
     private instancesStore: InstancesStore,
   ) {}
 
-  withNewInterceptor(interceptor: ClassType<INewInterceptor, []>): void {
+  withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void {
     throw new Error('Method not implemented.');
   }
 

@@ -3,15 +3,14 @@ import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
 import type { ScopeTag } from '../IContainer.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
-import type { ClassType } from '../../definitions/utils/class-type.js';
 
-import type { IInterceptor, INewInterceptor } from './interceptor.js';
+import type { IInterceptor, INewInterceptor, NewInterceptorClass } from './interceptor.js';
 
 export class NewCompositeInterceptor implements INewInterceptor {
   constructor(private _interceptors: INewInterceptor[] = []) {}
 
   // TODO: slow for a lot interceptors!
-  getInstance<TInstance>(cls: ClassType<TInstance, []>): TInstance {
+  getInstance<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance {
     return this._interceptors.find(interceptor => interceptor instanceof cls) as TInstance;
   }
 

@@ -3,6 +3,7 @@ import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
 import type { ScopeTag } from '../IContainer.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
+import type { ClassType } from '../../definitions/utils/class-type.js';
 
 export interface IInterceptor<TInstance> {
   readonly id: string;
@@ -19,6 +20,10 @@ export interface IInterceptor<TInstance> {
     instancesStore: IInstancesStoreRead,
   ): IInterceptor<TInstance>;
 }
+
+export type NewInterceptorClass<TInstance extends INewInterceptor> = ClassType<INewInterceptor, []> & {
+  create(): TInstance;
+};
 
 export interface INewInterceptor {
   // TODO: ideally dependencies:unknown[] should be factory function, so interceptor can cancel dependencies creation

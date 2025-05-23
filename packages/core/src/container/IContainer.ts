@@ -9,9 +9,8 @@ import type { MaybePromise } from '../utils/async.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
-import type { ClassType } from '../definitions/utils/class-type.js';
 
-import type { IInterceptor } from './interceptors/interceptor.js';
+import type { IInterceptor, INewInterceptor, NewInterceptorClass } from './interceptors/interceptor.js';
 
 export type ScopeTag = string | symbol;
 
@@ -74,7 +73,7 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
 
-  getInterceptorNew<TInstance>(cls: ClassType<TInstance, []>): TInstance;
+  getInterceptorNew<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance;
 }
 
 export type IContainerFactory = {

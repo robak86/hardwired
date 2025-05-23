@@ -4,6 +4,10 @@ import { singleton } from '../../../definitions/def-symbol.js';
 
 describe(`interceptor?`, () => {
   class TestInterceptor implements INewInterceptor {
+    static create() {
+      return new TestInterceptor();
+    }
+
     readonly id = crypto.randomUUID();
 
     onInstance<TInstance>(instance: TInstance, dependencies: unknown[]): TInstance {

@@ -6,13 +6,16 @@ import type {
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IContainer } from '../../../../container/IContainer.js';
 import type { DefinitionSymbol, IDefinitionToken } from '../../../../definitions/def-symbol.js';
-import type { IInterceptor, INewInterceptor } from '../../../../container/interceptors/interceptor.js';
+import type {
+  IInterceptor,
+  INewInterceptor,
+  NewInterceptorClass,
+} from '../../../../container/interceptors/interceptor.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
-import type { ClassType } from '../../../../definitions/utils/class-type.js';
 
 import { type IConfiguration } from './ContainerConfiguration.js';
 
@@ -38,7 +41,6 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     return this._context.toConfig();
   }
 
-  // TODO: replace this callback functions with some minimal interface
   modify<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): IModifyBuilder<TInstance, TLifeTime> {
@@ -51,22 +53,6 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
       allowedLifeTimes,
       this._context,
     ) as IModifyBuilder<TInstance, TLifeTime>;
-
-    // if (symbol.strategy === LifeTime.cascading) {
-    //   return new ModifyDefinitionBuilder(
-    //     'modify',
-    //     symbol,
-    //     this._allowedCascadingModifyLifeTimes,
-    //     this._context,
-    //   ) as IModifyBuilder<TInstance, TLifeTime>;
-    // } else {
-    //   return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
-    //     'modify',
-    //     symbol,
-    //     this._allowedModifyLifeTimes,
-    //     this._context,
-    //   ) as IModifyBuilder<TInstance, TLifeTime>;
-    // }
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
@@ -85,7 +71,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     this._context.withInterceptor(name, interceptor);
   }
 
-  withNewInterceptor(interceptor: ClassType<INewInterceptor, []>): void {
+  withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void {
     this._context.withNewInterceptor(interceptor);
   }
 

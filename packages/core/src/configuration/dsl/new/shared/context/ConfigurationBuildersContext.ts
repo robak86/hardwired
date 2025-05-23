@@ -4,7 +4,11 @@ import type { IDefinition } from '../../../../../definitions/abstract/IDefinitio
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
-import type { IInterceptor, INewInterceptor } from '../../../../../container/interceptors/interceptor.js';
+import type {
+  IInterceptor,
+  INewInterceptor,
+  NewInterceptorClass,
+} from '../../../../../container/interceptors/interceptor.js';
 import { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
 import {
   ContainerLifeCycleRegistry,
@@ -74,7 +78,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     this._interceptors.set(name, interceptor);
   }
 
-  withNewInterceptor(interceptor: ClassType<INewInterceptor, []>): void {
+  withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void {
     if (this._newInterceptors.has(interceptor)) {
       throw new Error(`Interceptor with name ${interceptor.name} already exists.`);
     }
