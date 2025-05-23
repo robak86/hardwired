@@ -7,12 +7,20 @@ import type { InstancesStore } from '../../../../../context/InstancesStore.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
+import type { MaybePromise } from '../../../../../utils/async.js';
 
 export class ContainerFreezeConfigurationContext implements IConfigurationContext {
   constructor(
     private _bindingsRegistry: BindingsRegistry,
     private instancesStore: InstancesStore,
   ) {}
+
+  addDefinitionDisposeFn<TInstance>(
+    _symbol: IDefinitionSymbol<TInstance, LifeTime>,
+    disposeFn: (instance: TInstance) => MaybePromise<void>,
+  ): void {
+    throw new Error('Method not implemented.');
+  }
 
   withInterceptor(_name: string | symbol, _interceptor: IInterceptor<unknown>): void {
     throw new Error('Modifying interceptors is not supported in eager mode.');

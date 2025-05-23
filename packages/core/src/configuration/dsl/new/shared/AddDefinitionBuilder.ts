@@ -1,5 +1,5 @@
 import type { IDefinitionSymbol } from '../../../../definitions/def-symbol.js';
-import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ClassType } from '../../../../definitions/utils/class-type.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
 import type { MaybePromise } from '../../../../utils/async.js';
@@ -8,8 +8,10 @@ import { FnDefinition } from '../../../../definitions/impl/FnDefinition.js';
 import { Definition } from '../../../../definitions/impl/Definition.js';
 import type { IServiceLocator } from '../../../../container/IContainer.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
+import type { FinalizerOrVoid } from '../../../abstract/IDisposeFinalizer.js';
 
 import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';
+import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
 
 export type ConstructorArgsSymbols<T extends any[], TCurrentLifeTime extends LifeTime> = {
   [K in keyof T]: IDefinitionSymbol<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
@@ -40,30 +42,54 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   class<TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
     ...dependencies: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>
-  ) {
+  ): FinalizerOrVoid<TInstance, TLifeTime> {
     const definition = new ClassDefinition(this._symbol.id, this._symbol.strategy, klass, dependencies);
 
     this._configurationContext.onDefinition(this._configType, definition);
+
+    return this.buildFinalizer();
   }
 
   fn<TArgs extends any[]>(
     fn: (...args: TArgs) => MaybePromise<TInstance>,
     ...dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>
-  ) {
+  ): FinalizerOrVoid<TInstance, TLifeTime> {
     const fnDefinition = new FnDefinition(this._symbol.id, this._symbol.strategy, fn, dependencies);
 
     this._configurationContext.onDefinition(this._configType, fnDefinition);
+
+    return this.buildFinalizer();
   }
 
-  static(value: TInstance) {
+  static(value: TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
     const definition = new Definition(this._symbol.id, this._symbol.strategy, () => value);
 
     this._configurationContext.onDefinition(this._configType, definition);
+
+    return this.buildFinalizer();
   }
 
-  locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>) {
+  locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>): FinalizerOrVoid<TInstance, TLifeTime> {
     const definition = new Definition(this._symbol.id, this._symbol.strategy, fn);
 
     this._configurationContext.onDefinition(this._configType, definition);
+
+    return this.buildFinalizer();
+  }
+
+  // TODO: can be memoized
+  private buildFinalizer(): FinalizerOrVoid<TInstance, TLifeTime> {
+    if (
+      this._symbol.strategy === LifeTime.singleton ||
+      this._symbol.strategy === LifeTime.cascading ||
+      this._symbol.strategy === LifeTime.scoped
+    ) {
+      return new DisposeFinalizeBuilder(this._symbol, this._configurationContext) as unknown as FinalizerOrVoid<
+        TInstance,
+        TLifeTime
+      >;
+    }
+
+    return undefined as unknown as FinalizerOrVoid<TInstance, TLifeTime>;
   }
 }

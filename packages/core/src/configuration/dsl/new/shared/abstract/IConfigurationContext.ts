@@ -4,6 +4,7 @@ import type { IDefinition } from '../../../../../definitions/abstract/IDefinitio
 import type { IDefinitionSymbol } from '../../../../../definitions/def-symbol.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
+import type { MaybePromise } from '../../../../../utils/async.js';
 
 export type ConfigurationType = 'add' | 'modify' | 'freeze';
 
@@ -17,4 +18,9 @@ export interface IConfigurationContext {
   // TODO: most likely these should be rewritten
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void;
   onDispose(callback: (scope: IContainer) => void): void;
+
+  addDefinitionDisposeFn<TInstance>(
+    _symbol: IDefinitionSymbol<TInstance, LifeTime>,
+    disposeFn: (instance: TInstance) => MaybePromise<void>,
+  ): void;
 }

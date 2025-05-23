@@ -8,6 +8,7 @@ import type { ConfigurationType, IConfigurationContext } from '../abstract/IConf
 import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
 import type { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
 import type { ILifeCycleRegistry } from '../../../../../lifecycle/ILifeCycleRegistry.js';
+import type { MaybePromise } from '../../../../../utils/async.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
@@ -26,6 +27,13 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     private _freezeDefinitions: Map<symbol, IDefinition<any, any>>,
     private _cascadeDefinitions: Map<symbol, IDefinitionSymbol<any, LifeTime.cascading>>,
   ) {}
+
+  addDefinitionDisposeFn<TInstance>(
+    _symbol: IDefinitionSymbol<TInstance, LifeTime>,
+    disposeFn: (instance: TInstance) => MaybePromise<void>,
+  ): void {
+    throw new Error('Method not implemented.');
+  }
 
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
     if (this._interceptors.get(name)) {

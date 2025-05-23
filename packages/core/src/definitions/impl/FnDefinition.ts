@@ -19,13 +19,16 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
     public readonly id: symbol,
     public readonly strategy: TLifeTime,
     public readonly createFn: (...deps: TDeps) => MaybePromise<TInstance>,
-    public readonly _dependencies?: ConstructorArgsSymbols<TDeps, TLifeTime>,
-  ) {}
+    public readonly _dependencies: ConstructorArgsSymbols<TDeps, TLifeTime>,
+  ) {
+    this._hasOnlySyncDependencies = _dependencies.length === 0;
+  }
 
   override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.id, this.strategy, createFn);
   }
 
+  // TODO: it's a mess with this MaybePromise and interceptor
   create(context: IServiceLocator, interceptor?: INewInterceptor): MaybePromise<TInstance> {
     // no dependencies
     if (this._dependencies === undefined) {

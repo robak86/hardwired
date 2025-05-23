@@ -24,13 +24,11 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
   }
 
   setCascadeRoot(defSymbol: IDefinitionSymbol<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
-    const hasFrozenBinding = this._frozenDefinitions.has(defSymbol.id);
-
-    if (hasFrozenBinding) {
-      return;
-    }
-
     this._cascadingRoots.set(defSymbol.id, container);
+  }
+
+  getOwningContainer(defSymbol: IDefinitionSymbol<any, any>): ICascadingDefinitionResolver | undefined {
+    return this._cascadingRoots.get(defSymbol.id);
   }
 
   getDefinitionForOverride<TInstance, TLifeTime extends LifeTime>(
@@ -72,10 +70,6 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     }
 
     this._definitions.override(definition.id, definition);
-  }
-
-  getOwningContainer(defSymbol: IDefinitionSymbol<any, any>): ICascadingDefinitionResolver | undefined {
-    return this._cascadingRoots.get(defSymbol.id);
   }
 
   getDefinition<TInstance, TLifeTime extends LifeTime>(

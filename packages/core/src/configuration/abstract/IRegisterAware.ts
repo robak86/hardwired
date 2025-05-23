@@ -5,20 +5,22 @@ import type { ClassType } from '../../definitions/utils/class-type.js';
 import type { MaybePromise } from '../../utils/async.js';
 import type { IServiceLocator } from '../../container/IContainer.js';
 
-export interface IAddDefinitionBuilder<TInstance, TAllowedLifeTime extends LifeTime> {
+import type { FinalizerOrVoid } from './IDisposeFinalizer.js';
+
+export interface IAddDefinitionBuilder<TInstance, TLifetime extends LifeTime> {
   class<TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
-    ...dependencies: ConstructorArgsSymbols<TConstructorArgs, TAllowedLifeTime>
-  ): void;
+    ...dependencies: ConstructorArgsSymbols<TConstructorArgs, TLifetime>
+  ): FinalizerOrVoid<TInstance, TLifetime>;
 
   fn<TArgs extends any[]>(
     fn: (...args: TArgs) => MaybePromise<TInstance>,
-    ...dependencies: ConstructorArgsSymbols<TArgs, TAllowedLifeTime>
-  ): void;
+    ...dependencies: ConstructorArgsSymbols<TArgs, TLifetime>
+  ): FinalizerOrVoid<TInstance, TLifetime>;
 
-  static(value: TInstance): void;
+  static(value: TInstance): FinalizerOrVoid<TInstance, TLifetime>;
 
-  locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>): void;
+  locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>): FinalizerOrVoid<TInstance, TLifetime>;
 }
 
 export interface IRegisterAware<TAllowedLifeTime extends LifeTime> {
