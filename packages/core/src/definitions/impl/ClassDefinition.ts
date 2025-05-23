@@ -18,7 +18,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifeTime>,
     protected readonly _class: ClassType<TInstance, TConstructorArgs>,
-    protected readonly _dependencies?: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>,
+    protected readonly _dependencyTokens: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>,
   ) {}
 
   get id() {
@@ -39,33 +39,36 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
 
   create(use: IServiceLocator, interceptor?: INewInterceptor): MaybePromise<TInstance> {
     // no dependencies
-    if (this._dependencies === undefined) {
+    if (this._dependencyTokens.length === 0) {
       // @ts-ignore - mute error about missing args
       const instance = new this._class();
 
-      return interceptor?.onInstance?.(instance, []) ?? instance;
+      return interceptor?.onInstance?.(instance, [], this.token, []) ?? instance;
     }
 
-    const deps = use.all(...this._dependencies) as TConstructorArgs | Promise<TConstructorArgs>;
+    const deps = use.all(...this._dependencyTokens) as TConstructorArgs | Promise<TConstructorArgs>;
 
     if (this._hasOnlySyncDependencies) {
       const instance = new this._class(...(deps as TConstructorArgs));
 
-      return interceptor?.onInstance?.(instance, []) ?? instance;
+      return (
+        interceptor?.onInstance?.<TInstance>(instance, deps as TConstructorArgs, this.token, this._dependencyTokens) ??
+        instance
+      );
     }
 
     if (isThenable(deps)) {
       return deps.then(deps => {
         const instance = new this._class(...deps);
 
-        return interceptor?.onInstance?.(instance, []) ?? instance;
+        return interceptor?.onInstance?.<TInstance>(instance, deps, this.token, this._dependencyTokens) ?? instance;
       }) as TInstance;
     } else {
       this._hasOnlySyncDependencies = true;
 
       const instance = new this._class(...(deps as TConstructorArgs));
 
-      return interceptor?.onInstance?.(instance, []) ?? instance;
+      return interceptor?.onInstance?.<TInstance>(instance, deps, this.token, this._dependencyTokens) ?? instance;
     }
   }
 }

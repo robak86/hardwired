@@ -44,12 +44,12 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
 
       if (isThenable(instance)) {
         return instance.then(awaited => {
-          return interceptor?.onInstance?.(awaited, []) ?? awaited;
+          return interceptor?.onInstance?.(awaited, [], this.token, this._dependencies) ?? awaited;
         }) as TInstance;
       } else {
         this._hasOnlySyncDependencies = true;
 
-        return interceptor?.onInstance?.(instance, []) ?? instance;
+        return interceptor?.onInstance?.(instance, [], this.token, this._dependencies) ?? instance;
       }
     }
 
@@ -60,10 +60,10 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
 
       if (isThenable(instance)) {
         return instance.then(instance => {
-          return interceptor?.onInstance?.(instance, deps as any[]) ?? instance;
+          return interceptor?.onInstance?.(instance, deps as any[], this.token, this._dependencies) ?? instance;
         }) as TInstance;
       } else {
-        return interceptor?.onInstance?.(instance, deps as any[]) ?? instance;
+        return interceptor?.onInstance?.(instance, deps as any[], this.token, this._dependencies) ?? instance;
       }
     }
 
@@ -73,10 +73,10 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
 
         if (isThenable(instance)) {
           return instance.then(instance => {
-            return interceptor?.onInstance?.(instance, awaitedDeps) ?? instance;
+            return interceptor?.onInstance?.(instance, awaitedDeps, this.token, this._dependencies) ?? instance;
           }) as TInstance;
         } else {
-          return interceptor?.onInstance?.(instance, awaitedDeps) ?? instance;
+          return interceptor?.onInstance?.(instance, awaitedDeps, this.token, this._dependencies) ?? instance;
         }
       }) as TInstance;
     } else {
@@ -86,10 +86,10 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
 
       if (isThenable(instance)) {
         return instance.then(instance => {
-          return interceptor?.onInstance?.(instance, deps) ?? instance;
+          return interceptor?.onInstance?.(instance, deps, this.token, this._dependencies) ?? instance;
         }) as TInstance;
       } else {
-        return interceptor?.onInstance?.(instance, deps) ?? instance;
+        return interceptor?.onInstance?.(instance, deps, this.token, this._dependencies) ?? instance;
       }
     }
   }

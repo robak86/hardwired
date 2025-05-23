@@ -59,10 +59,10 @@ describe(`interceptor?`, () => {
 
       expect(onInstanceSpy).toHaveBeenCalledTimes(4);
 
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(1, 'C1', []);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(2, 'C2', []);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], ['C1', 'C2']);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], [['B', 'C1', 'C2']]);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(1, 'C1', [], c1Def, []);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(2, 'C2', [], c2Def, []);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], ['C1', 'C2'], bDef, [c1Def, c2Def]);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], [['B', 'C1', 'C2']], aDef, [bDef]);
     });
   });
 
@@ -87,10 +87,10 @@ describe(`interceptor?`, () => {
 
       expect(onInstanceSpy).toHaveBeenCalledTimes(4);
 
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(1, 'C1', []);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(2, 'C2', []);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], ['C1', 'C2']);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], [['B', 'C1', 'C2']]);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(1, 'C1', [], c1Def, []);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(2, 'C2', [], c2Def, []);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], ['C1', 'C2'], bDef, [c1Def, c2Def]);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], [['B', 'C1', 'C2']], aDef, [bDef]);
     });
   });
 });

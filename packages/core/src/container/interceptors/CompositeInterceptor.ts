@@ -3,6 +3,7 @@ import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
 import type { ScopeTag } from '../IContainer.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
+import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 
 import type { IInterceptor, INewInterceptor, NewInterceptorClass } from './interceptor.js';
 
@@ -23,9 +24,14 @@ export class NewCompositeInterceptor implements INewInterceptor {
     this._interceptors.push(interceptor);
   }
 
-  onInstance<TInstance>(instance: TInstance, dependencies: unknown[]): TInstance {
+  onInstance<TInstance>(
+    instance: TInstance,
+    dependencies: unknown[],
+    token: IDefinitionToken<TInstance, LifeTime>,
+    dependenciesTokens: IDefinitionToken<unknown, LifeTime>[],
+  ): TInstance {
     return this._interceptors.reduce(
-      (acc, interceptor) => interceptor.onInstance?.(acc, dependencies) ?? acc,
+      (acc, interceptor) => interceptor.onInstance?.(acc, dependencies, token, dependenciesTokens) ?? acc,
       instance,
     );
   }

@@ -4,6 +4,7 @@ import type { ScopeTag } from '../IContainer.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
 import type { ClassType } from '../../definitions/utils/class-type.js';
+import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 
 export interface IInterceptor<TInstance> {
   readonly id: string;
@@ -27,7 +28,12 @@ export type NewInterceptorClass<TInstance extends INewInterceptor> = ClassType<I
 
 export interface INewInterceptor {
   // TODO: ideally dependencies:unknown[] should be factory function, so interceptor can cancel dependencies creation
-  onInstance?<TInstance>(instance: TInstance, dependencies: unknown[]): TInstance;
+  onInstance?<TInstance>(
+    instance: TInstance,
+    dependencies: unknown[],
+    token: IDefinitionToken<TInstance, LifeTime>,
+    dependenciesTokens: IDefinitionToken<unknown, LifeTime>[],
+  ): TInstance;
 
   onScope(): INewInterceptor;
 }
