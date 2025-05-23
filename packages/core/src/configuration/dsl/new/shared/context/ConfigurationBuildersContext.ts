@@ -13,7 +13,7 @@ import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
-    return new ConfigurationBuildersContext([], [], [], new Map(), new Map());
+    return new ConfigurationBuildersContext([], new Map());
   }
 
   private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
@@ -22,15 +22,12 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>> = ScopeRegistry.create();
   private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>> = ScopeRegistry.create();
 
+  private _lazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
+
   protected constructor(
-    private _lazyDefinitionsRegister: ILazyDefinitionBuilder<unknown, LifeTime>[],
-    private _lazyDefinitionsOverride: ILazyDefinitionBuilder<unknown, LifeTime>[],
     private _lazyDefinitionsFreeze: ILazyDefinitionBuilder<unknown, LifeTime>[],
 
-    // private _definitions: Map<symbol, IDefinition<any, any>>,
     private _cascadeDefinitions: Map<symbol, IDefinitionSymbol<any, LifeTime.cascading>>,
-
-    private _freezeDefinitions: Map<symbol, IDefinition<any, any>>,
   ) {}
 
   addDefinitionDisposeFn<TInstance>(
@@ -59,10 +56,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._lazyDefinitionsRegister.push(builder);
+        this._lazyDefinitions.push(builder);
         break;
       case 'modify':
-        this._lazyDefinitionsOverride.push(builder);
+        this._lazyDefinitions.push(builder);
         break;
       case 'freeze':
         this._lazyDefinitionsFreeze.push(builder);
@@ -77,10 +74,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._lazyDefinitionsRegister.push(builder);
+        this._lazyDefinitions.push(builder);
         break;
       case 'modify':
-        this._lazyDefinitionsOverride.push(builder);
+        this._lazyDefinitions.push(builder);
         break;
       case 'freeze':
         this._lazyDefinitionsFreeze.push(builder);
@@ -99,10 +96,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
     switch (configType) {
       case 'add':
-        this._lazyDefinitionsRegister.push(builder);
+        this._lazyDefinitions.push(builder);
         break;
       case 'modify':
-        this._lazyDefinitionsOverride.push(builder);
+        this._lazyDefinitions.push(builder);
         break;
       case 'freeze':
         this._lazyDefinitionsFreeze.push(builder);
@@ -123,7 +120,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         this._definitions.register(definition.id, definition);
         break;
       case 'freeze':
-        this._freezeDefinitions.set(definition.id, definition);
+        this._frozenDefinitions.register(definition.id, definition);
         break;
     }
   }
@@ -140,19 +137,13 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       bindingsRegistry.register(definition, definition, container);
     });
 
-    this._lazyDefinitionsRegister.forEach(builder => {
+    this._lazyDefinitions.forEach(builder => {
       const def = builder.build(bindingsRegistry);
 
       bindingsRegistry.override(def);
     });
 
-    this._lazyDefinitionsOverride.forEach(builder => {
-      const def = builder.build(bindingsRegistry);
-
-      bindingsRegistry.override(def);
-    });
-
-    this._freezeDefinitions.forEach(def => {
+    this._frozenDefinitions.forEach(def => {
       bindingsRegistry.freeze(def);
     });
 
