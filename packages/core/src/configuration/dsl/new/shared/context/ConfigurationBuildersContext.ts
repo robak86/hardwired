@@ -19,8 +19,8 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
   private _disposeFns: Array<(scope: IContainer) => void> = [];
 
-  private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>> = ScopeRegistry.create();
-  private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>> = ScopeRegistry.create();
+  private _definitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
+  private _frozenDefinitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
 
   private _lazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
 
@@ -137,16 +137,25 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       bindingsRegistry.register(definition, definition, container);
     });
 
+    this._frozenDefinitions.forEach(def => {
+      bindingsRegistry.freeze(def);
+    });
+
+    //! lazy
     this._lazyDefinitions.forEach(builder => {
       const def = builder.build(bindingsRegistry);
 
       bindingsRegistry.override(def);
     });
 
-    this._frozenDefinitions.forEach(def => {
-      bindingsRegistry.freeze(def);
+    //! lazy
+    this._lazyDefinitionsFreeze.forEach(def => {
+      const frozenDef = def.build(bindingsRegistry);
+
+      bindingsRegistry.freeze(frozenDef);
     });
 
+    //! lazy
     this._cascadeDefinitions.forEach(symbol => {
       bindingsRegistry.setCascadeRoot(symbol, container);
 

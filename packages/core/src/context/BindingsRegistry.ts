@@ -10,12 +10,16 @@ import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js'
 
 export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsRegistry {
   static create(): BindingsRegistry {
-    return new BindingsRegistry(COWMap.create(), ScopeRegistry.create(), COWMap.create());
+    return new BindingsRegistry(
+      COWMap.create(),
+      ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy),
+      COWMap.create(),
+    );
   }
 
   constructor(
     private _frozenDefinitions: COWMap<IDefinition<unknown, LifeTime>>,
-    private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
+    private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>,
     private _cascadingRoots: COWMap<ICascadingDefinitionResolver>,
   ) {}
 
