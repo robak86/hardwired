@@ -4,7 +4,7 @@ import type { IDefinition } from '../../../../../definitions/abstract/IDefinitio
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
-import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
+import type { IInterceptor, INewInterceptor } from '../../../../../container/interceptors/interceptor.js';
 import { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
 import {
   ContainerLifeCycleRegistry,
@@ -15,6 +15,7 @@ import type { MaybePromise } from '../../../../../utils/async.js';
 import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
+import type { ClassType } from '../../../../../definitions/utils/class-type.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
@@ -22,6 +23,8 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   }
 
   private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
+
+  private _newInterceptors = new Set<ClassType<INewInterceptor, []>>();
 
   private _definitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
   private _frozenDefinitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
@@ -52,6 +55,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       this._cascadeDefinitions,
       lifeCycleRegistry,
       interceptorsRegistry,
+      this._newInterceptors,
     );
   }
 
@@ -68,6 +72,14 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
 
     this._interceptors.set(name, interceptor);
+  }
+
+  withNewInterceptor(interceptor: ClassType<INewInterceptor, []>): void {
+    if (this._newInterceptors.has(interceptor)) {
+      throw new Error(`Interceptor with name ${interceptor.name} already exists.`);
+    }
+
+    this._newInterceptors.add(interceptor);
   }
 
   onDispose(callback: (scope: IContainer) => void): void {

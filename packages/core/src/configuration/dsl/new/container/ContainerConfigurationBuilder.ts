@@ -6,12 +6,13 @@ import type {
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IContainer } from '../../../../container/IContainer.js';
 import type { DefinitionSymbol, IDefinitionToken } from '../../../../definitions/def-symbol.js';
-import type { IInterceptor } from '../../../../container/interceptors/interceptor.js';
+import type { IInterceptor, INewInterceptor } from '../../../../container/interceptors/interceptor.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
+import type { ClassType } from '../../../../definitions/utils/class-type.js';
 
 import { type IConfiguration } from './ContainerConfiguration.js';
 
@@ -82,6 +83,10 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
     this._context.withInterceptor(name, interceptor);
+  }
+
+  withNewInterceptor(interceptor: ClassType<INewInterceptor, []>): void {
+    this._context.withNewInterceptor(interceptor);
   }
 
   onDispose(callback: (scope: IContainer) => void): void {

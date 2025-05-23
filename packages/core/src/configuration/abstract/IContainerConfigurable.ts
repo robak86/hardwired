@@ -1,8 +1,9 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IContainer, UseFn } from '../../container/IContainer.js';
 import type { IDefinitionToken } from '../../definitions/def-symbol.js';
-import type { IInterceptor } from '../../container/interceptors/interceptor.js';
+import type { IInterceptor, INewInterceptor } from '../../container/interceptors/interceptor.js';
 import type { ModifyDefinitionBuilder } from '../dsl/new/shared/ModifyDefinitionBuilder.js';
+import type { ClassType } from '../../definitions/utils/class-type.js';
 
 import type { IRegisterAware } from './IRegisterAware.js';
 import type { IContainerModifyAware } from './IModifyAware.js';
@@ -35,6 +36,7 @@ export interface IContainerConfigurable
   onDispose(callback: (scope: IContainer) => void): void;
 
   withInterceptor(id: string | symbol, interceptor: IInterceptor<unknown>): void;
+  withNewInterceptor(interceptor: ClassType<INewInterceptor, []>): void;
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,

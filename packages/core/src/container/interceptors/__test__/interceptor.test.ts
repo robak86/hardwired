@@ -4,7 +4,7 @@ import { singleton } from '../../../definitions/def-symbol.js';
 import type { IDefinition } from '../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
 
-describe(`interceptor`, () => {
+describe(`interceptor?`, () => {
   class TestInterceptor implements IInterceptor<any> {
     readonly id = crypto.randomUUID();
 

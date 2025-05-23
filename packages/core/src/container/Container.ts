@@ -20,6 +20,7 @@ import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/sh
 import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
+import type { ClassType } from '../definitions/utils/class-type.js';
 
 import type {
   ICascadingDefinitionResolver,
@@ -28,10 +29,11 @@ import type {
   IStrategyAware,
   UseFn,
 } from './IContainer.js';
-import type { IInterceptor } from './interceptors/interceptor.js';
+import type { IInterceptor, INewInterceptor } from './interceptors/interceptor.js';
 import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
+import { NewCompositeInterceptor } from './interceptors/CompositeInterceptor.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -59,6 +61,8 @@ export class Container
 
   private _singletonStrategy: SingletonStrategy;
   private _scopedStrategy: ScopedStrategy;
+
+  private _interceptor?: NewCompositeInterceptor;
 
   protected constructor(
     public readonly parentId: string | null,
@@ -126,6 +130,10 @@ export class Container
         bindingsRegistry.applyConfig(config, cnt);
         lifeCycleRegistry.append(config.lifeCycleRegistry);
         interceptorsRegistry.apply(config.interceptors);
+
+        if (config.interceptorsNew) {
+          cnt.applyInterceptors(config.interceptorsNew);
+        }
       });
 
       const interceptor = interceptorsRegistry.build();
@@ -136,6 +144,18 @@ export class Container
     }
 
     return cnt;
+  }
+
+  protected applyInterceptors(interceptor: Set<ClassType<INewInterceptor, []>>): void {
+    const containerInterceptor = this._interceptor ?? (this._interceptor = new NewCompositeInterceptor());
+
+    interceptor.forEach(interceptorClass => {
+      const interceptorInstance = new interceptorClass();
+
+      containerInterceptor.append(interceptorInstance);
+    });
+
+    console.log(this._interceptor);
   }
 
   scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configureFns: TConfigureFns): IContainer {
@@ -169,6 +189,10 @@ export class Container
         bindingsRegistry.applyConfig(config, cnt);
         lifeCycleRegistry.append(config.lifeCycleRegistry);
         scopeInterceptorsRegistry.apply(config.interceptors);
+
+        if (config.interceptorsNew) {
+          this.applyInterceptors(config.interceptorsNew);
+        }
       });
 
       return cnt;
@@ -192,6 +216,16 @@ export class Container
 
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
     return this.interceptorsRegistry?.get(id);
+  }
+
+  getInterceptorNew<TInstance>(cls: ClassType<TInstance, []>): TInstance {
+    const interceptorInstance = this._interceptor?.getInstance(cls);
+
+    if (!interceptorInstance) {
+      throw new Error(`Interceptor with class ${cls.name} not found.`);
+    }
+
+    return interceptorInstance;
   }
 
   protected withInterceptor(interceptor: IInterceptor<any>): Container {
@@ -236,16 +270,16 @@ export class Container
       return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition), definition);
     } else {
       if (this.bindingsRegistry.hasFrozenBinding(definition.token.id)) {
-        return this._singletonStrategy.build(definition, this);
+        return this._singletonStrategy.build(definition, this, this._interceptor);
       }
 
       switch (definition.strategy) {
         case LifeTime.transient:
-          return definition.create(this);
+          return definition.create(this, this._interceptor);
         case LifeTime.singleton:
-          return this._singletonStrategy.build(definition, this);
+          return this._singletonStrategy.build(definition, this, this._interceptor);
         case LifeTime.scoped:
-          return this._scopedStrategy.build(definition, this);
+          return this._scopedStrategy.build(definition, this, this._interceptor);
 
         case LifeTime.cascading:
           return (this.bindingsRegistry.getOwningContainer(definition.token) ?? this).resolveCascading(definition);
@@ -254,7 +288,7 @@ export class Container
   }
 
   resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
-    return this._scopedStrategy.build(definition, this);
+    return this._scopedStrategy.build(definition, this, this._interceptor);
   }
 
   private buildWithStrategyIntercepted<TValue>(
@@ -264,25 +298,25 @@ export class Container
     const withChildInterceptor = this.withInterceptor(currentInterceptor);
 
     if (this.bindingsRegistry.hasFrozenBinding(definition.token.id)) {
-      const instance = this._singletonStrategy.build(definition, withChildInterceptor);
+      const instance = this._singletonStrategy.build(definition, withChildInterceptor, this._interceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
     if (definition.strategy === LifeTime.transient) {
-      const instance = definition.create(this);
+      const instance = definition.create(this, this._interceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
     if (definition.strategy === LifeTime.singleton) {
-      const instance = this._singletonStrategy.build(definition, withChildInterceptor);
+      const instance = this._singletonStrategy.build(definition, withChildInterceptor, this._interceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }
 
     if (definition.strategy === LifeTime.scoped) {
-      const instance = this._scopedStrategy.build(definition, withChildInterceptor);
+      const instance = this._scopedStrategy.build(definition, withChildInterceptor, this._interceptor);
 
       return currentInterceptor.onLeave(instance, definition) as TValue;
     }

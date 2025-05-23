@@ -3,9 +3,10 @@ import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
-import type { IInterceptor } from '../../../../../container/interceptors/interceptor.js';
+import type { IInterceptor, INewInterceptor } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
+import type { ClassType } from '../../../../../definitions/utils/class-type.js';
 
 export type ConfigurationType = 'add' | 'modify' | 'freeze';
 
@@ -18,6 +19,7 @@ export interface IConfigurationContext {
 
   // TODO: most likely these should be rewritten
   withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void;
+  withNewInterceptor(interceptor: ClassType<INewInterceptor, []>): void;
   onDispose(callback: (scope: IContainer) => void): void;
 
   addDefinitionDisposeFn<TInstance>(
