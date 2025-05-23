@@ -20,7 +20,6 @@ import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/sh
 import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
-import type { ClassType } from '../definitions/utils/class-type.js';
 
 import type {
   ICascadingDefinitionResolver,
@@ -145,11 +144,11 @@ export class Container
     return cnt;
   }
 
-  protected applyInterceptors(interceptor: Set<ClassType<INewInterceptor, []>>): void {
+  protected applyInterceptors(interceptor: Set<NewInterceptorClass<INewInterceptor>>): void {
     const containerInterceptor = this._interceptor ?? (this._interceptor = new NewCompositeInterceptor());
 
     interceptor.forEach(interceptorClass => {
-      const interceptorInstance = new interceptorClass();
+      const interceptorInstance = interceptorClass.create();
 
       containerInterceptor.append(interceptorInstance);
     });

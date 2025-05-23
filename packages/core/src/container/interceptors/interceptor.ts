@@ -3,7 +3,6 @@ import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
 import type { ScopeTag } from '../IContainer.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
-import type { ClassType } from '../../definitions/utils/class-type.js';
 import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 
 export interface IInterceptor<TInstance> {
@@ -22,7 +21,7 @@ export interface IInterceptor<TInstance> {
   ): IInterceptor<TInstance>;
 }
 
-export type NewInterceptorClass<TInstance extends INewInterceptor> = ClassType<INewInterceptor, []> & {
+export type NewInterceptorClass<TInstance extends INewInterceptor> = {
   create(): TInstance;
 };
 

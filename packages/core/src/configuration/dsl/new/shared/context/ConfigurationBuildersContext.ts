@@ -19,7 +19,6 @@ import type { MaybePromise } from '../../../../../utils/async.js';
 import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
-import type { ClassType } from '../../../../../definitions/utils/class-type.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
@@ -28,7 +27,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
   private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
 
-  private _newInterceptors = new Set<ClassType<INewInterceptor, []>>();
+  private _newInterceptors = new Set<NewInterceptorClass<INewInterceptor>>();
 
   private _definitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
   private _frozenDefinitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
@@ -80,7 +79,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
   withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void {
     if (this._newInterceptors.has(interceptor)) {
-      throw new Error(`Interceptor with name ${interceptor.name} already exists.`);
+      throw new Error(`Interceptor with name ${(interceptor as any).name} already exists.`);
     }
 
     this._newInterceptors.add(interceptor);

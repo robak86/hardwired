@@ -5,8 +5,7 @@ import type { IDefinition } from '../../../../definitions/abstract/IDefinition.j
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ILazyDefinitionBuilder } from '../utils/abstract/ILazyDefinitionBuilder.js';
 import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
-import type { INewInterceptor } from '../../../../container/interceptors/interceptor.js';
-import type { ClassType } from '../../../../definitions/utils/class-type.js';
+import type { INewInterceptor, NewInterceptorClass } from '../../../../container/interceptors/interceptor.js';
 
 export interface IBindingsRegistryConfiguration {
   readonly definitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>;
@@ -22,7 +21,7 @@ export interface ILifecycleConfiguration {
 
 export interface IInterceptorsConfiguration {
   readonly interceptors: InterceptorsRegistry;
-  readonly interceptorsNew?: Set<ClassType<INewInterceptor, []>>;
+  readonly interceptorsNew?: Set<NewInterceptorClass<INewInterceptor>>;
 }
 
 export interface IConfiguration
@@ -39,6 +38,6 @@ export class ContainerConfiguration implements IConfiguration {
     public readonly cascadingTokens: Set<IDefinitionToken<any, LifeTime.cascading>>,
     public readonly lifeCycleRegistry: ILifeCycleRegistry,
     public readonly interceptors: InterceptorsRegistry,
-    public readonly interceptorsNew?: Set<ClassType<INewInterceptor, []>>,
+    public readonly interceptorsNew?: Set<NewInterceptorClass<INewInterceptor>>,
   ) {}
 }
