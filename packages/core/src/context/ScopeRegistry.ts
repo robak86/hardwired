@@ -1,6 +1,16 @@
 import { COWMap } from './COWMap.js';
 
-export class ScopeRegistry<V> {
+export interface IReadonlyScopeRegistry<V> {
+  findRegistration(definitionId: symbol): V | undefined;
+  findOverride(definitionId: symbol): V | undefined;
+  find(definitionId: symbol): V | undefined;
+  get(definitionId: symbol): V;
+  has(definitionId: symbol): boolean;
+  getForOverride(definitionId: symbol): V;
+  forEach(iterFn: (value: V) => void): void;
+}
+
+export class ScopeRegistry<V> implements IReadonlyScopeRegistry<V> {
   static create<V>(): ScopeRegistry<V> {
     return new ScopeRegistry<V>(false, COWMap.create<V>());
   }
@@ -14,7 +24,7 @@ export class ScopeRegistry<V> {
   constructor(
     protected _isFrozen: boolean,
     protected _registrations: COWMap<V>,
-    protected _prev?: ScopeRegistry<V>,
+    protected _prev?: IReadonlyScopeRegistry<V>,
   ) {}
 
   findRegistration(definitionId: symbol): V | undefined {
@@ -57,22 +67,6 @@ export class ScopeRegistry<V> {
     }
 
     return def;
-  }
-
-  protected getRegistered(definitionId: symbol): V {
-    const definition = this._registrations.get(definitionId);
-
-    if (definition) {
-      return definition;
-    } else {
-      const parentDefinition = this._prev?.getRegistered(definitionId);
-
-      if (parentDefinition) {
-        return parentDefinition;
-      } else {
-        throw new Error(`No definition registered for ${definitionId.toString()}`);
-      }
-    }
   }
 
   forceRegister(definitionId: symbol, instance: V) {
@@ -126,7 +120,7 @@ export class ScopeRegistry<V> {
     }
   }
 
-  withParent(_prev: ScopeRegistry<V>, freeze = false): ScopeRegistry<V> {
+  withParent(_prev: IReadonlyScopeRegistry<V>, freeze = false): ScopeRegistry<V> {
     if (this._prev) {
       throw new Error(
         `ScopeRegistry is already linked to some parent. You most likely don't wanna continue with this.`,
