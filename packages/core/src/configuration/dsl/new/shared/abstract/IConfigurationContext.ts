@@ -3,11 +3,7 @@ import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
-import type {
-  IInterceptor,
-  INewInterceptor,
-  NewInterceptorClass,
-} from '../../../../../container/interceptors/interceptor.js';
+import type { INewInterceptor, NewInterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
 
@@ -20,8 +16,6 @@ export interface IConfigurationContext {
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void;
   onCascadingDefinition(definition: IDefinitionToken<unknown, LifeTime.cascading>): void;
 
-  // TODO: most likely these should be rewritten
-  withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void;
   withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void;
   onDispose(callback: (scope: IContainer) => void): void;
 

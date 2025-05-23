@@ -10,7 +10,7 @@ import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/Mo
 import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 
-import type { IInterceptor, INewInterceptor, NewInterceptorClass } from './interceptors/interceptor.js';
+import type { INewInterceptor, NewInterceptorClass } from './interceptors/interceptor.js';
 
 export type ScopeTag = string | symbol;
 
@@ -70,8 +70,6 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   readonly parentId: string | null;
 
   dispose(): MaybePromise<void>;
-
-  getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
 
   getInterceptorNew<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance;
 

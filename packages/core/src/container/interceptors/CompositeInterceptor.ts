@@ -1,18 +1,14 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
-import type { ScopeTag } from '../IContainer.js';
-import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
-import type { IBindingsRegistryRead } from '../../context/abstract/IBindingsRegistryRead.js';
 import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 
-import type { IInterceptor, INewInterceptor, NewInterceptorClass } from './interceptor.js';
+import type { INewInterceptor, NewInterceptorClass } from './interceptor.js';
 
 export class NewCompositeInterceptor implements INewInterceptor {
   constructor(private _interceptors: INewInterceptor[] = []) {}
 
   // TODO: slow for a lot interceptors!
   findInstance<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance {
-    return this._interceptors.find(interceptor => interceptor instanceof cls) as TInstance;
+    return this._interceptors.find(interceptor => interceptor instanceof (cls as any)) as TInstance;
   }
 
   append(interceptor: INewInterceptor) {
@@ -38,33 +34,5 @@ export class NewCompositeInterceptor implements INewInterceptor {
 
   onScope(): NewCompositeInterceptor {
     return new NewCompositeInterceptor(this._interceptors.map(interceptor => interceptor.onScope()));
-  }
-}
-
-export class CompositeInterceptor<TInstance> implements IInterceptor<TInstance> {
-  readonly id = crypto.randomUUID();
-
-  constructor(private _interceptors: IInterceptor<TInstance>[]) {}
-
-  onEnter<TNewInstance>(definition: IDefinition<TNewInstance, LifeTime>): IInterceptor<TNewInstance> {
-    return new CompositeInterceptor(this._interceptors.map(interceptor => interceptor.onEnter(definition)));
-  }
-
-  onLeave(instance: TInstance, definition: IDefinition<TInstance, LifeTime>): TInstance {
-    return this._interceptors.reduce((acc, interceptor) => interceptor.onLeave(acc, definition), instance);
-  }
-
-  onScope(
-    tags: ScopeTag[],
-    bindingsRegistry: IBindingsRegistryRead,
-    instancesStore: IInstancesStoreRead,
-  ): IInterceptor<TInstance> {
-    return new CompositeInterceptor(
-      this._interceptors.map(interceptor => interceptor.onScope(tags, bindingsRegistry, instancesStore)),
-    );
-  }
-
-  append(interceptor: IInterceptor<TInstance>): CompositeInterceptor<TInstance> {
-    return new CompositeInterceptor([...this._interceptors, interceptor]);
   }
 }

@@ -4,12 +4,7 @@ import type { IDefinition } from '../../../../../definitions/abstract/IDefinitio
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
-import type {
-  IInterceptor,
-  INewInterceptor,
-  NewInterceptorClass,
-} from '../../../../../container/interceptors/interceptor.js';
-import { InterceptorsRegistry } from '../../../../../container/interceptors/InterceptorsRegistry.js';
+import type { INewInterceptor, NewInterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import {
   ContainerLifeCycleRegistry,
   DefinitionsDisposeFunctions,
@@ -25,8 +20,6 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     return new ConfigurationBuildersContext();
   }
 
-  private _interceptors = new Map<string | symbol, IInterceptor<unknown>>();
-
   private _newInterceptors = new Set<NewInterceptorClass<INewInterceptor>>();
 
   private _definitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
@@ -39,12 +32,6 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   private _definitionDisposeFns = new DefinitionsDisposeFunctions();
 
   toConfig(): IConfiguration {
-    const interceptorsRegistry = InterceptorsRegistry.create();
-
-    this._interceptors.forEach((interceptor, name) => {
-      interceptorsRegistry.register(name, interceptor);
-    });
-
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
 
     lifeCycleRegistry.append(this._disposeFunctions);
@@ -57,7 +44,6 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       this._frozenLazyDefinitions,
       this._cascadeDefinitions,
       lifeCycleRegistry,
-      interceptorsRegistry,
       this._newInterceptors,
     );
   }
@@ -67,14 +53,6 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     disposeFn: (instance: TInstance) => MaybePromise<void>,
   ): void {
     this._definitionDisposeFns.append(token, disposeFn);
-  }
-
-  withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
-    if (this._interceptors.get(name)) {
-      throw new Error(`Interceptor with name ${name.toString()} already exists.`);
-    }
-
-    this._interceptors.set(name, interceptor);
   }
 
   withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void {

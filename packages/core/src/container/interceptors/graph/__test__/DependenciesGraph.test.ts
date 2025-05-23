@@ -60,8 +60,6 @@ describe(`DependenciesGraph`, () => {
         ...configureFns,
       );
 
-      cnt.getInterceptor('graph');
-
       return { cnt, a: aDef, b: bDef, c1: c1Def, c2: c2Def };
     }
 

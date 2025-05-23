@@ -6,11 +6,7 @@ import type {
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IContainer } from '../../../../container/IContainer.js';
 import type { DefinitionSymbol, IDefinitionToken } from '../../../../definitions/def-symbol.js';
-import type {
-  IInterceptor,
-  INewInterceptor,
-  NewInterceptorClass,
-} from '../../../../container/interceptors/interceptor.js';
+import type { INewInterceptor, NewInterceptorClass } from '../../../../container/interceptors/interceptor.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
@@ -65,10 +61,6 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     symbol: DefinitionSymbol<TInstance, TLifeTime>,
   ): IAddDefinitionBuilder<TInstance, TLifeTime> {
     return new AddDefinitionBuilder('add', symbol, this._allowedRegisterLifeTimes, this._context);
-  }
-
-  withInterceptor(name: string | symbol, interceptor: IInterceptor<unknown>): void {
-    this._context.withInterceptor(name, interceptor);
   }
 
   withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void {

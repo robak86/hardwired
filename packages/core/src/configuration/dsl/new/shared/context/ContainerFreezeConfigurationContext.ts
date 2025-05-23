@@ -6,11 +6,7 @@ import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js'
 import type { InstancesStore } from '../../../../../context/InstancesStore.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
-import type {
-  IInterceptor,
-  INewInterceptor,
-  NewInterceptorClass,
-} from '../../../../../container/interceptors/interceptor.js';
+import type { INewInterceptor, NewInterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
 
@@ -35,9 +31,6 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
     throw new Error('Method not implemented.');
   }
 
-  withInterceptor(_name: string | symbol, _interceptor: IInterceptor<unknown>): void {
-    throw new Error('Modifying interceptors is not supported in eager mode.');
-  }
   onDispose(_callback: (scope: IContainer) => void): void {
     throw new Error('Adding dispose callbacks is not supported in eager mode.');
   }

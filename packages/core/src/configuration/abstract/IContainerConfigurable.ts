@@ -1,7 +1,7 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IContainer, UseFn } from '../../container/IContainer.js';
 import type { IDefinitionToken } from '../../definitions/def-symbol.js';
-import type { IInterceptor, INewInterceptor, NewInterceptorClass } from '../../container/interceptors/interceptor.js';
+import type { INewInterceptor, NewInterceptorClass } from '../../container/interceptors/interceptor.js';
 import type { ModifyDefinitionBuilder } from '../dsl/new/shared/ModifyDefinitionBuilder.js';
 
 import type { IRegisterAware } from './IRegisterAware.js';
@@ -34,7 +34,6 @@ export interface IContainerConfigurable
     ILazyInstantiationAware<ContainerConfigurationAllowedRegistrationLifeTimes> {
   onDispose(callback: (scope: IContainer) => void): void;
 
-  withInterceptor(id: string | symbol, interceptor: IInterceptor<unknown>): void;
   withNewInterceptor(interceptor: NewInterceptorClass<INewInterceptor>): void;
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
