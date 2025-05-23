@@ -15,6 +15,16 @@ describe(`interceptor?`, () => {
     }
   }
 
+  /*
+  A -> B  -> C1
+          -> C2
+*/
+
+  const c1Def = singleton<string>();
+  const c2Def = singleton<string>();
+  const bDef = singleton<[string, string, string]>();
+  const aDef = singleton<[string, [string, string, string]]>();
+
   describe(`container configuration`, () => {
     describe(`getInterceptor`, () => {
       it(`returns correct instance of interceptor`, async () => {
@@ -27,16 +37,6 @@ describe(`interceptor?`, () => {
 
   describe(`sync`, () => {
     it(`Calls interceptor methods with correct arguments`, async () => {
-      /*
-        A -> B  -> C1
-                -> C2
-      */
-
-      const c1Def = singleton<string>();
-      const c2Def = singleton<string>();
-      const bDef = singleton<[string, string, string]>();
-      const aDef = singleton<[string, [string, string, string]]>();
-
       const cnt = container.new(c => {
         c.add(c1Def).fn(() => 'C1');
         c.add(c2Def).fn(() => 'C2');
@@ -64,18 +64,6 @@ describe(`interceptor?`, () => {
 
   describe(`async`, () => {
     it(`Calls interceptor methods with correct arguments`, async () => {
-      // const interceptor = new TestInterceptor();
-
-      /*
-        A -> B  -> C1
-                -> C2
-       */
-
-      const c1Def = singleton<string>();
-      const c2Def = singleton<string>();
-      const bDef = singleton<[string, string, string]>();
-      const aDef = singleton<[string, [string, string, string]]>();
-
       const cnt = container.new(c => {
         c.add(c1Def).fn(async () => 'C1');
         c.add(c2Def).fn(async () => 'C2');

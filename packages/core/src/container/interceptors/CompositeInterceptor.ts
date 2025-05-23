@@ -31,8 +31,8 @@ export class NewCompositeInterceptor implements INewInterceptor {
     );
   }
 
-  onScope(): this {
-    return this;
+  onScope(): NewCompositeInterceptor {
+    return new NewCompositeInterceptor(this._interceptors.map(interceptor => interceptor.onScope()));
   }
 }
 

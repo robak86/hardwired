@@ -21,7 +21,8 @@ export interface IInterceptor<TInstance> {
 }
 
 export interface INewInterceptor {
+  // TODO: ideally dependencies:unknown[] should be factory function, so interceptor can cancel dependencies creation
   onInstance?<TInstance>(instance: TInstance, dependencies: unknown[]): TInstance;
 
-  onScope(): this;
+  onScope(): INewInterceptor;
 }

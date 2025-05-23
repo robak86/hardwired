@@ -62,8 +62,6 @@ export class Container
   private _singletonStrategy: SingletonStrategy;
   private _scopedStrategy: ScopedStrategy;
 
-  private _interceptor?: NewCompositeInterceptor;
-
   protected constructor(
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
@@ -72,6 +70,7 @@ export class Container
     protected readonly currentInterceptor: IInterceptor<any> | null,
     protected readonly scopeTags: (string | symbol)[],
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
+    private _interceptor?: NewCompositeInterceptor,
   ) {
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
@@ -154,8 +153,6 @@ export class Container
 
       containerInterceptor.append(interceptorInstance);
     });
-
-    console.log(this._interceptor);
   }
 
   scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configureFns: TConfigureFns): IContainer {
@@ -174,6 +171,7 @@ export class Container
       scopeInterceptorsRegistry.build() ?? null,
       tags,
       lifeCycleRegistry,
+      this._interceptor?.onScope(),
     );
 
     if (configureFns.length) {
@@ -191,7 +189,7 @@ export class Container
         scopeInterceptorsRegistry.apply(config.interceptors);
 
         if (config.interceptorsNew) {
-          this.applyInterceptors(config.interceptorsNew);
+          cnt.applyInterceptors(config.interceptorsNew);
         }
       });
 
@@ -291,6 +289,7 @@ export class Container
     return this._scopedStrategy.build(definition, this, this._interceptor);
   }
 
+  // TODO: remove!!
   private buildWithStrategyIntercepted<TValue>(
     currentInterceptor: IInterceptor<any>,
     definition: IDefinition<TValue, LifeTime>,
