@@ -75,8 +75,8 @@ export class Container
       },
     );
 
-    this._singletonStrategy = new SingletonStrategy(instancesStore, bindingsRegistry);
-    this._scopedStrategy = new ScopedStrategy(instancesStore, bindingsRegistry);
+    this._singletonStrategy = new SingletonStrategy(instancesStore);
+    this._scopedStrategy = new ScopedStrategy(instancesStore);
   }
 
   dispose(): MaybePromise<void> {

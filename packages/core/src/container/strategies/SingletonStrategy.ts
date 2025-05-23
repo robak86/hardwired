@@ -3,14 +3,10 @@ import type { MaybePromise } from '../../utils/async.js';
 import type { IServiceLocator } from '../IContainer.js';
 import type { InstancesStore } from '../../context/InstancesStore.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
-import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
 import type { IInterceptor } from '../interceptors/interceptor.js';
 
 export class SingletonStrategy {
-  constructor(
-    protected instancesStore: InstancesStore,
-    protected bindingsRegistry: BindingsRegistry,
-  ) {}
+  constructor(protected instancesStore: InstancesStore) {}
 
   build<TValue>(
     definition: IDefinition<TValue, LifeTime>,
