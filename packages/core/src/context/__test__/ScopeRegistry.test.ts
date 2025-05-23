@@ -49,4 +49,122 @@ describe(`ScopeRegistry`, () => {
       registry.override(symbol, 'overridden');
     }).toThrowError(`Instance with id ${symbol.toString()} not registered. Try using .register() instead.`);
   });
+
+  describe(`delegation to the prev registry`, () => {
+    it(`delegates findRegistration to _prev ScopeRegistry`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      parentRegistry.register(symbol, 'parentValue');
+
+      expect(childRegistry.findRegistration(symbol)).toBe('parentValue');
+    });
+
+    it(`delegates findOverride to _prev ScopeRegistry`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      parentRegistry.register(symbol, 'parentValue');
+      parentRegistry.override(symbol, 'parentOverride');
+
+      expect(parentRegistry.findOverride(symbol)).toBe('parentOverride');
+
+      expect(childRegistry.findOverride(symbol)).toBe('parentOverride');
+    });
+
+    it(`delegates find to _prev ScopeRegistry`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      parentRegistry.register(symbol, 'parentValue');
+      parentRegistry.override(symbol, 'parentOverride');
+
+      expect(childRegistry.find(symbol)).toBe('parentOverride');
+    });
+
+    it(`throws when get is called and _prev ScopeRegistry does not have the definition`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      expect(() => childRegistry.get(symbol)).toThrowError(`No definition registered for ${symbol.toString()}`);
+    });
+
+    it(`allows get to retrieve definitions from _prev ScopeRegistry`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      parentRegistry.register(symbol, 'parentValue');
+
+      expect(childRegistry.get(symbol)).toBe('parentValue');
+    });
+  });
+
+  describe(`resolving values from linked hierarchy`, () => {
+    it(`uses child registry's own registration over parent registry's`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      parentRegistry.register(symbol, 'parentValue');
+      childRegistry.register(symbol, 'childValue');
+
+      expect(childRegistry.get(symbol)).toBe('childValue');
+    });
+
+    it(`uses child registry's own override over parent registry's`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      parentRegistry.register(symbol, 'parentValue');
+      parentRegistry.override(symbol, 'parentOverride');
+      childRegistry.override(symbol, 'childOverride');
+
+      expect(childRegistry.get(symbol)).toBe('childOverride');
+    });
+
+    it(`falls back to parent registry when child registry does not have its own registration`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      parentRegistry.register(symbol, 'parentValue');
+
+      expect(childRegistry.get(symbol)).toBe('parentValue');
+    });
+
+    it(`falls back to parent registry when child registry does not have its own override`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      parentRegistry.register(symbol, 'parentValue');
+      parentRegistry.override(symbol, 'parentOverride');
+
+      expect(childRegistry.get(symbol)).toBe('parentOverride');
+    });
+
+    it(`throws when child registry has no registration and parent registry also lacks it`, async () => {
+      const parentRegistry = ScopeRegistry.create<string>();
+      const childRegistry = ScopeRegistry.create<string>().withParent(parentRegistry);
+
+      const symbol = Symbol('test');
+
+      expect(() => childRegistry.get(symbol)).toThrowError(`No definition registered for ${symbol.toString()}`);
+    });
+  });
 });
