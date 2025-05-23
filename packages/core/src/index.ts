@@ -3,16 +3,14 @@ export type { MaybePromise } from './utils/async.js';
 export type {
   GraphBuilderInterceptorConfig,
   GraphNode,
-} from './container/interceptors/graph/GraphBuilderInterceptor.js';
-export { GraphBuilderInterceptor } from './container/interceptors/graph/GraphBuilderInterceptor.js';
+} from './container/interceptors/graph/AbstractGraphDependenciesInterceptor.js';
+export { AbstractGraphDependenciesInterceptor } from './container/interceptors/graph/AbstractGraphDependenciesInterceptor.js';
 export * from './container/interceptors/graph/GraphBuilderContext.js';
 export * from './container/interceptors/graph/GraphNodesRegistry.js';
 
 export { COWMap } from './context/COWMap.js';
 
 export * from './container/interceptors/graph/DependenciesGraph.js';
-
-export { LoggingInterceptor } from './container/interceptors/logging/LoggingInterceptor.js';
 
 export type { IScopeConfigurable } from './configuration/abstract/IScopeConfigurable.js';
 export type { IContainerConfigurable } from './configuration/abstract/IContainerConfigurable.js';

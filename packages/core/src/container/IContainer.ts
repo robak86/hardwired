@@ -74,6 +74,8 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
 
   getInterceptorNew<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance;
+
+  hasInterceptor(interceptorClass: NewInterceptorClass<INewInterceptor>): boolean;
 }
 
 export type IContainerFactory = {

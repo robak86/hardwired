@@ -1,8 +1,9 @@
 import { configureContainer, container, scoped, singleton } from 'hardwired';
 import { expect } from 'vitest';
 
-import type { IReactLifeCycleAware, ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
-import { reactLifeCycleInterceptor, withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
+import type { IReactLifeCycleAware } from '../ReactLifeCycleInterceptor.js';
+import { ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
+import { withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
 
 describe(`ReactLifeCycleInterceptor`, () => {
   const noLifeCyclesD = scoped<NoLifeCycles>('NoLifeCycles');
@@ -46,7 +47,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
 
   function setup() {
     const cnt = container.new(registerServices, withReactLifeCycle());
-    const interceptor = cnt.getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor;
+    const interceptor = cnt.getInterceptorNew(ReactLifeCycleRootInterceptor);
 
     return { cnt, interceptor };
   }
@@ -159,14 +160,10 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const { cnt, interceptor } = setup();
 
       const childScope1 = cnt.scope();
-      const childScope1Interceptor = childScope1.getInterceptor(
-        reactLifeCycleInterceptor,
-      ) as ReactLifeCycleRootInterceptor;
+      const childScope1Interceptor = childScope1.getInterceptorNew(ReactLifeCycleRootInterceptor);
 
       const childScope2 = cnt.scope();
-      const childScope2Interceptor = childScope2.getInterceptor(
-        reactLifeCycleInterceptor,
-      ) as ReactLifeCycleRootInterceptor;
+      const childScope2Interceptor = childScope2.getInterceptorNew(ReactLifeCycleRootInterceptor);
 
       await childScope1.use(service1D);
       await childScope2.use(service1D);

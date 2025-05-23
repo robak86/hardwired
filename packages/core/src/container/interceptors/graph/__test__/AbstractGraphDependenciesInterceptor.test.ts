@@ -1,87 +1,26 @@
 import { container } from '../../../Container.js';
 import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
-import type { GraphNode } from '../GraphBuilderInterceptor.js';
+import { AbstractGraphDependenciesInterceptor } from '../AbstractGraphDependenciesInterceptor.js';
 import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import { cascading, scoped, singleton } from '../../../../definitions/def-symbol.js';
 import { BoxedValue } from '../../../../__test__/BoxedValue.js';
-import type { INewInterceptor } from '../../interceptor.js';
-import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import { COWMap } from '../../../../context/COWMap.js';
 
-describe(`GraphBuildInterceptor`, () => {
-  class SomeNode<T> implements GraphNode<T> {
+describe(`AbstractGraphDependenciesInterceptor`, () => {
+  class SomeNode<T> {
     readonly id = Math.random();
 
     constructor(
       readonly value: T,
       readonly definition: IDefinitionToken<T, any>,
-      readonly children: GraphNode<any>[],
+      readonly children: SomeNode<unknown>[],
     ) {}
   }
 
-  class RootTestInterceptor implements INewInterceptor {
+  class RootTestInterceptor extends AbstractGraphDependenciesInterceptor<SomeNode<unknown>> {
     static create() {
-      return new RootTestInterceptor(new Map(), new Map(), COWMap.create(), 0);
-    }
-
-    protected constructor(
-      private _globalInstances: Map<symbol, SomeNode<unknown>>,
-      private _scopeInstances: Map<symbol, SomeNode<unknown>>,
-      private _cascadingInstances: COWMap<SomeNode<unknown>>,
-      private _depth: number,
-    ) {}
-
-    hasInstance<TInstance>(token: IDefinitionToken<TInstance, LifeTime>): boolean {
-      return (
-        this._globalInstances.has(token.id) ||
-        this._scopeInstances.has(token.id) ||
-        this._cascadingInstances.has(token.id)
-      );
-    }
-
-    private find(token: IDefinitionToken<any, LifeTime>): SomeNode<unknown> | undefined {
-      return (
-        this._globalInstances.get(token.id) ||
-        this._scopeInstances.get(token.id) ||
-        this._cascadingInstances.get(token.id)
-      );
-    }
-
-    onInstance<TInstance>(
-      instance: TInstance,
-      dependencies: unknown[],
-      token: IDefinitionToken<TInstance, LifeTime>,
-      dependenciesTokens: IDefinitionToken<unknown, LifeTime>[],
-    ): TInstance {
-      if (token.strategy === LifeTime.transient) {
-        return instance;
-      }
-
-      const children = dependenciesTokens.map(token => {
-        const node = this.find(token);
-
-        if (!node) {
-          throw new Error(`Node for token ${token.toString()} not found`);
-        }
-
-        return node;
-      });
-
-      const node = new SomeNode(instance, token, children);
-
-      if (token.strategy === LifeTime.singleton) {
-        this._globalInstances.set(token.id, node);
-      }
-
-      if (token.strategy === LifeTime.scoped) {
-        this._scopeInstances.set(token.id, node);
-      }
-
-      if (token.strategy === LifeTime.cascading) {
-        this._cascadingInstances.set(token.id, node);
-      }
-
-      return instance;
+      return new RootTestInterceptor(new Map(), new Map(), COWMap.create());
     }
 
     getGraphNode<TInstance>(token: IDefinitionToken<TInstance, LifeTime>): SomeNode<TInstance> {
@@ -94,13 +33,16 @@ describe(`GraphBuildInterceptor`, () => {
       return node as SomeNode<TInstance>;
     }
 
-    onScope(): INewInterceptor {
-      return new RootTestInterceptor(
-        this._globalInstances,
-        new Map(),
-        this._cascadingInstances.clone(),
-        this._depth + 1,
-      );
+    onScope(): RootTestInterceptor {
+      return new RootTestInterceptor(this._globalInstances, new Map(), this._cascadingInstances.clone());
+    }
+
+    protected buildGraphNode<TInstance>(
+      instance: TInstance,
+      token: IDefinitionToken<TInstance, LifeTime>,
+      children: SomeNode<any>[],
+    ): SomeNode<TInstance> {
+      return new SomeNode(instance, token, children);
     }
   }
 

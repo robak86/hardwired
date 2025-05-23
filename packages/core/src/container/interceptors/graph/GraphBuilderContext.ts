@@ -2,7 +2,7 @@ import type { ScopeTag } from '../../IContainer.js';
 import type { IBindingsRegistryRead } from '../../../context/abstract/IBindingsRegistryRead.js';
 
 import type { GraphNodesRegistry } from './GraphNodesRegistry.js';
-import type { GraphNode } from './GraphBuilderInterceptor.js';
+import type { GraphNode } from './AbstractGraphDependenciesInterceptor.js';
 
 export class GraphBuilderContext<TNode extends GraphNode<any>> {
   constructor(

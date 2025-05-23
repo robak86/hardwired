@@ -215,11 +215,15 @@ export class Container
     return this.interceptorsRegistry?.get(id);
   }
 
+  hasInterceptor(interceptorClass: NewInterceptorClass<INewInterceptor>): boolean {
+    return this._interceptor?.findInstance(interceptorClass) !== undefined;
+  }
+
   getInterceptorNew<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance {
-    const interceptorInstance = this._interceptor?.getInstance(cls);
+    const interceptorInstance = this._interceptor?.findInstance(cls);
 
     if (!interceptorInstance) {
-      throw new Error(`Interceptor with class ${cls.name} not found.`);
+      throw new Error(`Interceptor with class ${(cls as any).name} not found.`);
     }
 
     return interceptorInstance;

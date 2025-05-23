@@ -1,7 +1,7 @@
 import { Bench } from 'tinybench';
 
 import { container } from '../container/Container.js';
-import { DependenciesGraphRoot } from '../container/interceptors/graph/DependenciesGraph.js';
+import { DependenciesGraphInterceptor } from '../container/interceptors/graph/DependenciesGraph.js';
 import type { IContainer } from '../container/IContainer.js';
 import { configureContainer } from '../configuration/ContainerConfiguration.js';
 
@@ -49,7 +49,7 @@ const instantiationBench = new Bench({
     c3 = cnt.scope();
 
     cntWithInterceptor = container.new(configure, c => {
-      c.withInterceptor('graph', new DependenciesGraphRoot());
+      c.withInterceptor('graph', new DependenciesGraphInterceptor());
     });
   },
   teardown: () => {},

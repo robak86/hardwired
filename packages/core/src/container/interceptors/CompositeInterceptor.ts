@@ -11,7 +11,7 @@ export class NewCompositeInterceptor implements INewInterceptor {
   constructor(private _interceptors: INewInterceptor[] = []) {}
 
   // TODO: slow for a lot interceptors!
-  getInstance<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance {
+  findInstance<TInstance extends INewInterceptor>(cls: NewInterceptorClass<TInstance>): TInstance {
     return this._interceptors.find(interceptor => interceptor instanceof cls) as TInstance;
   }
 
