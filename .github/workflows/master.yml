@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master,dev]
+    branches: [master, dev]
   pull_request:
-    branches: [master,dev]
+    branches: [master, dev]
 
 jobs:
   build:
@@ -67,7 +67,6 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           package: packages/react/package.json
 
-
   publish-dev:
     runs-on: ubuntu-latest
 
@@ -96,7 +95,6 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           package: packages/core/package.json
           tag: dev
-          dry-run: true
 
       - name: Publish react integration
         uses: JS-DevTools/npm-publish@v3
@@ -104,4 +102,3 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           package: packages/react/package.json
           tag: dev
-          dry-run: true
