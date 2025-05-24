@@ -12,6 +12,7 @@ import {
   buildTransientDefs,
   countDependenciesTreeCount,
   registerTestDefinitions,
+  registerTestDefinitionsAsync,
 } from './utils.js';
 
 const singletonDefs = buildSingletonDefs(3, 10);
@@ -36,17 +37,29 @@ const configure = configureContainer(c => {
   registerTestDefinitions(cascadingDefs, c);
 });
 
-let cnt: IContainer;
+const configureAsAsync = configureContainer(c => {
+  registerTestDefinitionsAsync(singletonDefs, c);
+  registerTestDefinitionsAsync(transientDefs, c);
+  registerTestDefinitionsAsync(scopedDefs, c);
+  registerTestDefinitionsAsync(cascadingDefs, c);
+});
+
+let syncCnt: IContainer;
+let asyncCnt: IContainer;
 let cntWithInterceptor: IContainer;
 
-let c3: IContainer;
+let syncCntScope: IContainer;
+let asyncCntScope: IContainer;
 
 const instantiationBench = new Bench({
   time: 200,
+  iterations: 1000,
   setup: () => {
-    cnt = container.new(configure);
+    syncCnt = container.new(configure);
+    asyncCnt = container.new(configureAsAsync);
 
-    c3 = cnt.scope();
+    syncCntScope = syncCnt.scope();
+    asyncCntScope = asyncCnt.scope();
 
     cntWithInterceptor = container.new(configure, c => {
       c.withInterceptor(DependenciesGraphInterceptor);
@@ -56,54 +69,86 @@ const instantiationBench = new Bench({
 });
 
 instantiationBench
-  .add('singletonD', () => {
-    void cnt.use(singletonD);
+  .add('[sync definitions] singletonD', () => {
+    syncCnt.use(singletonD).trySync();
   })
-  .add('singletonD + new scope', () => {
-    void cnt.scope().use(singletonD);
+  .add('[sync definitions] singletonD + new scope', () => {
+    syncCnt.scope().use(singletonD).trySync();
   })
-  .add('transientD', () => {
-    void cnt.use(transientD);
+  .add('[sync definitions] transientD', () => {
+    syncCnt.use(transientD).trySync();
   })
-  .add('transientD + new scope', () => {
-    void cnt.scope().use(transientD);
+  .add('[sync definitions] transientD + new scope', () => {
+    syncCnt.scope().use(transientD).trySync();
   })
-  .add('scopedD', () => {
-    void cnt.use(scopedD);
+  .add('[sync definitions] scopedD', () => {
+    syncCnt.use(scopedD).trySync();
   })
-  .add('scopedD + new scope', () => {
-    void cnt.scope().use(scopedD);
+  .add('[sync definitions] scopedD + new scope', () => {
+    syncCnt.scope().use(scopedD).trySync();
   })
-  .add('scopedD cascaded to lower scope', () => {
-    void c3.use(scopedD);
+  .add('[sync definitions] scopedD cascaded to lower scope', () => {
+    syncCntScope.use(scopedD).trySync();
   })
-  .add('cascadingD', () => {
-    void cnt.use(cascadingD);
+  .add('[sync definitions] cascadingD', () => {
+    syncCnt.use(cascadingD).trySync();
   })
-  .add('cascadingD + new scope', () => {
-    void cnt.scope().use(cascadingD);
+  .add('[sync definitions] cascadingD + new scope', () => {
+    syncCnt.scope().use(cascadingD).trySync();
   })
-  .add('cascadingD cascaded to lower scope', () => {
-    void c3.use(cascadingD);
+  .add('[sync definitions] cascadingD cascaded to lower scope', () => {
+    syncCntScope.use(cascadingD).trySync();
   })
+
+  .add('[async definitions] singletonD', async () => {
+    await asyncCnt.use(singletonD);
+  })
+  .add('[async definitions] singletonD + new scope', async () => {
+    await asyncCnt.scope().use(singletonD);
+  })
+  .add('[async definitions] transientD', async () => {
+    await asyncCnt.use(transientD);
+  })
+  .add('[async definitions] transientD + new scope', async () => {
+    await asyncCnt.scope().use(transientD);
+  })
+  .add('[async definitions] scopedD', async () => {
+    await asyncCnt.use(scopedD);
+  })
+  .add('[async definitions] scopedD + new scope', async () => {
+    await asyncCnt.scope().use(scopedD);
+  })
+  .add('[async definitions] scopedD cascaded to lower scope', async () => {
+    await asyncCntScope.use(scopedD);
+  })
+  .add('[async definitions] cascadingD', async () => {
+    await asyncCnt.use(cascadingD);
+  })
+  .add('[async definitions] cascadingD + new scope', async () => {
+    await asyncCnt.scope().use(cascadingD);
+  })
+  .add('[async definitions] cascadingD cascaded to lower scope', async () => {
+    await asyncCntScope.use(cascadingD);
+  })
+
   // with interceptor
   .add('[DependencyGraphInterceptor] singletonD', () => {
-    void cntWithInterceptor.use(singletonD);
+    cntWithInterceptor.use(singletonD);
   })
   .add('[DependencyGraphInterceptor] singletonD + new scope', () => {
-    void cntWithInterceptor.scope().use(singletonD);
+    cntWithInterceptor.scope().use(singletonD);
   })
   .add('[DependencyGraphInterceptor] transientD', () => {
-    void cntWithInterceptor.use(transientD);
+    cntWithInterceptor.use(transientD);
   })
   .add('[DependencyGraphInterceptor] transientD + new scope', () => {
-    void cntWithInterceptor.scope().use(transientD);
+    cntWithInterceptor.scope().use(transientD);
   })
   .add('[DependencyGraphInterceptor] scopedD', () => {
-    void cntWithInterceptor.use(scopedD);
+    cntWithInterceptor.use(scopedD);
   })
   .add('[DependencyGraphInterceptor] scopedD + new scope', () => {
-    void cntWithInterceptor.scope().use(scopedD);
+    cntWithInterceptor.scope().use(scopedD);
   });
 
 void instantiationBench

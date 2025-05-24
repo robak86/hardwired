@@ -26,6 +26,23 @@ export function registerTestDefinitions<T, TLifetime extends LifeTime>(
   }
 }
 
+export function registerTestDefinitionsAsync<T, TLifetime extends LifeTime>(
+  defs: TestDefinition<T, TLifetime>[],
+  config: IRegisterAware<LifeTime>,
+) {
+  for (const def of defs) {
+    const dependencies = def.children.map(d => d.def) as unknown as Array<
+      IDefinitionToken<T, ValidDependenciesLifeTime<TLifetime>>
+    >;
+
+    config.add(def.def).asyncFn(async (...args: T[]) => args[0], ...dependencies);
+
+    if (def.children.length > 0) {
+      registerTestDefinitions(def.children, config);
+    }
+  }
+}
+
 export function countDependenciesTreeCount(testDef: TestDefinition<unknown, LifeTime>): number {
   let count = 1;
 
