@@ -3,7 +3,6 @@ import type { IContainer, UseFn } from '../../container/IContainer.js';
 import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 import type { IInterceptor, InterceptorClass } from '../../container/interceptors/interceptor.js';
 import type { ModifyDefinitionBuilder } from '../dsl/new/shared/ModifyDefinitionBuilder.js';
-import type { MaybePromise } from '../../utils/async.js';
 
 import type { IRegisterAware } from './IRegisterAware.js';
 import type { IContainerModifyAware } from './IModifyAware.js';
@@ -33,7 +32,9 @@ export interface IContainerConfigurable
     IContainerModifyAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
     IEagerInstantiationAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
     ILazyInstantiationAware<ContainerConfigurationAllowedRegistrationLifeTimes> {
-  onDispose(callback: (scope: IContainer) => MaybePromise<void>): void;
+  onDispose(callback: (scope: IContainer) => void): void;
+
+  onDisposeAsync(callback: (scope: IContainer) => Promise<void>): void;
 
   withInterceptor(interceptor: InterceptorClass<IInterceptor>): void;
 

@@ -48,7 +48,7 @@ const cnt = container.new(c => {
           res.end(JSON.stringify({ message: 'something went wrong' }));
         })
         .finally(() => {
-          requestScope.dispose();
+          void requestScope.dispose();
         });
     });
   });

@@ -2,7 +2,6 @@ import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ClassType } from '../../../../definitions/utils/class-type.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
-import type { MaybePromise } from '../../../../utils/async.js';
 import { ClassDefinition } from '../../../../definitions/impl/ClassDefinition.js';
 import { FnDefinition } from '../../../../definitions/impl/FnDefinition.js';
 import { Definition } from '../../../../definitions/impl/Definition.js';
@@ -81,7 +80,17 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     return this.buildFinalizer();
   }
 
-  locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>): FinalizerOrVoid<TInstance, TLifeTime> {
+  locator(fn: (container: IServiceLocator) => TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
+    const definition = new Definition(this._symbol, container => {
+      return MaybeAsync.resolve(fn(container));
+    });
+
+    this._configurationContext.onDefinition(this._configType, definition);
+
+    return this.buildFinalizer();
+  }
+
+  asyncLocator(fn: (container: IServiceLocator) => Promise<TInstance>): FinalizerOrVoid<TInstance, TLifeTime> {
     const definition = new Definition(this._symbol, container => {
       return MaybeAsync.resolve(fn(container));
     });

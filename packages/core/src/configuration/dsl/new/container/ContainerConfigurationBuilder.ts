@@ -71,6 +71,11 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     this._context.onDispose(callback);
   }
 
+  // TODO: use for optimizations
+  onDisposeAsync(callback: (scope: IContainer) => Promise<void>): void {
+    this._context.onDispose(callback);
+  }
+
   eager<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     def: IDefinitionToken<TInstance, TLifeTime>,
   ): IConfigureBuilder<TInstance, TLifeTime> {

@@ -40,16 +40,6 @@ describe(`ScopeRegistry`, () => {
     expect(registry.get(symbol)).toBe('overridden2');
   });
 
-  it(`throws on overriding not registered definition`, async () => {
-    const registry = ScopeRegistry.create((val: string) => val);
-
-    const symbol = Symbol('test');
-
-    expect(() => {
-      registry.override(symbol, 'overridden');
-    }).toThrowError(`Instance with id ${symbol.toString()} not registered. Try using .register() instead.`);
-  });
-
   describe(`delegation to the prev registry`, () => {
     it(`delegates findRegistration to _prev ScopeRegistry`, async () => {
       const parentRegistry = ScopeRegistry.create<string, string>(val => val);

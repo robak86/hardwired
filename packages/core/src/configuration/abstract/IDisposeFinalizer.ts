@@ -1,5 +1,4 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { MaybePromise } from '../../utils/async.js';
 
 // prettier-ignore
 export type FinalizerOrVoid<TInstance, TLifeTime extends LifeTime> =
@@ -10,5 +9,6 @@ export type FinalizerOrVoid<TInstance, TLifeTime extends LifeTime> =
     never;
 
 export interface IDisposeFinalizer<TInstance, TLifetime extends LifeTime> {
-  onDispose(disposeFn: (instance: TInstance) => MaybePromise<void>): void;
+  onDispose(disposeFn: (instance: TInstance) => void): void;
+  onDisposeAsync(disposeFn: (instance: TInstance) => Promise<void>): void;
 }

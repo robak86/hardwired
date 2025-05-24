@@ -2,6 +2,11 @@ import { isThenable } from './IsThenable.js';
 
 export type MaybePromise<T> = T | Promise<T>;
 
+export type SyncFn<T> = (instance: T) => void;
+
+// Reject functions that return Promise
+export type NoAsyncFn<T> = (instance: T) => void & { __asyncForbidden?: never };
+
 export const maybePromiseAllThen = <T, TReturn>(
   promises: MaybePromise<T>[],
   callback: (values: T[]) => TReturn,
