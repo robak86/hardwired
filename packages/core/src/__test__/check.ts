@@ -1,7 +1,7 @@
 import { Bench } from 'tinybench';
 
 import { maybePromiseAllThen, maybePromiseThen } from '../utils/async.js';
-import { MaybePromise } from '../utils/MaybePromise.js';
+import { MaybeAsync } from '../utils/MaybeAsync.js';
 
 function a() {
   return Math.random();
@@ -28,15 +28,15 @@ async function cAsync() {
 }
 
 function aMaybePromise() {
-  return new MaybePromise(Math.random());
+  return new MaybeAsync(Math.random());
 }
 
 function bMaybePromise() {
-  return new MaybePromise(Math.random());
+  return new MaybeAsync(Math.random());
 }
 
 function cMaybePromise() {
-  return MaybePromise.all([aMaybePromise(), bMaybePromise()]).then(([a, b]) => a * b);
+  return MaybeAsync.all([aMaybePromise(), bMaybePromise()]).then(([a, b]) => a * b);
 }
 
 // cMaybePromise().trySync();
