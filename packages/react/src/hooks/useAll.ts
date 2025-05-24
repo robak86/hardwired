@@ -16,7 +16,7 @@ export const useAll: UseDefinitionsHook = <TDefinitions extends Array<IDefinitio
   const container = useContainer();
   const interceptor = useReactLifeCycleInterceptor();
 
-  const instances = container.all(...definitions);
+  const instances = container.all(...definitions).trySync();
 
   const hasDependenciesChange = useHasArrayChanged(definitions);
 

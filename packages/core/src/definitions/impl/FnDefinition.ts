@@ -2,10 +2,10 @@ import type { IServiceLocator } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
-import { isThenable } from '../../utils/IsThenable.js';
 import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { IDefinitionToken } from '../def-symbol.js';
+import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 import { Definition } from './Definition.js';
 
@@ -31,67 +31,37 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
     return this.token.strategy;
   }
 
-  override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
+  override(
+    createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
+  ): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.token, createFn);
   }
 
   // TODO: it's a mess with this MaybePromise and interceptor
-  create(context: IServiceLocator, interceptor?: IInterceptor): MaybePromise<TInstance> {
+  create(context: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
     // no dependencies
     if (this._dependencies === undefined) {
       // @ts-ignore
       const instance = this.createFn();
 
-      if (isThenable(instance)) {
-        return instance.then(awaited => {
-          return interceptor?.onInstance?.(awaited, [], this.token, this._dependencies) ?? awaited;
-        }) as TInstance;
-      } else {
-        this._hasOnlySyncDependencies = true;
-
-        return interceptor?.onInstance?.(instance, [], this.token, this._dependencies) ?? instance;
-      }
+      return MaybeAsync.resolve(instance).then(awaited => {
+        return interceptor.onInstance(awaited, [], this.token, this._dependencies);
+      });
     }
 
-    const deps = context.all(...this._dependencies);
+    const result = context.all(...this._dependencies).then(awaitedDeps => {
+      const instance = this.createFn(...(awaitedDeps as TDeps));
 
-    if (this._hasOnlySyncDependencies) {
-      const instance = this.createFn(...(deps as TDeps));
+      return MaybeAsync.resolve(instance).then(awaitedInstance => {
+        return interceptor.onInstance(awaitedInstance, awaitedDeps, this.token, this._dependencies);
+      });
+    });
 
-      if (isThenable(instance)) {
-        return instance.then(instance => {
-          return interceptor?.onInstance?.(instance, deps as any[], this.token, this._dependencies) ?? instance;
-        }) as TInstance;
-      } else {
-        return interceptor?.onInstance?.(instance, deps as any[], this.token, this._dependencies) ?? instance;
-      }
+    if (result.isSync) {
+      // TODO: If the result is synchronous, we can set remember that and next time dispatch only synchronously
     }
 
-    if (isThenable(deps)) {
-      return deps.then(awaitedDeps => {
-        const instance = this.createFn(...awaitedDeps);
-
-        if (isThenable(instance)) {
-          return instance.then(instance => {
-            return interceptor?.onInstance?.(instance, awaitedDeps, this.token, this._dependencies) ?? instance;
-          }) as TInstance;
-        } else {
-          return interceptor?.onInstance?.(instance, awaitedDeps, this.token, this._dependencies) ?? instance;
-        }
-      }) as TInstance;
-    } else {
-      this._hasOnlySyncDependencies = true;
-
-      const instance = this.createFn(...(deps as TDeps));
-
-      if (isThenable(instance)) {
-        return instance.then(instance => {
-          return interceptor?.onInstance?.(instance, deps, this.token, this._dependencies) ?? instance;
-        }) as TInstance;
-      } else {
-        return interceptor?.onInstance?.(instance, deps, this.token, this._dependencies) ?? instance;
-      }
-    }
+    return result;
   }
 
   toString() {

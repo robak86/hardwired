@@ -165,10 +165,10 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
         const scope1 = cnt.scope();
         const scope2 = cnt.scope();
 
-        expect(scope1.use(consumer)).toEqual({ c: 1, value: 1 });
-        expect(scope2.use(consumer)).toEqual({ c: 1, value: 1 });
-        expect(scope1.use(consumer)).toBe(scope2.use(consumer));
-        expect(cnt.use(consumer)).toBe(scope1.use(consumer));
+        expect(scope1.use(consumer).trySync()).toEqual({ c: 1, value: 1 });
+        expect(scope2.use(consumer).trySync()).toEqual({ c: 1, value: 1 });
+        expect(scope1.use(consumer).trySync()).toBe(scope2.use(consumer).trySync());
+        expect(cnt.use(consumer).trySync()).toBe(scope1.use(consumer).trySync());
 
         const scope1Interceptor = scope1.getInterceptor(RootTestInterceptor);
         const scope2Interceptor = scope2.getInterceptor(RootTestInterceptor);

@@ -9,6 +9,7 @@ import type { MaybePromise } from '../utils/async.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import type { MaybeAsync } from '../utils/MaybeAsync.js';
 
 import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 
@@ -29,7 +30,7 @@ export interface IContainerConfigurationAware {
 }
 
 export interface ICascadingDefinitionResolver {
-  resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>): MaybePromise<TValue>;
+  resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>): MaybeAsync<TValue>;
 }
 
 export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
@@ -39,17 +40,17 @@ export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   use<TValue>(
     instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
-  ): MaybePromise<TValue>;
+  ): MaybeAsync<TValue>;
 
   useAsync<TValue>(
     instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
   ): Promise<TValue>;
 
-  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): TValue | null;
+  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null>;
 
   all<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
     ...definitions: [...TDefinitions]
-  ): MaybePromise<InstancesArray<TDefinitions>>;
+  ): MaybeAsync<InstancesArray<TDefinitions>>;
 }
 
 export interface IContainerScopes {
@@ -58,7 +59,7 @@ export interface IContainerScopes {
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
   instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
-) => TValue;
+) => MaybeAsync<TValue>;
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,

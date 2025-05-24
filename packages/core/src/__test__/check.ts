@@ -28,11 +28,11 @@ async function cAsync() {
 }
 
 function aMaybePromise() {
-  return new MaybeAsync(Math.random());
+  return MaybeAsync.resolve(Math.random());
 }
 
 function bMaybePromise() {
-  return new MaybeAsync(Math.random());
+  return MaybeAsync.resolve(Math.random());
 }
 
 function cMaybePromise() {

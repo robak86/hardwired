@@ -30,8 +30,8 @@ describe(`SingletonStrategy`, () => {
         it(`returns class instance`, async () => {
           const c = container.new(setup);
 
-          expect(c.use(leafD)).toHaveProperty('value');
-          expect(c.use(leafD)).toHaveProperty('id');
+          expect(c.use(leafD).trySync()).toHaveProperty('value');
+          expect(c.use(leafD).trySync()).toHaveProperty('id');
         });
 
         it(`constructs class with correct dependencies`, async () => {

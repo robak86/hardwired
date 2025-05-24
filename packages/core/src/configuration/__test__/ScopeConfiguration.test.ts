@@ -39,18 +39,18 @@ describe(`ScopeConfiguration`, () => {
         });
         const scopeL2 = scopeL1.scope();
 
-        expect(scopeL1.use(someScoped)).toMatchObject({ value: 123 });
-        expect(scopeL1.use(someTransient)).toMatchObject({ value: 456 });
-        expect(scopeL1.use(someCascading)).toMatchObject({ value: 789 });
+        expect(scopeL1.use(someScoped).trySync()).toMatchObject({ value: 123 });
+        expect(scopeL1.use(someTransient).trySync()).toMatchObject({ value: 456 });
+        expect(scopeL1.use(someCascading).trySync()).toMatchObject({ value: 789 });
 
-        expect(scopeL2.use(someScoped)).toMatchObject({ value: 123 });
-        expect(scopeL2.use(someTransient)).toMatchObject({ value: 456 });
-        expect(scopeL2.use(someCascading)).toMatchObject({ value: 789 });
+        expect(scopeL2.use(someScoped).trySync()).toMatchObject({ value: 123 });
+        expect(scopeL2.use(someTransient).trySync()).toMatchObject({ value: 456 });
+        expect(scopeL2.use(someCascading).trySync()).toMatchObject({ value: 789 });
 
-        expect(scopeL1.use(someScoped)).not.toBe(scopeL2.use(someScoped));
-        expect(scopeL1.use(someTransient)).not.toBe(scopeL2.use(someTransient));
+        expect(scopeL1.use(someScoped).trySync()).not.toBe(scopeL2.use(someScoped).trySync());
+        expect(scopeL1.use(someTransient).trySync()).not.toBe(scopeL2.use(someTransient).trySync());
 
-        expect(scopeL1.use(someCascading)).toBe(scopeL2.use(someCascading));
+        expect(scopeL1.use(someCascading).trySync()).toBe(scopeL2.use(someCascading).trySync());
 
         expect(() => cnt.use(someScoped)).toThrowError('Cannot find definition');
         expect(() => cnt.use(someCascading)).toThrowError('Cannot find definition');

@@ -14,7 +14,7 @@ describe(`Container`, () => {
 
       const instance = use(myDef);
 
-      expect(instance).toEqual(123);
+      expect(instance.trySync()).toEqual(123);
     });
 
     describe(`other methods`, () => {
@@ -25,7 +25,7 @@ describe(`Container`, () => {
 
         const instance = cnt.use(myDef);
 
-        expect(instance).toEqual(123);
+        expect(instance.trySync()).toEqual(123);
       });
 
       describe(`all`, () => {

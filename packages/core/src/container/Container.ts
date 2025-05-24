@@ -11,7 +11,7 @@ import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { configureScope } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { MaybePromise } from '../utils/async.js';
-import { maybePromiseAll, maybePromiseThen } from '../utils/async.js';
+import { maybePromiseThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinitionToken } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
@@ -20,6 +20,7 @@ import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/sh
 import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
+import { MaybeAsync } from '../utils/MaybeAsync.js';
 
 import type {
   ICascadingDefinitionResolver,
@@ -28,10 +29,10 @@ import type {
   IStrategyAware,
   UseFn,
 } from './IContainer.js';
-import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
+import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
-import { CompositeInterceptor } from './interceptors/CompositeInterceptor.js';
+import { CompositeInterceptor, PassThroughInterceptor } from './interceptors/CompositeInterceptor.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -49,6 +50,7 @@ export class Container
 
       [],
       new ContainerLifeCycleRegistry(),
+      PassThroughInterceptor.instance,
     );
   }
 
@@ -65,7 +67,7 @@ export class Container
     protected readonly instancesStore: InstancesStore,
     protected readonly scopeTags: (string | symbol)[],
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
-    private _interceptor?: CompositeInterceptor,
+    private _interceptor: ICompositeInterceptor,
   ) {
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
@@ -100,7 +102,14 @@ export class Container
     const instancesStore = InstancesStore.create();
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
 
-    const cnt = new Container(null, bindingsRegistry, instancesStore, [], lifeCycleRegistry);
+    const cnt = new Container(
+      null,
+      bindingsRegistry,
+      instancesStore,
+      [],
+      lifeCycleRegistry,
+      PassThroughInterceptor.instance,
+    );
 
     if (configurations.length) {
       const configs = configurations.map(config => {
@@ -127,12 +136,14 @@ export class Container
   }
 
   protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
-    const containerInterceptor = this._interceptor ?? (this._interceptor = new CompositeInterceptor());
+    if (this._interceptor instanceof PassThroughInterceptor) {
+      this._interceptor = new CompositeInterceptor();
+    }
 
     interceptor.forEach(interceptorClass => {
       const interceptorInstance = interceptorClass.create();
 
-      containerInterceptor.append(interceptorInstance);
+      this._interceptor.append(interceptorInstance);
     });
   }
 
@@ -148,7 +159,7 @@ export class Container
       instancesStore,
       tags,
       lifeCycleRegistry,
-      this._interceptor?.onScope(),
+      this._interceptor.onScope(),
     );
 
     if (configureFns.length) {
@@ -189,7 +200,7 @@ export class Container
   }
 
   hasInterceptor(interceptorClass: InterceptorClass<IInterceptor>): boolean {
-    return this._interceptor?.findInstance(interceptorClass) !== undefined;
+    return this._interceptor.findInstance(interceptorClass) !== undefined;
   }
 
   getInterceptor<TInstance extends IInterceptor>(cls: InterceptorClass<TInstance>): TInstance {
@@ -202,7 +213,7 @@ export class Container
     return interceptorInstance;
   }
 
-  use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybePromise<TValue> {
+  use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition);
@@ -219,11 +230,11 @@ export class Container
    * Cascading instances are returned only from the scope holding the instance.
    * @param definition
    */
-  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): TValue | null {
-    return (this.instancesStore.getExisting(definition) as TValue) ?? null;
+  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null> {
+    return this.instancesStore.getExisting(definition);
   }
 
-  protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybePromise<TValue> {
+  protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybeAsync<TValue> {
     if (this._isDisposed) {
       throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
     }
@@ -250,10 +261,10 @@ export class Container
 
   all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
-  ): MaybePromise<InstancesArray<TDefinitions>> {
+  ): MaybeAsync<InstancesArray<TDefinitions>> {
     const results = definitions.map(def => this.use(def));
 
-    return maybePromiseAll(results) as MaybePromise<InstancesArray<TDefinitions>>;
+    return MaybeAsync.all(results) as MaybeAsync<InstancesArray<TDefinitions>>;
   }
 }
 

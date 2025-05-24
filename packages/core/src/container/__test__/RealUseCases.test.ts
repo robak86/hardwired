@@ -42,8 +42,8 @@ describe(`Testing`, () => {
         };
       });
 
-      c.onDispose(scope => {
-        scope.useExisting(dbConnection)?.destroy();
+      c.onDispose(async scope => {
+        (await scope.useExisting(dbConnection))?.destroy();
       });
     });
 
@@ -92,17 +92,17 @@ describe(`Logger`, () => {
         scope.modify(loggerD).claimNew();
       });
 
-      expect(root.use(requestId)).toEqual('app');
+      expect(root.use(requestId).trySync()).toEqual('app');
       expect((await root.use(loggerD)).print('msg')).toEqual('appmsg');
 
       const req1 = root.scope(requestScopeConfig);
       const req2 = root.scope(requestScopeConfig);
 
-      expect(req1.use(requestId)).toEqual('1');
-      expect(req1.use(requestId)).toEqual(req1.use(requestId));
+      expect(req1.use(requestId).trySync()).toEqual('1');
+      expect(req1.use(requestId).trySync()).toEqual(req1.use(requestId).trySync());
 
-      expect(req2.use(requestId)).toEqual('2');
-      expect(req2.use(requestId)).toEqual(req2.use(requestId));
+      expect(req2.use(requestId).trySync()).toEqual('2');
+      expect(req2.use(requestId).trySync()).toEqual(req2.use(requestId).trySync());
 
       expect((await req1.use(loggerD)).print('msg')).toEqual('1msg');
       expect((await req1.use(loggerD)).print('msg')).toEqual('1msg');

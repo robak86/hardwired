@@ -1,7 +1,32 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 
-import type { IInterceptor, InterceptorClass } from './interceptor.js';
+import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptor.js';
+
+export class PassThroughInterceptor implements ICompositeInterceptor {
+  static instance = new PassThroughInterceptor();
+
+  append(): void {
+    // noop;
+  }
+
+  findInstance<TInstance extends IInterceptor>(cls: InterceptorClass<TInstance>): TInstance {
+    throw new Error(`Interceptor of type ${(cls as any).name} not found.`);
+  }
+
+  onInstance<TInstance>(
+    instance: TInstance,
+    _dependencies: unknown[],
+    _token: IDefinitionToken<TInstance, LifeTime>,
+    _dependenciesTokens: IDefinitionToken<unknown, LifeTime>[],
+  ): TInstance {
+    return instance;
+  }
+
+  onScope(): PassThroughInterceptor {
+    return this;
+  }
+}
 
 export class CompositeInterceptor implements IInterceptor {
   constructor(private _interceptors: IInterceptor[] = []) {}

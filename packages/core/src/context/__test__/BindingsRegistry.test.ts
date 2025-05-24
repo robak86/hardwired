@@ -1,6 +1,7 @@
 import { BindingsRegistry } from '../BindingsRegistry.js';
 import { cascading } from '../../definitions/def-symbol.js';
 import { Definition } from '../../definitions/impl/Definition.js';
+import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 describe(`BindingsRegistry`, () => {
   function setup() {
@@ -9,8 +10,8 @@ describe(`BindingsRegistry`, () => {
 
     const symbol = cascading<number>();
 
-    const definition = new Definition(symbol, () => 1);
-    const otherDefinition = new Definition(symbol, () => 1);
+    const definition = new Definition(symbol, () => MaybeAsync.resolve(1));
+    const otherDefinition = new Definition(symbol, () => MaybeAsync.resolve(1));
 
     return {
       registry,

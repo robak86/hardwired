@@ -3,23 +3,63 @@ import { describe, expect, it, vi } from 'vitest';
 import { MaybeAsync } from '../MaybeAsync.js';
 
 describe('MaybeAsync', () => {
+  describe(`construction`, () => {
+    it(`unwraps deeply nested MaybeAsync values`, async () => {
+      const mp = MaybeAsync.resolve(MaybeAsync.resolve(MaybeAsync.resolve(42)));
+
+      expect(mp.trySync()).toBe(42);
+    });
+
+    it(`unwraps deeply nested async MaybeAsync values`, async () => {
+      const mp = MaybeAsync.resolve(MaybeAsync.resolve(MaybeAsync.resolve(Promise.resolve(42))));
+
+      expect(await mp).toBe(42);
+    });
+  });
+
   describe('sync values', () => {
+    it(`unwraps deeply nested MaybeAsync`, async () => {
+      const maybeAsync = MaybeAsync.resolve(1).then(val => {
+        return MaybeAsync.resolve(MaybeAsync.resolve(MaybeAsync.resolve(val + 1)));
+      });
+
+      expect(maybeAsync.trySync()).toBe(2);
+    });
+
+    it(`unwraps deeply nested MaybeAsync`, async () => {
+      const maybeAsync = MaybeAsync.resolve(1).then(val => {
+        return MaybeAsync.resolve(MaybeAsync.resolve(MaybeAsync.resolve(val + 1))).then(innerVal => innerVal + 1);
+      });
+
+      expect(maybeAsync.trySync()).toBe(3);
+    });
+
+    it(`unwraps deeply nested MaybeAsync with async`, async () => {
+      const maybeAsync = MaybeAsync.resolve(1).then(val => {
+        return MaybeAsync.resolve(MaybeAsync.resolve(MaybeAsync.resolve(Promise.resolve(val + 1)))).then(innerVal => {
+          return innerVal + 1;
+        });
+      });
+
+      expect(await maybeAsync).toBe(3);
+    });
+
     it('should return the same value via trySync()', () => {
-      const mp = new MaybeAsync(42);
+      const mp = MaybeAsync.resolve(42);
 
       expect(mp.trySync()).toBe(42);
     });
 
     it('should call then synchronously', () => {
       const spy = vi.fn((x: number) => x + 1);
-      const mp = new MaybeAsync(1).then(spy);
+      const mp = MaybeAsync.resolve(1).then(spy);
 
       expect(spy).toHaveBeenCalledOnce();
       expect(mp.trySync()).toBe(2);
     });
 
     it('should catch thrown error in then()', () => {
-      const mp = new MaybeAsync(10)
+      const mp = MaybeAsync.resolve(10)
         .then(() => {
           throw new Error('fail');
         })
@@ -28,9 +68,15 @@ describe('MaybeAsync', () => {
       expect(mp.trySync()).toBe(999);
     });
 
+    it('should unwrap sync inner MaybePromise', () => {
+      const mp = MaybeAsync.resolve(10).then(() => MaybeAsync.resolve(100));
+
+      expect(mp.trySync()).toBe(100);
+    });
+
     it('should run finally synchronously', () => {
       const spy = vi.fn();
-      const mp = new MaybeAsync('ok').finally(spy);
+      const mp = MaybeAsync.resolve('ok').finally(spy);
 
       expect(spy).toHaveBeenCalledOnce();
       expect(mp.trySync()).toBe('ok');
@@ -39,28 +85,28 @@ describe('MaybeAsync', () => {
 
   describe('async values', () => {
     it('should resolve async value correctly with then()', async () => {
-      const mp = new MaybeAsync(Promise.resolve(5));
+      const mp = MaybeAsync.resolve(Promise.resolve(5));
       const result = await mp.then(x => x + 5);
 
       expect(result).toBe(10); // Should throw, not actually sync
     });
 
     it('should resolve async value correctly with then(), ex.2', async () => {
-      const mp = new MaybeAsync(5);
+      const mp = MaybeAsync.resolve(5);
       const result = mp.then(x => x + 5);
 
       expect(result.trySync()).toBe(10); // Should throw, not actually sync
     });
 
     it('should throw on trySync() when async', () => {
-      const mp = new MaybeAsync(Promise.resolve(1));
+      const mp = MaybeAsync.resolve(Promise.resolve(1));
 
       expect(() => mp.trySync()).toThrowError('Value is asynchronous');
     });
 
     it('should support async catch()', async () => {
       const err = new Error('fail');
-      const mp = new MaybeAsync(Promise.reject(err)).catch(e => {
+      const mp = MaybeAsync.resolve(Promise.reject(err)).catch(e => {
         expect(e).toBe(err);
 
         return 'handled';
@@ -71,7 +117,7 @@ describe('MaybeAsync', () => {
 
     it('should support async finally()', async () => {
       const spy = vi.fn();
-      const mp = new MaybeAsync(Promise.resolve('done')).finally(spy);
+      const mp = MaybeAsync.resolve(Promise.resolve('done')).finally(spy);
       const result = await mp;
 
       expect(spy).toHaveBeenCalledOnce();
@@ -79,7 +125,9 @@ describe('MaybeAsync', () => {
     });
 
     it('should chain async then()', async () => {
-      const mp = new MaybeAsync(Promise.resolve(2)).then(x => x * 3).then(x => Promise.resolve(x + 1));
+      const mp = MaybeAsync.resolve(Promise.resolve(2))
+        .then(x => x * 3)
+        .then(x => Promise.resolve(x + 1));
 
       await expect(Promise.resolve(mp)).resolves.toBe(7);
     });
@@ -87,13 +135,15 @@ describe('MaybeAsync', () => {
 
   describe('type preservation', () => {
     it('should preserve type in then()', () => {
-      const mp = new MaybeAsync('hi').then(x => x + '!');
+      const mp = MaybeAsync.resolve('hi').then(x => x + '!');
 
       expect(mp.trySync()).toBe('hi!');
     });
 
     it('should allow chaining multiple thens', () => {
-      const mp = new MaybeAsync(3).then(x => x + 2).then(x => x * 10);
+      const mp = MaybeAsync.resolve(3)
+        .then(x => x + 2)
+        .then(x => x * 10);
 
       expect(mp.trySync()).toBe(50);
     });
@@ -101,13 +151,13 @@ describe('MaybeAsync', () => {
 
   describe('edge cases', () => {
     it('should allow null handler in catch() and finally()', () => {
-      const mp = new MaybeAsync(123).catch(null).finally(null);
+      const mp = MaybeAsync.resolve(123).catch(null).finally(null);
 
       expect(mp.trySync()).toBe(123);
     });
 
     it('should not mutate original instance', () => {
-      const orig = new MaybeAsync(10);
+      const orig = MaybeAsync.resolve(10);
       const mapped = orig.then(x => x * 2);
 
       expect(orig.trySync()).toBe(10);
@@ -117,9 +167,15 @@ describe('MaybeAsync', () => {
 
   describe('MaybePromise.all', () => {
     it(`doesnt lift to async when MaybePromise is sync`, async () => {
-      const result = MaybeAsync.all([new MaybeAsync(1)]);
+      const result = MaybeAsync.all([MaybeAsync.resolve(1)]).trySync();
 
-      expect(result.trySync()).toEqual([1]);
+      expect(result).toEqual([1]);
+    });
+
+    it(`unwraps deeply nested MaybeAsync`, async () => {
+      const result = MaybeAsync.all([MaybeAsync.resolve(MaybeAsync.resolve(1))]).trySync();
+
+      expect(result).toEqual([1]);
     });
 
     it('should return a sync MaybePromise if all inputs are sync', () => {

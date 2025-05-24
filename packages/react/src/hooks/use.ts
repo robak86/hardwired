@@ -52,13 +52,7 @@ function useAssertValidOptions(options: UseDefinitionHookOptions | undefined) {
 
 export const use: UseDefinitionHook = (definition, options) => {
   const container = useContainer();
-  const instance = container.use(definition);
-
-  if (instance instanceof Promise) {
-    throw new Error(
-      `Definition ${definition.toString()} requires async resolution. It's currently not supported in use() hook.`,
-    );
-  }
+  const instance = container.use(definition).trySync();
 
   const interceptor = useReactLifeCycleInterceptor();
 

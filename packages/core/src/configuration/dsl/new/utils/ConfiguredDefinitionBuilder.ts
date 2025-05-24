@@ -1,9 +1,9 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
-import { maybePromiseThen } from '../../../../utils/async.js';
 import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
+import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 
 import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
 
@@ -19,28 +19,14 @@ export class ConfiguredDefinitionBuilder<TInstance, TLifetime extends LifeTime, 
   build(registry: IBindingsRegistryRead): IDefinition<TInstance, TLifetime> {
     const def = registry.getForOverride(this.token);
 
-    return def.override(container => {
-      if (this.dependencies.length) {
-        const deps = container.all(...this.dependencies);
-
-        return maybePromiseThen(deps, (awaitedDependencies: TArgs) => {
-          const instance = def.create(container);
-
-          return maybePromiseThen(instance, awaitedInstance => {
-            return maybePromiseThen(this.configFn(awaitedInstance, ...awaitedDependencies), () => {
-              return instance;
-            });
+    return def.override((container, interceptor) => {
+      return container.all(...this.dependencies).then(awaitedDependencies => {
+        return def.create(container, interceptor).then(awaitedInstance => {
+          return MaybeAsync.resolve(this.configFn(awaitedInstance, ...(awaitedDependencies as TArgs))).then(() => {
+            return awaitedInstance;
           });
         });
-      } else {
-        const instance = def.create(container);
-
-        return maybePromiseThen(instance, awaitedInstance => {
-          return maybePromiseThen((this.configFn as any)(awaitedInstance), () => {
-            return instance;
-          });
-        });
-      }
+      });
     });
   }
 }

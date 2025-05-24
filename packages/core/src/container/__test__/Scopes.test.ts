@@ -13,7 +13,7 @@ describe(`Scopes`, () => {
           return scope.freeze(def).static(100);
         });
 
-        expect(cnt.use(def)).toEqual(100);
+        expect(cnt.use(def).trySync()).toEqual(100);
       });
 
       it(`propagates frozen definitions to child scopes`, async () => {
@@ -26,8 +26,8 @@ describe(`Scopes`, () => {
         const l1 = cnt.scope();
         const l2 = l1.scope();
 
-        expect(l1.use(def)).toEqual(1);
-        expect(l2.use(def)).toEqual(1);
+        expect(l1.use(def).trySync()).toEqual(1);
+        expect(l2.use(def).trySync()).toEqual(1);
       });
 
       describe(`overriding child bindings`, () => {
@@ -41,8 +41,8 @@ describe(`Scopes`, () => {
             const l1 = cnt.scope();
             const l2 = l1.scope(scope => scope.modify(def).static(2));
 
-            expect(l1.use(def)).toEqual(1);
-            expect(l2.use(def)).toEqual(1);
+            expect(l1.use(def).trySync()).toEqual(1);
+            expect(l2.use(def).trySync()).toEqual(1);
           });
         });
 
@@ -55,8 +55,8 @@ describe(`Scopes`, () => {
             const l1 = cnt.scope();
             const l2 = l1.scope(scope => scope.modify(def).static(2));
 
-            expect(l1.use(def)).toEqual(1);
-            expect(l2.use(def)).toEqual(1);
+            expect(l1.use(def).trySync()).toEqual(1);
+            expect(l2.use(def).trySync()).toEqual(1);
           });
         });
       });
@@ -83,9 +83,9 @@ describe(`Scopes`, () => {
         });
         const l3 = l2.scope();
 
-        expect(l3.use(consumer)).toEqual(100);
-        expect(l2.use(consumer)).toEqual(100);
-        expect(l2.use(def)).toEqual(100);
+        expect(l3.use(consumer).trySync()).toEqual(100);
+        expect(l2.use(consumer).trySync()).toEqual(100);
+        expect(l2.use(def).trySync()).toEqual(100);
       });
     });
   });

@@ -9,6 +9,7 @@ import { Definition } from '../../../../definitions/impl/Definition.js';
 import type { IServiceLocator } from '../../../../container/IContainer.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { FinalizerOrVoid } from '../../../abstract/IDisposeFinalizer.js';
+import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 
 import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';
 import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
@@ -62,7 +63,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   static(value: TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new Definition(this._symbol, () => value);
+    const definition = new Definition(this._symbol, () => MaybeAsync.resolve(value));
 
     this._configurationContext.onDefinition(this._configType, definition);
 
@@ -70,7 +71,9 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   locator(fn: (container: IServiceLocator) => MaybePromise<TInstance>): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new Definition(this._symbol, fn);
+    const definition = new Definition(this._symbol, container => {
+      return MaybeAsync.resolve(fn(container));
+    });
 
     this._configurationContext.onDefinition(this._configType, definition);
 

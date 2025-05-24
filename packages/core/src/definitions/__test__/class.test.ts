@@ -3,8 +3,8 @@ import { expectType } from 'ts-expect';
 import { container } from '../../container/Container.js';
 import { cascading, scoped, singleton, transient } from '../def-symbol.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
-import type { MaybePromise } from '../../utils/async.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
+import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 describe(`class`, () => {
   const numDef = transient<BoxedValue<number>>('num');
@@ -77,7 +77,7 @@ describe(`class`, () => {
 
       const instance = cnt.use(myClassTransient);
 
-      expectType<MaybePromise<MyClass>>(instance);
+      expectType<MaybeAsync<MyClass>>(instance);
     });
 
     it(`protects from using invalid scopes`, async () => {
@@ -95,7 +95,7 @@ describe(`class`, () => {
 
         const instance = cnt.use(myClassTransient);
 
-        expect(instance).toBeInstanceOf(MyClass);
+        expect(instance.trySync()).toBeInstanceOf(MyClass);
 
         const awaited = await cnt.use(myClassTransient);
 
@@ -118,7 +118,7 @@ describe(`class`, () => {
 
         const instance = cnt.use(myClassTransient);
 
-        expect(instance).toBeInstanceOf(Promise);
+        expect(instance.isSync).toBe(false);
 
         const awaited = await cnt.use(myClassTransient);
 
@@ -233,7 +233,7 @@ describe(`class`, () => {
 
       const instance = cnt.use(myClassTransient);
 
-      expectType<MaybePromise<MyClass>>(instance);
+      expectType<MaybeAsync<MyClass>>(instance);
     });
 
     it(`protects from using invalid scopes`, async () => {
@@ -251,7 +251,7 @@ describe(`class`, () => {
 
         const instance = cnt.use(myClassTransient);
 
-        expect(instance).toBeInstanceOf(MyClass);
+        expect(instance.trySync()).toBeInstanceOf(MyClass);
 
         const awaited = await cnt.use(myClassTransient);
 
@@ -274,7 +274,7 @@ describe(`class`, () => {
 
         const instance = cnt.use(myClassTransient);
 
-        expect(instance).toBeInstanceOf(Promise);
+        expect(instance.isSync).toBe(false);
 
         const awaited = await cnt.use(myClassTransient);
 

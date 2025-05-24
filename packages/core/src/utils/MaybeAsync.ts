@@ -3,25 +3,32 @@ import { isThenable } from './IsThenable.js';
 type UnwrapMaybePromise<T> = T extends MaybeAsync<infer U> ? U : T extends Promise<infer U> ? U : T;
 
 export class MaybeAsync<T> implements PromiseLike<T> {
+  static null = MaybeAsync.resolve(null);
+
   static all<T extends readonly unknown[]>(values: [...T]): MaybeAsync<{ [K in keyof T]: UnwrapMaybePromise<T[K]> }> {
     let hasAsync = false;
-    const unwrapped = values.map(v => {
-      if (v instanceof MaybeAsync) {
-        if (!v.isSync) hasAsync = true;
 
-        return v.value as UnwrapMaybePromise<T[number]>;
+    const unwrapped = values.map(v => {
+      let current = v;
+
+      // Unwrap nested MaybeAsyncs
+      while (current instanceof MaybeAsync) {
+        if (!current.isSync) hasAsync = true;
+
+        current = current.value;
       }
 
-      if (isThenable(v)) hasAsync = true;
+      // If still a Promise, mark as async
+      if (isThenable(current)) hasAsync = true;
 
-      return v;
+      return current;
     });
 
     if (!hasAsync) {
-      return new MaybeAsync(unwrapped as any); // fully sync
+      return MaybeAsync.resolve(unwrapped as any); // fully sync
     }
 
-    return new MaybeAsync(Promise.all(unwrapped) as any);
+    return MaybeAsync.resolve(Promise.all(unwrapped) as any);
   }
 
   private readonly value: T | Promise<T>;
@@ -30,13 +37,15 @@ export class MaybeAsync<T> implements PromiseLike<T> {
   //       MaybePromise completely an in next resolution use fully synchronous value.
   public readonly isSync: boolean;
 
-  constructor(value: T | Promise<T>) {
-    this.value = value;
-    this.isSync = !isThenable(value);
+  static resolve<T>(value: T | MaybeAsync<T> | Promise<T>): MaybeAsync<T> {
+    if (value instanceof MaybeAsync) return value;
+
+    return new MaybeAsync(value);
   }
 
-  static of<T>(value: T | Promise<T>): MaybeAsync<T> {
-    return new MaybeAsync(value);
+  protected constructor(value: T | Promise<T>) {
+    this.value = value;
+    this.isSync = !isThenable(value) || (value instanceof MaybeAsync && value.isSync);
   }
 
   then<TResult1 = T, TResult2 = never>(
@@ -51,23 +60,23 @@ export class MaybeAsync<T> implements PromiseLike<T> {
       try {
         const result = onFulfilled?.(this.value as T);
 
-        return new MaybeAsync(result as TResult1 | Promise<TResult1>);
+        return MaybeAsync.resolve(result as TResult1 | Promise<TResult1>);
       } catch (err) {
         if (onRejected) {
           try {
             const result = onRejected(err);
 
-            return new MaybeAsync(result as TResult2 | Promise<TResult2>);
+            return MaybeAsync.resolve(result as TResult2 | Promise<TResult2>);
           } catch (e) {
-            return new MaybeAsync(e) as MaybeAsync<TResult2>;
+            return MaybeAsync.resolve(e) as MaybeAsync<TResult2>;
           }
         }
 
-        return new MaybeAsync(err) as MaybeAsync<TResult2>;
+        return MaybeAsync.resolve(err) as MaybeAsync<TResult2>;
       }
     }
 
-    return new MaybeAsync((this.value as Promise<T>).then(onFulfilled, onRejected));
+    return MaybeAsync.resolve((this.value as Promise<T>).then(onFulfilled, onRejected));
   }
 
   catch<TResult = never>(
@@ -78,10 +87,10 @@ export class MaybeAsync<T> implements PromiseLike<T> {
     }
 
     if (this.isSync) {
-      return new MaybeAsync(onRejected(this.value)) as MaybeAsync<T | TResult>;
+      return MaybeAsync.resolve(onRejected(this.value)) as MaybeAsync<T | TResult>;
     }
 
-    return new MaybeAsync(Promise.resolve(this.value).catch(onRejected));
+    return MaybeAsync.resolve(Promise.resolve(this.value).catch(onRejected));
   }
 
   finally(onFinally?: (() => void) | null): MaybeAsync<T> {
@@ -91,10 +100,14 @@ export class MaybeAsync<T> implements PromiseLike<T> {
       return this;
     }
 
-    return new MaybeAsync(Promise.resolve(this.value).finally(onFinally));
+    return MaybeAsync.resolve(Promise.resolve(this.value).finally(onFinally));
   }
 
   trySync(): T {
+    if (this.value instanceof MaybeAsync) {
+      return this.value.trySync();
+    }
+
     if (!this.isSync) {
       throw new Error('Value is asynchronous');
     }

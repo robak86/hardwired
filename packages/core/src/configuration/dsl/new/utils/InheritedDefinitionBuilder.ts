@@ -1,10 +1,10 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
-import { maybePromiseThen } from '../../../../utils/async.js';
 import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
 import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
 import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
+import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 
 import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
 
@@ -24,22 +24,10 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
 
     const def = registry.getForOverride(this.token);
 
-    return def.override(container => {
-      const deps = container.all(...this._dependencies);
-
-      return maybePromiseThen(deps, (awaitedDependencies: TArgs) => {
-        const instance = def.create(container);
-
-        return maybePromiseThen(instance, awaitedInstance => {
-          return maybePromiseThen(this._decorateFn(awaitedInstance, ...awaitedDependencies), awaitedInstance => {
-            if (instance === awaitedInstance) {
-              throw new Error(
-                `Callback for returning a new instance based on the inherited value from ${def.toString()} must return a new object.`,
-              );
-            }
-
-            return awaitedInstance;
-          });
+    return def.override((container, interceptor) => {
+      return container.all(...this._dependencies).then(awaitedDependencies => {
+        return def.create(container, interceptor).then(awaitedInstance => {
+          return MaybeAsync.resolve(this._decorateFn(awaitedInstance, ...(awaitedDependencies as TArgs)));
         });
       });
     });

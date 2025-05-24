@@ -12,7 +12,7 @@ describe(`decorate`, () => {
       c.modify(someValue).decorate(val => val + 1);
     });
 
-    expect(c.use(someValue)).toEqual(2);
+    expect(c.use(someValue).trySync()).toEqual(2);
   });
 
   it(`is evaluated with awaited value`, async () => {

@@ -1,20 +1,19 @@
 import type { IServiceLocator } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
-import type { MaybePromise } from '../../utils/async.js';
-import { maybePromiseThen } from '../../utils/async.js';
 import type { IDefinitionToken } from '../def-symbol.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
+import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 export class Definition<TInstance, TLifeTime extends LifeTime> implements IDefinition<TInstance, TLifeTime> {
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifeTime>,
-    private readonly _create: (context: IServiceLocator) => MaybePromise<TInstance>,
+    private readonly _create: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
   ) {}
 
-  create(context: IServiceLocator, interceptor?: IInterceptor): MaybePromise<TInstance> {
-    return maybePromiseThen(this._create(context), awaited => {
-      return interceptor?.onInstance?.(awaited, [], this.token, []) ?? awaited;
+  create(context: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
+    return this._create(context, interceptor).then(awaited => {
+      return interceptor.onInstance(awaited, [], this.token, []);
     });
   }
 
@@ -26,7 +25,9 @@ export class Definition<TInstance, TLifeTime extends LifeTime> implements IDefin
     return this.token.strategy;
   }
 
-  override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
+  override(
+    createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
+  ): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.token, createFn);
   }
 

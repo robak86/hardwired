@@ -107,8 +107,8 @@ describe(`unbound`, () => {
         const scopeDef = scope.use(def);
 
         expect(redefinedSpy).toHaveBeenCalledTimes(2);
-        expect(cntResult).toBe(2);
-        expect(scopeDef).toBe(2);
+        expect(await cntResult).toBe(2);
+        expect(await scopeDef).toBe(2);
       });
     });
   });
@@ -144,7 +144,7 @@ describe(`unbound`, () => {
 
       const result = cnt.use(IMyInterfaceSingleton);
 
-      expect(result).toBeInstanceOf(MyClass);
+      expect(await result).toBeInstanceOf(MyClass);
     });
   });
 });

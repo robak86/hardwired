@@ -1,12 +1,11 @@
 import type { ClassType } from '../utils/class-type.js';
 import type { IServiceLocator } from '../../container/IContainer.js';
-import { isThenable } from '../../utils/IsThenable.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
-import type { MaybePromise } from '../../utils/async.js';
 import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { IDefinitionToken } from '../def-symbol.js';
+import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 import { Definition } from './Definition.js';
 
@@ -29,7 +28,9 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     return this.token.strategy;
   }
 
-  override(createFn: (context: IServiceLocator) => MaybePromise<TInstance>): IDefinition<TInstance, TLifeTime> {
+  override(
+    createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
+  ): IDefinition<TInstance, TLifeTime> {
     return new Definition(this.token, createFn);
   }
 
@@ -37,38 +38,52 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     return `${this.token.toString()}:${this._class.name}`;
   }
 
-  create(use: IServiceLocator, interceptor?: IInterceptor): MaybePromise<TInstance> {
+  create(use: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
     // no dependencies
     if (this._dependencyTokens.length === 0) {
       // @ts-ignore - mute error about missing args
       const instance = new this._class();
 
-      return interceptor?.onInstance?.(instance, [], this.token, []) ?? instance;
+      return MaybeAsync.resolve(instance).then(instance => {
+        return interceptor.onInstance(instance, [], this.token, []);
+      });
     }
 
-    const deps = use.all(...this._dependencyTokens) as TConstructorArgs | Promise<TConstructorArgs>;
+    const result = use.all(...this._dependencyTokens).then(depsAwaited => {
+      const instance = new this._class(...(depsAwaited as TConstructorArgs));
 
-    if (this._hasOnlySyncDependencies) {
-      const instance = new this._class(...(deps as TConstructorArgs));
+      return MaybeAsync.resolve(instance).then(instanceAwaited => {
+        return interceptor.onInstance(instanceAwaited, depsAwaited, this.token, this._dependencyTokens);
+      });
+    });
 
-      return (
-        interceptor?.onInstance?.<TInstance>(instance, deps as TConstructorArgs, this.token, this._dependencyTokens) ??
-        instance
-      );
+    if (result.isSync) {
+      // TODO: change flag, and resolve always as sync, (separate method);
     }
 
-    if (isThenable(deps)) {
-      return deps.then(deps => {
-        const instance = new this._class(...deps);
+    return result;
 
-        return interceptor?.onInstance?.<TInstance>(instance, deps, this.token, this._dependencyTokens) ?? instance;
-      }) as TInstance;
-    } else {
-      this._hasOnlySyncDependencies = true;
-
-      const instance = new this._class(...(deps as TConstructorArgs));
-
-      return interceptor?.onInstance?.<TInstance>(instance, deps, this.token, this._dependencyTokens) ?? instance;
-    }
+    // if (this._hasOnlySyncDependencies) {
+    //   const instance = new this._class(...(deps as TConstructorArgs));
+    //
+    //   return (
+    //     interceptor?.onInstance?.<TInstance>(instance, deps as TConstructorArgs, this.token, this._dependencyTokens) ??
+    //     instance
+    //   );
+    // }
+    //
+    // if (isThenable(deps)) {
+    //   return deps.then(deps => {
+    //     const instance = new this._class(...deps);
+    //
+    //     return interceptor?.onInstance?.<TInstance>(instance, deps, this.token, this._dependencyTokens) ?? instance;
+    //   }) as TInstance;
+    // } else {
+    //   this._hasOnlySyncDependencies = true;
+    //
+    //   const instance = new this._class(...(deps as TConstructorArgs));
+    //
+    //   return interceptor?.onInstance?.<TInstance>(instance, deps, this.token, this._dependencyTokens) ?? instance;
+    // }
   }
 }
