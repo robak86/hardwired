@@ -104,10 +104,6 @@ export class MaybeAsync<T> implements PromiseLike<T> {
   }
 
   trySync(): T {
-    if (this.value instanceof MaybeAsync) {
-      return this.value.trySync();
-    }
-
     if (!this.isSync) {
       throw new Error('Value is asynchronous');
     }
