@@ -81,12 +81,12 @@ describe(`Container`, () => {
             c.add(pubSub).locator(container => {
               const emitter = new EventEmitter<EventMap>();
 
-              emitter.on('req', async value => {
+              emitter.on('req', value => {
                 const scope = container.scope(scope => {
                   scope.add(handler).class(Handler);
                 });
 
-                const handlerInstance = await scope.use(handler);
+                const handlerInstance = scope.use(handler).trySync();
 
                 handlerInstance.handle(value);
 

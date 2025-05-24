@@ -42,7 +42,7 @@ describe(`Testing`, () => {
         };
       });
 
-      c.onDispose(async scope => {
+      c.onDisposeAsync(async scope => {
         (await scope.useExisting(dbConnection))?.destroy();
       });
     });

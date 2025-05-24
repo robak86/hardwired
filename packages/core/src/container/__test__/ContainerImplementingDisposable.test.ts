@@ -215,8 +215,8 @@ describe(`container#[Symbol.dispose]`, () => {
           const config = configureScope(c => {
             c.add(cascadingDef)
               .fn(() => 2)
-              .onDispose(instance => {
-                new Promise(resolve => setTimeout(resolve, 100));
+              .onDisposeAsync(async instance => {
+                await new Promise(resolve => setTimeout(resolve, 100));
                 disposed = true;
               });
           });

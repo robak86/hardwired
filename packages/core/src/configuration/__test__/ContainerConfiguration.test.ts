@@ -83,6 +83,7 @@ describe(`ContainerConfiguration`, () => {
 
           configureContainer(c => {
             // @ts-expect-error inherit is not available from the root configuration
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             c.modify(def).inherit;
           });
         });
