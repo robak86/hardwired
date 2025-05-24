@@ -15,6 +15,17 @@ export const maybePromiseAllThen = <T, TReturn>(
   }
 };
 
+export const maybePromiseThen = <T, TReturn>(
+  promise: MaybePromise<T>,
+  callback: (value: T) => MaybePromise<TReturn>,
+): MaybePromise<TReturn> => {
+  if (isThenable(promise)) {
+    return (promise as Promise<T>).then(callback);
+  } else {
+    return callback(promise as T);
+  }
+};
+
 export const maybePromiseAll = <T>(promises: MaybePromise<T>[]): MaybePromise<T[]> => {
   const hasAsync = promises.some(isThenable);
 

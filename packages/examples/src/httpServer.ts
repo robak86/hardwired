@@ -1,15 +1,18 @@
 import { createServer, type IncomingMessage } from 'node:http';
+import type { Server } from 'http';
 
-import { cls, fn, once, unbound } from 'hardwired';
+import { container, scoped, singleton } from 'hardwired';
 
-const reqD = unbound<IncomingMessage>();
+const reqD = scoped<IncomingMessage>();
+const requestHandlerD = scoped<IRequestHandler>();
+const serverD = singleton<Server>();
 
 interface IRequestHandler {
   handle(req: IncomingMessage): object;
 }
 
 class HomePageHandler implements IRequestHandler {
-  static instance = cls.scoped(this, [reqD]);
+  // static instance = cls.scoped(this, [reqD]);
 
   constructor(private _req: IncomingMessage) {}
 
@@ -26,21 +29,33 @@ class HomePageHandler implements IRequestHandler {
   }
 }
 
-const app = fn.singleton(use => {
-  return createServer((req, res) => {
-    const requestScope = use.scope(reqScope => {
-      reqScope.bindCascading(reqD).toValue(req);
+const cnt = container.new(c => {
+  c.add(serverD).locator(serviceLocator => {
+    return createServer((req, res) => {
+      const requestScope = serviceLocator.scope(scope => {
+        scope.add(reqD).static(req);
+        scope.add(requestHandlerD).class(HomePageHandler, reqD);
+      });
+
+      requestScope
+        .useAsync(requestHandlerD)
+        .then(handler => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(handler.handle(req)));
+        })
+        .catch(_err => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ message: 'something went wrong' }));
+        })
+        .finally(() => {
+          void requestScope.dispose();
+        });
     });
-
-    const handler = requestScope.use(HomePageHandler.instance);
-
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(handler.handle()));
-
-    requestScope.dispose();
   });
 });
 
-once(app).listen(3000, () => {
+const server = await cnt.use(serverD);
+
+server.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
 });

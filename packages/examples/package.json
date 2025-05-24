@@ -1,7 +1,7 @@
 {
   "name": "hardwired-examples",
   "private": true,
-  "version": "1.6.2",
+  "version": "2.0.0-dev.0",
   "description": "Minimalistic, type-safe dependency injection solution for TypeScript",
   "author": "Tomasz Robaczewski <robak86@gmail.com>",
   "license": "MIT",
@@ -25,7 +25,7 @@
   "main": "./dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
   "dependencies": {
-    "hardwired": "1.6.2"
+    "hardwired": "2.0.0-dev.0"
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0",

@@ -1,12 +1,12 @@
-import type { Definition } from '../../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import type { ScopeTag } from '../../IContainer.js';
+import type { IDefinitionToken } from '../../../definitions/def-symbol.js';
+import { COWMap } from '../../../context/COWMap.js';
 
-import { GraphBuilderInterceptor } from './GraphBuilderInterceptor.js';
+import { AbstractGraphDependenciesInterceptor } from './AbstractGraphDependenciesInterceptor.js';
 
 interface IGraphNode<T> {
   readonly value: T;
-  readonly definition: Definition<T, LifeTime, any[]>;
+  readonly token: IDefinitionToken<T, LifeTime>;
   readonly children: IGraphNode<unknown>[];
   readonly descendants: unknown[];
   readonly flatten: unknown[];
@@ -16,9 +16,8 @@ interface IGraphNode<T> {
 export class GraphNode<T> implements IGraphNode<T> {
   constructor(
     readonly value: T,
-    readonly definition: Definition<T, LifeTime, any[]>,
+    readonly token: IDefinitionToken<T, LifeTime>,
     readonly children: GraphNode<unknown>[],
-    readonly tags: ScopeTag[],
   ) {}
 
   get descendants(): unknown[] {
@@ -34,23 +33,30 @@ export class GraphNode<T> implements IGraphNode<T> {
   }
 }
 
-export class DependenciesGraphRoot extends GraphBuilderInterceptor<never, GraphNode<unknown>> {
-  constructor() {
-    super({
-      createNode<T>(
-        definition: Definition<T, LifeTime, any[]>,
-        value: Awaited<T>,
-        children: GraphNode<unknown>[],
-        tags: ScopeTag[],
-      ): GraphNode<T> {
-        return new GraphNode(value, definition, children, tags);
-      },
-    });
+export class DependenciesGraphInterceptor extends AbstractGraphDependenciesInterceptor<GraphNode<unknown>> {
+  static create() {
+    return new DependenciesGraphInterceptor(new Map(), new Map(), COWMap.create());
   }
 
-  getGraphNode<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
-  ): GraphNode<TInstance> | undefined {
-    return super.getGraphNode(definition) as GraphNode<TInstance> | undefined;
+  getGraphNode<TInstance>(token: IDefinitionToken<TInstance, LifeTime>): GraphNode<TInstance> {
+    const node = this.find(token);
+
+    if (!node) {
+      throw new Error(`Graph Node for token ${token.toString()} not found`);
+    }
+
+    return node as GraphNode<TInstance>;
+  }
+
+  onScope(): DependenciesGraphInterceptor {
+    return new DependenciesGraphInterceptor(this._globalInstances, new Map(), this._cascadingInstances.clone());
+  }
+
+  protected buildGraphNode<TInstance>(
+    instance: TInstance,
+    token: IDefinitionToken<TInstance, LifeTime>,
+    children: GraphNode<any>[],
+  ): GraphNode<TInstance> {
+    return new GraphNode(instance, token, children);
   }
 }

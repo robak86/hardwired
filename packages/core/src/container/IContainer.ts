@@ -1,107 +1,83 @@
-import type {
-  AwaitedInstanceRecord,
-  Instance,
-  InstancesArray,
-  InstancesObject,
-  InstancesRecord,
-} from '../definitions/abstract/InstanceDefinition.js';
+import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { type LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
-import type { Definition } from '../definitions/impl/Definition.js';
-import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import type { HasPromiseMember } from '../utils/HasPromiseMember.js';
-import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
-import type { Binder } from '../configuration/Binder.js';
+import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
+import type { IDefinition } from '../definitions/abstract/IDefinition.js';
+import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
+import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import type { MaybeAsync } from '../utils/MaybeAsync.js';
 
-import type { IInterceptor } from './interceptors/interceptor.js';
+import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 
 export type ScopeTag = string | symbol;
 
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;
 
-  buildWithStrategy<TValue, TArgs extends any[]>(
-    instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, TArgs>,
-    ...args: TArgs
-  ): TValue;
+  // buildWithStrategy<TValue>(
+  //   instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+  // ): MaybePromise<TValue>;
 }
 
 export interface IContainerConfigurationAware {
-  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
-  ): Binder<TInstance, TLifeTime, TArgs>;
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
+    definition: IDefinitionToken<TInstance, TLifeTime>,
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
 }
+
+export interface ICascadingDefinitionResolver {
+  resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>): MaybeAsync<TValue>;
+}
+
+export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
+  extends IContainerScopes,
+    InstanceCreationAware<TAllowedLifeTime> {}
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue>(instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>): TValue;
+  use<TValue>(
+    instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+  ): MaybeAsync<TValue>;
 
-  call<TValue, TArgs extends any[]>(
-    instanceDefinition: Definition<TValue, LifeTime.transient, TArgs>,
-    ...args: TArgs
-  ): TValue;
+  useAsync<TValue>(
+    instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+  ): Promise<TValue>;
 
-  useExisting<TValue>(definition: Definition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null;
+  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null>;
 
-  defer<TInstance, TArgs extends any[]>(
-    factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>,
-  ): (...args: TArgs) => TInstance;
-
-  all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<TAllowedLifeTime>, []>>>(
+  all<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
     ...definitions: [...TDefinitions]
-  ): ContainerAllReturn<TDefinitions>;
-
-  object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
-    object: TRecord,
-  ): HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
-    ? Promise<AwaitedInstanceRecord<TRecord>>
-    : InstancesRecord<TRecord>;
+  ): MaybeAsync<InstancesArray<TDefinitions>>;
 }
 
-export type NewScopeReturnType<
-  TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
-  TAllowedLifeTime extends LifeTime = LifeTime,
-> =
-  HasPromise<ReturnTypes<TConfigureFns>> extends true
-    ? Promise<IContainer<TAllowedLifeTime>>
-    : IContainer<TAllowedLifeTime>;
-
-export type ApplyReturnType<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>> =
-  HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<void> : void;
-
-export type ContainerAllReturn<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>> =
-  HasPromise<InstancesArray<TDefinitions>> extends true
-    ? Promise<AwaitedInstanceArray<TDefinitions>>
-    : InstancesArray<TDefinitions>;
-
 export interface IContainerScopes {
-  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
-    ...configureFns: TConfigureFns
-  ): NewScopeReturnType<TConfigureFns>;
+  scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configureFns: TConfigureFns): IContainer;
 }
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
-  instanceDefinition: Definition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>, []>,
-) => TValue;
+  instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
+) => MaybeAsync<TValue>;
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes,
     UseFn<TAllowedLifeTime>,
-    IContainerConfigurationAware {
+    IContainerConfigurationAware,
+    IStrategyAware {
   readonly id: string;
   readonly parentId: string | null;
 
-  dispose(): void;
+  dispose(): MaybeAsync<void>;
 
-  getInterceptor(id: string | symbol): IInterceptor<any> | undefined;
+  getInterceptor<TInstance extends IInterceptor>(cls: InterceptorClass<TInstance>): TInstance;
+
+  hasInterceptor(interceptorClass: InterceptorClass<IInterceptor>): boolean;
 }
 
-// prettier-ignore
-export type AwaitedInstance<T extends Definition<Promise<any>, any, any>> =
-  T extends Definition<Promise<infer TInstance>, any, any> ? TInstance : Instance<T>;
-
-export type AwaitedInstanceArray<T extends Array<Definition<Promise<any>, any, any>>> = {
-  [K in keyof T]: AwaitedInstance<T[K]>;
+export type IContainerFactory = {
+  new: (...configurations: Array<IConfiguration | ContainerConfigureFn>) => IContainer;
 };
 
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
@@ -115,8 +91,3 @@ export type HasPromise<T extends any[]> =
   T extends [infer First, ...infer Rest] ?
     IsAnyPromise<First> extends true ? true : HasPromise<Rest>:
       false;
-
-export type ContainerObjectReturn<TRecord extends Record<PropertyKey, Definition<any, any, any>>> =
-  HasPromiseMember<InstancesObject<TRecord>[keyof InstancesObject<TRecord>]> extends true
-    ? Promise<AwaitedInstanceRecord<TRecord>>
-    : InstancesRecord<TRecord>;

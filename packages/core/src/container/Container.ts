@@ -1,49 +1,54 @@
 import { v4 } from 'uuid';
 
-import type { InstancesRecord } from '../definitions/abstract/InstanceDefinition.js';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
-import type { Definition } from '../definitions/impl/Definition.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import { configureContainer } from '../configuration/ContainerConfiguration.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
-import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import { ScopeConfigurationDSL } from '../configuration/dsl/ScopeConfigurationDSL.js';
-import { ContainerConfigurationDSL } from '../configuration/dsl/ContainerConfigurationDSL.js';
-import { isThenable } from '../utils/IsThenable.js';
-import type { AnyDefinition } from '../definitions/abstract/IDefinition.js';
-import { maybePromiseAll, maybePromiseAllThen } from '../utils/async.js';
-import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/ContainerConfigurable.js';
-import { Binder } from '../configuration/Binder.js';
+import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import { configureScope } from '../configuration/ScopeConfiguration.js';
+import type { IDefinition } from '../definitions/abstract/IDefinition.js';
+import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
+import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
+import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
+import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
+import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
+import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
+import { MaybeAsync } from '../utils/MaybeAsync.js';
 
 import type {
-  ContainerAllReturn,
-  ContainerObjectReturn,
-  HasPromise,
+  ICascadingDefinitionResolver,
   IContainer,
+  IContainerFactory,
   IStrategyAware,
-  NewScopeReturnType,
-  ReturnTypes,
   UseFn,
 } from './IContainer.js';
-import type { IInterceptor } from './interceptors/interceptor.js';
-import { InterceptorsRegistry } from './interceptors/InterceptorsRegistry.js';
+import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
+import { SingletonStrategy } from './strategies/SingletonStrategy.js';
+import { ScopedStrategy } from './strategies/ScopedStrategy.js';
+import { CompositeInterceptor, PassThroughInterceptor } from './interceptors/CompositeInterceptor.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
-export type ContainerNewReturnType<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>> =
-  HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<Container> : Container;
+const containerAllowedScopes = [LifeTime.scoped, LifeTime.singleton, LifeTime.transient, LifeTime.cascading];
 
-export class Container extends ExtensibleFunction implements IContainer {
+export class Container
+  extends ExtensibleFunction
+  implements IContainer, ICascadingDefinitionResolver, IContainerFactory
+{
   static root(): Container {
     return new Container(
       null,
       BindingsRegistry.create(),
       InstancesStore.create(),
-      InterceptorsRegistry.create(),
-      null,
+
       [],
+      new ContainerLifeCycleRegistry(),
+      PassThroughInterceptor.instance,
     );
   }
 
@@ -51,147 +56,171 @@ export class Container extends ExtensibleFunction implements IContainer {
 
   private _isDisposed = false;
 
-  constructor(
+  private _singletonStrategy: SingletonStrategy;
+  private _scopedStrategy: ScopedStrategy;
+
+  protected constructor(
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
-    protected readonly interceptorsRegistry: InterceptorsRegistry,
-    protected readonly currentInterceptor: IInterceptor<any> | null,
     protected readonly scopeTags: (string | symbol)[],
-    protected readonly _disposableFns: Array<(container: IContainer) => void> = [],
+    protected readonly lifecycleRegistry: ILifeCycleRegistry,
+    private _interceptor: ICompositeInterceptor,
   ) {
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
-        definition: Definition<TInstance, TLifeTime, []>,
+        definition: IDefinitionToken<TInstance, TLifeTime>,
       ) => {
         return this.use(definition);
       },
     );
+
+    this._singletonStrategy = new SingletonStrategy(instancesStore);
+    this._scopedStrategy = new ScopedStrategy(instancesStore);
   }
 
-  dispose() {
+  dispose(): MaybeAsync<void> {
     if (this._isDisposed) {
-      return;
+      return MaybeAsync.resolve(undefined);
     }
 
     this._isDisposed = true;
 
-    this._disposableFns.forEach(dispose => dispose(this));
+    return MaybeAsync.resolve(this.lifecycleRegistry.dispose(this)).then(() => {
+      if (this.parentId === null) {
+        this.instancesStore.disposeRoot();
+      }
 
-    if (this.parentId === null) {
-      this.instancesStore.disposeRoot();
-    }
-
-    this.instancesStore.disposeCurrent();
+      this.instancesStore.disposeCurrent();
+    });
   }
 
-  new<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
-    ...configureFns: TConfigureFns
-  ): ContainerNewReturnType<TConfigureFns> {
+  new(...configurations: Array<IConfiguration | ContainerConfigureFn>): IContainer {
     const bindingsRegistry = BindingsRegistry.create();
     const instancesStore = InstancesStore.create();
-    const interceptorsRegistry = new InterceptorsRegistry();
-    const disposableFns: Array<(container: IContainer) => void> = [];
+    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
 
-    const cnt = new Container(null, bindingsRegistry, instancesStore, interceptorsRegistry, null, [], disposableFns);
+    const cnt = new Container(
+      null,
+      bindingsRegistry,
+      instancesStore,
+      [],
+      lifeCycleRegistry,
+      PassThroughInterceptor.instance,
+    );
 
-    if (configureFns.length) {
-      const binder = new ContainerConfigurationDSL(bindingsRegistry, cnt, interceptorsRegistry, disposableFns);
-      const configs = configureFns.map(configureFn => configureFn(binder));
+    if (configurations.length) {
+      const configs = configurations.map(config => {
+        if (config instanceof Function) {
+          return configureContainer(config);
+        } else {
+          return config;
+        }
+      });
 
-      return maybePromiseAllThen(configs, () => {
-        const interceptor = interceptorsRegistry.build();
+      configs.forEach((config: IConfiguration) => {
+        bindingsRegistry.applyConfig(config, cnt);
+        lifeCycleRegistry.append(config.lifeCycleRegistry);
 
-        interceptor?.configureRoot?.(bindingsRegistry, instancesStore);
+        if (config.interceptors) {
+          cnt.applyInterceptors(config.interceptors);
+        }
+      });
 
-        return interceptor ? cnt.withInterceptor(interceptor) : cnt;
-      }) as ContainerNewReturnType<TConfigureFns>;
+      return cnt;
     }
 
-    return cnt as ContainerNewReturnType<TConfigureFns>;
+    return cnt;
   }
 
-  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
-    ...configureFns: TConfigureFns
-  ): NewScopeReturnType<TConfigureFns> {
+  protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
+    if (this._interceptor instanceof PassThroughInterceptor) {
+      this._interceptor = new CompositeInterceptor();
+    }
+
+    interceptor.forEach(interceptorClass => {
+      const interceptorInstance = interceptorClass.create();
+
+      this._interceptor.append(interceptorInstance);
+    });
+  }
+
+  scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configureFns: TConfigureFns): IContainer {
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
     const instancesStore = this.instancesStore.childScope();
     const tags: (string | symbol)[] = [];
-    const disposableFns: Array<(container: IContainer) => void> = [];
-
-    const scopeInterceptorsRegistry = this.interceptorsRegistry.scope(tags, bindingsRegistry, instancesStore);
+    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
 
     const cnt: Container & IStrategyAware = new Container(
       this.id,
       bindingsRegistry,
       instancesStore,
-      scopeInterceptorsRegistry,
-      scopeInterceptorsRegistry.build() ?? null,
       tags,
-      disposableFns,
+      lifeCycleRegistry,
+      this._interceptor.onScope(),
     );
 
     if (configureFns.length) {
-      const binder = new ScopeConfigurationDSL(cnt, bindingsRegistry, tags, disposableFns);
-
-      const configs = configureFns.map(configureFn => {
-        return configureFn(binder, this);
+      const configs = configureFns.map(configOrConfigureFn => {
+        if (configOrConfigureFn instanceof Function) {
+          return configureScope(configOrConfigureFn);
+        } else {
+          return configOrConfigureFn;
+        }
       });
 
-      return maybePromiseAllThen(configs, () => cnt) as unknown as NewScopeReturnType<TConfigureFns>;
+      configs.forEach(config => {
+        bindingsRegistry.applyConfig(config, cnt);
+        lifeCycleRegistry.append(config.lifeCycleRegistry);
+
+        if (config.interceptors) {
+          cnt.applyInterceptors(config.interceptors);
+        }
+      });
+
+      return cnt;
     }
 
-    return cnt as unknown as NewScopeReturnType<TConfigureFns>;
+    return cnt;
   }
 
-  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes, TArgs extends unknown[]>(
-    definition: Definition<TInstance, TLifeTime, TArgs>,
-  ): Binder<TInstance, TLifeTime, TArgs> {
-    const bind = (definition: Definition<TInstance, TLifeTime, TArgs>) => {
-      if (this.instancesStore.has(definition.id)) {
-        throw new Error(`Cannot freeze binding ${definition.name} because it is already instantiated.`);
-      }
+  freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
+    definition: IDefinitionToken<TInstance, TLifeTime>,
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
+    const configurationContext = new ContainerFreezeConfigurationContext(this.bindingsRegistry, this.instancesStore);
 
-      if (
-        this.bindingsRegistry.inheritsCascadingDefinition(definition.id) &&
-        this.instancesStore.hasInherited(definition.id)
-      ) {
-        throw new Error(
-          `Cannot freeze cascading binding ${definition.name} because it is already instantiated in some ascendant scope.`,
-        );
-      }
-
-      this.bindingsRegistry.addFrozenBinding(definition);
-    };
-
-    return new Binder<TInstance, TLifeTime, TArgs>(definition, bind, bind);
-  }
-
-  getInterceptor(id: string | symbol): IInterceptor<any> | undefined {
-    return this.interceptorsRegistry?.get(id);
-  }
-
-  protected withInterceptor(interceptor: IInterceptor<any>): Container {
-    return new Container(
-      this.parentId,
-      this.bindingsRegistry,
-      this.instancesStore,
-      this.interceptorsRegistry,
-      interceptor,
-      this.scopeTags,
+    return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+      'freeze',
+      definition,
+      containerAllowedScopes,
+      configurationContext,
     );
   }
 
-  use<TValue>(definition: Definition<TValue, ValidDependenciesLifeTime<LifeTime>, []>): TValue {
+  hasInterceptor(interceptorClass: InterceptorClass<IInterceptor>): boolean {
+    return this._interceptor.findInstance(interceptorClass) !== undefined;
+  }
+
+  getInterceptor<TInstance extends IInterceptor>(cls: InterceptorClass<TInstance>): TInstance {
+    const interceptorInstance = this._interceptor?.findInstance(cls);
+
+    if (!interceptorInstance) {
+      throw new Error(`Interceptor with class ${(cls as any).name} not found.`);
+    }
+
+    return interceptorInstance;
+  }
+
+  use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition);
   }
 
-  call<TValue, TArgs extends any[]>(definition: Definition<TValue, LifeTime.transient, TArgs>, ...args: TArgs): TValue {
+  useAsync<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): Promise<TValue> {
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
-    return this.buildWithStrategy(patchedDefinition, ...args);
+    return Promise.resolve(this.buildWithStrategy(patchedDefinition));
   }
 
   /**
@@ -199,142 +228,42 @@ export class Container extends ExtensibleFunction implements IContainer {
    * Cascading instances are returned only from the scope holding the instance.
    * @param definition
    */
-  useExisting<TValue>(definition: Definition<TValue, LifeTime.scoped | LifeTime.singleton, []>): TValue | null {
-    return (this.instancesStore.getExisting(definition.id) as TValue) ?? null;
+  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null> {
+    return this.instancesStore.getExisting(definition);
   }
 
-  buildWithStrategy<TValue, TArgs extends any[]>(
-    definition: Definition<TValue, LifeTime, TArgs>,
-    ...args: TArgs
-  ): TValue {
+  protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybeAsync<TValue> {
     if (this._isDisposed) {
       throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
     }
 
-    if (this.currentInterceptor) {
-      return this.buildWithStrategyIntercepted(this.currentInterceptor.onEnter(definition, args), definition, ...args);
-    } else {
-      if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-        return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
-      }
+    if (this.bindingsRegistry.hasFrozenBinding(definition.token.id)) {
+      return this._singletonStrategy.build(definition, this, this._interceptor);
+    }
 
-      switch (definition.strategy) {
-        case LifeTime.transient:
-          return definition.create(this, ...args);
-        case LifeTime.singleton:
-          return this.instancesStore.upsertIntoRootInstances(definition, this, ...args);
-        case LifeTime.scoped:
-          return this.instancesStore.upsertIntoScopeInstances(
-            definition,
-            this,
-            this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
-            ...args,
-          );
-      }
+    switch (definition.strategy) {
+      case LifeTime.transient:
+        return definition.create(this, this._interceptor);
+      case LifeTime.singleton:
+        return this._singletonStrategy.build(definition, this, this._interceptor);
+      case LifeTime.scoped:
+        return this._scopedStrategy.build(definition, this, this._interceptor);
+      case LifeTime.cascading:
+        return (this.bindingsRegistry.getOwningContainer(definition.token) ?? this).resolveCascading(definition);
     }
   }
 
-  private buildWithStrategyIntercepted<TValue, TArgs extends any[]>(
-    currentInterceptor: IInterceptor<any>,
-    definition: Definition<TValue, LifeTime, TArgs>,
-    ...args: TArgs
-  ): TValue {
-    const withChildInterceptor = this.withInterceptor(currentInterceptor);
-
-    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor, ...args);
-
-      return currentInterceptor.onLeave(instance, definition) as TValue;
-    }
-
-    if (definition.strategy === LifeTime.transient) {
-      const instance = definition.create(this, ...args);
-
-      return currentInterceptor.onLeave(instance, definition) as TValue;
-    }
-
-    if (definition.strategy === LifeTime.singleton) {
-      const instance = this.instancesStore.upsertIntoRootInstances(definition, withChildInterceptor, ...args);
-
-      return currentInterceptor.onLeave(instance, definition) as TValue;
-    }
-
-    if (definition.strategy === LifeTime.scoped) {
-      const instance = this.instancesStore.upsertIntoScopeInstances(
-        definition,
-        withChildInterceptor,
-        this.bindingsRegistry.inheritsCascadingDefinition(definition.id),
-        ...args,
-      );
-
-      return currentInterceptor.onLeave(instance, definition) as TValue;
-    }
-
-    throw new Error(`Unsupported strategy ${(definition as AnyDefinition).strategy}`);
+  resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
+    return this._scopedStrategy.build(definition, this, this._interceptor);
   }
 
-  all<TDefinitions extends Array<Definition<any, ValidDependenciesLifeTime<LifeTime>, []>>>(
+  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
-  ): ContainerAllReturn<TDefinitions> {
-    const results = definitions.map(def => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return this.use(def);
-    });
+  ): MaybeAsync<InstancesArray<TDefinitions>> {
+    const results = definitions.map(def => this.use(def));
 
-    return maybePromiseAll(results) as ContainerAllReturn<TDefinitions>;
-  }
-
-  object<TRecord extends Record<PropertyKey, Definition<any, any, any>>>(
-    object: TRecord,
-  ): ContainerObjectReturn<TRecord> {
-    const entries = Object.entries(object);
-    const results = {} as InstancesRecord<any>;
-    const promises: Promise<void>[] = [];
-
-    for (const [key, definition] of entries) {
-      const instance: unknown = this.use(definition as AnyDefinition);
-
-      if (isThenable(instance)) {
-        promises.push(
-          instance.then(value => {
-            results[key] = value;
-          }),
-        );
-      } else {
-        results[key] = instance;
-      }
-    }
-
-    if (promises.length > 0) {
-      return Promise.all(promises).then(() => results) as ContainerObjectReturn<TRecord>;
-    } else {
-      return results as ContainerObjectReturn<TRecord>;
-    }
-  }
-
-  defer<TInstance, TArgs extends any[]>(factoryDefinition: Definition<TInstance, LifeTime.transient, TArgs>) {
-    return (...args: TArgs): TInstance => {
-      return this.call(factoryDefinition, ...args);
-    };
+    return MaybeAsync.all(results) as MaybeAsync<InstancesArray<TDefinitions>>;
   }
 }
 
-export function once<TInstance>(definition: Definition<TInstance, LifeTime, []>): TInstance;
-export function once<TInstance, TArgs extends any[]>(
-  definition: Definition<TInstance, LifeTime.transient, TArgs>,
-  ...args: TArgs
-): TInstance;
-export function once<TInstance, TArgs extends any[]>(
-  definition: Definition<TInstance, LifeTime, TArgs>,
-  ...args: TArgs
-): TInstance {
-  return Container.root().call(definition as Definition<TInstance, LifeTime.transient, TArgs>, ...args);
-}
-
-export const all = <TDefinitions extends Array<Definition<any, LifeTime, []>>>(
-  ...definitions: [...TDefinitions]
-): ContainerAllReturn<TDefinitions> => {
-  return Container.root().all(...definitions) as ContainerAllReturn<TDefinitions>;
-};
-
-export const container = Container.root();
+export const container: IContainer & IContainerFactory = Container.root();

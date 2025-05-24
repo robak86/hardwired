@@ -1,4 +1,4 @@
-import type { Definition, LifeTime } from 'hardwired';
+import type { LifeTime, IDefinitionToken } from 'hardwired';
 import { useEffect, useRef } from 'react';
 
 import { useContainer } from '../context/ContainerContext.js';
@@ -22,7 +22,7 @@ export type UseDefinitionHookOptions =
     };
 
 export type UseDefinitionHook = <TInstance>(
-  factoryDefinition: Definition<TInstance, LifeTime.singleton | LifeTime.scoped, []>,
+  factoryDefinition: IDefinitionToken<TInstance, LifeTime.singleton | LifeTime.scoped>,
   options?: UseDefinitionHookOptions,
 ) => TInstance;
 
@@ -52,7 +52,8 @@ function useAssertValidOptions(options: UseDefinitionHookOptions | undefined) {
 
 export const use: UseDefinitionHook = (definition, options) => {
   const container = useContainer();
-  const instance = container.use(definition);
+  const instance = container.use(definition).trySync();
+
   const interceptor = useReactLifeCycleInterceptor();
 
   useAssertValidOptions(options);

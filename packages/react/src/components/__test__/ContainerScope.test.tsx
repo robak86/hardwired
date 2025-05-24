@@ -1,4 +1,4 @@
-import { fn } from 'hardwired';
+import { container, scoped } from 'hardwired';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { FC } from 'react';
@@ -17,7 +17,11 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = fn.scoped(() => (counter += 1));
+      const valueD = scoped<number>();
+
+      const cnt = container.new(c => {
+        c.add(valueD).fn(() => (counter += 1));
+      });
 
       const ValueRenderer = ({ testId }: { testId: string }) => {
         const value = use(valueD);
@@ -26,7 +30,7 @@ describe(`ContainerScope`, () => {
       };
 
       const TestSubject = () => (
-        <ContainerProvider>
+        <ContainerProvider container={cnt}>
           <ContainerScope>
             <ValueRenderer testId={'scope1'} />
           </ContainerScope>
@@ -62,7 +66,11 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = fn.scoped(() => (counter += 1));
+      const valueD = scoped<number>();
+
+      const cnt = container.new(c => {
+        c.add(valueD).fn(() => (counter += 1));
+      });
 
       const ValueRenderer = ({ testId }: { testId: string }) => {
         const value = use(valueD);
@@ -74,7 +82,7 @@ describe(`ContainerScope`, () => {
         scope1Keys,
         scope2Keys,
       }) => (
-        <ContainerProvider>
+        <ContainerProvider container={cnt}>
           <ContainerScope invalidateKeys={scope1Keys}>
             <ValueRenderer testId={'scope1'} />
           </ContainerScope>
@@ -112,11 +120,12 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const baseD = fn.scoped(() => 0);
-      const valueD = fn.scoped(use => {
-        const base = use(baseD);
+      const baseD = scoped<number>();
+      const valueD = scoped<number>();
 
-        return (counter += 1 + base);
+      const cnt = container.new(c => {
+        c.add(baseD).fn(() => (counter += 1));
+        c.add(valueD).fn(base => (counter += 1 + base), baseD);
       });
 
       const ValueRenderer = ({ testId }: { testId: string }) => {
@@ -126,15 +135,15 @@ describe(`ContainerScope`, () => {
       };
 
       const scope1Config = useScopeConfig(scope => {
-        scope.bind(baseD).toValue(10);
+        scope.modify(baseD).static(10);
       });
 
       const scope2Config = useScopeConfig(scope => {
-        scope.bind(baseD).toValue(100);
+        scope.modify(baseD).static(100);
       });
 
       const TestSubject = () => (
-        <ContainerProvider>
+        <ContainerProvider container={cnt}>
           S1
           <ContainerScope config={scope1Config}>
             <ValueRenderer testId={'scope1'} />

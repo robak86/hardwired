@@ -1,33 +1,70 @@
 import { BindingsRegistry } from '../BindingsRegistry.js';
-import { fn } from '../../definitions/fn.js';
+import { cascading } from '../../definitions/def-symbol.js';
 import { Definition } from '../../definitions/impl/Definition.js';
+import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 describe(`BindingsRegistry`, () => {
   function setup() {
-    const def = fn.scoped(() => 1);
-    const defV2 = new Definition(def.id, def.strategy, () => 123);
-    const defV3 = new Definition(def.id, def.strategy, () => 456);
+    const registry = BindingsRegistry.create();
+    const container = {} as any;
 
-    return { def, defV2, defV3 };
+    const symbol = cascading<number>();
+
+    const definition = new Definition(symbol, () => MaybeAsync.resolve(1));
+    const otherDefinition = new Definition(symbol, () => MaybeAsync.resolve(1));
+
+    return {
+      registry,
+      symbol,
+      definition,
+      container,
+      otherDefinition,
+    };
   }
 
-  describe('scope definitions', () => {
-    it(`scoped takes precedence over cascading`, async () => {
-      const { def, defV2, defV3 } = setup();
+  describe(`hasCascading root`, () => {
+    it(`returns true when setCascadeRoot was called on the current registry`, async () => {
+      const { registry, symbol, container } = setup();
 
-      const registry = BindingsRegistry.create();
+      expect(registry.hasCascadingRoot(symbol.id)).toEqual(false);
 
-      expect(registry.getDefinition(def)).toBe(def);
+      registry.setCascadeRoot(symbol, container);
 
-      registry.addScopeBinding(defV2);
-      expect(registry.getDefinition(def)).toBe(defV2);
+      expect(registry.hasCascadingRoot(symbol.id)).toEqual(true);
 
-      const child = registry.checkoutForScope();
+      const childRegistry = registry.checkoutForScope();
 
-      expect(child.getDefinition(def)).toBe(def);
+      expect(childRegistry.hasCascadingRoot(symbol.id)).toEqual(false);
+      childRegistry.setCascadeRoot(symbol, container);
 
-      expect(() => registry.addCascadingBinding(defV3)).toThrow(); // Cannot override scope binding with cascading
-      expect(registry.getDefinition(def)).toBe(defV2);
+      expect(childRegistry.hasCascadingRoot(symbol.id)).toEqual(true);
+    });
+  });
+
+  describe(`register`, () => {
+    describe(`cascading`, () => {
+      describe(`register`, () => {
+        it(`registers a definition`, async () => {
+          const { registry, symbol, container, definition } = setup();
+
+          registry.register(symbol, definition, container);
+
+          expect(registry.getDefinition(symbol)).toBe(definition);
+        });
+
+        it(`does not inherit overrides`, async () => {
+          const { registry, symbol, container, definition, otherDefinition } = setup();
+
+          registry.register(symbol, definition, container);
+          registry.override(otherDefinition);
+
+          expect(registry.getDefinition(symbol)).toBe(otherDefinition);
+
+          const childRegistry = registry.checkoutForScope();
+
+          expect(childRegistry.getDefinition(symbol)).toBe(definition);
+        });
+      });
     });
   });
 });

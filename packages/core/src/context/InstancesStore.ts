@@ -1,21 +1,23 @@
-import type { Definition } from '../definitions/impl/Definition.js';
-import type { IContainer } from '../container/IContainer.js';
 import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
+import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import { MaybeAsync } from '../utils/MaybeAsync.js';
 
-import { isDisposable } from './InstancesMap.js';
+import { isDisposable } from './COWMap.js';
 
 export interface IInstancesStoreRead {
   hasRootInstance(definitionId: symbol): boolean;
   hasScopedInstance(definitionId: symbol): boolean;
 }
 
+// TODO: reduce the number of public methods by accepting IDefinitionSymbol as a parameter
+// That will allow hiding the implementation details related to lifetimes
 export class InstancesStore implements IInstancesStoreRead {
   static create(): InstancesStore {
     return new InstancesStore(
       null,
-      new Map<symbol, unknown>(),
-      new Map<symbol, unknown>(),
+      new Map<symbol, MaybeAsync<unknown>>(),
+      new Map<symbol, MaybeAsync<unknown>>(),
       new CompositeDisposable(),
       new CompositeDisposable(),
     );
@@ -23,8 +25,8 @@ export class InstancesStore implements IInstancesStoreRead {
 
   private constructor(
     private _parent: InstancesStore | null,
-    private _globalInstances: Map<symbol, unknown>,
-    private _scopeInstances: Map<symbol, unknown>,
+    private _globalInstances: Map<symbol, MaybeAsync<unknown>>,
+    private _scopeInstances: Map<symbol, MaybeAsync<unknown>>,
     private _rootDisposer: CompositeDisposable,
     private _currentDisposer: CompositeDisposable,
   ) {}
@@ -41,69 +43,47 @@ export class InstancesStore implements IInstancesStoreRead {
     return new InstancesStore(this, this._globalInstances, new Map(), this._rootDisposer, new CompositeDisposable());
   }
 
-  upsertIntoScopeInstances<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, any, TArgs>,
-    container: IContainer,
-    isCascadingInherited: boolean,
-    ...args: TArgs
-  ) {
-    if (this._scopeInstances.has(definition.id)) {
-      return this._scopeInstances.get(definition.id) as TInstance;
-    } else {
-      const instance = definition.create(container, ...args);
-
-      // If the definition is bound to the current container then after calling definition.create
-      // we already have the instance in the store, hence we should not register it for duplicated disposal.
-      if (this._scopeInstances.has(definition.id)) {
-        return this._scopeInstances.get(definition.id) as TInstance;
-      }
-
-      this._scopeInstances.set(definition.id, instance);
-
-      if (!isCascadingInherited) {
-        this.registerDisposable(instance, this._currentDisposer);
-      }
-
-      return instance;
-    }
+  getRootInstance(definitionId: symbol): MaybeAsync<unknown> | undefined {
+    return this._globalInstances.get(definitionId);
   }
 
-  upsertIntoRootInstances<TInstance, TArgs extends any[]>(
-    definition: Definition<TInstance, any, TArgs>,
-    container: IContainer,
-    ...args: TArgs
-  ) {
-    if (this._globalInstances.has(definition.id)) {
-      return this._globalInstances.get(definition.id) as TInstance;
-    } else {
-      const instance = definition.create(container, ...args);
-
-      this._globalInstances.set(definition.id, instance);
-
-      this.registerDisposable(instance, this._rootDisposer);
-
-      return instance;
-    }
+  setRootInstance(definitionId: symbol, instance: MaybeAsync<unknown>): void {
+    this._globalInstances.set(definitionId, instance);
+    this.registerDisposable(instance, this._rootDisposer);
   }
 
   hasScopedInstance(definitionId: symbol): boolean {
     return this._scopeInstances.has(definitionId);
   }
 
+  getScopedInstance(definitionId: symbol): MaybeAsync<unknown> | undefined {
+    return this._scopeInstances.get(definitionId);
+  }
+
+  setScopedInstance(definitionId: symbol, instance: MaybeAsync<unknown>): void {
+    this._scopeInstances.set(definitionId, instance);
+
+    this.registerDisposable(instance, this._currentDisposer);
+  }
+
   hasRootInstance(definitionId: symbol): boolean {
     return this._globalInstances.has(definitionId);
   }
 
-  has(definitionId: symbol): boolean {
-    return this._globalInstances.has(definitionId) || this._scopeInstances.has(definitionId);
+  has(symbol: IDefinitionToken<any, any>): boolean {
+    return this._globalInstances.has(symbol.id) || this._scopeInstances.has(symbol.id);
   }
 
-  hasInherited(definitionId: symbol): boolean {
-    return this._parent?.has(definitionId) ?? this._parent?.hasInherited(definitionId) ?? false;
+  hasInherited(symbol: IDefinitionToken<any, any>): boolean {
+    return this._parent?.has(symbol) ?? this._parent?.hasInherited(symbol) ?? false;
   }
 
-  getExisting(definitionId: symbol): unknown {
-    return this._globalInstances.get(definitionId) ?? this._scopeInstances.get(definitionId);
+  getExisting<TInstance>(symbol: IDefinitionToken<TInstance, any>): MaybeAsync<TInstance | null> {
+    return (
+      (this._globalInstances.get(symbol.id) as MaybeAsync<TInstance>) ??
+      (this._scopeInstances.get(symbol.id) as MaybeAsync<TInstance>) ??
+      MaybeAsync.null
+    );
   }
 
   private registerDisposable(instance: unknown, disposer: CompositeDisposable) {

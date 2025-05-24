@@ -1,82 +1,48 @@
-import type { ClassType } from '../cls.js';
-import { type Thunk, unwrapThunk } from '../../utils/Thunk.js';
-import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import { isThenable } from '../../utils/IsThenable.js';
+import type { ClassType } from '../utils/class-type.js';
+import type { IServiceLocator } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
-import type { InstancesDefinitions } from '../abstract/InstanceDefinition.js';
-import type { AnyDefinition, IDefinition } from '../abstract/IDefinition.js';
+import type { IDefinition } from '../abstract/IDefinition.js';
+import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
+import type { IInterceptor } from '../../container/interceptors/interceptor.js';
+import type { IDefinitionToken } from '../def-symbol.js';
+import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 import { Definition } from './Definition.js';
 
 export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructorArgs extends unknown[]>
-  implements IDefinition<TInstance, TLifeTime, []>
+  implements IDefinition<TInstance, TLifeTime>
 {
-  private _hasOnlySyncDependencies = false; // flag for optimization, so we don't have to check every time
-
-  readonly $type!: Awaited<TInstance>;
-  readonly $p0!: never;
-  readonly $p1!: never;
-  readonly $p2!: never;
-  readonly $p3!: never;
-  readonly $p4!: never;
-  readonly $p5!: never;
-
   constructor(
-    public readonly id: symbol,
-    public readonly strategy: TLifeTime,
+    public readonly token: IDefinitionToken<TInstance, TLifeTime>,
     protected readonly _class: ClassType<TInstance, TConstructorArgs>,
-    protected readonly _dependencies?: Thunk<InstancesDefinitions<TConstructorArgs, TLifeTime>>,
-  ) {
-    if (Array.isArray(_dependencies)) {
-      this.assertValidDependencies(_dependencies);
-    }
+    protected readonly _dependencyTokens: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>,
+  ) {}
+
+  get id() {
+    return this.token.id;
   }
 
-  override(createFn: (context: IContainer) => TInstance): Definition<TInstance, TLifeTime, []> {
-    return new Definition(this.id, this.strategy, createFn);
+  get strategy() {
+    return this.token.strategy;
   }
 
-  bind(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, []> {
-    return this.override(_use => {
-      return container.buildWithStrategy(this);
+  override(
+    createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
+  ): IDefinition<TInstance, TLifeTime> {
+    return new Definition(this.token, createFn);
+  }
+
+  toString() {
+    return `${this.token.toString()}:${this._class.name}`;
+  }
+
+  create(use: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
+    return use.all(...this._dependencyTokens).then(depsAwaited => {
+      const instance = new this._class(...(depsAwaited as TConstructorArgs));
+
+      return MaybeAsync.resolve(instance).then(instanceAwaited => {
+        return interceptor.onInstance(instanceAwaited, depsAwaited, this.token, this._dependencyTokens);
+      });
     });
-  }
-
-  create(use: IContainer): TInstance {
-    // no dependencies
-    if (this._dependencies === undefined) {
-      // @ts-ignore
-      return new this._class();
-    }
-
-    const deps = use.all(...unwrapThunk(this._dependencies)) as TConstructorArgs | Promise<TConstructorArgs>;
-
-    if (this._hasOnlySyncDependencies) {
-      return new this._class(...(deps as TConstructorArgs));
-    }
-
-    if (isThenable(deps)) {
-      return deps.then(deps => {
-        return new this._class(...deps);
-      }) as TInstance;
-    } else {
-      this._hasOnlySyncDependencies = true;
-
-      return new this._class(...deps);
-    }
-  }
-
-  get name() {
-    return this._class.name;
-  }
-
-  private assertValidDependencies(dependencies: AnyDefinition[]) {
-    if (dependencies.some(dep => dep === undefined)) {
-      throw new Error(
-        `Some dependencies are undefined. Perhaps your modules have some circular dependencies.
-         Try wrapping all dependencies in a function, e.g.:
-         cls(this, () => [dependency1, dependency2])`,
-      );
-    }
   }
 }

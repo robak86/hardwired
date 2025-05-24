@@ -1,9 +1,8 @@
-import type { ContainerConfigureFn, Definition, LifeTime, ScopeTag } from 'hardwired';
-import { GraphBuilderInterceptor } from 'hardwired';
+import type { ContainerConfigureFn, IDefinitionToken, LifeTime } from 'hardwired';
+import { AbstractGraphDependenciesInterceptor, COWMap } from 'hardwired';
 
 import { useContainer } from '../context/ContainerContext.js';
 
-import type { ReactLifeCycleNodeCallbacks } from './ReactLifeCycleNode.js';
 import { ReactLifeCycleNode } from './ReactLifeCycleNode.js';
 
 export interface IReactLifeCycleAware {
@@ -11,63 +10,45 @@ export interface IReactLifeCycleAware {
   onUnmount?(): void;
 }
 
-export const reactLifeCycleInterceptor = Symbol('reactLifeCycleInterceptor');
-
-export type WithReactLifeCycleConfig = {
-  debug?: boolean;
+export const withReactLifeCycle = (): ContainerConfigureFn => c => {
+  c.withInterceptor(ReactLifeCycleRootInterceptor);
 };
-
-export const withReactLifeCycle =
-  (config: WithReactLifeCycleConfig = {}): ContainerConfigureFn =>
-  c => {
-    c.withInterceptor(reactLifeCycleInterceptor, new ReactLifeCycleRootInterceptor(config));
-  };
 
 export const useReactLifeCycleInterceptor = () => {
-  return useContainer().getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor;
+  const container = useContainer();
+
+  if (container.hasInterceptor(ReactLifeCycleRootInterceptor)) {
+    return container.getInterceptor(ReactLifeCycleRootInterceptor);
+  }
 };
 
-export class ReactLifeCycleRootInterceptor extends GraphBuilderInterceptor<never, ReactLifeCycleNode<unknown>> {
-  private readonly _callbacks: ReactLifeCycleNodeCallbacks = {};
-
-  constructor(_config: WithReactLifeCycleConfig) {
-    const createNode = <T>(
-      _definition: Definition<T, any, any>,
-      value: Awaited<T>,
-      children: ReactLifeCycleNode<unknown>[],
-      _tags: ScopeTag[],
-    ): ReactLifeCycleNode<T> => {
-      return new ReactLifeCycleNode(value, children, this._callbacks) as ReactLifeCycleNode<T>;
-    };
-
-    super({
-      createNode,
-    });
-
-    if (_config.debug) {
-      this._callbacks = {
-        onMount: instance => {
-          console.log(`onMount`, instance);
-        },
-        onUnmount: instance => {
-          console.log(`onUnmount`, instance);
-        },
-      };
-    }
+export class ReactLifeCycleRootInterceptor extends AbstractGraphDependenciesInterceptor<ReactLifeCycleNode<unknown>> {
+  static create() {
+    return new ReactLifeCycleRootInterceptor(new Map(), new Map(), COWMap.create());
   }
 
-  getGraphNode<TInstance>(
-    definition: Definition<TInstance, LifeTime.scoped | LifeTime.singleton, any[]>,
-  ): ReactLifeCycleNode<TInstance> | undefined {
-    const graphNode = super.getGraphNode(definition);
+  getGraphNode<TInstance>(token: IDefinitionToken<TInstance, LifeTime>): ReactLifeCycleNode<TInstance> {
+    const graphNode = this.find(token);
 
     if (!graphNode) {
       console.warn(
-        `React lifecycles interceptor node not found for definition: ${definition.name.toString()}.
+        `React lifecycles interceptor node not found for definition: ${token.toString()}.
          This means that you try to instantiate transient dependency or there is a bug in the container.`,
       );
     }
 
     return graphNode as ReactLifeCycleNode<TInstance>;
+  }
+
+  onScope(): ReactLifeCycleRootInterceptor {
+    return new ReactLifeCycleRootInterceptor(this._globalInstances, new Map(), this._cascadingInstances.clone());
+  }
+
+  protected buildGraphNode<TInstance>(
+    instance: TInstance,
+    _token: IDefinitionToken<TInstance, LifeTime>,
+    children: ReactLifeCycleNode<any>[],
+  ): ReactLifeCycleNode<TInstance> {
+    return new ReactLifeCycleNode(instance, children);
   }
 }

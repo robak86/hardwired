@@ -1,13 +1,13 @@
-import type { InstanceCreationAware, UseFn } from '../container/IContainer.js';
-import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import type { IContainerConfigurable } from './abstract/IContainerConfigurable.js';
+import type { IConfiguration } from './dsl/new/container/ContainerConfiguration.js';
+import { ContainerConfigurationBuilder } from './dsl/new/container/ContainerConfigurationBuilder.js';
 
-import type { ContainerConfigurable } from './abstract/ContainerConfigurable.js';
+export type ContainerConfigureFn = (container: IContainerConfigurable) => void;
 
-export type ContainerConfigureFn = (container: ContainerConfigurable) => void;
-export type AsyncContainerConfigureFn = (container: ContainerConfigurable) => Promise<void>;
+export const configureContainer = (configureFn: ContainerConfigureFn): IConfiguration => {
+  const builder = new ContainerConfigurationBuilder();
 
-export const configureContainer = <T extends ContainerConfigureFn | AsyncContainerConfigureFn>(configureFn: T): T => {
-  return configureFn;
+  configureFn(builder);
+
+  return builder.toConfig();
 };
-
-export type ConfigurationContainer = InstanceCreationAware & UseFn<LifeTime>;

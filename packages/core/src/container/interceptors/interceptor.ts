@@ -1,19 +1,26 @@
-import type { Definition } from '../../definitions/impl/Definition.js';
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IBindingRegistryRead } from '../../context/BindingsRegistry.js';
-import type { IInstancesStoreRead } from '../../context/InstancesStore.js';
-import type { ScopeTag } from '../IContainer.js';
+import type { IDefinitionToken } from '../../definitions/def-symbol.js';
 
-export interface IInterceptor<TInstance> {
-  configureRoot?(bindingRegistry: IBindingRegistryRead, instancesStore: IInstancesStoreRead): void;
+export type InterceptorClass<TInstance extends IInterceptor> = {
+  create(): TInstance;
+};
 
-  onEnter<TNewInstance>(definition: Definition<TNewInstance, LifeTime, any[]>, args: any[]): IInterceptor<TNewInstance>; // before create (definition becomes our origin)
+export interface ICompositeInterceptor extends IInterceptor {
+  append(interceptor: IInterceptor): void;
 
-  onLeave(instance: TInstance, definition: Definition<TInstance, LifeTime, any[]>): TInstance;
+  onScope(): ICompositeInterceptor;
 
-  onScope(
-    tags: ScopeTag[],
-    bindingsRegistry: IBindingRegistryRead,
-    instancesStore: IInstancesStoreRead,
-  ): IInterceptor<TInstance>;
+  findInstance<TInstance extends IInterceptor>(cls: InterceptorClass<TInstance>): TInstance;
+}
+
+export interface IInterceptor {
+  // TODO: ideally dependencies:unknown[] should be factory function, so interceptor can cancel dependencies creation
+  onInstance<TInstance>(
+    instance: TInstance,
+    dependencies: unknown[],
+    token: IDefinitionToken<TInstance, LifeTime>,
+    dependenciesTokens: IDefinitionToken<unknown, LifeTime>[],
+  ): TInstance;
+
+  onScope(): IInterceptor;
 }

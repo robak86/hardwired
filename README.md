@@ -485,7 +485,7 @@ const logger = fn.scoped(() => {
   };
 });
 
-const requestId = unbound<string>();
+const requestId = unbound.scoped<string>();
 
 const command = fn.scoped(use => {
   const _logger = use(logger);
@@ -517,8 +517,8 @@ const handler2 = fn.transient(async (use, req: Request) => {
 // for each scope bind an unique id and brand the logger with it,
 // so the printed string will contain the request id
 const requestScopeConfig = configureScope(scope => {
-  scope.bindCascading(requestId).toValue(uuid());
-  scope.bindCascading(logger).toDecorated((use, originalLogger) => {
+  scope.overrideCascading(requestId).toValue(uuid());
+  scope.overrideCascading(logger).toDecorated((use, originalLogger) => {
     const label = use(requestId);
 
     return {
@@ -640,11 +640,11 @@ configuredScope.use(definition); // returns the Boxed object with value 1
 
 The assigned value is available for the current scope and propagated to all newly created descendant scopes
 
-- `scope.bindCascading(definition).toValue(value)`: Replaces a definition with a static value.
-- `scope.bindCascading(definition).to(otherDefinition)`: Redirects a definition to another one.
-- `scope.bindCascading(definition).toDecorated(decoratorFn)`: Wraps the original instance with additional functionality.
-- `scope.bindCascading(definition).toConfigured(configureFn)`: Modifies the instance after it's created.
-- `scope.bindCascading(definition).toRedefined(factoryFn)`: Completely redefines how the instance is created.
+- `scope.overrideCascading(definition).toValue(value)`: Replaces a definition with a static value.
+- `scope.overrideCascading(definition).to(otherDefinition)`: Redirects a definition to another one.
+- `scope.overrideCascading(definition).toDecorated(decoratorFn)`: Wraps the original instance with additional functionality.
+- `scope.overrideCascading(definition).toConfigured(configureFn)`: Modifies the instance after it's created.
+- `scope.overrideCascading(definition).toRedefined(factoryFn)`: Completely redefines how the instance is created.
 
 Additionally, you can make the definition cascading using `scope.cascade(definition)`.
 
@@ -660,13 +660,13 @@ const otherDefinition = fn.singleton(() => new Boxed(1));
 
 const rootConfig = configureContainer(container => {
   // in the container configuration we can also bind singletons
-  container.bindCascading(definition).to(otherDefinition);
-  container.bindCascading(definition).toValue(new Boxed(1));
-  container.bindCascading(definition).toDecorated((use, originalValue) => new Boxed(1));
-  container.bindCascading(definition).toConfigured((use, originalValue) => {
+  container.overrideCascading(definition).to(otherDefinition);
+  container.overrideCascading(definition).toValue(new Boxed(1));
+  container.overrideCascading(definition).toDecorated((use, originalValue) => new Boxed(1));
+  container.overrideCascading(definition).toConfigured((use, originalValue) => {
     originalValue.value = 1;
   });
-  container.bindCascading(definition).toRedefined(use => {
+  container.overrideCascading(definition).toRedefined(use => {
     const otherInstance = use(otherDefinition);
     return new Boxed(otherInstance.value);
   });
@@ -683,7 +683,7 @@ Container configuration provides as well more compact syntax:
 
 ```typescript
 const root = container.new(container => {
-  container.bindCascading(definition).to(otherDefinition);
+  container.overrideCascading(definition).to(otherDefinition);
 });
 ```
 
@@ -748,7 +748,7 @@ interface Config {
   apiUrl: string;
 }
 
-const config = unbound<Config>();
+const config = unbound.scoped<Config>();
 ```
 
 ### Providing a Value
@@ -759,7 +759,7 @@ You must provide a value for unbound definitions when creating a container or sc
 import { container } from 'hardwired';
 
 const myContainer = container.new(container => {
-  container.bindCascading(config).toValue({ apiUrl: 'https://api.example.com' });
+  container.overrideCascading(config).toValue({ apiUrl: 'https://api.example.com' });
 });
 
 const configValue = myContainer.use(config); // { apiUrl: 'https://api.example.com' }
@@ -795,13 +795,13 @@ By using unbound definitions, you can decouple the interface from the actual imp
 ```typescript
 import { unbound, cls } from 'hardwired';
 
-const logger = unbound<ILogger>();
+const logger = unbound.scoped<ILogger>();
 
 interface ILogger {
   info(msg: string);
 }
 
-const transport = unbound<ITransport>();
+const transport = unbound.scoped<ITransport>();
 
 interface ITransport {
   write(msg: string);
@@ -836,13 +836,13 @@ const myApp = fn(use => {
 });
 
 const prodContainer = container.new(container => {
-  container.bindCascading(transport).to(FsLoggerTransport.class);
-  container.bindCascading(logger).to(ProductionLogger.class);
+  container.overrideCascading(transport).to(FsLoggerTransport.class);
+  container.overrideCascading(logger).to(ProductionLogger.class);
 });
 
 const devContainer = container.new(container => {
-  container.bindCascading(transport).toValue({ write: noop });
-  container.bindCascading(logger).to(DevLogger.class);
+  container.overrideCascading(transport).toValue({ write: noop });
+  container.overrideCascading(logger).to(DevLogger.class);
 });
 
 const prodApp = prodContainer.use(myApp);

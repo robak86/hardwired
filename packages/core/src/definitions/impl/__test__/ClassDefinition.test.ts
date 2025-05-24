@@ -1,13 +1,5 @@
-import { cls } from '../../cls.js';
-
 describe(`ClassDefinition`, () => {
-  describe(`name`, () => {
-    it(`returns class name`, async () => {
-      class MyClass {}
-
-      const def = cls.transient(MyClass);
-
-      expect(def.name).toBe('MyClass');
-    });
+  describe(`lifting to async`, () => {
+    it(`doesn't lift to async unless some dependencies are async`);
   });
 });

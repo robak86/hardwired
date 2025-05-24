@@ -1,45 +1,37 @@
-import type { IContainer, IStrategyAware } from '../../container/IContainer.js';
-import { getTruncatedFunctionDefinition } from '../utils/getTruncatedFunctionDefinition.js';
+import type { IServiceLocator } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
+import type { IDefinitionToken } from '../def-symbol.js';
+import type { IInterceptor } from '../../container/interceptors/interceptor.js';
+import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 
-export class Definition<TInstance, TLifeTime extends LifeTime, TArgs extends unknown[]>
-  implements IDefinition<TInstance, TLifeTime, TArgs>
-{
-  readonly $type!: Awaited<TInstance>;
-  readonly $p0!: TArgs[0];
-  readonly $p1!: TArgs[1];
-  readonly $p2!: TArgs[2];
-  readonly $p3!: TArgs[3];
-  readonly $p4!: TArgs[4];
-  readonly $p5!: TArgs[5];
-
+export class Definition<TInstance, TLifeTime extends LifeTime> implements IDefinition<TInstance, TLifeTime> {
   constructor(
-    public readonly id: symbol,
-    public readonly strategy: TLifeTime,
-    public readonly create: (context: IContainer, ...args: TArgs) => TInstance,
+    public readonly token: IDefinitionToken<TInstance, TLifeTime>,
+    private readonly _create: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
   ) {}
 
-  get name() {
-    if (this.create.name !== '') {
-      return this.create.name;
-    } else {
-      return getTruncatedFunctionDefinition(this.create.toString());
-    }
-  }
-
-  override(createFn: (context: IContainer, ...args: TArgs) => TInstance): Definition<TInstance, TLifeTime, TArgs> {
-    return new Definition(this.id, this.strategy, createFn);
-  }
-
-  /**
-   * Binds the definition to the container. Whenever the definition is instantiated,
-   * the container will be used to resolve its dependencies.
-   * @param container
-   */
-  bind(container: IContainer & IStrategyAware): Definition<TInstance, TLifeTime, TArgs> {
-    return this.override((_use, ...args: TArgs) => {
-      return container.buildWithStrategy(this, ...args);
+  create(context: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
+    return this._create(context, interceptor).then(awaited => {
+      return interceptor.onInstance(awaited, [], this.token, []);
     });
+  }
+
+  get id() {
+    return this.token.id;
+  }
+
+  get strategy() {
+    return this.token.strategy;
+  }
+
+  override(
+    createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
+  ): IDefinition<TInstance, TLifeTime> {
+    return new Definition(this.token, createFn);
+  }
+
+  toString() {
+    return this.token.toString();
   }
 }

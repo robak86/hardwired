@@ -1,4 +1,4 @@
-import type { Definition, InstancesArray } from 'hardwired';
+import type { IDefinitionToken, InstancesArray } from 'hardwired';
 import { useEffect } from 'react';
 
 import { useContainer } from '../context/ContainerContext.js';
@@ -6,17 +6,17 @@ import { useReactLifeCycleInterceptor } from '../interceptors/ReactLifeCycleInte
 
 import { useHasArrayChanged } from './helpers/useHasArrayChanged.js';
 
-export type UseDefinitionsHook = <TDefinitions extends Array<Definition<any, any, []>>>(
+export type UseDefinitionsHook = <TDefinitions extends Array<IDefinitionToken<any, any>>>(
   ...definitions: [...TDefinitions]
 ) => InstancesArray<TDefinitions>;
 
-export const useAll: UseDefinitionsHook = <TDefinitions extends Array<Definition<any, any, []>>>(
+export const useAll: UseDefinitionsHook = <TDefinitions extends Array<IDefinitionToken<any, any>>>(
   ...definitions: [...TDefinitions]
 ): InstancesArray<TDefinitions> => {
   const container = useContainer();
   const interceptor = useReactLifeCycleInterceptor();
 
-  const instances = container.all(...definitions);
+  const instances = container.all(...definitions).trySync();
 
   const hasDependenciesChange = useHasArrayChanged(definitions);
 

@@ -1,30 +1,31 @@
-import { cls, container } from 'hardwired';
+import { configureContainer, container, scoped, singleton } from 'hardwired';
 import { expect } from 'vitest';
 
-import type { IReactLifeCycleAware, ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
-import { reactLifeCycleInterceptor, withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
+import type { IReactLifeCycleAware } from '../ReactLifeCycleInterceptor.js';
+import { ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
+import { withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
 
 describe(`ReactLifeCycleInterceptor`, () => {
-  class NoLifeCycles {
-    static instance = cls.scoped(this);
-  }
+  const noLifeCyclesD = scoped<NoLifeCycles>('NoLifeCycles');
+  const childSvc1D = singleton<ChildSvc1>('ChildSvc1');
+  const childSvc2D = singleton<ChildSvc2>('ChildSvc2');
+  const service1D = scoped<Service1>('Service1');
+
+  class NoLifeCycles {}
 
   class ChildSvc1 implements IReactLifeCycleAware {
-    static instance = cls.singleton(this);
-
     onMount = vi.fn();
     onUnmount = vi.fn();
   }
 
   class ChildSvc2 implements IReactLifeCycleAware {
-    static instance = cls.singleton(this);
-
     onMount = vi.fn();
     onUnmount = vi.fn();
   }
 
   class Service1 implements IReactLifeCycleAware {
-    static instance = cls.scoped(this, [ChildSvc1.instance, ChildSvc2.instance, NoLifeCycles.instance]);
+    onMount = vi.fn();
+    onUnmount = vi.fn();
 
     constructor(
       private _childSvc1: ChildSvc1,
@@ -35,26 +36,31 @@ describe(`ReactLifeCycleInterceptor`, () => {
       void this._childSvc2;
       void this._noLifeCycles;
     }
-    onMount = vi.fn();
-    onUnmount = vi.fn();
   }
 
+  const registerServices = configureContainer(c => {
+    c.add(noLifeCyclesD).class(NoLifeCycles);
+    c.add(childSvc1D).class(ChildSvc1);
+    c.add(childSvc2D).class(ChildSvc2);
+    c.add(service1D).class(Service1, childSvc1D, childSvc2D, noLifeCyclesD);
+  });
+
   function setup() {
-    const cnt = container.new(withReactLifeCycle());
-    const interceptor = cnt.getInterceptor(reactLifeCycleInterceptor) as ReactLifeCycleRootInterceptor;
+    const cnt = container.new(registerServices, withReactLifeCycle());
+    const interceptor = cnt.getInterceptor(ReactLifeCycleRootInterceptor);
 
     return { cnt, interceptor };
   }
 
   describe(`returning graph node`, () => {
-    it(`caches graph nodes`, () => {
+    it(`caches graph nodes`, async () => {
       const { cnt, interceptor } = setup();
 
-      cnt.use(ChildSvc1.instance);
-      const nodeReq = interceptor.getGraphNode(ChildSvc1.instance);
+      await cnt.use(childSvc1D);
+      const nodeReq = interceptor.getGraphNode(childSvc1D);
 
-      cnt.use(ChildSvc1.instance);
-      const nodeReq2 = interceptor.getGraphNode(ChildSvc1.instance);
+      await cnt.use(childSvc1D);
+      const nodeReq2 = interceptor.getGraphNode(childSvc1D);
 
       expect(nodeReq).toBe(nodeReq2);
     });
@@ -64,9 +70,9 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`allows getting node for the dependency`, async () => {
       const { cnt, interceptor } = setup();
 
-      cnt.use(ChildSvc1.instance);
+      await cnt.use(childSvc1D);
 
-      expect(interceptor.getGraphNode(ChildSvc1.instance)?.value).toBeInstanceOf(ChildSvc1);
+      expect(interceptor.getGraphNode(childSvc1D)?.value).toBeInstanceOf(ChildSvc1);
     });
   });
 
@@ -74,16 +80,16 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`returns correct values based on the availability of mount/unmount callbacks`, async () => {
       const { cnt, interceptor } = setup();
 
-      cnt.use(Service1.instance);
+      await cnt.use(service1D);
 
-      const svcInterceptor = interceptor.getGraphNode(Service1.instance);
+      const svcInterceptor = interceptor.getGraphNode(service1D);
 
       expect(svcInterceptor?.value).toBeInstanceOf(Service1);
       expect(svcInterceptor?.isMountable).toBe(true);
       expect(svcInterceptor?.isUnmountable).toBe(true);
 
-      expect(interceptor.getGraphNode(NoLifeCycles.instance)?.isMountable).toBe(false);
-      expect(interceptor.getGraphNode(NoLifeCycles.instance)?.isUnmountable).toBe(false);
+      expect(interceptor.getGraphNode(noLifeCyclesD)?.isMountable).toBe(false);
+      expect(interceptor.getGraphNode(noLifeCyclesD)?.isUnmountable).toBe(false);
     });
   });
 
@@ -91,11 +97,11 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`calls recursively mount on every mountable object`, async () => {
       const { cnt, interceptor } = setup();
 
-      cnt.use(Service1.instance);
-      interceptor.getGraphNode(Service1.instance)?.acquire();
+      await cnt.use(service1D);
+      interceptor.getGraphNode(service1D)?.acquire();
 
-      const childSvc1 = cnt.use(ChildSvc1.instance);
-      const childSvc2 = cnt.use(ChildSvc2.instance);
+      const childSvc1 = await cnt.use(childSvc1D);
+      const childSvc2 = await cnt.use(childSvc2D);
 
       expect(childSvc1.onMount).toBeCalled();
       expect(childSvc2.onMount).toBeCalled();
@@ -104,13 +110,13 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`doesn't call mount on already mounted service`, async () => {
       const { cnt, interceptor } = setup();
 
-      cnt.use(Service1.instance);
-      interceptor.getGraphNode(Service1.instance)?.acquire();
-      interceptor.getGraphNode(Service1.instance)?.acquire();
-      interceptor.getGraphNode(Service1.instance)?.acquire();
+      await cnt.use(service1D);
+      interceptor.getGraphNode(service1D)?.acquire();
+      interceptor.getGraphNode(service1D)?.acquire();
+      interceptor.getGraphNode(service1D)?.acquire();
 
-      const childSvc1 = cnt.use(ChildSvc1.instance);
-      const childSvc2 = cnt.use(ChildSvc2.instance);
+      const childSvc1 = await cnt.use(childSvc1D);
+      const childSvc2 = await cnt.use(childSvc2D);
 
       expect(childSvc1.onMount).toHaveBeenCalledOnce();
       expect(childSvc2.onMount).toHaveBeenCalledOnce();
@@ -121,12 +127,12 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`calls recursively unmount on every unmountable object`, async () => {
       const { cnt, interceptor } = setup();
 
-      cnt.use(Service1.instance);
-      interceptor.getGraphNode(Service1.instance)?.acquire();
-      interceptor.getGraphNode(Service1.instance)?.release();
+      await cnt.use(service1D);
+      interceptor.getGraphNode(service1D)?.acquire();
+      interceptor.getGraphNode(service1D)?.release();
 
-      const childSvc1 = cnt.use(ChildSvc1.instance);
-      const childSvc2 = cnt.use(ChildSvc2.instance);
+      const childSvc1 = await cnt.use(childSvc1D);
+      const childSvc2 = await cnt.use(childSvc2D);
 
       expect(childSvc1.onUnmount).toBeCalled();
       expect(childSvc2.onUnmount).toBeCalled();
@@ -135,14 +141,14 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`doesn't call unmount on already unmounted service`, async () => {
       const { cnt, interceptor } = setup();
 
-      cnt.use(Service1.instance);
-      interceptor.getGraphNode(Service1.instance)?.acquire();
-      interceptor.getGraphNode(Service1.instance)?.release();
-      interceptor.getGraphNode(Service1.instance)?.release();
-      interceptor.getGraphNode(Service1.instance)?.release();
+      await cnt.use(service1D);
+      interceptor.getGraphNode(service1D)?.acquire();
+      interceptor.getGraphNode(service1D)?.release();
+      interceptor.getGraphNode(service1D)?.release();
+      interceptor.getGraphNode(service1D)?.release();
 
-      const childSvc1 = cnt.use(ChildSvc1.instance);
-      const childSvc2 = cnt.use(ChildSvc2.instance);
+      const childSvc1 = await cnt.use(childSvc1D);
+      const childSvc2 = await cnt.use(childSvc2D);
 
       expect(childSvc1.onUnmount).toHaveBeenCalledOnce();
       expect(childSvc2.onUnmount).toHaveBeenCalledOnce();
@@ -154,36 +160,32 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const { cnt, interceptor } = setup();
 
       const childScope1 = cnt.scope();
-      const childScope1Interceptor = childScope1.getInterceptor(
-        reactLifeCycleInterceptor,
-      ) as ReactLifeCycleRootInterceptor;
+      const childScope1Interceptor = childScope1.getInterceptor(ReactLifeCycleRootInterceptor);
 
       const childScope2 = cnt.scope();
-      const childScope2Interceptor = childScope2.getInterceptor(
-        reactLifeCycleInterceptor,
-      ) as ReactLifeCycleRootInterceptor;
+      const childScope2Interceptor = childScope2.getInterceptor(ReactLifeCycleRootInterceptor);
 
-      childScope1.use(Service1.instance);
-      childScope2.use(Service1.instance);
+      await childScope1.use(service1D);
+      await childScope2.use(service1D);
 
-      childScope1Interceptor.getGraphNode(Service1.instance)?.acquire();
-      childScope2Interceptor.getGraphNode(Service1.instance)?.acquire();
+      childScope1Interceptor.getGraphNode(service1D)?.acquire();
+      childScope2Interceptor.getGraphNode(service1D)?.acquire();
 
-      const childSvc1Node = interceptor.getGraphNode(ChildSvc1.instance);
-      const childSvc2Node = interceptor.getGraphNode(ChildSvc2.instance);
+      const childSvc1Node = interceptor.getGraphNode(childSvc1D);
+      const childSvc2Node = interceptor.getGraphNode(childSvc2D);
 
       expect(childSvc1Node?.refCount).toEqual(2);
       expect(childSvc2Node?.refCount).toEqual(2);
 
-      const childSvc1 = cnt.use(ChildSvc1.instance);
-      const childSvc2 = cnt.use(ChildSvc2.instance);
+      const childSvc1 = await cnt.use(childSvc1D);
+      const childSvc2 = await cnt.use(childSvc2D);
 
       expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
       expect(childSvc2.onMount).toHaveBeenCalledTimes(1);
       expect(childSvc1.onUnmount).not.toBeCalled();
       expect(childSvc2.onUnmount).not.toBeCalled();
 
-      childScope1Interceptor.getGraphNode(Service1.instance)?.release();
+      childScope1Interceptor.getGraphNode(service1D)?.release();
 
       expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
       expect(childSvc2.onMount).toHaveBeenCalledTimes(1);
@@ -191,7 +193,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
       expect(childSvc1.onUnmount).not.toBeCalled();
       expect(childSvc2.onUnmount).not.toBeCalled();
 
-      childScope2Interceptor.getGraphNode(Service1.instance)?.release();
+      childScope2Interceptor.getGraphNode(service1D)?.release();
 
       expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
       expect(childSvc2.onMount).toHaveBeenCalledTimes(1);
