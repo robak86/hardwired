@@ -325,6 +325,8 @@ describe(`container#[Symbol.dispose]`, () => {
 
           await cnt.dispose();
 
+          await new Promise(resolve => setTimeout(resolve, 100));
+
           expect(singletonSpy).toHaveBeenCalledTimes(1);
           expect(singletonSpy).toHaveBeenCalledWith(1);
 

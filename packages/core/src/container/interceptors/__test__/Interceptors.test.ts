@@ -8,8 +8,6 @@ describe(`interceptor`, () => {
       return new TestInterceptor();
     }
 
-    readonly id = crypto.randomUUID();
-
     onInstance<TInstance>(instance: TInstance, dependencies: unknown[]): TInstance {
       return instance;
     }

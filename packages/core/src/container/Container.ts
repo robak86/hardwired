@@ -10,8 +10,6 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { configureScope } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { MaybePromise } from '../utils/async.js';
-import { maybePromiseThen } from '../utils/async.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinitionToken } from '../definitions/def-symbol.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
@@ -81,14 +79,14 @@ export class Container
     this._scopedStrategy = new ScopedStrategy(instancesStore);
   }
 
-  dispose(): MaybePromise<void> {
+  dispose(): MaybeAsync<void> {
     if (this._isDisposed) {
-      return;
+      return MaybeAsync.resolve(undefined);
     }
 
     this._isDisposed = true;
 
-    return maybePromiseThen(this.lifecycleRegistry.dispose(this), () => {
+    return MaybeAsync.resolve(this.lifecycleRegistry.dispose(this)).then(() => {
       if (this.parentId === null) {
         this.instancesStore.disposeRoot();
       }

@@ -1,3 +1,5 @@
+import { v4 } from 'uuid';
+
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import { container } from '../../container/Container.js';
 import { cascading, scoped, singleton, transient } from '../def-symbol.js';
@@ -10,7 +12,7 @@ describe(`unbound`, () => {
           const unboundDefinition = cascading<string>();
 
           const configure = configureContainer(c => {
-            c.add(unboundDefinition).fn(() => crypto.randomUUID());
+            c.add(unboundDefinition).fn(() => v4());
           });
 
           const cnt = container.new(configure);
@@ -28,7 +30,7 @@ describe(`unbound`, () => {
             const unboundDefinition = singleton<string>('unboundDefinition');
 
             const configure = configureContainer(c => {
-              c.add(unboundDefinition).fn(() => crypto.randomUUID());
+              c.add(unboundDefinition).fn(() => v4());
             });
 
             const cnt = container.new(configure);
@@ -45,7 +47,7 @@ describe(`unbound`, () => {
             const unboundDefinition = cascading<string>();
 
             const configure = configureContainer(c => {
-              c.add(unboundDefinition).fn(() => crypto.randomUUID());
+              c.add(unboundDefinition).fn(() => v4());
             });
 
             const cnt = container.new(configure);
@@ -62,7 +64,7 @@ describe(`unbound`, () => {
             const unboundDefinition = scoped<string>();
 
             const configure = configureContainer(c => {
-              c.add(unboundDefinition).fn(() => crypto.randomUUID());
+              c.add(unboundDefinition).fn(() => v4());
             });
 
             const cnt = container.new(configure);
@@ -82,7 +84,7 @@ describe(`unbound`, () => {
 
         const configure = configureContainer(c => {
           // bind only for the current scope
-          c.add(unboundDefinition).fn(() => crypto.randomUUID());
+          c.add(unboundDefinition).fn(() => v4());
         });
 
         const cnt = container.new(configure);
