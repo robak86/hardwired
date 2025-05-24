@@ -53,22 +53,22 @@ describe(`class`, () => {
   });
 
   const asyncConfig = configureContainer(c => {
-    c.add(numDef).fn(async () => new BoxedValue(123));
-    c.add(strDef).fn(async () => new BoxedValue('123'));
+    c.add(numDef).asyncFn(async () => new BoxedValue(123));
+    c.add(strDef).asyncFn(async () => new BoxedValue('123'));
 
-    c.add(numDefSingleton).fn(async () => new BoxedValue(123));
-    c.add(strDefSingleton).fn(async () => new BoxedValue('123'));
+    c.add(numDefSingleton).asyncFn(async () => new BoxedValue(123));
+    c.add(strDefSingleton).asyncFn(async () => new BoxedValue('123'));
 
-    c.add(numDefScoped).fn(async () => new BoxedValue(123));
-    c.add(strDefScoped).fn(async () => new BoxedValue('123'));
+    c.add(numDefScoped).asyncFn(async () => new BoxedValue(123));
+    c.add(strDefScoped).asyncFn(async () => new BoxedValue('123'));
 
-    c.add(numDefCascading).fn(async () => new BoxedValue(123));
-    c.add(strDefCascading).fn(async () => new BoxedValue('123'));
+    c.add(numDefCascading).asyncFn(async () => new BoxedValue(123));
+    c.add(strDefCascading).asyncFn(async () => new BoxedValue('123'));
 
-    c.add(myClassTransient).fn(async (num, str) => new MyClass(num, str), numDef, strDef);
-    c.add(myClassSingleton).fn(async (num, str) => new MyClass(num, str), numDefSingleton, strDefSingleton);
-    c.add(myClassScoped).fn(async (num, str) => new MyClass(num, str), numDefScoped, strDefScoped);
-    c.add(myClassCascading).fn(async (num, str) => new MyClass(num, str), numDefCascading, strDefCascading);
+    c.add(myClassTransient).asyncFn(async (num, str) => new MyClass(num, str), numDef, strDef);
+    c.add(myClassSingleton).asyncFn(async (num, str) => new MyClass(num, str), numDefSingleton, strDefSingleton);
+    c.add(myClassScoped).asyncFn(async (num, str) => new MyClass(num, str), numDefScoped, strDefScoped);
+    c.add(myClassCascading).asyncFn(async (num, str) => new MyClass(num, str), numDefCascading, strDefCascading);
   });
 
   describe(`types`, () => {

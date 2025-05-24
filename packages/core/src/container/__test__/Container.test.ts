@@ -49,7 +49,7 @@ describe(`Container`, () => {
           const myDef2 = singleton<number>();
 
           const use = container.new(c => {
-            c.add(myDef1).fn(async () => 123);
+            c.add(myDef1).asyncFn(async () => 123);
             c.add(myDef2).fn(() => 456);
           });
 

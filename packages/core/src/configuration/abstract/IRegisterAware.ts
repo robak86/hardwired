@@ -14,7 +14,12 @@ export interface IAddDefinitionBuilder<TInstance, TLifetime extends LifeTime> {
   ): FinalizerOrVoid<TInstance, TLifetime>;
 
   fn<TArgs extends any[]>(
-    fn: (...args: TArgs) => MaybePromise<TInstance>,
+    fn: (...args: TArgs) => TInstance,
+    ...dependencies: ConstructorArgsSymbols<TArgs, TLifetime>
+  ): FinalizerOrVoid<TInstance, TLifetime>;
+
+  asyncFn<TArgs extends any[]>(
+    fn: (...args: TArgs) => Promise<TInstance>,
     ...dependencies: ConstructorArgsSymbols<TArgs, TLifetime>
   ): FinalizerOrVoid<TInstance, TLifetime>;
 

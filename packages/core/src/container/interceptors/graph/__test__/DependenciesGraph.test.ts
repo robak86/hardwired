@@ -50,10 +50,10 @@ describe(`DependenciesGraph`, () => {
 
       const cnt = container.new(
         c => {
-          c.add(c1Def).fn(async () => 'C1');
-          c.add(c2Def).fn(async () => 'C2');
-          c.add(bDef).fn(async (c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
-          c.add(aDef).fn(async b => ({ A: b }), bDef);
+          c.add(c1Def).asyncFn(async () => 'C1');
+          c.add(c2Def).asyncFn(async () => 'C2');
+          c.add(bDef).asyncFn(async (c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
+          c.add(aDef).asyncFn(async b => ({ A: b }), bDef);
 
           c.withInterceptor(DependenciesGraphInterceptor);
         },
@@ -92,11 +92,11 @@ describe(`DependenciesGraph`, () => {
         const c = transient<{ C: number }>();
 
         const { cnt } = setup(config => {
-          config.add(shared).fn(async () => (counter += 1));
+          config.add(shared).asyncFn(async () => (counter += 1));
 
-          config.add(a).fn(async val => ({ A: val }), shared);
-          config.add(b).fn(async val => ({ B: val }), shared);
-          config.add(c).fn(async val => ({ C: val }), shared);
+          config.add(a).asyncFn(async val => ({ A: val }), shared);
+          config.add(b).asyncFn(async val => ({ B: val }), shared);
+          config.add(c).asyncFn(async val => ({ C: val }), shared);
         });
 
         await cnt.use(a);

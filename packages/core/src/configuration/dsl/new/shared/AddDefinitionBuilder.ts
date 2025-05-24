@@ -52,7 +52,18 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   fn<TArgs extends any[]>(
-    fn: (...args: TArgs) => MaybePromise<TInstance>,
+    fn: (...args: TArgs) => TInstance,
+    ...dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>
+  ): FinalizerOrVoid<TInstance, TLifeTime> {
+    const fnDefinition = new FnDefinition(this._symbol, fn, dependencies);
+
+    this._configurationContext.onDefinition(this._configType, fnDefinition);
+
+    return this.buildFinalizer();
+  }
+
+  asyncFn<TArgs extends any[]>(
+    fn: (...args: TArgs) => Promise<TInstance>,
     ...dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
     const fnDefinition = new FnDefinition(this._symbol, fn, dependencies);

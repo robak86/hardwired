@@ -17,7 +17,7 @@ describe(`decorate`, () => {
 
   it(`is evaluated with awaited value`, async () => {
     const c = container.new(c => {
-      c.add(someValue).fn(async () => 1);
+      c.add(someValue).asyncFn(async () => 1);
       c.modify(someValue).decorate(val => val + 1);
     });
 
@@ -32,7 +32,7 @@ describe(`decorate`, () => {
     const c = container.new(c => {
       c.add(a).static(1);
       c.add(b).static(2);
-      c.add(someValue).fn(async () => 10);
+      c.add(someValue).asyncFn(async () => 10);
 
       c.modify(someValue).decorate([a, b], (val, aVal, bVal) => {
         return val + aVal + bVal;

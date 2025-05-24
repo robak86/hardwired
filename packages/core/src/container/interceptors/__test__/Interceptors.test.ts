@@ -69,10 +69,10 @@ describe(`interceptor`, () => {
   describe(`async`, () => {
     it(`Calls interceptor methods with correct arguments`, async () => {
       const cnt = container.new(c => {
-        c.add(c1Def).fn(async () => 'C1');
-        c.add(c2Def).fn(async () => 'C2');
-        c.add(bDef).fn(async (c1, c2) => ['B', c1, c2], c1Def, c2Def);
-        c.add(aDef).fn(async b => ['A', b], bDef);
+        c.add(c1Def).asyncFn(async () => 'C1');
+        c.add(c2Def).asyncFn(async () => 'C2');
+        c.add(bDef).asyncFn(async (c1, c2) => ['B', c1, c2], c1Def, c2Def);
+        c.add(aDef).asyncFn(async b => ['A', b], bDef);
 
         c.withInterceptor(TestInterceptor);
       });

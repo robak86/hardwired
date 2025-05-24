@@ -79,9 +79,9 @@ describe(`SingletonStrategy`, () => {
           const consumer2 = singleton<BoxedValue<number>>();
 
           const ctn = container.new(c => {
-            c.add(slowSingletonD).fn(() => resolveAfter(Math.random() * 500, new BoxedValue(Math.random())));
-            c.add(consumer1).fn(async value => value, slowSingletonD);
-            c.add(consumer2).fn(async value => value, slowSingletonD);
+            c.add(slowSingletonD).asyncFn(() => resolveAfter(Math.random() * 500, new BoxedValue(Math.random())));
+            c.add(consumer1).asyncFn(async value => value, slowSingletonD);
+            c.add(consumer2).asyncFn(async value => value, slowSingletonD);
           });
 
           const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
