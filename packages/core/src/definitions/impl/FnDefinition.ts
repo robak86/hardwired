@@ -4,7 +4,6 @@ import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
 import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
-import type { IDefinitionToken } from '../def-symbol.js';
 import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 import { Definition } from './Definition.js';
@@ -12,25 +11,20 @@ import { Definition } from './Definition.js';
 export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends any[]>
   implements IDefinition<TInstance, TLifeTime>
 {
+  readonly $type!: TInstance;
+
   constructor(
-    public readonly token: IDefinitionToken<TInstance, TLifeTime>,
+    public readonly id: symbol,
+    public readonly strategy: TLifeTime,
 
     public readonly createFn: (...deps: TDeps) => MaybePromise<TInstance>,
     public readonly _dependencies: ConstructorArgsSymbols<TDeps, TLifeTime>,
   ) {}
 
-  get id() {
-    return this.token.id;
-  }
-
-  get strategy() {
-    return this.token.strategy;
-  }
-
   override(
     createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
   ): IDefinition<TInstance, TLifeTime> {
-    return new Definition(this.token, createFn);
+    return new Definition(this.id, this.strategy, createFn);
   }
 
   create(context: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
@@ -38,12 +32,12 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
       const instance = this.createFn(...(awaitedDeps as TDeps));
 
       return MaybeAsync.resolve(instance).then(awaitedInstance => {
-        return interceptor.onInstance(awaitedInstance, awaitedDeps, this.token, this._dependencies);
+        return interceptor.onInstance(awaitedInstance, awaitedDeps, this, this._dependencies);
       });
     });
   }
 
   toString() {
-    return this.token.toString();
+    return this.id.toString();
   }
 }

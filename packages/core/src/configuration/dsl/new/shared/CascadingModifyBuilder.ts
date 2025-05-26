@@ -21,11 +21,11 @@ export class CascadingModifyBuilder<TInstance>
   }
 
   claimNew() {
-    this._configurationContext.onCascadingDefinition(this._symbol);
+    this._configurationContext.onCascadingDefinition(this._token);
   }
 
   inherit(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {
-    const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(this._symbol, decorateFn, []);
+    const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(this._token, decorateFn, []);
 
     this._configurationContext.onInheritBuilder(this._configType, inheritedDefinitionBuilder);
   }

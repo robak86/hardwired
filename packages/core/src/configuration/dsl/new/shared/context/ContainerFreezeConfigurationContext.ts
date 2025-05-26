@@ -58,14 +58,14 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
   }
 
   onDefinition(_configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
-    if (this.instancesStore.hasInherited(definition.token)) {
+    if (this.instancesStore.hasInherited(definition)) {
       throw new Error(
-        `Cannot freeze binding ${definition.token.toString()} because it is already instantiated in some higher scope.`,
+        `Cannot freeze binding ${definition.toString()} because it is already instantiated in some higher scope.`,
       );
     }
 
-    if (this.instancesStore.has(definition.token)) {
-      throw new Error(`Cannot freeze binding ${definition.token.toString()} because it is already instantiated.`);
+    if (this.instancesStore.has(definition)) {
+      throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
     }
 
     this._bindingsRegistry.freeze(definition);

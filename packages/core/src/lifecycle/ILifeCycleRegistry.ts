@@ -20,7 +20,7 @@ export class DisposeFunctions implements ILifeCycleRegistry {
       try {
         return fn(container);
       } catch (err) {
-        console.error((err as any).message);
+        console.error((err as any).message); // TODO: add some kind of container instrumentation layer
       }
     });
 

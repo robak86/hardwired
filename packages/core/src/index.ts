@@ -1,3 +1,5 @@
+export * from './configuration/dsl/new/container/ContainerConfiguration.js';
+
 export type { MaybePromise } from './utils/async.js';
 
 export { AbstractGraphDependenciesInterceptor } from './container/interceptors/graph/AbstractGraphDependenciesInterceptor.js';

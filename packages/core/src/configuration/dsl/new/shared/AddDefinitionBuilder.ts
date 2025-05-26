@@ -22,7 +22,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 {
   constructor(
     protected readonly _configType: ConfigurationType,
-    protected readonly _symbol: IDefinitionToken<TInstance, TLifeTime>,
+    protected readonly _token: IDefinitionToken<TInstance, TLifeTime>,
     protected readonly _allowedLifeTimes: LifeTime[],
     protected readonly _configurationContext: IConfigurationContext,
   ) {
@@ -30,12 +30,10 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   private assertValidLifeTime() {
-    if (!this._allowedLifeTimes.includes(this._symbol.strategy)) {
+    if (!this._allowedLifeTimes.includes(this._token.strategy)) {
       const allowed = this._allowedLifeTimes.join(', ');
 
-      throw new Error(
-        `Invalid life time "${this._symbol.strategy}" for ${this._symbol.toString()}. Allowed: ${allowed}`,
-      );
+      throw new Error(`Invalid life time "${this._token.strategy}" for ${this._token.toString()}. Allowed: ${allowed}`);
     }
   }
 
@@ -43,7 +41,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     klass: ClassType<TInstance, TConstructorArgs>,
     ...dependencies: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new ClassDefinition(this._symbol, klass, dependencies);
+    const definition = new ClassDefinition(this._token.id, this._token.strategy, klass, dependencies);
 
     this._configurationContext.onDefinition(this._configType, definition);
 
@@ -54,7 +52,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     fn: (...args: TArgs) => TInstance,
     ...dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const fnDefinition = new FnDefinition(this._symbol, fn, dependencies);
+    const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, dependencies);
 
     this._configurationContext.onDefinition(this._configType, fnDefinition);
 
@@ -65,7 +63,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     fn: (...args: TArgs) => Promise<TInstance>,
     ...dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const fnDefinition = new FnDefinition(this._symbol, fn, dependencies);
+    const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, dependencies);
 
     this._configurationContext.onDefinition(this._configType, fnDefinition);
 
@@ -73,7 +71,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   static(value: TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new Definition(this._symbol, () => MaybeAsync.resolve(value));
+    const definition = new Definition(this._token.id, this._token.strategy, () => MaybeAsync.resolve(value));
 
     this._configurationContext.onDefinition(this._configType, definition);
 
@@ -81,7 +79,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   locator(fn: (container: IServiceLocator) => TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new Definition(this._symbol, container => {
+    const definition = new Definition(this._token.id, this._token.strategy, container => {
       return MaybeAsync.resolve(fn(container));
     });
 
@@ -91,7 +89,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   }
 
   asyncLocator(fn: (container: IServiceLocator) => Promise<TInstance>): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new Definition(this._symbol, container => {
+    const definition = new Definition(this._token.id, this._token.strategy, container => {
       return MaybeAsync.resolve(fn(container));
     });
 
@@ -103,11 +101,11 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   // TODO: can be memoized
   private buildFinalizer(): FinalizerOrVoid<TInstance, TLifeTime> {
     if (
-      this._symbol.strategy === LifeTime.singleton ||
-      this._symbol.strategy === LifeTime.cascading ||
-      this._symbol.strategy === LifeTime.scoped
+      this._token.strategy === LifeTime.singleton ||
+      this._token.strategy === LifeTime.cascading ||
+      this._token.strategy === LifeTime.scoped
     ) {
-      return new DisposeFinalizeBuilder(this._symbol, this._configurationContext) as unknown as FinalizerOrVoid<
+      return new DisposeFinalizeBuilder(this._token, this._configurationContext) as unknown as FinalizerOrVoid<
         TInstance,
         TLifeTime
       >;

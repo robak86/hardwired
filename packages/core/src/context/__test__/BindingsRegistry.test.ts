@@ -8,14 +8,14 @@ describe(`BindingsRegistry`, () => {
     const registry = BindingsRegistry.create();
     const container = {} as any;
 
-    const symbol = cascading<number>();
+    const token = cascading<number>();
 
-    const definition = new Definition(symbol, () => MaybeAsync.resolve(1));
-    const otherDefinition = new Definition(symbol, () => MaybeAsync.resolve(1));
+    const definition = new Definition(token.id, token.strategy, () => MaybeAsync.resolve(1));
+    const otherDefinition = new Definition(token.id, token.strategy, () => MaybeAsync.resolve(1));
 
     return {
       registry,
-      symbol,
+      token,
       definition,
       container,
       otherDefinition,
@@ -24,20 +24,20 @@ describe(`BindingsRegistry`, () => {
 
   describe(`hasCascading root`, () => {
     it(`returns true when setCascadeRoot was called on the current registry`, async () => {
-      const { registry, symbol, container } = setup();
+      const { registry, token, container } = setup();
 
-      expect(registry.hasCascadingRoot(symbol.id)).toEqual(false);
+      expect(registry.hasCascadingRoot(token.id)).toEqual(false);
 
-      registry.setCascadeRoot(symbol, container);
+      registry.setCascadeRoot(token, container);
 
-      expect(registry.hasCascadingRoot(symbol.id)).toEqual(true);
+      expect(registry.hasCascadingRoot(token.id)).toEqual(true);
 
       const childRegistry = registry.checkoutForScope();
 
-      expect(childRegistry.hasCascadingRoot(symbol.id)).toEqual(false);
-      childRegistry.setCascadeRoot(symbol, container);
+      expect(childRegistry.hasCascadingRoot(token.id)).toEqual(false);
+      childRegistry.setCascadeRoot(token, container);
 
-      expect(childRegistry.hasCascadingRoot(symbol.id)).toEqual(true);
+      expect(childRegistry.hasCascadingRoot(token.id)).toEqual(true);
     });
   });
 
@@ -45,24 +45,24 @@ describe(`BindingsRegistry`, () => {
     describe(`cascading`, () => {
       describe(`register`, () => {
         it(`registers a definition`, async () => {
-          const { registry, symbol, container, definition } = setup();
+          const { registry, token, container, definition } = setup();
 
-          registry.register(symbol, definition, container);
+          registry.register(token, definition, container);
 
-          expect(registry.getDefinition(symbol)).toBe(definition);
+          expect(registry.getDefinition(token)).toBe(definition);
         });
 
         it(`does not inherit overrides`, async () => {
-          const { registry, symbol, container, definition, otherDefinition } = setup();
+          const { registry, token, container, definition, otherDefinition } = setup();
 
-          registry.register(symbol, definition, container);
+          registry.register(token, definition, container);
           registry.override(otherDefinition);
 
-          expect(registry.getDefinition(symbol)).toBe(otherDefinition);
+          expect(registry.getDefinition(token)).toBe(otherDefinition);
 
           const childRegistry = registry.checkoutForScope();
 
-          expect(childRegistry.getDefinition(symbol)).toBe(definition);
+          expect(childRegistry.getDefinition(token)).toBe(definition);
         });
       });
     });

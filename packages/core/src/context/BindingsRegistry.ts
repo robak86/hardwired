@@ -1,5 +1,5 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { DefinitionSymbol, IDefinitionToken } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/def-symbol.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
 import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
@@ -13,7 +13,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
   static create(): BindingsRegistry {
     return new BindingsRegistry(
       COWMap.create(),
-      ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.token.strategy),
+      ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy),
       COWMap.create(),
     );
   }
@@ -26,7 +26,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
 
   applyConfig(config: IBindingsRegistryConfiguration, container: ICascadingDefinitionResolver) {
     config.definitions.forEach(definition => {
-      this.register(definition.token, definition, container);
+      this.register(definition, definition, container);
     });
 
     // TODO: don't copy all definitions. Just link them.
@@ -112,7 +112,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
   }
 
   getDefinition<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, any>,
+    symbol: IDefinitionToken<TInstance, any>,
   ): IDefinition<TInstance, TLifeTime> {
     const definition =
       (this._frozenDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??

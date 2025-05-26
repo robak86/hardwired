@@ -57,10 +57,37 @@ describe(`interceptor`, () => {
 
       expect(onInstanceSpy).toHaveBeenCalledTimes(4);
 
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(1, 'C1', [], c1Def, []);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(2, 'C2', [], c2Def, []);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], ['C1', 'C2'], bDef, [c1Def, c2Def]);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], [['B', 'C1', 'C2']], aDef, [bDef]);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(
+        1,
+        'C1',
+        [],
+        expect.objectContaining({ id: c1Def.id, strategy: c1Def.strategy }),
+        [],
+      );
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(
+        2,
+        'C2',
+        [],
+        expect.objectContaining({ id: c2Def.id, strategy: c2Def.strategy }),
+        [],
+      );
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(
+        3,
+        ['B', 'C1', 'C2'],
+        ['C1', 'C2'],
+        expect.objectContaining({ id: bDef.id, strategy: bDef.strategy }),
+        [
+          expect.objectContaining({ id: c1Def.id, strategy: c1Def.strategy }),
+          expect.objectContaining({ id: c2Def.id, strategy: c2Def.strategy }),
+        ],
+      );
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(
+        4,
+        ['A', ['B', 'C1', 'C2']],
+        [['B', 'C1', 'C2']],
+        expect.objectContaining({ id: aDef.id, strategy: aDef.strategy }),
+        [expect.objectContaining({ id: bDef.id, strategy: bDef.strategy })],
+      );
     });
   });
 
@@ -85,10 +112,37 @@ describe(`interceptor`, () => {
 
       expect(onInstanceSpy).toHaveBeenCalledTimes(4);
 
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(1, 'C1', [], c1Def, []);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(2, 'C2', [], c2Def, []);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(3, ['B', 'C1', 'C2'], ['C1', 'C2'], bDef, [c1Def, c2Def]);
-      expect(onInstanceSpy).toHaveBeenNthCalledWith(4, ['A', ['B', 'C1', 'C2']], [['B', 'C1', 'C2']], aDef, [bDef]);
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(
+        1,
+        'C1',
+        [],
+        expect.objectContaining({ id: c1Def.id, strategy: c1Def.strategy }),
+        [],
+      );
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(
+        2,
+        'C2',
+        [],
+        expect.objectContaining({ id: c2Def.id, strategy: c2Def.strategy }),
+        [],
+      );
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(
+        3,
+        ['B', 'C1', 'C2'],
+        ['C1', 'C2'],
+        expect.objectContaining({ id: bDef.id, strategy: bDef.strategy }),
+        [
+          expect.objectContaining({ id: c1Def.id, strategy: c1Def.strategy }),
+          expect.objectContaining({ id: c2Def.id, strategy: c2Def.strategy }),
+        ],
+      );
+      expect(onInstanceSpy).toHaveBeenNthCalledWith(
+        4,
+        ['A', ['B', 'C1', 'C2']],
+        [['B', 'C1', 'C2']],
+        expect.objectContaining({ id: aDef.id, strategy: aDef.strategy }),
+        [expect.objectContaining({ id: bDef.id, strategy: bDef.strategy })],
+      );
     });
   });
 });

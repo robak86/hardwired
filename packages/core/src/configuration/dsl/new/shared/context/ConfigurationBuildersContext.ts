@@ -128,17 +128,17 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._definitions.register(definition.token.id, definition);
+        this._definitions.register(definition.id, definition);
         break;
       case 'modify':
         if (definition.strategy === LifeTime.cascading) {
-          this._cascadeDefinitions.add(definition.token as IDefinitionToken<unknown, LifeTime.cascading>);
+          this._cascadeDefinitions.add(definition as IDefinitionToken<unknown, LifeTime.cascading>);
         }
 
-        this._definitions.register(definition.token.id, definition);
+        this._definitions.register(definition.id, definition);
         break;
       case 'freeze':
-        this._frozenDefinitions.register(definition.token.id, definition);
+        this._frozenDefinitions.register(definition.id, definition);
         break;
     }
   }

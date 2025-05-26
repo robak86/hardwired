@@ -1,6 +1,5 @@
 import { LifeTime } from './abstract/LifeTime.js';
 
-// TODO: use just IDefinitionSymbol = symbol & {};
 export interface IDefinitionToken<TInstance, TLifeTime extends LifeTime> {
   readonly id: symbol;
   readonly strategy: TLifeTime;
@@ -9,7 +8,7 @@ export interface IDefinitionToken<TInstance, TLifeTime extends LifeTime> {
   toString(): string;
 }
 
-export class DefinitionSymbol<TInstance, TLifeTime extends LifeTime> {
+export class DefinitionToken<TInstance, TLifeTime extends LifeTime> implements IDefinitionToken<TInstance, TLifeTime> {
   public readonly id;
 
   public readonly $type!: TInstance;
@@ -27,13 +26,13 @@ export class DefinitionSymbol<TInstance, TLifeTime extends LifeTime> {
 }
 
 export const singleton = <TInstance>(name?: string) =>
-  new DefinitionSymbol<TInstance, LifeTime.singleton>(LifeTime.singleton, name);
+  new DefinitionToken<TInstance, LifeTime.singleton>(LifeTime.singleton, name);
 
 export const transient = <TInstance>(name?: string) =>
-  new DefinitionSymbol<TInstance, LifeTime.transient>(LifeTime.transient, name);
+  new DefinitionToken<TInstance, LifeTime.transient>(LifeTime.transient, name);
 
 export const scoped = <TInstance>(name?: string) =>
-  new DefinitionSymbol<TInstance, LifeTime.scoped>(LifeTime.scoped, name);
+  new DefinitionToken<TInstance, LifeTime.scoped>(LifeTime.scoped, name);
 
 export const cascading = <TInstance>(name?: string) =>
-  new DefinitionSymbol<TInstance, LifeTime.cascading>(LifeTime.cascading, name);
+  new DefinitionToken<TInstance, LifeTime.cascading>(LifeTime.cascading, name);

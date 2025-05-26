@@ -237,7 +237,7 @@ export class Container
       throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
     }
 
-    if (this.bindingsRegistry.hasFrozenBinding(definition.token.id)) {
+    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
       return this._singletonStrategy.build(definition, this, this._interceptor);
     }
 
@@ -249,7 +249,7 @@ export class Container
       case LifeTime.scoped:
         return this._scopedStrategy.build(definition, this, this._interceptor);
       case LifeTime.cascading:
-        return (this.bindingsRegistry.getOwningContainer(definition.token) ?? this).resolveCascading(definition);
+        return (this.bindingsRegistry.getOwningContainer(definition) ?? this).resolveCascading(definition);
     }
   }
 
