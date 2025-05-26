@@ -3,6 +3,7 @@ import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
 import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { ILazyDefinitionBuilder } from '../configuration/dsl/new/utils/abstract/ILazyDefinitionBuilder.js';
 
 import type { IReadonlyScopeRegistry } from './ScopeRegistry.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
@@ -164,5 +165,9 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     }
 
     this._frozenDefinitions.register(def.id, def);
+  }
+
+  appendLazyDefinition(_definition: ILazyDefinitionBuilder<unknown, LifeTime>) {
+    this._lazyDefinitions.append(_definition);
   }
 }
