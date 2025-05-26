@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { container } from '../../container/Container.js';
-import { scoped, transient } from '../def-symbol.js';
+import { scoped, transient } from '../tokens.js';
 
 describe(`define`, () => {
   const ext1 = scoped<number>();
@@ -11,10 +11,9 @@ describe(`define`, () => {
     it(`correctly resolves externals`, async () => {
       const composite = transient<[number, string]>();
 
-      const result = container
-        .new(c => {
-          c.add(composite).fn((v1, v2) => [v1, v2], ext1, ext2);
-        })
+      const result = container(c => {
+        c.add(composite).fn((v1, v2) => [v1, v2], ext1, ext2);
+      })
         .scope(c => {
           c.add(ext1).static(1);
           c.add(ext2).static('str');

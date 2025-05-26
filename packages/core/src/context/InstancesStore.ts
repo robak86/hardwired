@@ -1,6 +1,6 @@
 import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
-import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/tokens.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 
 import { isDisposable } from './COWMap.js';

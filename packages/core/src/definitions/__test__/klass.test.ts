@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 
-import { cascading, scoped, singleton, transient } from '../def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../tokens.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 
 describe(`cls`, () => {

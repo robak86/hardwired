@@ -1,7 +1,7 @@
 import type { MaybePromise } from '../../../../utils/async.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ICascadeModifyBuilder } from '../../../abstract/IModifyAware.js';
-import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import { InheritedDefinitionBuilder } from '../utils/InheritedDefinitionBuilder.js';
 
 import { ModifyDefinitionBuilder } from './ModifyDefinitionBuilder.js';
@@ -21,11 +21,11 @@ export class CascadingModifyBuilder<TInstance>
   }
 
   claimNew() {
-    this._configurationContext.onCascadingDefinition(this._symbol);
+    this._configurationContext.onCascadingDefinition(this._token);
   }
 
   inherit(decorateFn: (instance: TInstance) => MaybePromise<TInstance>) {
-    const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(this._symbol, decorateFn, []);
+    const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(this._token, decorateFn, []);
 
     this._configurationContext.onInheritBuilder(this._configType, inheritedDefinitionBuilder);
   }

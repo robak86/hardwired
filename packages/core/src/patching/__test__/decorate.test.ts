@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { container } from '../../container/Container.js';
-import { singleton } from '../../definitions/def-symbol.js';
+import { singleton } from '../../definitions/tokens.js';
 
 describe(`decorate`, () => {
   const someValue = singleton<number>('someValue');
 
   it(`decorates original value`, async () => {
-    const c = container.new(c => {
+    const c = container(c => {
       c.add(someValue).static(1);
       c.modify(someValue).decorate(val => val + 1);
     });
@@ -16,7 +16,7 @@ describe(`decorate`, () => {
   });
 
   it(`is evaluated with awaited value`, async () => {
-    const c = container.new(c => {
+    const c = container(c => {
       c.add(someValue).asyncFn(async () => 1);
       c.modify(someValue).decorate(val => val + 1);
     });
@@ -29,7 +29,7 @@ describe(`decorate`, () => {
     const b = singleton<number>();
     const someValue = singleton<number>();
 
-    const c = container.new(c => {
+    const c = container(c => {
       c.add(a).static(1);
       c.add(b).static(2);
       c.add(someValue).asyncFn(async () => 10);

@@ -1,5 +1,5 @@
-import type { IDefinitionToken } from '../definitions/def-symbol.js';
-import { cascading, scoped, singleton, transient } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/tokens.js';
+import { cascading, scoped, singleton, transient } from '../definitions/tokens.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { IRegisterAware } from '../configuration/abstract/IRegisterAware.js';

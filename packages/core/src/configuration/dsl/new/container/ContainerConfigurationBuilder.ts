@@ -5,7 +5,7 @@ import type {
 } from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { DefinitionSymbol, IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/tokens.js';
 import type { IInterceptor, InterceptorClass } from '../../../../container/interceptors/interceptor.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
@@ -58,7 +58,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   }
 
   add<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, TLifeTime>,
+    symbol: DefinitionToken<TInstance, TLifeTime>,
   ): IAddDefinitionBuilder<TInstance, TLifeTime> {
     return new AddDefinitionBuilder('add', symbol, this._allowedRegisterLifeTimes, this._context);
   }

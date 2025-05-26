@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import { container } from '../../container/Container.js';
-import { cascading, scoped, singleton, transient } from '../def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../tokens.js';
 
 describe(`unbound`, () => {
   describe(`scopes`, () => {
@@ -15,7 +15,7 @@ describe(`unbound`, () => {
             c.add(unboundDefinition).fn(() => v4());
           });
 
-          const cnt = container.new(configure);
+          const cnt = container(configure);
 
           const result = cnt.use(unboundDefinition);
           const scopeResult = cnt.scope().use(unboundDefinition);
@@ -33,7 +33,7 @@ describe(`unbound`, () => {
               c.add(unboundDefinition).fn(() => v4());
             });
 
-            const cnt = container.new(configure);
+            const cnt = container(configure);
 
             const result = cnt.use(unboundDefinition);
             const scopeResult = cnt.scope().use(unboundDefinition);
@@ -50,7 +50,7 @@ describe(`unbound`, () => {
               c.add(unboundDefinition).fn(() => v4());
             });
 
-            const cnt = container.new(configure);
+            const cnt = container(configure);
 
             const result = cnt.use(unboundDefinition);
             const scopeResult = cnt.scope().use(unboundDefinition);
@@ -67,7 +67,7 @@ describe(`unbound`, () => {
               c.add(unboundDefinition).fn(() => v4());
             });
 
-            const cnt = container.new(configure);
+            const cnt = container(configure);
 
             const result = cnt.use(unboundDefinition);
             const scopeResult = cnt.scope().use(unboundDefinition);
@@ -87,7 +87,7 @@ describe(`unbound`, () => {
           c.add(unboundDefinition).fn(() => v4());
         });
 
-        const cnt = container.new(configure);
+        const cnt = container(configure);
 
         const result = cnt.use(unboundDefinition);
         const sameScopeResult = cnt.use(unboundDefinition);
@@ -102,7 +102,7 @@ describe(`unbound`, () => {
 
         const redefinedSpy = vi.fn(() => 2);
 
-        const cnt = container.new(c => c.add(def).fn(redefinedSpy));
+        const cnt = container(c => c.add(def).fn(redefinedSpy));
         const cntResult = cnt.use(def);
 
         const scope = cnt.scope();
@@ -142,7 +142,7 @@ describe(`unbound`, () => {
         c.add(IMyInterfaceTransient).class(MyClass, scalingFactor);
       });
 
-      const cnt = container.new(configure);
+      const cnt = container(configure);
 
       const result = cnt.use(IMyInterfaceSingleton);
 

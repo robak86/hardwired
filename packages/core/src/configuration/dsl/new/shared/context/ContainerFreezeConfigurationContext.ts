@@ -2,7 +2,7 @@ import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitio
 import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
-import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../../definitions/tokens.js';
 import type { InstancesStore } from '../../../../../context/InstancesStore.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
@@ -40,32 +40,46 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
   }
 
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
-    const def = builder.build(this._bindingsRegistry);
+    // const def = builder.build(this._bindingsRegistry);
 
-    this.onDefinition(configType, def);
+    this.onLazyDefinition(configType, builder);
   }
 
   onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
-    const def = builder.build(this._bindingsRegistry);
+    // const def = builder.build(this._bindingsRegistry);
 
-    this.onDefinition(configType, def);
+    this.onLazyDefinition(configType, builder);
   }
 
   onInheritBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void {
-    const def = builder.build(this._bindingsRegistry);
+    // const def = builder.build(this._bindingsRegistry);
 
-    this.onDefinition(configType, def);
+    this.onLazyDefinition(configType, builder);
   }
 
-  onDefinition(_configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
-    if (this.instancesStore.hasInherited(definition.token)) {
+  onLazyDefinition(_configType: ConfigurationType, _definition: ILazyDefinitionBuilder<unknown, LifeTime>): void {
+    if (this.instancesStore.hasInherited(_definition.token)) {
       throw new Error(
-        `Cannot freeze binding ${definition.token.toString()} because it is already instantiated in some higher scope.`,
+        `Cannot freeze binding ${_definition.token.toString()} because it is already instantiated in some higher scope.`,
       );
     }
 
-    if (this.instancesStore.has(definition.token)) {
-      throw new Error(`Cannot freeze binding ${definition.token.toString()} because it is already instantiated.`);
+    if (this.instancesStore.has(_definition.token)) {
+      throw new Error(`Cannot freeze binding ${_definition.token.toString()} because it is already instantiated.`);
+    }
+
+    this._bindingsRegistry.appendLazyDefinition(_definition);
+  }
+
+  onDefinition(_configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
+    if (this.instancesStore.hasInherited(definition)) {
+      throw new Error(
+        `Cannot freeze binding ${definition.toString()} because it is already instantiated in some higher scope.`,
+      );
+    }
+
+    if (this.instancesStore.has(definition)) {
+      throw new Error(`Cannot freeze binding ${definition.toString()} because it is already instantiated.`);
     }
 
     this._bindingsRegistry.freeze(definition);

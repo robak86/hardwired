@@ -1,7 +1,7 @@
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { DefinitionSymbol, IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/tokens.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
@@ -52,7 +52,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   }
 
   add<TInstance, TLifeTime extends LifeTime>(
-    symbol: DefinitionSymbol<TInstance, TLifeTime>,
+    symbol: DefinitionToken<TInstance, TLifeTime>,
   ): AddDefinitionBuilder<TInstance, TLifeTime> {
     return new AddDefinitionBuilder('add', symbol, this._allowedRegistrationLifeTimes, this._context);
   }

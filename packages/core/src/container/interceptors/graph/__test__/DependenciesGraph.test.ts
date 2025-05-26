@@ -1,5 +1,5 @@
 import { DependenciesGraphInterceptor } from '../DependenciesGraph.js';
-import { scoped, singleton, transient } from '../../../../definitions/def-symbol.js';
+import { scoped, singleton, transient } from '../../../../definitions/tokens.js';
 import { container } from '../../../Container.js';
 import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 
@@ -10,7 +10,7 @@ describe(`DependenciesGraph`, () => {
     const bDef = singleton<{ B: { c1: string; c2: string } }>();
     const aDef = singleton<{ A: { B: { c1: string; c2: string } } }>();
 
-    const cnt = container.new(c => {
+    const cnt = container(c => {
       c.add(c1Def).fn(() => 'C1');
       c.add(c2Def).fn(() => 'C2');
       c.add(bDef).fn((c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
@@ -34,10 +34,10 @@ describe(`DependenciesGraph`, () => {
       expect(interceptor.getGraphNode(b).value).toEqual({ B: { c1: 'C1', c2: 'C2' } });
       expect(interceptor.getGraphNode(b).descendants).toEqual(['C1', 'C2']);
 
-      expect(interceptor.getGraphNode(a).token).toBe(a);
-      expect(interceptor.getGraphNode(b).token).toBe(b);
-      expect(interceptor.getGraphNode(c1).token).toBe(c1);
-      expect(interceptor.getGraphNode(c2).token).toBe(c2);
+      expect(interceptor.getGraphNode(a).token.id).toBe(a.id);
+      expect(interceptor.getGraphNode(b).token.id).toBe(b.id);
+      expect(interceptor.getGraphNode(c1).token.id).toBe(c1.id);
+      expect(interceptor.getGraphNode(c2).token.id).toBe(c2.id);
     });
   });
 
@@ -48,7 +48,7 @@ describe(`DependenciesGraph`, () => {
       const bDef = singleton<{ B: { c1: string; c2: string } }>();
       const aDef = singleton<{ A: { B: { c1: string; c2: string } } }>();
 
-      const cnt = container.new(
+      const cnt = container(
         c => {
           c.add(c1Def).asyncFn(async () => 'C1');
           c.add(c2Def).asyncFn(async () => 'C2');
@@ -75,10 +75,10 @@ describe(`DependenciesGraph`, () => {
         expect(interceptor.getGraphNode(b)?.value).toEqual({ B: { c1: 'C1', c2: 'C2' } });
         expect(interceptor.getGraphNode(b)?.descendants).toEqual(['C1', 'C2']);
 
-        expect(interceptor.getGraphNode(a)?.token).toBe(a);
-        expect(interceptor.getGraphNode(b)?.token).toBe(b);
-        expect(interceptor.getGraphNode(c1)?.token).toBe(c1);
-        expect(interceptor.getGraphNode(c2)?.token).toBe(c2);
+        expect(interceptor.getGraphNode(a)?.token.id).toBe(a.id);
+        expect(interceptor.getGraphNode(b)?.token.id).toBe(b.id);
+        expect(interceptor.getGraphNode(c1)?.token.id).toBe(c1.id);
+        expect(interceptor.getGraphNode(c2)?.token.id).toBe(c2.id);
       });
     });
 

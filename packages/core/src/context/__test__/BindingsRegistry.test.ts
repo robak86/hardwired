@@ -1,70 +1,25 @@
+import { cascading, singleton } from '../../definitions/tokens.js';
+import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import { BindingsRegistry } from '../BindingsRegistry.js';
-import { cascading } from '../../definitions/def-symbol.js';
-import { Definition } from '../../definitions/impl/Definition.js';
-import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 describe(`BindingsRegistry`, () => {
-  function setup() {
-    const registry = BindingsRegistry.create();
-    const container = {} as any;
+  const def1 = singleton<number>('def');
+  const def2 = cascading<number>('def');
 
-    const symbol = cascading<number>();
-
-    const definition = new Definition(symbol, () => MaybeAsync.resolve(1));
-    const otherDefinition = new Definition(symbol, () => MaybeAsync.resolve(1));
-
-    return {
-      registry,
-      symbol,
-      definition,
-      container,
-      otherDefinition,
-    };
-  }
-
-  describe(`hasCascading root`, () => {
-    it(`returns true when setCascadeRoot was called on the current registry`, async () => {
-      const { registry, symbol, container } = setup();
-
-      expect(registry.hasCascadingRoot(symbol.id)).toEqual(false);
-
-      registry.setCascadeRoot(symbol, container);
-
-      expect(registry.hasCascadingRoot(symbol.id)).toEqual(true);
-
-      const childRegistry = registry.checkoutForScope();
-
-      expect(childRegistry.hasCascadingRoot(symbol.id)).toEqual(false);
-      childRegistry.setCascadeRoot(symbol, container);
-
-      expect(childRegistry.hasCascadingRoot(symbol.id)).toEqual(true);
-    });
-  });
-
-  describe(`register`, () => {
-    describe(`cascading`, () => {
-      describe(`register`, () => {
-        it(`registers a definition`, async () => {
-          const { registry, symbol, container, definition } = setup();
-
-          registry.register(symbol, definition, container);
-
-          expect(registry.getDefinition(symbol)).toBe(definition);
-        });
-
-        it(`does not inherit overrides`, async () => {
-          const { registry, symbol, container, definition, otherDefinition } = setup();
-
-          registry.register(symbol, definition, container);
-          registry.override(otherDefinition);
-
-          expect(registry.getDefinition(symbol)).toBe(otherDefinition);
-
-          const childRegistry = registry.checkoutForScope();
-
-          expect(childRegistry.getDefinition(symbol)).toBe(definition);
-        });
+  describe(`definitions`, () => {
+    it(`correctly applies configurations`, async () => {
+      const config1 = configureContainer(c => {
+        c.add(def1).static(1);
       });
+
+      const config2 = configureContainer(c => {
+        c.add(def2).static(2);
+      });
+
+      const registry = BindingsRegistry.create([config1, config2]);
+
+      expect(registry.getByToken(def1).id).toEqual(def1.id);
+      expect(registry.getByToken(def2).id).toEqual(def2.id);
     });
   });
 });

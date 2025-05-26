@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../definitions/def-symbol.js';
-import type { ConstructorArgsSymbols } from '../dsl/new/shared/AddDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../definitions/tokens.js';
+import type { ConstructorArgsTokens } from '../dsl/new/shared/AddDefinitionBuilder.js';
 import type { ClassType } from '../../definitions/utils/class-type.js';
 import type { IServiceLocator } from '../../container/IContainer.js';
 
@@ -9,17 +9,17 @@ import type { FinalizerOrVoid } from './IDisposeFinalizer.js';
 export interface IAddDefinitionBuilder<TInstance, TLifetime extends LifeTime> {
   class<TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
-    ...dependencies: ConstructorArgsSymbols<TConstructorArgs, TLifetime>
+    ...dependencies: ConstructorArgsTokens<TConstructorArgs, TLifetime>
   ): FinalizerOrVoid<TInstance, TLifetime>;
 
   fn<TArgs extends any[]>(
     fn: (...args: TArgs) => TInstance,
-    ...dependencies: ConstructorArgsSymbols<TArgs, TLifetime>
+    ...dependencies: ConstructorArgsTokens<TArgs, TLifetime>
   ): FinalizerOrVoid<TInstance, TLifetime>;
 
   asyncFn<TArgs extends any[]>(
     fn: (...args: TArgs) => Promise<TInstance>,
-    ...dependencies: ConstructorArgsSymbols<TArgs, TLifetime>
+    ...dependencies: ConstructorArgsTokens<TArgs, TLifetime>
   ): FinalizerOrVoid<TInstance, TLifetime>;
 
   static(value: TInstance): FinalizerOrVoid<TInstance, TLifetime>;

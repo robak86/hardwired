@@ -4,10 +4,9 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
-import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import type { MaybeAsync } from '../utils/MaybeAsync.js';
 
 import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
@@ -75,10 +74,6 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
 
   hasInterceptor(interceptorClass: InterceptorClass<IInterceptor>): boolean;
 }
-
-export type IContainerFactory = {
-  new: (...configurations: Array<IConfiguration | ContainerConfigureFn>) => IContainer;
-};
 
 export type IsAnyPromise<T> = T extends Promise<any> ? true : false;
 

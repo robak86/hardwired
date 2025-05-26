@@ -1,6 +1,6 @@
 import type { IContainer } from '../container/IContainer.js';
 import type { MaybePromise } from '../utils/async.js';
-import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 
@@ -20,7 +20,7 @@ export class DisposeFunctions implements ILifeCycleRegistry {
       try {
         return fn(container);
       } catch (err) {
-        console.error((err as any).message);
+        console.error((err as any).message); // TODO: add some kind of container instrumentation layer
       }
     });
 

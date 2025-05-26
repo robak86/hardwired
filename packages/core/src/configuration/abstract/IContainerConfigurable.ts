@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IContainer, UseFn } from '../../container/IContainer.js';
-import type { IDefinitionToken } from '../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../definitions/tokens.js';
 import type { IInterceptor, InterceptorClass } from '../../container/interceptors/interceptor.js';
 import type { ModifyDefinitionBuilder } from '../dsl/new/shared/ModifyDefinitionBuilder.js';
 

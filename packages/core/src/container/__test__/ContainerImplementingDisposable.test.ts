@@ -1,7 +1,7 @@
 import { describe, expect, vi } from 'vitest';
 
 import { container } from '../Container.js';
-import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../../definitions/tokens.js';
 import type { ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';
@@ -27,7 +27,7 @@ describe(`container#[Symbol.dispose]`, () => {
         const disposeSpy = vi.fn();
         const def = scoped<DisposableImpl>();
 
-        const cnt = container.new(c => {
+        const cnt = container(c => {
           c.add(def).fn(() => new DisposableImpl(disposeSpy));
         });
 
@@ -47,7 +47,7 @@ describe(`container#[Symbol.dispose]`, () => {
         const disposeSpy = vi.fn();
         const def = cascading<DisposableImpl>();
 
-        const cnt = container.new(c => {
+        const cnt = container(c => {
           c.add(def).fn(() => new DisposableImpl(disposeSpy));
         });
 
@@ -73,7 +73,7 @@ describe(`container#[Symbol.dispose]`, () => {
         const disposeSpy = vi.fn();
         const def = singleton<DisposableImpl>();
 
-        const cnt = container.new(c => {
+        const cnt = container(c => {
           c.add(def).fn(() => new DisposableImpl(disposeSpy));
         });
 
@@ -96,7 +96,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
       const def = singleton<DisposableImpl>();
 
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(def).fn(() => new DisposableImpl(disposeSpy));
       });
 
@@ -117,7 +117,7 @@ describe(`container#[Symbol.dispose]`, () => {
         const rootDispose = vi.fn();
         const scopeDispose = vi.fn();
 
-        const cnt = container.new(c => {
+        const cnt = container(c => {
           c.onDispose(rootDispose);
         });
 
@@ -140,7 +140,7 @@ describe(`container#[Symbol.dispose]`, () => {
       it(`throws when container is used after manual disposal`, async () => {
         const def = singleton<number>();
 
-        const cnt = container.new(c => c.add(def).static(1));
+        const cnt = container(c => c.add(def).static(1));
 
         await cnt.dispose();
 
@@ -194,7 +194,7 @@ describe(`container#[Symbol.dispose]`, () => {
               .onDispose(scopedSpy);
           });
 
-          const cnt = container.new();
+          const cnt = container();
 
           const scope = cnt.scope(config);
 
@@ -221,7 +221,7 @@ describe(`container#[Symbol.dispose]`, () => {
               });
           });
 
-          const cnt = container.new(config);
+          const cnt = container(config);
 
           await cnt.use(cascadingDef);
 
@@ -241,7 +241,7 @@ describe(`container#[Symbol.dispose]`, () => {
               });
           });
 
-          const cnt = container.new(config);
+          const cnt = container(config);
 
           await cnt.use(cascadingDef);
 
@@ -262,7 +262,7 @@ describe(`container#[Symbol.dispose]`, () => {
               .onDispose(scopedSpy);
           });
 
-          const cnt = container.new();
+          const cnt = container();
           const scope = cnt.scope(config);
 
           await scope.dispose();
@@ -319,7 +319,7 @@ describe(`container#[Symbol.dispose]`, () => {
               .onDispose(scopedSpy);
           });
 
-          const cnt = container.new(config);
+          const cnt = container(config);
 
           await cnt.all(singletonDef, cascadingDef, scopedDef);
 
@@ -356,7 +356,7 @@ describe(`container#[Symbol.dispose]`, () => {
               .onDispose(scopedSpy);
           });
 
-          const cnt = container.new(config);
+          const cnt = container(config);
 
           await cnt.dispose();
 
@@ -381,7 +381,7 @@ describe(`container#[Symbol.dispose]`, () => {
     ) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use) => {
-          const scope = container.new(...containerConfigFns);
+          const scope = container(...containerConfigFns);
 
           await use(scope);
 

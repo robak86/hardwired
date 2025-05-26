@@ -1,7 +1,7 @@
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import { container } from '../../container/Container.js';
-import { cascading } from '../def-symbol.js';
+import { cascading } from '../tokens.js';
 
 describe(`cascading definition`, () => {
   const numDefCascading = cascading<BoxedValue<number>>('num');
@@ -27,7 +27,7 @@ describe(`cascading definition`, () => {
 
   describe(`own configured`, () => {
     it(`allows configuring the `, async () => {
-      const cnt = container.new(syncConfig);
+      const cnt = container(syncConfig);
 
       const scope1Spy = vi.fn();
       const scope2Spy = vi.fn();

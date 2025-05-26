@@ -6,7 +6,7 @@ import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../../definitions/tokens.js';
 import { configureContainer } from '../ContainerConfiguration.js';
 
 describe(`ContainerConfiguration`, () => {
@@ -16,7 +16,7 @@ describe(`ContainerConfiguration`, () => {
         it(`modify is applicative`, async () => {
           const def = cascading<number>('testCascadingDef');
 
-          const cnt = container.new(c => {
+          const cnt = container(c => {
             c.add(def).static(0);
 
             c.modify(def).decorate(val => val + 1);
@@ -47,10 +47,12 @@ describe(`ContainerConfiguration`, () => {
           const def = cascading<number>('testCascadingDef');
 
           expect(() => {
-            container.new(c => {
+            const cnt = container(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('No definition registered');
+
+            cnt.use(def).trySync();
+          }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
 
@@ -58,7 +60,7 @@ describe(`ContainerConfiguration`, () => {
         it.skip(`inherits value from the parent scope`, async () => {
           // const def = cascading<number>('testCascadingDef');
           //
-          // const cnt = container.new(c => {
+          // const cnt = container(c => {
           //   c.add(def).static(0);
           // });
           //
@@ -91,7 +93,7 @@ describe(`ContainerConfiguration`, () => {
         it(`throws when there is already modification for the current scope`, async () => {
           const def = cascading<number>('testCascadingDef');
 
-          const cnt = container.new(c => {
+          const cnt = container(c => {
             c.add(def).static(0);
           });
 
@@ -111,7 +113,7 @@ describe(`ContainerConfiguration`, () => {
 
           const inheritFactorySpy = vi.fn((val: number) => val + 1);
 
-          const cnt = container.new(c => {
+          const cnt = container(c => {
             c.add(def).static(0);
           });
 
@@ -129,7 +131,7 @@ describe(`ContainerConfiguration`, () => {
         it(`can be combined with modify`, async () => {
           const def = cascading<number>('testCascadingDef');
 
-          const cnt = container.new(c => {
+          const cnt = container(c => {
             c.add(def).static(0);
           });
 
@@ -161,7 +163,7 @@ describe(`ContainerConfiguration`, () => {
         it(`modify is applicative`, async () => {
           const def = scoped<number>('testCascadingDef');
 
-          const cnt = container.new(c => {
+          const cnt = container(c => {
             c.add(def).static(0);
 
             c.modify(def).decorate(val => val + 1);
@@ -187,10 +189,12 @@ describe(`ContainerConfiguration`, () => {
           const def = scoped<number>('testCascadingDef');
 
           expect(() => {
-            container.new(c => {
+            const cnt = container(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('No definition registered');
+
+            cnt.use(def).trySync();
+          }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
     });
@@ -200,7 +204,7 @@ describe(`ContainerConfiguration`, () => {
         it(`modify is applicative`, async () => {
           const def = singleton<number>('testCascadingDef');
 
-          const cnt = container.new(c => {
+          const cnt = container(c => {
             c.add(def).static(0);
 
             c.modify(def).decorate(val => val + 1);
@@ -214,10 +218,12 @@ describe(`ContainerConfiguration`, () => {
           const def = singleton<number>('testCascadingDef');
 
           expect(() => {
-            container.new(c => {
+            const cnt = container(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('No definition registered for Symbol(testCascadingDef)');
+
+            cnt.use(def).trySync();
+          }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
     });
@@ -227,7 +233,7 @@ describe(`ContainerConfiguration`, () => {
         it(`modify is applicative`, async () => {
           const def = transient<number>('testCascadingDef');
 
-          const cnt = container.new(c => {
+          const cnt = container(c => {
             c.add(def).static(0);
 
             c.modify(def).decorate(val => val + 1);
@@ -253,10 +259,12 @@ describe(`ContainerConfiguration`, () => {
           const def = transient<number>('testCascadingDef');
 
           expect(() => {
-            container.new(c => {
+            const cnt = container(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('No definition registered');
+
+            cnt.use(def).trySync();
+          }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
     });
@@ -265,7 +273,7 @@ describe(`ContainerConfiguration`, () => {
   describe(`container#freeze`, () => {
     it(`allows freezing instances before they are created`, async () => {
       const def = scoped<number>();
-      const cnt = container.new();
+      const cnt = container();
 
       cnt.freeze(def).static(456);
       expect(cnt.use(def).trySync()).toEqual(456);
@@ -273,7 +281,7 @@ describe(`ContainerConfiguration`, () => {
 
     it(`supports configure`, async () => {
       const def = scoped<BoxedValue<number>>();
-      const cnt = container.new(c => c.add(def).static(new BoxedValue(123)));
+      const cnt = container(c => c.add(def).static(new BoxedValue(123)));
 
       cnt.freeze(def).configure(c => {
         c.value = 456;
@@ -283,7 +291,7 @@ describe(`ContainerConfiguration`, () => {
 
     it(`supports decorate`, async () => {
       const def = scoped<BoxedValue<number>>();
-      const cnt = container.new(c => c.add(def).static(new BoxedValue(123)));
+      const cnt = container(c => c.add(def).static(new BoxedValue(123)));
 
       cnt.freeze(def).decorate(c => {
         return new BoxedValue(456);
@@ -293,7 +301,7 @@ describe(`ContainerConfiguration`, () => {
 
     it(`does not support inherit`, async () => {
       const def = scoped<BoxedValue<number>>();
-      const cnt = container.new(c => c.add(def).static(new BoxedValue(123)));
+      const cnt = container(c => c.add(def).static(new BoxedValue(123)));
 
       // @ts-expect-error inherit is not available from the root configuration
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -303,7 +311,7 @@ describe(`ContainerConfiguration`, () => {
     it(`throws if the instances is already created`, async () => {
       const def = scoped<number>();
 
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(def).static(123);
       });
 
@@ -315,7 +323,7 @@ describe(`ContainerConfiguration`, () => {
     it(`throws if the instances is already created on the parent scope`, async () => {
       const def = cascading<number>();
 
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(def).static(123);
       });
 
@@ -329,7 +337,7 @@ describe(`ContainerConfiguration`, () => {
     it(`works with child scopes`, async () => {
       const def = scoped<number>();
 
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(def).static(123);
       });
 
@@ -342,7 +350,7 @@ describe(`ContainerConfiguration`, () => {
     it(`throws when cascading definition was created in child scope`, async () => {
       const def = cascading<number>();
 
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(def).static(123);
       });
 
@@ -358,13 +366,13 @@ describe(`ContainerConfiguration`, () => {
 
   describe(`container.new`, () => {
     it(`accepts synchronous function`, async () => {
-      const cnt = container.new(_c => {});
+      const cnt = container(_c => {});
 
       expectType<TypeOf<typeof cnt, Container>>(true);
     });
 
     it(`returns container synchronously when no configuration is passed`, async () => {
-      const cnt = container.new();
+      const cnt = container();
 
       expectType<TypeOf<typeof cnt, Container>>(true);
     });
@@ -373,7 +381,7 @@ describe(`ContainerConfiguration`, () => {
       const def1 = scoped<number>();
       const def2 = scoped<number>();
 
-      const cnt = container.new(
+      const cnt = container(
         container => {
           container.add(def1).static(456);
         },
@@ -390,7 +398,7 @@ describe(`ContainerConfiguration`, () => {
       it.skip(`runs init functions on passing the newly created container`, async () => {
         const dep = scoped<BoxedValue<number>>();
 
-        const cnt = container.new(container => {
+        const cnt = container(container => {
           // container.init(use => {
           //   use(dep).value = 1;
           // });
@@ -403,14 +411,14 @@ describe(`ContainerConfiguration`, () => {
 
   describe(`container.scope`, () => {
     it(`accepts synchronous function`, async () => {
-      const cnt = container.new();
+      const cnt = container();
       const scope = cnt.scope();
 
       expectType<TypeOf<typeof scope, IContainer>>(true);
     });
 
     it(`returns container synchronously when no configuration is passed`, async () => {
-      const cnt = container.new();
+      const cnt = container();
       const scope = cnt.scope();
 
       expectType<TypeOf<typeof scope, IContainer>>(true);
@@ -418,7 +426,7 @@ describe(`ContainerConfiguration`, () => {
 
     it(`correctly configures the scope`, async () => {
       const def = cascading<number>();
-      const cnt = container.new();
+      const cnt = container();
       const scope = cnt.scope(scope => {
         scope.add(def).static(456);
       });

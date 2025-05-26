@@ -4,7 +4,7 @@ describe(`disposable`, () => {
   describe(`disposing container`, () => {
     it(`is not supported`, async () => {
       try {
-        container.new(scope => {
+        container(scope => {
           // @ts-expect-error - no dispose function
           scope.onDispose();
         });
@@ -17,7 +17,7 @@ describe(`disposable`, () => {
   describe(`disposing scope`, () => {
     it(`is not supported`, async () => {
       try {
-        container.new().scope(scope => {
+        container().scope(scope => {
           // @ts-expect-error - no dispose function
           return scope.onDispose();
         });

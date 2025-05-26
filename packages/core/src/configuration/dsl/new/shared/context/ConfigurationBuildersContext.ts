@@ -2,7 +2,7 @@ import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitio
 import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
-import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../../definitions/tokens.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import {
@@ -14,6 +14,7 @@ import type { MaybePromise } from '../../../../../utils/async.js';
 import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
+import { LazyDefinitionsRegistry } from '../../../../../context/LazyDefinitionsRegistry.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
@@ -22,11 +23,11 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
   private _newInterceptors = new Set<InterceptorClass<IInterceptor>>();
 
-  private _definitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
-  private _frozenDefinitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
-  private _lazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
-  private _cascadeDefinitions = new Set<IDefinitionToken<any, LifeTime.cascading>>();
-  private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
+  private _definitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
+  private _frozenDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
+  private _lazyDefinitions = LazyDefinitionsRegistry.empty();
+  private _cascadeTokens = new Set<IDefinitionToken<any, LifeTime.cascading>>();
+  private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = []; // TODO: replace with _lazyDefinitions. It already holds frozen definitions
 
   private _disposeFunctions = new DisposeFunctions();
   private _definitionDisposeFns = new DefinitionsDisposeFunctions();
@@ -38,11 +39,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     lifeCycleRegistry.append(this._definitionDisposeFns);
 
     return new ContainerConfiguration(
-      this._definitions,
-      this._frozenDefinitions,
-      this._lazyDefinitions,
-      this._frozenLazyDefinitions,
-      this._cascadeDefinitions,
+      this._definitions.freeze(),
+      this._frozenDefinitions.freeze(),
+      this._lazyDefinitions.freeze(),
+      this._cascadeTokens,
       lifeCycleRegistry,
       this._newInterceptors,
     );
@@ -68,16 +68,16 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   }
 
   onCascadingDefinition(token: IDefinitionToken<unknown, LifeTime.cascading>): void {
-    this._cascadeDefinitions.add(token);
+    this._cascadeTokens.add(token);
   }
 
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'freeze':
         this._frozenLazyDefinitions.push(builder);
@@ -85,17 +85,17 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
 
     if (builder.token.strategy === LifeTime.cascading) {
-      this._cascadeDefinitions.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
+      this._cascadeTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
     }
   }
 
   onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'freeze':
         this._frozenLazyDefinitions.push(builder);
@@ -103,7 +103,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
 
     if (builder.token.strategy === LifeTime.cascading) {
-      this._cascadeDefinitions.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
+      this._cascadeTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
     }
   }
 
@@ -114,10 +114,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'freeze':
         this._frozenLazyDefinitions.push(builder);
@@ -128,17 +128,15 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._definitions.register(definition.token.id, definition);
-        break;
       case 'modify':
         if (definition.strategy === LifeTime.cascading) {
-          this._cascadeDefinitions.add(definition.token as IDefinitionToken<unknown, LifeTime.cascading>);
+          this._cascadeTokens.add(definition as IDefinitionToken<unknown, LifeTime.cascading>);
         }
 
-        this._definitions.register(definition.token.id, definition);
+        this._definitions.register(definition.id, definition);
         break;
       case 'freeze':
-        this._frozenDefinitions.register(definition.token.id, definition);
+        this._frozenDefinitions.register(definition.id, definition);
         break;
     }
   }

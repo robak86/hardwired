@@ -1,8 +1,8 @@
 import { container } from '../../../Container.js';
 import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 import { AbstractGraphDependenciesInterceptor } from '../AbstractGraphDependenciesInterceptor.js';
-import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
-import { cascading, scoped, singleton } from '../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../definitions/tokens.js';
+import { cascading, scoped, singleton } from '../../../../definitions/tokens.js';
 import { BoxedValue } from '../../../../__test__/BoxedValue.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import { COWMap } from '../../../../context/COWMap.js';
@@ -47,7 +47,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
   }
 
   function setup(...setupFns: ContainerConfigureFn[]) {
-    const cnt = container.new(
+    const cnt = container(
       c => {
         c.withInterceptor(RootTestInterceptor);
       },

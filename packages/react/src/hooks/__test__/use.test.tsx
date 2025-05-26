@@ -27,7 +27,7 @@ describe(`use`, () => {
         return <DummyComponent value={val1} />;
       };
 
-      const c = container.new(c => {
+      const c = container(c => {
         c.add(val1Def).static('val1');
       });
 
@@ -58,7 +58,7 @@ describe(`use`, () => {
         return <DummyComponent value={cls} />;
       };
 
-      const c = container.new(c => {
+      const c = container(c => {
         c.add(clsDef).fn(checkoutRenderId);
       });
 
@@ -119,7 +119,7 @@ describe(`use`, () => {
         return <DummyComponent value={val1} />;
       };
 
-      const c = container.new(c => {
+      const c = container(c => {
         c.add(someExternalParam).static('val1');
         c.add(val1Def).fn(ext => `render:${checkoutRenderId()};value:${ext}`, someExternalParam);
       });
@@ -205,7 +205,7 @@ describe(`use`, () => {
 
     describe(`single scope`, () => {
       it(`calls mount on component mount`, async () => {
-        const cnt = container.new(configure, withReactLifeCycle());
+        const cnt = container(configure, withReactLifeCycle());
 
         const OtherConsumer = () => {
           use(mountableServiceD);
@@ -257,7 +257,7 @@ describe(`use`, () => {
 
       describe(`forceMount`, () => {
         it(`forces mount of already mounted component`, async () => {
-          const cnt = container.new(configure, withReactLifeCycle());
+          const cnt = container(configure, withReactLifeCycle());
 
           const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
             use(mountableServiceConsumerD);
@@ -307,7 +307,7 @@ describe(`use`, () => {
 
       describe(`forceReMount`, () => {
         it(`forces mount of already mounted component`, async () => {
-          const cnt = container.new(configure, withReactLifeCycle());
+          const cnt = container(configure, withReactLifeCycle());
 
           const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
             use(mountableServiceConsumerD);
@@ -357,7 +357,7 @@ describe(`use`, () => {
 
       describe(`skipLifecycle`, () => {
         it(`skips calling mount/unmount callbacks`, async () => {
-          const cnt = container.new(configure, withReactLifeCycle());
+          const cnt = container(configure, withReactLifeCycle());
 
           const ConsumerParent = ({ renderChild }: { renderChild: boolean }) => {
             use(mountableServiceConsumerD);
@@ -408,7 +408,7 @@ describe(`use`, () => {
 
     describe(`scoped instances`, () => {
       it(`correctly calls mount/unmount for shared singleton used from scoped definition used in multiple scopes`, async () => {
-        const cnt = container.new(configure, withReactLifeCycle());
+        const cnt = container(configure, withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());
@@ -465,7 +465,7 @@ describe(`use`, () => {
       });
 
       it(`calls correctly callbacks when service is used within list item`, async () => {
-        const cnt = container.new(configure, withReactLifeCycle());
+        const cnt = container(configure, withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());

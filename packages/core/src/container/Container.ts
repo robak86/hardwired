@@ -11,7 +11,7 @@ import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { configureScope } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
-import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
@@ -19,14 +19,10 @@ import type { IConfiguration } from '../configuration/dsl/new/container/Containe
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
+import { AbstractDefinition } from '../definitions/impl/AbstractDefinition.js';
+import { COWMap } from '../context/COWMap.js';
 
-import type {
-  ICascadingDefinitionResolver,
-  IContainer,
-  IContainerFactory,
-  IStrategyAware,
-  UseFn,
-} from './IContainer.js';
+import type { ICascadingDefinitionResolver, IContainer, IStrategyAware, UseFn } from './IContainer.js';
 import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
@@ -36,20 +32,48 @@ export interface Container extends UseFn<LifeTime> {}
 
 const containerAllowedScopes = [LifeTime.scoped, LifeTime.singleton, LifeTime.transient, LifeTime.cascading];
 
-export class Container
-  extends ExtensibleFunction
-  implements IContainer, ICascadingDefinitionResolver, IContainerFactory
-{
-  static root(): Container {
-    return new Container(
-      null,
-      BindingsRegistry.create(),
-      InstancesStore.create(),
+export class Container extends ExtensibleFunction implements IContainer, ICascadingDefinitionResolver {
+  static create(...configurations: Array<IConfiguration | ContainerConfigureFn>): IContainer {
+    const configs = configurations.map(config => {
+      if (config instanceof Function) {
+        return configureContainer(config);
+      } else {
+        return config;
+      }
+    });
 
-      [],
-      new ContainerLifeCycleRegistry(),
+    const bindingsRegistry = BindingsRegistry.create(configs);
+    const instancesStore = InstancesStore.create();
+    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
+    const cascadingRoots = COWMap.create<ICascadingDefinitionResolver>();
+
+    const cnt = new Container(
+      null,
+      bindingsRegistry,
+      instancesStore,
+      cascadingRoots,
+      lifeCycleRegistry,
       PassThroughInterceptor.instance,
     );
+
+    configs.forEach((config: IConfiguration) => {
+      // bindingsRegistry.applyConfig(config, cnt);
+      lifeCycleRegistry.append(config.lifeCycleRegistry);
+
+      if (config.interceptors) {
+        cnt.applyInterceptors(config.interceptors);
+      }
+
+      config.cascadingTokens.forEach(token => {
+        cascadingRoots.set(token.id, cnt);
+
+        // if (token instanceof AbstractDefinition) {
+        //   bindingsRegistry.override(token);
+        // }
+      });
+    });
+
+    return cnt;
   }
 
   public readonly id = v4();
@@ -63,10 +87,11 @@ export class Container
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
-    protected readonly scopeTags: (string | symbol)[],
+    protected readonly cascadingRoots: COWMap<ICascadingDefinitionResolver>,
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
     private _interceptor: ICompositeInterceptor,
   ) {
+    // TODO: remove
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
         definition: IDefinitionToken<TInstance, TLifeTime>,
@@ -95,44 +120,6 @@ export class Container
     });
   }
 
-  new(...configurations: Array<IConfiguration | ContainerConfigureFn>): IContainer {
-    const bindingsRegistry = BindingsRegistry.create();
-    const instancesStore = InstancesStore.create();
-    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
-
-    const cnt = new Container(
-      null,
-      bindingsRegistry,
-      instancesStore,
-      [],
-      lifeCycleRegistry,
-      PassThroughInterceptor.instance,
-    );
-
-    if (configurations.length) {
-      const configs = configurations.map(config => {
-        if (config instanceof Function) {
-          return configureContainer(config);
-        } else {
-          return config;
-        }
-      });
-
-      configs.forEach((config: IConfiguration) => {
-        bindingsRegistry.applyConfig(config, cnt);
-        lifeCycleRegistry.append(config.lifeCycleRegistry);
-
-        if (config.interceptors) {
-          cnt.applyInterceptors(config.interceptors);
-        }
-      });
-
-      return cnt;
-    }
-
-    return cnt;
-  }
-
   protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
     if (this._interceptor instanceof PassThroughInterceptor) {
       this._interceptor = new CompositeInterceptor();
@@ -145,41 +132,42 @@ export class Container
     });
   }
 
-  scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configureFns: TConfigureFns): IContainer {
-    const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
+  scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configurations: TConfigureFns): IContainer {
+    const configs = configurations.map(configOrConfigureFn => {
+      if (configOrConfigureFn instanceof Function) {
+        return configureScope(configOrConfigureFn);
+      } else {
+        return configOrConfigureFn;
+      }
+    });
+
+    const bindingsRegistry = this.bindingsRegistry.checkoutForScope(configs);
     const instancesStore = this.instancesStore.childScope();
-    const tags: (string | symbol)[] = [];
+
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
+    const cascadingRoots = this.cascadingRoots.clone();
 
     const cnt: Container & IStrategyAware = new Container(
       this.id,
       bindingsRegistry,
       instancesStore,
-      tags,
+      cascadingRoots,
       lifeCycleRegistry,
       this._interceptor.onScope(),
     );
 
-    if (configureFns.length) {
-      const configs = configureFns.map(configOrConfigureFn => {
-        if (configOrConfigureFn instanceof Function) {
-          return configureScope(configOrConfigureFn);
-        } else {
-          return configOrConfigureFn;
-        }
+    configs.forEach(config => {
+      // bindingsRegistry.applyConfig(config, cnt);
+      lifeCycleRegistry.append(config.lifeCycleRegistry);
+
+      if (config.interceptors) {
+        cnt.applyInterceptors(config.interceptors);
+      }
+
+      config.cascadingTokens.forEach(token => {
+        cascadingRoots.set(token.id, cnt);
       });
-
-      configs.forEach(config => {
-        bindingsRegistry.applyConfig(config, cnt);
-        lifeCycleRegistry.append(config.lifeCycleRegistry);
-
-        if (config.interceptors) {
-          cnt.applyInterceptors(config.interceptors);
-        }
-      });
-
-      return cnt;
-    }
+    });
 
     return cnt;
   }
@@ -212,13 +200,27 @@ export class Container
   }
 
   use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
-    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+    if (definition instanceof AbstractDefinition) {
+      const override = this.bindingsRegistry.findForDefinition(definition);
+
+      if (definition.strategy === LifeTime.cascading) {
+        // if we don't have any cascading root for the definition in the whole containers hierarchy,
+        // we set the current container as a cascading root for this definition
+        if (!this.cascadingRoots.has(definition.id)) {
+          this.cascadingRoots.set(definition.id, this);
+        }
+      }
+
+      return this.buildWithStrategy(override ?? definition);
+    }
+
+    const patchedDefinition = this.bindingsRegistry.getByToken(definition);
 
     return this.buildWithStrategy(patchedDefinition);
   }
 
   useAsync<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): Promise<TValue> {
-    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+    const patchedDefinition = this.bindingsRegistry.getByToken(definition);
 
     return Promise.resolve(this.buildWithStrategy(patchedDefinition));
   }
@@ -237,7 +239,7 @@ export class Container
       throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
     }
 
-    if (this.bindingsRegistry.hasFrozenBinding(definition.token.id)) {
+    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
       return this._singletonStrategy.build(definition, this, this._interceptor);
     }
 
@@ -249,7 +251,7 @@ export class Container
       case LifeTime.scoped:
         return this._scopedStrategy.build(definition, this, this._interceptor);
       case LifeTime.cascading:
-        return (this.bindingsRegistry.getOwningContainer(definition.token) ?? this).resolveCascading(definition);
+        return (this.cascadingRoots.get(definition.id) ?? this).resolveCascading(definition);
     }
   }
 
@@ -266,4 +268,4 @@ export class Container
   }
 }
 
-export const container: IContainer & IContainerFactory = Container.root();
+export const container = Container.create.bind(Container);

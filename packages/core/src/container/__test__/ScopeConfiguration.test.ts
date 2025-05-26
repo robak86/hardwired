@@ -17,7 +17,7 @@ describe('ScopeConfiguration', () => {
       //
       // const def = scoped<MyClass>();
       //
-      // const root = container.new(c => {
+      // const root = container(c => {
       //   c.add(def).class(MyClass);
       // });
       // const scope = root.scope(c => {
@@ -35,7 +35,7 @@ describe('ScopeConfiguration', () => {
   //       return [use(depA), use(depB)];
   //     });
   //
-  //     const root = container.new();
+  //     const root = container();
   //
   //     const childContainer = root.scope((scope, use) => {
   //       scope.override(compositionRoot).toRedefined(_ => use(compositionRoot));
@@ -51,7 +51,7 @@ describe('ScopeConfiguration', () => {
   //   describe(`init`, () => {
   //     it(`runs init functions on passing the newly created container`, async () => {
   //       const dep = fn.scoped(() => new BoxedValue(Math.random()));
-  //       const root = container.new();
+  //       const root = container();
   //
   //       const childContainer = root.scope(scope => {
   //         scope.onInit(use => {
@@ -65,7 +65,7 @@ describe('ScopeConfiguration', () => {
   //
   //   describe(`inheritFrom`, () => {
   //     it(`is not available for the container configuration`, async () => {
-  //       container.new(c => {
+  //       container(c => {
   //         try {
   //           // @ts-expect-error - inheritFrom is not available for the container configuration
   //

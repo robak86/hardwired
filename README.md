@@ -223,7 +223,7 @@ Scoped containers can be created using `.scope()` function.
 ```typescript
 import { container, IContainer } from 'hardwired';
 
-const myContainer: IContainer = container.new();
+const myContainer: IContainer = container();
 const scopedContainer: IContainer = container.scope();
 ```
 
@@ -436,7 +436,7 @@ For more control or isolation, you can create a new isolated container:
 ```typescript
 import { container } from 'hardwired';
 
-const myContainer = container.new();
+const myContainer = container();
 
 const client = myContainer.use(ApiClient.class);
 ```
@@ -672,17 +672,17 @@ const rootConfig = configureContainer(container => {
   });
 });
 
-const rootWithoutConfiguration = container.new();
+const rootWithoutConfiguration = container();
 rootWithoutConfiguration.use(definition); // returns random value;
 
-const configuredRoot = container.new(rootConfig);
+const configuredRoot = container(rootConfig);
 configuredRoot.use(definition); // returns the Boxed object with value 1
 ```
 
 Container configuration provides as well more compact syntax:
 
 ```typescript
-const root = container.new(container => {
+const root = container(container => {
   container.overrideCascading(definition).to(otherDefinition);
 });
 ```
@@ -694,7 +694,7 @@ Additionally, container configurations allow freezing definitions so they cannot
 ```typescript
 const myObject = fn.scoped(() => ({ someMethod: () => null }));
 
-const root = container.new(container => {
+const root = container(container => {
   container.freeze(myObject).toConfigured((_, instance) => {
     spyOn(instance, 'someMethod');
   });
@@ -729,7 +729,7 @@ const containerConfig = configureContainer(container => {
 // Whenever a new container is created with this config, the listeners will be registered.
 // You can think of it as a way to enforce eager instantiation of some definitions
 
-const root = container.new(containerConfig);
+const root = container(containerConfig);
 // listeners are already registered;
 ```
 
@@ -758,7 +758,7 @@ You must provide a value for unbound definitions when creating a container or sc
 ```typescript
 import { container } from 'hardwired';
 
-const myContainer = container.new(container => {
+const myContainer = container(container => {
   container.overrideCascading(config).toValue({ apiUrl: 'https://api.example.com' });
 });
 
@@ -835,12 +835,12 @@ const myApp = fn(use => {
   log.info('Hell, world');
 });
 
-const prodContainer = container.new(container => {
+const prodContainer = container(container => {
   container.overrideCascading(transport).to(FsLoggerTransport.class);
   container.overrideCascading(logger).to(ProductionLogger.class);
 });
 
-const devContainer = container.new(container => {
+const devContainer = container(container => {
   container.overrideCascading(transport).toValue({ write: noop });
   container.overrideCascading(logger).to(DevLogger.class);
 });
