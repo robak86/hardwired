@@ -7,7 +7,7 @@ export interface IBindingsRegistryRead {
     symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime>;
 
-  getForOverride<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionToken<TInstance, TLifeTime>,
-  ): IDefinition<TInstance, TLifeTime>;
+  findDefinition<TInstance, TLifeTime extends LifeTime>(
+    token: IDefinitionToken<TInstance, TLifeTime>,
+  ): IDefinition<TInstance, TLifeTime> | undefined;
 }
