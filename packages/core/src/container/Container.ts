@@ -201,11 +201,11 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
 
   use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
     if (definition instanceof AbstractDefinition) {
-      const override = this.bindingsRegistry.findDefinition(definition);
+      const override = this.bindingsRegistry.findForDefinition(definition);
 
-      if (definition.strategy === LifeTime.cascading && override === undefined) {
-        // If the definition with default implementation is cascading and does not have an override,
-        // that means we need to register cascading root for it.
+      if (definition.strategy === LifeTime.cascading) {
+        // if we don't have any cascading root for the definition in the whole containers hierarchy,
+        // we set the current container as a cascading root for this definition
         if (!this.cascadingRoots.has(definition.id)) {
           this.cascadingRoots.set(definition.id, this);
         }
@@ -214,13 +214,13 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
       return this.buildWithStrategy(override ?? definition);
     }
 
-    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+    const patchedDefinition = this.bindingsRegistry.getByToken(definition);
 
     return this.buildWithStrategy(patchedDefinition);
   }
 
   useAsync<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): Promise<TValue> {
-    const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
+    const patchedDefinition = this.bindingsRegistry.getByToken(definition);
 
     return Promise.resolve(this.buildWithStrategy(patchedDefinition));
   }

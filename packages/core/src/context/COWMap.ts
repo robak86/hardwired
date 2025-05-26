@@ -12,9 +12,9 @@ export class COWMap<V> {
   }
 
   static all<V>(maps: Array<COWMap<V>>): COWMap<V> {
-    const mapInstances = maps.map(map => map._instances);
+    const mapEntries = maps.map(map => map._entries);
 
-    const merged = new Map(mapInstances.flatMap(m => [...m]));
+    const merged = new Map(mapEntries.flatMap(m => [...m]));
 
     return new COWMap<V>(merged, true);
   }
@@ -22,16 +22,16 @@ export class COWMap<V> {
   private _inheritedKeys = new Set<symbol>();
 
   protected constructor(
-    protected _instances: Map<symbol, V>,
+    protected _entries: Map<symbol, V>,
     protected _pristine: boolean,
   ) {}
 
   has(definitionId: symbol): boolean {
-    return this._instances.has(definitionId);
+    return this._entries.has(definitionId);
   }
 
   hasOwn(definitionId: symbol): boolean {
-    return this._pristine && this._instances.has(definitionId) && !this._inheritedKeys.has(definitionId);
+    return this._pristine && this._entries.has(definitionId) && !this._inheritedKeys.has(definitionId);
   }
 
   hasInherited(definitionId: symbol): boolean {
@@ -40,24 +40,24 @@ export class COWMap<V> {
 
   set(definitionId: symbol, instance: V): void {
     if (!this._pristine) {
-      this._inheritedKeys = new Set(this._instances.keys());
-      this._instances = new Map(this._instances);
+      this._inheritedKeys = new Set(this._entries.keys());
+      this._entries = new Map(this._entries);
       this._pristine = true;
     }
 
     this._inheritedKeys.delete(definitionId);
-    this._instances.set(definitionId, instance);
+    this._entries.set(definitionId, instance);
   }
 
   get(definitionId: symbol): V | undefined {
-    return this._instances.get(definitionId);
+    return this._entries.get(definitionId);
   }
 
   clone(): COWMap<V> {
-    return new COWMap(this._instances, false);
+    return new COWMap(this._entries, false);
   }
 
   forEach(callback: (value: V, key: symbol) => void): void {
-    this._instances.forEach(callback);
+    this._entries.forEach(callback);
   }
 }

@@ -100,7 +100,10 @@ describe('cls', () => {
         const scope2 = scope1.scope(c => c.modify(leafDef).claimNew());
         const scope3 = scope2.scope();
 
-        expect(await cnt.use(leafDef)).toBe(await scope1.use(leafDef));
+        const cntInstance = await cnt.use(leafDef);
+        const scope1Instance = await scope1.use(leafDef);
+
+        expect(cntInstance).toBe(scope1Instance);
         expect(await scope1.use(leafDef)).not.toBe(await scope2.use(leafDef));
         expect(await scope2.use(leafDef)).toBe(await scope3.use(leafDef));
       });

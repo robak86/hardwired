@@ -26,8 +26,8 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   private _definitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
   private _frozenDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
   private _lazyDefinitions = LazyDefinitionsRegistry.empty();
-  private _cascadeDefinitions = new Set<IDefinitionToken<any, LifeTime.cascading>>();
-  private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
+  private _cascadeTokens = new Set<IDefinitionToken<any, LifeTime.cascading>>();
+  private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = []; // TODO: replace with _lazyDefinitions. It already holds frozen definitions
 
   private _disposeFunctions = new DisposeFunctions();
   private _definitionDisposeFns = new DefinitionsDisposeFunctions();
@@ -42,7 +42,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       this._definitions.freeze(),
       this._frozenDefinitions.freeze(),
       this._lazyDefinitions.freeze(),
-      this._cascadeDefinitions,
+      this._cascadeTokens,
       lifeCycleRegistry,
       this._newInterceptors,
     );
@@ -68,7 +68,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   }
 
   onCascadingDefinition(token: IDefinitionToken<unknown, LifeTime.cascading>): void {
-    this._cascadeDefinitions.add(token);
+    this._cascadeTokens.add(token);
   }
 
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
@@ -85,7 +85,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
 
     if (builder.token.strategy === LifeTime.cascading) {
-      this._cascadeDefinitions.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
+      this._cascadeTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
     }
   }
 
@@ -103,7 +103,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
 
     if (builder.token.strategy === LifeTime.cascading) {
-      this._cascadeDefinitions.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
+      this._cascadeTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
     }
   }
 
@@ -130,7 +130,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       case 'add':
       case 'modify':
         if (definition.strategy === LifeTime.cascading) {
-          this._cascadeDefinitions.add(definition as IDefinitionToken<unknown, LifeTime.cascading>);
+          this._cascadeTokens.add(definition as IDefinitionToken<unknown, LifeTime.cascading>);
         }
 
         this._definitions.register(definition.id, definition);

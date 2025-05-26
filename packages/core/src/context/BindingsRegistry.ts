@@ -32,7 +32,26 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     );
   }
 
-  findDefinition<TInstance, TLifeTime extends LifeTime>(
+  findForDefinition<TInstance, TLifeTime extends LifeTime>(
+    definition: IDefinition<TInstance, TLifeTime>,
+  ): IDefinition<TInstance, TLifeTime> {
+    const overriddenDefinition = this.findByToken(definition);
+
+    if (overriddenDefinition) {
+      return overriddenDefinition;
+    }
+
+    // we didnt' find any .add() definition that will override definition,
+    // but we still might have a lazy definitions
+
+    if (this._lazyDefinitions.has(definition.id)) {
+      return this._lazyDefinitions.apply(definition);
+    }
+
+    return definition;
+  }
+
+  findByToken<TInstance, TLifeTime extends LifeTime>(
     token: IDefinitionToken<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> | undefined {
     const definition =
@@ -46,15 +65,13 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     return definition;
   }
 
-  getDefinition<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionToken<TInstance, TLifeTime>,
+  getByToken<TInstance, TLifeTime extends LifeTime>(
+    token: IDefinitionToken<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> {
-    const definition = this.findDefinition(symbol);
+    const definition = this.findByToken(token);
 
     if (!definition) {
-      throw new Error(
-        `Cannot find definition for ${symbol.toString()}. Make sure the definition symbol is registered.`,
-      );
+      throw new Error(`Cannot find definition for ${token.toString()}. Make sure the definition symbol is registered.`);
     }
 
     return definition;

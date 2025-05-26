@@ -16,6 +16,18 @@ describe(`ScopeRegistry`, () => {
     expect(childRegistry.get(symbol)).toBe('init');
   });
 
+  it(`falls back to parent registry when child registry does not have its own override`, async () => {
+    const parentRegistry = ScopeRegistry.empty<string>();
+    const childRegistry = parentRegistry.checkoutScope([]);
+
+    const symbol = Symbol('test');
+
+    parentRegistry.register(symbol, 'parentValue');
+    parentRegistry.override(symbol, 'parentOverride');
+
+    expect(childRegistry.get(symbol)).toBe('parentValue');
+  });
+
   it(`throws on registering already registered definition`, async () => {
     const registry = ScopeRegistry.empty();
 
@@ -134,18 +146,6 @@ describe(`ScopeRegistry`, () => {
       parentRegistry.register(symbol, 'parentValue');
 
       expect(childRegistry.get(symbol)).toBe('parentValue');
-    });
-
-    it(`falls back to parent registry when child registry does not have its own override`, async () => {
-      const parentRegistry = ScopeRegistry.empty<string>();
-      const childRegistry = parentRegistry.checkoutScope([]);
-
-      const symbol = Symbol('test');
-
-      parentRegistry.register(symbol, 'parentValue');
-      parentRegistry.override(symbol, 'parentOverride');
-
-      expect(childRegistry.get(symbol)).toBe('parentOverride');
     });
 
     it(`throws when child registry has no registration and parent registry also lacks it`, async () => {
