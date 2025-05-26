@@ -21,13 +21,7 @@ import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 import { AbstractDefinition } from '../definitions/impl/AbstractDefinition.js';
 
-import type {
-  ICascadingDefinitionResolver,
-  IContainer,
-  IContainerFactory,
-  IStrategyAware,
-  UseFn,
-} from './IContainer.js';
+import type { ICascadingDefinitionResolver, IContainer, IStrategyAware, UseFn } from './IContainer.js';
 import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
@@ -37,20 +31,39 @@ export interface Container extends UseFn<LifeTime> {}
 
 const containerAllowedScopes = [LifeTime.scoped, LifeTime.singleton, LifeTime.transient, LifeTime.cascading];
 
-export class Container
-  extends ExtensibleFunction
-  implements IContainer, ICascadingDefinitionResolver, IContainerFactory
-{
-  static root(): Container {
-    return new Container(
-      null,
-      BindingsRegistry.create(),
-      InstancesStore.create(),
+export class Container extends ExtensibleFunction implements IContainer, ICascadingDefinitionResolver {
+  static create(...configurations: Array<IConfiguration | ContainerConfigureFn>): IContainer {
+    const configs = configurations.map(config => {
+      if (config instanceof Function) {
+        return configureContainer(config);
+      } else {
+        return config;
+      }
+    });
 
+    const bindingsRegistry = BindingsRegistry.create(configs);
+    const instancesStore = InstancesStore.create();
+    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
+
+    const cnt = new Container(
+      null,
+      bindingsRegistry,
+      instancesStore,
       [],
-      new ContainerLifeCycleRegistry(),
+      lifeCycleRegistry,
       PassThroughInterceptor.instance,
     );
+
+    configs.forEach((config: IConfiguration) => {
+      bindingsRegistry.applyConfig(config, cnt);
+      lifeCycleRegistry.append(config.lifeCycleRegistry);
+
+      if (config.interceptors) {
+        cnt.applyInterceptors(config.interceptors);
+      }
+    });
+
+    return cnt;
   }
 
   public readonly id = v4();
@@ -96,44 +109,6 @@ export class Container
     });
   }
 
-  new(...configurations: Array<IConfiguration | ContainerConfigureFn>): IContainer {
-    const bindingsRegistry = BindingsRegistry.create();
-    const instancesStore = InstancesStore.create();
-    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
-
-    const cnt = new Container(
-      null,
-      bindingsRegistry,
-      instancesStore,
-      [],
-      lifeCycleRegistry,
-      PassThroughInterceptor.instance,
-    );
-
-    if (configurations.length) {
-      const configs = configurations.map(config => {
-        if (config instanceof Function) {
-          return configureContainer(config);
-        } else {
-          return config;
-        }
-      });
-
-      configs.forEach((config: IConfiguration) => {
-        bindingsRegistry.applyConfig(config, cnt);
-        lifeCycleRegistry.append(config.lifeCycleRegistry);
-
-        if (config.interceptors) {
-          cnt.applyInterceptors(config.interceptors);
-        }
-      });
-
-      return cnt;
-    }
-
-    return cnt;
-  }
-
   protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
     if (this._interceptor instanceof PassThroughInterceptor) {
       this._interceptor = new CompositeInterceptor();
@@ -146,8 +121,16 @@ export class Container
     });
   }
 
-  scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configureFns: TConfigureFns): IContainer {
-    const bindingsRegistry = this.bindingsRegistry.checkoutForScope();
+  scope<TConfigureFns extends Array<ScopeConfigureFn | IConfiguration>>(...configurations: TConfigureFns): IContainer {
+    const configs = configurations.map(configOrConfigureFn => {
+      if (configOrConfigureFn instanceof Function) {
+        return configureScope(configOrConfigureFn);
+      } else {
+        return configOrConfigureFn;
+      }
+    });
+
+    const bindingsRegistry = this.bindingsRegistry.checkoutForScope(configs);
     const instancesStore = this.instancesStore.childScope();
     const tags: (string | symbol)[] = [];
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
@@ -161,26 +144,14 @@ export class Container
       this._interceptor.onScope(),
     );
 
-    if (configureFns.length) {
-      const configs = configureFns.map(configOrConfigureFn => {
-        if (configOrConfigureFn instanceof Function) {
-          return configureScope(configOrConfigureFn);
-        } else {
-          return configOrConfigureFn;
-        }
-      });
+    configs.forEach(config => {
+      bindingsRegistry.applyConfig(config, cnt);
+      lifeCycleRegistry.append(config.lifeCycleRegistry);
 
-      configs.forEach(config => {
-        bindingsRegistry.applyConfig(config, cnt);
-        lifeCycleRegistry.append(config.lifeCycleRegistry);
-
-        if (config.interceptors) {
-          cnt.applyInterceptors(config.interceptors);
-        }
-      });
-
-      return cnt;
-    }
+      if (config.interceptors) {
+        cnt.applyInterceptors(config.interceptors);
+      }
+    });
 
     return cnt;
   }
@@ -281,4 +252,4 @@ export class Container
   }
 }
 
-export const container: IContainer & IContainerFactory = Container.root();
+export const container = Container.create.bind(Container);

@@ -9,13 +9,15 @@ import { COWMap } from './COWMap.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
 import type { ICascadeRootsRegistry } from './abstract/ICascadeRootsRegistry.js';
 import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js';
+import { LazyDefinitionsRegistry } from './LazyDefinitionsRegistry.js';
 
 export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsRegistry {
-  static create(): BindingsRegistry {
+  static create(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
     return new BindingsRegistry(
       COWMap.create(),
       ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy),
       COWMap.create(),
+      new LazyDefinitionsRegistry(),
     );
   }
 
@@ -23,6 +25,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     private _frozenDefinitions: COWMap<IDefinition<unknown, LifeTime>>,
     private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>,
     private _cascadingRoots: COWMap<ICascadingDefinitionResolver>,
+    private _lazyDefinitions: LazyDefinitionsRegistry,
   ) {}
 
   applyConfig(config: IBindingsRegistryConfiguration, container: ICascadingDefinitionResolver) {
@@ -85,7 +88,7 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     return this._definitions.getForOverride(symbol.id) as IDefinition<TInstance, TLifeTime>;
   }
 
-  checkoutForScope(): BindingsRegistry {
+  checkoutForScope(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
     return new BindingsRegistry(
       this._frozenDefinitions.clone(),
       this._definitions.checkoutForScope(),
