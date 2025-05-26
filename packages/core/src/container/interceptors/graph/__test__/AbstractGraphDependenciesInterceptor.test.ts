@@ -47,7 +47,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
   }
 
   function setup(...setupFns: ContainerConfigureFn[]) {
-    const cnt = container.new(
+    const cnt = container(
       c => {
         c.withInterceptor(RootTestInterceptor);
       },

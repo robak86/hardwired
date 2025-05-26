@@ -46,7 +46,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
   });
 
   function setup() {
-    const cnt = container.new(registerServices, withReactLifeCycle());
+    const cnt = container(registerServices, withReactLifeCycle());
     const interceptor = cnt.getInterceptor(ReactLifeCycleRootInterceptor);
 
     return { cnt, interceptor };

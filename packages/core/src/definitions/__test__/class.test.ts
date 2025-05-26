@@ -73,7 +73,7 @@ describe(`class`, () => {
 
   describe(`types`, () => {
     it(`returns correct type`, async () => {
-      const cnt = container.new(syncConfig);
+      const cnt = container(syncConfig);
 
       const instance = cnt.use(myClassTransient);
 
@@ -91,7 +91,7 @@ describe(`class`, () => {
   describe(`resolution`, () => {
     describe(`sync resolution`, () => {
       it(`doesn't lift to async if all dependencies are sync`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance = cnt.use(myClassTransient);
 
@@ -104,7 +104,7 @@ describe(`class`, () => {
       });
 
       it(`throws when definition symbol is not registered`, async () => {
-        const cnt = container.new();
+        const cnt = container();
 
         await expect(async () => {
           await cnt.use(myClassTransient);
@@ -114,7 +114,7 @@ describe(`class`, () => {
 
     describe(`async resolution`, () => {
       it(`lifts to Promise if some of dependencies are async`, async () => {
-        const cnt = container.new(asyncConfig);
+        const cnt = container(asyncConfig);
 
         const instance = cnt.use(myClassTransient);
 
@@ -131,7 +131,7 @@ describe(`class`, () => {
   describe(`scopes`, () => {
     describe(`singleton`, () => {
       it(`returns always the same instance`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance1 = await cnt.use(myClassSingleton);
         const instance2 = await cnt.use(myClassSingleton);
@@ -140,7 +140,7 @@ describe(`class`, () => {
       });
 
       it(`returns the same instance also fetched from the child scope`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance1 = await cnt.use(myClassSingleton);
         const childScope = cnt.scope();
@@ -153,7 +153,7 @@ describe(`class`, () => {
 
     describe(`transient`, () => {
       it(`returns always a new instance`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance1 = await cnt.use(myClassTransient);
         const instance2 = await cnt.use(myClassTransient);
@@ -164,7 +164,7 @@ describe(`class`, () => {
 
     describe(`scoped`, () => {
       it(`returns the same instance within a scope`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance1 = await cnt.use(myClassScoped);
         const instance2 = await cnt.use(myClassScoped);
@@ -191,7 +191,7 @@ describe(`class`, () => {
       });
 
       it(`is inherited by child scope`, async () => {
-        const cnt = container.new(config);
+        const cnt = container(config);
 
         const childScope = cnt.scope();
 
@@ -202,7 +202,7 @@ describe(`class`, () => {
       });
 
       it(`is inherited until a child scope makes owning the definition`, async () => {
-        const root = container.new(config);
+        const root = container(config);
 
         const scopeL1 = root.scope(s => s.modify(numDefCascading).claimNew());
         const scopeL2 = scopeL1.scope(s => s.modify(myClassCascading).claimNew());
@@ -229,7 +229,7 @@ describe(`class`, () => {
 
   describe(`types2`, () => {
     it(`returns correct type`, async () => {
-      const cnt = container.new(syncConfig);
+      const cnt = container(syncConfig);
 
       const instance = cnt.use(myClassTransient);
 
@@ -247,7 +247,7 @@ describe(`class`, () => {
   describe(`resolution2`, () => {
     describe(`sync resolution`, () => {
       it(`doesn't lift to async if all dependencies are sync`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance = cnt.use(myClassTransient);
 
@@ -260,7 +260,7 @@ describe(`class`, () => {
       });
 
       it(`throws when definition symbol is not registered`, async () => {
-        const cnt = container.new();
+        const cnt = container();
 
         await expect(async () => {
           await cnt.use(myClassTransient);
@@ -270,7 +270,7 @@ describe(`class`, () => {
 
     describe(`async resolution`, () => {
       it(`lifts to Promise if some of dependencies are async`, async () => {
-        const cnt = container.new(asyncConfig);
+        const cnt = container(asyncConfig);
 
         const instance = cnt.use(myClassTransient);
 
@@ -287,7 +287,7 @@ describe(`class`, () => {
   describe(`scopes2`, () => {
     describe(`singleton`, () => {
       it(`returns always the same instance`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance1 = await cnt.use(myClassSingleton);
         const instance2 = await cnt.use(myClassSingleton);
@@ -296,7 +296,7 @@ describe(`class`, () => {
       });
 
       it(`returns the same instance also fetched from the child scope`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance1 = await cnt.use(myClassSingleton);
         const childScope = cnt.scope();
@@ -307,7 +307,7 @@ describe(`class`, () => {
       });
 
       it(`propagates singleton to the root container`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const childScope = cnt.scope();
 
@@ -320,7 +320,7 @@ describe(`class`, () => {
 
     describe(`transient`, () => {
       it(`returns always a new instance`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance1 = await cnt.use(myClassTransient);
         const instance2 = await cnt.use(myClassTransient);
@@ -331,7 +331,7 @@ describe(`class`, () => {
 
     describe(`scoped`, () => {
       it(`returns the same instance within a scope`, async () => {
-        const cnt = container.new(syncConfig);
+        const cnt = container(syncConfig);
 
         const instance1 = await cnt.use(myClassScoped);
         const instance2 = await cnt.use(myClassScoped);
@@ -358,7 +358,7 @@ describe(`class`, () => {
       });
 
       it(`is inherited by child scope`, async () => {
-        const cnt = container.new(config);
+        const cnt = container(config);
 
         const childScope = cnt.scope();
 
@@ -369,7 +369,7 @@ describe(`class`, () => {
       });
 
       it(`is inherited until a child scope makes owning the definition`, async () => {
-        const root = container.new(config);
+        const root = container(config);
 
         const scopeL1 = root.scope(s => s.modify(numDefCascading).claimNew());
         const scopeL2 = scopeL1.scope(s => s.modify(myClassCascading).claimNew());

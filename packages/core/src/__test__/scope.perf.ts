@@ -36,7 +36,7 @@ let childScope: IContainer;
 const scopesBench = new Bench({
   time: 100,
   setup: () => {
-    cnt = container.new();
+    cnt = container();
 
     childScope = cnt.scope(configure);
 
@@ -45,7 +45,7 @@ const scopesBench = new Bench({
     void childScope.use(cascadingD);
   },
   teardown: () => {
-    cnt = container.new();
+    cnt = container();
   },
 });
 

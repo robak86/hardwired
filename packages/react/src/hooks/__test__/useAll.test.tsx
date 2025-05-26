@@ -45,7 +45,7 @@ describe(`useDefinitions`, () => {
         return <DummyComponent value={values.join(',')} />;
       };
 
-      const c = container.new(c => {
+      const c = container(c => {
         c.add(val1Def).static('val1');
         c.add(val2Def).static('val2');
       });
@@ -76,7 +76,7 @@ describe(`useDefinitions`, () => {
         return <DummyComponent value={cls} />;
       };
 
-      const c = container.new(c => {
+      const c = container(c => {
         c.add(clsDef).fn(checkoutRenderId);
       });
 
@@ -138,7 +138,7 @@ describe(`useDefinitions`, () => {
         return <DummyComponent value={values.join('|')} />;
       };
 
-      const c = container.new(c => {
+      const c = container(c => {
         c.add(val1Def).fn(ext => `def:1,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
         c.add(val2Def).fn(ext => `def:2,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
       });
@@ -240,7 +240,7 @@ describe(`useDefinitions`, () => {
 
     describe(`single scope`, () => {
       it(`calls mount on component mount`, async () => {
-        const cnt = container.new(withReactLifeCycle(), configure);
+        const cnt = container(withReactLifeCycle(), configure);
 
         const OtherConsumer = () => {
           useAll(mountableServiceD, mountableServiceOtherD);
@@ -310,7 +310,7 @@ describe(`useDefinitions`, () => {
 
     describe(`scoped instances`, () => {
       it(`correctly calls mount/unmount for shared singleton used from scoped definition used in multiple scopes`, async () => {
-        const cnt = container.new(configure, withReactLifeCycle());
+        const cnt = container(configure, withReactLifeCycle());
 
         const ScopedConsumer = () => {
           const [id] = useState(Math.random());

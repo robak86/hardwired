@@ -55,13 +55,13 @@ const instantiationBench = new Bench({
   time: 200,
   iterations: 1000,
   setup: () => {
-    syncCnt = container.new(configure);
-    asyncCnt = container.new(configureAsAsync);
+    syncCnt = container(configure);
+    asyncCnt = container(configureAsAsync);
 
     syncCntScope = syncCnt.scope();
     asyncCntScope = asyncCnt.scope();
 
-    cntWithInterceptor = container.new(configure, c => {
+    cntWithInterceptor = container(configure, c => {
       c.withInterceptor(DependenciesGraphInterceptor);
     });
   },

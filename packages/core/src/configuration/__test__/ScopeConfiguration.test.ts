@@ -30,7 +30,7 @@ describe(`ScopeConfiguration`, () => {
 
     describe(`registration`, () => {
       it(`registers definition only for the current scope and all the child scopes`, async () => {
-        const cnt = container.new();
+        const cnt = container();
 
         const scopeL1 = cnt.scope(s => {
           s.add(someScoped).fn(() => new BoxedValue(123));

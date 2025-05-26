@@ -29,7 +29,7 @@ class HomePageHandler implements IRequestHandler {
   }
 }
 
-const cnt = container.new(c => {
+const cnt = container(c => {
   c.add(serverD).locator(serviceLocator => {
     return createServer((req, res) => {
       const requestScope = serviceLocator.scope(scope => {

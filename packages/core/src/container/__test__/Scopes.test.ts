@@ -9,7 +9,7 @@ describe(`Scopes`, () => {
       it(`freezes values for the root scope`, async () => {
         const def = singleton<number>();
 
-        const cnt = container.new(scope => {
+        const cnt = container(scope => {
           return scope.freeze(def).static(100);
         });
 
@@ -19,7 +19,7 @@ describe(`Scopes`, () => {
       it(`propagates frozen definitions to child scopes`, async () => {
         const def = singleton<number>();
 
-        const cnt = container.new(scope => {
+        const cnt = container(scope => {
           return scope.freeze(def).static(1);
         });
 
@@ -35,7 +35,7 @@ describe(`Scopes`, () => {
           it(`overrides static value binding`, async () => {
             const def = scoped<number>();
 
-            const cnt = container.new(scope => {
+            const cnt = container(scope => {
               return scope.freeze(def).static(1);
             });
             const l1 = cnt.scope();
@@ -50,7 +50,7 @@ describe(`Scopes`, () => {
           it(`overrides static value binding`, async () => {
             const def = cascading<number>();
 
-            const cnt = container.new(scope => scope.freeze(def).static(1));
+            const cnt = container(scope => scope.freeze(def).static(1));
 
             const l1 = cnt.scope();
             const l2 = l1.scope(scope => scope.modify(def).static(2));
@@ -67,7 +67,7 @@ describe(`Scopes`, () => {
         const def = cascading<number>();
         const consumer = cascading<number>();
 
-        const root = container.new(scope => {
+        const root = container(scope => {
           scope.add(def).static(1);
           scope.add(consumer).fn(val => val, def);
         });

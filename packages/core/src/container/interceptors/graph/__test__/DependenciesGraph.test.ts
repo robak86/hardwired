@@ -10,7 +10,7 @@ describe(`DependenciesGraph`, () => {
     const bDef = singleton<{ B: { c1: string; c2: string } }>();
     const aDef = singleton<{ A: { B: { c1: string; c2: string } } }>();
 
-    const cnt = container.new(c => {
+    const cnt = container(c => {
       c.add(c1Def).fn(() => 'C1');
       c.add(c2Def).fn(() => 'C2');
       c.add(bDef).fn((c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
@@ -48,7 +48,7 @@ describe(`DependenciesGraph`, () => {
       const bDef = singleton<{ B: { c1: string; c2: string } }>();
       const aDef = singleton<{ A: { B: { c1: string; c2: string } } }>();
 
-      const cnt = container.new(
+      const cnt = container(
         c => {
           c.add(c1Def).asyncFn(async () => 'C1');
           c.add(c2Def).asyncFn(async () => 'C2');

@@ -19,7 +19,7 @@ describe(`ContainerScope`, () => {
 
       const valueD = scoped<number>();
 
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(valueD).fn(() => (counter += 1));
       });
 
@@ -68,7 +68,7 @@ describe(`ContainerScope`, () => {
 
       const valueD = scoped<number>();
 
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(valueD).fn(() => (counter += 1));
       });
 
@@ -123,7 +123,7 @@ describe(`ContainerScope`, () => {
       const baseD = scoped<number>();
       const valueD = scoped<number>();
 
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(baseD).fn(() => (counter += 1));
         c.add(valueD).fn(base => (counter += 1 + base), baseD);
       });

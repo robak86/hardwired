@@ -93,7 +93,7 @@ class MyDisposable implements Disposable {
   }
 }
 
-const cnt = container.new();
+const cnt = container();
 
 const scope = cnt.scope();
 scope.use(MyDisposable.instance); // during creation of MyDisposable, it gets registered in the scope as disposable
@@ -136,7 +136,7 @@ const myClass = await once(MyClass.instance); // needs to be awaited because MyC
 ```typescript
 import { LoggingInterceptor } from 'hardwired';
 
-const cnt = container.new(c => {
+const cnt = container(c => {
   return c.withInterceptor('logging', new LoggingInterceptor());
 });
 ```
@@ -196,7 +196,7 @@ const App = () => {
 
 - add support for configuring container and scope using callback functions
   ```typescript
-  const cnt = container.new(containerConfigureFn);
+  const cnt = container(containerConfigureFn);
   const scope = cnt.scope(scopeConfigureFn);
   ```
 

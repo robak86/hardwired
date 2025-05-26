@@ -24,7 +24,7 @@ describe(`Testing`, () => {
     ) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use) => {
-          const scope = container.new(...containerConfigurations);
+          const scope = container(...containerConfigurations);
 
           await use(scope);
 
@@ -82,7 +82,7 @@ describe(`Logger`, () => {
         }
       }
 
-      const root = container.new(scope => {
+      const root = container(scope => {
         scope.add(requestId).static('app');
         scope.add(loggerD).class(Logger, requestId);
       });

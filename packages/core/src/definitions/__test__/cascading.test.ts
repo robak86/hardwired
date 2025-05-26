@@ -27,7 +27,7 @@ describe(`cascading definition`, () => {
 
   describe(`own configured`, () => {
     it(`allows configuring the `, async () => {
-      const cnt = container.new(syncConfig);
+      const cnt = container(syncConfig);
 
       const scope1Spy = vi.fn();
       const scope2Spy = vi.fn();

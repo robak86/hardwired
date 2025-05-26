@@ -10,7 +10,7 @@ describe(`Container`, () => {
     it(`is callable like function`, async () => {
       const myDef = singleton<number>();
 
-      const use = container.new(c => c.add(myDef).fn(() => 123));
+      const use = container(c => c.add(myDef).fn(() => 123));
 
       const instance = use(myDef);
 
@@ -21,7 +21,7 @@ describe(`Container`, () => {
       it(`provides use method`, async () => {
         const myDef = singleton<number>();
 
-        const cnt = container.new(c => c.add(myDef).fn(() => 123));
+        const cnt = container(c => c.add(myDef).fn(() => 123));
 
         const instance = cnt.use(myDef);
 
@@ -33,7 +33,7 @@ describe(`Container`, () => {
           const myDef1 = singleton<number>();
           const myDef2 = singleton<number>();
 
-          const use = container.new(c => {
+          const use = container(c => {
             c.add(myDef1).fn(() => 123);
             c.add(myDef2).fn(() => 456);
           });
@@ -48,7 +48,7 @@ describe(`Container`, () => {
           const myDef1 = singleton<number>();
           const myDef2 = singleton<number>();
 
-          const use = container.new(c => {
+          const use = container(c => {
             c.add(myDef1).asyncFn(async () => 123);
             c.add(myDef2).fn(() => 456);
           });
@@ -77,7 +77,7 @@ describe(`Container`, () => {
           const pubSub = singleton<EventEmitter<EventMap>>();
           const handler = cascading<IHandler>();
 
-          const cnt = container.new(c => {
+          const cnt = container(c => {
             c.add(pubSub).locator(container => {
               const emitter = new EventEmitter<EventMap>();
 

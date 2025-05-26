@@ -185,7 +185,7 @@ describe('CounterAction', () => {
     // delegating instances construction to container and
     // overriding initial value for the counter store
     it('increments counter state by 1', () => {
-      const cnt = container.new(container => {
+      const cnt = container(container => {
         container.bind(initialValue).toValue(10);
       });
       const [counterStore, counterStoreActions] = cnt.all(CounterStore.instance, CounterActions.class);
@@ -269,7 +269,7 @@ import {runInAction} from 'mobx';
 
 describe('CounterButtons', () => {
   function setup(startCountValue: number) {
-    const cnt = container.new(c => {
+    const cnt = container(c => {
       c.bind(initialValue).toValue(startCountValue)
     })
 

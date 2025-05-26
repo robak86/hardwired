@@ -30,7 +30,7 @@ describe(`interceptor`, () => {
   describe(`container configuration`, () => {
     describe(`getInterceptor`, () => {
       it(`returns correct instance of interceptor`, async () => {
-        const cnt = container.new(c => c.withInterceptor(TestInterceptor));
+        const cnt = container(c => c.withInterceptor(TestInterceptor));
 
         expect(cnt.getInterceptor(TestInterceptor)).toBeInstanceOf(TestInterceptor);
       });
@@ -39,7 +39,7 @@ describe(`interceptor`, () => {
 
   describe(`sync`, () => {
     it(`Calls interceptor methods with correct arguments`, async () => {
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(c1Def).fn(() => 'C1');
         c.add(c2Def).fn(() => 'C2');
         c.add(bDef).fn((c1, c2) => ['B', c1, c2], c1Def, c2Def);
@@ -93,7 +93,7 @@ describe(`interceptor`, () => {
 
   describe(`async`, () => {
     it(`Calls interceptor methods with correct arguments`, async () => {
-      const cnt = container.new(c => {
+      const cnt = container(c => {
         c.add(c1Def).asyncFn(async () => 'C1');
         c.add(c2Def).asyncFn(async () => 'C2');
         c.add(bDef).asyncFn(async (c1, c2) => ['B', c1, c2], c1Def, c2Def);

@@ -28,21 +28,21 @@ describe(`SingletonStrategy`, () => {
     describe(`resolution`, () => {
       describe(`single module`, () => {
         it(`returns class instance`, async () => {
-          const c = container.new(setup);
+          const c = container(setup);
 
           expect(c.use(leafD).trySync()).toHaveProperty('value');
           expect(c.use(leafD).trySync()).toHaveProperty('id');
         });
 
         it(`constructs class with correct dependencies`, async () => {
-          const c = container.new(setup);
+          const c = container(setup);
           const instance = await c.use(leafD);
 
           expect(instance.value).toEqual('someString');
         });
 
         it(`caches class instance`, async () => {
-          const c = container.new(setup);
+          const c = container(setup);
           const instance = await c.use(leafD);
           const instance2 = await c.use(leafD);
 
@@ -78,7 +78,7 @@ describe(`SingletonStrategy`, () => {
           const consumer1 = singleton<BoxedValue<number>>();
           const consumer2 = singleton<BoxedValue<number>>();
 
-          const ctn = container.new(c => {
+          const ctn = container(c => {
             c.add(slowSingletonD).asyncFn(() => resolveAfter(Math.random() * 500, new BoxedValue(Math.random())));
             c.add(consumer1).asyncFn(async value => value, slowSingletonD);
             c.add(consumer2).asyncFn(async value => value, slowSingletonD);
