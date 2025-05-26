@@ -3,6 +3,8 @@ import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 
 export class LazyDefinitionsRegistry {
+  private _isFrozen = false;
+
   static empty(): LazyDefinitionsRegistry {
     return new LazyDefinitionsRegistry(
       new Map<symbol, ILazyDefinitionBuilder<unknown, LifeTime>[]>(),
@@ -11,10 +13,7 @@ export class LazyDefinitionsRegistry {
   }
 
   static root(others: Array<LazyDefinitionsRegistry>): LazyDefinitionsRegistry {
-    return new LazyDefinitionsRegistry(
-      new Map<symbol, ILazyDefinitionBuilder<unknown, LifeTime>[]>(),
-      new Map<symbol, ILazyDefinitionBuilder<unknown, LifeTime>[]>(),
-    ).checkoutScope(others);
+    return LazyDefinitionsRegistry.empty().checkoutScope(others);
   }
 
   protected constructor(
@@ -25,7 +24,7 @@ export class LazyDefinitionsRegistry {
   ) {}
 
   checkoutScope(other: Array<LazyDefinitionsRegistry>) {
-    return new LazyDefinitionsRegistry(new Map(), new Map()).appendPrevious(other).withParent(this);
+    return LazyDefinitionsRegistry.empty().appendPrevious(other).withParent(this);
   }
 
   private withParent(parent: LazyDefinitionsRegistry): LazyDefinitionsRegistry {
@@ -49,6 +48,8 @@ export class LazyDefinitionsRegistry {
   }
 
   append(lazyDefinition: ILazyDefinitionBuilder<unknown, LifeTime>) {
+    this.assertNotFrozen();
+
     if (!this._lazyDefinitions.has(lazyDefinition.token.id)) {
       this._lazyDefinitions.set(lazyDefinition.token.id, []);
     }
@@ -57,6 +58,8 @@ export class LazyDefinitionsRegistry {
   }
 
   appendFrozen(lazyDefinition: ILazyDefinitionBuilder<unknown, LifeTime>) {
+    this.assertNotFrozen();
+
     if (!this._frozenLazyDefinitions.has(lazyDefinition.token.id)) {
       this._frozenLazyDefinitions.set(lazyDefinition.token.id, []);
     }
@@ -111,11 +114,27 @@ export class LazyDefinitionsRegistry {
     return definition;
   }
 
+  private assertNotFrozen() {
+    if (this._isFrozen) {
+      throw new Error('Cannot modify frozen LazyDefinitionsRegistry.');
+    }
+  }
+
   private appendPrevious(others: Array<LazyDefinitionsRegistry>) {
     if (others.length === 0) {
       return new LazyDefinitionsRegistry(this._lazyDefinitions, this._frozenLazyDefinitions, this._parent, this._prev);
     }
 
     return others.reduce((parentRegistry, registry) => registry.withPrev(parentRegistry), this);
+  }
+
+  freeze() {
+    if (this._isFrozen) {
+      throw new Error('LazyDefinitionsRegistry is already frozen.');
+    }
+
+    this._isFrozen = true;
+
+    return this;
   }
 }

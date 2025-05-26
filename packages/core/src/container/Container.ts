@@ -20,6 +20,7 @@ import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 import { AbstractDefinition } from '../definitions/impl/AbstractDefinition.js';
+import { COWMap } from '../context/COWMap.js';
 
 import type { ICascadingDefinitionResolver, IContainer, IStrategyAware, UseFn } from './IContainer.js';
 import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
@@ -44,23 +45,32 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     const bindingsRegistry = BindingsRegistry.create(configs);
     const instancesStore = InstancesStore.create();
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
+    const cascadingRoots = COWMap.create<ICascadingDefinitionResolver>();
 
     const cnt = new Container(
       null,
       bindingsRegistry,
       instancesStore,
-      [],
+      cascadingRoots,
       lifeCycleRegistry,
       PassThroughInterceptor.instance,
     );
 
     configs.forEach((config: IConfiguration) => {
-      bindingsRegistry.applyConfig(config, cnt);
+      // bindingsRegistry.applyConfig(config, cnt);
       lifeCycleRegistry.append(config.lifeCycleRegistry);
 
       if (config.interceptors) {
         cnt.applyInterceptors(config.interceptors);
       }
+
+      config.cascadingTokens.forEach(token => {
+        cascadingRoots.set(token.id, cnt);
+
+        // if (token instanceof AbstractDefinition) {
+        //   bindingsRegistry.override(token);
+        // }
+      });
     });
 
     return cnt;
@@ -77,7 +87,7 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
-    protected readonly scopeTags: (string | symbol)[],
+    protected readonly cascadingRoots: COWMap<ICascadingDefinitionResolver>,
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
     private _interceptor: ICompositeInterceptor,
   ) {
@@ -133,25 +143,30 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
 
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope(configs);
     const instancesStore = this.instancesStore.childScope();
-    const tags: (string | symbol)[] = [];
+
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
+    const cascadingRoots = this.cascadingRoots.clone();
 
     const cnt: Container & IStrategyAware = new Container(
       this.id,
       bindingsRegistry,
       instancesStore,
-      tags,
+      cascadingRoots,
       lifeCycleRegistry,
       this._interceptor.onScope(),
     );
 
     configs.forEach(config => {
-      bindingsRegistry.applyConfig(config, cnt);
+      // bindingsRegistry.applyConfig(config, cnt);
       lifeCycleRegistry.append(config.lifeCycleRegistry);
 
       if (config.interceptors) {
         cnt.applyInterceptors(config.interceptors);
       }
+
+      config.cascadingTokens.forEach(token => {
+        cascadingRoots.set(token.id, cnt);
+      });
     });
 
     return cnt;
@@ -191,8 +206,8 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
       if (definition.strategy === LifeTime.cascading && override === undefined) {
         // If the definition with default implementation is cascading and does not have an override,
         // that means we need to register cascading root for it.
-        if (!this.bindingsRegistry.hasCascadingRoot(definition.id)) {
-          this.bindingsRegistry.setCascadeRoot(definition, this);
+        if (!this.cascadingRoots.has(definition.id)) {
+          this.cascadingRoots.set(definition.id, this);
         }
       }
 
@@ -236,7 +251,7 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
       case LifeTime.scoped:
         return this._scopedStrategy.build(definition, this, this._interceptor);
       case LifeTime.cascading:
-        return (this.bindingsRegistry.getOwningContainer(definition) ?? this).resolveCascading(definition);
+        return (this.cascadingRoots.get(definition.id) ?? this).resolveCascading(definition);
     }
   }
 

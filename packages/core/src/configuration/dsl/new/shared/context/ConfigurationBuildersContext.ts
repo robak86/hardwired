@@ -23,8 +23,8 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
   private _newInterceptors = new Set<InterceptorClass<IInterceptor>>();
 
-  private _definitions = ScopeRegistry.create<IDefinition<unknown, LifeTime>>();
-  private _frozenDefinitions = ScopeRegistry.create<IDefinition<unknown, LifeTime>>();
+  private _definitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
+  private _frozenDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
   private _lazyDefinitions = LazyDefinitionsRegistry.empty();
   private _cascadeDefinitions = new Set<IDefinitionToken<any, LifeTime.cascading>>();
   private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
@@ -39,9 +39,9 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     lifeCycleRegistry.append(this._definitionDisposeFns);
 
     return new ContainerConfiguration(
-      this._definitions,
-      this._frozenDefinitions,
-      this._lazyDefinitions,
+      this._definitions.freeze(),
+      this._frozenDefinitions.freeze(),
+      this._lazyDefinitions.freeze(),
       this._cascadeDefinitions,
       lifeCycleRegistry,
       this._newInterceptors,
@@ -128,8 +128,6 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._definitions.register(definition.id, definition);
-        break;
       case 'modify':
         if (definition.strategy === LifeTime.cascading) {
           this._cascadeDefinitions.add(definition as IDefinitionToken<unknown, LifeTime.cascading>);

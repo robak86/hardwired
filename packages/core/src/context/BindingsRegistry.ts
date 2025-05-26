@@ -4,26 +4,28 @@ import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
 import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 
-import { COWMap } from './COWMap.js';
 import type { IReadonlyScopeRegistry } from './ScopeRegistry.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
-import type { ICascadeRootsRegistry } from './abstract/ICascadeRootsRegistry.js';
 import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js';
 import { LazyDefinitionsRegistry } from './LazyDefinitionsRegistry.js';
 
-export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsRegistry {
+export class BindingsRegistry implements IBindingsRegistryRead {
   static create(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
-    const definitions = ScopeRegistry.readonlyRoot(configs.map(c => c.definitions));
+    const definitions = ScopeRegistry.root(configs.map(c => c.definitions));
     const frozenDefinitions = ScopeRegistry.root(configs.map(c => c.frozenDefinitions));
     const lazyDefinitions = LazyDefinitionsRegistry.root(configs.map(c => c.lazyDefinitions));
 
-    return new BindingsRegistry(frozenDefinitions, definitions, COWMap.create(), lazyDefinitions);
+    // const cascadingTokens = new Set<IDefinitionToken<any, LifeTime.cascading>>(
+    //   configs.flatMap(c => Array.from(c.cascadingTokens)),
+    // );
+
+    return new BindingsRegistry(frozenDefinitions, definitions, lazyDefinitions);
   }
 
   constructor(
     private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
     private _definitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>>,
-    private _cascadingRoots: COWMap<ICascadingDefinitionResolver>,
+
     private _lazyDefinitions: LazyDefinitionsRegistry,
     // private _cascadingTokens: Set<IDefinitionToken<any, LifeTime.cascading>>,
   ) {}
@@ -61,21 +63,21 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     // });
   }
 
-  hasCascadingRoot(id: symbol): boolean {
-    return this._cascadingRoots.has(id);
-  }
-
-  hasOwnCascadingRoot(id: symbol): boolean {
-    return this._cascadingRoots.hasOwn(id);
-  }
-
-  setCascadeRoot(defSymbol: IDefinitionToken<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
-    this._cascadingRoots.set(defSymbol.id, container);
-  }
-
-  getOwningContainer(defSymbol: IDefinitionToken<any, any>): ICascadingDefinitionResolver | undefined {
-    return this._cascadingRoots.get(defSymbol.id);
-  }
+  // hasCascadingRoot(id: symbol): boolean {
+  //   return this._cascadingRoots.has(id);
+  // }
+  //
+  // hasOwnCascadingRoot(id: symbol): boolean {
+  //   return this._cascadingRoots.hasOwn(id);
+  // }
+  //
+  // setCascadeRoot(defSymbol: IDefinitionToken<any, LifeTime.cascading>, container: ICascadingDefinitionResolver) {
+  //   this._cascadingRoots.set(defSymbol.id, container);
+  // }
+  //
+  // getOwningContainer(defSymbol: IDefinitionToken<any, any>): ICascadingDefinitionResolver | undefined {
+  //   return this._cascadingRoots.get(defSymbol.id);
+  // }
 
   getForOverride<TInstance, TLifeTime extends LifeTime>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,
@@ -84,11 +86,16 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
   }
 
   checkoutForScope(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
+    // const cascadingTokens = new Set<IDefinitionToken<any, LifeTime.cascading>>(
+    //   configs.flatMap(c => Array.from(c.cascadingTokens)),
+    // );
+
     return new BindingsRegistry(
-      this._frozenDefinitions.chain(configs.map(c => c.frozenDefinitions)),
-      this._definitions.chain(configs.map(c => c.definitions)),
-      this._cascadingRoots.clone(),
+      this._frozenDefinitions.checkoutScope(configs.map(c => c.frozenDefinitions)),
+      this._definitions.checkoutScope(configs.map(c => c.definitions)),
+      // this._cascadingRoots.clone(),
       this._lazyDefinitions.checkoutScope(configs.map(c => c.lazyDefinitions)),
+      // cascadingTokens,
     );
   }
 
