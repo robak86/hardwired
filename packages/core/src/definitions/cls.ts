@@ -8,7 +8,7 @@ export const createClassDefinition =
   <TLifeTime extends LifeTime>(lifeTime: TLifeTime) =>
   <TInstance, TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
-    ...dependencies: ConstructorArgsTokens<TConstructorArgs, TLifeTime>
+    dependencies: ConstructorArgsTokens<TConstructorArgs, TLifeTime>,
   ): ClassDefinition<TInstance, TLifeTime, TConstructorArgs> => {
     return new ClassDefinition(Symbol(klass.name), lifeTime, klass, dependencies);
   };

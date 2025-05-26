@@ -22,10 +22,10 @@ describe('cls', () => {
 
   describe(`resolving with cls dependencies`, () => {
     it(`uses default implementation provided to cls`, async () => {
-      const left = cls.singleton(Leaf, value('left'));
-      const right = cls.singleton(Leaf, value('right'));
+      const left = cls.singleton(Leaf, [value('left')]);
+      const right = cls.singleton(Leaf, [value('right')]);
 
-      const binary = cls.singleton(Binary, left, right);
+      const binary = cls.singleton(Binary, [left, right]);
 
       const cnt = container();
       const result = await cnt.use(binary);
@@ -36,9 +36,9 @@ describe('cls', () => {
 
     it(`supports tokens as dependencies`, async () => {
       const left = singleton<Leaf>('left');
-      const right = cls.singleton(Leaf, value('right'));
+      const right = cls.singleton(Leaf, [value('right')]);
 
-      const binary = cls.singleton(Binary, left, right);
+      const binary = cls.singleton(Binary, [left, right]);
 
       const cnt = container(c => {
         c.add(left).fn(() => new Leaf('left'));
@@ -51,9 +51,9 @@ describe('cls', () => {
 
     it(`supports async dependencies`, async () => {
       const left = singleton<Leaf>('left');
-      const right = cls.singleton(Leaf, value('right'));
+      const right = cls.singleton(Leaf, [value('right')]);
 
-      const binary = cls.singleton(Binary, left, right);
+      const binary = cls.singleton(Binary, [left, right]);
 
       const cnt = container(c => {
         c.add(left).asyncFn(async () => new Leaf('left'));
@@ -68,7 +68,7 @@ describe('cls', () => {
   describe(`scopes`, () => {
     describe(`singleton`, () => {
       it(`acts as singleton`, async () => {
-        const leafDef = cls.singleton(Leaf, value('leaf'));
+        const leafDef = cls.singleton(Leaf, [value('leaf')]);
 
         const cnt = container();
         const scope = cnt.scope();
@@ -79,7 +79,7 @@ describe('cls', () => {
 
     describe(`scoped`, () => {
       it(`gets new instance per scope`, async () => {
-        const leafDef = cls.scoped(Leaf, value('leaf'));
+        const leafDef = cls.scoped(Leaf, [value('leaf')]);
 
         const cnt = container();
         const scope = cnt.scope();
@@ -93,7 +93,7 @@ describe('cls', () => {
 
     describe(`cascading`, () => {
       it(`inherits instance from parent scope until marked as cascade root`, async () => {
-        const leafDef = cls.cascading(Leaf, value('leaf'));
+        const leafDef = cls.cascading(Leaf, [value('leaf')]);
 
         const cnt = container();
         const scope1 = cnt.scope();
@@ -111,7 +111,7 @@ describe('cls', () => {
 
     describe(`transient`, () => {
       it(`returns always a new instance`, async () => {
-        const leafDef = cls.transient(Leaf, value('leaf'));
+        const leafDef = cls.transient(Leaf, [value('leaf')]);
         const cnt = container();
 
         expect(await cnt.use(leafDef)).not.toBe(await cnt.use(leafDef));
@@ -122,7 +122,7 @@ describe('cls', () => {
   describe(`overriding`, () => {
     describe('cascading', () => {
       it(`allows completely overriding the default implementation`, async () => {
-        const leafDef = cls.cascading(BoxedValue, value(0));
+        const leafDef = cls.cascading(BoxedValue, [value(0)]);
 
         const cnt = container(c => {
           c.modify(leafDef).decorate(val => new BoxedValue(val.value + 1));
