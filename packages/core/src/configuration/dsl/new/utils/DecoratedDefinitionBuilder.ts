@@ -3,7 +3,6 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
 import type { ConstructorArgsTokens } from '../shared/AddDefinitionBuilder.js';
 import type { IDefinitionToken } from '../../../../definitions/tokens.js';
-import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 
 import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
@@ -17,9 +16,7 @@ export class DecoratedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
     private decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ) {}
 
-  build(registry: IBindingsRegistryRead): IDefinition<TInstance, TLifetime> {
-    const def = registry.getForOverride(this.token);
-
+  build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {
     return def.override((container, interceptor) => {
       return container.all(...this.dependencies).then(awaitedDependencies => {
         return def.create(container, interceptor).then(awaitedInstance => {

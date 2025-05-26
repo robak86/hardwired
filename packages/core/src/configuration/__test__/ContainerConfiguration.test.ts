@@ -47,10 +47,12 @@ describe(`ContainerConfiguration`, () => {
           const def = cascading<number>('testCascadingDef');
 
           expect(() => {
-            container(c => {
+            const cnt = container(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('No definition registered');
+
+            cnt.use(def).trySync();
+          }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
 
@@ -187,10 +189,12 @@ describe(`ContainerConfiguration`, () => {
           const def = scoped<number>('testCascadingDef');
 
           expect(() => {
-            container(c => {
+            const cnt = container(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('No definition registered');
+
+            cnt.use(def).trySync();
+          }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
     });
@@ -214,10 +218,12 @@ describe(`ContainerConfiguration`, () => {
           const def = singleton<number>('testCascadingDef');
 
           expect(() => {
-            container(c => {
+            const cnt = container(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('No definition registered for Symbol(testCascadingDef)');
+
+            cnt.use(def).trySync();
+          }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
     });
@@ -253,10 +259,12 @@ describe(`ContainerConfiguration`, () => {
           const def = transient<number>('testCascadingDef');
 
           expect(() => {
-            container(c => {
+            const cnt = container(c => {
               c.modify(def).decorate(val => val + 1);
             });
-          }).toThrow('No definition registered');
+
+            cnt.use(def).trySync();
+          }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
     });

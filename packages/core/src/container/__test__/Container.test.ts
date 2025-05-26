@@ -10,9 +10,9 @@ describe(`Container`, () => {
     it(`is callable like function`, async () => {
       const myDef = singleton<number>();
 
-      const use = container(c => c.add(myDef).fn(() => 123));
+      const cnt = container(c => c.add(myDef).fn(() => 123));
 
-      const instance = use(myDef);
+      const instance = cnt.use(myDef);
 
       expect(instance.trySync()).toEqual(123);
     });

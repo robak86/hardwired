@@ -5,7 +5,7 @@ import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 describe(`BindingsRegistry`, () => {
   function setup() {
-    const registry = BindingsRegistry.create();
+    const registry = BindingsRegistry.create([]);
     const container = {} as any;
 
     const token = cascading<number>();

@@ -11,6 +11,14 @@ export class COWMap<V> {
     return new COWMap<V>(new Map(), true);
   }
 
+  static all<V>(maps: Array<COWMap<V>>): COWMap<V> {
+    const mapInstances = maps.map(map => map._instances);
+
+    const merged = new Map(mapInstances.flatMap(m => [...m]));
+
+    return new COWMap<V>(merged, true);
+  }
+
   private _inheritedKeys = new Set<symbol>();
 
   protected constructor(

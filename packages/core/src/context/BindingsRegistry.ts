@@ -1,11 +1,11 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionToken } from '../definitions/tokens.js';
-import { LifeTime } from '../definitions/abstract/LifeTime.js';
+import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
 import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
-import { AbstractDefinition } from '../definitions/impl/AbstractDefinition.js';
 
 import { COWMap } from './COWMap.js';
+import type { IReadonlyScopeRegistry } from './ScopeRegistry.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
 import type { ICascadeRootsRegistry } from './abstract/ICascadeRootsRegistry.js';
 import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js';
@@ -13,57 +13,52 @@ import { LazyDefinitionsRegistry } from './LazyDefinitionsRegistry.js';
 
 export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsRegistry {
   static create(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
-    return new BindingsRegistry(
-      COWMap.create(),
-      ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy),
-      COWMap.create(),
-      new LazyDefinitionsRegistry(),
-    );
+    const definitions = ScopeRegistry.readonlyRoot(configs.map(c => c.definitions));
+    const frozenDefinitions = ScopeRegistry.root(configs.map(c => c.frozenDefinitions));
+    const lazyDefinitions = LazyDefinitionsRegistry.root(configs.map(c => c.lazyDefinitions));
+
+    return new BindingsRegistry(frozenDefinitions, definitions, COWMap.create(), lazyDefinitions);
   }
 
   constructor(
-    private _frozenDefinitions: COWMap<IDefinition<unknown, LifeTime>>,
-    private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>, LifeTime>,
+    private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
+    private _definitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>>,
     private _cascadingRoots: COWMap<ICascadingDefinitionResolver>,
     private _lazyDefinitions: LazyDefinitionsRegistry,
+    // private _cascadingTokens: Set<IDefinitionToken<any, LifeTime.cascading>>,
   ) {}
 
   applyConfig(config: IBindingsRegistryConfiguration, container: ICascadingDefinitionResolver) {
-    config.definitions.forEach(definition => {
-      this.register(definition, definition, container);
-    });
-
+    // config.definitions.forEach(definition => {
+    //   this.register(definition, definition, container);
+    // });
     // TODO: don't copy all definitions. Just link them.
     // this._definitions = config.definitions.withParent(this._definitions, false);
-
-    config.frozenDefinitions.forEach(def => {
-      this.freeze(def);
-    });
-
+    // config.frozenDefinitions.forEach(def => {
+    //   this.freeze(def);
+    // });
     //! lazy
-    config.lazyDefinitions.forEach(builder => {
-      const def = builder.build(this);
-
-      this.override(def);
-    });
-
+    // config.lazyDefinitions.forEach(builder => {
+    //   const def = builder.build(this);
+    //
+    //   this.override(def);
+    // });
     //! lazy
-    config.frozenLazyDefinitions.forEach(def => {
-      const frozenDef = def.build(this);
-
-      this.freeze(frozenDef);
-    });
-
+    // config.frozenLazyDefinitions.forEach(def => {
+    //   const frozenDef = def.build(this);
+    //
+    //   this.freeze(frozenDef);
+    // });
     //! lazy
-    config.cascadingTokens.forEach(token => {
-      this.setCascadeRoot(token, container);
-
-      if (token instanceof AbstractDefinition) {
-        this.override(token);
-      } else {
-        this.override(this.getDefinition(token));
-      }
-    });
+    // config.cascadingTokens.forEach(token => {
+    //   this.setCascadeRoot(token, container);
+    //
+    //   if (token instanceof AbstractDefinition) {
+    //     this.override(token);
+    //   } else {
+    //     this.override(this.getDefinition(token));
+    //   }
+    // });
   }
 
   hasCascadingRoot(id: symbol): boolean {
@@ -90,46 +85,52 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
 
   checkoutForScope(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
     return new BindingsRegistry(
-      this._frozenDefinitions.clone(),
-      this._definitions.checkoutForScope(),
+      this._frozenDefinitions.chain(configs.map(c => c.frozenDefinitions)),
+      this._definitions.chain(configs.map(c => c.definitions)),
       this._cascadingRoots.clone(),
+      this._lazyDefinitions.checkoutScope(configs.map(c => c.lazyDefinitions)),
     );
   }
 
-  register<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionToken<TInstance, TLifeTime>,
-    definition: IDefinition<TInstance, TLifeTime>,
-    buildAware: ICascadingDefinitionResolver,
-  ) {
-    if (symbol.strategy === LifeTime.cascading) {
-      this._cascadingRoots.set(symbol.id, buildAware);
-    }
+  // register<TInstance, TLifeTime extends LifeTime>(
+  //   symbol: IDefinitionToken<TInstance, TLifeTime>,
+  //   definition: IDefinition<TInstance, TLifeTime>,
+  //   buildAware: ICascadingDefinitionResolver,
+  // ) {
+  //   if (symbol.strategy === LifeTime.cascading) {
+  //     this._cascadingRoots.set(symbol.id, buildAware);
+  //   }
+  //
+  //   this._definitions.append(symbol.id, definition);
+  // }
 
-    this._definitions.append(symbol.id, definition);
-  }
-
-  override(definition: IDefinition<any, LifeTime>) {
-    if (this._frozenDefinitions.has(definition.id)) {
-      return;
-    }
-
-    if (definition.strategy === LifeTime.cascading && !this._cascadingRoots.has(definition.id)) {
-      throw new Error(
-        `Cannot override cascading definition ${definition.toString()}.
-        The registry is missing container that will be used as cascade root.`,
-      );
-    }
-
-    this._definitions.override(definition.id, definition);
-  }
+  // override(definition: IDefinition<any, LifeTime>) {
+  //   if (this._frozenDefinitions.has(definition.id)) {
+  //     return;
+  //   }
+  //
+  //   if (definition.strategy === LifeTime.cascading && !this._cascadingRoots.has(definition.id)) {
+  //     throw new Error(
+  //       `Cannot override cascading definition ${definition.toString()}.
+  //       The registry is missing container that will be used as cascade root.`,
+  //     );
+  //   }
+  //
+  //   this._definitions.override(definition.id, definition);
+  // }
 
   findDefinition<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionToken<TInstance, TLifeTime>,
+    token: IDefinitionToken<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> {
-    return (
-      (this._frozenDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
-      (this._definitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>)
-    );
+    const definition =
+      (this._frozenDefinitions.find(token.id) as IDefinition<TInstance, TLifeTime>) ??
+      (this._definitions.find(token.id) as IDefinition<TInstance, TLifeTime>);
+
+    if (definition && this._lazyDefinitions.has(token.id)) {
+      return this._lazyDefinitions.apply(definition);
+    }
+
+    return definition;
   }
 
   getDefinition<TInstance, TLifeTime extends LifeTime>(
@@ -155,6 +156,6 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
       throw new Error(`Final binding was already set. Cannot override it.`);
     }
 
-    this._frozenDefinitions.set(def.id, def);
+    this._frozenDefinitions.register(def.id, def);
   }
 }

@@ -14,6 +14,7 @@ import type { MaybePromise } from '../../../../../utils/async.js';
 import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 import type { IConfiguration } from '../../container/ContainerConfiguration.js';
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
+import { LazyDefinitionsRegistry } from '../../../../../context/LazyDefinitionsRegistry.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
@@ -22,9 +23,9 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
   private _newInterceptors = new Set<InterceptorClass<IInterceptor>>();
 
-  private _definitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
-  private _frozenDefinitions = ScopeRegistry.create((def: IDefinition<unknown, LifeTime>) => def.strategy);
-  private _lazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
+  private _definitions = ScopeRegistry.create<IDefinition<unknown, LifeTime>>();
+  private _frozenDefinitions = ScopeRegistry.create<IDefinition<unknown, LifeTime>>();
+  private _lazyDefinitions = LazyDefinitionsRegistry.empty();
   private _cascadeDefinitions = new Set<IDefinitionToken<any, LifeTime.cascading>>();
   private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = [];
 
@@ -41,7 +42,6 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       this._definitions,
       this._frozenDefinitions,
       this._lazyDefinitions,
-      this._frozenLazyDefinitions,
       this._cascadeDefinitions,
       lifeCycleRegistry,
       this._newInterceptors,
@@ -74,10 +74,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'freeze':
         this._frozenLazyDefinitions.push(builder);
@@ -92,10 +92,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'freeze':
         this._frozenLazyDefinitions.push(builder);
@@ -114,10 +114,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.push(builder);
+        this._lazyDefinitions.append(builder);
         break;
       case 'freeze':
         this._frozenLazyDefinitions.push(builder);

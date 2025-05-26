@@ -1,6 +1,6 @@
 import { COWMap } from './COWMap.js';
 
-export interface IReadonlyScopeRegistry<V, TType> {
+export interface IReadonlyScopeRegistry<V> {
   findRegistration(definitionId: symbol): V | undefined;
   findOverride(definitionId: symbol): V | undefined;
   find(definitionId: symbol): V | undefined;
@@ -8,23 +8,37 @@ export interface IReadonlyScopeRegistry<V, TType> {
   has(definitionId: symbol): boolean;
   getForOverride(definitionId: symbol): V;
   forEach(iterFn: (value: V) => void): void;
-  forEachType(type: TType, iterFn: (value: V) => void): void;
-  withParent(_prev: IReadonlyScopeRegistry<V, TType>, freeze: boolean): ScopeRegistry<V, TType>;
+  withParent(_prev: IReadonlyScopeRegistry<V>, freeze?: boolean): IReadonlyScopeRegistry<V>;
+  chain(next: IReadonlyScopeRegistry<V>[]): ScopeRegistry<V>;
 }
 
-export class ScopeRegistry<V, TType> implements IReadonlyScopeRegistry<V, TType> {
-  static create<V, TType>(typeSelector: (value: V) => TType): ScopeRegistry<V, TType> {
-    return new ScopeRegistry<V, TType>(false, typeSelector, COWMap.create<V>());
+export class ScopeRegistry<V> implements IReadonlyScopeRegistry<V> {
+  static create<V>(): ScopeRegistry<V> {
+    return new ScopeRegistry<V>(false, COWMap.create<V>());
+  }
+
+  static readonlyRoot<V>(registries: Array<IReadonlyScopeRegistry<V>>): IReadonlyScopeRegistry<V> {
+    return ScopeRegistry.root(registries);
+  }
+
+  static root<V>(registries: Array<IReadonlyScopeRegistry<V>>): ScopeRegistry<V> {
+    if (registries.length === 0) {
+      return new ScopeRegistry<V>(true, COWMap.create<V>());
+    }
+
+    const readonlyRegistries = registries.reduce((parentRegistry, registry) =>
+      registry.withParent(parentRegistry, false),
+    );
+
+    return ScopeRegistry.create<V>().withParent(readonlyRegistries);
   }
 
   private _overrides = new Map<symbol, V>();
-  private _byType = new Map<TType, Set<symbol>>();
 
   constructor(
     protected _isFrozen: boolean,
-    protected _typeSelector: (value: V) => TType,
     protected _registrations: COWMap<V>,
-    protected _prev?: IReadonlyScopeRegistry<V, TType>,
+    protected _prev?: IReadonlyScopeRegistry<V>,
   ) {}
 
   findRegistration(definitionId: symbol): V | undefined {
@@ -72,14 +86,12 @@ export class ScopeRegistry<V, TType> implements IReadonlyScopeRegistry<V, TType>
   forceRegister(definitionId: symbol, instance: V) {
     this.assertMutable(definitionId);
 
-    this.upsertByType(definitionId, instance);
     this._registrations.set(definitionId, instance);
   }
 
   forceOverride(definitionId: symbol, instance: V) {
     this.assertMutable(definitionId);
 
-    this.upsertByType(definitionId, instance);
     this._overrides.set(definitionId, instance);
   }
 
@@ -87,8 +99,6 @@ export class ScopeRegistry<V, TType> implements IReadonlyScopeRegistry<V, TType>
     this.assertMutable(definitionId);
 
     const current = this._registrations.get(definitionId);
-
-    this.upsertByType(definitionId, instance);
 
     if (current) {
       this._overrides.set(definitionId, instance);
@@ -115,7 +125,7 @@ export class ScopeRegistry<V, TType> implements IReadonlyScopeRegistry<V, TType>
   }
 
   checkoutForScope() {
-    return new ScopeRegistry(false, this._typeSelector, this._registrations.clone());
+    return new ScopeRegistry(false, this._registrations.clone());
   }
 
   private assertMutable(definitionId: symbol) {
@@ -124,14 +134,24 @@ export class ScopeRegistry<V, TType> implements IReadonlyScopeRegistry<V, TType>
     }
   }
 
-  withParent(_prev: IReadonlyScopeRegistry<V, TType>, freeze = false): ScopeRegistry<V, TType> {
+  withParent(_prev: IReadonlyScopeRegistry<V>, freeze = false): ScopeRegistry<V> {
     if (this._prev) {
       throw new Error(
         `ScopeRegistry is already linked to some parent. You most likely don't wanna continue with this.`,
       );
     }
 
-    return new ScopeRegistry(freeze, this._typeSelector, this._registrations, _prev);
+    return new ScopeRegistry(freeze, this._registrations, _prev);
+  }
+
+  chain(next: IReadonlyScopeRegistry<V>[]): ScopeRegistry<V> {
+    if (next.length === 0) {
+      return this;
+    }
+
+    const nextRegistries = next.reduce((prev, current) => current.withParent(prev, false), this);
+
+    return new ScopeRegistry(this._isFrozen, this._registrations, nextRegistries);
   }
 
   forEach(iterFn: (value: V) => void) {
@@ -139,25 +159,5 @@ export class ScopeRegistry<V, TType> implements IReadonlyScopeRegistry<V, TType>
 
     this._registrations.forEach(iterFn);
     this._overrides.forEach(iterFn);
-  }
-
-  forEachType(type: TType, iterFn: (value: V) => void): void {
-    this._byType.get(type)?.forEach(definitionId => {
-      const instance = this._registrations.get(definitionId) ?? this._overrides.get(definitionId);
-
-      if (instance) {
-        iterFn(instance);
-      }
-    });
-  }
-
-  private upsertByType(definitionId: symbol, instance: V) {
-    if (!this._byType.has(this._typeSelector(instance))) {
-      this._byType.set(this._typeSelector(instance), new Set());
-    }
-
-    const set = this._byType.get(this._typeSelector(instance))!;
-
-    set.add(definitionId);
   }
 }

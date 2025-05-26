@@ -81,6 +81,7 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
     private _interceptor: ICompositeInterceptor,
   ) {
+    // TODO: remove
     super(
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
         definition: IDefinitionToken<TInstance, TLifeTime>,
