@@ -2,23 +2,25 @@ import type { ClassType } from '../utils/class-type.js';
 import type { IServiceLocator } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
-import type { ConstructorArgsSymbols } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
+import type { ConstructorArgsTokens } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
 import { Definition } from './Definition.js';
+import { AbstractDefinition } from './AbstractDefinition.js';
 
 export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructorArgs extends unknown[]>
+  extends AbstractDefinition<TInstance, TLifeTime>
   implements IDefinition<TInstance, TLifeTime>
 {
-  readonly $type!: TInstance;
-
   constructor(
-    public readonly id: symbol,
-    public readonly strategy: TLifeTime,
+    id: symbol,
+    strategy: TLifeTime,
     protected readonly _class: ClassType<TInstance, TConstructorArgs>,
-    protected readonly _dependencyTokens: ConstructorArgsSymbols<TConstructorArgs, TLifeTime>,
-  ) {}
+    protected readonly _dependencyTokens: ConstructorArgsTokens<TConstructorArgs, TLifeTime>,
+  ) {
+    super(id, strategy);
+  }
 
   override(
     createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,

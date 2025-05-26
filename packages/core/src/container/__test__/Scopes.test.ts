@@ -1,7 +1,7 @@
 import { describe, expect } from 'vitest';
 
 import { container } from '../Container.js';
-import { cascading, scoped, singleton } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton } from '../../definitions/tokens.js';
 
 describe(`Scopes`, () => {
   describe(`root scope`, () => {

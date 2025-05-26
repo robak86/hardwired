@@ -1,6 +1,6 @@
 import { container } from '../../Container.js';
 import type { IInterceptor } from '../interceptor.js';
-import { singleton } from '../../../definitions/def-symbol.js';
+import { singleton } from '../../../definitions/tokens.js';
 
 describe(`interceptor`, () => {
   class TestInterceptor implements IInterceptor {

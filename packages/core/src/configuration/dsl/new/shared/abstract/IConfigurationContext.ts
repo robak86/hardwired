@@ -1,7 +1,7 @@
 import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitionBuilder.js';
 import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
-import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../../definitions/tokens.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';

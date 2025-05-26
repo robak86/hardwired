@@ -1,5 +1,5 @@
 import type { IServiceLocator } from '../../container/IContainer.js';
-import type { IDefinitionToken } from '../def-symbol.js';
+import type { IDefinitionToken } from '../tokens.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 

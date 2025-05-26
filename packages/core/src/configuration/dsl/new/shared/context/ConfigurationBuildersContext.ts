@@ -2,7 +2,7 @@ import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitio
 import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
-import type { IDefinitionToken } from '../../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../../definitions/tokens.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import {

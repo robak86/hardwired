@@ -4,7 +4,7 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import type { IConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';

@@ -3,7 +3,7 @@ import { test } from 'vitest';
 import { container } from '../Container.js';
 import type { IContainer } from '../IContainer.js';
 import { configureContainer, type ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
-import { cascading } from '../../definitions/def-symbol.js';
+import { cascading } from '../../definitions/tokens.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
 import type { IConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
 

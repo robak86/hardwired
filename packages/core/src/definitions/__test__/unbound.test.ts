@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import { container } from '../../container/Container.js';
-import { cascading, scoped, singleton, transient } from '../def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../tokens.js';
 
 describe(`unbound`, () => {
   describe(`scopes`, () => {

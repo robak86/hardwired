@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { container } from '../../container/Container.js';
-import { scoped, transient } from '../def-symbol.js';
+import { scoped, transient } from '../tokens.js';
 
 describe(`define`, () => {
   const ext1 = scoped<number>();

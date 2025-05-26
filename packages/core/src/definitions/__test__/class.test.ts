@@ -1,7 +1,7 @@
 import { expectType } from 'ts-expect';
 
 import { container } from '../../container/Container.js';
-import { cascading, scoped, singleton, transient } from '../def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../tokens.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import type { MaybeAsync } from '../../utils/MaybeAsync.js';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { container } from '../../container/Container.js';
-import { singleton } from '../../definitions/def-symbol.js';
+import { singleton } from '../../definitions/tokens.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`configure`, () => {

@@ -1,5 +1,5 @@
 import { BindingsRegistry } from '../BindingsRegistry.js';
-import { cascading } from '../../definitions/def-symbol.js';
+import { cascading } from '../../definitions/tokens.js';
 import { Definition } from '../../definitions/impl/Definition.js';
 import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
@@ -26,18 +26,18 @@ describe(`BindingsRegistry`, () => {
     it(`returns true when setCascadeRoot was called on the current registry`, async () => {
       const { registry, token, container } = setup();
 
-      expect(registry.hasCascadingRoot(token.id)).toEqual(false);
+      expect(registry.hasOwnCascadingRoot(token.id)).toEqual(false);
 
       registry.setCascadeRoot(token, container);
 
-      expect(registry.hasCascadingRoot(token.id)).toEqual(true);
+      expect(registry.hasOwnCascadingRoot(token.id)).toEqual(true);
 
       const childRegistry = registry.checkoutForScope();
 
-      expect(childRegistry.hasCascadingRoot(token.id)).toEqual(false);
+      expect(childRegistry.hasOwnCascadingRoot(token.id)).toEqual(false);
       childRegistry.setCascadeRoot(token, container);
 
-      expect(childRegistry.hasCascadingRoot(token.id)).toEqual(true);
+      expect(childRegistry.hasOwnCascadingRoot(token.id)).toEqual(true);
     });
   });
 

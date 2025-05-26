@@ -1,5 +1,5 @@
 import { configureScope } from '../ScopeConfiguration.js';
-import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../../definitions/tokens.js';
 import { container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 

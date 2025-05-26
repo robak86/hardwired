@@ -1,8 +1,9 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/tokens.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver } from '../container/IContainer.js';
 import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import { AbstractDefinition } from '../definitions/impl/AbstractDefinition.js';
 
 import { COWMap } from './COWMap.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
@@ -51,14 +52,22 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     });
 
     //! lazy
-    config.cascadingTokens.forEach(symbol => {
-      this.setCascadeRoot(symbol, container);
+    config.cascadingTokens.forEach(token => {
+      this.setCascadeRoot(token, container);
 
-      this.override(this.getDefinition(symbol));
+      if (token instanceof AbstractDefinition) {
+        this.override(token);
+      } else {
+        this.override(this.getDefinition(token));
+      }
     });
   }
 
   hasCascadingRoot(id: symbol): boolean {
+    return this._cascadingRoots.has(id);
+  }
+
+  hasOwnCascadingRoot(id: symbol): boolean {
     return this._cascadingRoots.hasOwn(id);
   }
 
@@ -111,12 +120,19 @@ export class BindingsRegistry implements IBindingsRegistryRead, ICascadeRootsReg
     this._definitions.override(definition.id, definition);
   }
 
-  getDefinition<TInstance, TLifeTime extends LifeTime>(
-    symbol: IDefinitionToken<TInstance, any>,
+  findDefinition<TInstance, TLifeTime extends LifeTime>(
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> {
-    const definition =
+    return (
       (this._frozenDefinitions.get(symbol.id) as IDefinition<TInstance, TLifeTime>) ??
-      (this._definitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>);
+      (this._definitions.find(symbol.id) as IDefinition<TInstance, TLifeTime>)
+    );
+  }
+
+  getDefinition<TInstance, TLifeTime extends LifeTime>(
+    symbol: IDefinitionToken<TInstance, TLifeTime>,
+  ): IDefinition<TInstance, TLifeTime> {
+    const definition = this.findDefinition(symbol);
 
     if (!definition) {
       throw new Error(

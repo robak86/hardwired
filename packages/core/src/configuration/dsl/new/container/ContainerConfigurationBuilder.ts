@@ -5,7 +5,7 @@ import type {
 } from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/tokens.js';
 import type { IInterceptor, InterceptorClass } from '../../../../container/interceptors/interceptor.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';

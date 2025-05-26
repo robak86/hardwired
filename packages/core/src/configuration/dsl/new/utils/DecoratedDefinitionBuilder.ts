@@ -1,8 +1,8 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
-import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
-import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { ConstructorArgsTokens } from '../shared/AddDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 
@@ -13,7 +13,7 @@ export class DecoratedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
 {
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
-    private dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
+    private dependencies: ConstructorArgsTokens<TArgs, TLifetime>,
     private decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ) {}
 

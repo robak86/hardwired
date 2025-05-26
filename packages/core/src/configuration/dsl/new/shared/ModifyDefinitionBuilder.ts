@@ -4,7 +4,7 @@ import type { IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfiguredDefinitionBuilder } from '../utils/ConfiguredDefinitionBuilder.js';
 import { DecoratedDefinitionBuilder } from '../utils/DecoratedDefinitionBuilder.js';
 
-import type { ConstructorArgsSymbols } from './AddDefinitionBuilder.js';
+import type { ConstructorArgsTokens } from './AddDefinitionBuilder.js';
 import { AddDefinitionBuilder } from './AddDefinitionBuilder.js';
 
 // TODO: we need to constraint allowed types that can be injected to configure and decorate functions
@@ -14,12 +14,12 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 {
   configure<TArgs extends any[]>(configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>): void;
   configure<TArgs extends any[]>(
-    dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>,
+    dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
     configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
   ): void;
   configure<TArgs extends any[]>(
     dependenciesOrConfigureFn:
-      | ConstructorArgsSymbols<TArgs, TLifeTime>
+      | ConstructorArgsTokens<TArgs, TLifeTime>
       | ((instance: TInstance, ...args: TArgs) => MaybePromise<void>),
     configureFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
   ) {
@@ -38,7 +38,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     if (typeof dependenciesOrConfigureFn === 'function') {
       const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
         this._token,
-        [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
+        [] as ConstructorArgsTokens<TArgs, TLifeTime>,
         dependenciesOrConfigureFn,
       );
 
@@ -52,12 +52,12 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 
   decorate<TArgs extends any[]>(decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>): void;
   decorate<TArgs extends any[]>(
-    dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>,
+    dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
     decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ): void;
   decorate<TArgs extends any[]>(
     dependenciesOrDecorateFn:
-      | ConstructorArgsSymbols<TArgs, TLifeTime>
+      | ConstructorArgsTokens<TArgs, TLifeTime>
       | ((instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>),
     decorateFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ) {
@@ -76,7 +76,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     if (typeof dependenciesOrDecorateFn === 'function') {
       const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
         this._token,
-        [] as ConstructorArgsSymbols<TArgs, TLifeTime>,
+        [] as ConstructorArgsTokens<TArgs, TLifeTime>,
         dependenciesOrDecorateFn,
       );
 

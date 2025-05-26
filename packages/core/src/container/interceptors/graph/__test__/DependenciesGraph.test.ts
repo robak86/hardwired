@@ -1,5 +1,5 @@
 import { DependenciesGraphInterceptor } from '../DependenciesGraph.js';
-import { scoped, singleton, transient } from '../../../../definitions/def-symbol.js';
+import { scoped, singleton, transient } from '../../../../definitions/tokens.js';
 import { container } from '../../../Container.js';
 import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 

@@ -1,8 +1,8 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
-import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
-import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { ConstructorArgsTokens } from '../shared/AddDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 
@@ -14,11 +14,11 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
     protected readonly _decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
-    protected readonly _dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
+    protected readonly _dependencies: ConstructorArgsTokens<TArgs, TLifetime>,
   ) {}
 
   build(registry: IBindingsRegistryRead): IDefinition<TInstance, TLifetime> {
-    if (registry.hasCascadingRoot(this.token.id)) {
+    if (registry.hasOwnCascadingRoot(this.token.id)) {
       throw new Error('Cannot inherit cascading definition. Current scope already provides own definition.');
     }
 

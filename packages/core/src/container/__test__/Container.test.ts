@@ -3,7 +3,7 @@ import EventEmitter from 'node:events';
 import { describe, expect, it } from 'vitest';
 
 import { container } from '../Container.js';
-import { cascading, singleton } from '../../definitions/def-symbol.js';
+import { cascading, singleton } from '../../definitions/tokens.js';
 
 describe(`Container`, () => {
   describe(`acts like a function`, () => {

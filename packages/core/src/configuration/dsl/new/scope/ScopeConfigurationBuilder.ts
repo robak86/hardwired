@@ -1,7 +1,7 @@
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/tokens.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';

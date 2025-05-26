@@ -11,7 +11,7 @@ import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import { configureScope } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
-import type { IDefinitionToken } from '../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
@@ -19,6 +19,7 @@ import type { IConfiguration } from '../configuration/dsl/new/container/Containe
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
+import { AbstractDefinition } from '../definitions/impl/AbstractDefinition.js';
 
 import type {
   ICascadingDefinitionResolver,
@@ -212,6 +213,20 @@ export class Container
   }
 
   use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
+    if (definition instanceof AbstractDefinition) {
+      const override = this.bindingsRegistry.findDefinition(definition);
+
+      if (definition.strategy === LifeTime.cascading && override === undefined) {
+        // If the definition with default implementation is cascading and does not have an override,
+        // that means we need to register cascading root for it.
+        if (!this.bindingsRegistry.hasCascadingRoot(definition.id)) {
+          this.bindingsRegistry.setCascadeRoot(definition, this);
+        }
+      }
+
+      return this.buildWithStrategy(override ?? definition);
+    }
+
     const patchedDefinition = this.bindingsRegistry.getDefinition(definition);
 
     return this.buildWithStrategy(patchedDefinition);

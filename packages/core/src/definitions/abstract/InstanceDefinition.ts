@@ -1,4 +1,4 @@
-import type { IDefinitionToken } from '../def-symbol.js';
+import type { IDefinitionToken } from '../tokens.js';
 
 import type { AnyDefinitionSymbol } from './IDefinition.js';
 

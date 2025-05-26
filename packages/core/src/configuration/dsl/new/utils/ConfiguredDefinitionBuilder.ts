@@ -1,7 +1,7 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { ConstructorArgsSymbols } from '../shared/AddDefinitionBuilder.js';
-import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { ConstructorArgsTokens } from '../shared/AddDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import type { IBindingsRegistryRead } from '../../../../context/abstract/IBindingsRegistryRead.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 
@@ -12,7 +12,7 @@ export class ConfiguredDefinitionBuilder<TInstance, TLifetime extends LifeTime, 
 {
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
-    private dependencies: ConstructorArgsSymbols<TArgs, TLifetime>,
+    private dependencies: ConstructorArgsTokens<TArgs, TLifetime>,
     private configFn: (instance: TInstance, ...args: TArgs) => void | Promise<void>,
   ) {}
 

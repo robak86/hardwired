@@ -1,7 +1,7 @@
 import { describe, expect, vi } from 'vitest';
 
 import { container } from '../Container.js';
-import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../../definitions/tokens.js';
 import type { ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';

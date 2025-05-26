@@ -14,7 +14,7 @@ export type { IContainerConfigurable } from './configuration/abstract/IContainer
 export type { InstanceCreationAware, IContainerScopes } from './container/IContainer.js';
 export { Container, container } from './container/Container.js';
 
-export * from './definitions/def-symbol.js';
+export * from './definitions/tokens.js';
 
 export type * from './definitions/abstract/InstanceDefinition.js';
 export type * from './definitions/abstract/InstanceDefinitionDependency.js';
@@ -38,3 +38,5 @@ export * from './configuration/ContainerConfiguration.js';
 export * from './configuration/ScopeConfiguration.js';
 
 export type { AnyDefinitionSymbol, IDefinition } from './definitions/abstract/IDefinition.js';
+
+export * from './definitions/cls.js';

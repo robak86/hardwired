@@ -3,7 +3,7 @@ import type { IReadonlyScopeRegistry } from '../../../../context/ScopeRegistry.j
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ILazyDefinitionBuilder } from '../utils/abstract/ILazyDefinitionBuilder.js';
-import type { IDefinitionToken } from '../../../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import type { IInterceptor, InterceptorClass } from '../../../../container/interceptors/interceptor.js';
 
 export interface IBindingsRegistryConfiguration {

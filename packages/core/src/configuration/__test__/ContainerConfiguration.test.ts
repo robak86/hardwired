@@ -6,7 +6,7 @@ import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
 import type { IContainer } from '../../container/IContainer.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
-import { cascading, scoped, singleton, transient } from '../../definitions/def-symbol.js';
+import { cascading, scoped, singleton, transient } from '../../definitions/tokens.js';
 import { configureContainer } from '../ContainerConfiguration.js';
 
 describe(`ContainerConfiguration`, () => {

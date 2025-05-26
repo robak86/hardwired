@@ -1,7 +1,7 @@
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import { container } from '../../container/Container.js';
-import { cascading } from '../def-symbol.js';
+import { cascading } from '../tokens.js';
 
 describe(`cascading definition`, () => {
   const numDefCascading = cascading<BoxedValue<number>>('num');

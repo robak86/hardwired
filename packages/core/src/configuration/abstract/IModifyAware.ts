@@ -1,14 +1,14 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../definitions/tokens.js';
 import type { MaybePromise } from '../../utils/async.js';
-import type { ConstructorArgsSymbols } from '../dsl/new/shared/AddDefinitionBuilder.js';
+import type { ConstructorArgsTokens } from '../dsl/new/shared/AddDefinitionBuilder.js';
 
 import type { IAddDefinitionBuilder } from './IRegisterAware.js';
 
 export interface IConfigureBuilder<TInstance, TLifeTime extends LifeTime> {
   configure<TArgs extends any[]>(configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>): void;
   configure<TArgs extends any[]>(
-    dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>,
+    dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
     configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
   ): void;
 }
@@ -18,7 +18,7 @@ export interface IModifyBuilder<TInstance, TLifeTime extends LifeTime>
     IConfigureBuilder<TInstance, TLifeTime> {
   decorate<TArgs extends any[]>(decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>): void;
   decorate<TArgs extends any[]>(
-    dependencies: ConstructorArgsSymbols<TArgs, TLifeTime>,
+    dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
     decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ): void;
 }

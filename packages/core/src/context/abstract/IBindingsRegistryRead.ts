@@ -1,5 +1,5 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../definitions/def-symbol.js';
+import type { IDefinitionToken } from '../../definitions/tokens.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 
 import type { ICascadeRootsRegistryRead } from './ICascadeRootsRegistry.js';
