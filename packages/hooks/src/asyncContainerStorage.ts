@@ -1,17 +1,12 @@
-import { IContainer } from 'hardwired';
+import { AsyncLocalStorage } from 'node:async_hooks';
+
+import type { IContainer } from 'hardwired';
 
 import { isServer } from './utils/isServer.js';
-import { AsyncLocalStorage } from 'node:async_hooks';
 
 export type AsyncLocalStorageValue = {
   container: IContainer | null;
 };
-
-declare global {
-  interface Window {
-    __container?: IContainer;
-  }
-}
 
 const __storage = new AsyncLocalStorage<AsyncLocalStorageValue>();
 
@@ -32,10 +27,5 @@ export function getCurrentContainer(): IContainer {
     return container;
   } else {
     throw new Error('Not implemented');
-    // if (!window.__container) {
-    //   window.__container = __container;
-    // }
-    //
-    // return window.__container;
   }
 }
