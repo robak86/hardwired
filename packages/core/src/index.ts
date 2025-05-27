@@ -1,3 +1,7 @@
+export { ModifyDefinitionBuilder } from './configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
+
+export { MaybeAsync } from './utils/MaybeAsync.js';
+
 export * from './configuration/dsl/new/container/ContainerConfiguration.js';
 
 export type { MaybePromise } from './utils/async.js';

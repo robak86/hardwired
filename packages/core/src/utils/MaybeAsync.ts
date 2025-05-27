@@ -1,6 +1,6 @@
 import { isThenable } from './IsThenable.js';
 
-type UnwrapMaybePromise<T> = T extends MaybeAsync<infer U> ? U : T extends Promise<infer U> ? U : T;
+export type UnwrapMaybePromise<T> = T extends MaybeAsync<infer U> ? U : T extends Promise<infer U> ? U : T;
 
 export class MaybeAsync<T> implements PromiseLike<T> {
   static null = MaybeAsync.resolve(null);

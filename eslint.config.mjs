@@ -95,7 +95,9 @@ export default typescriptLint.config(
   },
   // Overrides for test files
   {
-    files: ['packages/*/src/**/*.test.{ts,tsx}', 'packages/**/__test__/**/*.{ts,tsx}'],
+    files: [
+      'packages/*/src/**/*.test.{ts,tsx}',
+      'packages/**/__test__/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
