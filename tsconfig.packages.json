@@ -9,6 +9,9 @@
       "path": "packages/examples/tsconfig.json"
     },
     {
+      "path": "packages/hooks/tsconfig.json"
+    },
+    {
       "path": "packages/react/tsconfig.json"
     }
   ]

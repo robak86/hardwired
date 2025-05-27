@@ -2,7 +2,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    workspace: ['./packages/core/vitest.config.ts', './packages/react/vitest.config.ts'],
+    workspace: [
+      './packages/core/vitest.config.ts',
+      './packages/react/vitest.config.ts',
+      './packages/hooks/vitest.config.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['cobertura', 'html'],
