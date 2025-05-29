@@ -140,4 +140,6 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         break;
     }
   }
+
+  registerEagerInstantiation(def: IDefinitionToken<unknown, LifeTime>) {}
 }

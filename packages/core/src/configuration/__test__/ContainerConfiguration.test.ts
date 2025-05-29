@@ -10,6 +10,20 @@ import { cascading, scoped, singleton, transient } from '../../definitions/token
 import { configureContainer } from '../ContainerConfiguration.js';
 
 describe(`ContainerConfiguration`, () => {
+  describe.skip(`eager`, () => {
+    describe('types', () => {
+      it(`allows using async functions for decorate and configure`, async () => {
+        const def = cascading<BoxedValue<number>>('testCascadingDef');
+
+        const cnt = container(c => {
+          c.eager(def).decorate(async val => val);
+        });
+
+        expect(await cnt.use(def)).toMatchObject({ value: 789 });
+      });
+    });
+  });
+
   describe(`modify`, () => {
     describe(`cascading`, () => {
       describe(`decorate`, () => {

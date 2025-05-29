@@ -5,10 +5,8 @@ import { InstancesStore } from '../context/InstancesStore.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
-import { configureContainer } from '../configuration/ContainerConfiguration.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import { configureScope } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
@@ -21,6 +19,8 @@ import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 import { COWMap } from '../context/COWMap.js';
+import { ContainerConfigurationBuilder } from '../configuration/dsl/new/container/ContainerConfigurationBuilder.js';
+import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
 
 import type {
   HasPromise,
@@ -54,13 +54,13 @@ export class Container
   extends ExtensibleFunction
   implements IContainer, ICascadingDefinitionResolver, IDependenciesResolver
 {
-  static create(...configurations: Array<IContainerConfiguration | ContainerConfigureFn>): IContainer {
-    const configs = configurations.map(config => {
-      if (config instanceof Function) {
-        return configureContainer(config);
-      } else {
-        return config;
-      }
+  static create(...configurations: Array<ContainerConfigureFn>): IContainer {
+    const configs: IContainerConfiguration[] = configurations.map(config => {
+      const builder = new ContainerConfigurationBuilder();
+
+      config(builder);
+
+      return builder.toConfig();
     });
 
     const bindingsRegistry = BindingsRegistry.create(configs);
@@ -153,15 +153,13 @@ export class Container
     });
   }
 
-  scope<TConfigureFns extends Array<ScopeConfigureFn | IContainerConfiguration>>(
-    ...configurations: TConfigureFns
-  ): IContainer {
-    const configs = configurations.map(configOrConfigureFn => {
-      if (configOrConfigureFn instanceof Function) {
-        return configureScope(configOrConfigureFn);
-      } else {
-        return configOrConfigureFn;
-      }
+  scope<TConfigureFns extends Array<ScopeConfigureFn>>(...configurations: TConfigureFns): IContainer {
+    const configs: IContainerConfiguration[] = configurations.map(configOrConfigureFn => {
+      const builder = new ScopeConfigurationBuilder();
+
+      configOrConfigureFn(builder);
+
+      return builder.toConfig();
     });
 
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope(configs);

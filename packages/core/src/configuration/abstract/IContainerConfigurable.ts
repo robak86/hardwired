@@ -7,7 +7,6 @@ import type { ModifyDefinitionBuilder } from '../dsl/new/shared/ModifyDefinition
 import type { IRegisterAware } from './IRegisterAware.js';
 import type { IContainerModifyAware } from './IModifyAware.js';
 import type { IEagerInstantiationAware } from './IEagerInstantiationAware.js';
-import type { ILazyInstantiationAware } from './ILazyInstantiationAware.js';
 
 export type ContainerConfigureFreezeLifeTimes =
   | LifeTime.transient
@@ -21,6 +20,8 @@ export type ContainerConfigurationAllowedRegistrationLifeTimes =
   | LifeTime.singleton
   | LifeTime.cascading;
 
+export type EagerInstantiable = LifeTime.scoped | LifeTime.singleton | LifeTime.cascading;
+
 export type ContainerConfigureLocalLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 export type ContainerConfigureCascadingLifeTimes = LifeTime.transient | LifeTime.scoped | LifeTime.singleton;
 
@@ -30,8 +31,7 @@ export type DisposeFn = (container: UseFn<any>) => void;
 export interface IContainerConfigurable
   extends IRegisterAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
     IContainerModifyAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
-    IEagerInstantiationAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
-    ILazyInstantiationAware<ContainerConfigurationAllowedRegistrationLifeTimes> {
+    IEagerInstantiationAware<EagerInstantiable> {
   onDispose(callback: (scope: IContainer) => void): void;
 
   onDisposeAsync(callback: (scope: IContainer) => Promise<void>): void;

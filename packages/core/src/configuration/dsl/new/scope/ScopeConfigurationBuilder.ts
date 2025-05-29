@@ -5,9 +5,10 @@ import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
-import type { IConfigureBuilder, ScopeModifyBuilderType } from '../../../abstract/IModifyAware.js';
+import type { ScopeModifyBuilderType } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 import type { IContainerConfiguration } from '../container/ContainerConfiguration.js';
+import type { IEagerConfigurable } from '../../../abstract/IEagerInstantiationAware.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
@@ -43,7 +44,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
 
   eager<TInstance, TLifeTime extends ScopeConfigureAllowedLifeTimes>(
     def: IDefinitionToken<TInstance, TLifeTime>,
-  ): IConfigureBuilder<TInstance, TLifeTime> {
+  ): IEagerConfigurable<TInstance, TLifeTime> {
     // this._scopeInitializationFns.push(use => {
     //   use(def);
     // });

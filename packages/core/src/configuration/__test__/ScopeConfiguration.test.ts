@@ -12,17 +12,16 @@ describe(`ScopeConfiguration`, () => {
   describe(`add`, () => {
     describe(`types`, () => {
       it(`doesn't allow registering singletons`, async () => {
-        const buildConfiguration = () =>
-          configureScope(s => {
-            s.add(someScoped);
-            s.add(someTransient);
-            s.add(someCascading);
+        const config = configureScope(s => {
+          s.add(someScoped);
+          s.add(someTransient);
+          s.add(someCascading);
 
-            // @ts-expect-error cannot add singletons
-            s.add(someSingleton);
-          });
+          // @ts-expect-error cannot add singletons
+          s.add(someSingleton);
+        });
 
-        expect(buildConfiguration).toThrowError(
+        expect(() => container().scope(config)).toThrowError(
           'Invalid life time "singleton" for Symbol(). Allowed: scoped, transient, cascading',
         );
       });
