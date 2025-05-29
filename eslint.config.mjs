@@ -99,7 +99,7 @@ export default typescriptLint.config(
       'packages/*/src/**/*.test.{ts,tsx}',
       'packages/**/__test__/**/*.{ts,tsx}'],
     rules: {
-      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/require-await': 'warn',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       'unused-imports/no-unused-vars': 'off',

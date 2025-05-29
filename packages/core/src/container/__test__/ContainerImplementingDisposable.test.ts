@@ -5,7 +5,7 @@ import { cascading, scoped, singleton, transient } from '../../definitions/token
 import type { ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';
-import type { IConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { IContainerConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
 
 describe(`container#[Symbol.dispose]`, () => {
@@ -376,7 +376,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
     const dbConnection = cascading<Disposable>();
 
-    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | IConfiguration>>(
+    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | IContainerConfiguration>>(
       ...containerConfigFns: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({

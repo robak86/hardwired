@@ -1,4 +1,5 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
+import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
@@ -62,7 +63,15 @@ export class BindingsRegistry implements IBindingsRegistryRead {
       return this._lazyDefinitions.apply(definition);
     }
 
+    if (!definition && isDefinition(token)) {
+      return this._lazyDefinitions.apply(token);
+    }
+
     return definition;
+  }
+
+  hasLazyDefinition<TInstance, TLifeTime extends LifeTime>(token: IDefinitionToken<TInstance, TLifeTime>): boolean {
+    return this._lazyDefinitions.has(token.id);
   }
 
   getByToken<TInstance, TLifeTime extends LifeTime>(

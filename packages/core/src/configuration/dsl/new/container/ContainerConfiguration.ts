@@ -21,12 +21,12 @@ export interface IInterceptorsConfiguration {
   readonly interceptors?: Set<InterceptorClass<IInterceptor>>;
 }
 
-export interface IConfiguration
+export interface IContainerConfiguration
   extends IBindingsRegistryConfiguration,
     ILifecycleConfiguration,
     IInterceptorsConfiguration {}
 
-export class ContainerConfiguration implements IConfiguration {
+export class ContainerConfiguration implements IContainerConfiguration {
   constructor(
     public readonly definitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
     public readonly frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,

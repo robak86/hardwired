@@ -1,7 +1,7 @@
 import { configureScope, container, scoped } from 'hardwired';
 import { describe, expect } from 'vitest';
 
-import { use } from '../use.js';
+import { use, useAsync } from '../use.js';
 import { withScope } from '../withScope.js';
 import { withContainer } from '../asyncContainerStorage.js';
 
@@ -18,15 +18,15 @@ describe(`AsyncContext`, () => {
     const result = await withContainer(cnt, async () => {
       const collected: number[] = [];
 
-      collected.push(await use(someValue));
-      collected.push(await use(someValue));
+      collected.push(await useAsync(someValue));
+      collected.push(await useAsync(someValue));
 
       await withScope(async () => {
-        collected.push(await use(someValue));
+        collected.push(await useAsync(someValue));
       });
 
       await withScope(async () => {
-        collected.push(await use(someValue));
+        collected.push(use(someValue));
       });
 
       return collected;
@@ -55,7 +55,7 @@ describe(`AsyncContext`, () => {
         c.add(someValue).static(2);
       });
 
-      await withScope([scopeConfig], async () => {
+      await withScope(scopeConfig, async () => {
         collected.push(await use(someValue));
       });
 

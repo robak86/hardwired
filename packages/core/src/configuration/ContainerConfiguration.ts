@@ -1,10 +1,10 @@
 import type { IContainerConfigurable } from './abstract/IContainerConfigurable.js';
-import type { IConfiguration } from './dsl/new/container/ContainerConfiguration.js';
+import type { IContainerConfiguration } from './dsl/new/container/ContainerConfiguration.js';
 import { ContainerConfigurationBuilder } from './dsl/new/container/ContainerConfigurationBuilder.js';
 
 export type ContainerConfigureFn = (container: IContainerConfigurable) => void;
 
-export const configureContainer = (configureFn: ContainerConfigureFn): IConfiguration => {
+export const configureContainer = (configureFn: ContainerConfigureFn): IContainerConfiguration => {
   const builder = new ContainerConfigurationBuilder();
 
   configureFn(builder);

@@ -5,7 +5,7 @@ import type { IDefinitionToken } from '../../../../../definitions/tokens.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
-import type { IConfiguration } from '../../container/ContainerConfiguration.js';
+import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
 
 export type ConfigurationType = 'add' | 'modify' | 'freeze';
 
@@ -24,5 +24,5 @@ export interface IConfigurationContext {
     disposeFn: (instance: TInstance) => MaybePromise<void>,
   ): void;
 
-  toConfig(): IConfiguration;
+  toConfig(): IContainerConfiguration;
 }
