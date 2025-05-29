@@ -16,7 +16,7 @@ export type WrapAsync<TInstance, TDependenciesDefinitions> =
       : TInstance
     : never;
 
-export type ConstructorArgsDefinitions<T extends any[], TCurrentLifeTime extends LifeTime> = {
+export type ConstructorArgsTokens<T extends any[], TCurrentLifeTime extends LifeTime> = {
   [K in keyof T]: IDefinitionToken<T[K] | Promise<T[K]>, ValidDependenciesLifeTime<TCurrentLifeTime>>;
 };
 
@@ -25,7 +25,7 @@ type IsNotEmpty<T extends any[]> = T extends [] ? false : true;
 const transient = <
   TInstance,
   TConstructorArgs extends any[],
-  TDependencies extends Thunk<ConstructorArgsDefinitions<TConstructorArgs, LifeTime.transient>>,
+  TDependencies extends Thunk<ConstructorArgsTokens<TConstructorArgs, LifeTime.transient>>,
 >(
   klass: ClassType<TInstance, TConstructorArgs>,
   ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []
@@ -41,7 +41,7 @@ const transient = <
 const scoped = <
   TInstance,
   TConstructorArgs extends any[],
-  TDependencies extends Thunk<ConstructorArgsDefinitions<TConstructorArgs, LifeTime.scoped>>,
+  TDependencies extends Thunk<ConstructorArgsTokens<TConstructorArgs, LifeTime.scoped>>,
 >(
   klass: ClassType<TInstance, TConstructorArgs>,
   ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []
@@ -57,7 +57,7 @@ const scoped = <
 const cascading = <
   TInstance,
   TConstructorArgs extends any[],
-  TDependencies extends Thunk<ConstructorArgsDefinitions<TConstructorArgs, LifeTime.cascading>>,
+  TDependencies extends Thunk<ConstructorArgsTokens<TConstructorArgs, LifeTime.cascading>>,
 >(
   klass: ClassType<TInstance, TConstructorArgs>,
   ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []
@@ -73,7 +73,7 @@ const cascading = <
 const singleton = <
   TInstance,
   TConstructorArgs extends any[],
-  TDependencies extends Thunk<ConstructorArgsDefinitions<TConstructorArgs, LifeTime.singleton>>,
+  TDependencies extends Thunk<ConstructorArgsTokens<TConstructorArgs, LifeTime.singleton>>,
 >(
   klass: ClassType<TInstance, TConstructorArgs>,
   ...[dependencies]: IsNotEmpty<TConstructorArgs> extends true ? [TDependencies] : []

@@ -48,3 +48,5 @@ export * from './configuration/ScopeConfiguration.js';
 export type { AnyDefinitionSymbol, IDefinition } from './definitions/abstract/IDefinition.js';
 
 export * from './definitions/cls.js';
+
+export * from './definitions/fn.js';
