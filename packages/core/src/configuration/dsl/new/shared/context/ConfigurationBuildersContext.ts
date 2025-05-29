@@ -12,7 +12,7 @@ import {
 } from '../../../../../lifecycle/ILifeCycleRegistry.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
 import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
-import type { IConfiguration } from '../../container/ContainerConfiguration.js';
+import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import { LazyDefinitionsRegistry } from '../../../../../context/LazyDefinitionsRegistry.js';
 
@@ -32,7 +32,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   private _disposeFunctions = new DisposeFunctions();
   private _definitionDisposeFns = new DefinitionsDisposeFunctions();
 
-  toConfig(): IConfiguration {
+  toConfig(): IContainerConfiguration {
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
 
     lifeCycleRegistry.append(this._disposeFunctions);

@@ -13,7 +13,7 @@ import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js'
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 
-import { type IConfiguration } from './ContainerConfiguration.js';
+import { type IContainerConfiguration } from './ContainerConfiguration.js';
 
 export class ContainerConfigurationBuilder implements IContainerConfigurable {
   private readonly _allowedRegisterLifeTimes = [
@@ -33,7 +33,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   private _context = ConfigurationBuildersContext.create();
 
-  toConfig(): IConfiguration {
+  toConfig(): IContainerConfiguration {
     return this._context.toConfig();
   }
 

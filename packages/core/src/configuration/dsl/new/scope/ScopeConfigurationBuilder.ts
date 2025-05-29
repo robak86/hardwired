@@ -7,7 +7,7 @@ import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import type { IConfigureBuilder, ScopeModifyBuilderType } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
-import type { IConfiguration } from '../container/ContainerConfiguration.js';
+import type { IContainerConfiguration } from '../container/ContainerConfiguration.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];
@@ -16,7 +16,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
 
   private _context = ConfigurationBuildersContext.create();
 
-  toConfig(): IConfiguration {
+  toConfig(): IContainerConfiguration {
     return this._context.toConfig();
   }
 

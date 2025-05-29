@@ -4,12 +4,12 @@ import { configureScope, container, scoped } from 'hardwired';
 import { getCurrentContainer, withContainer } from '../asyncContainerStorage.js';
 import { withScope } from '../withScope.js';
 import { use } from '../use.js';
+import { fn } from '../fn.js';
 
 import { it } from './helpers/test-case.js';
 
 describe(`useContainer`, () => {
   it(`returns default global container if not run within a container context`, async () => {
-    console.log('ASDF');
     const c1 = getCurrentContainer();
     const c2 = getCurrentContainer();
 
@@ -26,6 +26,21 @@ describe(`useContainer`, () => {
 });
 
 describe(`withScope`, () => {
+  it(`accepts multiple configurations`, async () => {
+    const myFn = fn.scoped(() => 1);
+
+    const c1 = configureScope(c => c.modify(myFn).decorate(val => val + 1));
+    const c2 = configureScope(c => c.modify(myFn).decorate(val => val + 1));
+
+    const cnt = container();
+
+    const val = withContainer(cnt, () => {
+      return withScope(c1, c2, () => use(myFn));
+    });
+
+    expect(val).toEqual(2);
+  });
+
   describe(`wrapped with local container`, () => {
     it(`returns scoped container that is a child of local container`, async () => {
       const c0 = getCurrentContainer();
@@ -65,10 +80,10 @@ describe(`withScope`, () => {
         c.modify(valD).fn(() => 0);
       });
 
-      const [outer, inner] = await withScope([outerConfig], async () => {
+      const [outer, inner] = await withScope(outerConfig, async () => {
         return [
-          await use(valD),
-          await withScope([innerConfig], () => {
+          use(valD),
+          withScope(innerConfig, () => {
             return use(valD);
           }),
         ];

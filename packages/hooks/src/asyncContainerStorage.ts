@@ -14,6 +14,14 @@ export function withContainer<T>(container: IContainer, runFn: () => T): T {
   return __storage.run({ container }, runFn);
 }
 
+export function hasCurrentContainer(): boolean {
+  if (isServer) {
+    return __storage.getStore()?.container !== undefined;
+  } else {
+    throw new Error('Not implemented');
+  }
+}
+
 export function getCurrentContainer(): IContainer {
   if (isServer) {
     const container = __storage.getStore()?.container;

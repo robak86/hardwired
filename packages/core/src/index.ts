@@ -1,3 +1,7 @@
+export { AbstractDefinition } from './definitions/impl/AbstractDefinition.js';
+
+export type * from './container/interceptors/interceptor.js';
+
 export { ModifyDefinitionBuilder } from './configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 
 export { MaybeAsync } from './utils/MaybeAsync.js';

@@ -8,7 +8,7 @@ import type { ConfigurationType, IConfigurationContext } from '../abstract/IConf
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
-import type { IConfiguration } from '../../container/ContainerConfiguration.js';
+import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
 
 export class ContainerFreezeConfigurationContext implements IConfigurationContext {
   constructor(
@@ -20,7 +20,7 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
     throw new Error('Method not implemented.');
   }
 
-  toConfig(): IConfiguration {
+  toConfig(): IContainerConfiguration {
     throw new Error('Returning container configuration is not supported in eager mode.');
   }
 

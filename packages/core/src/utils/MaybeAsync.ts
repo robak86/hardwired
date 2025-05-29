@@ -31,7 +31,7 @@ export class MaybeAsync<T> implements PromiseLike<T> {
     return MaybeAsync.resolve(Promise.all(unwrapped) as any);
   }
 
-  private readonly value: T | Promise<T>;
+  public readonly value: T | Promise<T>;
 
   // TODO: this can be used to trivially optimize definitions. If the final result isSync, we can skip
   //       MaybePromise completely an in next resolution use fully synchronous value.
