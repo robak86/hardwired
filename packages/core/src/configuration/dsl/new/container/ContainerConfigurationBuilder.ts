@@ -81,16 +81,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   eager<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     def: IDefinitionToken<TInstance, TLifeTime>,
   ): IEagerConfigurable<TInstance, TLifeTime> {
-    this._context.registerEagerInstantiation(def);
-
     throw new Error('Implement me!');
-    // this._initializationFns.push(() => {
-    //   const instance = this._currentContainer.use(symbol);
-    //
-    //   return maybePromiseThen(instance, awaitedInstance => {
-    //     return configureFn(awaitedInstance);
-    //   });
-    // });
   }
 
   lazy<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
