@@ -10,6 +10,7 @@ import type { IContainerConfiguration } from '../configuration/dsl/new/container
 import type { MaybeAsync } from '../utils/MaybeAsync.js';
 
 import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
+import type { ContainerAllReturn } from './Container.js';
 
 export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   readonly id: string;
@@ -48,9 +49,13 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 
   useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null>;
 
-  all<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
+  resolveAll<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): MaybeAsync<InstancesArray<TDefinitions>>;
+
+  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+    ...definitions: [...TDefinitions]
+  ): ContainerAllReturn<TDefinitions>;
 }
 
 export interface IContainerScopes {

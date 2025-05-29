@@ -33,7 +33,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
   }
 
   create(use: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
-    return use.all(...this._dependencyTokens).then(depsAwaited => {
+    return use.resolveAll(...this._dependencyTokens).then(depsAwaited => {
       const instance = new this._class(...(depsAwaited as TConstructorArgs));
 
       return MaybeAsync.resolve(instance).then(instanceAwaited => {

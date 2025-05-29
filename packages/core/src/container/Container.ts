@@ -287,12 +287,20 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     return this._scopedStrategy.build(definition, this, this._interceptor);
   }
 
-  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+  resolveAll<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): MaybeAsync<InstancesArray<TDefinitions>> {
     const results = definitions.map(def => this.use(def));
 
     return MaybeAsync.all(results) as MaybeAsync<InstancesArray<TDefinitions>>;
+  }
+
+  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+    ...definitions: [...TDefinitions]
+  ): ContainerAllReturn<TDefinitions> {
+    const results = definitions.map(def => this.use(def));
+
+    return MaybeAsync.all(results).value as ContainerAllReturn<TDefinitions>;
   }
 }
 

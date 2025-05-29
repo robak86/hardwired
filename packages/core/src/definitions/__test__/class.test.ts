@@ -268,7 +268,7 @@ describe(`class`, () => {
       it(`lifts to Promise if some of dependencies are async`, async () => {
         const cnt = container(asyncConfig);
 
-        const instance = cnt.use(myClassTransient);
+        // const instance = cnt.use(myClassTransient);
 
         const awaited = await cnt.use(myClassTransient);
 

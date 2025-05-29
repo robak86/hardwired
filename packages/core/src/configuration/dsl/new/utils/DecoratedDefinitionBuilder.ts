@@ -18,7 +18,7 @@ export class DecoratedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
 
   build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {
     return def.override((container, interceptor) => {
-      return container.all(...this.dependencies).then(awaitedDependencies => {
+      return container.resolveAll(...this.dependencies).then(awaitedDependencies => {
         return def.create(container, interceptor).then(awaitedInstance => {
           return MaybeAsync.resolve(this.decorateFn(awaitedInstance, ...(awaitedDependencies as TArgs)));
         });

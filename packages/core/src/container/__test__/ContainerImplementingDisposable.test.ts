@@ -198,7 +198,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
           const scope = cnt.scope(config);
 
-          await scope.all(cascadingDef, scopedDef);
+          await scope.resolveAll(cascadingDef, scopedDef);
 
           await scope.dispose();
 
@@ -321,7 +321,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
           const cnt = container(config);
 
-          await cnt.all(singletonDef, cascadingDef, scopedDef);
+          await cnt.resolveAll(singletonDef, cascadingDef, scopedDef);
 
           await cnt.dispose();
 

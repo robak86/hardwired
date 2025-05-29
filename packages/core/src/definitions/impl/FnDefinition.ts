@@ -30,7 +30,7 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
   }
 
   create(context: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
-    return context.all(...this._dependencies).then(awaitedDeps => {
+    return context.resolveAll(...this._dependencies).then(awaitedDeps => {
       const instance = this.createFn(...(awaitedDeps as TDeps));
 
       return MaybeAsync.resolve(instance).then(awaitedInstance => {
