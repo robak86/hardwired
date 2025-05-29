@@ -12,14 +12,6 @@ import type { MaybeAsync } from '../utils/MaybeAsync.js';
 import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import type { ContainerAllReturn } from './Container.js';
 
-export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  readonly id: string;
-
-  // buildWithStrategy<TValue>(
-  //   instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
-  // ): MaybePromise<TValue>;
-}
-
 export interface IDependenciesResolver {
   resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue>;
 
@@ -42,12 +34,8 @@ export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
   extends IContainerScopes,
     InstanceCreationAware<TAllowedLifeTime> {}
 
-export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
+export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> extends IDependenciesResolver {
   use<TValue>(instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>): TValue;
-
-  resolve<TValue>(
-    instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
-  ): MaybeAsync<TValue>;
 
   has(token: IDefinitionToken<unknown, LifeTime>): boolean;
 
@@ -56,10 +44,6 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
   ): Promise<TValue>;
 
   useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null>;
-
-  resolveAll<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
-    ...definitions: [...TDefinitions]
-  ): MaybeAsync<InstancesArray<TDefinitions>>;
 
   all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
@@ -80,8 +64,7 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes,
     UseFn<TAllowedLifeTime>,
-    IContainerConfigurationAware,
-    IStrategyAware {
+    IContainerConfigurationAware {
   readonly id: string;
   readonly parentId: string | null;
 

@@ -27,7 +27,6 @@ import type {
   ICascadingDefinitionResolver,
   IContainer,
   IDependenciesResolver,
-  IStrategyAware,
   UseFn,
 } from './IContainer.js';
 import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
@@ -171,7 +170,7 @@ export class Container
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
     const cascadingRoots = this.cascadingRoots.clone();
 
-    const cnt: Container & IStrategyAware = new Container(
+    const cnt: Container = new Container(
       this.id,
       bindingsRegistry,
       instancesStore,
