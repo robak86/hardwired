@@ -13,7 +13,7 @@ import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinitionToken } from '../definitions/tokens.js';
-import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
+import type { Instance, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
 import type { IContainerConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
@@ -22,7 +22,7 @@ import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 import { COWMap } from '../context/COWMap.js';
 
-import type { ICascadingDefinitionResolver, IContainer, IStrategyAware, UseFn } from './IContainer.js';
+import type { HasPromise, ICascadingDefinitionResolver, IContainer, IStrategyAware, UseFn } from './IContainer.js';
 import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
@@ -31,6 +31,18 @@ import { CompositeInterceptor, PassThroughInterceptor } from './interceptors/Com
 export interface Container extends UseFn<LifeTime> {}
 
 const containerAllowedScopes = [LifeTime.scoped, LifeTime.singleton, LifeTime.transient, LifeTime.cascading];
+
+export type ContainerAllReturn<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<LifeTime>>>> =
+  HasPromise<InstancesArray<TDefinitions>> extends true
+    ? Promise<AwaitedInstanceArray<TDefinitions>>
+    : InstancesArray<TDefinitions>;
+
+export type AwaitedInstance<T extends IDefinitionToken<Promise<any>, any>> =
+  T extends IDefinitionToken<Promise<infer TInstance>, any> ? TInstance : Instance<T>;
+
+export type AwaitedInstanceArray<T extends Array<IDefinitionToken<Promise<any>, any>>> = {
+  [K in keyof T]: AwaitedInstance<T[K]>;
+};
 
 export class Container extends ExtensibleFunction implements IContainer, ICascadingDefinitionResolver {
   static create(...configurations: Array<IContainerConfiguration | ContainerConfigureFn>): IContainer {
@@ -96,7 +108,7 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
         definition: IDefinitionToken<TInstance, TLifeTime>,
       ) => {
-        return this.use(definition);
+        return this.resolve(definition);
       },
     );
 
@@ -211,7 +223,11 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     );
   }
 
-  use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
+  use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): TValue {
+    return this.resolve(definition).value as TValue;
+  }
+
+  resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
     if (isDefinition(definition)) {
       const override = this.bindingsRegistry.findForDefinition(definition);
 

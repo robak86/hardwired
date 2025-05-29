@@ -70,34 +70,34 @@ const instantiationBench = new Bench({
 
 instantiationBench
   .add('[sync definitions] singletonD', () => {
-    syncCnt.use(singletonD).trySync();
+    syncCnt.use(singletonD);
   })
   .add('[sync definitions] singletonD + new scope', () => {
-    syncCnt.scope().use(singletonD).trySync();
+    syncCnt.scope().use(singletonD);
   })
   .add('[sync definitions] transientD', () => {
-    syncCnt.use(transientD).trySync();
+    syncCnt.use(transientD);
   })
   .add('[sync definitions] transientD + new scope', () => {
-    syncCnt.scope().use(transientD).trySync();
+    syncCnt.scope().use(transientD);
   })
   .add('[sync definitions] scopedD', () => {
-    syncCnt.use(scopedD).trySync();
+    syncCnt.use(scopedD);
   })
   .add('[sync definitions] scopedD + new scope', () => {
-    syncCnt.scope().use(scopedD).trySync();
+    syncCnt.scope().use(scopedD);
   })
   .add('[sync definitions] scopedD cascaded to lower scope', () => {
-    syncCntScope.use(scopedD).trySync();
+    syncCntScope.use(scopedD);
   })
   .add('[sync definitions] cascadingD', () => {
-    syncCnt.use(cascadingD).trySync();
+    syncCnt.use(cascadingD);
   })
   .add('[sync definitions] cascadingD + new scope', () => {
-    syncCnt.scope().use(cascadingD).trySync();
+    syncCnt.scope().use(cascadingD);
   })
   .add('[sync definitions] cascadingD cascaded to lower scope', () => {
-    syncCntScope.use(cascadingD).trySync();
+    syncCntScope.use(cascadingD);
   })
 
   .add('[async definitions] singletonD', async () => {

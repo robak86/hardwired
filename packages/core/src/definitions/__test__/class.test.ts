@@ -95,7 +95,7 @@ describe(`class`, () => {
 
         const instance = cnt.use(myClassTransient);
 
-        expect(instance.trySync()).toBeInstanceOf(MyClass);
+        expect(instance).toBeInstanceOf(MyClass);
 
         const awaited = await cnt.use(myClassTransient);
 
@@ -115,10 +115,6 @@ describe(`class`, () => {
     describe(`async resolution`, () => {
       it(`lifts to Promise if some of dependencies are async`, async () => {
         const cnt = container(asyncConfig);
-
-        const instance = cnt.use(myClassTransient);
-
-        expect(instance.isSync).toBe(false);
 
         const awaited = await cnt.use(myClassTransient);
 
@@ -251,7 +247,7 @@ describe(`class`, () => {
 
         const instance = cnt.use(myClassTransient);
 
-        expect(instance.trySync()).toBeInstanceOf(MyClass);
+        expect(instance).toBeInstanceOf(MyClass);
 
         const awaited = await cnt.use(myClassTransient);
 
@@ -273,8 +269,6 @@ describe(`class`, () => {
         const cnt = container(asyncConfig);
 
         const instance = cnt.use(myClassTransient);
-
-        expect(instance.isSync).toBe(false);
 
         const awaited = await cnt.use(myClassTransient);
 

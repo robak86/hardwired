@@ -14,7 +14,7 @@ describe(`Container`, () => {
 
       const instance = cnt.use(myDef);
 
-      expect(instance.trySync()).toEqual(123);
+      expect(instance).toEqual(123);
     });
 
     describe(`other methods`, () => {
@@ -25,7 +25,7 @@ describe(`Container`, () => {
 
         const instance = cnt.use(myDef);
 
-        expect(instance.trySync()).toEqual(123);
+        expect(instance).toEqual(123);
       });
 
       describe(`all`, () => {
@@ -86,7 +86,7 @@ describe(`Container`, () => {
                   scope.add(handler).class(Handler);
                 });
 
-                const handlerInstance = scope.use(handler).trySync();
+                const handlerInstance = scope.use(handler);
 
                 handlerInstance.handle(value);
 

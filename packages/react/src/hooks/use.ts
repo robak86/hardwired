@@ -52,7 +52,7 @@ function useAssertValidOptions(options: UseDefinitionHookOptions | undefined) {
 
 export const use: UseDefinitionHook = (definition, options) => {
   const container = useContainer();
-  const instance = container.use(definition).trySync();
+  const instance = container.use(definition);
 
   const interceptor = useReactLifeCycleInterceptor();
 

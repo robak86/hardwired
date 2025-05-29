@@ -51,7 +51,7 @@ describe(`ContainerConfiguration`, () => {
               c.modify(def).decorate(val => val + 1);
             });
 
-            cnt.use(def).trySync();
+            cnt.use(def);
           }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
@@ -193,7 +193,7 @@ describe(`ContainerConfiguration`, () => {
               c.modify(def).decorate(val => val + 1);
             });
 
-            cnt.use(def).trySync();
+            cnt.use(def);
           }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
@@ -222,7 +222,7 @@ describe(`ContainerConfiguration`, () => {
               c.modify(def).decorate(val => val + 1);
             });
 
-            cnt.use(def).trySync();
+            cnt.use(def);
           }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
@@ -263,7 +263,7 @@ describe(`ContainerConfiguration`, () => {
               c.modify(def).decorate(val => val + 1);
             });
 
-            cnt.use(def).trySync();
+            cnt.use(def);
           }).toThrow('Cannot find definition for Symbol(testCascadingDef)');
         });
       });
@@ -276,7 +276,7 @@ describe(`ContainerConfiguration`, () => {
       const cnt = container();
 
       cnt.freeze(def).static(456);
-      expect(cnt.use(def).trySync()).toEqual(456);
+      expect(cnt.use(def)).toEqual(456);
     });
 
     it(`supports configure`, async () => {
@@ -286,7 +286,7 @@ describe(`ContainerConfiguration`, () => {
       cnt.freeze(def).configure(c => {
         c.value = 456;
       });
-      expect(cnt.use(def).trySync()).toMatchObject({ value: 456 });
+      expect(cnt.use(def)).toMatchObject({ value: 456 });
     });
 
     it(`supports decorate`, async () => {
@@ -296,7 +296,7 @@ describe(`ContainerConfiguration`, () => {
       cnt.freeze(def).decorate(c => {
         return new BoxedValue(456);
       });
-      expect(cnt.use(def).trySync()).toMatchObject({ value: 456 });
+      expect(cnt.use(def)).toMatchObject({ value: 456 });
     });
 
     it(`does not support inherit`, async () => {
@@ -344,7 +344,7 @@ describe(`ContainerConfiguration`, () => {
       const scope = cnt.scope();
 
       scope.freeze(def).static(456);
-      expect(scope.use(def).trySync()).toEqual(456);
+      expect(scope.use(def)).toEqual(456);
     });
 
     it(`throws when cascading definition was created in child scope`, async () => {
@@ -390,8 +390,8 @@ describe(`ContainerConfiguration`, () => {
         },
       );
 
-      expect(cnt.use(def1).trySync()).toEqual(456);
-      expect(cnt.use(def2).trySync()).toEqual(789);
+      expect(cnt.use(def1)).toEqual(456);
+      expect(cnt.use(def2)).toEqual(789);
     });
 
     describe(`init`, () => {
@@ -431,7 +431,7 @@ describe(`ContainerConfiguration`, () => {
         scope.add(def).static(456);
       });
 
-      expect(scope.use(def).trySync()).toEqual(456);
+      expect(scope.use(def)).toEqual(456);
     });
   });
 });

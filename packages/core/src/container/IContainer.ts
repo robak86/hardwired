@@ -34,7 +34,9 @@ export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
     InstanceCreationAware<TAllowedLifeTime> {}
 
 export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue>(
+  use<TValue>(instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>): TValue;
+
+  resolve<TValue>(
     instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
   ): MaybeAsync<TValue>;
 
