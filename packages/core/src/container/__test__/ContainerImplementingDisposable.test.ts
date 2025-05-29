@@ -378,7 +378,7 @@ describe(`container#[Symbol.dispose]`, () => {
     const withContainer = <TConfigureFns extends Array<ContainerConfigureFn>>(...containerConfigFns: TConfigureFns) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use) => {
-          const scope = container(...containerConfigFns);
+          const scope = await container(...containerConfigFns);
 
           await use(scope);
 

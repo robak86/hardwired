@@ -23,7 +23,7 @@ describe(`Testing`, () => {
     ) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use) => {
-          const scope = container(...containerConfigurations);
+          const scope = await container(...containerConfigurations);
 
           await use(scope);
 
@@ -51,7 +51,7 @@ describe(`Testing`, () => {
     it(`uses container`, async ({ use }) => {
       const scope = use.scope();
 
-      await scope.use(dbConnection);
+      scope.use(dbConnection);
     });
 
     it(`has cleaned resources from the previous run`, async () => {
@@ -92,7 +92,7 @@ describe(`Logger`, () => {
       });
 
       expect(root.use(requestId)).toEqual('app');
-      expect((await root.use(loggerD)).print('msg')).toEqual('appmsg');
+      expect(root.use(loggerD).print('msg')).toEqual('appmsg');
 
       const req1 = root.scope(requestScopeConfig);
       const req2 = root.scope(requestScopeConfig);
@@ -103,11 +103,11 @@ describe(`Logger`, () => {
       expect(req2.use(requestId)).toEqual('2');
       expect(req2.use(requestId)).toEqual(req2.use(requestId));
 
-      expect((await req1.use(loggerD)).print('msg')).toEqual('1msg');
-      expect((await req1.use(loggerD)).print('msg')).toEqual('1msg');
+      expect(req1.use(loggerD).print('msg')).toEqual('1msg');
+      expect(req1.use(loggerD).print('msg')).toEqual('1msg');
 
-      expect((await req2.use(loggerD)).print('msg')).toEqual('2msg');
-      expect((await req2.use(loggerD)).print('msg')).toEqual('2msg');
+      expect(req2.use(loggerD).print('msg')).toEqual('2msg');
+      expect(req2.use(loggerD).print('msg')).toEqual('2msg');
     });
   });
 });

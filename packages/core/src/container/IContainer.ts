@@ -1,7 +1,7 @@
 import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { type LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
-import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionToken } from '../definitions/tokens.js';
@@ -9,7 +9,7 @@ import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/Mo
 import type { MaybeAsync } from '../utils/MaybeAsync.js';
 
 import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
-import type { ContainerAllReturn } from './Container.js';
+import type { ContainerAllReturn, NewScopeReturnType } from './Container.js';
 
 export interface IDependenciesResolver {
   resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue>;
@@ -50,7 +50,9 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 }
 
 export interface IContainerScopes {
-  scope<TConfigureFns extends Array<ScopeConfigureFn>>(...configureFns: TConfigureFns): IContainer;
+  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): NewScopeReturnType<TConfigureFns>;
 }
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(

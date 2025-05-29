@@ -76,7 +76,7 @@ describe(`withScope`, () => {
         c.modify(valD).fn(() => 10);
       });
 
-      const outerConfig = configureScope(c => {
+      const outerConfig = configureScope(async c => {
         c.modify(valD).fn(() => 0);
       });
 
