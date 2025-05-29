@@ -92,12 +92,17 @@ describe(`interceptor`, () => {
   });
 
   describe(`async`, () => {
+    const c1DefAsync = singleton<Promise<string>>();
+    const c2DefAsync = singleton<Promise<string>>();
+    const bDefAsync = singleton<Promise<[string, string, string]>>();
+    const aDefAsync = singleton<Promise<[string, [string, string, string]]>>();
+
     it(`Calls interceptor methods with correct arguments`, async () => {
       const cnt = container(c => {
-        c.add(c1Def).asyncFn(async () => 'C1');
-        c.add(c2Def).asyncFn(async () => 'C2');
-        c.add(bDef).asyncFn(async (c1, c2) => ['B', c1, c2], c1Def, c2Def);
-        c.add(aDef).asyncFn(async b => ['A', b], bDef);
+        c.add(c1DefAsync).fn(async () => 'C1');
+        c.add(c2DefAsync).fn(async () => 'C2');
+        c.add(bDefAsync).fn(async (c1, c2) => ['B', c1, c2], c1DefAsync, c2DefAsync);
+        c.add(aDefAsync).fn(async b => ['A', b], bDefAsync);
 
         c.withInterceptor(TestInterceptor);
       });
@@ -108,7 +113,7 @@ describe(`interceptor`, () => {
 
       const onInstanceSpy = vi.spyOn(interceptor, 'onInstance');
 
-      await cnt.use(aDef);
+      await cnt.use(aDefAsync);
 
       expect(onInstanceSpy).toHaveBeenCalledTimes(4);
 
@@ -116,32 +121,32 @@ describe(`interceptor`, () => {
         1,
         'C1',
         [],
-        expect.objectContaining({ id: c1Def.id, strategy: c1Def.strategy }),
+        expect.objectContaining({ id: c1DefAsync.id, strategy: c1DefAsync.strategy }),
         [],
       );
       expect(onInstanceSpy).toHaveBeenNthCalledWith(
         2,
         'C2',
         [],
-        expect.objectContaining({ id: c2Def.id, strategy: c2Def.strategy }),
+        expect.objectContaining({ id: c2DefAsync.id, strategy: c2DefAsync.strategy }),
         [],
       );
       expect(onInstanceSpy).toHaveBeenNthCalledWith(
         3,
         ['B', 'C1', 'C2'],
         ['C1', 'C2'],
-        expect.objectContaining({ id: bDef.id, strategy: bDef.strategy }),
+        expect.objectContaining({ id: bDefAsync.id, strategy: bDefAsync.strategy }),
         [
-          expect.objectContaining({ id: c1Def.id, strategy: c1Def.strategy }),
-          expect.objectContaining({ id: c2Def.id, strategy: c2Def.strategy }),
+          expect.objectContaining({ id: c1DefAsync.id, strategy: c1DefAsync.strategy }),
+          expect.objectContaining({ id: c2DefAsync.id, strategy: c2DefAsync.strategy }),
         ],
       );
       expect(onInstanceSpy).toHaveBeenNthCalledWith(
         4,
         ['A', ['B', 'C1', 'C2']],
         [['B', 'C1', 'C2']],
-        expect.objectContaining({ id: aDef.id, strategy: aDef.strategy }),
-        [expect.objectContaining({ id: bDef.id, strategy: bDef.strategy })],
+        expect.objectContaining({ id: aDefAsync.id, strategy: aDefAsync.strategy }),
+        [expect.objectContaining({ id: bDefAsync.id, strategy: bDefAsync.strategy })],
       );
     });
   });

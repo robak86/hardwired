@@ -101,34 +101,34 @@ instantiationBench
   })
 
   .add('[async definitions] singletonD', async () => {
-    await asyncCnt.use(singletonD);
+    asyncCnt.use(singletonD);
   })
   .add('[async definitions] singletonD + new scope', async () => {
-    await asyncCnt.scope().use(singletonD);
+    asyncCnt.scope().use(singletonD);
   })
   .add('[async definitions] transientD', async () => {
-    await asyncCnt.use(transientD);
+    asyncCnt.use(transientD);
   })
   .add('[async definitions] transientD + new scope', async () => {
-    await asyncCnt.scope().use(transientD);
+    asyncCnt.scope().use(transientD);
   })
   .add('[async definitions] scopedD', async () => {
-    await asyncCnt.use(scopedD);
+    asyncCnt.use(scopedD);
   })
   .add('[async definitions] scopedD + new scope', async () => {
-    await asyncCnt.scope().use(scopedD);
+    asyncCnt.scope().use(scopedD);
   })
   .add('[async definitions] scopedD cascaded to lower scope', async () => {
-    await asyncCntScope.use(scopedD);
+    asyncCntScope.use(scopedD);
   })
   .add('[async definitions] cascadingD', async () => {
-    await asyncCnt.use(cascadingD);
+    asyncCnt.use(cascadingD);
   })
   .add('[async definitions] cascadingD + new scope', async () => {
-    await asyncCnt.scope().use(cascadingD);
+    asyncCnt.scope().use(cascadingD);
   })
   .add('[async definitions] cascadingD cascaded to lower scope', async () => {
-    await asyncCntScope.use(cascadingD);
+    asyncCntScope.use(cascadingD);
   })
 
   // with interceptor

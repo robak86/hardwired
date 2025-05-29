@@ -5,21 +5,25 @@ import type { ConstructorArgsTokens } from '../dsl/new/shared/AddDefinitionBuild
 
 import type { IAddDefinitionBuilder } from './IRegisterAware.js';
 
+export type ConfigureResult<TInstance> = TInstance extends Promise<any> ? Promise<void> | void : void;
+
 export interface IConfigureBuilder<TInstance, TLifeTime extends LifeTime> {
-  configure<TArgs extends any[]>(configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>): void;
+  configure<TArgs extends any[]>(
+    configureFn: (instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>,
+  ): void;
   configure<TArgs extends any[]>(
     dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
-    configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
+    configureFn: (instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>,
   ): void;
 }
 
 export interface IModifyBuilder<TInstance, TLifeTime extends LifeTime>
   extends IAddDefinitionBuilder<TInstance, TLifeTime>,
     IConfigureBuilder<TInstance, TLifeTime> {
-  decorate<TArgs extends any[]>(decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>): void;
+  decorate(decorateFn: (instance: Awaited<TInstance>) => TInstance): void;
   decorate<TArgs extends any[]>(
     dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
-    decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
+    decorateFn: (instance: Awaited<TInstance>, ...args: TArgs) => TInstance,
   ): void;
 }
 

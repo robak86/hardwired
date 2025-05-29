@@ -22,7 +22,14 @@ import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 import { COWMap } from '../context/COWMap.js';
 
-import type { HasPromise, ICascadingDefinitionResolver, IContainer, IStrategyAware, UseFn } from './IContainer.js';
+import type {
+  HasPromise,
+  ICascadingDefinitionResolver,
+  IContainer,
+  IDependenciesResolver,
+  IStrategyAware,
+  UseFn,
+} from './IContainer.js';
 import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
@@ -44,7 +51,10 @@ export type AwaitedInstanceArray<T extends Array<IDefinitionToken<Promise<any>, 
   [K in keyof T]: AwaitedInstance<T[K]>;
 };
 
-export class Container extends ExtensibleFunction implements IContainer, ICascadingDefinitionResolver {
+export class Container
+  extends ExtensibleFunction
+  implements IContainer, ICascadingDefinitionResolver, IDependenciesResolver
+{
   static create(...configurations: Array<IContainerConfiguration | ContainerConfigureFn>): IContainer {
     const configs = configurations.map(config => {
       if (config instanceof Function) {

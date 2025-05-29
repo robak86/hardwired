@@ -6,6 +6,10 @@ import type { IServiceLocator } from '../../container/IContainer.js';
 
 import type { FinalizerOrVoid } from './IDisposeFinalizer.js';
 
+export type AwaitedArray<T extends any[]> = {
+  [K in keyof T]: T[K] extends Promise<infer U> ? U : T[K];
+};
+
 export interface IAddDefinitionBuilder<TInstance, TLifetime extends LifeTime> {
   class<TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
@@ -13,12 +17,7 @@ export interface IAddDefinitionBuilder<TInstance, TLifetime extends LifeTime> {
   ): FinalizerOrVoid<TInstance, TLifetime>;
 
   fn<TArgs extends any[]>(
-    fn: (...args: TArgs) => TInstance,
-    ...dependencies: ConstructorArgsTokens<TArgs, TLifetime>
-  ): FinalizerOrVoid<TInstance, TLifetime>;
-
-  asyncFn<TArgs extends any[]>(
-    fn: (...args: TArgs) => Promise<TInstance>,
+    fn: (...args: AwaitedArray<TArgs>) => TInstance,
     ...dependencies: ConstructorArgsTokens<TArgs, TLifetime>
   ): FinalizerOrVoid<TInstance, TLifetime>;
 

@@ -21,7 +21,7 @@ const transient = <TFunc extends (...args: TArgs) => unknown, TArgs extends any[
     if (cnt.has(token)) {
       const definition = new Definition(token.id, LifeTime.transient, () => MaybeAsync.resolve(fn(...args)));
 
-      return cnt.use(definition).value;
+      return cnt.use(definition);
     }
 
     return fn(...args);
@@ -49,7 +49,7 @@ const scoped = <TFunc extends () => any>(fn: TFunc): TFunc & IDefinition<ReturnT
 
     const cnt = getCurrentContainer();
 
-    return cnt.use(definition).value as any;
+    return cnt.use(definition);
   };
 
   return Object.setPrototypeOf(containerDelegate, definition) as TFunc &
@@ -71,7 +71,7 @@ const cascading = <TFunc extends () => any>(fn: TFunc): TFunc & IDefinition<Retu
 
     const cnt = getCurrentContainer();
 
-    return cnt.use(definition).value as any;
+    return cnt.use(definition);
   };
 
   return Object.setPrototypeOf(containerDelegate, definition) as TFunc &

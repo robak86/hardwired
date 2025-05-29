@@ -20,6 +20,14 @@ export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
   // ): MaybePromise<TValue>;
 }
 
+export interface IDependenciesResolver {
+  resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue>;
+
+  resolveAll<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+    ...definitions: [...TDefinitions]
+  ): MaybeAsync<InstancesArray<TDefinitions>>;
+}
+
 export interface IContainerConfigurationAware {
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionToken<TInstance, TLifeTime>,

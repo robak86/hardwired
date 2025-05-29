@@ -50,13 +50,13 @@ describe('cls', () => {
     });
 
     it(`supports async dependencies`, async () => {
-      const left = singleton<Leaf>('left');
+      const left = singleton<Promise<Leaf>>('left');
       const right = cls.singleton(Leaf, [value('right')]);
 
       const binary = cls.singleton(Binary, [left, right]);
 
       const cnt = container(c => {
-        c.add(left).asyncFn(async () => new Leaf('left'));
+        c.add(left).fn(async () => new Leaf('left'));
       });
       const result = await cnt.use(binary);
 
@@ -73,7 +73,7 @@ describe('cls', () => {
         const cnt = container();
         const scope = cnt.scope();
 
-        expect(await cnt.use(leafDef)).toBe(await scope.use(leafDef));
+        expect(cnt.use(leafDef)).toBe(scope.use(leafDef));
       });
     });
 
@@ -84,10 +84,10 @@ describe('cls', () => {
         const cnt = container();
         const scope = cnt.scope();
 
-        expect(await cnt.use(leafDef)).toBe(await cnt.use(leafDef));
-        expect(await scope.use(leafDef)).toBe(await scope.use(leafDef));
+        expect(cnt.use(leafDef)).toBe(cnt.use(leafDef));
+        expect(scope.use(leafDef)).toBe(scope.use(leafDef));
 
-        expect(await cnt.use(leafDef)).not.toBe(await scope.use(leafDef));
+        expect(cnt.use(leafDef)).not.toBe(scope.use(leafDef));
       });
     });
 
@@ -100,12 +100,12 @@ describe('cls', () => {
         const scope2 = scope1.scope(c => c.modify(leafDef).claimNew());
         const scope3 = scope2.scope();
 
-        const cntInstance = await cnt.use(leafDef);
-        const scope1Instance = await scope1.use(leafDef);
+        const cntInstance = cnt.use(leafDef);
+        const scope1Instance = scope1.use(leafDef);
 
         expect(cntInstance).toBe(scope1Instance);
-        expect(await scope1.use(leafDef)).not.toBe(await scope2.use(leafDef));
-        expect(await scope2.use(leafDef)).toBe(await scope3.use(leafDef));
+        expect(scope1.use(leafDef)).not.toBe(scope2.use(leafDef));
+        expect(scope2.use(leafDef)).toBe(scope3.use(leafDef));
       });
     });
 
@@ -114,7 +114,7 @@ describe('cls', () => {
         const leafDef = cls.transient(Leaf, [value('leaf')]);
         const cnt = container();
 
-        expect(await cnt.use(leafDef)).not.toBe(await cnt.use(leafDef));
+        expect(cnt.use(leafDef)).not.toBe(cnt.use(leafDef));
       });
     });
   });
@@ -129,7 +129,7 @@ describe('cls', () => {
           c.modify(leafDef).decorate(val => new BoxedValue(val.value + 1));
         });
 
-        expect(await cnt.use(leafDef)).toEqual(new BoxedValue(2));
+        expect(cnt.use(leafDef)).toEqual(new BoxedValue(2));
       });
     });
   });

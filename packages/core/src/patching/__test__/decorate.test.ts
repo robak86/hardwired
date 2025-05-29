@@ -5,6 +5,7 @@ import { singleton } from '../../definitions/tokens.js';
 
 describe(`decorate`, () => {
   const someValue = singleton<number>('someValue');
+  const someValueAsync = singleton<Promise<number>>('someValue');
 
   it(`decorates original value`, async () => {
     const c = container(c => {
@@ -17,28 +18,27 @@ describe(`decorate`, () => {
 
   it(`is evaluated with awaited value`, async () => {
     const c = container(c => {
-      c.add(someValue).asyncFn(async () => 1);
-      c.modify(someValue).decorate(val => val + 1);
+      c.add(someValueAsync).fn(async () => 1);
+      c.modify(someValueAsync).decorate(async val => val + 1);
     });
 
-    expect(await c.use(someValue)).toEqual(2);
+    expect(await c.use(someValueAsync)).toEqual(2);
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
     const a = singleton<number>();
     const b = singleton<number>();
-    const someValue = singleton<number>();
 
     const c = container(c => {
       c.add(a).static(1);
       c.add(b).static(2);
-      c.add(someValue).asyncFn(async () => 10);
+      c.add(someValueAsync).fn(async () => 10);
 
-      c.modify(someValue).decorate([a, b], (val, aVal, bVal) => {
+      c.modify(someValueAsync).decorate([a, b], async (val, aVal, bVal) => {
         return val + aVal + bVal;
       });
     });
 
-    expect(await c.use(someValue)).toEqual(13);
+    expect(await c.use(someValueAsync)).toEqual(13);
   });
 });
