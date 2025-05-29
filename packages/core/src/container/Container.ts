@@ -4,9 +4,9 @@ import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
-import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
+import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
-import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
+import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
@@ -27,6 +27,7 @@ import type {
   ICascadingDefinitionResolver,
   IContainer,
   IDependenciesResolver,
+  ReturnTypes,
   UseFn,
 } from './IContainer.js';
 import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
@@ -37,6 +38,22 @@ import { CompositeInterceptor, PassThroughInterceptor } from './interceptors/Com
 export interface Container extends UseFn<LifeTime> {}
 
 const containerAllowedScopes = [LifeTime.scoped, LifeTime.singleton, LifeTime.transient, LifeTime.cascading];
+
+export type NewScopeReturnType<
+  TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>,
+  TAllowedLifeTime extends LifeTime = LifeTime,
+> =
+  HasPromise<ReturnTypes<TConfigureFns>> extends true
+    ? Promise<IContainer<TAllowedLifeTime>>
+    : IContainer<TAllowedLifeTime>;
+
+export type ContainerNewReturnType<
+  TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>,
+  TAllowedLifeTime extends LifeTime = LifeTime,
+> =
+  HasPromise<ReturnTypes<TConfigureFns>> extends true
+    ? Promise<IContainer<TAllowedLifeTime>>
+    : IContainer<TAllowedLifeTime>;
 
 export type ContainerAllReturn<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<LifeTime>>>> =
   HasPromise<InstancesArray<TDefinitions>> extends true
@@ -54,47 +71,51 @@ export class Container
   extends ExtensibleFunction
   implements IContainer, ICascadingDefinitionResolver, IDependenciesResolver
 {
-  static create(...configurations: Array<ContainerConfigureFn>): IContainer {
-    const configs: IContainerConfiguration[] = configurations.map(config => {
+  static create<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
+    ...configurations: TConfigureFns
+  ): ContainerNewReturnType<TConfigureFns> {
+    const _configs: MaybeAsync<IContainerConfiguration>[] = configurations.map(configOrConfigureFn => {
       const builder = new ContainerConfigurationBuilder();
 
-      config(builder);
-
-      return builder.toConfig();
+      return MaybeAsync.resolve(configOrConfigureFn(builder)).then(() => builder.toConfig());
     });
 
-    const bindingsRegistry = BindingsRegistry.create(configs);
-    const instancesStore = InstancesStore.create();
-    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
-    const cascadingRoots = COWMap.create<ICascadingDefinitionResolver>();
+    return MaybeAsync.all(_configs)
+      .then(configs => {
+        const bindingsRegistry = BindingsRegistry.create(configs);
+        const instancesStore = InstancesStore.create();
+        const lifeCycleRegistry = new ContainerLifeCycleRegistry();
+        const cascadingRoots = COWMap.create<ICascadingDefinitionResolver>();
 
-    const cnt = new Container(
-      null,
-      bindingsRegistry,
-      instancesStore,
-      cascadingRoots,
-      lifeCycleRegistry,
-      PassThroughInterceptor.instance,
-    );
+        const cnt = new Container(
+          null,
+          bindingsRegistry,
+          instancesStore,
+          cascadingRoots,
+          lifeCycleRegistry,
+          PassThroughInterceptor.instance,
+        );
 
-    configs.forEach((config: IContainerConfiguration) => {
-      // bindingsRegistry.applyConfig(config, cnt);
-      lifeCycleRegistry.append(config.lifeCycleRegistry);
+        configs.forEach((config: IContainerConfiguration) => {
+          // bindingsRegistry.applyConfig(config, cnt);
+          lifeCycleRegistry.append(config.lifeCycleRegistry);
 
-      if (config.interceptors) {
-        cnt.applyInterceptors(config.interceptors);
-      }
+          if (config.interceptors) {
+            cnt.applyInterceptors(config.interceptors);
+          }
 
-      config.cascadingTokens.forEach(token => {
-        cascadingRoots.set(token.id, cnt);
+          config.cascadingTokens.forEach(token => {
+            cascadingRoots.set(token.id, cnt);
 
-        // if (token instanceof AbstractDefinition) {
-        //   bindingsRegistry.override(token);
-        // }
-      });
-    });
+            // if (token instanceof AbstractDefinition) {
+            //   bindingsRegistry.override(token);
+            // }
+          });
+        });
 
-    return cnt;
+        return cnt;
+      })
+      .unwrap() as unknown as ContainerNewReturnType<TConfigureFns>;
   }
 
   public readonly id = v4();
@@ -153,44 +174,48 @@ export class Container
     });
   }
 
-  scope<TConfigureFns extends Array<ScopeConfigureFn>>(...configurations: TConfigureFns): IContainer {
-    const configs: IContainerConfiguration[] = configurations.map(configOrConfigureFn => {
+  scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
+    ...configureFns: TConfigureFns
+  ): NewScopeReturnType<TConfigureFns> {
+    const configs: MaybeAsync<IContainerConfiguration>[] = configureFns.map(configOrConfigureFn => {
       const builder = new ScopeConfigurationBuilder();
 
-      configOrConfigureFn(builder);
-
-      return builder.toConfig();
+      return MaybeAsync.resolve(configOrConfigureFn(builder, this)).then(() => builder.toConfig());
     });
 
-    const bindingsRegistry = this.bindingsRegistry.checkoutForScope(configs);
-    const instancesStore = this.instancesStore.childScope();
+    return MaybeAsync.all(configs)
+      .then(configs => {
+        const bindingsRegistry = this.bindingsRegistry.checkoutForScope(configs);
+        const instancesStore = this.instancesStore.childScope();
 
-    const lifeCycleRegistry = new ContainerLifeCycleRegistry();
-    const cascadingRoots = this.cascadingRoots.clone();
+        const lifeCycleRegistry = new ContainerLifeCycleRegistry();
+        const cascadingRoots = this.cascadingRoots.clone();
 
-    const cnt: Container = new Container(
-      this.id,
-      bindingsRegistry,
-      instancesStore,
-      cascadingRoots,
-      lifeCycleRegistry,
-      this._interceptor.onScope(),
-    );
+        const cnt: Container = new Container(
+          this.id,
+          bindingsRegistry,
+          instancesStore,
+          cascadingRoots,
+          lifeCycleRegistry,
+          this._interceptor.onScope(),
+        );
 
-    configs.forEach(config => {
-      // bindingsRegistry.applyConfig(config, cnt);
-      lifeCycleRegistry.append(config.lifeCycleRegistry);
+        configs.forEach(config => {
+          // bindingsRegistry.applyConfig(config, cnt);
+          lifeCycleRegistry.append(config.lifeCycleRegistry);
 
-      if (config.interceptors) {
-        cnt.applyInterceptors(config.interceptors);
-      }
+          if (config.interceptors) {
+            cnt.applyInterceptors(config.interceptors);
+          }
 
-      config.cascadingTokens.forEach(token => {
-        cascadingRoots.set(token.id, cnt);
-      });
-    });
+          config.cascadingTokens.forEach(token => {
+            cascadingRoots.set(token.id, cnt);
+          });
+        });
 
-    return cnt;
+        return cnt;
+      })
+      .unwrap() as unknown as NewScopeReturnType<TConfigureFns>;
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
@@ -231,7 +256,7 @@ export class Container
   }
 
   use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): TValue {
-    return this.resolve(definition).value as TValue;
+    return this.resolve(definition).unwrap() as TValue;
   }
 
   resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
@@ -307,7 +332,7 @@ export class Container
   ): ContainerAllReturn<TDefinitions> {
     const results = definitions.map(def => this.use(def));
 
-    return MaybeAsync.all(results).value as ContainerAllReturn<TDefinitions>;
+    return MaybeAsync.all(results).unwrap() as ContainerAllReturn<TDefinitions>;
   }
 }
 

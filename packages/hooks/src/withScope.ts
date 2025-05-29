@@ -1,9 +1,12 @@
-import type { ScopeConfigureFn } from 'hardwired';
+import { MaybeAsync } from 'hardwired';
+import type { HasPromise, ReturnTypes, AsyncScopeConfigureFn, ScopeConfigureFn } from 'hardwired';
 
 import { getCurrentContainer, withContainer } from './asyncContainerStorage.js';
 import { isServer } from './utils/isServer.js';
 
-export function withScope<T>(...args: Array<ScopeConfigureFn | (() => T)>): T {
+export function withScope<TConfigureFns extends Array<ScopeConfigureFn | AsyncScopeConfigureFn>, T>(
+  ...args: [...TConfigureFns, () => T]
+): HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<T> : T {
   const runFn = args[args.length - 1] as () => T;
   const configurations = args.slice(0, -1) as Array<ScopeConfigureFn>;
 
@@ -15,5 +18,9 @@ export function withScope<T>(...args: Array<ScopeConfigureFn | (() => T)>): T {
 
   const scope = getCurrentContainer().scope(...configurations);
 
-  return withContainer(scope, runFn);
+  return MaybeAsync.resolve(scope)
+    .then(awaitedScope => {
+      return withContainer(awaitedScope, runFn);
+    })
+    .unwrap() as HasPromise<ReturnTypes<TConfigureFns>> extends true ? Promise<T> : T;
 }
