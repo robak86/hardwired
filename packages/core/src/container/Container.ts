@@ -5,15 +5,13 @@ import { InstancesStore } from '../context/InstancesStore.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
-import { configureContainer } from '../configuration/ContainerConfiguration.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
-import { configureScope } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinitionToken } from '../definitions/tokens.js';
-import type { InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
+import type { Instance, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
 import type { IContainerConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
@@ -21,8 +19,16 @@ import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 import { COWMap } from '../context/COWMap.js';
+import { ContainerConfigurationBuilder } from '../configuration/dsl/new/container/ContainerConfigurationBuilder.js';
+import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
 
-import type { ICascadingDefinitionResolver, IContainer, IStrategyAware, UseFn } from './IContainer.js';
+import type {
+  HasPromise,
+  ICascadingDefinitionResolver,
+  IContainer,
+  IDependenciesResolver,
+  UseFn,
+} from './IContainer.js';
 import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
@@ -32,14 +38,29 @@ export interface Container extends UseFn<LifeTime> {}
 
 const containerAllowedScopes = [LifeTime.scoped, LifeTime.singleton, LifeTime.transient, LifeTime.cascading];
 
-export class Container extends ExtensibleFunction implements IContainer, ICascadingDefinitionResolver {
-  static create(...configurations: Array<IContainerConfiguration | ContainerConfigureFn>): IContainer {
-    const configs = configurations.map(config => {
-      if (config instanceof Function) {
-        return configureContainer(config);
-      } else {
-        return config;
-      }
+export type ContainerAllReturn<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<LifeTime>>>> =
+  HasPromise<InstancesArray<TDefinitions>> extends true
+    ? Promise<AwaitedInstanceArray<TDefinitions>>
+    : InstancesArray<TDefinitions>;
+
+export type AwaitedInstance<T extends IDefinitionToken<Promise<any>, any>> =
+  T extends IDefinitionToken<Promise<infer TInstance>, any> ? TInstance : Instance<T>;
+
+export type AwaitedInstanceArray<T extends Array<IDefinitionToken<Promise<any>, any>>> = {
+  [K in keyof T]: AwaitedInstance<T[K]>;
+};
+
+export class Container
+  extends ExtensibleFunction
+  implements IContainer, ICascadingDefinitionResolver, IDependenciesResolver
+{
+  static create(...configurations: Array<ContainerConfigureFn>): IContainer {
+    const configs: IContainerConfiguration[] = configurations.map(config => {
+      const builder = new ContainerConfigurationBuilder();
+
+      config(builder);
+
+      return builder.toConfig();
     });
 
     const bindingsRegistry = BindingsRegistry.create(configs);
@@ -96,7 +117,7 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
       <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
         definition: IDefinitionToken<TInstance, TLifeTime>,
       ) => {
-        return this.use(definition);
+        return this.resolve(definition);
       },
     );
 
@@ -132,15 +153,13 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     });
   }
 
-  scope<TConfigureFns extends Array<ScopeConfigureFn | IContainerConfiguration>>(
-    ...configurations: TConfigureFns
-  ): IContainer {
-    const configs = configurations.map(configOrConfigureFn => {
-      if (configOrConfigureFn instanceof Function) {
-        return configureScope(configOrConfigureFn);
-      } else {
-        return configOrConfigureFn;
-      }
+  scope<TConfigureFns extends Array<ScopeConfigureFn>>(...configurations: TConfigureFns): IContainer {
+    const configs: IContainerConfiguration[] = configurations.map(configOrConfigureFn => {
+      const builder = new ScopeConfigurationBuilder();
+
+      configOrConfigureFn(builder);
+
+      return builder.toConfig();
     });
 
     const bindingsRegistry = this.bindingsRegistry.checkoutForScope(configs);
@@ -149,7 +168,7 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     const lifeCycleRegistry = new ContainerLifeCycleRegistry();
     const cascadingRoots = this.cascadingRoots.clone();
 
-    const cnt: Container & IStrategyAware = new Container(
+    const cnt: Container = new Container(
       this.id,
       bindingsRegistry,
       instancesStore,
@@ -211,7 +230,11 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     );
   }
 
-  use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
+  use<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): TValue {
+    return this.resolve(definition).value as TValue;
+  }
+
+  resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
     if (isDefinition(definition)) {
       const override = this.bindingsRegistry.findForDefinition(definition);
 
@@ -271,12 +294,20 @@ export class Container extends ExtensibleFunction implements IContainer, ICascad
     return this._scopedStrategy.build(definition, this, this._interceptor);
   }
 
-  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+  resolveAll<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): MaybeAsync<InstancesArray<TDefinitions>> {
     const results = definitions.map(def => this.use(def));
 
     return MaybeAsync.all(results) as MaybeAsync<InstancesArray<TDefinitions>>;
+  }
+
+  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+    ...definitions: [...TDefinitions]
+  ): ContainerAllReturn<TDefinitions> {
+    const results = definitions.map(def => this.use(def));
+
+    return MaybeAsync.all(results).value as ContainerAllReturn<TDefinitions>;
   }
 }
 

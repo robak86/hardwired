@@ -14,7 +14,7 @@ describe(`Container`, () => {
 
       const instance = cnt.use(myDef);
 
-      expect(instance.trySync()).toEqual(123);
+      expect(instance).toEqual(123);
     });
 
     describe(`other methods`, () => {
@@ -25,7 +25,7 @@ describe(`Container`, () => {
 
         const instance = cnt.use(myDef);
 
-        expect(instance.trySync()).toEqual(123);
+        expect(instance).toEqual(123);
       });
 
       describe(`all`, () => {
@@ -45,11 +45,11 @@ describe(`Container`, () => {
         });
 
         it(`returns correct type for async instances`, async () => {
-          const myDef1 = singleton<number>();
+          const myDef1 = singleton<Promise<number>>();
           const myDef2 = singleton<number>();
 
           const use = container(c => {
-            c.add(myDef1).asyncFn(async () => 123);
+            c.add(myDef1).fn(async () => 123);
             c.add(myDef2).fn(() => 456);
           });
 
@@ -86,7 +86,7 @@ describe(`Container`, () => {
                   scope.add(handler).class(Handler);
                 });
 
-                const handlerInstance = scope.use(handler).trySync();
+                const handlerInstance = scope.use(handler);
 
                 handlerInstance.handle(value);
 

@@ -30,21 +30,21 @@ describe(`SingletonStrategy`, () => {
         it(`returns class instance`, async () => {
           const c = container(setup);
 
-          expect(c.use(leafD).trySync()).toHaveProperty('value');
-          expect(c.use(leafD).trySync()).toHaveProperty('id');
+          expect(c.resolve(leafD).trySync()).toHaveProperty('value');
+          expect(c.resolve(leafD).trySync()).toHaveProperty('id');
         });
 
         it(`constructs class with correct dependencies`, async () => {
           const c = container(setup);
-          const instance = await c.use(leafD);
+          const instance = await c.resolve(leafD);
 
           expect(instance.value).toEqual('someString');
         });
 
         it(`caches class instance`, async () => {
           const c = container(setup);
-          const instance = await c.use(leafD);
-          const instance2 = await c.use(leafD);
+          const instance = await c.resolve(leafD);
+          const instance2 = await c.resolve(leafD);
 
           expect(instance).toBe(instance2);
         });
@@ -74,17 +74,17 @@ describe(`SingletonStrategy`, () => {
 
       describe(`race condition`, () => {
         it(`does not create singleton duplicates`, async () => {
-          const slowSingletonD = singleton<BoxedValue<number>>();
-          const consumer1 = singleton<BoxedValue<number>>();
-          const consumer2 = singleton<BoxedValue<number>>();
+          const slowSingletonD = singleton<Promise<BoxedValue<number>>>();
+          const consumer1 = singleton<Promise<BoxedValue<number>>>();
+          const consumer2 = singleton<Promise<BoxedValue<number>>>();
 
           const ctn = container(c => {
-            c.add(slowSingletonD).asyncFn(() => resolveAfter(Math.random() * 500, new BoxedValue(Math.random())));
-            c.add(consumer1).asyncFn(async value => value, slowSingletonD);
-            c.add(consumer2).asyncFn(async value => value, slowSingletonD);
+            c.add(slowSingletonD).fn(() => resolveAfter(Math.random() * 500, new BoxedValue(Math.random())));
+            c.add(consumer1).fn(async value => value, slowSingletonD);
+            c.add(consumer2).fn(async value => value, slowSingletonD);
           });
 
-          const [result1, result2] = await Promise.all([ctn.use(consumer1), ctn.use(consumer2)]);
+          const [result1, result2] = await Promise.all([ctn.resolve(consumer1), ctn.resolve(consumer2)]);
 
           expect(result1).toBe(result2);
         });

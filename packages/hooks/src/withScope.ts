@@ -1,11 +1,11 @@
-import type { IContainerConfiguration } from 'hardwired';
+import type { ScopeConfigureFn } from 'hardwired';
 
 import { getCurrentContainer, withContainer } from './asyncContainerStorage.js';
 import { isServer } from './utils/isServer.js';
 
-export function withScope<T>(...args: Array<IContainerConfiguration | (() => T)>): T {
+export function withScope<T>(...args: Array<ScopeConfigureFn | (() => T)>): T {
   const runFn = args[args.length - 1] as () => T;
-  const configurations = args.slice(0, -1) as Array<IContainerConfiguration>;
+  const configurations = args.slice(0, -1) as Array<ScopeConfigureFn>;
 
   if (!isServer) {
     throw new Error(

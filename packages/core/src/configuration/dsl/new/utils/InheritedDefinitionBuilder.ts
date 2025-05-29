@@ -24,7 +24,7 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
     // const def = registry.getForOverride(this.token);
 
     return def.override((container, interceptor) => {
-      return container.all(...this._dependencies).then(awaitedDependencies => {
+      return container.resolveAll(...this._dependencies).then(awaitedDependencies => {
         return def.create(container, interceptor).then(awaitedInstance => {
           return MaybeAsync.resolve(this._decorateFn(awaitedInstance, ...(awaitedDependencies as TArgs)));
         });

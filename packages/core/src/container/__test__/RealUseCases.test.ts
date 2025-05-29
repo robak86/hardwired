@@ -5,7 +5,6 @@ import type { IContainer } from '../IContainer.js';
 import { configureContainer, type ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { cascading } from '../../definitions/tokens.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
-import type { IContainerConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
 
 describe(`Testing`, () => {
   describe(`using container in vitest context with custom cleaning of resources`, () => {
@@ -19,7 +18,7 @@ describe(`Testing`, () => {
 
     const dbConnection = cascading<IDbConnection>();
 
-    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | IContainerConfiguration>>(
+    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn>>(
       ...containerConfigurations: TConfigureFns
     ) => {
       return test.extend<{ use: IContainer }>({
@@ -92,17 +91,17 @@ describe(`Logger`, () => {
         scope.modify(loggerD).claimNew();
       });
 
-      expect(root.use(requestId).trySync()).toEqual('app');
+      expect(root.use(requestId)).toEqual('app');
       expect((await root.use(loggerD)).print('msg')).toEqual('appmsg');
 
       const req1 = root.scope(requestScopeConfig);
       const req2 = root.scope(requestScopeConfig);
 
-      expect(req1.use(requestId).trySync()).toEqual('1');
-      expect(req1.use(requestId).trySync()).toEqual(req1.use(requestId).trySync());
+      expect(req1.use(requestId)).toEqual('1');
+      expect(req1.use(requestId)).toEqual(req1.use(requestId));
 
-      expect(req2.use(requestId).trySync()).toEqual('2');
-      expect(req2.use(requestId).trySync()).toEqual(req2.use(requestId).trySync());
+      expect(req2.use(requestId)).toEqual('2');
+      expect(req2.use(requestId)).toEqual(req2.use(requestId));
 
       expect((await req1.use(loggerD)).print('msg')).toEqual('1msg');
       expect((await req1.use(loggerD)).print('msg')).toEqual('1msg');

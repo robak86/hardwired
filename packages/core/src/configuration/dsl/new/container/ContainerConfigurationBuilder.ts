@@ -12,6 +12,7 @@ import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
+import type { IEagerConfigurable } from '../../../abstract/IEagerInstantiationAware.js';
 
 import { type IContainerConfiguration } from './ContainerConfiguration.js';
 
@@ -79,15 +80,8 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   eager<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     def: IDefinitionToken<TInstance, TLifeTime>,
-  ): IConfigureBuilder<TInstance, TLifeTime> {
+  ): IEagerConfigurable<TInstance, TLifeTime> {
     throw new Error('Implement me!');
-    // this._initializationFns.push(() => {
-    //   const instance = this._currentContainer.use(symbol);
-    //
-    //   return maybePromiseThen(instance, awaitedInstance => {
-    //     return configureFn(awaitedInstance);
-    //   });
-    // });
   }
 
   lazy<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(

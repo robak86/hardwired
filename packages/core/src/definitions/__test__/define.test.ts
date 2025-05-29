@@ -20,7 +20,7 @@ describe(`define`, () => {
         })
         .use(composite);
 
-      expect(result.trySync()).toEqual([1, 'str']);
+      expect(result).toEqual([1, 'str']);
       expect(await result).toEqual([1, 'str']);
     });
   });

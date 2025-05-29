@@ -5,6 +5,8 @@ import type { IDefinition } from '../abstract/IDefinition.js';
 import type { ConstructorArgsTokens } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import { MaybeAsync } from '../../utils/MaybeAsync.js';
+import type { Thunk } from '../../utils/Thunk.js';
+import { unwrapThunk } from '../../utils/Thunk.js';
 
 import { Definition } from './Definition.js';
 import { AbstractDefinition } from './AbstractDefinition.js';
@@ -17,7 +19,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     id: symbol,
     strategy: TLifeTime,
     protected readonly _class: ClassType<TInstance, TConstructorArgs>,
-    protected readonly _dependencyTokens: ConstructorArgsTokens<TConstructorArgs, TLifeTime>,
+    protected readonly _dependencyTokens: Thunk<ConstructorArgsTokens<TConstructorArgs, TLifeTime>>,
   ) {
     super(id, strategy);
   }
@@ -33,11 +35,13 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
   }
 
   create(use: IServiceLocator, interceptor: IInterceptor): MaybeAsync<TInstance> {
-    return use.all(...this._dependencyTokens).then(depsAwaited => {
+    const dependenciesTokens = unwrapThunk(this._dependencyTokens);
+
+    return use.resolveAll(...dependenciesTokens).then(depsAwaited => {
       const instance = new this._class(...(depsAwaited as TConstructorArgs));
 
       return MaybeAsync.resolve(instance).then(instanceAwaited => {
-        return interceptor.onInstance(instanceAwaited, depsAwaited, this, this._dependencyTokens);
+        return interceptor.onInstance(instanceAwaited, depsAwaited, this, dependenciesTokens);
       });
     });
   }

@@ -6,6 +6,7 @@ import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`configure`, () => {
   const someValue = singleton<BoxedValue<number>>('someValue');
+  const someValueAsync = singleton<Promise<BoxedValue<number>>>('someValue');
 
   it(`decorates original value`, async () => {
     const c = container(c => {
@@ -20,13 +21,13 @@ describe(`configure`, () => {
 
   it(`is evaluated with awaited value`, async () => {
     const c = container(c => {
-      c.add(someValue).asyncFn(async () => new BoxedValue(1));
-      c.modify(someValue).configure(val => {
+      c.add(someValueAsync).fn(async () => new BoxedValue(1));
+      c.modify(someValueAsync).configure(val => {
         val.value = 10;
       });
     });
 
-    expect((await c.use(someValue)).value).toEqual(10);
+    expect((await c.use(someValueAsync)).value).toEqual(10);
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
@@ -35,15 +36,15 @@ describe(`configure`, () => {
     const someValue = singleton<BoxedValue<number>>();
 
     const c = container(c => {
-      c.add(a).asyncFn(async () => new BoxedValue(1));
+      c.add(a).fn(() => new BoxedValue(1));
       c.add(b).static(new BoxedValue(2));
-      c.add(someValue).asyncFn(async () => new BoxedValue(10));
+      c.add(someValue).fn(() => new BoxedValue(10));
 
       c.modify(someValue).configure([a, b], (val, aVal, bVal) => {
         val.value = val.value + aVal.value + bVal.value;
       });
     });
 
-    expect((await c.use(someValue)).value).toEqual(13);
+    expect(c.use(someValue).value).toEqual(13);
   });
 });

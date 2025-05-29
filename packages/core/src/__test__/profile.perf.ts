@@ -70,65 +70,65 @@ const instantiationBench = new Bench({
 
 instantiationBench
   .add('[sync definitions] singletonD', () => {
-    syncCnt.use(singletonD).trySync();
+    syncCnt.use(singletonD);
   })
   .add('[sync definitions] singletonD + new scope', () => {
-    syncCnt.scope().use(singletonD).trySync();
+    syncCnt.scope().use(singletonD);
   })
   .add('[sync definitions] transientD', () => {
-    syncCnt.use(transientD).trySync();
+    syncCnt.use(transientD);
   })
   .add('[sync definitions] transientD + new scope', () => {
-    syncCnt.scope().use(transientD).trySync();
+    syncCnt.scope().use(transientD);
   })
   .add('[sync definitions] scopedD', () => {
-    syncCnt.use(scopedD).trySync();
+    syncCnt.use(scopedD);
   })
   .add('[sync definitions] scopedD + new scope', () => {
-    syncCnt.scope().use(scopedD).trySync();
+    syncCnt.scope().use(scopedD);
   })
   .add('[sync definitions] scopedD cascaded to lower scope', () => {
-    syncCntScope.use(scopedD).trySync();
+    syncCntScope.use(scopedD);
   })
   .add('[sync definitions] cascadingD', () => {
-    syncCnt.use(cascadingD).trySync();
+    syncCnt.use(cascadingD);
   })
   .add('[sync definitions] cascadingD + new scope', () => {
-    syncCnt.scope().use(cascadingD).trySync();
+    syncCnt.scope().use(cascadingD);
   })
   .add('[sync definitions] cascadingD cascaded to lower scope', () => {
-    syncCntScope.use(cascadingD).trySync();
+    syncCntScope.use(cascadingD);
   })
 
   .add('[async definitions] singletonD', async () => {
-    await asyncCnt.use(singletonD);
+    asyncCnt.use(singletonD);
   })
   .add('[async definitions] singletonD + new scope', async () => {
-    await asyncCnt.scope().use(singletonD);
+    asyncCnt.scope().use(singletonD);
   })
   .add('[async definitions] transientD', async () => {
-    await asyncCnt.use(transientD);
+    asyncCnt.use(transientD);
   })
   .add('[async definitions] transientD + new scope', async () => {
-    await asyncCnt.scope().use(transientD);
+    asyncCnt.scope().use(transientD);
   })
   .add('[async definitions] scopedD', async () => {
-    await asyncCnt.use(scopedD);
+    asyncCnt.use(scopedD);
   })
   .add('[async definitions] scopedD + new scope', async () => {
-    await asyncCnt.scope().use(scopedD);
+    asyncCnt.scope().use(scopedD);
   })
   .add('[async definitions] scopedD cascaded to lower scope', async () => {
-    await asyncCntScope.use(scopedD);
+    asyncCntScope.use(scopedD);
   })
   .add('[async definitions] cascadingD', async () => {
-    await asyncCnt.use(cascadingD);
+    asyncCnt.use(cascadingD);
   })
   .add('[async definitions] cascadingD + new scope', async () => {
-    await asyncCnt.scope().use(cascadingD);
+    asyncCnt.scope().use(cascadingD);
   })
   .add('[async definitions] cascadingD cascaded to lower scope', async () => {
-    await asyncCntScope.use(cascadingD);
+    asyncCntScope.use(cascadingD);
   })
 
   // with interceptor

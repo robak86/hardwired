@@ -18,7 +18,7 @@ export function registerTestDefinitions<T, TLifetime extends LifeTime>(
       IDefinitionToken<T, ValidDependenciesLifeTime<TLifetime>>
     >;
 
-    config.add(def.def).fn((...args: T[]) => args[0], ...dependencies);
+    config.add(def.def).fn((...args: any[]) => args[0], ...dependencies);
 
     if (def.children.length > 0) {
       registerTestDefinitions(def.children, config);
@@ -35,7 +35,7 @@ export function registerTestDefinitionsAsync<T, TLifetime extends LifeTime>(
       IDefinitionToken<T, ValidDependenciesLifeTime<TLifetime>>
     >;
 
-    config.add(def.def).asyncFn(async (...args: T[]) => args[0], ...dependencies);
+    config.add(def.def as IDefinitionToken<Promise<any>, any>).fn(async (...args: any[]) => args[0], ...dependencies);
 
     if (def.children.length > 0) {
       registerTestDefinitions(def.children, config);

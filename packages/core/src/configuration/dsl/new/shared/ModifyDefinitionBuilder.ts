@@ -1,6 +1,5 @@
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { MaybePromise } from '../../../../utils/async.js';
-import type { IModifyBuilder } from '../../../abstract/IModifyAware.js';
+import type { ConfigureResult, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfiguredDefinitionBuilder } from '../utils/ConfiguredDefinitionBuilder.js';
 import { DecoratedDefinitionBuilder } from '../utils/DecoratedDefinitionBuilder.js';
 
@@ -12,20 +11,20 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   extends AddDefinitionBuilder<TInstance, TLifeTime>
   implements IModifyBuilder<TInstance, TLifeTime>
 {
-  configure<TArgs extends any[]>(configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>): void;
+  configure(configureFn: (instance: Awaited<TInstance>) => ConfigureResult<TInstance>): void;
   configure<TArgs extends any[]>(
     dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
-    configureFn: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
+    configureFn: (instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>,
   ): void;
   configure<TArgs extends any[]>(
     dependenciesOrConfigureFn:
       | ConstructorArgsTokens<TArgs, TLifeTime>
-      | ((instance: TInstance, ...args: TArgs) => MaybePromise<void>),
-    configureFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<void>,
+      | ((instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>),
+    configureFn?: (instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>,
   ) {
     if (configureFn && Array.isArray(dependenciesOrConfigureFn)) {
       const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
-        this._token,
+        this._token as any, // TODO
         dependenciesOrConfigureFn,
         configureFn,
       );
@@ -37,7 +36,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 
     if (typeof dependenciesOrConfigureFn === 'function') {
       const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
-        this._token,
+        this._token as any, // TODO,
         [] as ConstructorArgsTokens<TArgs, TLifeTime>,
         dependenciesOrConfigureFn,
       );
@@ -50,22 +49,22 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     throw new Error('Invalid params');
   }
 
-  decorate<TArgs extends any[]>(decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>): void;
+  decorate(decorateFn: (instance: Awaited<TInstance>) => TInstance): void;
   decorate<TArgs extends any[]>(
     dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
-    decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
+    decorateFn: (instance: Awaited<TInstance>, ...args: TArgs) => TInstance,
   ): void;
   decorate<TArgs extends any[]>(
     dependenciesOrDecorateFn:
       | ConstructorArgsTokens<TArgs, TLifeTime>
-      | ((instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>),
-    decorateFn?: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
+      | ((instance: Awaited<TInstance>, ...args: TArgs) => TInstance),
+    decorateFn?: (instance: Awaited<TInstance>, ...args: TArgs) => TInstance,
   ) {
     if (decorateFn && Array.isArray(dependenciesOrDecorateFn)) {
       const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
-        this._token,
+        this._token as any, // TODO
         dependenciesOrDecorateFn,
-        decorateFn,
+        decorateFn as any, // TODO,
       );
 
       this._configurationContext.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
@@ -75,9 +74,9 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 
     if (typeof dependenciesOrDecorateFn === 'function') {
       const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
-        this._token,
+        this._token as any, // TODO
         [] as ConstructorArgsTokens<TArgs, TLifeTime>,
-        dependenciesOrDecorateFn,
+        dependenciesOrDecorateFn as any, // TODO
       );
 
       this._configurationContext.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);

@@ -5,7 +5,6 @@ import { cascading, scoped, singleton, transient } from '../../definitions/token
 import type { ContainerConfigureFn } from '../../configuration/ContainerConfiguration.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 import type { IContainer } from '../IContainer.js';
-import type { IContainerConfiguration } from '../../configuration/dsl/new/container/ContainerConfiguration.js';
 import { configureScope } from '../../configuration/ScopeConfiguration.js';
 
 describe(`container#[Symbol.dispose]`, () => {
@@ -198,7 +197,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
           const scope = cnt.scope(config);
 
-          await scope.all(cascadingDef, scopedDef);
+          await scope.resolveAll(cascadingDef, scopedDef);
 
           await scope.dispose();
 
@@ -212,7 +211,7 @@ describe(`container#[Symbol.dispose]`, () => {
         it(`supports async dispose fn`, async () => {
           let disposed = false;
 
-          const config = configureScope(c => {
+          const config = configureContainer(c => {
             c.add(cascadingDef)
               .fn(() => 2)
               .onDisposeAsync(async instance => {
@@ -233,7 +232,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
         // TODO: add container configuration like .onDisposeError()
         it(`catches all errors related to disposal`, async () => {
-          const config = configureScope(c => {
+          const config = configureContainer(c => {
             c.add(cascadingDef)
               .fn(() => 2)
               .onDispose(() => {
@@ -243,7 +242,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
           const cnt = container(config);
 
-          await cnt.use(cascadingDef);
+          cnt.use(cascadingDef);
 
           expect(() => cnt.dispose()).not.toThrowError();
         });
@@ -321,7 +320,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
           const cnt = container(config);
 
-          await cnt.all(singletonDef, cascadingDef, scopedDef);
+          await cnt.resolveAll(singletonDef, cascadingDef, scopedDef);
 
           await cnt.dispose();
 
@@ -376,9 +375,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
     const dbConnection = cascading<Disposable>();
 
-    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn | IContainerConfiguration>>(
-      ...containerConfigFns: TConfigureFns
-    ) => {
+    const withContainer = <TConfigureFns extends Array<ContainerConfigureFn>>(...containerConfigFns: TConfigureFns) => {
       return test.extend<{ use: IContainer }>({
         use: async ({}, use) => {
           const scope = container(...containerConfigFns);

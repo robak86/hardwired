@@ -1,6 +1,5 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { MaybePromise } from '../../../../utils/async.js';
 import type { ConstructorArgsTokens } from '../shared/AddDefinitionBuilder.js';
 import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
@@ -13,12 +12,12 @@ export class DecoratedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
     private dependencies: ConstructorArgsTokens<TArgs, TLifetime>,
-    private decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
+    private decorateFn: (instance: TInstance, ...args: TArgs) => TInstance,
   ) {}
 
   build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {
     return def.override((container, interceptor) => {
-      return container.all(...this.dependencies).then(awaitedDependencies => {
+      return container.resolveAll(...this.dependencies).then(awaitedDependencies => {
         return def.create(container, interceptor).then(awaitedInstance => {
           return MaybeAsync.resolve(this.decorateFn(awaitedInstance, ...(awaitedDependencies as TArgs)));
         });

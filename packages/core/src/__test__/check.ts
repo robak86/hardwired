@@ -39,8 +39,6 @@ function cMaybePromise() {
   return MaybeAsync.all([aMaybePromise(), bMaybePromise()]).then(([a, b]) => a * b);
 }
 
-// cMaybePromise().trySync();
-
 const instantiationBench = new Bench({
   time: 200,
   setup: () => {},

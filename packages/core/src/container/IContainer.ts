@@ -6,17 +6,17 @@ import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstrac
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
-import type { IContainerConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { MaybeAsync } from '../utils/MaybeAsync.js';
 
 import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
+import type { ContainerAllReturn } from './Container.js';
 
-export interface IStrategyAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  readonly id: string;
+export interface IDependenciesResolver {
+  resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue>;
 
-  // buildWithStrategy<TValue>(
-  //   instanceDefinition: IDefinition<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
-  // ): MaybePromise<TValue>;
+  resolveAll<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+    ...definitions: [...TDefinitions]
+  ): MaybeAsync<InstancesArray<TDefinitions>>;
 }
 
 export interface IContainerConfigurationAware {
@@ -33,10 +33,8 @@ export interface IServiceLocator<TAllowedLifeTime extends LifeTime = LifeTime>
   extends IContainerScopes,
     InstanceCreationAware<TAllowedLifeTime> {}
 
-export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> {
-  use<TValue>(
-    instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
-  ): MaybeAsync<TValue>;
+export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeTime> extends IDependenciesResolver {
+  use<TValue>(instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>): TValue;
 
   has(token: IDefinitionToken<unknown, LifeTime>): boolean;
 
@@ -46,15 +44,13 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
 
   useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null>;
 
-  all<TDefinitions extends Array<IDefinitionToken<any, ValidDependenciesLifeTime<TAllowedLifeTime>>>>(
+  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
-  ): MaybeAsync<InstancesArray<TDefinitions>>;
+  ): ContainerAllReturn<TDefinitions>;
 }
 
 export interface IContainerScopes {
-  scope<TConfigureFns extends Array<ScopeConfigureFn | IContainerConfiguration>>(
-    ...configureFns: TConfigureFns
-  ): IContainer;
+  scope<TConfigureFns extends Array<ScopeConfigureFn>>(...configureFns: TConfigureFns): IContainer;
 }
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
@@ -65,8 +61,7 @@ export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
     IContainerScopes,
     UseFn<TAllowedLifeTime>,
-    IContainerConfigurationAware,
-    IStrategyAware {
+    IContainerConfigurationAware {
   readonly id: string;
   readonly parentId: string | null;
 

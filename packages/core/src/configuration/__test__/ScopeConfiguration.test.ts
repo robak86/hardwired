@@ -12,17 +12,16 @@ describe(`ScopeConfiguration`, () => {
   describe(`add`, () => {
     describe(`types`, () => {
       it(`doesn't allow registering singletons`, async () => {
-        const buildConfiguration = () =>
-          configureScope(s => {
-            s.add(someScoped);
-            s.add(someTransient);
-            s.add(someCascading);
+        const config = configureScope(s => {
+          s.add(someScoped);
+          s.add(someTransient);
+          s.add(someCascading);
 
-            // @ts-expect-error cannot add singletons
-            s.add(someSingleton);
-          });
+          // @ts-expect-error cannot add singletons
+          s.add(someSingleton);
+        });
 
-        expect(buildConfiguration).toThrowError(
+        expect(() => container().scope(config)).toThrowError(
           'Invalid life time "singleton" for Symbol(). Allowed: scoped, transient, cascading',
         );
       });
@@ -39,18 +38,18 @@ describe(`ScopeConfiguration`, () => {
         });
         const scopeL2 = scopeL1.scope();
 
-        expect(scopeL1.use(someScoped).trySync()).toMatchObject({ value: 123 });
-        expect(scopeL1.use(someTransient).trySync()).toMatchObject({ value: 456 });
-        expect(scopeL1.use(someCascading).trySync()).toMatchObject({ value: 789 });
+        expect(scopeL1.use(someScoped)).toMatchObject({ value: 123 });
+        expect(scopeL1.use(someTransient)).toMatchObject({ value: 456 });
+        expect(scopeL1.use(someCascading)).toMatchObject({ value: 789 });
         //
-        expect(scopeL2.use(someScoped).trySync()).toMatchObject({ value: 123 });
-        expect(scopeL2.use(someTransient).trySync()).toMatchObject({ value: 456 });
-        expect(scopeL2.use(someCascading).trySync()).toMatchObject({ value: 789 });
+        expect(scopeL2.use(someScoped)).toMatchObject({ value: 123 });
+        expect(scopeL2.use(someTransient)).toMatchObject({ value: 456 });
+        expect(scopeL2.use(someCascading)).toMatchObject({ value: 789 });
         //
-        expect(scopeL1.use(someScoped).trySync()).not.toBe(scopeL2.use(someScoped).trySync());
-        expect(scopeL1.use(someTransient).trySync()).not.toBe(scopeL2.use(someTransient).trySync());
+        expect(scopeL1.use(someScoped)).not.toBe(scopeL2.use(someScoped));
+        expect(scopeL1.use(someTransient)).not.toBe(scopeL2.use(someTransient));
         //
-        expect(scopeL1.use(someCascading).trySync()).toBe(scopeL2.use(someCascading).trySync());
+        expect(scopeL1.use(someCascading)).toBe(scopeL2.use(someCascading));
         //
         // expect(() => cnt.use(someScoped)).toThrowError('Cannot find definition');
         // expect(() => cnt.use(someCascading)).toThrowError('Cannot find definition');

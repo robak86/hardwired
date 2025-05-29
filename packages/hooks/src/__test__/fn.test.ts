@@ -18,7 +18,7 @@ describe(`fn`, () => {
         c.add(sumFn).static(10);
       });
 
-      expect(cnt.use(sumFn).trySync()).toEqual(10);
+      expect(cnt.use(sumFn)).toEqual(10);
     });
 
     it(`allows overrides`, async () => {

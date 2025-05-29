@@ -17,7 +17,7 @@ export class ConfiguredDefinitionBuilder<TInstance, TLifetime extends LifeTime, 
 
   build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {
     return def.override((container, interceptor) => {
-      return container.all(...this.dependencies).then(awaitedDependencies => {
+      return container.resolveAll(...this.dependencies).then(awaitedDependencies => {
         return def.create(container, interceptor).then(awaitedInstance => {
           return MaybeAsync.resolve(this.configFn(awaitedInstance, ...(awaitedDependencies as TArgs))).then(() => {
             return awaitedInstance;
