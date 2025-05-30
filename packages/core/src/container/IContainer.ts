@@ -57,7 +57,7 @@ export interface IContainerScopes {
 
 export type UseFn<TAllowedLifeTime extends LifeTime> = <TValue>(
   instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
-) => MaybeAsync<TValue>;
+) => TValue;
 
 export interface IContainer<TAllowedLifeTime extends LifeTime = LifeTime>
   extends InstanceCreationAware<TAllowedLifeTime>,
