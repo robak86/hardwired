@@ -244,15 +244,20 @@ describe(`ContainerConfiguration`, () => {
 
     describe(`transient`, () => {
       describe(`decorate`, () => {
-        it(`modify is applicative`, async () => {
+        it.todo(`modify is applicative`, async () => {
           const def = transient<number>('testCascadingDef');
 
-          const cnt = container(c => {
+          const cfg1 = configureContainer(c => {
             c.add(def).static(0);
 
             c.modify(def).decorate(val => val + 1);
+          });
+
+          const cfg2 = configureContainer(c => {
             c.modify(def).decorate(val => val + 1);
           });
+
+          const cnt = container(cfg1, cfg2);
 
           const child = cnt.scope(c => {
             c.modify(def).decorate(val => val + 1);

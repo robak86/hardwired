@@ -1,3 +1,4 @@
+import type { TypeEqual } from 'ts-expect';
 import { expectType } from 'ts-expect';
 
 import { fn } from '../fn.js';
@@ -28,8 +29,21 @@ describe(`fn`, () => {
 
     it(`doesn't allow narrower lifetimes for dependencies`, async () => {
       const def = fn.scoped(async () => 123);
+
       // @ts-expect-error
-      const consumer = fn.singleton(def, (val: number) => val + 1);
+      fn.singleton(def, (val: number) => val + 1);
+    });
+
+    it(`injects correct type`, async () => {
+      const myNum = fn.singleton(() => 123);
+      const myNumAsync = fn.scoped(async () => 123);
+
+      fn.scoped(myNum, myNumAsync, (val, valFromAsync) => {
+        expectType<TypeEqual<number, typeof val>>(true);
+        expectType<TypeEqual<number, typeof valFromAsync>>(true);
+
+        return val + 1;
+      });
     });
   });
 
