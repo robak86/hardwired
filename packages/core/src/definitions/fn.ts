@@ -27,8 +27,8 @@ export const fnDefinition = <TLifeTime extends LifeTime>(lifeTime: TLifeTime) =>
   };
 };
 
-export const fn = {
+export const fn = Object.assign(fnDefinition(LifeTime.transient), {
   singleton: fnDefinition(LifeTime.singleton),
   scoped: fnDefinition(LifeTime.scoped),
   cascading: fnDefinition(LifeTime.cascading),
-};
+});

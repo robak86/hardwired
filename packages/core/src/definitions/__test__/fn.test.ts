@@ -48,6 +48,14 @@ describe(`fn`, () => {
   });
 
   describe(`resolution`, () => {
+    describe(`transient`, () => {
+      it(`returns transient definition`, async () => {
+        const myFn = fn(() => 123);
+
+        expect(container().use(myFn)).toEqual(123);
+      });
+    });
+
     describe(`sync`, () => {
       it(`resolves correctly values`, async () => {
         const myFn = fn.scoped(() => 123);
