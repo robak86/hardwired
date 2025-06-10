@@ -46,21 +46,19 @@ export class DefinitionsDisposeFunctions implements ILifeCycleRegistry {
     const disposeTasks = Array.from(this._disposeFunctions).map(([token, disposeFns]) => {
       const instance = container.useExisting(token);
 
-      return instance.then(awaited => {
-        if (!awaited) {
-          return MaybeAsync.resolve([]);
-        }
+      if (!instance) {
+        return MaybeAsync.resolve([]);
+      }
 
-        return MaybeAsync.all(
-          disposeFns.map(fn => {
-            try {
-              return fn(awaited);
-            } catch (err) {
-              console.error((err as any).message);
-            }
-          }),
-        );
-      });
+      return MaybeAsync.all(
+        disposeFns.map(fn => {
+          try {
+            return fn(instance);
+          } catch (err) {
+            console.error((err as any).message);
+          }
+        }),
+      );
     });
 
     return MaybeAsync.all(disposeTasks) as unknown as MaybeAsync<void>;

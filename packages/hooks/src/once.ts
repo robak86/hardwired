@@ -43,7 +43,7 @@ export function once<TConfigureFns extends Array<ContainerConfigureFn | AsyncCon
   if (Array.isArray(configsOrToken) && !token) {
     const cnt = MaybeAsync.resolve(container(...configsOrToken));
 
-    return <TValue>(token: IDefinitionToken<TValue, LifeTime> | (<TReturn>() => TReturn)) => {
+    const curried = <TValue>(token: IDefinitionToken<TValue, LifeTime> | (<TReturn>() => TReturn)) => {
       return cnt
         .then(c => {
           if (typeof token === 'function') {
@@ -54,6 +54,8 @@ export function once<TConfigureFns extends Array<ContainerConfigureFn | AsyncCon
         })
         .unwrap() as OnceReturnType<TConfigureFns, TValue>;
     };
+
+    return curried as OnceReturnTypeCurried<TConfigureFns>;
   }
 
   if (Array.isArray(configsOrToken) && token) {
