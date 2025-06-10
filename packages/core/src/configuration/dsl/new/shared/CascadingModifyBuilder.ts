@@ -5,6 +5,7 @@ import { InheritedDefinitionBuilder } from '../utils/InheritedDefinitionBuilder.
 
 import { ModifyDefinitionBuilder } from './ModifyDefinitionBuilder.js';
 import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';
+import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
 
 export class CascadingModifyBuilder<TInstance>
   extends ModifyDefinitionBuilder<TInstance, LifeTime.cascading>
@@ -20,12 +21,14 @@ export class CascadingModifyBuilder<TInstance>
   }
 
   claimNew() {
-    this._configurationContext.onCascadingDefinition(this._token);
+    this._context.onCascadingDefinition(this._token);
   }
 
   inherit(decorateFn: (instance: TInstance) => TInstance) {
     const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(this._token, decorateFn, []);
 
-    this._configurationContext.onInheritBuilder(this._configType, inheritedDefinitionBuilder);
+    this._context.onInheritBuilder(this._configType, inheritedDefinitionBuilder);
+
+    return new DisposeFinalizeBuilder(this._token, this._context);
   }
 }

@@ -3,6 +3,7 @@ import type { IDefinitionToken } from '../../definitions/tokens.js';
 import type { ConstructorArgsTokens } from '../dsl/new/shared/AddDefinitionBuilder.js';
 
 import type { IAddDefinitionBuilder } from './IRegisterAware.js';
+import type { IDisposeFinalizer } from './IDisposeFinalizer.js';
 
 export type ConfigureResult<TInstance> = TInstance extends Promise<any> ? Promise<void> | void : void;
 
@@ -31,7 +32,7 @@ export interface IModifyBuilder<TInstance, TLifeTime extends LifeTime>
 
 export interface ICascadeModifyBuilder<TInstance> extends IModifyBuilder<TInstance, LifeTime.cascading> {
   claimNew(): void;
-  inherit(factory: (instance: TInstance) => TInstance): void;
+  inherit(factory: (instance: TInstance) => TInstance): IDisposeFinalizer<TInstance, LifeTime.cascading>;
 }
 
 export type ScopeModifyBuilderType<TInstance, TLifeTime extends LifeTime> = TLifeTime extends LifeTime.cascading
