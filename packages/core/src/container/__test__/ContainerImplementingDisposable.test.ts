@@ -101,7 +101,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
       const scope = cnt.scope(s => {
         s.onDispose(use => {
-          use.useExisting(def).then(existing => existing?.dispose());
+          use.useExisting(def)?.dispose();
         });
       });
 

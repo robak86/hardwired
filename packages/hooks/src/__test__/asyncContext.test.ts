@@ -1,7 +1,7 @@
 import { configureScope, container, scoped } from 'hardwired';
 import { describe, expect } from 'vitest';
 
-import { use, useAsync } from '../use.js';
+import { use } from '../use.js';
 import { withScope } from '../withScope.js';
 import { withContainer } from '../asyncContainerStorage.js';
 
@@ -9,24 +9,24 @@ import { it } from './helpers/test-case.js';
 
 describe(`AsyncContext`, () => {
   it(`works`, async () => {
-    const someValue = scoped<number>('someValue');
+    const someValue = scoped<Promise<number>>('someValue');
 
     const cnt = container(c => {
-      c.add(someValue).fn(() => Math.random());
+      c.add(someValue).fn(async () => Math.random());
     });
 
     const result = await withContainer(cnt, async () => {
       const collected: number[] = [];
 
-      collected.push(await useAsync(someValue));
-      collected.push(await useAsync(someValue));
+      collected.push(await use(someValue));
+      collected.push(await use(someValue));
 
       await withScope(async () => {
-        collected.push(await useAsync(someValue));
+        collected.push(await use(someValue));
       });
 
       await withScope(async () => {
-        collected.push(use(someValue));
+        collected.push(await use(someValue));
       });
 
       return collected;

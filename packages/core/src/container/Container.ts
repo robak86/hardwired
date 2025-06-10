@@ -290,8 +290,8 @@ export class Container
    * Cascading instances are returned only from the scope holding the instance.
    * @param definition
    */
-  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null> {
-    return this.instancesStore.getExisting(definition);
+  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): TValue | null {
+    return this.instancesStore.getExisting(definition).unwrap() as TValue | null;
   }
 
   protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybeAsync<TValue> {

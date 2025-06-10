@@ -29,7 +29,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
         configureFn,
       );
 
-      this._configurationContext.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
+      this._context.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
 
       return;
     }
@@ -41,7 +41,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
         dependenciesOrConfigureFn,
       );
 
-      this._configurationContext.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
+      this._context.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
 
       return;
     }
@@ -67,7 +67,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
         decorateFn as any, // TODO,
       );
 
-      this._configurationContext.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
+      this._context.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
 
       return;
     }
@@ -79,7 +79,7 @@ export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
         dependenciesOrDecorateFn as any, // TODO
       );
 
-      this._configurationContext.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
+      this._context.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
 
       return;
     }

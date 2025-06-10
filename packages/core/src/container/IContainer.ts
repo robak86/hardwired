@@ -42,7 +42,7 @@ export interface InstanceCreationAware<TAllowedLifeTime extends LifeTime = LifeT
     instanceDefinition: IDefinitionToken<TValue, ValidDependenciesLifeTime<TAllowedLifeTime>>,
   ): Promise<TValue>;
 
-  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): MaybeAsync<TValue | null>;
+  useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): TValue | null;
 
   all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]

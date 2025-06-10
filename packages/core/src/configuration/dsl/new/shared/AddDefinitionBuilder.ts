@@ -24,7 +24,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     protected readonly _configType: ConfigurationType,
     protected readonly _token: IDefinitionToken<TInstance, TLifeTime>,
     protected readonly _allowedLifeTimes: LifeTime[],
-    protected readonly _configurationContext: IConfigurationContext,
+    protected readonly _context: IConfigurationContext,
   ) {
     this.assertValidLifeTime();
   }
@@ -43,7 +43,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
     const definition = new ClassDefinition(this._token.id, this._token.strategy, klass, dependencies);
 
-    this._configurationContext.onDefinition(this._configType, definition);
+    this._context.onDefinition(this._configType, definition);
 
     return this.buildFinalizer();
   }
@@ -54,7 +54,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
     const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, dependencies);
 
-    this._configurationContext.onDefinition(this._configType, fnDefinition);
+    this._context.onDefinition(this._configType, fnDefinition);
 
     return this.buildFinalizer();
   }
@@ -65,7 +65,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
     const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, dependencies);
 
-    this._configurationContext.onDefinition(this._configType, fnDefinition);
+    this._context.onDefinition(this._configType, fnDefinition);
 
     return this.buildFinalizer();
   }
@@ -73,7 +73,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
   static(value: TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
     const definition = new Definition(this._token.id, this._token.strategy, () => MaybeAsync.resolve(value));
 
-    this._configurationContext.onDefinition(this._configType, definition);
+    this._context.onDefinition(this._configType, definition);
 
     return this.buildFinalizer();
   }
@@ -83,7 +83,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
       return MaybeAsync.resolve(fn(container));
     });
 
-    this._configurationContext.onDefinition(this._configType, definition);
+    this._context.onDefinition(this._configType, definition);
 
     return this.buildFinalizer();
   }
@@ -93,7 +93,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
       return MaybeAsync.resolve(fn(container));
     });
 
-    this._configurationContext.onDefinition(this._configType, definition);
+    this._context.onDefinition(this._configType, definition);
 
     return this.buildFinalizer();
   }
@@ -105,10 +105,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
       this._token.strategy === LifeTime.cascading ||
       this._token.strategy === LifeTime.scoped
     ) {
-      return new DisposeFinalizeBuilder(this._token, this._configurationContext) as unknown as FinalizerOrVoid<
-        TInstance,
-        TLifeTime
-      >;
+      return new DisposeFinalizeBuilder(this._token, this._context) as unknown as FinalizerOrVoid<TInstance, TLifeTime>;
     }
 
     return undefined as unknown as FinalizerOrVoid<TInstance, TLifeTime>;

@@ -1,6 +1,6 @@
 import type { TypeOf } from 'ts-expect';
 import { expectType } from 'ts-expect';
-import { describe } from 'vitest';
+import { describe, expect } from 'vitest';
 
 import type { Container } from '../../container/Container.js';
 import { container } from '../../container/Container.js';
@@ -8,6 +8,7 @@ import type { IContainer } from '../../container/IContainer.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 import { cascading, scoped, singleton, transient } from '../../definitions/tokens.js';
 import { configureContainer } from '../ContainerConfiguration.js';
+import { configureScope } from '../ScopeConfiguration.js';
 
 describe(`ContainerConfiguration`, () => {
   describe.skip(`eager`, () => {
@@ -19,7 +20,7 @@ describe(`ContainerConfiguration`, () => {
           c.eager(def).decorate(async val => val);
         });
 
-        expect(await cnt.use(def)).toMatchObject({ value: 789 });
+        expect(cnt.use(def)).toMatchObject({ value: 789 });
       });
     });
   });
@@ -51,10 +52,10 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).decorate(val => val + 1);
           });
 
-          expect(await cnt.use(def)).toEqual(2);
-          expect(await child.use(def)).toEqual(11);
-          expect(await child2.use(def)).toEqual(0);
-          expect(await child3.use(def)).toEqual(2);
+          expect(cnt.use(def)).toEqual(2);
+          expect(child.use(def)).toEqual(11);
+          expect(child2.use(def)).toEqual(0);
+          expect(child3.use(def)).toEqual(2);
         });
 
         it(`throws when definition wasn't registered`, async () => {
@@ -71,27 +72,58 @@ describe(`ContainerConfiguration`, () => {
       });
 
       describe(`inherit`, () => {
-        it.skip(`inherits value from the parent scope`, async () => {
-          // const def = cascading<number>('testCascadingDef');
-          //
-          // const cnt = container(c => {
-          //   c.add(def).static(0);
-          // });
-          //
-          // const child = cnt.scope(c => {
-          //   c.modify(def).inherit(val => val + 1);
-          // });
-          //
-          // // TODO:
-          //
-          // const child = cnt.scope(c => {
-          //   c.modify(def)
-          //     .inherit(val => val + 1)
-          //     .onDispose(val => {});
-          // });
-          //
-          // expect(await cnt.use(def)).toEqual(0);
-          // expect(await child.use(def)).toEqual(1);
+        it(`inherits value from the parent scope`, async () => {
+          const def = cascading<string>('testCascadingDef');
+
+          const scopeConfig = configureScope(scope => {
+            scope.modify(def).inherit(value => {
+              return value + '_inherited';
+            });
+          });
+
+          const root = container(c => c.add(def).static('root'));
+
+          expect(root.use(def)).toEqual('root');
+
+          const scope = root.scope(scopeConfig);
+
+          expect(scope.use(def)).toEqual('root_inherited');
+        });
+
+        it(`inherits value from the parent scope`, async () => {
+          const def = cascading<number>('testCascadingDef');
+
+          const cnt = container(c => {
+            c.add(def).static(0);
+          });
+
+          const child = cnt.scope(c => {
+            c.modify(def).inherit(val => val + 1);
+          });
+
+          expect(cnt.use(def)).toEqual(0);
+          expect(child.use(def)).toEqual(1);
+        });
+
+        it(`works with onDispose`, async () => {
+          const def = cascading<number>('testCascadingDef');
+          const disposeSpy = vi.fn();
+
+          const cnt = container(c => {
+            c.add(def).static(0);
+          });
+
+          const child = cnt.scope(c => {
+            c.modify(def)
+              .inherit(val => val + 1)
+              .onDispose(disposeSpy);
+          });
+
+          expect(cnt.use(def)).toEqual(0);
+          expect(child.use(def)).toEqual(1);
+          child.dispose();
+
+          expect(disposeSpy).toHaveBeenCalledWith(1);
         });
 
         it(`throws when definition is not registered in the parent scope`, async () => {
@@ -135,9 +167,9 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).inherit(inheritFactorySpy);
           });
 
-          await child.use(def);
-          await child.use(def);
-          await child.use(def);
+          child.use(def);
+          child.use(def);
+          child.use(def);
 
           expect(inheritFactorySpy).toHaveBeenCalledTimes(1);
         });
@@ -154,8 +186,8 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).decorate(val => val + 1);
           });
 
-          expect(await cnt.use(def)).toEqual(0);
-          expect(await child.use(def)).toEqual(2);
+          expect(cnt.use(def)).toEqual(0);
+          expect(child.use(def)).toEqual(2);
         });
       });
 
@@ -194,9 +226,9 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).decorate(val => val + 1);
           });
 
-          expect(await cnt.use(def)).toEqual(2);
-          expect(await child.use(def)).toEqual(11);
-          expect(await child2.use(def)).toEqual(2);
+          expect(cnt.use(def)).toEqual(2);
+          expect(child.use(def)).toEqual(11);
+          expect(child2.use(def)).toEqual(2);
         });
 
         it(`throws when definition wasn't registered`, async () => {
@@ -225,7 +257,7 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).decorate(val => val + 1);
           });
 
-          expect(await cnt.use(def)).toEqual(2);
+          expect(cnt.use(def)).toEqual(2);
         });
 
         it(`throws when definition wasn't registered`, async () => {
@@ -269,9 +301,9 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).decorate(val => val + 1);
           });
 
-          expect(await cnt.use(def)).toEqual(2);
-          expect(await child.use(def)).toEqual(11);
-          expect(await child2.use(def)).toEqual(2);
+          expect(cnt.use(def)).toEqual(2);
+          expect(child.use(def)).toEqual(11);
+          expect(child2.use(def)).toEqual(2);
         });
 
         it(`throws when definition wasn't registered`, async () => {
@@ -334,7 +366,7 @@ describe(`ContainerConfiguration`, () => {
         c.add(def).static(123);
       });
 
-      await cnt.use(def);
+      cnt.use(def);
 
       expect(() => cnt.freeze(def).static(456)).toThrowError('already instantiated');
     });
@@ -346,7 +378,7 @@ describe(`ContainerConfiguration`, () => {
         c.add(def).static(123);
       });
 
-      await cnt.use(def);
+      cnt.use(def);
 
       const scope = cnt.scope();
 
@@ -375,7 +407,7 @@ describe(`ContainerConfiguration`, () => {
 
       const scope1 = cnt.scope(s => s.modify(def).claimNew());
 
-      await scope1.use(def);
+      scope1.use(def);
 
       const scope2 = scope1.scope();
 
@@ -423,7 +455,7 @@ describe(`ContainerConfiguration`, () => {
           // });
         });
 
-        expect((await cnt.use(dep)).value).toEqual(1);
+        expect(cnt.use(dep).value).toEqual(1);
       });
     });
   });
