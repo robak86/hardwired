@@ -33,8 +33,6 @@ export * from './definitions/utils/derivedLifeTime.js';
 
 export * from './definitions/abstract/LifeTime.js';
 
-export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
-
 export type * from './container/IContainer.js';
 
 export type { ClassType } from './definitions/utils/class-type.js';

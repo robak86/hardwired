@@ -3,7 +3,6 @@ import { v4 } from 'uuid';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
@@ -67,10 +66,7 @@ export type AwaitedInstanceArray<T extends Array<IDefinitionToken<Promise<any>, 
   [K in keyof T]: AwaitedInstance<T[K]>;
 };
 
-export class Container
-  extends ExtensibleFunction
-  implements IContainer, ICascadingDefinitionResolver, IDependenciesResolver
-{
+export class Container implements IContainer, ICascadingDefinitionResolver, IDependenciesResolver {
   static create<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
     ...configurations: TConfigureFns
   ): ContainerNewReturnType<TConfigureFns> {
@@ -133,15 +129,6 @@ export class Container
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
     private _interceptor: ICompositeInterceptor,
   ) {
-    // TODO: remove
-    super(
-      <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
-        definition: IDefinitionToken<TInstance, TLifeTime>,
-      ) => {
-        return this.resolve(definition);
-      },
-    );
-
     this._singletonStrategy = new SingletonStrategy(instancesStore);
     this._scopedStrategy = new ScopedStrategy(instancesStore);
   }
