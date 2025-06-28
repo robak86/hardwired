@@ -50,3 +50,7 @@ export * from './definitions/cls.js';
 export * from './definitions/fn.js';
 export { DefinitionToken } from './definitions/DefinitionToken.js';
 export type { IDefinitionToken } from './definitions/DefinitionToken.js';
+
+export * from './definitions/builders/ArgumentPlaceholderToken.js';
+export * from './definitions/builders/DefinitionBuilder.js';
+export type * from './definitions/builders/DefinitionBuilderDependencies.js';
