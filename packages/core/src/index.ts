@@ -1,3 +1,5 @@
+export { HierarchicalMap } from './context/HierarchicalMap.js';
+
 export { AbstractDefinition } from './definitions/impl/AbstractDefinition.js';
 
 export type * from './container/interceptors/interceptor.js';

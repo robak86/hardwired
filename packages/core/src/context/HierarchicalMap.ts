@@ -7,6 +7,14 @@ export class HierarchicalMap<V> {
     return new HierarchicalMap();
   }
 
+  setForRoot(key: symbol, value: V): void {
+    if (this._parent) {
+      this._parent.setForRoot(key, value);
+    } else {
+      this._own.set(key, value);
+    }
+  }
+
   set(key: symbol, value: V): void {
     this._own.set(key, value);
   }

@@ -25,7 +25,7 @@ export class CascadingModifyBuilder<TInstance>
   }
 
   inherit(decorateFn: (instance: TInstance) => TInstance) {
-    const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(this._token, decorateFn, []);
+    const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(this._token, [], decorateFn);
 
     this._context.onInheritBuilder(this._configType, inheritedDefinitionBuilder);
 

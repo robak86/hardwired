@@ -92,15 +92,17 @@ describe('cls', () => {
       it(`inherits instance from parent scope until marked as cascade root`, async () => {
         const leafDef = cascading.using(value('leaf')).class(Leaf);
 
-        const cnt = container();
-        const scope1 = cnt.scope();
+        const root = container();
+
+        const scope1 = root.scope();
+
         const scope2 = scope1.scope(c => c.modify(leafDef).claimNew());
         const scope3 = scope2.scope();
 
-        const cntInstance = cnt.use(leafDef);
-        const scope1Instance = scope1.use(leafDef);
+        const scope1Val = scope1.use(leafDef);
+        const rootVal = root.use(leafDef);
 
-        expect(cntInstance).toBe(scope1Instance);
+        expect(rootVal).toBe(scope1Val);
         expect(scope1.use(leafDef)).not.toBe(scope2.use(leafDef));
         expect(scope2.use(leafDef)).toBe(scope3.use(leafDef));
       });

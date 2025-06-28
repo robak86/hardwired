@@ -16,10 +16,10 @@ import type { IContainerConfiguration } from '../configuration/dsl/new/container
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
-import { COWMap } from '../context/COWMap.js';
 import { ContainerConfigurationBuilder } from '../configuration/dsl/new/container/ContainerConfigurationBuilder.js';
 import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
 import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
+import { HierarchicalMap } from '../context/HierarchicalMap.js';
 
 import type {
   HasPromise,
@@ -81,7 +81,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
         const bindingsRegistry = BindingsRegistry.create(configs);
         const instancesStore = InstancesStore.create();
         const lifeCycleRegistry = new ContainerLifeCycleRegistry();
-        const cascadingRoots = COWMap.create<ICascadingDefinitionResolver>();
+        const cascadingRoots = HierarchicalMap.create<ICascadingDefinitionResolver>();
 
         const cnt = new Container(
           null,
@@ -125,7 +125,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
     public readonly parentId: string | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
-    protected readonly cascadingRoots: COWMap<ICascadingDefinitionResolver>,
+    protected readonly cascadingRoots: HierarchicalMap<ICascadingDefinitionResolver>,
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
     private _interceptor: ICompositeInterceptor,
   ) {
@@ -176,7 +176,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
         const instancesStore = this.instancesStore.childScope();
 
         const lifeCycleRegistry = new ContainerLifeCycleRegistry();
-        const cascadingRoots = this.cascadingRoots.clone();
+        const cascadingRoots = this.cascadingRoots.child();
 
         const cnt: Container = new Container(
           this.id,
@@ -251,10 +251,13 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
       const override = this.bindingsRegistry.findForDefinition(definition);
 
       if (definition.strategy === LifeTime.cascading) {
-        // if we don't have any cascading root for the definition in the whole containers hierarchy,
-        // we set the current container as a cascading root for this definition
+        // When resolving cascading definition, we don't have a container root for that definition during
+        // container/scope creation compared to tokens for which the definition is set. Therefore, we need to lazily
+        // set the cascading root here.
+
+        // If there is no cascading root for the definition in the whole hierarchy, we set cascading root to the root container.
         if (!this.cascadingRoots.has(definition.id)) {
-          this.cascadingRoots.set(definition.id, this);
+          this.cascadingRoots.setForRoot(definition.id, this);
         }
       }
 
