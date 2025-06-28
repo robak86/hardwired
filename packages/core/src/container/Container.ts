@@ -309,7 +309,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
   resolveAll<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): MaybeAsync<InstancesArray<TDefinitions>> {
-    const results = definitions.map(def => this.use(def));
+    const results = definitions.map(def => this.resolve(def));
 
     return MaybeAsync.all(results) as MaybeAsync<InstancesArray<TDefinitions>>;
   }
@@ -317,7 +317,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
   all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
     ...definitions: [...TDefinitions]
   ): ContainerAllReturn<TDefinitions> {
-    const results = definitions.map(def => this.use(def));
+    const results = definitions.map(def => this.resolve(def));
 
     return MaybeAsync.all(results).unwrap() as ContainerAllReturn<TDefinitions>;
   }
