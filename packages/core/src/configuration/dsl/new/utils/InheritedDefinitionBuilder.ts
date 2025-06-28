@@ -12,17 +12,11 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
 {
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
-    protected readonly _decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
-    protected readonly _dependencies: InstancesTokens<TArgs, TLifetime>,
+    private readonly _dependencies: InstancesTokens<TArgs, TLifetime>,
+    private readonly _decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ) {}
 
   build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {
-    // if (registry.hasOwnCascadingRoot(this.token.id)) {
-    //   throw new Error('Cannot inherit cascading definition. Current scope already provides own definition.');
-    // }
-    //
-    // const def = registry.getForOverride(this.token);
-
     return def.override((container, interceptor) => {
       return container.resolveAll(...this._dependencies).then(awaitedDependencies => {
         return def.create(container, interceptor).then(awaitedInstance => {

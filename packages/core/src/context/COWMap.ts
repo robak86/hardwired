@@ -11,15 +11,7 @@ export class COWMap<V> {
     return new COWMap<V>(new Map(), true);
   }
 
-  static all<V>(maps: Array<COWMap<V>>): COWMap<V> {
-    const mapEntries = maps.map(map => map._entries);
-
-    const merged = new Map(mapEntries.flatMap(m => [...m]));
-
-    return new COWMap<V>(merged, true);
-  }
-
-  private _inheritedKeys = new Set<symbol>();
+  private _inheritedKeys?: Set<symbol>;
 
   protected constructor(
     protected _entries: Map<symbol, V>,
@@ -30,8 +22,16 @@ export class COWMap<V> {
     return this._entries.has(definitionId);
   }
 
+  /**
+   * Checks if the map has an entry that is not inherited from a cloned map.
+   * @param definitionId
+   */
   hasOwn(definitionId: symbol): boolean {
-    return this._pristine && this._entries.has(definitionId) && !this._inheritedKeys.has(definitionId);
+    if (this._pristine) {
+      return false;
+    }
+
+    return this._entries.has(definitionId) && !this._inheritedKeys?.has(definitionId);
   }
 
   hasInherited(definitionId: symbol): boolean {
@@ -39,13 +39,13 @@ export class COWMap<V> {
   }
 
   set(definitionId: symbol, instance: V): void {
-    if (!this._pristine) {
-      this._inheritedKeys = new Set(this._entries.keys());
+    if (this._pristine) {
       this._entries = new Map(this._entries);
-      this._pristine = true;
+      this._inheritedKeys = new Set(this._entries.keys()); // implemented here instead of constructor, to make it lazy
+      this._pristine = false;
     }
 
-    this._inheritedKeys.delete(definitionId);
+    this._inheritedKeys!.delete(definitionId);
     this._entries.set(definitionId, instance);
   }
 
@@ -54,7 +54,7 @@ export class COWMap<V> {
   }
 
   clone(): COWMap<V> {
-    return new COWMap(this._entries, false);
+    return new COWMap(this._entries, true);
   }
 
   forEach(callback: (value: V, key: symbol) => void): void {
