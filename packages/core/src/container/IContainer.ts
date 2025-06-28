@@ -4,9 +4,9 @@ import type { ValidDependenciesLifeTime } from '../definitions/abstract/Instance
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
-import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import type { MaybeAsync } from '../utils/MaybeAsync.js';
+import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
 import type { IInterceptor, InterceptorClass } from './interceptors/interceptor.js';
 import type { ContainerAllReturn, NewScopeReturnType } from './Container.js';

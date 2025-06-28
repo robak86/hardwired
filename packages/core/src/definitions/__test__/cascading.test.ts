@@ -4,10 +4,10 @@ import { container } from '../../container/Container.js';
 import { cascading } from '../tokens.js';
 
 describe(`cascading definition`, () => {
-  const numDefCascading = cascading<BoxedValue<number>>('num');
-  const strDefCascading = cascading<BoxedValue<string>>('str');
+  const numDefCascading = cascading.token<BoxedValue<number>>('num');
+  const strDefCascading = cascading.token<BoxedValue<string>>('str');
 
-  const myClassCascading = cascading<MyClass>('MyClassCascading');
+  const myClassCascading = cascading.token<MyClass>('MyClassCascading');
 
   class MyClass {
     readonly value = Math.random();

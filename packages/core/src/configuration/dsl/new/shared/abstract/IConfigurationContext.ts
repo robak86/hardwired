@@ -1,11 +1,11 @@
 import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitionBuilder.js';
 import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
-import type { IDefinitionToken } from '../../../../../definitions/tokens.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
 import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import type { MaybePromise } from '../../../../../utils/async.js';
 import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
+import type { IDefinitionToken } from '../../../../../definitions/DefinitionToken.js';
 
 export type ConfigurationType = 'add' | 'modify' | 'freeze';
 

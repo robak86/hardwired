@@ -14,7 +14,7 @@ describe(`ContainerConfiguration`, () => {
   describe.skip(`eager`, () => {
     describe('types', () => {
       it(`allows using async functions for decorate and configure`, async () => {
-        const def = cascading<BoxedValue<number>>('testCascadingDef');
+        const def = cascading.token<BoxedValue<number>>('testCascadingDef');
 
         const cnt = container(c => {
           c.eager(def).decorate(async val => val);
@@ -29,7 +29,7 @@ describe(`ContainerConfiguration`, () => {
     describe(`cascading`, () => {
       describe(`decorate`, () => {
         it(`modify is applicative`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
 
           const cnt = container(c => {
             c.add(def).static(0);
@@ -59,7 +59,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`throws when definition wasn't registered`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
 
           expect(() => {
             const cnt = container(c => {
@@ -73,7 +73,7 @@ describe(`ContainerConfiguration`, () => {
 
       describe(`inherit`, () => {
         it(`inherits value from the parent scope`, async () => {
-          const def = cascading<string>('testCascadingDef');
+          const def = cascading.token<string>('testCascadingDef');
 
           const scopeConfig = configureScope(scope => {
             scope.modify(def).inherit(value => {
@@ -90,8 +90,31 @@ describe(`ContainerConfiguration`, () => {
           expect(scope.use(def)).toEqual('root_inherited');
         });
 
+        it(`uses memoized cascading value from container ancestors`, async () => {
+          const def = cascading.token<any[]>('testCascadingDef');
+
+          const scopeConfig = configureScope(scope => {
+            scope.modify(def).inherit(value => [...value, 'inherited']);
+          });
+
+          const rootFactorySpy = vi.fn(() => ['root', Math.random()]);
+
+          const root = container(c => {
+            c.add(def).fn(rootFactorySpy);
+          });
+
+          const scope = root.scope(scopeConfig);
+
+          expect(scope.use(def)).toEqual(['root', expect.any(Number), 'inherited']);
+
+          expect(root.use(def)).toEqual(['root', expect.any(Number)]);
+          expect(root.use(def)).toBe(root.use(def));
+
+          expect(rootFactorySpy).toHaveBeenCalledTimes(1);
+        });
+
         it(`inherits value from the parent scope`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
 
           const cnt = container(c => {
             c.add(def).static(0);
@@ -106,7 +129,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`works with onDispose`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
           const disposeSpy = vi.fn();
 
           const cnt = container(c => {
@@ -127,7 +150,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`throws when definition is not registered in the parent scope`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
 
           configureContainer(c => {
             // @ts-expect-error inherit is not available from the root configuration
@@ -137,7 +160,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`throws when there is already modification for the current scope`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
 
           const cnt = container(c => {
             c.add(def).static(0);
@@ -155,7 +178,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`memorizes inherit factory result`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
 
           const inheritFactorySpy = vi.fn((val: number) => val + 1);
 
@@ -175,7 +198,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`can be combined with modify`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
 
           const cnt = container(c => {
             c.add(def).static(0);
@@ -193,7 +216,7 @@ describe(`ContainerConfiguration`, () => {
 
       describe(`cascade`, () => {
         it(`is not available from the container config`, async () => {
-          const def = cascading<number>('testCascadingDef');
+          const def = cascading.token<number>('testCascadingDef');
 
           configureContainer(c => {
             // @ts-expect-error cascade is not available from the root configuration
@@ -207,7 +230,7 @@ describe(`ContainerConfiguration`, () => {
     describe(`scoped`, () => {
       describe(`decorate`, () => {
         it(`modify is applicative`, async () => {
-          const def = scoped<number>('testCascadingDef');
+          const def = scoped.token<number>('testCascadingDef');
 
           const cnt = container(c => {
             c.add(def).static(0);
@@ -232,7 +255,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`throws when definition wasn't registered`, async () => {
-          const def = scoped<number>('testCascadingDef');
+          const def = scoped.token<number>('testCascadingDef');
 
           expect(() => {
             const cnt = container(c => {
@@ -248,7 +271,7 @@ describe(`ContainerConfiguration`, () => {
     describe(`singleton`, () => {
       describe(`decorate`, () => {
         it(`modify is applicative`, async () => {
-          const def = singleton<number>('testCascadingDef');
+          const def = singleton.token<number>('testCascadingDef');
 
           const cnt = container(c => {
             c.add(def).static(0);
@@ -261,7 +284,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`throws when definition wasn't registered`, async () => {
-          const def = singleton<number>('testCascadingDef');
+          const def = singleton.token<number>('testCascadingDef');
 
           expect(() => {
             const cnt = container(c => {
@@ -277,7 +300,7 @@ describe(`ContainerConfiguration`, () => {
     describe(`transient`, () => {
       describe(`decorate`, () => {
         it.todo(`modify is applicative`, async () => {
-          const def = transient<number>('testCascadingDef');
+          const def = transient.token<number>('testCascadingDef');
 
           const cfg1 = configureContainer(c => {
             c.add(def).static(0);
@@ -307,7 +330,7 @@ describe(`ContainerConfiguration`, () => {
         });
 
         it(`throws when definition wasn't registered`, async () => {
-          const def = transient<number>('testCascadingDef');
+          const def = transient.token<number>('testCascadingDef');
 
           expect(() => {
             const cnt = container(c => {
@@ -323,7 +346,7 @@ describe(`ContainerConfiguration`, () => {
 
   describe(`container#freeze`, () => {
     it(`allows freezing instances before they are created`, async () => {
-      const def = scoped<number>();
+      const def = scoped.token<number>();
       const cnt = container();
 
       cnt.freeze(def).static(456);
@@ -331,7 +354,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`supports configure`, async () => {
-      const def = scoped<BoxedValue<number>>();
+      const def = scoped.token<BoxedValue<number>>();
       const cnt = container(c => c.add(def).static(new BoxedValue(123)));
 
       cnt.freeze(def).configure(c => {
@@ -341,7 +364,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`supports decorate`, async () => {
-      const def = scoped<BoxedValue<number>>();
+      const def = scoped.token<BoxedValue<number>>();
       const cnt = container(c => c.add(def).static(new BoxedValue(123)));
 
       cnt.freeze(def).decorate(c => {
@@ -351,7 +374,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`does not support inherit`, async () => {
-      const def = scoped<BoxedValue<number>>();
+      const def = scoped.token<BoxedValue<number>>();
       const cnt = container(c => c.add(def).static(new BoxedValue(123)));
 
       // @ts-expect-error inherit is not available from the root configuration
@@ -360,7 +383,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`throws if the instances is already created`, async () => {
-      const def = scoped<number>();
+      const def = scoped.token<number>();
 
       const cnt = container(c => {
         c.add(def).static(123);
@@ -372,7 +395,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`throws if the instances is already created on the parent scope`, async () => {
-      const def = cascading<number>();
+      const def = cascading.token<number>();
 
       const cnt = container(c => {
         c.add(def).static(123);
@@ -386,7 +409,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`works with child scopes`, async () => {
-      const def = scoped<number>();
+      const def = scoped.token<number>();
 
       const cnt = container(c => {
         c.add(def).static(123);
@@ -399,7 +422,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`throws when cascading definition was created in child scope`, async () => {
-      const def = cascading<number>();
+      const def = cascading.token<number>();
 
       const cnt = container(c => {
         c.add(def).static(123);
@@ -429,8 +452,8 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`accepts multiple config functions`, async () => {
-      const def1 = scoped<number>();
-      const def2 = scoped<number>();
+      const def1 = scoped.token<number>();
+      const def2 = scoped.token<number>();
 
       const cnt = container(
         container => {
@@ -447,7 +470,7 @@ describe(`ContainerConfiguration`, () => {
 
     describe(`init`, () => {
       it.skip(`runs init functions on passing the newly created container`, async () => {
-        const dep = scoped<BoxedValue<number>>();
+        const dep = scoped.token<BoxedValue<number>>();
 
         const cnt = container(container => {
           // container.init(use => {
@@ -476,7 +499,7 @@ describe(`ContainerConfiguration`, () => {
     });
 
     it(`correctly configures the scope`, async () => {
-      const def = cascading<number>();
+      const def = cascading.token<number>();
       const cnt = container();
       const scope = cnt.scope(scope => {
         scope.add(def).static(456);

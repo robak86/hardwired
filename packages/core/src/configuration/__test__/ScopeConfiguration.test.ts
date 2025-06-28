@@ -4,10 +4,10 @@ import { container } from '../../container/Container.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`ScopeConfiguration`, () => {
-  const someSingleton = singleton<BoxedValue<number>>();
-  const someScoped = scoped<BoxedValue<number>>();
-  const someCascading = cascading<BoxedValue<number>>();
-  const someTransient = transient<BoxedValue<number>>();
+  const someSingleton = singleton.token<BoxedValue<number>>();
+  const someScoped = scoped.token<BoxedValue<number>>();
+  const someCascading = cascading.token<BoxedValue<number>>();
+  const someTransient = transient.token<BoxedValue<number>>();
 
   describe(`add`, () => {
     describe(`types`, () => {

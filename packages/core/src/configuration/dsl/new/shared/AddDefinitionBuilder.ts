@@ -1,4 +1,3 @@
-import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ClassType } from '../../../../definitions/utils/class-type.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
@@ -9,11 +8,12 @@ import type { IServiceLocator } from '../../../../container/IContainer.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { FinalizerOrVoid } from '../../../abstract/IDisposeFinalizer.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';
 import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
 
-export type ConstructorArgsTokens<T extends any[], TCurrentLifeTime extends LifeTime> = {
+export type InstancesTokens<T extends any[], TCurrentLifeTime extends LifeTime> = {
   [K in keyof T]: IDefinitionToken<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
 };
 
@@ -39,7 +39,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 
   class<TConstructorArgs extends any[]>(
     klass: ClassType<TInstance, TConstructorArgs>,
-    ...dependencies: ConstructorArgsTokens<TConstructorArgs, TLifeTime>
+    ...dependencies: InstancesTokens<TConstructorArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
     const definition = new ClassDefinition(this._token.id, this._token.strategy, klass, dependencies);
 
@@ -50,7 +50,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 
   fn<TArgs extends any[]>(
     fn: (...args: TArgs) => TInstance,
-    ...dependencies: ConstructorArgsTokens<TArgs, TLifeTime>
+    ...dependencies: InstancesTokens<TArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
     const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, dependencies);
 
@@ -61,7 +61,7 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
 
   asyncFn<TArgs extends any[]>(
     fn: (...args: TArgs) => Promise<TInstance>,
-    ...dependencies: ConstructorArgsTokens<TArgs, TLifeTime>
+    ...dependencies: InstancesTokens<TArgs, TLifeTime>
   ): FinalizerOrVoid<TInstance, TLifeTime> {
     const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, dependencies);
 

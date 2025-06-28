@@ -4,8 +4,8 @@ import { container } from '../../container/Container.js';
 import { singleton } from '../../definitions/tokens.js';
 
 describe(`decorate`, () => {
-  const someValue = singleton<number>('someValue');
-  const someValueAsync = singleton<Promise<number>>('someValue');
+  const someValue = singleton.token<number>('someValue');
+  const someValueAsync = singleton.token<Promise<number>>('someValue');
 
   it(`decorates original value`, async () => {
     const c = container(c => {
@@ -26,8 +26,8 @@ describe(`decorate`, () => {
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
-    const a = singleton<number>();
-    const b = singleton<number>();
+    const a = singleton.token<number>();
+    const b = singleton.token<number>();
 
     const c = container(c => {
       c.add(a).static(1);

@@ -2,7 +2,6 @@ import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitio
 import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
-import type { IDefinitionToken } from '../../../../../definitions/tokens.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import {
@@ -15,6 +14,7 @@ import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import { LazyDefinitionsRegistry } from '../../../../../context/LazyDefinitionsRegistry.js';
+import type { IDefinitionToken } from '../../../../../definitions/DefinitionToken.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {

@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../definitions/tokens.js';
 import type { MaybePromise } from '../../utils/async.js';
+import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 
 import type { IConfigureBuilder, IDecoratedBuilder } from './IModifyAware.js';
 

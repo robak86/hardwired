@@ -24,7 +24,7 @@ describe(`container#[Symbol.dispose]`, () => {
     describe(`scoped`, () => {
       it(`can be disposed only from the owning scope`, async () => {
         const disposeSpy = vi.fn();
-        const def = scoped<DisposableImpl>();
+        const def = scoped.token<DisposableImpl>();
 
         const cnt = container(c => {
           c.add(def).fn(() => new DisposableImpl(disposeSpy));
@@ -44,7 +44,7 @@ describe(`container#[Symbol.dispose]`, () => {
 
       it(`doesn't dispose scoped instance cascaded from the parent scope`, async () => {
         const disposeSpy = vi.fn();
-        const def = cascading<DisposableImpl>();
+        const def = cascading.token<DisposableImpl>();
 
         const cnt = container(c => {
           c.add(def).fn(() => new DisposableImpl(disposeSpy));
@@ -70,7 +70,7 @@ describe(`container#[Symbol.dispose]`, () => {
     describe(`singletons`, () => {
       it(`can be disposed only from the root scope`, async () => {
         const disposeSpy = vi.fn();
-        const def = singleton<DisposableImpl>();
+        const def = singleton.token<DisposableImpl>();
 
         const cnt = container(c => {
           c.add(def).fn(() => new DisposableImpl(disposeSpy));
@@ -93,7 +93,7 @@ describe(`container#[Symbol.dispose]`, () => {
     it(`it's called correctly`, async () => {
       const disposeSpy = vi.fn();
 
-      const def = singleton<DisposableImpl>();
+      const def = singleton.token<DisposableImpl>();
 
       const cnt = container(c => {
         c.add(def).fn(() => new DisposableImpl(disposeSpy));
@@ -137,7 +137,7 @@ describe(`container#[Symbol.dispose]`, () => {
       });
 
       it(`throws when container is used after manual disposal`, async () => {
-        const def = singleton<number>();
+        const def = singleton.token<number>();
 
         const cnt = container(c => c.add(def).static(1));
 
@@ -151,10 +151,10 @@ describe(`container#[Symbol.dispose]`, () => {
   });
 
   describe(`onDispose finalizer`, () => {
-    const singletonDef = singleton<number>();
-    const cascadingDef = cascading<number>();
-    const scopedDef = scoped<number>();
-    const transientDef = transient<number>();
+    const singletonDef = singleton.token<number>();
+    const cascadingDef = cascading.token<number>();
+    const scopedDef = scoped.token<number>();
+    const transientDef = transient.token<number>();
 
     describe(`scope configuration`, () => {
       describe(`types`, () => {
@@ -373,7 +373,7 @@ describe(`container#[Symbol.dispose]`, () => {
       customDisposeCalled: false,
     };
 
-    const dbConnection = cascading<Disposable>();
+    const dbConnection = cascading.token<Disposable>();
 
     const withContainer = <TConfigureFns extends Array<ContainerConfigureFn>>(...containerConfigFns: TConfigureFns) => {
       return test.extend<{ use: IContainer }>({

@@ -4,12 +4,12 @@ import { container } from '../../container/Container.js';
 import { scoped, transient } from '../tokens.js';
 
 describe(`define`, () => {
-  const ext1 = scoped<number>();
-  const ext2 = scoped<string>();
+  const ext1 = scoped.token<number>();
+  const ext2 = scoped.token<string>();
 
   describe(`instantiation`, () => {
     it(`correctly resolves externals`, async () => {
-      const composite = transient<[number, string]>();
+      const composite = transient.token<[number, string]>();
 
       const result = container(c => {
         c.add(composite).fn((v1, v2) => [v1, v2], ext1, ext2);

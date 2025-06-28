@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../../definitions/tokens.js';
 import { COWMap } from '../../../context/COWMap.js';
+import type { IDefinitionToken } from '../../../definitions/DefinitionToken.js';
 
 import { AbstractGraphDependenciesInterceptor } from './AbstractGraphDependenciesInterceptor.js';
 

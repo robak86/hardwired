@@ -1,11 +1,11 @@
 import { container } from '../../../Container.js';
 import type { ContainerConfigureFn } from '../../../../configuration/ContainerConfiguration.js';
 import { AbstractGraphDependenciesInterceptor } from '../AbstractGraphDependenciesInterceptor.js';
-import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import { cascading, scoped, singleton } from '../../../../definitions/tokens.js';
 import { BoxedValue } from '../../../../__test__/BoxedValue.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import { COWMap } from '../../../../context/COWMap.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 describe(`AbstractGraphDependenciesInterceptor`, () => {
   class SomeNode<T> {
@@ -61,7 +61,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
   describe(`sync`, () => {
     describe(`getNode`, () => {
       it(`caches node instances`, async () => {
-        const def = singleton<number>();
+        const def = singleton.token<number>();
 
         const { cnt, interceptor } = setup(c => {
           c.add(def).fn(() => 1);
@@ -83,7 +83,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
     describe(`scopes`, () => {
       it('propagates singletons to the root', async () => {
-        const def = singleton<number>();
+        const def = singleton.token<number>();
 
         const { cnt, interceptor } = setup(c => {
           c.add(def).fn(() => 1);
@@ -99,7 +99,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
       });
 
       it(`doesn't propagate scoped definitions`, async () => {
-        const def = scoped<number>('def');
+        const def = scoped.token<number>('def');
 
         const { cnt } = setup(c => {
           c.add(def).fn(() => 1);
@@ -124,8 +124,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
       });
 
       it(`has correct children`, async () => {
-        const shared = singleton<number>();
-        const consumer = scoped<{ c: number }>();
+        const shared = singleton.token<number>();
+        const consumer = scoped.token<{ c: number }>();
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
@@ -153,8 +153,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
       });
 
       it(`works with cascading`, async () => {
-        const shared = singleton<number>();
-        const consumer = cascading<{ c: number; value: number }>();
+        const shared = singleton.token<number>();
+        const consumer = cascading.token<{ c: number; value: number }>();
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
@@ -186,7 +186,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
   describe(`async`, () => {
     describe(`getNode`, () => {
       it(`caches node instances`, async () => {
-        const def = singleton<number>();
+        const def = singleton.token<number>();
 
         const { cnt, interceptor } = setup(c => {
           c.add(def).static(1);
@@ -207,7 +207,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
     describe(`scopes`, () => {
       it('propagates singletons to the root', async () => {
-        const def = singleton<number>();
+        const def = singleton.token<number>();
 
         const { cnt, interceptor } = setup(c => {
           c.add(def).static(1);
@@ -223,7 +223,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
       });
 
       it(`doesn't propagate scoped definitions`, async () => {
-        const def = scoped<number>();
+        const def = scoped.token<number>();
 
         const { cnt } = setup(c => {
           c.add(def).static(1);
@@ -247,8 +247,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
       });
 
       it(`has correct children`, async () => {
-        const shared = singleton<number>();
-        const consumer = scoped<{ c: number }>();
+        const shared = singleton.token<number>();
+        const consumer = scoped.token<{ c: number }>();
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
@@ -276,8 +276,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
       });
 
       it(`works with cascading definitions`, async () => {
-        const shared = singleton<number>();
-        const consumer = cascading<{ c: number; value: number }>();
+        const shared = singleton.token<number>();
+        const consumer = cascading.token<{ c: number; value: number }>();
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
@@ -308,8 +308,8 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
       });
 
       it(`works with cascade`, async () => {
-        const shared = singleton<number>();
-        const consumer = cascading<{ c: number; value: number }>();
+        const shared = singleton.token<number>();
+        const consumer = cascading.token<{ c: number; value: number }>();
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
@@ -343,7 +343,7 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
       });
 
       it(`works with cascading modify`, async () => {
-        const cascadingDef = cascading<BoxedValue<number>>();
+        const cascadingDef = cascading.token<BoxedValue<number>>();
 
         const { cnt } = setup(c => {
           c.add(cascadingDef).fn(() => new BoxedValue(1));

@@ -1,5 +1,5 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../definitions/tokens.js';
+import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 
 export type InterceptorClass<TInstance extends IInterceptor> = {
   create(): TInstance;

@@ -2,7 +2,7 @@ import type { ILazyDefinitionBuilder } from '../../configuration/dsl/new/utils/a
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import { LazyDefinitionsRegistry } from '../LazyDefinitionsRegistry.js';
-import type { IDefinitionToken } from '../../definitions/tokens.js';
+import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 
 describe(`LazyDefinitionsRegistry`, () => {
   function buildLazyDef(

@@ -5,7 +5,6 @@ import type {
 } from '../../../abstract/IContainerConfigurable.js';
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/tokens.js';
 import type { IInterceptor, InterceptorClass } from '../../../../container/interceptors/interceptor.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
@@ -13,6 +12,7 @@ import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js'
 import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 import type { IEagerConfigurable } from '../../../abstract/IEagerInstantiationAware.js';
+import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 import { type IContainerConfiguration } from './ContainerConfiguration.js';
 

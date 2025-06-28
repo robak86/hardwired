@@ -18,7 +18,7 @@ import { withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor
 
 describe(`use`, () => {
   describe(`instantiating dependencies`, () => {
-    const val1Def = singleton<string>('val1');
+    const val1Def = singleton.token<string>('val1');
 
     function setup() {
       const Consumer = () => {
@@ -50,7 +50,7 @@ describe(`use`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const clsDef = scoped<number>('clsDef');
+      const clsDef = scoped.token<number>('clsDef');
 
       const Consumer = () => {
         const cls = use(clsDef);
@@ -107,8 +107,8 @@ describe(`use`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = scoped<string>();
-      const val1Def = scoped<string>('val1Def');
+      const someExternalParam = scoped.token<string>();
+      const val1Def = scoped.token<string>('val1Def');
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
@@ -171,8 +171,8 @@ describe(`use`, () => {
   });
 
   describe(`lifecycle interceptor`, () => {
-    const mountableServiceD = singleton<MountableService>('mountableServiceD');
-    const mountableServiceConsumerD = scoped<MountableServiceConsumer>('mountableServiceConsumerD');
+    const mountableServiceD = singleton.token<MountableService>('mountableServiceD');
+    const mountableServiceConsumerD = scoped.token<MountableServiceConsumer>('mountableServiceConsumerD');
 
     class MountableService implements IReactLifeCycleAware {
       // static instance = cls.singleton(this);

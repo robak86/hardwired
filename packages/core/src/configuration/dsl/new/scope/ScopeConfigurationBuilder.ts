@@ -1,7 +1,6 @@
 import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { IScopeConfigurable, ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
 import type { IContainer } from '../../../../container/IContainer.js';
-import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/tokens.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import { CascadingModifyBuilder } from '../shared/CascadingModifyBuilder.js';
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
@@ -9,6 +8,7 @@ import type { ScopeModifyBuilderType } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
 import type { IContainerConfiguration } from '../container/ContainerConfiguration.js';
 import type { IEagerConfigurable } from '../../../abstract/IEagerInstantiationAware.js';
+import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 export class ScopeConfigurationBuilder implements IScopeConfigurable {
   private readonly _allowedRegistrationLifeTimes = [LifeTime.scoped, LifeTime.transient, LifeTime.cascading];

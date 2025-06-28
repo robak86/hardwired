@@ -1,6 +1,6 @@
 import type { IDisposeFinalizer } from '../../../abstract/IDisposeFinalizer.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../../../definitions/tokens.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 import type { IConfigurationContext } from './abstract/IConfigurationContext.js';
 

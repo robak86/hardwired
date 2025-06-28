@@ -1,9 +1,9 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
-import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILazyDefinitionBuilder } from '../configuration/dsl/new/utils/abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
 import type { IReadonlyScopeRegistry } from './ScopeRegistry.js';
 import { ScopeRegistry } from './ScopeRegistry.js';

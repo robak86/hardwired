@@ -317,7 +317,7 @@ import { makeAutoObservable } from 'mobx';
 import { external, scoped, cls } from 'hardwired';
 
 const initialValue = value(0);
-const label = unbound.scoped<string>();
+const label = unbound.scoped.token<string>();
 
 class CounterStore {
   static class = cls.scoped(this, [initialValue, label]);

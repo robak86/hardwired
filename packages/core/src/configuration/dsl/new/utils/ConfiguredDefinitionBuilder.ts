@@ -1,8 +1,8 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { ConstructorArgsTokens } from '../shared/AddDefinitionBuilder.js';
-import type { IDefinitionToken } from '../../../../definitions/tokens.js';
+import type { InstancesTokens } from '../shared/AddDefinitionBuilder.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
 
@@ -11,7 +11,7 @@ export class ConfiguredDefinitionBuilder<TInstance, TLifetime extends LifeTime, 
 {
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
-    private dependencies: ConstructorArgsTokens<TArgs, TLifetime>,
+    private dependencies: InstancesTokens<TArgs, TLifetime>,
     private configFn: (instance: TInstance, ...args: TArgs) => void | Promise<void>,
   ) {}
 

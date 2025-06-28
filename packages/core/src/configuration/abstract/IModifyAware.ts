@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../definitions/tokens.js';
-import type { ConstructorArgsTokens } from '../dsl/new/shared/AddDefinitionBuilder.js';
+import type { InstancesTokens } from '../dsl/new/shared/AddDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 
 import type { IAddDefinitionBuilder } from './IRegisterAware.js';
 import type { IDisposeFinalizer } from './IDisposeFinalizer.js';
@@ -12,7 +12,7 @@ export interface IConfigureBuilder<TInstance, TLifeTime extends LifeTime> {
     configureFn: (instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>,
   ): void;
   configure<TArgs extends any[]>(
-    dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
+    dependencies: InstancesTokens<TArgs, TLifeTime>,
     configureFn: (instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>,
   ): void;
 }
@@ -20,7 +20,7 @@ export interface IConfigureBuilder<TInstance, TLifeTime extends LifeTime> {
 export interface IDecoratedBuilder<TInstance, TLifeTime extends LifeTime> {
   decorate(decorateFn: (instance: Awaited<TInstance>) => TInstance): void;
   decorate<TArgs extends any[]>(
-    dependencies: ConstructorArgsTokens<TArgs, TLifeTime>,
+    dependencies: InstancesTokens<TArgs, TLifeTime>,
     decorateFn: (instance: Awaited<TInstance>, ...args: TArgs) => TInstance,
   ): void;
 }

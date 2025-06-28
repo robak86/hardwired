@@ -6,10 +6,10 @@ import { ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
 import { withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
 
 describe(`ReactLifeCycleInterceptor`, () => {
-  const noLifeCyclesD = scoped<NoLifeCycles>('NoLifeCycles');
-  const childSvc1D = singleton<ChildSvc1>('ChildSvc1');
-  const childSvc2D = singleton<ChildSvc2>('ChildSvc2');
-  const service1D = scoped<Service1>('Service1');
+  const noLifeCyclesD = scoped.token<NoLifeCycles>('NoLifeCycles');
+  const childSvc1D = singleton.token<ChildSvc1>('ChildSvc1');
+  const childSvc2D = singleton.token<ChildSvc2>('ChildSvc2');
+  const service1D = scoped.token<Service1>('Service1');
 
   class NoLifeCycles {}
 

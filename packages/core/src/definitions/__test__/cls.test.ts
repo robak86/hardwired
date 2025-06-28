@@ -35,7 +35,7 @@ describe('cls', () => {
     });
 
     it(`supports tokens as dependencies`, async () => {
-      const left = singleton<Leaf>('left');
+      const left = singleton.token<Leaf>('left');
       const right = cls.singleton(Leaf, [value('right')]);
 
       const binary = cls.singleton(Binary, [left, right]);
@@ -50,7 +50,7 @@ describe('cls', () => {
     });
 
     it(`supports async dependencies`, async () => {
-      const left = singleton<Promise<Leaf>>('left');
+      const left = singleton.token<Promise<Leaf>>('left');
       const right = cls.singleton(Leaf, [value('right')]);
 
       const binary = cls.singleton(Binary, [left, right]);

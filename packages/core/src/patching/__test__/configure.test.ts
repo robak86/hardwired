@@ -5,8 +5,8 @@ import { singleton } from '../../definitions/tokens.js';
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`configure`, () => {
-  const someValue = singleton<BoxedValue<number>>('someValue');
-  const someValueAsync = singleton<Promise<BoxedValue<number>>>('someValue');
+  const someValue = singleton.token<BoxedValue<number>>('someValue');
+  const someValueAsync = singleton.token<Promise<BoxedValue<number>>>('someValue');
 
   it(`decorates original value`, async () => {
     const c = container(c => {
@@ -31,9 +31,9 @@ describe(`configure`, () => {
   });
 
   it(`allows using additional dependencies, ex1`, async () => {
-    const a = singleton<BoxedValue<number>>();
-    const b = singleton<BoxedValue<number>>();
-    const someValue = singleton<BoxedValue<number>>();
+    const a = singleton.token<BoxedValue<number>>();
+    const b = singleton.token<BoxedValue<number>>();
+    const someValue = singleton.token<BoxedValue<number>>();
 
     const c = container(c => {
       c.add(a).fn(() => new BoxedValue(1));

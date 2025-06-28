@@ -5,8 +5,8 @@ import type { IDefinition } from './abstract/IDefinition.js';
 import { LifeTime } from './abstract/LifeTime.js';
 import { FnDefinition } from './impl/FnDefinition.js';
 import type { InstancesArray } from './abstract/InstanceDefinition.js';
-import type { IDefinitionToken } from './tokens.js';
 import type { ValidDependenciesLifeTime } from './abstract/InstanceDefinitionDependency.js';
+import type { IDefinitionToken } from './DefinitionToken.js';
 
 export type WrapFnResultAsync<TInstance, TDependenciesDefinitions extends IDefinitionToken<any, any>[]> =
   HasPromise<InstancesArray<TDependenciesDefinitions>> extends true ? Promise<TInstance> : TInstance;

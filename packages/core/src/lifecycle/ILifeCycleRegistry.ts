@@ -1,8 +1,8 @@
 import type { IContainer } from '../container/IContainer.js';
 import type { MaybePromise } from '../utils/async.js';
-import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
+import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
 export interface ILifeCycleRegistry {
   dispose(container: IContainer): MaybeAsync<void>;

@@ -1,7 +1,7 @@
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ICascadeModifyBuilder } from '../../../abstract/IModifyAware.js';
-import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import { InheritedDefinitionBuilder } from '../utils/InheritedDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 import { ModifyDefinitionBuilder } from './ModifyDefinitionBuilder.js';
 import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';

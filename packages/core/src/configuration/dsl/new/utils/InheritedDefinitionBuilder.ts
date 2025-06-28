@@ -1,9 +1,9 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { MaybePromise } from '../../../../utils/async.js';
-import type { ConstructorArgsTokens } from '../shared/AddDefinitionBuilder.js';
-import type { IDefinitionToken } from '../../../../definitions/tokens.js';
+import type { InstancesTokens } from '../shared/AddDefinitionBuilder.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
 
@@ -13,7 +13,7 @@ export class InheritedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
     protected readonly _decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
-    protected readonly _dependencies: ConstructorArgsTokens<TArgs, TLifetime>,
+    protected readonly _dependencies: InstancesTokens<TArgs, TLifetime>,
   ) {}
 
   build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {

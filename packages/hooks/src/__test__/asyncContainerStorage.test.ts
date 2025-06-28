@@ -77,7 +77,7 @@ describe(`withScope`, () => {
 
   describe(`overrides are not promoted to the parent container`, () => {
     it(`returns correct instance when operating on the root container`, async c => {
-      const valD = scoped<number>();
+      const valD = scoped.token<number>();
 
       const innerConfig = configureScope(c => {
         c.modify(valD).fn(() => 10);

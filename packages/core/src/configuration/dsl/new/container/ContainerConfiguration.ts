@@ -2,9 +2,9 @@ import type { ILifeCycleRegistry } from '../../../../lifecycle/ILifeCycleRegistr
 import type { ScopeRegistry } from '../../../../context/ScopeRegistry.js';
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../../../definitions/tokens.js';
 import type { IInterceptor, InterceptorClass } from '../../../../container/interceptors/interceptor.js';
 import type { LazyDefinitionsRegistry } from '../../../../context/LazyDefinitionsRegistry.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 export interface IBindingsRegistryConfiguration {
   readonly definitions: ScopeRegistry<IDefinition<unknown, LifeTime>>;

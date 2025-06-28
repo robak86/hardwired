@@ -8,9 +8,9 @@ import { configureContainer } from '../../configuration/ContainerConfiguration.j
 
 describe(`SingletonStrategy`, () => {
   describe(`sync resolution`, () => {
-    const someValueD = singleton<string>();
-    const leafD = singleton<{ value: string; id: string }>();
-    const consumerD = singleton<{ testClassInstance: { value: string; id: string } }>();
+    const someValueD = singleton.token<string>();
+    const leafD = singleton.token<{ value: string; id: string }>();
+    const consumerD = singleton.token<{ testClassInstance: { value: string; id: string } }>();
 
     const setup = configureContainer(c => {
       c.add(someValueD).fn(() => 'someString');
@@ -74,9 +74,9 @@ describe(`SingletonStrategy`, () => {
 
       describe(`race condition`, () => {
         it(`does not create singleton duplicates`, async () => {
-          const slowSingletonD = singleton<Promise<BoxedValue<number>>>();
-          const consumer1 = singleton<Promise<BoxedValue<number>>>();
-          const consumer2 = singleton<Promise<BoxedValue<number>>>();
+          const slowSingletonD = singleton.token<Promise<BoxedValue<number>>>();
+          const consumer1 = singleton.token<Promise<BoxedValue<number>>>();
+          const consumer2 = singleton.token<Promise<BoxedValue<number>>>();
 
           const ctn = container(c => {
             c.add(slowSingletonD).fn(() => resolveAfter(Math.random() * 500, new BoxedValue(Math.random())));

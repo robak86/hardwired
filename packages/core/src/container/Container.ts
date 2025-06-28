@@ -9,7 +9,6 @@ import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/S
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
-import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { Instance, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
@@ -20,6 +19,7 @@ import { MaybeAsync } from '../utils/MaybeAsync.js';
 import { COWMap } from '../context/COWMap.js';
 import { ContainerConfigurationBuilder } from '../configuration/dsl/new/container/ContainerConfigurationBuilder.js';
 import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
+import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
 import type {
   HasPromise,

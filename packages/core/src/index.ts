@@ -48,3 +48,5 @@ export type { AnyDefinitionSymbol, IDefinition } from './definitions/abstract/ID
 export * from './definitions/cls.js';
 
 export * from './definitions/fn.js';
+export { DefinitionToken } from './definitions/DefinitionToken.js';
+export type { IDefinitionToken } from './definitions/DefinitionToken.js';

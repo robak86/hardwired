@@ -1,8 +1,8 @@
-import type { IDefinitionToken } from '../definitions/tokens.js';
 import { cascading, scoped, singleton, transient } from '../definitions/tokens.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { IRegisterAware } from '../configuration/abstract/IRegisterAware.js';
+import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
 export type TestDefinition<T, TLifetime extends LifeTime> = {
   def: IDefinitionToken<T, TLifetime>;
@@ -79,17 +79,17 @@ export function buildDefinitions<T, TLifetime extends LifeTime>(
 }
 
 export function buildSingletonDefs(times: number, depth: number): TestDefinition<number, LifeTime.singleton>[] {
-  return buildDefinitions(times, depth, key => singleton<number>(`singleton:${key}`));
+  return buildDefinitions(times, depth, key => singleton.token<number>(`singleton:${key}`));
 }
 
 export function buildTransientDefs(times: number, depth: number): TestDefinition<number, LifeTime.transient>[] {
-  return buildDefinitions(times, depth, key => transient<number>(`transient:${key}`));
+  return buildDefinitions(times, depth, key => transient.token<number>(`transient:${key}`));
 }
 
 export function buildScopedDefs(times: number, depth: number): TestDefinition<number, LifeTime.scoped>[] {
-  return buildDefinitions(times, depth, key => scoped<number>(`scoped:${key}`));
+  return buildDefinitions(times, depth, key => scoped.token<number>(`scoped:${key}`));
 }
 
 export function buildCascadingDefs(times: number, depth: number): TestDefinition<number, LifeTime.cascading>[] {
-  return buildDefinitions(times, depth, key => cascading<number>(`cascading:${key}`));
+  return buildDefinitions(times, depth, key => cascading.token<number>(`cascading:${key}`));
 }

@@ -8,7 +8,7 @@ import { cascading, singleton } from '../../definitions/tokens.js';
 describe(`Container`, () => {
   describe(`acts like a function`, () => {
     it(`is callable like function`, async () => {
-      const myDef = singleton<number>();
+      const myDef = singleton.token<number>();
 
       const cnt = container(c => c.add(myDef).fn(() => 123));
 
@@ -19,7 +19,7 @@ describe(`Container`, () => {
 
     describe(`other methods`, () => {
       it(`provides use method`, async () => {
-        const myDef = singleton<number>();
+        const myDef = singleton.token<number>();
 
         const cnt = container(c => c.add(myDef).fn(() => 123));
 
@@ -30,8 +30,8 @@ describe(`Container`, () => {
 
       describe(`all`, () => {
         it(`returns correct instances`, async () => {
-          const myDef1 = singleton<number>();
-          const myDef2 = singleton<number>();
+          const myDef1 = singleton.token<number>();
+          const myDef2 = singleton.token<number>();
 
           const use = container(c => {
             c.add(myDef1).fn(() => 123);
@@ -45,8 +45,8 @@ describe(`Container`, () => {
         });
 
         it(`returns correct type for async instances`, async () => {
-          const myDef1 = singleton<Promise<number>>();
-          const myDef2 = singleton<number>();
+          const myDef1 = singleton.token<Promise<number>>();
+          const myDef2 = singleton.token<number>();
 
           const use = container(c => {
             c.add(myDef1).fn(async () => 123);
@@ -74,8 +74,8 @@ describe(`Container`, () => {
             }
           }
 
-          const pubSub = singleton<EventEmitter<EventMap>>();
-          const handler = cascading<IHandler>();
+          const pubSub = singleton.token<EventEmitter<EventMap>>();
+          const handler = cascading.token<IHandler>();
 
           const cnt = container(c => {
             c.add(pubSub).locator(container => {

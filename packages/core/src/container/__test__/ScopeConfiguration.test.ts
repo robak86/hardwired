@@ -15,7 +15,7 @@ describe('ScopeConfiguration', () => {
       //   }
       // }
       //
-      // const def = scoped<MyClass>();
+      // const def = scoped.token<MyClass>();
       //
       // const root = container(c => {
       //   c.add(def).class(MyClass);
