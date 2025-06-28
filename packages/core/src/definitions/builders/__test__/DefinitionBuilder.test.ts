@@ -67,21 +67,42 @@ describe(`DefinitionBuilder`, () => {
 
     describe(`fn`, () => {
       describe(`no arguments`, () => {
-        it(`is called with correct arguments`, async () => {
-          const num = value(1);
-          const bool = value(true);
+        describe(`sync deps`, () => {
+          it(`is called with correct arguments`, async () => {
+            const num = value(1);
+            const bool = value(true);
 
-          const def = singleton
-            .using(num)
-            .using(bool)
-            .fn((n, b) => {
-              expectType<number>(n);
-              expectType<boolean>(b);
+            const def = singleton
+              .using(num)
+              .using(bool)
+              .fn((n, b) => {
+                expectType<number>(n);
+                expectType<boolean>(b);
 
-              return `${n} - ${b}`;
-            });
+                return `${n} - ${b}`;
+              });
 
-          expectType<IDefinitionToken<string, LifeTime.singleton>>(def);
+            expectType<IDefinitionToken<string, LifeTime.singleton>>(def);
+          });
+        });
+
+        describe(`async deps`, () => {
+          it(`is called with correct arguments`, async () => {
+            const num = singleton.fn(async () => 1);
+            const bool = singleton.fn(async () => true);
+
+            const def = singleton
+              .using(num)
+              .using(bool)
+              .fn((n, b) => {
+                expectType<number>(n);
+                expectType<boolean>(b);
+
+                return `${n} - ${b}`;
+              });
+
+            expectType<IDefinitionToken<Promise<string>, LifeTime.singleton>>(def);
+          });
         });
       });
 
@@ -196,6 +217,24 @@ describe(`DefinitionBuilder`, () => {
 
             expect(val).toBeInstanceOf(Function);
             expect(val('test')).toBe('1 - test - true');
+          });
+        });
+
+        describe(`arguments mixed with async dependencies`, () => {
+          it(`returns correct instance via thunk`, async () => {
+            const num = singleton.fn(async () => 1);
+            const bool = singleton.fn(async () => true);
+
+            const def = singleton
+              .using(num)
+              .arg<string>()
+              .using(bool)
+              .fn((n, str, b) => `${n} - ${str} - ${b}`);
+
+            const val = container().use(def);
+
+            expect(val).toBeInstanceOf(Function);
+            expect(await val('test')).toBe('1 - test - true');
           });
         });
       });
