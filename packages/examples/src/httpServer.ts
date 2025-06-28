@@ -12,8 +12,6 @@ interface IRequestHandler {
 }
 
 class HomePageHandler implements IRequestHandler {
-  // static instance = cls.scoped(this, [reqD]);
-
   constructor(private _req: IncomingMessage) {}
 
   handle() {
