@@ -21,5 +21,7 @@ export interface IDefinition<TInstance, TLifeTime extends LifeTime> extends IDef
     createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
   ): IDefinition<TInstance, TLifeTime>;
 
+  bind(container: IServiceLocator): IDefinition<TInstance, TLifeTime>;
+
   toString(): string;
 }

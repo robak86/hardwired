@@ -33,6 +33,7 @@ import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './in
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
 import { CompositeInterceptor, PassThroughInterceptor } from './interceptors/CompositeInterceptor.js';
+import { CascadingStrategy } from './strategies/CascadingStrategy.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -82,12 +83,14 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
         const instancesStore = InstancesStore.create();
         const lifeCycleRegistry = new ContainerLifeCycleRegistry();
         const cascadingRoots = HierarchicalMap.create<ICascadingDefinitionResolver>();
+        const inheritedTokens = new Set<symbol>();
 
         const cnt = new Container(
           null,
           bindingsRegistry,
           instancesStore,
           cascadingRoots,
+          inheritedTokens,
           lifeCycleRegistry,
           PassThroughInterceptor.instance,
         );
@@ -120,17 +123,24 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
 
   private _singletonStrategy: SingletonStrategy;
   private _scopedStrategy: ScopedStrategy;
+  private _cascadingStrategy: CascadingStrategy;
 
   protected constructor(
-    public readonly parentId: string | null,
+    private _parent: (IContainer & ICascadingDefinitionResolver) | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
     protected readonly cascadingRoots: HierarchicalMap<ICascadingDefinitionResolver>,
+    protected readonly inheritedTokens: Set<symbol>,
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
     private _interceptor: ICompositeInterceptor,
   ) {
     this._singletonStrategy = new SingletonStrategy(instancesStore);
     this._scopedStrategy = new ScopedStrategy(instancesStore);
+    this._cascadingStrategy = new CascadingStrategy(instancesStore, inheritedTokens, cascadingRoots);
+  }
+
+  get parentId() {
+    return this._parent ? this._parent.id : null;
   }
 
   dispose(): MaybeAsync<void> {
@@ -146,18 +156,6 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
       }
 
       this.instancesStore.disposeCurrent();
-    });
-  }
-
-  protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
-    if (this._interceptor instanceof PassThroughInterceptor) {
-      this._interceptor = new CompositeInterceptor();
-    }
-
-    interceptor.forEach(interceptorClass => {
-      const interceptorInstance = interceptorClass.create();
-
-      this._interceptor.append(interceptorInstance);
     });
   }
 
@@ -178,11 +176,14 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
         const lifeCycleRegistry = new ContainerLifeCycleRegistry();
         const cascadingRoots = this.cascadingRoots.child();
 
+        const inheritedTokens = new Set<symbol>(this.inheritedTokens);
+
         const cnt: Container = new Container(
-          this.id,
+          this,
           bindingsRegistry,
           instancesStore,
           cascadingRoots,
+          inheritedTokens,
           lifeCycleRegistry,
           this._interceptor.onScope(),
         );
@@ -197,6 +198,10 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
 
           config.cascadingTokens.forEach(token => {
             cascadingRoots.set(token.id, cnt);
+          });
+
+          config.inheritedTokens.forEach(token => {
+            inheritedTokens.add(token.id);
           });
         });
 
@@ -256,6 +261,8 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
         // set the cascading root here.
 
         // If there is no cascading root for the definition in the whole hierarchy, we set cascading root to the root container.
+        // Otherwise, we already know which container use for resolving cascading definition as it is set in the
+        // cascadingRoots phase.
         if (!this.cascadingRoots.has(definition.id)) {
           this.cascadingRoots.setForRoot(definition.id, this);
         }
@@ -284,27 +291,6 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
     return this.instancesStore.getExisting(definition).unwrap() as TValue | null;
   }
 
-  protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybeAsync<TValue> {
-    if (this._isDisposed) {
-      throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
-    }
-
-    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
-      return this._singletonStrategy.build(definition, this, this._interceptor);
-    }
-
-    switch (definition.strategy) {
-      case LifeTime.transient:
-        return definition.create(this, this._interceptor);
-      case LifeTime.singleton:
-        return this._singletonStrategy.build(definition, this, this._interceptor);
-      case LifeTime.scoped:
-        return this._scopedStrategy.build(definition, this, this._interceptor);
-      case LifeTime.cascading:
-        return (this.cascadingRoots.get(definition.id) ?? this).resolveCascading(definition);
-    }
-  }
-
   resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
     return this._scopedStrategy.build(definition, this, this._interceptor);
   }
@@ -323,6 +309,39 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
     const results = definitions.map(def => this.resolve(def));
 
     return MaybeAsync.all(results).unwrap() as ContainerAllReturn<TDefinitions>;
+  }
+
+  protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
+    if (this._interceptor instanceof PassThroughInterceptor) {
+      this._interceptor = new CompositeInterceptor();
+    }
+
+    interceptor.forEach(interceptorClass => {
+      const interceptorInstance = interceptorClass.create();
+
+      this._interceptor.append(interceptorInstance);
+    });
+  }
+
+  protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybeAsync<TValue> {
+    if (this._isDisposed) {
+      throw new Error(`Container ${this.id} is disposed. You cannot used it for resolving instances anymore.`);
+    }
+
+    if (this.bindingsRegistry.hasFrozenBinding(definition.id)) {
+      return this._singletonStrategy.build(definition, this, this._interceptor);
+    }
+
+    switch (definition.strategy) {
+      case LifeTime.transient:
+        return definition.create(this, this._interceptor);
+      case LifeTime.singleton:
+        return this._singletonStrategy.build(definition, this, this._interceptor);
+      case LifeTime.scoped:
+        return this._scopedStrategy.build(definition, this, this._interceptor);
+      case LifeTime.cascading:
+        return this._cascadingStrategy.build(definition, this._parent, this, this._interceptor);
+    }
   }
 }
 

@@ -23,4 +23,15 @@ export abstract class AbstractDefinition<TInstance, TLifeTime extends LifeTime>
   abstract override(
     createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
   ): IDefinition<TInstance, TLifeTime>;
+
+  /**
+   * Binds the definition to the container. Whenever the definition is instantiated,
+   * the container will be used to resolve its dependencies.
+   * @param container
+   */
+  bind(container: IServiceLocator): IDefinition<TInstance, TLifeTime> {
+    return this.override(_use => {
+      return container.resolve(this);
+    });
+  }
 }

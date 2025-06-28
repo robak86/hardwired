@@ -27,6 +27,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   private _frozenDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
   private _lazyDefinitions = LazyDefinitionsRegistry.empty();
   private _cascadeTokens = new Set<IDefinitionToken<any, LifeTime.cascading>>();
+  private _inheritedTokens = new Set<IDefinitionToken<unknown, LifeTime.cascading>>();
   private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = []; // TODO: replace with _lazyDefinitions. It already holds frozen definitions
 
   private _disposeFunctions = new DisposeFunctions();
@@ -43,6 +44,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       this._frozenDefinitions.freeze(),
       this._lazyDefinitions.freeze(),
       this._cascadeTokens,
+      this._inheritedTokens,
       lifeCycleRegistry,
       this._newInterceptors,
     );
@@ -113,6 +115,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
 
     this._cascadeTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
+    this._inheritedTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
 
     switch (configType) {
       case 'add':

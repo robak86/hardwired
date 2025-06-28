@@ -106,8 +106,8 @@ describe(`ContainerConfiguration`, () => {
           root.id = 'root';
           scope.id = 'scope';
 
-          // expect(root.use(def)).toEqual(['root', expect.any(Number)]);
-          // expect(scope.use(def)).toEqual(['root', expect.any(Number), 'inherited']);
+          expect(root.use(def)).toEqual(['root', expect.any(Number)]);
+          expect(scope.use(def)).toEqual(['root', expect.any(Number), 'inherited']);
 
           root.use(def);
           scope.use(def);

@@ -11,6 +11,7 @@ export interface IBindingsRegistryConfiguration {
   readonly frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>;
   readonly lazyDefinitions: LazyDefinitionsRegistry;
   readonly cascadingTokens: Set<IDefinitionToken<any, LifeTime.cascading>>;
+  readonly inheritedTokens: Set<IDefinitionToken<unknown, LifeTime.cascading>>;
 }
 
 export interface ILifecycleConfiguration {
@@ -32,6 +33,7 @@ export class ContainerConfiguration implements IContainerConfiguration {
     public readonly frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
     public readonly lazyDefinitions: LazyDefinitionsRegistry,
     public readonly cascadingTokens: Set<IDefinitionToken<any, LifeTime.cascading>>,
+    public readonly inheritedTokens: Set<IDefinitionToken<any, LifeTime.cascading>>,
     public readonly lifeCycleRegistry: ILifeCycleRegistry,
     public readonly interceptors?: Set<InterceptorClass<IInterceptor>>,
   ) {}
