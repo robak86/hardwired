@@ -9,6 +9,8 @@ import type { InstancesArray } from '../abstract/InstanceDefinition.js';
 import { FnDefinition } from '../impl/FnDefinition.js';
 import { FnDefinitionDeferred } from '../impl/FnDefinitionDeferred.js';
 import type { InstancesTokens } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
+import { ClassDefinitionDeferred } from '../impl/ClassDefinitionDeferred.js';
+import { ClassDefinition } from '../impl/ClassDefinition.js';
 
 import type { Arguments, FilterExact, HasArguments, HasInstance } from './ArgumentPlaceholderToken.js';
 import { ArgumentPlaceholderToken } from './ArgumentPlaceholderToken.js';
@@ -52,13 +54,26 @@ export interface IDefinitionBuilder<
   >;
 }
 
-type DefinitionBuilderFnDefinition<
+export type DefinitionBuilderFnDefinition<
   TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
   TLifeTime extends LifeTime,
   TInstance,
 > = IDefinition<
   HasArguments<TDependencies> extends true
     ? (...args: Arguments<TDependencies>) => WrapFnResultAsync<TInstance, TDependencies>
+    : WrapFnResultAsync<TInstance, TDependencies>,
+  TLifeTime
+>;
+
+export type DefinitionBuilderClassDefinition<
+  TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  TLifeTime extends LifeTime,
+  TInstance,
+> = IDefinition<
+  HasInstance<TDependencies, ArgumentPlaceholderToken<any, any>> extends true
+    ? (
+        ...args: InstancesArray<FilterExact<TDependencies, ArgumentPlaceholderToken<any, any>>>
+      ) => WrapFnResultAsync<TInstance, TDependencies>
     : WrapFnResultAsync<TInstance, TDependencies>,
   TLifeTime
 >;
@@ -103,8 +118,7 @@ export class DefinitionBuilder<
   fn<TInstance>(
     factory: (...args: AwaitedInstanceArray<TDependencies>) => TInstance,
   ): DefinitionBuilderFnDefinition<TDependencies, TLifeTime, TInstance> {
-    const dependencies = this._dependencies.filter(dep => !(dep instanceof ArgumentPlaceholderToken));
-    const hasArguments = (dependencies.length < this._dependencies.length) as HasArguments<TDependencies>;
+    const hasArguments = this._argsPositions[0] !== undefined;
 
     if (hasArguments) {
       return new FnDefinitionDeferred(
@@ -126,14 +140,24 @@ export class DefinitionBuilder<
 
   class<TInstance>(
     klass: new (...args: AwaitedInstanceArray<TDependencies>) => TInstance,
-  ): IDefinition<
-    HasInstance<TDependencies, ArgumentPlaceholderToken<any, any>> extends true
-      ? (
-          ...args: InstancesArray<FilterExact<TDependencies, ArgumentPlaceholderToken<any, any>>>
-        ) => WrapFnResultAsync<TInstance, TDependencies>
-      : WrapFnResultAsync<TInstance, TDependencies>,
-    TLifeTime
-  > {
-    throw new Error('Method not implemented.');
+  ): DefinitionBuilderClassDefinition<TDependencies, TLifeTime, TInstance> {
+    const hasArguments = this._argsPositions[0] !== undefined;
+
+    if (hasArguments) {
+      return new ClassDefinitionDeferred(
+        Symbol(),
+        this._strategy,
+        klass,
+        this._dependencies,
+        this._argsPositions,
+      ) as unknown as DefinitionBuilderClassDefinition<TDependencies, TLifeTime, TInstance>;
+    } else {
+      return new ClassDefinition(
+        Symbol(),
+        this._strategy,
+        klass,
+        this._dependencies as InstancesTokens<AwaitedInstanceArray<TDependencies>, TLifeTime>,
+      ) as DefinitionBuilderClassDefinition<TDependencies, TLifeTime, TInstance>;
+    }
   }
 }

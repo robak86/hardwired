@@ -1,5 +1,6 @@
 import type { TypeEqual } from 'ts-expect';
 import { expectType } from 'ts-expect';
+import { describe } from 'vitest';
 
 import type { IDefinitionBuilder } from '../DefinitionBuilder.js';
 import { DefinitionBuilder } from '../DefinitionBuilder.js';
@@ -10,6 +11,7 @@ import { value } from '../../value.js';
 import type { Definition } from '../../impl/Definition.js';
 import type { ArgumentPlaceholderToken } from '../ArgumentPlaceholderToken.js';
 import { container } from '../../../container/Container.js';
+import type { IDefinition } from '../../abstract/IDefinition.js';
 
 describe(`DefinitionBuilder`, () => {
   describe(`types`, () => {
@@ -104,6 +106,49 @@ describe(`DefinitionBuilder`, () => {
         });
       });
     });
+
+    describe('class', () => {
+      describe(`no constructor args`, () => {
+        it(`has correct types`, async () => {
+          class MyClass {}
+
+          const def = singleton.class(MyClass);
+
+          type Expected = IDefinition<MyClass, LifeTime.singleton>;
+
+          expectType<TypeEqual<typeof def, Expected>>(true);
+        });
+      });
+
+      describe(`with deferred arg`, () => {
+        it(`uses correct types`, async () => {
+          class MyClass {
+            constructor(_str: string) {}
+          }
+
+          const def = singleton.arg<string>().class(MyClass);
+
+          type Expected = IDefinition<(arg: string) => MyClass, LifeTime.singleton>;
+
+          expectType<TypeEqual<typeof def, Expected>>(true);
+        });
+      });
+
+      describe(`with deps and args mixed`, () => {
+        it(`uses correct types`, async () => {
+          class MyClass {
+            constructor(_num: number, _str: string) {}
+          }
+
+          const num = value(1);
+          const def = singleton.using(num).arg<string>().class(MyClass);
+
+          type Expected = IDefinition<(arg: string) => MyClass, LifeTime.singleton>;
+
+          expectType<TypeEqual<typeof def, Expected>>(true);
+        });
+      });
+    });
   });
 
   describe(`runtime`, () => {
@@ -152,6 +197,50 @@ describe(`DefinitionBuilder`, () => {
             expect(val).toBeInstanceOf(Function);
             expect(val('test')).toBe('1 - test - true');
           });
+        });
+      });
+    });
+
+    describe(`class`, () => {
+      describe(`with arguments`, () => {
+        it(`returns correct instance`, async () => {
+          class MyClass {
+            constructor(
+              private _num: number,
+              private _str: string,
+            ) {}
+
+            get value() {
+              return `${this._num} - ${this._str}`;
+            }
+          }
+
+          const num = value(1);
+          const def = singleton.using(num).arg<string>().class(MyClass);
+
+          const instance = container().use(def);
+
+          expect(instance).toBeInstanceOf(Function);
+          expect(instance('test').value).toBe('1 - test');
+        });
+      });
+
+      describe(`just arguments`, () => {
+        it(`returns correct value`, async () => {
+          class MyClass {
+            constructor(private _str: string) {}
+
+            get value() {
+              return this._str;
+            }
+          }
+
+          const def = singleton.arg<string>().class(MyClass);
+
+          const instance = container().use(def);
+
+          expect(instance).toBeInstanceOf(Function);
+          expect(instance('test').value).toBe('test');
         });
       });
     });
