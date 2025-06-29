@@ -4,15 +4,15 @@ import { cascading, scoped, singleton, transient } from '../tokens.js';
 import { configureContainer } from '../../configuration/ContainerConfiguration.js';
 
 describe(`cls`, () => {
-  const singletonDefinition = singleton<string>('singletonDefinition');
-  const transientDefinition = transient<string>('transientDefinition');
-  const scopedDefinition = scoped<string>('scopedDefinition');
-  const cascadingDefinition = cascading<string>('cascadingDefinition');
+  const singletonDefinition = singleton.token<string>('singletonDefinition');
+  const transientDefinition = transient.token<string>('transientDefinition');
+  const scopedDefinition = scoped.token<string>('scopedDefinition');
+  const cascadingDefinition = cascading.token<string>('cascadingDefinition');
 
-  const consumerSingleton = singleton<Consumer>('consumerSingleton');
-  const consumerTransient = transient<Consumer>('consumerTransient');
-  const consumerScoped = scoped<Consumer>('consumerScoped');
-  const consumerCascading = cascading<Consumer>('consumerCascading');
+  const consumerSingleton = singleton.token<Consumer>('consumerSingleton');
+  const consumerTransient = transient.token<Consumer>('consumerTransient');
+  const consumerScoped = scoped.token<Consumer>('consumerScoped');
+  const consumerCascading = cascading.token<Consumer>('consumerCascading');
 
   class Consumer {
     constructor(_str: string) {}

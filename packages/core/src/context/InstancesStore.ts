@@ -1,7 +1,7 @@
 import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
-import type { IDefinitionToken } from '../definitions/tokens.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
+import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
 import { isDisposable } from './COWMap.js';
 
@@ -41,6 +41,10 @@ export class InstancesStore implements IInstancesStoreRead {
 
   childScope(): InstancesStore {
     return new InstancesStore(this, this._globalInstances, new Map(), this._rootDisposer, new CompositeDisposable());
+  }
+
+  get(definitionId: symbol): MaybeAsync<unknown> | undefined {
+    return this.getRootInstance(definitionId) ?? this.getScopedInstance(definitionId);
   }
 
   getRootInstance(definitionId: symbol): MaybeAsync<unknown> | undefined {

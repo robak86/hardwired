@@ -6,10 +6,10 @@ import { ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
 import { withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
 
 describe(`ReactLifeCycleInterceptor`, () => {
-  const noLifeCyclesD = scoped<NoLifeCycles>('NoLifeCycles');
-  const childSvc1D = singleton<ChildSvc1>('ChildSvc1');
-  const childSvc2D = singleton<ChildSvc2>('ChildSvc2');
-  const service1D = scoped<Service1>('Service1');
+  const noLifeCyclesD = scoped.token<NoLifeCycles>('NoLifeCycles');
+  const childSvc1D = singleton.token<ChildSvc1>('ChildSvc1');
+  const childSvc2D = singleton.token<ChildSvc2>('ChildSvc2');
+  const service1D = scoped.token<Service1>('Service1');
 
   class NoLifeCycles {}
 
@@ -97,11 +97,11 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`calls recursively mount on every mountable object`, async () => {
       const { cnt, interceptor } = setup();
 
-      await cnt.use(service1D);
+      cnt.use(service1D);
       interceptor.getGraphNode(service1D)?.acquire();
 
-      const childSvc1 = await cnt.use(childSvc1D);
-      const childSvc2 = await cnt.use(childSvc2D);
+      const childSvc1 = cnt.use(childSvc1D);
+      const childSvc2 = cnt.use(childSvc2D);
 
       expect(childSvc1.onMount).toBeCalled();
       expect(childSvc2.onMount).toBeCalled();
@@ -110,13 +110,13 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`doesn't call mount on already mounted service`, async () => {
       const { cnt, interceptor } = setup();
 
-      await cnt.use(service1D);
+      cnt.use(service1D);
       interceptor.getGraphNode(service1D)?.acquire();
       interceptor.getGraphNode(service1D)?.acquire();
       interceptor.getGraphNode(service1D)?.acquire();
 
-      const childSvc1 = await cnt.use(childSvc1D);
-      const childSvc2 = await cnt.use(childSvc2D);
+      const childSvc1 = cnt.use(childSvc1D);
+      const childSvc2 = cnt.use(childSvc2D);
 
       expect(childSvc1.onMount).toHaveBeenCalledOnce();
       expect(childSvc2.onMount).toHaveBeenCalledOnce();
@@ -127,12 +127,12 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`calls recursively unmount on every unmountable object`, async () => {
       const { cnt, interceptor } = setup();
 
-      await cnt.use(service1D);
+      cnt.use(service1D);
       interceptor.getGraphNode(service1D)?.acquire();
       interceptor.getGraphNode(service1D)?.release();
 
-      const childSvc1 = await cnt.use(childSvc1D);
-      const childSvc2 = await cnt.use(childSvc2D);
+      const childSvc1 = cnt.use(childSvc1D);
+      const childSvc2 = cnt.use(childSvc2D);
 
       expect(childSvc1.onUnmount).toBeCalled();
       expect(childSvc2.onUnmount).toBeCalled();
@@ -141,14 +141,14 @@ describe(`ReactLifeCycleInterceptor`, () => {
     it(`doesn't call unmount on already unmounted service`, async () => {
       const { cnt, interceptor } = setup();
 
-      await cnt.use(service1D);
+      cnt.use(service1D);
       interceptor.getGraphNode(service1D)?.acquire();
       interceptor.getGraphNode(service1D)?.release();
       interceptor.getGraphNode(service1D)?.release();
       interceptor.getGraphNode(service1D)?.release();
 
-      const childSvc1 = await cnt.use(childSvc1D);
-      const childSvc2 = await cnt.use(childSvc2D);
+      const childSvc1 = cnt.use(childSvc1D);
+      const childSvc2 = cnt.use(childSvc2D);
 
       expect(childSvc1.onUnmount).toHaveBeenCalledOnce();
       expect(childSvc2.onUnmount).toHaveBeenCalledOnce();
@@ -165,8 +165,8 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const childScope2 = cnt.scope();
       const childScope2Interceptor = childScope2.getInterceptor(ReactLifeCycleRootInterceptor);
 
-      await childScope1.use(service1D);
-      await childScope2.use(service1D);
+      childScope1.use(service1D);
+      childScope2.use(service1D);
 
       childScope1Interceptor.getGraphNode(service1D)?.acquire();
       childScope2Interceptor.getGraphNode(service1D)?.acquire();
@@ -177,8 +177,8 @@ describe(`ReactLifeCycleInterceptor`, () => {
       expect(childSvc1Node?.refCount).toEqual(2);
       expect(childSvc2Node?.refCount).toEqual(2);
 
-      const childSvc1 = await cnt.use(childSvc1D);
-      const childSvc2 = await cnt.use(childSvc2D);
+      const childSvc1 = cnt.use(childSvc1D);
+      const childSvc2 = cnt.use(childSvc2D);
 
       expect(childSvc1.onMount).toHaveBeenCalledTimes(1);
       expect(childSvc2.onMount).toHaveBeenCalledTimes(1);

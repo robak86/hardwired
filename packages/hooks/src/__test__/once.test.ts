@@ -5,8 +5,8 @@ import { once } from '../once.js';
 import { use } from '../use.js';
 
 describe(`once`, () => {
-  const defSingleton = singleton<string>();
-  const defSingletonAsync = singleton<Promise<string>>();
+  const defSingleton = singleton.token<string>();
+  const defSingletonAsync = singleton.token<Promise<string>>();
 
   const cfg = configureContainer(c => {
     c.add(defSingleton).fn(() => 'defSingleton');

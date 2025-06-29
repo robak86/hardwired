@@ -2,7 +2,6 @@ import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitio
 import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
-import type { IDefinitionToken } from '../../../../../definitions/tokens.js';
 import type { ConfigurationType, IConfigurationContext } from '../abstract/IConfigurationContext.js';
 import type { IInterceptor, InterceptorClass } from '../../../../../container/interceptors/interceptor.js';
 import {
@@ -15,6 +14,7 @@ import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import { LazyDefinitionsRegistry } from '../../../../../context/LazyDefinitionsRegistry.js';
+import type { IDefinitionToken } from '../../../../../definitions/DefinitionToken.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
@@ -27,6 +27,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
   private _frozenDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
   private _lazyDefinitions = LazyDefinitionsRegistry.empty();
   private _cascadeTokens = new Set<IDefinitionToken<any, LifeTime.cascading>>();
+  private _inheritedTokens = new Set<IDefinitionToken<unknown, LifeTime.cascading>>();
   private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = []; // TODO: replace with _lazyDefinitions. It already holds frozen definitions
 
   private _disposeFunctions = new DisposeFunctions();
@@ -43,6 +44,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       this._frozenDefinitions.freeze(),
       this._lazyDefinitions.freeze(),
       this._cascadeTokens,
+      this._inheritedTokens,
       lifeCycleRegistry,
       this._newInterceptors,
     );
@@ -112,7 +114,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       throw new Error(`Cannot inherit from ${builder.token.toString()}. It is already modified in the current scope.`);
     }
 
-    this._cascadeTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
+    this._inheritedTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
 
     switch (configType) {
       case 'add':

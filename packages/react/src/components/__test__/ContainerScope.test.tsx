@@ -17,7 +17,7 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = scoped<number>();
+      const valueD = scoped.token<number>();
 
       const cnt = container(c => {
         c.add(valueD).fn(() => (counter += 1));
@@ -66,7 +66,7 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const valueD = scoped<number>();
+      const valueD = scoped.token<number>();
 
       const cnt = container(c => {
         c.add(valueD).fn(() => (counter += 1));
@@ -120,8 +120,8 @@ describe(`ContainerScope`, () => {
     function setup() {
       let counter = 0;
 
-      const baseD = scoped<number>();
-      const valueD = scoped<number>();
+      const baseD = scoped.token<number>();
+      const valueD = scoped.token<number>();
 
       const cnt = container(c => {
         c.add(baseD).fn(() => (counter += 1));

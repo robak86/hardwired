@@ -5,10 +5,10 @@ import type { ContainerConfigureFn } from '../../../../configuration/ContainerCo
 
 describe(`DependenciesGraph`, () => {
   function setup() {
-    const c1Def = singleton<string>();
-    const c2Def = singleton<string>();
-    const bDef = singleton<{ B: { c1: string; c2: string } }>();
-    const aDef = singleton<{ A: { B: { c1: string; c2: string } } }>();
+    const c1Def = singleton.token<string>();
+    const c2Def = singleton.token<string>();
+    const bDef = singleton.token<{ B: { c1: string; c2: string } }>();
+    const aDef = singleton.token<{ A: { B: { c1: string; c2: string } } }>();
 
     const cnt = container(c => {
       c.add(c1Def).fn(() => 'C1');
@@ -43,10 +43,10 @@ describe(`DependenciesGraph`, () => {
 
   describe(`async`, () => {
     function setup(...configureFns: ContainerConfigureFn[]) {
-      const c1Def = singleton<Promise<string>>();
-      const c2Def = singleton<Promise<string>>();
-      const bDef = singleton<Promise<{ B: { c1: string; c2: string } }>>();
-      const aDef = singleton<Promise<{ A: { B: { c1: string; c2: string } } }>>();
+      const c1Def = singleton.token<Promise<string>>();
+      const c2Def = singleton.token<Promise<string>>();
+      const bDef = singleton.token<Promise<{ B: { c1: string; c2: string } }>>();
+      const aDef = singleton.token<Promise<{ A: { B: { c1: string; c2: string } } }>>();
 
       const cnt = container(
         c => {
@@ -86,10 +86,10 @@ describe(`DependenciesGraph`, () => {
       it(`returns node holding corresponding value`, async () => {
         let counter = 0;
 
-        const shared = singleton<Promise<number>>();
-        const a = scoped<Promise<{ A: number }>>();
-        const b = scoped<Promise<{ B: number }>>();
-        const c = transient<Promise<{ C: number }>>();
+        const shared = singleton.token<Promise<number>>();
+        const a = scoped.token<Promise<{ A: number }>>();
+        const b = scoped.token<Promise<{ B: number }>>();
+        const c = transient.token<Promise<{ C: number }>>();
 
         const { cnt } = setup(config => {
           config.add(shared).fn(async () => (counter += 1));

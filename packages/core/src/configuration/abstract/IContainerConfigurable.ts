@@ -1,8 +1,8 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IContainer, UseFn } from '../../container/IContainer.js';
-import type { IDefinitionToken } from '../../definitions/tokens.js';
 import type { IInterceptor, InterceptorClass } from '../../container/interceptors/interceptor.js';
 import type { ModifyDefinitionBuilder } from '../dsl/new/shared/ModifyDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 
 import type { IRegisterAware } from './IRegisterAware.js';
 import type { IContainerModifyAware } from './IModifyAware.js';
@@ -40,5 +40,5 @@ export interface IContainerConfigurable
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,
-  ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime, []>;
 }

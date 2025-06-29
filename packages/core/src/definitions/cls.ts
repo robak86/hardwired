@@ -5,9 +5,9 @@ import { LifeTime } from './abstract/LifeTime.js';
 import type { ClassType } from './utils/class-type.js';
 import { ClassDefinition } from './impl/ClassDefinition.js';
 import type { InstancesArray } from './abstract/InstanceDefinition.js';
-import type { IDefinitionToken } from './tokens.js';
 import type { ValidDependenciesLifeTime } from './abstract/InstanceDefinitionDependency.js';
 import type { IDefinition } from './abstract/IDefinition.js';
+import type { IDefinitionToken } from './DefinitionToken.js';
 
 export type WrapAsync<TInstance, TDependenciesDefinitions> =
   UnwrapThunk<TDependenciesDefinitions> extends any[]

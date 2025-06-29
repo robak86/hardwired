@@ -8,6 +8,7 @@ import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 export class SingletonStrategy {
   constructor(protected instancesStore: InstancesStore) {}
 
+  // TODO: inline strategies into container method.
   build<TValue>(
     definition: IDefinition<TValue, LifeTime>,
     locator: IServiceLocator,
@@ -21,6 +22,7 @@ export class SingletonStrategy {
     container: IServiceLocator,
     interceptor: IInterceptor,
   ): MaybeAsync<TInstance> {
+    //TODO this check is not required as we check for existence at the beginning on container.resolve method.
     if (this.instancesStore.hasRootInstance(definition.id)) {
       return this.instancesStore.getRootInstance(definition.id) as MaybeAsync<TInstance>;
     } else {

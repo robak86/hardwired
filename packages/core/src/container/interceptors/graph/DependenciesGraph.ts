@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../../definitions/abstract/LifeTime.js';
-import type { IDefinitionToken } from '../../../definitions/tokens.js';
-import { COWMap } from '../../../context/COWMap.js';
+import type { IDefinitionToken } from '../../../definitions/DefinitionToken.js';
+import { HierarchicalMap } from '../../../context/HierarchicalMap.js';
 
 import { AbstractGraphDependenciesInterceptor } from './AbstractGraphDependenciesInterceptor.js';
 
@@ -35,7 +35,7 @@ export class GraphNode<T> implements IGraphNode<T> {
 
 export class DependenciesGraphInterceptor extends AbstractGraphDependenciesInterceptor<GraphNode<unknown>> {
   static create() {
-    return new DependenciesGraphInterceptor(new Map(), new Map(), COWMap.create());
+    return new DependenciesGraphInterceptor(new Map(), new Map(), HierarchicalMap.create());
   }
 
   getGraphNode<TInstance>(token: IDefinitionToken<TInstance, LifeTime>): GraphNode<TInstance> {
@@ -49,7 +49,7 @@ export class DependenciesGraphInterceptor extends AbstractGraphDependenciesInter
   }
 
   onScope(): DependenciesGraphInterceptor {
-    return new DependenciesGraphInterceptor(this._globalInstances, new Map(), this._cascadingInstances.clone());
+    return new DependenciesGraphInterceptor(this._globalInstances, new Map(), this._cascadingInstances.child());
   }
 
   protected buildGraphNode<TInstance>(

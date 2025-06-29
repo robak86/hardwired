@@ -1,8 +1,8 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
-import type { ConstructorArgsTokens } from '../shared/AddDefinitionBuilder.js';
-import type { IDefinitionToken } from '../../../../definitions/tokens.js';
+import type { InstancesTokens } from '../shared/AddDefinitionBuilder.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
 import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
 
@@ -11,15 +11,15 @@ export class DecoratedDefinitionBuilder<TInstance, TLifetime extends LifeTime, T
 {
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
-    private dependencies: ConstructorArgsTokens<TArgs, TLifetime>,
-    private decorateFn: (instance: TInstance, ...args: TArgs) => TInstance,
+    private readonly _dependencies: InstancesTokens<TArgs, TLifetime>,
+    private readonly _decorateFn: (instance: TInstance, ...args: TArgs) => TInstance,
   ) {}
 
   build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {
     return def.override((container, interceptor) => {
-      return container.resolveAll(...this.dependencies).then(awaitedDependencies => {
+      return container.resolveAll(...this._dependencies).then(awaitedDependencies => {
         return def.create(container, interceptor).then(awaitedInstance => {
-          return MaybeAsync.resolve(this.decorateFn(awaitedInstance, ...(awaitedDependencies as TArgs)));
+          return MaybeAsync.resolve(this._decorateFn(awaitedInstance, ...(awaitedDependencies as TArgs)));
         });
       });
     });

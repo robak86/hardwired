@@ -3,24 +3,25 @@ import { v4 } from 'uuid';
 import { BindingsRegistry } from '../context/BindingsRegistry.js';
 import { InstancesStore } from '../context/InstancesStore.js';
 import { LifeTime } from '../definitions/abstract/LifeTime.js';
-import { ExtensibleFunction } from '../utils/ExtensibleFunction.js';
 import type { AsyncContainerConfigureFn, ContainerConfigureFn } from '../configuration/ContainerConfiguration.js';
 import type { ValidDependenciesLifeTime } from '../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AsyncScopeConfigureFn, ScopeConfigureFn } from '../configuration/ScopeConfiguration.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { ContainerConfigureFreezeLifeTimes } from '../configuration/abstract/IContainerConfigurable.js';
-import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { Instance, InstancesArray } from '../definitions/abstract/InstanceDefinition.js';
 import { ModifyDefinitionBuilder } from '../configuration/dsl/new/shared/ModifyDefinitionBuilder.js';
 import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/shared/context/ContainerFreezeConfigurationContext.js';
 import type { IContainerConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
+import type { UnwrapMaybePromise } from '../utils/MaybeAsync.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
-import { COWMap } from '../context/COWMap.js';
 import { ContainerConfigurationBuilder } from '../configuration/dsl/new/container/ContainerConfigurationBuilder.js';
 import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
+import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
+import { HierarchicalMap } from '../context/HierarchicalMap.js';
+import { Definition } from '../definitions/impl/Definition.js';
 
 import type {
   HasPromise,
@@ -63,14 +64,11 @@ export type ContainerAllReturn<TDefinitions extends Array<IDefinitionToken<any, 
 export type AwaitedInstance<T extends IDefinitionToken<Promise<any>, any>> =
   T extends IDefinitionToken<Promise<infer TInstance>, any> ? TInstance : Instance<T>;
 
-export type AwaitedInstanceArray<T extends Array<IDefinitionToken<Promise<any>, any>>> = {
+export type AwaitedInstanceArray<T extends Array<IDefinitionToken<UnwrapMaybePromise<any>, any>>> = {
   [K in keyof T]: AwaitedInstance<T[K]>;
 };
 
-export class Container
-  extends ExtensibleFunction
-  implements IContainer, ICascadingDefinitionResolver, IDependenciesResolver
-{
+export class Container implements IContainer, ICascadingDefinitionResolver, IDependenciesResolver {
   static create<TConfigureFns extends Array<AsyncContainerConfigureFn | ContainerConfigureFn>>(
     ...configurations: TConfigureFns
   ): ContainerNewReturnType<TConfigureFns> {
@@ -85,13 +83,15 @@ export class Container
         const bindingsRegistry = BindingsRegistry.create(configs);
         const instancesStore = InstancesStore.create();
         const lifeCycleRegistry = new ContainerLifeCycleRegistry();
-        const cascadingRoots = COWMap.create<ICascadingDefinitionResolver>();
+        const cascadingRoots = HierarchicalMap.create<ICascadingDefinitionResolver>();
+        const inheritedTokens = new Set<symbol>();
 
         const cnt = new Container(
           null,
           bindingsRegistry,
           instancesStore,
           cascadingRoots,
+          inheritedTokens,
           lifeCycleRegistry,
           PassThroughInterceptor.instance,
         );
@@ -126,24 +126,20 @@ export class Container
   private _scopedStrategy: ScopedStrategy;
 
   protected constructor(
-    public readonly parentId: string | null,
+    private _parent: (IContainer & ICascadingDefinitionResolver) | null,
     protected readonly bindingsRegistry: BindingsRegistry,
     protected readonly instancesStore: InstancesStore,
-    protected readonly cascadingRoots: COWMap<ICascadingDefinitionResolver>,
+    protected readonly cascadingRoots: HierarchicalMap<ICascadingDefinitionResolver>,
+    protected readonly inheritedTokens: Set<symbol>,
     protected readonly lifecycleRegistry: ILifeCycleRegistry,
     private _interceptor: ICompositeInterceptor,
   ) {
-    // TODO: remove
-    super(
-      <TInstance, TLifeTime extends ValidDependenciesLifeTime<LifeTime>>(
-        definition: IDefinitionToken<TInstance, TLifeTime>,
-      ) => {
-        return this.resolve(definition);
-      },
-    );
-
     this._singletonStrategy = new SingletonStrategy(instancesStore);
     this._scopedStrategy = new ScopedStrategy(instancesStore);
+  }
+
+  get parentId() {
+    return this._parent ? this._parent.id : null;
   }
 
   dispose(): MaybeAsync<void> {
@@ -162,18 +158,6 @@ export class Container
     });
   }
 
-  protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
-    if (this._interceptor instanceof PassThroughInterceptor) {
-      this._interceptor = new CompositeInterceptor();
-    }
-
-    interceptor.forEach(interceptorClass => {
-      const interceptorInstance = interceptorClass.create();
-
-      this._interceptor.append(interceptorInstance);
-    });
-  }
-
   scope<TConfigureFns extends Array<AsyncScopeConfigureFn | ScopeConfigureFn>>(
     ...configureFns: TConfigureFns
   ): NewScopeReturnType<TConfigureFns> {
@@ -189,13 +173,16 @@ export class Container
         const instancesStore = this.instancesStore.childScope();
 
         const lifeCycleRegistry = new ContainerLifeCycleRegistry();
-        const cascadingRoots = this.cascadingRoots.clone();
+        const cascadingRoots = this.cascadingRoots.child();
+
+        const inheritedTokens = new Set<symbol>();
 
         const cnt: Container = new Container(
-          this.id,
+          this,
           bindingsRegistry,
           instancesStore,
           cascadingRoots,
+          inheritedTokens,
           lifeCycleRegistry,
           this._interceptor.onScope(),
         );
@@ -211,6 +198,10 @@ export class Container
           config.cascadingTokens.forEach(token => {
             cascadingRoots.set(token.id, cnt);
           });
+
+          config.inheritedTokens.forEach(token => {
+            inheritedTokens.add(token.id);
+          });
         });
 
         return cnt;
@@ -220,14 +211,15 @@ export class Container
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionToken<TInstance, TLifeTime>,
-  ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime, []> {
     const configurationContext = new ContainerFreezeConfigurationContext(this.bindingsRegistry, this.instancesStore);
 
-    return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+    return new ModifyDefinitionBuilder<TInstance, TLifeTime, []>(
       'freeze',
       definition,
       containerAllowedScopes,
       configurationContext,
+      [],
     );
   }
 
@@ -259,24 +251,99 @@ export class Container
     return this.resolve(definition).unwrap() as TValue;
   }
 
+  // TODO: reorganize resolve
+  // - at the top level, we should have a switch by lifetime, that will early skip the most complex cases, like inherited tokens.
   resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
-    if (isDefinition(definition)) {
-      const override = this.bindingsRegistry.findForDefinition(definition);
-
-      if (definition.strategy === LifeTime.cascading) {
-        // if we don't have any cascading root for the definition in the whole containers hierarchy,
-        // we set the current container as a cascading root for this definition
-        if (!this.cascadingRoots.has(definition.id)) {
-          this.cascadingRoots.set(definition.id, this);
-        }
-      }
-
-      return this.buildWithStrategy(override ?? definition);
+    if (this.instancesStore.has(definition)) {
+      return this.instancesStore.get(definition.id) as MaybeAsync<TValue>;
     }
 
-    const patchedDefinition = this.bindingsRegistry.getByToken(definition);
+    // whenever definition is marked as inherited, we need to resolve it from the parent container
+    const shouldInheritFromParent = this.inheritedTokens.has(definition.id);
 
-    return this.buildWithStrategy(patchedDefinition);
+    if (shouldInheritFromParent) {
+      if (!this._parent) {
+        throw new Error(
+          `Cannot resolve inherited token ${definition.id.toString()}. The container does not have a parent to inherit from.`,
+        );
+      }
+
+      if (this.bindingsRegistry.hasOwnDefinition(definition.id)) {
+        throw new Error(
+          `Cannot resolve inherited token ${definition.id.toString()}. The container already has a definition for it.`,
+        );
+      }
+
+      // TODO: !!!!!!!!!!!!! this might mutate the configuration !!!!!!!!!!. Ideally, bindings registry should be immutable.
+      // TODO: create a separate method, or separate registry for inherited definitions.
+      // TODO: consider splitting current bindings registry into two:
+      // - definitions registry
+      // - definitions transform registry - holding lazy definitions, referencing definitions registry under the hood.
+      // - transform registry would become a facade for fetching definitions, delegating to definitions registry and applying lazy definitions.
+      this.bindingsRegistry.setShadowingDefinition(
+        definition.id,
+        new Definition(definition.id, LifeTime.scoped, () => this._parent!.resolve(definition)),
+      );
+    }
+
+    if (isDefinition(definition)) {
+      return this.resolveDefinition(definition, shouldInheritFromParent);
+    } else {
+      return this.resolveToken(definition, shouldInheritFromParent);
+    }
+  }
+
+  private resolveToken<TValue>(
+    definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>,
+    shouldInheritFromParent: boolean,
+  ) {
+    const shouldHaveOwnInstance = this.cascadingRoots.hasOwn(definition.id) && !this.inheritedTokens.has(definition.id);
+    const patchedDefinition = this.bindingsRegistry.getByToken(definition, shouldHaveOwnInstance);
+
+    const value = this.buildWithStrategy(patchedDefinition);
+
+    // since the definition is inherited, and we use scoped definition to hold the value,
+    // we need to override the definition, to the definition holding the final value.
+    if (shouldInheritFromParent) {
+      this.bindingsRegistry.setShadowingDefinition(
+        definition.id,
+        new Definition(definition.id, LifeTime.scoped, () => value),
+      );
+    }
+
+    return value;
+  }
+
+  private resolveDefinition<TValue>(definition: IDefinition<TValue, LifeTime>, shouldInheritFromParent: boolean) {
+    const shouldHaveOwnInstance = this.cascadingRoots.hasOwn(definition.id) && !this.inheritedTokens.has(definition.id);
+
+    const override = this.bindingsRegistry.findForDefinition(definition, shouldHaveOwnInstance);
+
+    if (definition.strategy === LifeTime.cascading) {
+      // When resolving cascading definition, we don't have a container root for that definition during
+      // container/scope creation compared to tokens for which the definition is set. Therefore, we need to lazily
+      // set the cascading root here.
+
+      // If there is no cascading root for the definition in the whole hierarchy, we set cascading root to the root container.
+      // Otherwise, we already know which container use for resolving cascading definition as it is set in the
+      // cascadingRoots phase.
+      if (!this.cascadingRoots.has(definition.id)) {
+        this.cascadingRoots.setForRoot(definition.id, this);
+      }
+    }
+
+    const value = this.buildWithStrategy(override ?? definition);
+
+    // since the definition is inherited, and we use scoped definition to hold the value,
+    // we need to override the definition, to the definition holding the final value.
+    if (shouldInheritFromParent) {
+      this.bindingsRegistry.setShadowingDefinition(
+        definition.id,
+        new Definition(definition.id, LifeTime.scoped, () => value),
+      );
+    }
+
+    return value;
   }
 
   useAsync<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): Promise<TValue> {
@@ -292,6 +359,40 @@ export class Container
    */
   useExisting<TValue>(definition: IDefinitionToken<TValue, LifeTime>): TValue | null {
     return this.instancesStore.getExisting(definition).unwrap() as TValue | null;
+  }
+
+  resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
+    console.log('resolving cascading definition', this.id);
+
+    return this._scopedStrategy.build(definition, this, this._interceptor);
+  }
+
+  resolveAll<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+    ...definitions: [...TDefinitions]
+  ): MaybeAsync<InstancesArray<TDefinitions>> {
+    const results = definitions.map(def => this.resolve(def));
+
+    return MaybeAsync.all(results) as MaybeAsync<InstancesArray<TDefinitions>>;
+  }
+
+  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
+    ...definitions: [...TDefinitions]
+  ): ContainerAllReturn<TDefinitions> {
+    const results = definitions.map(def => this.resolve(def));
+
+    return MaybeAsync.all(results).unwrap() as ContainerAllReturn<TDefinitions>;
+  }
+
+  protected applyInterceptors(interceptor: Set<InterceptorClass<IInterceptor>>): void {
+    if (this._interceptor instanceof PassThroughInterceptor) {
+      this._interceptor = new CompositeInterceptor();
+    }
+
+    interceptor.forEach(interceptorClass => {
+      const interceptorInstance = interceptorClass.create();
+
+      this._interceptor.append(interceptorInstance);
+    });
   }
 
   protected buildWithStrategy<TValue>(definition: IDefinition<TValue, LifeTime>): MaybeAsync<TValue> {
@@ -311,28 +412,12 @@ export class Container
       case LifeTime.scoped:
         return this._scopedStrategy.build(definition, this, this._interceptor);
       case LifeTime.cascading:
+        if (this.inheritedTokens.has(definition.id)) {
+          return this.resolve(definition);
+        }
+
         return (this.cascadingRoots.get(definition.id) ?? this).resolveCascading(definition);
     }
-  }
-
-  resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
-    return this._scopedStrategy.build(definition, this, this._interceptor);
-  }
-
-  resolveAll<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
-    ...definitions: [...TDefinitions]
-  ): MaybeAsync<InstancesArray<TDefinitions>> {
-    const results = definitions.map(def => this.use(def));
-
-    return MaybeAsync.all(results) as MaybeAsync<InstancesArray<TDefinitions>>;
-  }
-
-  all<TDefinitions extends Array<IDefinitionToken<unknown, ValidDependenciesLifeTime<LifeTime>>>>(
-    ...definitions: [...TDefinitions]
-  ): ContainerAllReturn<TDefinitions> {
-    const results = definitions.map(def => this.use(def));
-
-    return MaybeAsync.all(results).unwrap() as ContainerAllReturn<TDefinitions>;
   }
 }
 

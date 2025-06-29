@@ -1,3 +1,5 @@
+export { HierarchicalMap } from './context/HierarchicalMap.js';
+
 export { AbstractDefinition } from './definitions/impl/AbstractDefinition.js';
 
 export type * from './container/interceptors/interceptor.js';
@@ -33,8 +35,6 @@ export * from './definitions/utils/derivedLifeTime.js';
 
 export * from './definitions/abstract/LifeTime.js';
 
-export { ExtensibleFunction } from './utils/ExtensibleFunction.js';
-
 export type * from './container/IContainer.js';
 
 export type { ClassType } from './definitions/utils/class-type.js';
@@ -50,3 +50,8 @@ export type { AnyDefinitionSymbol, IDefinition } from './definitions/abstract/ID
 export * from './definitions/cls.js';
 
 export * from './definitions/fn.js';
+export { DefinitionToken } from './definitions/DefinitionToken.js';
+export type { IDefinitionToken } from './definitions/DefinitionToken.js';
+
+export * from './definitions/builders/ArgumentPlaceholderToken.js';
+export * from './definitions/builders/DefinitionBuilder.js';

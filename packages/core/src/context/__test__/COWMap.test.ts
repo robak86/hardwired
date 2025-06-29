@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { COWMap } from '../COWMap.js';
 
@@ -25,6 +25,30 @@ describe('COWMap', () => {
     const clonedMap = map.clone();
 
     expect(clonedMap.hasOwn(key)).toBe(false);
+  });
+
+  it('correctly tracks inherited and own entries', () => {
+    const symA = Symbol('A');
+
+    const parent = COWMap.create<string>();
+
+    parent.set(symA, 'foo');
+
+    const child = parent.clone();
+
+    expect(child.has(symA)).toBe(true);
+    expect(child.hasOwn(symA)).toBe(false);
+    expect(child.hasInherited(symA)).toBe(true);
+
+    child.set(symA, 'bar');
+
+    expect(child.has(symA)).toBe(true);
+    expect(child.hasOwn(symA)).toBe(true);
+    expect(child.hasInherited(symA)).toBe(false);
+    expect(child.get(symA)).toBe('bar');
+
+    // Ensure parent is unchanged
+    expect(parent.get(symA)).toBe('foo');
   });
 
   describe('COWMap - hasOwn', () => {

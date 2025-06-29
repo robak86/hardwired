@@ -1,42 +1,54 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
-import type { IDefinitionToken } from '../definitions/tokens.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
-import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { IDefinitionsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILazyDefinitionBuilder } from '../configuration/dsl/new/utils/abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
-import type { IReadonlyScopeRegistry } from './ScopeRegistry.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
 import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js';
 import { LazyDefinitionsRegistry } from './LazyDefinitionsRegistry.js';
 
+// TODO: rename to DefinitionsRegistry
 export class BindingsRegistry implements IBindingsRegistryRead {
-  static create(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
+  static create(configs: IDefinitionsRegistryConfiguration[]): BindingsRegistry {
     const definitions = ScopeRegistry.root(configs.map(c => c.definitions));
+    const shadowingDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
     const frozenDefinitions = ScopeRegistry.root(configs.map(c => c.frozenDefinitions));
     const lazyDefinitions = LazyDefinitionsRegistry.root(configs.map(c => c.lazyDefinitions));
 
-    return new BindingsRegistry(frozenDefinitions, definitions, lazyDefinitions);
+    return new BindingsRegistry(frozenDefinitions, definitions, lazyDefinitions, shadowingDefinitions);
   }
 
   constructor(
     private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
-    private _definitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>>,
+    private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
     private _lazyDefinitions: LazyDefinitionsRegistry,
+    private _shadowingDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
   ) {}
 
-  checkoutForScope(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
+  hasOwnDefinition(definitionId: symbol): boolean {
+    return this._definitions.hasOwn(definitionId);
+  }
+
+  setShadowingDefinition(definitionId: symbol, definition: IDefinition<unknown, LifeTime>): void {
+    this._shadowingDefinitions.append(definitionId, definition);
+  }
+
+  checkoutForScope(configs: IDefinitionsRegistryConfiguration[]): BindingsRegistry {
     return new BindingsRegistry(
       this._frozenDefinitions.checkoutScope(configs.map(c => c.frozenDefinitions)),
       this._definitions.checkoutScope(configs.map(c => c.definitions)),
       this._lazyDefinitions.checkoutScope(configs.map(c => c.lazyDefinitions)),
+      this._shadowingDefinitions.checkoutScope([]),
     );
   }
 
   findForDefinition<TInstance, TLifeTime extends LifeTime>(
     definition: IDefinition<TInstance, TLifeTime>,
+    skipShadowingDefinitions = false,
   ): IDefinition<TInstance, TLifeTime> {
-    const overriddenDefinition = this.findByToken(definition);
+    const overriddenDefinition = this.findByToken(definition, skipShadowingDefinitions);
 
     if (overriddenDefinition) {
       return overriddenDefinition;
@@ -52,11 +64,17 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     return definition;
   }
 
+  // TODO: Reorganize. If we find a frozen definition, there's no reason to look for a lazy one.
+  // TODO: Or is there?
   findByToken<TInstance, TLifeTime extends LifeTime>(
     token: IDefinitionToken<TInstance, TLifeTime>,
+    skipShadowingDefinitions = false,
   ): IDefinition<TInstance, TLifeTime> | undefined {
     const definition =
       (this._frozenDefinitions.find(token.id) as IDefinition<TInstance, TLifeTime>) ??
+      (skipShadowingDefinitions
+        ? null
+        : (this._shadowingDefinitions.find(token.id) as IDefinition<TInstance, TLifeTime>)) ??
       (this._definitions.find(token.id) as IDefinition<TInstance, TLifeTime>);
 
     if (definition && this._lazyDefinitions.has(token.id)) {
@@ -76,8 +94,9 @@ export class BindingsRegistry implements IBindingsRegistryRead {
 
   getByToken<TInstance, TLifeTime extends LifeTime>(
     token: IDefinitionToken<TInstance, TLifeTime>,
+    skipShadowingDefinitions = false,
   ): IDefinition<TInstance, TLifeTime> {
-    const definition = this.findByToken(token);
+    const definition = this.findByToken(token, skipShadowingDefinitions);
 
     if (!definition) {
       throw new Error(`Cannot find definition for ${token.toString()}. Make sure the definition symbol is registered.`);

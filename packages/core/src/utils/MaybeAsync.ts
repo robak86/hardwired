@@ -11,7 +11,7 @@ export class MaybeAsync<T> implements PromiseLike<T> {
     const unwrapped = values.map(v => {
       let current = v;
 
-      // Unwrap nested MaybeAsyncs
+      // Unwrap nested MaybeAsync
       while (current instanceof MaybeAsync) {
         if (!current.isSync) hasAsync = true;
 

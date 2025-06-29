@@ -2,7 +2,7 @@ import type { ClassType } from '../utils/class-type.js';
 import type { IServiceLocator } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
-import type { ConstructorArgsTokens } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
+import type { InstancesTokens } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import { MaybeAsync } from '../../utils/MaybeAsync.js';
 import type { Thunk } from '../../utils/Thunk.js';
@@ -19,7 +19,7 @@ export class ClassDefinition<TInstance, TLifeTime extends LifeTime, TConstructor
     id: symbol,
     strategy: TLifeTime,
     protected readonly _class: ClassType<TInstance, TConstructorArgs>,
-    protected readonly _dependencyTokens: Thunk<ConstructorArgsTokens<TConstructorArgs, TLifeTime>>,
+    protected readonly _dependencyTokens: Thunk<InstancesTokens<TConstructorArgs, TLifeTime>>,
   ) {
     super(id, strategy);
   }

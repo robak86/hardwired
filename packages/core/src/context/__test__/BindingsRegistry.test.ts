@@ -4,8 +4,8 @@ import { BindingsRegistry } from '../BindingsRegistry.js';
 import { ContainerConfigurationBuilder } from '../../configuration/dsl/new/container/ContainerConfigurationBuilder.js';
 
 describe(`BindingsRegistry`, () => {
-  const def1 = singleton<number>('def');
-  const def2 = cascading<number>('def');
+  const def1 = singleton.token<number>('def');
+  const def2 = cascading.token<number>('def');
 
   describe(`definitions`, () => {
     it(`correctly applies configurations`, async () => {

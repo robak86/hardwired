@@ -1,7 +1,7 @@
 import type { IServiceLocator } from '../../container/IContainer.js';
-import type { IDefinitionToken } from '../tokens.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import type { MaybeAsync } from '../../utils/MaybeAsync.js';
+import type { IDefinitionToken } from '../DefinitionToken.js';
 
 import type { LifeTime } from './LifeTime.js';
 
@@ -20,6 +20,8 @@ export interface IDefinition<TInstance, TLifeTime extends LifeTime> extends IDef
   override(
     createFn: (context: IServiceLocator, interceptor: IInterceptor) => MaybeAsync<TInstance>,
   ): IDefinition<TInstance, TLifeTime>;
+
+  bind(container: IServiceLocator): IDefinition<TInstance, TLifeTime>;
 
   toString(): string;
 }

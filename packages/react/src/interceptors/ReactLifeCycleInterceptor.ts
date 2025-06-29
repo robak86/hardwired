@@ -1,5 +1,6 @@
 import type { ContainerConfigureFn, IDefinitionToken, LifeTime } from 'hardwired';
-import { AbstractGraphDependenciesInterceptor, COWMap } from 'hardwired';
+import { AbstractGraphDependenciesInterceptor } from 'hardwired';
+import { HierarchicalMap } from 'hardwired';
 
 import { useContainer } from '../context/ContainerContext.js';
 
@@ -24,7 +25,7 @@ export const useReactLifeCycleInterceptor = () => {
 
 export class ReactLifeCycleRootInterceptor extends AbstractGraphDependenciesInterceptor<ReactLifeCycleNode<unknown>> {
   static create() {
-    return new ReactLifeCycleRootInterceptor(new Map(), new Map(), COWMap.create());
+    return new ReactLifeCycleRootInterceptor(new Map(), new Map(), HierarchicalMap.create());
   }
 
   getGraphNode<TInstance>(token: IDefinitionToken<TInstance, LifeTime>): ReactLifeCycleNode<TInstance> {
@@ -41,7 +42,7 @@ export class ReactLifeCycleRootInterceptor extends AbstractGraphDependenciesInte
   }
 
   onScope(): ReactLifeCycleRootInterceptor {
-    return new ReactLifeCycleRootInterceptor(this._globalInstances, new Map(), this._cascadingInstances.clone());
+    return new ReactLifeCycleRootInterceptor(this._globalInstances, new Map(), this._cascadingInstances.child());
   }
 
   protected buildGraphNode<TInstance>(

@@ -16,7 +16,7 @@ describe(`Testing`, () => {
       destroy(): void;
     }
 
-    const dbConnection = cascading<IDbConnection>();
+    const dbConnection = cascading.token<IDbConnection>();
 
     const withContainer = <TConfigureFns extends Array<ContainerConfigureFn>>(
       ...containerConfigurations: TConfigureFns
@@ -63,8 +63,8 @@ describe(`Testing`, () => {
 describe(`Logger`, () => {
   describe(`branding logger with an id for a request`, () => {
     it(`return correct output`, async () => {
-      const requestId = cascading<string>();
-      const loggerD = cascading<Logger>();
+      const requestId = cascading.token<string>();
+      const loggerD = cascading.token<Logger>();
 
       let id = 0;
       const nextId = () => (id += 1);

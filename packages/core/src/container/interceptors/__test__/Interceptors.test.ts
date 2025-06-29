@@ -22,10 +22,10 @@ describe(`interceptor`, () => {
           -> C2
 */
 
-  const c1Def = singleton<string>();
-  const c2Def = singleton<string>();
-  const bDef = singleton<[string, string, string]>();
-  const aDef = singleton<[string, [string, string, string]]>();
+  const c1Def = singleton.token<string>();
+  const c2Def = singleton.token<string>();
+  const bDef = singleton.token<[string, string, string]>();
+  const aDef = singleton.token<[string, [string, string, string]]>();
 
   describe(`container configuration`, () => {
     describe(`getInterceptor`, () => {
@@ -92,10 +92,10 @@ describe(`interceptor`, () => {
   });
 
   describe(`async`, () => {
-    const c1DefAsync = singleton<Promise<string>>();
-    const c2DefAsync = singleton<Promise<string>>();
-    const bDefAsync = singleton<Promise<[string, string, string]>>();
-    const aDefAsync = singleton<Promise<[string, [string, string, string]]>>();
+    const c1DefAsync = singleton.token<Promise<string>>();
+    const c2DefAsync = singleton.token<Promise<string>>();
+    const bDefAsync = singleton.token<Promise<[string, string, string]>>();
+    const aDefAsync = singleton.token<Promise<[string, [string, string, string]]>>();
 
     it(`Calls interceptor methods with correct arguments`, async () => {
       const cnt = container(c => {

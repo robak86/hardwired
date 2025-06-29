@@ -9,7 +9,7 @@ import { it } from './helpers/test-case.js';
 
 describe(`AsyncContext`, () => {
   it(`works`, async () => {
-    const someValue = scoped<Promise<number>>('someValue');
+    const someValue = scoped.token<Promise<number>>('someValue');
 
     const cnt = container(c => {
       c.add(someValue).fn(async () => Math.random());
@@ -38,7 +38,7 @@ describe(`AsyncContext`, () => {
   });
 
   it(`works with overrides`, async () => {
-    const someValue = scoped<number>();
+    const someValue = scoped.token<number>();
 
     const cnt = container(c => {
       c.add(someValue).fn(() => 1);

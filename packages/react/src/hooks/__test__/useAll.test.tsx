@@ -21,8 +21,8 @@ import { withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor
 describe(`useDefinitions`, () => {
   describe(`types`, () => {
     it(`returns correct types`, async () => {
-      const val1Def = scoped<string>();
-      const val2Def = scoped<number>();
+      const val1Def = scoped.token<string>();
+      const val2Def = scoped.token<number>();
 
       // @ts-ignore
       const _Component = () => {
@@ -35,8 +35,8 @@ describe(`useDefinitions`, () => {
   });
 
   describe(`instantiating dependencies`, () => {
-    const val1Def = singleton<string>('val1');
-    const val2Def = singleton<string>('val2');
+    const val1Def = singleton.token<string>('val1');
+    const val2Def = singleton.token<string>('val2');
 
     function setup() {
       const Consumer = () => {
@@ -68,7 +68,7 @@ describe(`useDefinitions`, () => {
     function setup() {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
-      const clsDef = scoped<number>(`clsDef`);
+      const clsDef = scoped.token<number>(`clsDef`);
 
       const Consumer = () => {
         const [cls] = useAll(clsDef);
@@ -125,9 +125,9 @@ describe(`useDefinitions`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = scoped<string>();
-      const val1Def = scoped<string>();
-      const val2Def = scoped<string>();
+      const someExternalParam = scoped.token<string>();
+      const val1Def = scoped.token<string>();
+      const val2Def = scoped.token<string>();
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
@@ -201,9 +201,9 @@ describe(`useDefinitions`, () => {
   });
 
   describe(`lifecycle interceptor`, () => {
-    const mountableServiceD = singleton<MountableService>('mountableServiceD');
-    const mountableServiceOtherD = singleton<MountableServiceOther>('mountableServiceOther');
-    const mountableServiceConsumerD = scoped<MountableServiceConsumer>(`mountableServiceConsumer`);
+    const mountableServiceD = singleton.token<MountableService>('mountableServiceD');
+    const mountableServiceOtherD = singleton.token<MountableServiceOther>('mountableServiceOther');
+    const mountableServiceConsumerD = scoped.token<MountableServiceConsumer>(`mountableServiceConsumer`);
 
     class MountableService implements IReactLifeCycleAware {
       id = Math.random();

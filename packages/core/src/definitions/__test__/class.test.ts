@@ -6,39 +6,39 @@ import { configureContainer } from '../../configuration/ContainerConfiguration.j
 import { BoxedValue } from '../../__test__/BoxedValue.js';
 
 describe(`class`, () => {
-  const numDef = transient<BoxedValue<number>>('num');
-  const strDef = transient<BoxedValue<string>>('str');
+  const numDef = transient.token<BoxedValue<number>>('num');
+  const strDef = transient.token<BoxedValue<string>>('str');
 
-  const numDefScoped = scoped<BoxedValue<number>>('num');
-  const strDefScoped = scoped<BoxedValue<string>>('str');
+  const numDefScoped = scoped.token<BoxedValue<number>>('num');
+  const strDefScoped = scoped.token<BoxedValue<string>>('str');
 
-  const numDefCascading = cascading<BoxedValue<number>>('num');
-  const strDefCascading = cascading<BoxedValue<string>>('str');
+  const numDefCascading = cascading.token<BoxedValue<number>>('num');
+  const strDefCascading = cascading.token<BoxedValue<string>>('str');
 
-  const numDefSingleton = singleton<BoxedValue<number>>('num');
-  const strDefSingleton = singleton<BoxedValue<string>>('str');
+  const numDefSingleton = singleton.token<BoxedValue<number>>('num');
+  const strDefSingleton = singleton.token<BoxedValue<string>>('str');
 
-  const myClassTransient = transient<MyClass>('MyClassTransient');
-  const myClassSingleton = singleton<MyClass>('MyClassSingleton');
-  const myClassScoped = scoped<MyClass>('MyClassScoped');
-  const myClassCascading = cascading<MyClass>('MyClassCascading');
+  const myClassTransient = transient.token<MyClass>('MyClassTransient');
+  const myClassSingleton = singleton.token<MyClass>('MyClassSingleton');
+  const myClassScoped = scoped.token<MyClass>('MyClassScoped');
+  const myClassCascading = cascading.token<MyClass>('MyClassCascading');
 
-  const numDefAsync = transient<Promise<BoxedValue<number>>>('num');
-  const strDefAsync = transient<Promise<BoxedValue<string>>>('str');
+  const numDefAsync = transient.token<Promise<BoxedValue<number>>>('num');
+  const strDefAsync = transient.token<Promise<BoxedValue<string>>>('str');
 
-  const numDefScopedAsync = scoped<Promise<BoxedValue<number>>>('num');
-  const strDefScopedAsync = scoped<Promise<BoxedValue<string>>>('str');
+  const numDefScopedAsync = scoped.token<Promise<BoxedValue<number>>>('num');
+  const strDefScopedAsync = scoped.token<Promise<BoxedValue<string>>>('str');
 
-  const numDefCascadingAsync = cascading<Promise<BoxedValue<number>>>('num');
-  const strDefCascadingAsync = cascading<Promise<BoxedValue<string>>>('str');
+  const numDefCascadingAsync = cascading.token<Promise<BoxedValue<number>>>('num');
+  const strDefCascadingAsync = cascading.token<Promise<BoxedValue<string>>>('str');
 
-  const numDefSingletonAsync = singleton<Promise<BoxedValue<number>>>('num');
-  const strDefSingletonAsync = singleton<Promise<BoxedValue<string>>>('str');
+  const numDefSingletonAsync = singleton.token<Promise<BoxedValue<number>>>('num');
+  const strDefSingletonAsync = singleton.token<Promise<BoxedValue<string>>>('str');
 
-  const myClassTransientAsync = transient<Promise<MyClass>>('MyClassTransient');
-  const myClassSingletonAsync = singleton<Promise<MyClass>>('MyClassSingleton');
-  const myClassScopedAsync = scoped<Promise<MyClass>>('MyClassScoped');
-  const myClassCascadingAsync = cascading<Promise<MyClass>>('MyClassCascading');
+  const myClassTransientAsync = transient.token<Promise<MyClass>>('MyClassTransient');
+  const myClassSingletonAsync = singleton.token<Promise<MyClass>>('MyClassSingleton');
+  const myClassScopedAsync = scoped.token<Promise<MyClass>>('MyClassScoped');
+  const myClassCascadingAsync = cascading.token<Promise<MyClass>>('MyClassCascading');
 
   class MyClass {
     readonly value = Math.random();

@@ -2,7 +2,7 @@ import type { IServiceLocator } from '../../container/IContainer.js';
 import type { LifeTime } from '../abstract/LifeTime.js';
 import type { IDefinition } from '../abstract/IDefinition.js';
 import type { MaybePromise } from '../../utils/async.js';
-import type { ConstructorArgsTokens } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
+import type { InstancesTokens } from '../../configuration/dsl/new/shared/AddDefinitionBuilder.js';
 import type { IInterceptor } from '../../container/interceptors/interceptor.js';
 import { MaybeAsync } from '../../utils/MaybeAsync.js';
 
@@ -18,7 +18,7 @@ export class FnDefinition<TInstance, TLifeTime extends LifeTime, TDeps extends a
     strategy: TLifeTime,
 
     public readonly createFn: (...deps: TDeps) => MaybePromise<TInstance>,
-    public readonly _dependencies: ConstructorArgsTokens<TDeps, TLifeTime>,
+    public readonly _dependencies: InstancesTokens<TDeps, TLifeTime>,
   ) {
     super(id, strategy);
   }

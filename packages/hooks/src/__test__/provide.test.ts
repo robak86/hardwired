@@ -8,7 +8,7 @@ import { freeze } from '../freeze.js';
 import { it } from './helpers/test-case.js';
 
 describe(`freeze`, () => {
-  const impl = scoped<number>('someNumber');
+  const impl = scoped.token<number>('someNumber');
 
   describe(`root container`, () => {
     it(`returns correct value`, async () => {

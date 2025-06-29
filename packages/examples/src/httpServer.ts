@@ -3,17 +3,15 @@ import type { Server } from 'http';
 
 import { container, scoped, singleton } from 'hardwired';
 
-const reqD = scoped<IncomingMessage>();
-const requestHandlerD = scoped<IRequestHandler>();
-const serverD = singleton<Server>();
+const reqD = scoped.token<IncomingMessage>();
+const requestHandlerD = scoped.token<IRequestHandler>();
+const serverD = singleton.token<Server>();
 
 interface IRequestHandler {
   handle(req: IncomingMessage): object;
 }
 
 class HomePageHandler implements IRequestHandler {
-  // static instance = cls.scoped(this, [reqD]);
-
   constructor(private _req: IncomingMessage) {}
 
   handle() {

@@ -9,7 +9,7 @@ describe(`unbound`, () => {
     describe(`overrideCascading`, () => {
       describe(`binding to value`, () => {
         it(`acts as scoped`, async () => {
-          const unboundDefinition = cascading<string>();
+          const unboundDefinition = cascading.token<string>();
 
           const configure = configureContainer(c => {
             c.add(unboundDefinition).fn(() => v4());
@@ -27,7 +27,7 @@ describe(`unbound`, () => {
       describe(`binding to definition`, () => {
         describe(`singleton`, () => {
           it(`acts as singleton`, async () => {
-            const unboundDefinition = singleton<string>('unboundDefinition');
+            const unboundDefinition = singleton.token<string>('unboundDefinition');
 
             const configure = configureContainer(c => {
               c.add(unboundDefinition).fn(() => v4());
@@ -44,7 +44,7 @@ describe(`unbound`, () => {
 
         describe(`cascading`, () => {
           it(`acts as scoped`, async () => {
-            const unboundDefinition = cascading<string>();
+            const unboundDefinition = cascading.token<string>();
 
             const configure = configureContainer(c => {
               c.add(unboundDefinition).fn(() => v4());
@@ -61,7 +61,7 @@ describe(`unbound`, () => {
 
         describe(`scoped`, () => {
           it(`acts as scoped`, async () => {
-            const unboundDefinition = scoped<string>();
+            const unboundDefinition = scoped.token<string>();
 
             const configure = configureContainer(c => {
               c.add(unboundDefinition).fn(() => v4());
@@ -80,7 +80,7 @@ describe(`unbound`, () => {
 
     describe(`bind`, () => {
       it(`acts as scoped`, async () => {
-        const unboundDefinition = scoped<string>();
+        const unboundDefinition = scoped.token<string>();
 
         const configure = configureContainer(c => {
           // bind only for the current scope
@@ -98,7 +98,7 @@ describe(`unbound`, () => {
       });
 
       it(`keeps override for the child scope`, async () => {
-        const def = scoped<number>();
+        const def = scoped.token<number>();
 
         const redefinedSpy = vi.fn(() => 2);
 
@@ -116,15 +116,15 @@ describe(`unbound`, () => {
   });
 
   describe(`injecting implementation for an interface`, () => {
-    const IMyInterfaceSingleton = singleton<IMyInterface>();
-    const IMyInterfaceScoped = scoped<IMyInterface>();
-    const IMyInterfaceTransient = transient<IMyInterface>();
+    const IMyInterfaceSingleton = singleton.token<IMyInterface>();
+    const IMyInterfaceScoped = scoped.token<IMyInterface>();
+    const IMyInterfaceTransient = transient.token<IMyInterface>();
 
     interface IMyInterface {
       multiply(a: number, b: number): number;
     }
 
-    const scalingFactor = singleton<number>();
+    const scalingFactor = singleton.token<number>();
 
     class MyClass implements IMyInterface {
       constructor(private _scalingFactor: number) {}

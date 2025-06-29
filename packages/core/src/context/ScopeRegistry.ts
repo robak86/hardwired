@@ -73,6 +73,10 @@ export class ScopeRegistry<V> implements IReadonlyScopeRegistry<V> {
     );
   }
 
+  hasOwn(definitionId: symbol): boolean {
+    return this._registrations.has(definitionId) || this._overrides.has(definitionId);
+  }
+
   getForOverride(definitionId: symbol): V {
     const def = this.findOverride(definitionId) || this.findRegistration(definitionId);
     // if (this._overrides.has(definitionId)) {

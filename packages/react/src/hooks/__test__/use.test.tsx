@@ -18,7 +18,7 @@ import { withReactLifeCycle } from '../../interceptors/ReactLifeCycleInterceptor
 
 describe(`use`, () => {
   describe(`instantiating dependencies`, () => {
-    const val1Def = singleton<string>('val1');
+    const val1Def = singleton.token<string>('val1');
 
     function setup() {
       const Consumer = () => {
@@ -50,7 +50,7 @@ describe(`use`, () => {
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
 
-      const clsDef = scoped<number>('clsDef');
+      const clsDef = scoped.token<number>('clsDef');
 
       const Consumer = () => {
         const cls = use(clsDef);
@@ -107,8 +107,8 @@ describe(`use`, () => {
 
   describe(`using externals`, () => {
     function setup() {
-      const someExternalParam = scoped<string>();
-      const val1Def = scoped<string>('val1Def');
+      const someExternalParam = scoped.token<string>();
+      const val1Def = scoped.token<string>('val1Def');
 
       let counter = 0;
       const checkoutRenderId = () => (counter += 1);
@@ -171,8 +171,8 @@ describe(`use`, () => {
   });
 
   describe(`lifecycle interceptor`, () => {
-    const mountableServiceD = singleton<MountableService>('mountableServiceD');
-    const mountableServiceConsumerD = scoped<MountableServiceConsumer>('mountableServiceConsumerD');
+    const mountableServiceD = singleton.token<MountableService>('mountableServiceD');
+    const mountableServiceConsumerD = scoped.token<MountableServiceConsumer>('mountableServiceConsumerD');
 
     class MountableService implements IReactLifeCycleAware {
       // static instance = cls.singleton(this);
@@ -229,7 +229,7 @@ describe(`use`, () => {
 
         const result = render(<App />);
 
-        const svc = await cnt.use(mountableServiceD);
+        const svc = cnt.use(mountableServiceD);
 
         expect(svc.onMount).toHaveBeenCalledTimes(1);
         expect(svc.onUnmount).not.toHaveBeenCalled();
@@ -282,26 +282,26 @@ describe(`use`, () => {
 
           const result = render(<App renderChild={false} />);
 
-          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+          expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(1);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={true} />);
 
-          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+          expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(2);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={true} other={'rerender on prop change'} />);
 
-          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+          expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(2);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={false} />);
 
-          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+          expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(2);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
           result.unmount();
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(1);
         });
       });
 
@@ -332,26 +332,26 @@ describe(`use`, () => {
 
           const result = render(<App renderChild={false} />);
 
-          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+          expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(1);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
           result.rerender(<App renderChild={true} />);
 
-          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
+          expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(2);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(1);
 
           result.rerender(<App renderChild={true} other={'rerender on prop change'} />);
 
-          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
+          expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(2);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(1);
 
           result.rerender(<App renderChild={false} />);
 
-          expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(2);
+          expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(2);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(2);
 
           result.unmount();
-          expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(2);
+          expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(2);
         });
       });
 
@@ -440,28 +440,28 @@ describe(`use`, () => {
 
         const result = render(<App renderScope1={false} renderScope2={false} />);
 
-        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(0);
-        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+        expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(0);
+        expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
         result.rerender(<App renderScope1={true} renderScope2={true} />);
 
-        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
-        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+        expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
         result.rerender(<App renderScope1={true} renderScope2={false} />);
 
-        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
-        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+        expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
         result.rerender(<App renderScope1={false} renderScope2={false} />);
 
-        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
-        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(1);
 
         result.rerender(<App renderScope1={true} renderScope2={false} />);
 
-        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(2);
-        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(2);
+        expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(1);
       });
 
       it(`calls correctly callbacks when service is used within list item`, async () => {
@@ -508,20 +508,20 @@ describe(`use`, () => {
 
         const result = render(<App scopes={scopes} />);
 
-        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
-        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+        expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
         for (let i = 0; i < 20; i++) {
           result.rerender(<App scopes={[{ isEnabled: true }, ...randomScopeConfigs(20)]} />);
         }
 
-        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
-        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(0);
+        expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(0);
 
         result.rerender(<App scopes={[]} />);
 
-        expect((await cnt.use(mountableServiceD)).onMount).toBeCalledTimes(1);
-        expect((await cnt.use(mountableServiceD)).onUnmount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onMount).toBeCalledTimes(1);
+        expect(cnt.use(mountableServiceD).onUnmount).toBeCalledTimes(1);
       });
     });
   });
