@@ -8,6 +8,7 @@ import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 export class ScopedStrategy {
   constructor(protected instancesStore: InstancesStore) {}
 
+  // TODO: inline strategies into container method.
   build<TValue>(
     definition: IDefinition<TValue, LifeTime>,
     locator: IServiceLocator,
@@ -21,6 +22,7 @@ export class ScopedStrategy {
     container: IServiceLocator,
     interceptor: IInterceptor,
   ): MaybeAsync<TInstance> {
+    //TODO this check is not required as we check for existence at the beginning on container.resolve method.
     if (this.instancesStore.hasScopedInstance(definition.id)) {
       return this.instancesStore.getScopedInstance(definition.id) as MaybeAsync<TInstance>;
     } else {

@@ -1,11 +1,10 @@
 import type { InstancesStore } from '../../context/InstancesStore.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
-import { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver, IServiceLocator } from '../IContainer.js';
 import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 import type { HierarchicalMap } from '../../context/HierarchicalMap.js';
 import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
-import { Definition } from '../../definitions/impl/Definition.js';
 
 export class CascadingStrategy {
   constructor(
@@ -15,39 +14,14 @@ export class CascadingStrategy {
     private cascadingRoots: HierarchicalMap<ICascadingDefinitionResolver>,
   ) {}
 
+  // TODO: inline strategies into container method.
   build<TValue>(
     definition: IDefinition<TValue, LifeTime>,
     parent: (IServiceLocator & ICascadingDefinitionResolver) | null,
     locator: IServiceLocator & ICascadingDefinitionResolver,
   ): MaybeAsync<TValue> {
-    // inherited values are stored as scoped instances
-
-    // TODO: this check should happen before fetching any definitions from the register (in use() and resolve() methods)
-    // The same applies for other strategies/lifetimes
-    if (this.instancesStore.hasScopedInstance(definition.id)) {
-      return this.instancesStore.getScopedInstance(definition.id) as MaybeAsync<TValue>;
-    }
-
     if (this.inheritedTokens.has(definition.id)) {
-      if (parent) {
-        const inheritedValue = parent.resolve(definition);
-
-        console.log('parent resolve', parent.id, inheritedValue.unwrap());
-
-        // override the definition in the registry with a new one that returns the inherited value
-        // This approach works correctly with lazy definitions being applicative. So, one can combine inherit(),
-        // with other definitions modifiers like .decorate() or .configure()
-        this.definitionsRegistry.setDefinition(
-          definition.id,
-          new Definition(definition.id, LifeTime.scoped, () => {
-            return inheritedValue;
-          }),
-        );
-
-        return locator.resolve(definition);
-      } else {
-        return (this.cascadingRoots.get(definition.id) ?? locator).resolveCascading(definition);
-      }
+      return locator.resolve(definition);
     }
 
     return (this.cascadingRoots.get(definition.id) ?? locator).resolveCascading(definition);

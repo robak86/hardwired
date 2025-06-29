@@ -25,6 +25,18 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     private _lazyDefinitions: LazyDefinitionsRegistry,
   ) {}
 
+  hasOwnDefinition(definitionId: symbol): boolean {
+    return this._definitions.hasOwn(definitionId);
+  }
+
+  // has(definitionId: symbol): boolean {
+  //   return (
+  //     this._frozenDefinitions.has(definitionId) ||
+  //     this._definitions.has(definitionId) ||
+  //     this._lazyDefinitions.has(definitionId)
+  //   );
+  // }
+
   setDefinition(definitionId: symbol, definition: IDefinition<unknown, LifeTime>): void {
     if (this._frozenDefinitions.has(definitionId)) {
       // TODO? raise some error?

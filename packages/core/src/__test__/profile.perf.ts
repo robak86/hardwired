@@ -55,6 +55,7 @@ const instantiationBench = new Bench({
   time: 200,
   iterations: 1000,
   setup: () => {
+    console.log('setup');
     syncCnt = container(configure);
     asyncCnt = container(configureAsAsync);
 

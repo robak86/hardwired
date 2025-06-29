@@ -159,39 +159,28 @@ describe(`ContainerConfiguration`, () => {
           });
 
           const child1 = cnt.scope(c => {
-            c.modify(def).inherit(val => {
-              console.log(`child1 inherit: ${val}`);
-
-              return val + 1;
-            });
+            c.modify(def).inherit(val => val + 1);
           });
 
           const child2 = child1.scope(c => {
-            c.modify(def).inherit(val => {
-              console.log(`child2 inherit: ${val}`);
-
-              return val + 10;
-            });
+            c.modify(def).inherit(val => val + 10);
           });
 
-          // const child3 = child2.scope(c => {
-          //   c.modify(def).inherit(val => val + 100);
-          // });
-
-          cnt.id = 'root';
-          child1.id = 'child1';
-          child2.id = 'child2';
-          // child3.id = 'child3';
+          const child3 = child2.scope(c => {
+            c.modify(def).inherit(val => val + 100);
+          });
 
           const cntVal = cnt.use(def);
           const child1Val = child1.use(def);
           const child2Val = child2.use(def);
-          // const child3Val = child3.use(def);
+          const child3Val = child3.use(def);
 
           expect(cntVal).toEqual(0);
           expect(child1Val).toEqual(1);
           expect(child2Val).toEqual(11);
-          // expect(child3Val).toEqual(111);
+          expect(child3Val).toEqual(111);
+
+          expect(rootFactorySpy).toHaveBeenCalledTimes(1);
         });
 
         it(`works with onDispose`, async () => {

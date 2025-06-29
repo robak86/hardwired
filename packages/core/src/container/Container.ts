@@ -21,6 +21,7 @@ import { ContainerConfigurationBuilder } from '../configuration/dsl/new/containe
 import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
 import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 import { HierarchicalMap } from '../context/HierarchicalMap.js';
+import { Definition } from '../definitions/impl/Definition.js';
 
 import type {
   HasPromise,
@@ -256,6 +257,30 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
   resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
     if (this.instancesStore.has(definition)) {
       return this.instancesStore.get(definition.id) as MaybeAsync<TValue>;
+    }
+
+    // whenever definition is marked as inherited, we need to resolve it from the parent container
+    if (this.inheritedTokens.has(definition.id)) {
+      if (!this._parent) {
+        throw new Error(
+          `Cannot resolve inherited token ${definition.id.toString()}. The container does not have a parent to inherit from.`,
+        );
+      }
+
+      if (this.bindingsRegistry.hasOwnDefinition(definition.id)) {
+        throw new Error(
+          `Cannot resolve inherited token ${definition.id.toString()}. The container already has a definition for it.`,
+        );
+      }
+
+      const inheritedValue = this._parent.resolve(definition);
+
+      this.bindingsRegistry.setDefinition(
+        definition.id,
+        new Definition(definition.id, LifeTime.scoped, () => {
+          return inheritedValue;
+        }),
+      );
     }
 
     if (isDefinition(definition)) {
