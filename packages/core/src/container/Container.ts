@@ -280,7 +280,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
       // - definitions registry
       // - definitions transform registry - holding lazy definitions, referencing definitions registry under the hood.
       // - transform registry would become a facade for fetching definitions, delegating to definitions registry and applying lazy definitions.
-      this.bindingsRegistry.setInheritedDefinition(
+      this.bindingsRegistry.setShadowingDefinition(
         definition.id,
         new Definition(definition.id, LifeTime.scoped, () => this._parent!.resolve(definition)),
       );
@@ -305,7 +305,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
     // since the definition is inherited, and we use scoped definition to hold the value,
     // we need to override the definition, to the definition holding the final value.
     if (shouldInheritFromParent) {
-      this.bindingsRegistry.setInheritedDefinition(
+      this.bindingsRegistry.setShadowingDefinition(
         definition.id,
         new Definition(definition.id, LifeTime.scoped, () => value),
       );
@@ -337,7 +337,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
     // since the definition is inherited, and we use scoped definition to hold the value,
     // we need to override the definition, to the definition holding the final value.
     if (shouldInheritFromParent) {
-      this.bindingsRegistry.setInheritedDefinition(
+      this.bindingsRegistry.setShadowingDefinition(
         definition.id,
         new Definition(definition.id, LifeTime.scoped, () => value),
       );

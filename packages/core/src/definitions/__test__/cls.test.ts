@@ -106,6 +106,20 @@ describe('cls', () => {
         expect(scope1.use(leafDef)).not.toBe(scope2.use(leafDef));
         expect(scope2.use(leafDef)).toBe(scope3.use(leafDef));
       });
+
+      it(`propagates cascading definition to the root`, async () => {
+        const evalSpy = vi.fn(() => 1);
+
+        const def = cascading.fn(evalSpy);
+
+        const root = container();
+        const scope1 = root.scope();
+
+        scope1.use(def);
+        root.use(def);
+
+        expect(evalSpy).toHaveBeenCalledTimes(1);
+      });
     });
 
     describe(`transient`, () => {
