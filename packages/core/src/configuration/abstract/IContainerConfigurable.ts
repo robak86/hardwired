@@ -40,5 +40,5 @@ export interface IContainerConfigurable
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,
-  ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime, []>;
 }

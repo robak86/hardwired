@@ -26,14 +26,14 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
     symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): ScopeModifyBuilderType<TInstance, TLifeTime> {
     if (symbol.strategy === LifeTime.cascading) {
-      return new CascadingModifyBuilder<TInstance>(
+      return new CascadingModifyBuilder<TInstance, []>(
         'modify',
         symbol as IDefinitionToken<TInstance, LifeTime.cascading>,
         this._cascadingModifyAllowedLifeTimes,
         this._context,
       ) as any;
     } else {
-      return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+      return new ModifyDefinitionBuilder<TInstance, TLifeTime, []>(
         'modify',
         symbol,
         this._modifyAllowedLifeTimes,
@@ -54,7 +54,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
 
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionToken<TInstance, TLifeTime>,
-  ): AddDefinitionBuilder<TInstance, TLifeTime> {
+  ): AddDefinitionBuilder<TInstance, TLifeTime, []> {
     return new AddDefinitionBuilder('add', symbol, this._allowedRegistrationLifeTimes, this._context);
   }
 

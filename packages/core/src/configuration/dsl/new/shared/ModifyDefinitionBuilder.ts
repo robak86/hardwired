@@ -2,13 +2,19 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ConfigureResult, IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfiguredDefinitionBuilder } from '../utils/ConfiguredDefinitionBuilder.js';
 import { DecoratedDefinitionBuilder } from '../utils/DecoratedDefinitionBuilder.js';
+import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
+import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
 
 import type { InstancesTokens } from './AddDefinitionBuilder.js';
 import { AddDefinitionBuilder } from './AddDefinitionBuilder.js';
 
 // TODO: we need to constraint allowed types that can be injected to configure and decorate functions
-export class ModifyDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
-  extends AddDefinitionBuilder<TInstance, TLifeTime>
+export class ModifyDefinitionBuilder<
+    TInstance,
+    TLifeTime extends LifeTime,
+    TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >
+  extends AddDefinitionBuilder<TInstance, TLifeTime, TDependencies>
   implements IModifyBuilder<TInstance, TLifeTime>
 {
   configure(configureFn: (instance: Awaited<TInstance>) => ConfigureResult<TInstance>): void;

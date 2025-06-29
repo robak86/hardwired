@@ -17,8 +17,11 @@ export type InstancesTokens<T extends any[], TCurrentLifeTime extends LifeTime> 
   [K in keyof T]: IDefinitionToken<T[K], ValidDependenciesLifeTime<TCurrentLifeTime>>;
 };
 
-export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
-  implements IAddDefinitionBuilder<TInstance, TLifeTime>
+export class AddDefinitionBuilder<
+  TInstance,
+  TLifeTime extends LifeTime,
+  TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+> implements IAddDefinitionBuilder<TInstance, TLifeTime, TDependencies>
 {
   constructor(
     protected readonly _configType: ConfigurationType,
@@ -27,6 +30,12 @@ export class AddDefinitionBuilder<TInstance, TLifeTime extends LifeTime>
     protected readonly _context: IConfigurationContext,
   ) {
     this.assertValidLifeTime();
+  }
+
+  using<TDeps extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
+    ...deps: TDeps
+  ): IAddDefinitionBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]> {
+    throw new Error('Method not implemented.');
   }
 
   private assertValidLifeTime() {

@@ -2,13 +2,17 @@ import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ICascadeModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { InheritedDefinitionBuilder } from '../utils/InheritedDefinitionBuilder.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
+import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
 
 import { ModifyDefinitionBuilder } from './ModifyDefinitionBuilder.js';
 import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';
 import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
 
-export class CascadingModifyBuilder<TInstance>
-  extends ModifyDefinitionBuilder<TInstance, LifeTime.cascading>
+export class CascadingModifyBuilder<
+    TInstance,
+    TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<LifeTime.cascading>>[],
+  >
+  extends ModifyDefinitionBuilder<TInstance, LifeTime.cascading, TDependencies>
   implements ICascadeModifyBuilder<TInstance>
 {
   constructor(

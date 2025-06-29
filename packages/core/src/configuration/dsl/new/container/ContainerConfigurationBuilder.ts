@@ -44,7 +44,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     const allowedLifeTimes =
       symbol.strategy === LifeTime.cascading ? this._allowedCascadingModifyLifeTimes : this._allowedModifyLifeTimes;
 
-    return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+    return new ModifyDefinitionBuilder<TInstance, TLifeTime, []>(
       'modify',
       symbol,
       allowedLifeTimes,
@@ -54,13 +54,13 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,
-  ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime, []> {
     return new ModifyDefinitionBuilder('freeze', symbol, this._allowedRegisterLifeTimes, this._context);
   }
 
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionToken<TInstance, TLifeTime>,
-  ): IAddDefinitionBuilder<TInstance, TLifeTime> {
+  ): IAddDefinitionBuilder<TInstance, TLifeTime, []> {
     return new AddDefinitionBuilder('add', symbol, this._allowedRegisterLifeTimes, this._context);
   }
 

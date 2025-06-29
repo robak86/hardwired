@@ -22,7 +22,7 @@ export interface IDependenciesResolver {
 export interface IContainerConfigurationAware {
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionToken<TInstance, TLifeTime>,
-  ): ModifyDefinitionBuilder<TInstance, TLifeTime>;
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime, []>;
 }
 
 export interface ICascadingDefinitionResolver {

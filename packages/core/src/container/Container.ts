@@ -212,10 +212,10 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     definition: IDefinitionToken<TInstance, TLifeTime>,
-  ): ModifyDefinitionBuilder<TInstance, TLifeTime> {
+  ): ModifyDefinitionBuilder<TInstance, TLifeTime, []> {
     const configurationContext = new ContainerFreezeConfigurationContext(this.bindingsRegistry, this.instancesStore);
 
-    return new ModifyDefinitionBuilder<TInstance, TLifeTime>(
+    return new ModifyDefinitionBuilder<TInstance, TLifeTime, []>(
       'freeze',
       definition,
       containerAllowedScopes,

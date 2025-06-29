@@ -25,8 +25,8 @@ export interface IDecoratedBuilder<TInstance, TLifeTime extends LifeTime> {
   ): void;
 }
 
-export interface IModifyBuilder<TInstance, TLifeTime extends LifeTime>
-  extends IAddDefinitionBuilder<TInstance, TLifeTime>,
+export interface IModifyBuilder<TInstance, TLifeTime extends LifeTime, TDependencies extends any[] = []>
+  extends IAddDefinitionBuilder<TInstance, TLifeTime, TDependencies>,
     IConfigureBuilder<TInstance, TLifeTime>,
     IDecoratedBuilder<TInstance, TLifeTime> {}
 
