@@ -19,9 +19,22 @@ export class CascadingStrategy {
     locator: IServiceLocator & ICascadingDefinitionResolver,
     interceptor: IInterceptor,
   ): MaybeAsync<TValue> {
+    if (this.instancesStore.hasScopedInstance(definition.id)) {
+      return this.instancesStore.getScopedInstance(definition.id) as MaybeAsync<TValue>;
+    }
+
     if (this.inheritedTokens.has(definition.id)) {
       if (parent) {
-        return parent.resolve(definition);
+        const inheritedValue = parent.resolve(definition);
+
+        // TODO:
+        /*
+           - Currently we use InheritedDefinitionBuilder for decorating inherited definitions, but we need something,
+              like pipeline for actual value. The chain needs to start by passing inheritedValue
+           - after getting decorated value, we need to store it in the instancesStore in the current scope
+         */
+
+        return inheritedValue;
       } else {
         return (this.cascadingRoots.get(definition.id) ?? locator).resolveCascading(definition);
       }

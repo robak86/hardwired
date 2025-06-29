@@ -23,7 +23,7 @@ export abstract class AbstractDeferredDefinition<
 {
   private readonly _dependencies: Dependencies<TDepsTokens>;
 
-  constructor(
+  protected constructor(
     id: symbol,
     strategy: TLifeTime,
     _withArguments: TDepsTokens,

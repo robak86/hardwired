@@ -237,6 +237,27 @@ describe(`DefinitionBuilder`, () => {
             expect(await val('test')).toBe('1 - test - true');
           });
         });
+
+        describe(`overrides`, () => {
+          describe(`decorate`, () => {
+            it(`returns decorated value`, async () => {
+              const str = value('dep');
+
+              const def = singleton
+                .using(str)
+                .arg<string>()
+                .fn((n, b) => `${n} - ${b}`);
+
+              const val = container(c => {
+                c.modify(def).decorate(factory => {
+                  return str => `${factory(`${str} - decorated_arg`)} - decorated_result`;
+                });
+              }).use(def);
+
+              expect(val('param')).toBe('dep - param - decorated_arg - decorated_result');
+            });
+          });
+        });
       });
     });
 
