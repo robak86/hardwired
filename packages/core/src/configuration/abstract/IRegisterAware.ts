@@ -52,6 +52,7 @@ export interface IAddDefinitionBuilder<
   ): IAddDefinitionBuilder<TInstance, TLifetime, [...TDependencies, ...TDeps]>;
 }
 
+// TODO: IRegisterAware should not accept IDefinition (which extends IDefinitionToken) as a parameter
 export interface IRegisterAware<TAllowedLifeTime extends LifeTime> {
   add<TInstance, TLifeTime extends TAllowedLifeTime>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,

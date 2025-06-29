@@ -43,6 +43,10 @@ export class InstancesStore implements IInstancesStoreRead {
     return new InstancesStore(this, this._globalInstances, new Map(), this._rootDisposer, new CompositeDisposable());
   }
 
+  get(definitionId: symbol): MaybeAsync<unknown> | undefined {
+    return this.getRootInstance(definitionId) ?? this.getScopedInstance(definitionId);
+  }
+
   getRootInstance(definitionId: symbol): MaybeAsync<unknown> | undefined {
     return this._globalInstances.get(definitionId);
   }

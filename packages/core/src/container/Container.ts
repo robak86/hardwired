@@ -254,6 +254,10 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
   }
 
   resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
+    if (this.instancesStore.has(definition)) {
+      return this.instancesStore.get(definition.id) as MaybeAsync<TValue>;
+    }
+
     if (isDefinition(definition)) {
       const override = this.bindingsRegistry.findForDefinition(definition);
 

@@ -21,6 +21,9 @@ export class CascadingStrategy {
     locator: IServiceLocator & ICascadingDefinitionResolver,
   ): MaybeAsync<TValue> {
     // inherited values are stored as scoped instances
+
+    // TODO: this check should happen before fetching any definitions from the register (in use() and resolve() methods)
+    // The same applies for other strategies/lifetimes
     if (this.instancesStore.hasScopedInstance(definition.id)) {
       return this.instancesStore.getScopedInstance(definition.id) as MaybeAsync<TValue>;
     }
@@ -28,6 +31,8 @@ export class CascadingStrategy {
     if (this.inheritedTokens.has(definition.id)) {
       if (parent) {
         const inheritedValue = parent.resolve(definition);
+
+        console.log('parent resolve', parent.id, inheritedValue.unwrap());
 
         // override the definition in the registry with a new one that returns the inherited value
         // This approach works correctly with lazy definitions being applicative. So, one can combine inherit(),
