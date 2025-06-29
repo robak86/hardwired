@@ -150,7 +150,7 @@ describe(`ContainerConfiguration`, () => {
           expect(child.use(def)).toEqual(1);
         });
 
-        it(`works with complex hierarchies`, async () => {
+        it(`works with complex hierarchies, ex.1`, async () => {
           const def = cascading.token<number>('testCascadingDef');
           const rootFactorySpy = vi.fn(() => 0);
 
@@ -179,6 +179,68 @@ describe(`ContainerConfiguration`, () => {
           expect(child1Val).toEqual(1);
           expect(child2Val).toEqual(11);
           expect(child3Val).toEqual(111);
+
+          expect(rootFactorySpy).toHaveBeenCalledTimes(1);
+        });
+
+        it(`works with complex hierarchies, ex.2`, async () => {
+          const def = cascading.token<number>('testCascadingDef');
+          const rootFactorySpy = vi.fn(() => 0);
+
+          const cnt = container(c => {
+            c.add(def).fn(rootFactorySpy);
+          });
+
+          const child1 = cnt.scope(c => {
+            c.modify(def).inherit(val => val + 1); // here we insert scoped definition that resolves to value from cnt
+          });
+
+          const child2 = child1.scope(c => {}); // here the scoped definition is inherited from child1, but no inherit decorator is called, as it lives in child1
+
+          const child3 = child1.scope(c => {
+            c.modify(def).claimNew();
+          });
+
+          const cntVal = cnt.use(def);
+          const child1Val = child1.use(def);
+          const child2Val = child2.use(def);
+          const child3Val = child3.use(def);
+
+          expect(cntVal).toEqual(0);
+          expect(child1Val).toEqual(1);
+          expect(child2Val).toEqual(1);
+          expect(child3Val).toEqual(0);
+
+          expect(rootFactorySpy).toHaveBeenCalledTimes(2);
+        });
+
+        it(`works with complex hierarchies, ex.3`, async () => {
+          const def = cascading.token<number>('testCascadingDef');
+          const rootFactorySpy = vi.fn(() => 0);
+
+          const cnt = container(c => {
+            c.add(def).fn(rootFactorySpy);
+          });
+
+          const child1 = cnt.scope(c => {
+            c.modify(def).inherit(val => val + 1);
+          });
+
+          const child2 = child1.scope();
+
+          const child3 = child2.scope(c => {
+            c.modify(def).inherit(val => val + 100);
+          });
+
+          const cntVal = cnt.use(def);
+          const child1Val = child1.use(def);
+          const child2Val = child2.use(def);
+          const child3Val = child3.use(def);
+
+          expect(cntVal).toEqual(0);
+          expect(child1Val).toEqual(1);
+          expect(child2Val).toEqual(1);
+          expect(child3Val).toEqual(101);
 
           expect(rootFactorySpy).toHaveBeenCalledTimes(1);
         });

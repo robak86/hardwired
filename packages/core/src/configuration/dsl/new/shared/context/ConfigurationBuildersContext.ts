@@ -114,7 +114,6 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
       throw new Error(`Cannot inherit from ${builder.token.toString()}. It is already modified in the current scope.`);
     }
 
-    // this._cascadeTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
     this._inheritedTokens.add(builder.token as IDefinitionToken<unknown, LifeTime.cascading>);
 
     switch (configType) {

@@ -35,7 +35,6 @@ import type { ICompositeInterceptor, IInterceptor, InterceptorClass } from './in
 import { SingletonStrategy } from './strategies/SingletonStrategy.js';
 import { ScopedStrategy } from './strategies/ScopedStrategy.js';
 import { CompositeInterceptor, PassThroughInterceptor } from './interceptors/CompositeInterceptor.js';
-import { CascadingStrategy } from './strategies/CascadingStrategy.js';
 
 export interface Container extends UseFn<LifeTime> {}
 
@@ -125,7 +124,6 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
 
   private _singletonStrategy: SingletonStrategy;
   private _scopedStrategy: ScopedStrategy;
-  private _cascadingStrategy: CascadingStrategy;
 
   protected constructor(
     private _parent: (IContainer & ICascadingDefinitionResolver) | null,
@@ -138,7 +136,6 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
   ) {
     this._singletonStrategy = new SingletonStrategy(instancesStore);
     this._scopedStrategy = new ScopedStrategy(instancesStore);
-    this._cascadingStrategy = new CascadingStrategy(instancesStore, bindingsRegistry, inheritedTokens, cascadingRoots);
   }
 
   get parentId() {
@@ -178,7 +175,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
         const lifeCycleRegistry = new ContainerLifeCycleRegistry();
         const cascadingRoots = this.cascadingRoots.child();
 
-        const inheritedTokens = new Set<symbol>(this.inheritedTokens);
+        const inheritedTokens = new Set<symbol>();
 
         const cnt: Container = new Container(
           this,
@@ -254,13 +251,17 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
     return this.resolve(definition).unwrap() as TValue;
   }
 
+  // TODO: reorganize resolve
+  // - at the top level, we should have a switch by lifetime, that will early skip the most complex cases, like inherited tokens.
   resolve<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): MaybeAsync<TValue> {
     if (this.instancesStore.has(definition)) {
       return this.instancesStore.get(definition.id) as MaybeAsync<TValue>;
     }
 
     // whenever definition is marked as inherited, we need to resolve it from the parent container
-    if (this.inheritedTokens.has(definition.id)) {
+    const shouldInheritFromParent = this.inheritedTokens.has(definition.id);
+
+    if (shouldInheritFromParent) {
       if (!this._parent) {
         throw new Error(
           `Cannot resolve inherited token ${definition.id.toString()}. The container does not have a parent to inherit from.`,
@@ -273,38 +274,76 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
         );
       }
 
-      const inheritedValue = this._parent.resolve(definition);
-
-      this.bindingsRegistry.setDefinition(
+      // TODO: !!!!!!!!!!!!! this might mutate the configuration !!!!!!!!!!. Ideally, bindings registry should be immutable.
+      // TODO: create a separate method, or separate registry for inherited definitions.
+      // TODO: consider splitting current bindings registry into two:
+      // - definitions registry
+      // - definitions transform registry - holding lazy definitions, referencing definitions registry under the hood.
+      // - transform registry would become a facade for fetching definitions, delegating to definitions registry and applying lazy definitions.
+      this.bindingsRegistry.setInheritedDefinition(
         definition.id,
-        new Definition(definition.id, LifeTime.scoped, () => {
-          return inheritedValue;
-        }),
+        new Definition(definition.id, LifeTime.scoped, () => this._parent!.resolve(definition)),
       );
     }
 
     if (isDefinition(definition)) {
-      const override = this.bindingsRegistry.findForDefinition(definition);
+      return this.resolveDefinition(definition, shouldInheritFromParent);
+    } else {
+      return this.resolveToken(definition, shouldInheritFromParent);
+    }
+  }
 
-      if (definition.strategy === LifeTime.cascading) {
-        // When resolving cascading definition, we don't have a container root for that definition during
-        // container/scope creation compared to tokens for which the definition is set. Therefore, we need to lazily
-        // set the cascading root here.
+  private resolveToken<TValue>(
+    definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>,
+    shouldInheritFromParent: boolean,
+  ) {
+    const shouldHaveOwnInstance = this.cascadingRoots.hasOwn(definition.id) && !this.inheritedTokens.has(definition.id);
+    const patchedDefinition = this.bindingsRegistry.getByToken(definition, shouldHaveOwnInstance);
 
-        // If there is no cascading root for the definition in the whole hierarchy, we set cascading root to the root container.
-        // Otherwise, we already know which container use for resolving cascading definition as it is set in the
-        // cascadingRoots phase.
-        if (!this.cascadingRoots.has(definition.id)) {
-          this.cascadingRoots.setForRoot(definition.id, this);
-        }
-      }
+    const value = this.buildWithStrategy(patchedDefinition);
 
-      return this.buildWithStrategy(override ?? definition);
+    // since the definition is inherited, and we use scoped definition to hold the value,
+    // we need to override the definition, to the definition holding the final value.
+    if (shouldInheritFromParent) {
+      this.bindingsRegistry.setInheritedDefinition(
+        definition.id,
+        new Definition(definition.id, LifeTime.scoped, () => value),
+      );
     }
 
-    const patchedDefinition = this.bindingsRegistry.getByToken(definition);
+    return value;
+  }
 
-    return this.buildWithStrategy(patchedDefinition);
+  private resolveDefinition<TValue>(definition: IDefinition<TValue, LifeTime>, shouldInheritFromParent: boolean) {
+    const shouldHaveOwnInstance = this.cascadingRoots.hasOwn(definition.id) && !this.inheritedTokens.has(definition.id);
+
+    const override = this.bindingsRegistry.findForDefinition(definition, shouldHaveOwnInstance);
+
+    if (definition.strategy === LifeTime.cascading) {
+      // When resolving cascading definition, we don't have a container root for that definition during
+      // container/scope creation compared to tokens for which the definition is set. Therefore, we need to lazily
+      // set the cascading root here.
+
+      // If there is no cascading root for the definition in the whole hierarchy, we set cascading root to the root container.
+      // Otherwise, we already know which container use for resolving cascading definition as it is set in the
+      // cascadingRoots phase.
+      if (!this.cascadingRoots.has(definition.id)) {
+        this.cascadingRoots.setForRoot(definition.id, this);
+      }
+    }
+
+    const value = this.buildWithStrategy(override ?? definition);
+
+    // since the definition is inherited, and we use scoped definition to hold the value,
+    // we need to override the definition, to the definition holding the final value.
+    if (shouldInheritFromParent) {
+      this.bindingsRegistry.setInheritedDefinition(
+        definition.id,
+        new Definition(definition.id, LifeTime.scoped, () => value),
+      );
+    }
+
+    return value;
   }
 
   useAsync<TValue>(definition: IDefinitionToken<TValue, ValidDependenciesLifeTime<LifeTime>>): Promise<TValue> {
@@ -323,6 +362,8 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
   }
 
   resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
+    console.log('resolving cascading definition', this.id);
+
     return this._scopedStrategy.build(definition, this, this._interceptor);
   }
 
@@ -371,7 +412,11 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
       case LifeTime.scoped:
         return this._scopedStrategy.build(definition, this, this._interceptor);
       case LifeTime.cascading:
-        return this._cascadingStrategy.build(definition, this._parent, this);
+        if (this.inheritedTokens.has(definition.id)) {
+          return this.resolve(definition);
+        }
+
+        return (this.cascadingRoots.get(definition.id) ?? this).resolveCascading(definition);
     }
   }
 }

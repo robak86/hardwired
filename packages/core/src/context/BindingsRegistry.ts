@@ -13,16 +13,18 @@ import { LazyDefinitionsRegistry } from './LazyDefinitionsRegistry.js';
 export class BindingsRegistry implements IBindingsRegistryRead {
   static create(configs: IDefinitionsRegistryConfiguration[]): BindingsRegistry {
     const definitions = ScopeRegistry.root(configs.map(c => c.definitions));
+    const inheritanceDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
     const frozenDefinitions = ScopeRegistry.root(configs.map(c => c.frozenDefinitions));
     const lazyDefinitions = LazyDefinitionsRegistry.root(configs.map(c => c.lazyDefinitions));
 
-    return new BindingsRegistry(frozenDefinitions, definitions, lazyDefinitions);
+    return new BindingsRegistry(frozenDefinitions, definitions, lazyDefinitions, inheritanceDefinitions);
   }
 
   constructor(
     private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
     private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
     private _lazyDefinitions: LazyDefinitionsRegistry,
+    private _inheritanceDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
   ) {}
 
   hasOwnDefinition(definitionId: symbol): boolean {
@@ -37,6 +39,13 @@ export class BindingsRegistry implements IBindingsRegistryRead {
   //   );
   // }
 
+  setInheritedDefinition<TInstance, TLifeTime extends LifeTime>(
+    definitionId: symbol,
+    definition: IDefinition<unknown, LifeTime>,
+  ): void {
+    this._inheritanceDefinitions.append(definitionId, definition);
+  }
+
   setDefinition(definitionId: symbol, definition: IDefinition<unknown, LifeTime>): void {
     if (this._frozenDefinitions.has(definitionId)) {
       // TODO? raise some error?
@@ -50,13 +59,15 @@ export class BindingsRegistry implements IBindingsRegistryRead {
       this._frozenDefinitions.checkoutScope(configs.map(c => c.frozenDefinitions)),
       this._definitions.checkoutScope(configs.map(c => c.definitions)),
       this._lazyDefinitions.checkoutScope(configs.map(c => c.lazyDefinitions)),
+      this._inheritanceDefinitions.checkoutScope([]),
     );
   }
 
   findForDefinition<TInstance, TLifeTime extends LifeTime>(
     definition: IDefinition<TInstance, TLifeTime>,
+    skipDynamic = false,
   ): IDefinition<TInstance, TLifeTime> {
-    const overriddenDefinition = this.findByToken(definition);
+    const overriddenDefinition = this.findByToken(definition, skipDynamic);
 
     if (overriddenDefinition) {
       return overriddenDefinition;
@@ -74,8 +85,10 @@ export class BindingsRegistry implements IBindingsRegistryRead {
 
   findByToken<TInstance, TLifeTime extends LifeTime>(
     token: IDefinitionToken<TInstance, TLifeTime>,
+    skipDynamic = false,
   ): IDefinition<TInstance, TLifeTime> | undefined {
     const definition =
+      (skipDynamic ? null : (this._inheritanceDefinitions.find(token.id) as IDefinition<TInstance, TLifeTime>)) ??
       (this._frozenDefinitions.find(token.id) as IDefinition<TInstance, TLifeTime>) ??
       (this._definitions.find(token.id) as IDefinition<TInstance, TLifeTime>);
 
@@ -90,14 +103,27 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     return definition;
   }
 
+  findByTokenAndLifeTime<TInstance, TLifeTime extends LifeTime>(
+    token: IDefinitionToken<TInstance, TLifeTime>,
+  ): IDefinition<TInstance, TLifeTime> | undefined {
+    const definition = this.findByToken(token);
+
+    if (definition && definition.strategy === token.strategy) {
+      return definition;
+    }
+
+    return undefined;
+  }
+
   hasLazyDefinition<TInstance, TLifeTime extends LifeTime>(token: IDefinitionToken<TInstance, TLifeTime>): boolean {
     return this._lazyDefinitions.has(token.id);
   }
 
   getByToken<TInstance, TLifeTime extends LifeTime>(
     token: IDefinitionToken<TInstance, TLifeTime>,
+    skipDynamic = false,
   ): IDefinition<TInstance, TLifeTime> {
-    const definition = this.findByToken(token);
+    const definition = this.findByToken(token, skipDynamic);
 
     if (!definition) {
       throw new Error(`Cannot find definition for ${token.toString()}. Make sure the definition symbol is registered.`);
