@@ -4,8 +4,8 @@ import { ConfiguredDefinitionBuilder } from '../utils/ConfiguredDefinitionBuilde
 import { DecoratedDefinitionBuilder } from '../utils/DecoratedDefinitionBuilder.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
+import type { AwaitedInstanceArray } from '../../../../container/Container.js';
 
-import type { InstancesTokens } from './AddDefinitionBuilder.js';
 import { AddDefinitionBuilder } from './AddDefinitionBuilder.js';
 
 // TODO: we need to constraint allowed types that can be injected to configure and decorate functions
@@ -15,81 +15,44 @@ export class ModifyDefinitionBuilder<
     TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
   >
   extends AddDefinitionBuilder<TInstance, TLifeTime, TDependencies>
-  implements IModifyBuilder<TInstance, TLifeTime>
+  implements IModifyBuilder<TInstance, TLifeTime, TDependencies>
 {
-  configure(configureFn: (instance: Awaited<TInstance>) => ConfigureResult<TInstance>): void;
-  configure<TArgs extends any[]>(
-    dependencies: InstancesTokens<TArgs, TLifeTime>,
-    configureFn: (instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>,
-  ): void;
-  configure<TArgs extends any[]>(
-    dependenciesOrConfigureFn:
-      | InstancesTokens<TArgs, TLifeTime>
-      | ((instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>),
-    configureFn?: (instance: Awaited<TInstance>, ...args: TArgs) => ConfigureResult<TInstance>,
-  ) {
-    if (configureFn && Array.isArray(dependenciesOrConfigureFn)) {
-      const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
-        this._token as any, // TODO
-        dependenciesOrConfigureFn,
-        configureFn,
-      );
-
-      this._context.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
-
-      return;
-    }
-
-    if (typeof dependenciesOrConfigureFn === 'function') {
-      const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
-        this._token as any, // TODO,
-        [] as InstancesTokens<TArgs, TLifeTime>,
-        dependenciesOrConfigureFn,
-      );
-
-      this._context.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
-
-      return;
-    }
-
-    throw new Error('Invalid params');
+  using<TDeps extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
+    ...deps: TDeps
+  ): IModifyBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]> {
+    return new ModifyDefinitionBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]>(
+      this._configType,
+      this._token,
+      this._allowedLifeTimes,
+      this._context,
+      [...this._dependencies, ...deps],
+    );
   }
 
-  decorate(decorateFn: (instance: Awaited<TInstance>) => TInstance): void;
-  decorate<TArgs extends any[]>(
-    dependencies: InstancesTokens<TArgs, TLifeTime>,
-    decorateFn: (instance: Awaited<TInstance>, ...args: TArgs) => TInstance,
-  ): void;
-  decorate<TArgs extends any[]>(
-    dependenciesOrDecorateFn:
-      | InstancesTokens<TArgs, TLifeTime>
-      | ((instance: Awaited<TInstance>, ...args: TArgs) => TInstance),
-    decorateFn?: (instance: Awaited<TInstance>, ...args: TArgs) => TInstance,
-  ) {
-    if (decorateFn && Array.isArray(dependenciesOrDecorateFn)) {
-      const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
-        this._token as any, // TODO
-        dependenciesOrDecorateFn,
-        decorateFn as any, // TODO,
-      );
+  configure(
+    configureFn: (
+      instance: Awaited<TInstance>,
+      ...deps: AwaitedInstanceArray<TDependencies>
+    ) => ConfigureResult<TInstance>,
+  ): void {
+    const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
+      this._token as any, // TODO
+      this._dependencies as any, // TODO
+      configureFn,
+    );
 
-      this._context.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
+    this._context.onConfigureBuilder(this._configType, configuredDefinitionBuilder);
+  }
 
-      return;
-    }
+  decorate(
+    decorateFn: (instance: Awaited<TInstance>, ...deps: AwaitedInstanceArray<TDependencies>) => TInstance,
+  ): void {
+    const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
+      this._token as any, // TODO
+      this._dependencies as any, // TODO
+      decorateFn as any, // TODO,
+    );
 
-    if (typeof dependenciesOrDecorateFn === 'function') {
-      const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
-        this._token as any, // TODO
-        [] as InstancesTokens<TArgs, TLifeTime>,
-        dependenciesOrDecorateFn as any, // TODO
-      );
-
-      this._context.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
-
-      return;
-    }
-
-    throw new Error('Invalid params');
+    this._context.onDecorateBuilder(this._configType, decoratedDefinitionBuilder);
   }
 }

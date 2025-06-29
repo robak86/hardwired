@@ -15,6 +15,7 @@ import { ContainerFreezeConfigurationContext } from '../configuration/dsl/new/sh
 import type { IContainerConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
 import { ContainerLifeCycleRegistry } from '../lifecycle/ILifeCycleRegistry.js';
+import type { UnwrapMaybePromise } from '../utils/MaybeAsync.js';
 import { MaybeAsync } from '../utils/MaybeAsync.js';
 import { ContainerConfigurationBuilder } from '../configuration/dsl/new/container/ContainerConfigurationBuilder.js';
 import { ScopeConfigurationBuilder } from '../configuration/dsl/new/scope/ScopeConfigurationBuilder.js';
@@ -63,7 +64,7 @@ export type ContainerAllReturn<TDefinitions extends Array<IDefinitionToken<any, 
 export type AwaitedInstance<T extends IDefinitionToken<Promise<any>, any>> =
   T extends IDefinitionToken<Promise<infer TInstance>, any> ? TInstance : Instance<T>;
 
-export type AwaitedInstanceArray<T extends Array<IDefinitionToken<Promise<any>, any>>> = {
+export type AwaitedInstanceArray<T extends Array<IDefinitionToken<UnwrapMaybePromise<any>, any>>> = {
   [K in keyof T]: AwaitedInstance<T[K]>;
 };
 
@@ -220,6 +221,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
       definition,
       containerAllowedScopes,
       configurationContext,
+      [],
     );
   }
 

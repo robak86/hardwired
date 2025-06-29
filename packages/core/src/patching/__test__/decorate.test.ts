@@ -34,9 +34,9 @@ describe(`decorate`, () => {
       c.add(b).static(2);
       c.add(someValueAsync).fn(async () => 10);
 
-      c.modify(someValueAsync).decorate([a, b], async (val, aVal, bVal) => {
-        return val + aVal + bVal;
-      });
+      c.modify(someValueAsync)
+        .using(a, b)
+        .decorate(async (val, aVal, bVal) => val + aVal + bVal);
     });
 
     expect(await c.use(someValueAsync)).toEqual(13);

@@ -31,6 +31,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
         symbol as IDefinitionToken<TInstance, LifeTime.cascading>,
         this._cascadingModifyAllowedLifeTimes,
         this._context,
+        [],
       ) as any;
     } else {
       return new ModifyDefinitionBuilder<TInstance, TLifeTime, []>(
@@ -38,6 +39,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
         symbol,
         this._modifyAllowedLifeTimes,
         this._context,
+        [],
       ) as any;
     }
   }
@@ -55,7 +57,7 @@ export class ScopeConfigurationBuilder implements IScopeConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionToken<TInstance, TLifeTime>,
   ): AddDefinitionBuilder<TInstance, TLifeTime, []> {
-    return new AddDefinitionBuilder('add', symbol, this._allowedRegistrationLifeTimes, this._context);
+    return new AddDefinitionBuilder('add', symbol, this._allowedRegistrationLifeTimes, this._context, []);
   }
 
   onDispose(callback: (scope: IContainer) => void): void {

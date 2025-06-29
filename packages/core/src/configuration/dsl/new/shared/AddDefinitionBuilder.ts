@@ -28,6 +28,7 @@ export class AddDefinitionBuilder<
     protected readonly _token: IDefinitionToken<TInstance, TLifeTime>,
     protected readonly _allowedLifeTimes: LifeTime[],
     protected readonly _context: IConfigurationContext,
+    protected readonly _dependencies: TDependencies,
   ) {
     this.assertValidLifeTime();
   }
@@ -35,7 +36,13 @@ export class AddDefinitionBuilder<
   using<TDeps extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
     ...deps: TDeps
   ): IAddDefinitionBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]> {
-    throw new Error('Method not implemented.');
+    return new AddDefinitionBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]>(
+      this._configType,
+      this._token,
+      this._allowedLifeTimes,
+      this._context,
+      [...this._dependencies, ...deps],
+    );
   }
 
   private assertValidLifeTime() {

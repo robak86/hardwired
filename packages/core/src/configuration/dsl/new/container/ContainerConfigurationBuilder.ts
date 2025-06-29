@@ -40,7 +40,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   modify<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,
-  ): IModifyBuilder<TInstance, TLifeTime> {
+  ): IModifyBuilder<TInstance, TLifeTime, []> {
     const allowedLifeTimes =
       symbol.strategy === LifeTime.cascading ? this._allowedCascadingModifyLifeTimes : this._allowedModifyLifeTimes;
 
@@ -49,19 +49,20 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
       symbol,
       allowedLifeTimes,
       this._context,
-    ) as IModifyBuilder<TInstance, TLifeTime>;
+      [],
+    ) as IModifyBuilder<TInstance, TLifeTime, []>;
   }
 
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime, []> {
-    return new ModifyDefinitionBuilder('freeze', symbol, this._allowedRegisterLifeTimes, this._context);
+    return new ModifyDefinitionBuilder('freeze', symbol, this._allowedRegisterLifeTimes, this._context, []);
   }
 
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionToken<TInstance, TLifeTime>,
   ): IAddDefinitionBuilder<TInstance, TLifeTime, []> {
-    return new AddDefinitionBuilder('add', symbol, this._allowedRegisterLifeTimes, this._context);
+    return new AddDefinitionBuilder('add', symbol, this._allowedRegisterLifeTimes, this._context, []);
   }
 
   withInterceptor(interceptor: InterceptorClass<IInterceptor>): void {
@@ -86,7 +87,7 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
 
   lazy<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
     def: IDefinitionToken<TInstance, TLifeTime>,
-  ): IConfigureBuilder<TInstance, TLifeTime> {
+  ): IConfigureBuilder<TInstance, TLifeTime, []> {
     throw new Error('Implement me!');
     // this._initializationFns.push(() => {
     //   const instance = this._currentContainer.use(symbol);

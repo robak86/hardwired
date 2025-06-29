@@ -40,9 +40,11 @@ describe(`configure`, () => {
       c.add(b).static(new BoxedValue(2));
       c.add(someValue).fn(() => new BoxedValue(10));
 
-      c.modify(someValue).configure([a, b], (val, aVal, bVal) => {
-        val.value = val.value + aVal.value + bVal.value;
-      });
+      c.modify(someValue)
+        .using(a, b)
+        .configure((val, aVal, bVal) => {
+          val.value = val.value + aVal.value + bVal.value;
+        });
     });
 
     expect(c.use(someValue).value).toEqual(13);
