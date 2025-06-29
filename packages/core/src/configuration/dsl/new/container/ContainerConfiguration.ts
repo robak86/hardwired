@@ -6,10 +6,13 @@ import type { IInterceptor, InterceptorClass } from '../../../../container/inter
 import type { LazyDefinitionsRegistry } from '../../../../context/LazyDefinitionsRegistry.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
-export interface IBindingsRegistryConfiguration {
+export interface IDefinitionsRegistryConfiguration {
   readonly definitions: ScopeRegistry<IDefinition<unknown, LifeTime>>;
   readonly frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>;
   readonly lazyDefinitions: LazyDefinitionsRegistry;
+}
+
+export interface ICascadingDefinitionsConfiguration {
   readonly cascadingTokens: Set<IDefinitionToken<any, LifeTime.cascading>>;
   readonly inheritedTokens: Set<IDefinitionToken<unknown, LifeTime.cascading>>;
 }
@@ -23,7 +26,8 @@ export interface IInterceptorsConfiguration {
 }
 
 export interface IContainerConfiguration
-  extends IBindingsRegistryConfiguration,
+  extends ICascadingDefinitionsConfiguration,
+    IDefinitionsRegistryConfiguration,
     ILifecycleConfiguration,
     IInterceptorsConfiguration {}
 

@@ -137,7 +137,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
   ) {
     this._singletonStrategy = new SingletonStrategy(instancesStore);
     this._scopedStrategy = new ScopedStrategy(instancesStore);
-    this._cascadingStrategy = new CascadingStrategy(instancesStore, inheritedTokens, cascadingRoots);
+    this._cascadingStrategy = new CascadingStrategy(instancesStore, bindingsRegistry, inheritedTokens, cascadingRoots);
   }
 
   get parentId() {

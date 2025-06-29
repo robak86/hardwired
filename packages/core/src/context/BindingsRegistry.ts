@@ -1,17 +1,17 @@
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
-import type { IBindingsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
+import type { IDefinitionsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
 import type { ILazyDefinitionBuilder } from '../configuration/dsl/new/utils/abstract/ILazyDefinitionBuilder.js';
 import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
-import type { IReadonlyScopeRegistry } from './ScopeRegistry.js';
 import { ScopeRegistry } from './ScopeRegistry.js';
 import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js';
 import { LazyDefinitionsRegistry } from './LazyDefinitionsRegistry.js';
 
+// TODO: rename to DefinitionsRegistry
 export class BindingsRegistry implements IBindingsRegistryRead {
-  static create(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
+  static create(configs: IDefinitionsRegistryConfiguration[]): BindingsRegistry {
     const definitions = ScopeRegistry.root(configs.map(c => c.definitions));
     const frozenDefinitions = ScopeRegistry.root(configs.map(c => c.frozenDefinitions));
     const lazyDefinitions = LazyDefinitionsRegistry.root(configs.map(c => c.lazyDefinitions));
@@ -21,11 +21,19 @@ export class BindingsRegistry implements IBindingsRegistryRead {
 
   constructor(
     private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
-    private _definitions: IReadonlyScopeRegistry<IDefinition<unknown, LifeTime>>,
+    private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
     private _lazyDefinitions: LazyDefinitionsRegistry,
   ) {}
 
-  checkoutForScope(configs: IBindingsRegistryConfiguration[]): BindingsRegistry {
+  setDefinition(definitionId: symbol, definition: IDefinition<unknown, LifeTime>): void {
+    if (this._frozenDefinitions.has(definitionId)) {
+      // TODO? raise some error?
+    }
+
+    this._definitions.append(definitionId, definition);
+  }
+
+  checkoutForScope(configs: IDefinitionsRegistryConfiguration[]): BindingsRegistry {
     return new BindingsRegistry(
       this._frozenDefinitions.checkoutScope(configs.map(c => c.frozenDefinitions)),
       this._definitions.checkoutScope(configs.map(c => c.definitions)),

@@ -1,14 +1,17 @@
 import type { InstancesStore } from '../../context/InstancesStore.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
-import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
+import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver, IServiceLocator } from '../IContainer.js';
 import type { IInterceptor } from '../interceptors/interceptor.js';
 import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 import type { HierarchicalMap } from '../../context/HierarchicalMap.js';
+import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
+import { Definition } from '../../definitions/impl/Definition.js';
 
 export class CascadingStrategy {
   constructor(
     protected instancesStore: InstancesStore,
+    protected definitionsRegistry: BindingsRegistry,
     private inheritedTokens: Set<symbol>,
     private cascadingRoots: HierarchicalMap<ICascadingDefinitionResolver>,
   ) {}
@@ -27,14 +30,14 @@ export class CascadingStrategy {
       if (parent) {
         const inheritedValue = parent.resolve(definition);
 
-        // TODO:
-        /*
-           - Currently we use InheritedDefinitionBuilder for decorating inherited definitions, but we need something,
-              like pipeline for actual value. The chain needs to start by passing inheritedValue
-           - after getting decorated value, we need to store it in the instancesStore in the current scope
-         */
+        this.definitionsRegistry.setDefinition(
+          definition.id,
+          new Definition(definition.id, LifeTime.scoped, () => {
+            return inheritedValue;
+          }),
+        );
 
-        return inheritedValue;
+        return locator.resolve(definition);
       } else {
         return (this.cascadingRoots.get(definition.id) ?? locator).resolveCascading(definition);
       }
