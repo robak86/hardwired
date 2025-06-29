@@ -342,7 +342,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
       case LifeTime.scoped:
         return this._scopedStrategy.build(definition, this, this._interceptor);
       case LifeTime.cascading:
-        return this._cascadingStrategy.build(definition, this._parent, this, this._interceptor);
+        return this._cascadingStrategy.build(definition, this._parent, this);
     }
   }
 }

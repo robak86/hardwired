@@ -103,11 +103,11 @@ describe(`ContainerConfiguration`, () => {
             scope.modify(def).inherit(value => [...value, 'inherited']);
           });
 
-          root.id = 'root';
-          scope.id = 'scope';
-
           expect(root.use(def)).toEqual(['root', expect.any(Number)]);
           expect(scope.use(def)).toEqual(['root', expect.any(Number), 'inherited']);
+
+          root.use(def);
+          scope.use(def);
 
           root.use(def);
           scope.use(def);
@@ -207,12 +207,33 @@ describe(`ContainerConfiguration`, () => {
           });
 
           const child = cnt.scope(c => {
-            c.modify(def).inherit(val => val + 1);
             c.modify(def).decorate(val => val + 1);
+            c.modify(def).inherit(val => val + 1);
           });
 
           expect(cnt.use(def)).toEqual(0);
           expect(child.use(def)).toEqual(2);
+        });
+
+        it(`works with freeze`, async () => {
+          const def = cascading.token<number>('testCascadingDef');
+          const frozenDefFactorySpy = vi.fn(() => 123);
+
+          const scopeConfig = configureScope(c => {
+            c.modify(def).decorate(val => val + 1);
+            c.modify(def).inherit(val => val + 1);
+          });
+
+          const cnt = container(c => {
+            c.freeze(def).fn(frozenDefFactorySpy);
+          });
+
+          const child = cnt.scope(scopeConfig);
+
+          expect(cnt.use(def)).toEqual(123);
+          expect(child.use(def)).toEqual(123);
+
+          expect(frozenDefFactorySpy).toHaveBeenCalledTimes(1);
         });
       });
 

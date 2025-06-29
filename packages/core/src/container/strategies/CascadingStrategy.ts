@@ -2,7 +2,6 @@ import type { InstancesStore } from '../../context/InstancesStore.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { ICascadingDefinitionResolver, IServiceLocator } from '../IContainer.js';
-import type { IInterceptor } from '../interceptors/interceptor.js';
 import type { MaybeAsync } from '../../utils/MaybeAsync.js';
 import type { HierarchicalMap } from '../../context/HierarchicalMap.js';
 import type { BindingsRegistry } from '../../context/BindingsRegistry.js';
@@ -20,8 +19,8 @@ export class CascadingStrategy {
     definition: IDefinition<TValue, LifeTime>,
     parent: (IServiceLocator & ICascadingDefinitionResolver) | null,
     locator: IServiceLocator & ICascadingDefinitionResolver,
-    interceptor: IInterceptor,
   ): MaybeAsync<TValue> {
+    // inherited values are stored as scoped instances
     if (this.instancesStore.hasScopedInstance(definition.id)) {
       return this.instancesStore.getScopedInstance(definition.id) as MaybeAsync<TValue>;
     }
@@ -30,6 +29,9 @@ export class CascadingStrategy {
       if (parent) {
         const inheritedValue = parent.resolve(definition);
 
+        // override the definition in the registry with a new one that returns the inherited value
+        // This approach works correctly with lazy definitions being applicative. So, one can combine inherit(),
+        // with other definitions modifiers like .decorate() or .configure()
         this.definitionsRegistry.setDefinition(
           definition.id,
           new Definition(definition.id, LifeTime.scoped, () => {
