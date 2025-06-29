@@ -55,4 +55,3 @@ export type { IDefinitionToken } from './definitions/DefinitionToken.js';
 
 export * from './definitions/builders/ArgumentPlaceholderToken.js';
 export * from './definitions/builders/DefinitionBuilder.js';
-export type * from './definitions/builders/DefinitionBuilderDependencies.js';
