@@ -5,7 +5,7 @@ import { ClassDefinition } from '../../../../definitions/impl/ClassDefinition.js
 import { FnDefinition } from '../../../../definitions/impl/FnDefinition.js';
 import { Definition } from '../../../../definitions/impl/Definition.js';
 import type { IServiceLocator } from '../../../../container/IContainer.js';
-import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
+import type { FilterDepsByInstanceType, IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
 import type { FinalizerOrVoid } from '../../../abstract/IDisposeFinalizer.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
@@ -33,8 +33,8 @@ export class AddDefinitionBuilder<
     this.assertValidLifeTime();
   }
 
-  using<TDeps extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
-    ...deps: TDeps
+  using<TDeps extends readonly IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
+    ...deps: FilterDepsByInstanceType<TInstance, TLifeTime, TDeps>
   ): IAddDefinitionBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]> {
     return new AddDefinitionBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]>(
       this._configType,

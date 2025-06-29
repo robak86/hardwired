@@ -22,6 +22,23 @@ describe(`ContainerConfiguration`, () => {
 
         expect(cnt.use(def)).toMatchObject({ value: 789 });
       });
+
+      it(`doesn't allow async dependencies for sync definition`, async () => {
+        const def = cascading.token<BoxedValue<number>>('testCascadingDef');
+        const def1 = cascading.fn(() => new BoxedValue(123));
+        const def2 = cascading.fn(async () => 123);
+        const def3 = cascading.fn(async () => 123);
+
+        container(c => {
+          // @ts-expect-error async definition cannot be used as dependency for sync definition
+          c.add(def).using(def2);
+        });
+
+        container(c => {
+          // @ts-expect-error async definition cannot be used as dependency for sync definition
+          c.add(def).using(def1, def3);
+        });
+      });
     });
   });
 
@@ -74,6 +91,7 @@ describe(`ContainerConfiguration`, () => {
       describe(`inherit`, () => {
         it(`inherits value from the parent scope`, async () => {
           const def = cascading.token<string>('testCascadingDef');
+          const rootFactorySpy = vi.fn(() => 'root');
 
           const scopeConfig = configureScope(scope => {
             scope.modify(def).inherit(value => {
@@ -81,13 +99,15 @@ describe(`ContainerConfiguration`, () => {
             });
           });
 
-          const root = container(c => c.add(def).static('root'));
+          const root = container(c => c.add(def).fn(rootFactorySpy));
 
           expect(root.use(def)).toEqual('root');
 
           const scope = root.scope(scopeConfig);
 
           expect(scope.use(def)).toEqual('root_inherited');
+
+          expect(rootFactorySpy).toHaveBeenCalledTimes(1);
         });
 
         it(`uses memoized cascading value from container ancestors`, async () => {
@@ -128,6 +148,32 @@ describe(`ContainerConfiguration`, () => {
 
           expect(cnt.use(def)).toEqual(0);
           expect(child.use(def)).toEqual(1);
+        });
+
+        it(`works with complex hierarchies`, async () => {
+          const def = cascading.token<number>('testCascadingDef');
+          const rootFactorySpy = vi.fn(() => 0);
+
+          const cnt = container(c => {
+            c.add(def).fn(rootFactorySpy);
+          });
+
+          const child1 = cnt.scope(c => {
+            c.modify(def).inherit(val => val + 1);
+          });
+
+          const child2 = child1.scope(c => {
+            c.modify(def).inherit(val => val + 10);
+          });
+
+          const child3 = child2.scope(c => {
+            c.modify(def).inherit(val => val + 100);
+          });
+
+          expect(cnt.use(def)).toEqual(0);
+          expect(child1.use(def)).toEqual(1);
+          expect(child2.use(def)).toEqual(11);
+          expect(child3.use(def)).toEqual(111);
         });
 
         it(`works with onDispose`, async () => {

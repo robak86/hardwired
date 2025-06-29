@@ -5,6 +5,7 @@ import { DecoratedDefinitionBuilder } from '../utils/DecoratedDefinitionBuilder.
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AwaitedInstanceArray } from '../../../../container/Container.js';
+import type { FilterDepsByInstanceType } from '../../../abstract/IRegisterAware.js';
 
 import { AddDefinitionBuilder } from './AddDefinitionBuilder.js';
 
@@ -17,8 +18,8 @@ export class ModifyDefinitionBuilder<
   extends AddDefinitionBuilder<TInstance, TLifeTime, TDependencies>
   implements IModifyBuilder<TInstance, TLifeTime, TDependencies>
 {
-  using<TDeps extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
-    ...deps: TDeps
+  using<TDeps extends readonly IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
+    ...deps: FilterDepsByInstanceType<TInstance, TLifeTime, TDeps>
   ): IModifyBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]> {
     return new ModifyDefinitionBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]>(
       this._configType,

@@ -11,6 +11,21 @@ export type AwaitedArray<T extends any[]> = {
   [K in keyof T]: T[K] extends Promise<infer U> ? U : T[K];
 };
 
+export type AllowedDependencyFor<TInstance, TLifetime extends LifeTime, T> =
+  TInstance extends Promise<any>
+    ? T extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifetime>>
+      ? T
+      : never
+    : T extends IDefinitionToken<infer R, ValidDependenciesLifeTime<TLifetime>>
+      ? R extends Promise<any>
+        ? never
+        : T
+      : never;
+
+export type FilterDepsByInstanceType<TInstance, TLifetime extends LifeTime, TDeps extends readonly any[]> = {
+  [K in keyof TDeps]: AllowedDependencyFor<TInstance, TLifetime, TDeps[K]>;
+};
+
 export interface IAddDefinitionBuilder<
   TInstance,
   TLifetime extends LifeTime,
@@ -32,8 +47,8 @@ export interface IAddDefinitionBuilder<
 
   asyncLocator(fn: (container: IServiceLocator) => Promise<TInstance>): FinalizerOrVoid<TInstance, TLifetime>;
 
-  using<TDeps extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifetime>>[]>(
-    ...deps: TDeps
+  using<TDeps extends readonly IDefinitionToken<any, ValidDependenciesLifeTime<TLifetime>>[]>(
+    ...deps: FilterDepsByInstanceType<TInstance, TLifetime, TDeps>
   ): IAddDefinitionBuilder<TInstance, TLifetime, [...TDependencies, ...TDeps]>;
 }
 

@@ -3,7 +3,7 @@ import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 import type { ValidDependenciesLifeTime } from '../../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AwaitedInstanceArray } from '../../container/Container.js';
 
-import type { IAddDefinitionBuilder } from './IRegisterAware.js';
+import type { FilterDepsByInstanceType, IAddDefinitionBuilder } from './IRegisterAware.js';
 import type { IDisposeFinalizer } from './IDisposeFinalizer.js';
 
 export type ConfigureResult<TInstance> = TInstance extends Promise<any> ? Promise<void> | void : void;
@@ -36,8 +36,8 @@ export interface IModifyBuilder<
 > extends IAddDefinitionBuilder<TInstance, TLifeTime, TDependencies>,
     IConfigureBuilder<TInstance, TLifeTime, TDependencies>,
     IDecoratedBuilder<TInstance, TLifeTime, TDependencies> {
-  using<TDeps extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
-    ...deps: TDeps
+  using<TDeps extends readonly IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
+    ...deps: FilterDepsByInstanceType<TInstance, TLifeTime, TDeps>
   ): IModifyBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]>;
 }
 
