@@ -9,10 +9,12 @@ import type { IInterceptor, InterceptorClass } from '../../../../container/inter
 import { ModifyDefinitionBuilder } from '../shared/ModifyDefinitionBuilder.js';
 import { AddDefinitionBuilder } from '../shared/AddDefinitionBuilder.js';
 import type { IAddDefinitionBuilder } from '../../../abstract/IRegisterAware.js';
-import type { IConfigureBuilder, IModifyBuilder } from '../../../abstract/IModifyAware.js';
+import type { IModifyBuilder } from '../../../abstract/IModifyAware.js';
 import { ConfigurationBuildersContext } from '../shared/context/ConfigurationBuildersContext.js';
-import type { IEagerConfigurable } from '../../../abstract/IEagerInstantiationAware.js';
 import type { DefinitionToken, IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
+import type { ScopeConfigureAllowedLifeTimes } from '../../../abstract/IScopeConfigurable.js';
+import type { IInitBuilder } from '../../../abstract/IInitBuilder.js';
+import { InitDefinitionBuilder } from '../shared/InitDefinitionBuilder.js';
 
 import { type IContainerConfiguration } from './ContainerConfiguration.js';
 
@@ -29,6 +31,12 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     LifeTime.scoped,
     LifeTime.transient,
     LifeTime.singleton,
+    LifeTime.cascading,
+  ];
+
+  private readonly _initAllowedLifeTimes: ScopeConfigureAllowedLifeTimes[] = [
+    LifeTime.scoped,
+    LifeTime.transient,
     LifeTime.cascading,
   ];
 
@@ -62,7 +70,13 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
   add<TInstance, TLifeTime extends LifeTime>(
     symbol: DefinitionToken<TInstance, TLifeTime>,
   ): IAddDefinitionBuilder<TInstance, TLifeTime, []> {
-    return new AddDefinitionBuilder('add', symbol, this._allowedRegisterLifeTimes, this._context, []);
+    return new AddDefinitionBuilder<TInstance, TLifeTime, []>(
+      'add',
+      symbol,
+      this._allowedRegisterLifeTimes,
+      this._context,
+      [],
+    );
   }
 
   withInterceptor(interceptor: InterceptorClass<IInterceptor>): void {
@@ -79,22 +93,10 @@ export class ContainerConfigurationBuilder implements IContainerConfigurable {
     this._context.onDispose(callback);
   }
 
-  eager<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
-    def: IDefinitionToken<TInstance, TLifeTime>,
-  ): IEagerConfigurable<TInstance, TLifeTime> {
-    throw new Error('Implement me!');
-  }
-
-  lazy<TInstance, TLifeTime extends ContainerConfigurationAllowedRegistrationLifeTimes>(
-    def: IDefinitionToken<TInstance, TLifeTime>,
-  ): IConfigureBuilder<TInstance, TLifeTime, []> {
-    throw new Error('Implement me!');
-    // this._initializationFns.push(() => {
-    //   const instance = this._currentContainer.use(symbol);
-    //
-    //   return maybePromiseThen(instance, awaitedInstance => {
-    //     return configureFn(awaitedInstance);
-    //   });
-    // });
+  // TODO: for scope configuration we shouldn't allow initialization of singleton
+  init<TInstance, TLifeTime extends LifeTime>(
+    token: IDefinitionToken<TInstance, TLifeTime>,
+  ): IInitBuilder<TInstance, TLifeTime, []> {
+    return new InitDefinitionBuilder<TInstance, TLifeTime, []>(token, this._initAllowedLifeTimes, this._context, []);
   }
 }

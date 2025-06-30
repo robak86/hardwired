@@ -13,16 +13,6 @@ import { configureScope } from '../ScopeConfiguration.js';
 describe(`ContainerConfiguration`, () => {
   describe.skip(`eager`, () => {
     describe('types', () => {
-      it(`allows using async functions for decorate and configure`, async () => {
-        const def = cascading.token<BoxedValue<number>>('testCascadingDef');
-
-        const cnt = container(c => {
-          c.eager(def).decorate(async val => val);
-        });
-
-        expect(cnt.use(def)).toMatchObject({ value: 789 });
-      });
-
       it(`doesn't allow async dependencies for sync definition`, async () => {
         const def = cascading.token<BoxedValue<number>>('testCascadingDef');
         const def1 = cascading.fn(() => new BoxedValue(123));

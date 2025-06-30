@@ -6,7 +6,7 @@ import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 
 import type { IRegisterAware } from './IRegisterAware.js';
 import type { IContainerModifyAware } from './IModifyAware.js';
-import type { IEagerInstantiationAware } from './IEagerInstantiationAware.js';
+import type { IInitBuilder } from './IInitBuilder.js';
 
 export type ContainerConfigureFreezeLifeTimes =
   | LifeTime.transient
@@ -30,8 +30,7 @@ export type DisposeFn = (container: UseFn<any>) => void;
 
 export interface IContainerConfigurable
   extends IRegisterAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
-    IContainerModifyAware<ContainerConfigurationAllowedRegistrationLifeTimes>,
-    IEagerInstantiationAware<EagerInstantiable> {
+    IContainerModifyAware<ContainerConfigurationAllowedRegistrationLifeTimes> {
   onDispose(callback: (scope: IContainer) => void): void;
 
   onDisposeAsync(callback: (scope: IContainer) => Promise<void>): void;
@@ -41,4 +40,8 @@ export interface IContainerConfigurable
   freeze<TInstance, TLifeTime extends ContainerConfigureFreezeLifeTimes>(
     symbol: IDefinitionToken<TInstance, TLifeTime>,
   ): ModifyDefinitionBuilder<TInstance, TLifeTime, []>;
+
+  init<TInstance, TLifeTime extends LifeTime>(
+    token: IDefinitionToken<TInstance, TLifeTime>,
+  ): IInitBuilder<TInstance, TLifeTime, []>;
 }
