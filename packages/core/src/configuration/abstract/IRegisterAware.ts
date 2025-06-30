@@ -1,9 +1,9 @@
 import type { LifeTime } from '../../definitions/abstract/LifeTime.js';
-import type { InstancesTokens } from '../dsl/new/shared/AddDefinitionBuilder.js';
 import type { ClassType } from '../../definitions/utils/class-type.js';
 import type { IServiceLocator } from '../../container/IContainer.js';
 import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 import type { ValidDependenciesLifeTime } from '../../definitions/abstract/InstanceDefinitionDependency.js';
+import type { AwaitedInstanceArray } from '../../container/Container.js';
 
 import type { FinalizerOrVoid } from './IDisposeFinalizer.js';
 
@@ -31,15 +31,9 @@ export interface IAddDefinitionBuilder<
   TLifetime extends LifeTime,
   TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifetime>>[],
 > {
-  class<TConstructorArgs extends any[]>(
-    klass: ClassType<TInstance, TConstructorArgs>,
-    ...dependencies: InstancesTokens<TConstructorArgs, TLifetime>
-  ): FinalizerOrVoid<TInstance, TLifetime>;
+  class(klass: ClassType<TInstance, AwaitedInstanceArray<TDependencies>>): FinalizerOrVoid<TInstance, TLifetime>;
 
-  fn<TArgs extends any[]>(
-    fn: (...args: AwaitedArray<TArgs>) => TInstance,
-    ...dependencies: InstancesTokens<TArgs, TLifetime>
-  ): FinalizerOrVoid<TInstance, TLifetime>;
+  fn(fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance): FinalizerOrVoid<TInstance, TLifetime>;
 
   static(value: TInstance): FinalizerOrVoid<TInstance, TLifetime>;
 

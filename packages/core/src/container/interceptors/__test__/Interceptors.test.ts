@@ -42,8 +42,12 @@ describe(`interceptor`, () => {
       const cnt = container(c => {
         c.add(c1Def).fn(() => 'C1');
         c.add(c2Def).fn(() => 'C2');
-        c.add(bDef).fn((c1, c2) => ['B', c1, c2], c1Def, c2Def);
-        c.add(aDef).fn(b => ['A', b], bDef);
+        c.add(bDef)
+          .using(c1Def, c2Def)
+          .fn((c1, c2) => ['B', c1, c2]);
+        c.add(aDef)
+          .using(bDef)
+          .fn(b => ['A', b]);
 
         c.withInterceptor(TestInterceptor);
       });
@@ -101,8 +105,12 @@ describe(`interceptor`, () => {
       const cnt = container(c => {
         c.add(c1DefAsync).fn(async () => 'C1');
         c.add(c2DefAsync).fn(async () => 'C2');
-        c.add(bDefAsync).fn(async (c1, c2) => ['B', c1, c2], c1DefAsync, c2DefAsync);
-        c.add(aDefAsync).fn(async b => ['A', b], bDefAsync);
+        c.add(bDefAsync)
+          .using(c1DefAsync, c2DefAsync)
+          .fn(async (c1, c2) => ['B', c1, c2]);
+        c.add(aDefAsync)
+          .using(bDefAsync)
+          .fn(async b => ['A', b]);
 
         c.withInterceptor(TestInterceptor);
       });

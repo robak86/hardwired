@@ -42,7 +42,7 @@ describe(`ReactLifeCycleInterceptor`, () => {
     c.add(noLifeCyclesD).class(NoLifeCycles);
     c.add(childSvc1D).class(ChildSvc1);
     c.add(childSvc2D).class(ChildSvc2);
-    c.add(service1D).class(Service1, childSvc1D, childSvc2D, noLifeCyclesD);
+    c.add(service1D).using(childSvc1D, childSvc2D, noLifeCyclesD).class(Service1);
   });
 
   function setup() {

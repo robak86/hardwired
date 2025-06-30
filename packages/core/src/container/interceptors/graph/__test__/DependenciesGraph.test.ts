@@ -13,8 +13,12 @@ describe(`DependenciesGraph`, () => {
     const cnt = container(c => {
       c.add(c1Def).fn(() => 'C1');
       c.add(c2Def).fn(() => 'C2');
-      c.add(bDef).fn((c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
-      c.add(aDef).fn(b => ({ A: b }), bDef);
+      c.add(bDef)
+        .using(c1Def, c2Def)
+        .fn((c1, c2) => ({ B: { c1, c2 } }));
+      c.add(aDef)
+        .using(bDef)
+        .fn(b => ({ A: b }));
 
       c.withInterceptor(DependenciesGraphInterceptor);
     });
@@ -52,8 +56,12 @@ describe(`DependenciesGraph`, () => {
         c => {
           c.add(c1Def).fn(async () => 'C1');
           c.add(c2Def).fn(async () => 'C2');
-          c.add(bDef).fn(async (c1, c2) => ({ B: { c1, c2 } }), c1Def, c2Def);
-          c.add(aDef).fn(async b => ({ A: b }), bDef);
+          c.add(bDef)
+            .using(c1Def, c2Def)
+            .fn(async (c1, c2) => ({ B: { c1, c2 } }));
+          c.add(aDef)
+            .using(bDef)
+            .fn(async b => ({ A: b }));
 
           c.withInterceptor(DependenciesGraphInterceptor);
         },
@@ -94,9 +102,18 @@ describe(`DependenciesGraph`, () => {
         const { cnt } = setup(config => {
           config.add(shared).fn(async () => (counter += 1));
 
-          config.add(a).fn(async val => ({ A: val }), shared);
-          config.add(b).fn(async val => ({ B: val }), shared);
-          config.add(c).fn(async val => ({ C: val }), shared);
+          config
+            .add(a)
+            .using(shared)
+            .fn(async val => ({ A: val }));
+          config
+            .add(b)
+            .using(shared)
+            .fn(async val => ({ B: val }));
+          config
+            .add(c)
+            .using(shared)
+            .fn(async val => ({ C: val }));
         });
 
         await cnt.use(a);

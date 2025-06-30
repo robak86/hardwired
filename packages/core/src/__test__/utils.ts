@@ -18,7 +18,10 @@ export function registerTestDefinitions<T, TLifetime extends LifeTime>(
       IDefinitionToken<T, ValidDependenciesLifeTime<TLifetime>>
     >;
 
-    config.add(def.def).fn((...args: any[]) => args[0], ...dependencies);
+    config
+      .add(def.def)
+      .using(...(dependencies as any[]))
+      .fn((...args: any[]) => args[0]);
 
     if (def.children.length > 0) {
       registerTestDefinitions(def.children, config);

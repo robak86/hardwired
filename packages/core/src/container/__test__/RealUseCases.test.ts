@@ -83,7 +83,7 @@ describe(`Logger`, () => {
 
       const root = container(scope => {
         scope.add(requestId).static('app');
-        scope.add(loggerD).class(Logger, requestId);
+        scope.add(loggerD).using(requestId).class(Logger);
       });
 
       const requestScopeConfig = configureScope(scope => {

@@ -32,7 +32,7 @@ const cnt = container(c => {
     return createServer((req, res) => {
       const requestScope = serviceLocator.scope(scope => {
         scope.add(reqD).static(req);
-        scope.add(requestHandlerD).class(HomePageHandler, reqD);
+        scope.add(requestHandlerD).using(reqD).class(HomePageHandler);
       });
 
       requestScope

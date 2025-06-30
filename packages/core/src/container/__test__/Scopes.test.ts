@@ -69,7 +69,10 @@ describe(`Scopes`, () => {
 
         const root = container(scope => {
           scope.add(def).static(1);
-          scope.add(consumer).fn(val => val, def);
+          scope
+            .add(consumer)
+            .using(def)
+            .fn(val => val);
         });
 
         const l1 = root.scope(scope => {

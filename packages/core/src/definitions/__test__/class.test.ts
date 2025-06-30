@@ -62,10 +62,18 @@ describe(`class`, () => {
     c.add(numDefCascading).fn(() => new BoxedValue(123));
     c.add(strDefCascading).fn(() => new BoxedValue('123'));
 
-    c.add(myClassTransient).fn((num, str) => new MyClass(num, str), numDef, strDef);
-    c.add(myClassSingleton).fn((num, str) => new MyClass(num, str), numDefSingleton, strDefSingleton);
-    c.add(myClassScoped).fn((num, str) => new MyClass(num, str), numDefScoped, strDefScoped);
-    c.add(myClassCascading).fn((num, str) => new MyClass(num, str), numDefCascading, strDefCascading);
+    c.add(myClassTransient)
+      .using(numDef, strDef)
+      .fn((num, str) => new MyClass(num, str));
+    c.add(myClassSingleton)
+      .using(numDefSingleton, strDefSingleton)
+      .fn((num, str) => new MyClass(num, str));
+    c.add(myClassScoped)
+      .using(numDefScoped, strDefScoped)
+      .fn((num, str) => new MyClass(num, str));
+    c.add(myClassCascading)
+      .using(numDefCascading, strDefCascading)
+      .fn((num, str) => new MyClass(num, str));
   });
 
   const asyncConfig = configureContainer(c => {
@@ -81,18 +89,21 @@ describe(`class`, () => {
     c.add(numDefCascadingAsync).fn(async () => new BoxedValue(123));
     c.add(strDefCascadingAsync).fn(async () => new BoxedValue('123'));
 
-    c.add(myClassTransientAsync).fn(async (num, str) => new MyClass(num, str), numDefAsync, strDefAsync);
-    c.add(myClassSingletonAsync).fn(
-      async (num, str) => new MyClass(num, str),
-      numDefSingletonAsync,
-      strDefSingletonAsync,
-    );
-    c.add(myClassScopedAsync).fn(async (num, str) => new MyClass(num, str), numDefScopedAsync, strDefScopedAsync);
-    c.add(myClassCascadingAsync).fn(
-      async (num, str) => new MyClass(num, str),
-      numDefCascadingAsync,
-      strDefCascadingAsync,
-    );
+    c.add(myClassTransientAsync)
+      .using(numDefAsync, strDefAsync)
+      .fn(async (num, str) => new MyClass(num, str));
+
+    c.add(myClassSingletonAsync)
+      .using(numDefSingletonAsync, strDefSingletonAsync)
+      .fn(async (num, str) => new MyClass(num, str));
+
+    c.add(myClassScopedAsync)
+      .using(numDefScopedAsync, strDefScopedAsync)
+      .fn(async (num, str) => new MyClass(num, str));
+
+    c.add(myClassCascadingAsync)
+      .using(numDefCascadingAsync, strDefCascadingAsync)
+      .fn(async (num, str) => new MyClass(num, str));
   });
 
   describe(`types`, () => {
@@ -209,7 +220,9 @@ describe(`class`, () => {
       const config = configureContainer(c => {
         c.add(numDefCascading).fn(() => new BoxedValue(123));
         c.add(strDefCascading).fn(() => new BoxedValue('123'));
-        c.add(myClassCascading).fn((num, str) => new MyClass(num, str), numDefCascading, strDefCascading);
+        c.add(myClassCascading)
+          .using(numDefCascading, strDefCascading)
+          .fn((num, str) => new MyClass(num, str));
       });
 
       it(`is inherited by child scope`, async () => {
@@ -372,7 +385,7 @@ describe(`class`, () => {
       const config = configureContainer(c => {
         c.add(numDefCascading).fn(() => new BoxedValue(123));
         c.add(strDefCascading).fn(() => new BoxedValue('123'));
-        c.add(myClassCascading).class(MyClass, numDefCascading, strDefCascading);
+        c.add(myClassCascading).using(numDefCascading, strDefCascading).class(MyClass);
       });
 
       it(`is inherited by child scope`, async () => {

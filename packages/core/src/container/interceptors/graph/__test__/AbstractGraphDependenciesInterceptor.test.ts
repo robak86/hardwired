@@ -129,7 +129,9 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
-          c.add(consumer).fn(val => ({ c: val }), shared);
+          c.add(consumer)
+            .using(shared)
+            .fn(val => ({ c: val }));
         });
 
         const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
@@ -158,7 +160,9 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
-          c.add(consumer).fn(val => ({ c: val, value: 1 }), shared);
+          c.add(consumer)
+            .using(shared)
+            .fn(val => ({ c: val, value: 1 }));
         });
 
         const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
@@ -252,7 +256,9 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
-          c.add(consumer).fn(val => ({ c: val }), shared);
+          c.add(consumer)
+            .using(shared)
+            .fn(val => ({ c: val }));
         });
 
         const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
@@ -281,7 +287,9 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
-          c.add(consumer).fn(val => ({ c: val, value: 1 }), shared);
+          c.add(consumer)
+            .using(shared)
+            .fn(val => ({ c: val, value: 1 }));
         });
 
         const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);
@@ -313,7 +321,9 @@ describe(`AbstractGraphDependenciesInterceptor`, () => {
 
         const { cnt } = setup(c => {
           c.add(shared).fn(() => 1);
-          c.add(consumer).fn(val => ({ c: val, value: 1 }), shared);
+          c.add(consumer)
+            .using(shared)
+            .fn(val => ({ c: val, value: 1 }));
         });
 
         const rootInterceptor = cnt.getInterceptor(RootTestInterceptor);

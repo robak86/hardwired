@@ -9,6 +9,7 @@ import type { FilterDepsByInstanceType, IAddDefinitionBuilder } from '../../../a
 import type { FinalizerOrVoid } from '../../../abstract/IDisposeFinalizer.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
+import type { AwaitedInstanceArray } from '../../../../container/Container.js';
 
 import type { ConfigurationType, IConfigurationContext } from './abstract/IConfigurationContext.js';
 import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
@@ -53,33 +54,16 @@ export class AddDefinitionBuilder<
     }
   }
 
-  class<TConstructorArgs extends any[]>(
-    klass: ClassType<TInstance, TConstructorArgs>,
-    ...dependencies: InstancesTokens<TConstructorArgs, TLifeTime>
-  ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const definition = new ClassDefinition(this._token.id, this._token.strategy, klass, dependencies);
+  class(klass: ClassType<TInstance, AwaitedInstanceArray<TDependencies>>): FinalizerOrVoid<TInstance, TLifeTime> {
+    const definition = new ClassDefinition(this._token.id, this._token.strategy, klass, this._dependencies as any);
 
     this._context.onDefinition(this._configType, definition);
 
     return this.buildFinalizer();
   }
 
-  fn<TArgs extends any[]>(
-    fn: (...args: TArgs) => TInstance,
-    ...dependencies: InstancesTokens<TArgs, TLifeTime>
-  ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, dependencies);
-
-    this._context.onDefinition(this._configType, fnDefinition);
-
-    return this.buildFinalizer();
-  }
-
-  asyncFn<TArgs extends any[]>(
-    fn: (...args: TArgs) => Promise<TInstance>,
-    ...dependencies: InstancesTokens<TArgs, TLifeTime>
-  ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, dependencies);
+  fn(fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
+    const fnDefinition = new FnDefinition(this._token.id, this._token.strategy, fn, this._dependencies as any);
 
     this._context.onDefinition(this._configType, fnDefinition);
 

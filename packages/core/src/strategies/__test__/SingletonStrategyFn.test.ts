@@ -14,15 +14,19 @@ describe(`SingletonStrategy`, () => {
 
     const setup = configureContainer(c => {
       c.add(someValueD).fn(() => 'someString');
-      c.add(leafD).fn(someValue => {
-        return {
-          value: someValue,
-          id: v4(),
-        };
-      }, someValueD);
-      c.add(consumerD).fn(leaf => {
-        return { testClassInstance: leaf };
-      }, leafD);
+      c.add(leafD)
+        .using(someValueD)
+        .fn(someValue => {
+          return {
+            value: someValue,
+            id: v4(),
+          };
+        });
+      c.add(consumerD)
+        .using(leafD)
+        .fn(leaf => {
+          return { testClassInstance: leaf };
+        });
     });
 
     describe(`resolution`, () => {
@@ -80,8 +84,12 @@ describe(`SingletonStrategy`, () => {
 
           const ctn = container(c => {
             c.add(slowSingletonD).fn(() => resolveAfter(Math.random() * 500, new BoxedValue(Math.random())));
-            c.add(consumer1).fn(async value => value, slowSingletonD);
-            c.add(consumer2).fn(async value => value, slowSingletonD);
+            c.add(consumer1)
+              .using(slowSingletonD)
+              .fn(async value => value);
+            c.add(consumer2)
+              .using(slowSingletonD)
+              .fn(async value => value);
           });
 
           const [result1, result2] = await Promise.all([ctn.resolve(consumer1), ctn.resolve(consumer2)]);

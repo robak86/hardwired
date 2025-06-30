@@ -125,7 +125,9 @@ describe(`ContainerScope`, () => {
 
       const cnt = container(c => {
         c.add(baseD).fn(() => (counter += 1));
-        c.add(valueD).fn(base => (counter += 1 + base), baseD);
+        c.add(valueD)
+          .using(baseD)
+          .fn(base => (counter += 1 + base));
       });
 
       const ValueRenderer = ({ testId }: { testId: string }) => {

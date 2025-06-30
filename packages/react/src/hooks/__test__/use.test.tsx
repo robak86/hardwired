@@ -121,7 +121,9 @@ describe(`use`, () => {
 
       const c = container(c => {
         c.add(someExternalParam).static('val1');
-        c.add(val1Def).fn(ext => `render:${checkoutRenderId()};value:${ext}`, someExternalParam);
+        c.add(val1Def)
+          .using(someExternalParam)
+          .fn(ext => `render:${checkoutRenderId()};value:${ext}`);
       });
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
@@ -200,7 +202,7 @@ describe(`use`, () => {
 
     const configure = configureContainer(c => {
       c.add(mountableServiceD).class(MountableService);
-      c.add(mountableServiceConsumerD).class(MountableServiceConsumer, mountableServiceD);
+      c.add(mountableServiceConsumerD).using(mountableServiceD).class(MountableServiceConsumer);
     });
 
     describe(`single scope`, () => {

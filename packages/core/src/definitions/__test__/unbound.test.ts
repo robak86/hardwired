@@ -137,9 +137,9 @@ describe(`unbound`, () => {
     it(`provides implementation for the interface`, async () => {
       const configure = configureContainer(c => {
         c.add(scalingFactor).static(10);
-        c.add(IMyInterfaceSingleton).class(MyClass, scalingFactor);
-        c.add(IMyInterfaceScoped).class(MyClass, scalingFactor);
-        c.add(IMyInterfaceTransient).class(MyClass, scalingFactor);
+        c.add(IMyInterfaceSingleton).using(scalingFactor).class(MyClass);
+        c.add(IMyInterfaceScoped).using(scalingFactor).class(MyClass);
+        c.add(IMyInterfaceTransient).using(scalingFactor).class(MyClass);
       });
 
       const cnt = container(configure);

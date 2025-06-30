@@ -139,8 +139,12 @@ describe(`useDefinitions`, () => {
       };
 
       const c = container(c => {
-        c.add(val1Def).fn(ext => `def:1,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
-        c.add(val2Def).fn(ext => `def:2,render:${checkoutRenderId()};value:${ext}`, someExternalParam);
+        c.add(val1Def)
+          .using(someExternalParam)
+          .fn(ext => `def:1,render:${checkoutRenderId()};value:${ext}`);
+        c.add(val2Def)
+          .using(someExternalParam)
+          .fn(ext => `def:2,render:${checkoutRenderId()};value:${ext}`);
       });
 
       const TestSubject = ({ externalValue }: { externalValue: string }) => {
@@ -235,7 +239,7 @@ describe(`useDefinitions`, () => {
     const configure = configureContainer(c => {
       c.add(mountableServiceD).class(MountableService);
       c.add(mountableServiceOtherD).class(MountableServiceOther);
-      c.add(mountableServiceConsumerD).class(MountableServiceConsumer, mountableServiceD);
+      c.add(mountableServiceConsumerD).using(mountableServiceD).class(MountableServiceConsumer);
     });
 
     describe(`single scope`, () => {

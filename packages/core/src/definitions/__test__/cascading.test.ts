@@ -22,7 +22,7 @@ describe(`cascading definition`, () => {
     c.add(numDefCascading).fn(() => new BoxedValue(123));
     c.add(strDefCascading).fn(() => new BoxedValue('123'));
 
-    c.add(myClassCascading).class(MyClass, numDefCascading, strDefCascading);
+    c.add(myClassCascading).using(numDefCascading, strDefCascading).class(MyClass);
   });
 
   describe(`own configured`, () => {

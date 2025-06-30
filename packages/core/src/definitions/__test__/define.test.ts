@@ -12,7 +12,9 @@ describe(`define`, () => {
       const composite = transient.token<[number, string]>();
 
       const result = container(c => {
-        c.add(composite).fn((v1, v2) => [v1, v2], ext1, ext2);
+        c.add(composite)
+          .using(ext1, ext2)
+          .fn((v1, v2) => [v1, v2]);
       })
         .scope(c => {
           c.add(ext1).static(1);
