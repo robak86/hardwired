@@ -34,6 +34,10 @@ export class MaybeAsync<T> implements PromiseLike<T> {
   protected readonly value: T | Promise<T>;
 
   public unwrap(): T | Promise<T> {
+    if (this.isError) {
+      throw this.value as Error; // If it's an error, throw it
+    }
+
     return this.value;
   }
 
@@ -47,7 +51,14 @@ export class MaybeAsync<T> implements PromiseLike<T> {
     return new MaybeAsync(value);
   }
 
-  protected constructor(value: T | Promise<T>) {
+  static reject<T>(reason: any): MaybeAsync<T> {
+    return new MaybeAsync(reason, true);
+  }
+
+  protected constructor(
+    value: T | Promise<T>,
+    private isError = false,
+  ) {
     this.value = value;
     this.isSync = !isThenable(value) || (value instanceof MaybeAsync && value.isSync);
   }
@@ -72,11 +83,11 @@ export class MaybeAsync<T> implements PromiseLike<T> {
 
             return MaybeAsync.resolve(result as TResult2 | Promise<TResult2>);
           } catch (e) {
-            return MaybeAsync.resolve(e) as MaybeAsync<TResult2>;
+            return MaybeAsync.reject(e) as MaybeAsync<TResult2>;
           }
         }
 
-        return MaybeAsync.resolve(err) as MaybeAsync<TResult2>;
+        return MaybeAsync.reject(err) as MaybeAsync<TResult2>;
       }
     }
 
@@ -108,6 +119,10 @@ export class MaybeAsync<T> implements PromiseLike<T> {
   }
 
   trySync(): T {
+    if (this.isError) {
+      throw this.value as Error; // If it's an error, throw it
+    }
+
     if (!this.isSync) {
       throw new Error('Value is asynchronous');
     }

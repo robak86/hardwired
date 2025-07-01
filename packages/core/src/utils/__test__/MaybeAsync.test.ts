@@ -68,6 +68,14 @@ describe('MaybeAsync', () => {
       expect(mp.trySync()).toBe(999);
     });
 
+    it('should throw na error if not caught', () => {
+      const mp = MaybeAsync.resolve(10).then(() => {
+        throw new Error('fail');
+      });
+
+      expect(() => mp.trySync()).toThrowError('fail');
+    });
+
     it('should unwrap sync inner MaybePromise', () => {
       const mp = MaybeAsync.resolve(10).then(() => MaybeAsync.resolve(100));
 
