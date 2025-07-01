@@ -3,22 +3,12 @@ import type { IInterceptor } from '../interceptor.js';
 import type { IDefinitionToken } from '../../../definitions/DefinitionToken.js';
 import type { HierarchicalMap } from '../../../context/HierarchicalMap.js';
 
-export type GraphBuilderMemoizableLifeTime = LifeTime.scoped | LifeTime.singleton | LifeTime.cascading;
-
 export abstract class AbstractGraphDependenciesInterceptor<TNode> implements IInterceptor {
   protected constructor(
     protected _globalInstances: Map<symbol, TNode>,
     protected _scopeInstances: Map<symbol, TNode>,
     protected _cascadingInstances: HierarchicalMap<TNode>,
   ) {}
-
-  // hasInstance<TInstance>(token: IDefinitionToken<TInstance, LifeTime>): boolean {
-  //   return (
-  //     this._globalInstances.has(token.id) ||
-  //     this._scopeInstances.has(token.id) ||
-  //     this._cascadingInstances.has(token.id)
-  //   );
-  // }
 
   protected find(token: IDefinitionToken<any, LifeTime>): TNode | undefined {
     return (
