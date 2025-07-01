@@ -1,5 +1,5 @@
 import type { ILazyDefinitionBuilder } from '../configuration/dsl/new/utils/abstract/ILazyDefinitionBuilder.js';
-import type { LifeTime } from '../definitions/abstract/LifeTime.js';
+import { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 
 export class LazyDefinitionsRegistry {
@@ -57,22 +57,12 @@ export class LazyDefinitionsRegistry {
     this._lazyDefinitions.get(lazyDefinition.token.id)!.push(lazyDefinition);
   }
 
-  appendFrozen(lazyDefinition: ILazyDefinitionBuilder<unknown, LifeTime>) {
-    this.assertNotFrozen();
-
-    if (!this._frozenLazyDefinitions.has(lazyDefinition.token.id)) {
-      this._frozenLazyDefinitions.set(lazyDefinition.token.id, []);
-    }
-
-    this._frozenLazyDefinitions.get(lazyDefinition.token.id)!.push(lazyDefinition);
-  }
-
   hasOwn(id: symbol): boolean {
     return this._lazyDefinitions.has(id) || this._frozenLazyDefinitions.has(id) || this._prev?.hasOwn(id) || false;
   }
 
   has(id: symbol): boolean {
-    return this.hasOwn(id) || this._prev?.has(id) || false;
+    return this.hasOwn(id) || this._prev?.has(id) || this._parent?.has(id) || false;
   }
 
   getOwnFrozen(id: symbol): ILazyDefinitionBuilder<unknown, LifeTime>[] {
@@ -93,10 +83,23 @@ export class LazyDefinitionsRegistry {
     return this.getOwnDefinitions(id);
   }
 
+  getAll(id: symbol): ILazyDefinitionBuilder<unknown, LifeTime>[] {
+    return [
+      ...(this._parent?.getAll(id) ?? []),
+      ...(this._prev?.getAll(id) ?? []),
+      ...(this._lazyDefinitions.get(id) ?? []),
+    ];
+  }
+
   apply<TInstance, TLifeTime extends LifeTime>(
     definition: IDefinition<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> {
-    const lazyDefinitions = this._lazyDefinitions.get(definition.id) ?? [];
+    // for a singleton we need to collect all transformations from all scopes, as we might be instantiating it in a child scope
+    const lazyDefinitions =
+      definition.strategy === LifeTime.singleton
+        ? this.getAll(definition.id)
+        : (this._lazyDefinitions.get(definition.id) ?? []);
+
     const frozenLazyDefinitions = this._frozenLazyDefinitions.get(definition.id) ?? [];
 
     if (frozenLazyDefinitions.length > 0) {

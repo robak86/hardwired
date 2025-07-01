@@ -16,7 +16,7 @@ describe(`configure`, () => {
       });
     });
 
-    expect((await c.use(someValue)).value).toEqual(10);
+    expect(c.use(someValue).value).toEqual(10);
   });
 
   it(`is evaluated with awaited value`, async () => {
