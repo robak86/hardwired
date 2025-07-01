@@ -1,4 +1,4 @@
-import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionTransform } from '../../utils/abstract/IDefinitionTransform.js';
 import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
@@ -12,9 +12,9 @@ import type { ValidDependenciesLifeTime } from '../../../../../definitions/abstr
 export type ConfigurationType = 'add' | 'modify' | 'freeze';
 
 export interface IConfigurationContext {
-  onInheritBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void;
-  onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
-  onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void;
+  onInheritBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime.cascading>): void;
+  onDecorateBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime>): void;
+  onConfigureBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime>): void;
   onDefinition(configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void;
   onCascadingDefinition(definition: IDefinitionToken<unknown, LifeTime.cascading>): void;
 

@@ -5,7 +5,7 @@ import type { FinalizerOrVoid } from '../../../abstract/IDisposeFinalizer.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 import type { IInitBuilder } from '../../../abstract/IInitBuilder.js';
 import type { AwaitedInstanceArray } from '../../../../container/Container.js';
-import { ConfiguredDefinitionBuilder } from '../utils/ConfiguredDefinitionBuilder.js';
+import { ConfigureTransform } from '../utils/ConfigureTransform.js';
 
 import type { IConfigurationContext } from './abstract/IConfigurationContext.js';
 import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
@@ -28,7 +28,7 @@ export class InitDefinitionBuilder<
   lazy(
     configureFn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
   ): FinalizerOrVoid<TInstance, TLifeTime> {
-    const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
+    const configuredDefinitionBuilder = new ConfigureTransform(
       this._token as any, // TODO
       this._dependencies as any, // TODO
       configureFn as any,

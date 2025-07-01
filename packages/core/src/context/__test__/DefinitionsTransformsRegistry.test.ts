@@ -1,14 +1,14 @@
-import type { ILazyDefinitionBuilder } from '../../configuration/dsl/new/utils/abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionTransform } from '../../configuration/dsl/new/utils/abstract/IDefinitionTransform.js';
 import { LifeTime } from '../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../definitions/abstract/IDefinition.js';
-import { LazyDefinitionsRegistry } from '../LazyDefinitionsRegistry.js';
+import { DefinitionsTransformsRegistry } from '../DefinitionsTransformsRegistry.js';
 import type { IDefinitionToken } from '../../definitions/DefinitionToken.js';
 
-describe(`LazyDefinitionsRegistry`, () => {
+describe(`DefinitionsTransformsRegistry`, () => {
   function buildLazyDef(
     id: string,
     decorateFn: (val: number) => number = val => val,
-  ): ILazyDefinitionBuilder<number, LifeTime.transient> {
+  ): IDefinitionTransform<number, LifeTime.transient> {
     return {
       token: {
         id: Symbol.for(id),
@@ -24,7 +24,7 @@ describe(`LazyDefinitionsRegistry`, () => {
   describe(`empty root`, () => {
     describe(`hasOwn`, () => {
       it(`returns true `, async () => {
-        const registry = LazyDefinitionsRegistry.empty();
+        const registry = DefinitionsTransformsRegistry.empty();
 
         const def = buildLazyDef('a');
 
@@ -36,9 +36,9 @@ describe(`LazyDefinitionsRegistry`, () => {
 
   describe(`checkoutScope`, () => {
     it(`creates child registry with linked values`, async () => {
-      const parent = LazyDefinitionsRegistry.empty();
-      const child1Values = LazyDefinitionsRegistry.empty();
-      const child2Values = LazyDefinitionsRegistry.empty();
+      const parent = DefinitionsTransformsRegistry.empty();
+      const child1Values = DefinitionsTransformsRegistry.empty();
+      const child2Values = DefinitionsTransformsRegistry.empty();
 
       const def1 = buildLazyDef('a', val => val + 1);
 
@@ -50,9 +50,9 @@ describe(`LazyDefinitionsRegistry`, () => {
     });
 
     it(`aggregates values from the same level registries`, async () => {
-      const parent = LazyDefinitionsRegistry.empty();
-      const child1Values = LazyDefinitionsRegistry.empty();
-      const child2Values = LazyDefinitionsRegistry.empty();
+      const parent = DefinitionsTransformsRegistry.empty();
+      const child1Values = DefinitionsTransformsRegistry.empty();
+      const child2Values = DefinitionsTransformsRegistry.empty();
 
       const def1 = buildLazyDef('a', val => val + 1);
       const def2 = buildLazyDef('a', val => val + 1);

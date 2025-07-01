@@ -1,6 +1,6 @@
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ICascadeModifyBuilder } from '../../../abstract/IModifyAware.js';
-import { InheritedDefinitionBuilder } from '../utils/InheritedDefinitionBuilder.js';
+import { InheritTransform } from '../utils/InheritTransform.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AwaitedInstanceArray } from '../../../../container/Container.js';
@@ -31,11 +31,7 @@ export class CascadingModifyBuilder<
   }
 
   inherit(decorateFn: (instance: TInstance, ...deps: AwaitedInstanceArray<TDependencies>) => TInstance) {
-    const inheritedDefinitionBuilder = new InheritedDefinitionBuilder(
-      this._token,
-      this._dependencies as any,
-      decorateFn,
-    );
+    const inheritedDefinitionBuilder = new InheritTransform(this._token, this._dependencies as any, decorateFn);
 
     this._context.onInheritBuilder(this._configType, inheritedDefinitionBuilder);
 

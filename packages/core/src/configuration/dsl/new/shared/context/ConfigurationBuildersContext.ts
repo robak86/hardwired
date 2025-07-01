@@ -1,4 +1,4 @@
-import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionTransform } from '../../utils/abstract/IDefinitionTransform.js';
 import { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { IContainer } from '../../../../../container/IContainer.js';
@@ -13,7 +13,7 @@ import type { MaybePromise } from '../../../../../utils/async.js';
 import { ScopeRegistry } from '../../../../../context/ScopeRegistry.js';
 import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
-import { LazyDefinitionsRegistry } from '../../../../../context/LazyDefinitionsRegistry.js';
+import { DefinitionsTransformsRegistry } from '../../../../../context/DefinitionsTransformsRegistry.js';
 import type { IDefinitionToken } from '../../../../../definitions/DefinitionToken.js';
 import type { ValidDependenciesLifeTime } from '../../../../../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AwaitedInstanceArray } from '../../../../../container/Container.js';
@@ -27,10 +27,10 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
   private _definitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
   private _frozenDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
-  private _lazyDefinitions = LazyDefinitionsRegistry.empty();
+  private _definitionsTransforms = DefinitionsTransformsRegistry.empty();
   private _cascadeTokens = new Set<IDefinitionToken<any, LifeTime.cascading>>();
   private _inheritedTokens = new Set<IDefinitionToken<unknown, LifeTime.cascading>>();
-  private _frozenLazyDefinitions: ILazyDefinitionBuilder<unknown, LifeTime>[] = []; // TODO: replace with _lazyDefinitions. It already holds frozen definitions
+  private _frozenDefinitionsTransforms: IDefinitionTransform<unknown, LifeTime>[] = []; // TODO: replace with _definitionsTransforms. It already holds frozen definitions
 
   private _disposeFunctions = new DisposeFunctions();
   private _definitionDisposeFns = new DefinitionsDisposeFunctions();
@@ -44,7 +44,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     return new ContainerConfiguration(
       this._definitions.freeze(),
       this._frozenDefinitions.freeze(),
-      this._lazyDefinitions.freeze(),
+      this._definitionsTransforms.freeze(),
       this._cascadeTokens,
       this._inheritedTokens,
       lifeCycleRegistry,
@@ -75,16 +75,16 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     this._cascadeTokens.add(token);
   }
 
-  onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
+  onConfigureBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.append(builder);
+        this._definitionsTransforms.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.append(builder);
+        this._definitionsTransforms.append(builder);
         break;
       case 'freeze':
-        this._frozenLazyDefinitions.push(builder);
+        this._frozenDefinitionsTransforms.push(builder);
         break;
     }
 
@@ -93,16 +93,16 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
   }
 
-  onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
+  onDecorateBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime>): void {
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.append(builder);
+        this._definitionsTransforms.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.append(builder);
+        this._definitionsTransforms.append(builder);
         break;
       case 'freeze':
-        this._frozenLazyDefinitions.push(builder);
+        this._frozenDefinitionsTransforms.push(builder);
         break;
     }
 
@@ -111,7 +111,7 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
     }
   }
 
-  onInheritBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void {
+  onInheritBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime.cascading>): void {
     if (this._definitions.has(builder.token.id)) {
       throw new Error(`Cannot inherit from ${builder.token.toString()}. It is already modified in the current scope.`);
     }
@@ -120,13 +120,13 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
 
     switch (configType) {
       case 'add':
-        this._lazyDefinitions.append(builder);
+        this._definitionsTransforms.append(builder);
         break;
       case 'modify':
-        this._lazyDefinitions.append(builder);
+        this._definitionsTransforms.append(builder);
         break;
       case 'freeze':
-        this._frozenLazyDefinitions.push(builder);
+        this._frozenDefinitionsTransforms.push(builder);
         break;
     }
   }

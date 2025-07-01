@@ -1,4 +1,4 @@
-import type { ILazyDefinitionBuilder } from '../../utils/abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionTransform } from '../../utils/abstract/IDefinitionTransform.js';
 import type { LifeTime } from '../../../../../definitions/abstract/LifeTime.js';
 import type { IDefinition } from '../../../../../definitions/abstract/IDefinition.js';
 import type { BindingsRegistry } from '../../../../../context/BindingsRegistry.js';
@@ -41,25 +41,25 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
     throw new Error('Cascading definitions are not supported in eager mode.');
   }
 
-  onConfigureBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
+  onConfigureBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime>): void {
     // const def = builder.build(this._bindingsRegistry);
 
-    this.onLazyDefinition(configType, builder);
+    this.onDefinitionTransform(configType, builder);
   }
 
-  onDecorateBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime>): void {
+  onDecorateBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime>): void {
     // const def = builder.build(this._bindingsRegistry);
 
-    this.onLazyDefinition(configType, builder);
+    this.onDefinitionTransform(configType, builder);
   }
 
-  onInheritBuilder(configType: ConfigurationType, builder: ILazyDefinitionBuilder<unknown, LifeTime.cascading>): void {
+  onInheritBuilder(configType: ConfigurationType, builder: IDefinitionTransform<unknown, LifeTime.cascading>): void {
     // const def = builder.build(this._bindingsRegistry);
 
-    this.onLazyDefinition(configType, builder);
+    this.onDefinitionTransform(configType, builder);
   }
 
-  onLazyDefinition(_configType: ConfigurationType, _definition: ILazyDefinitionBuilder<unknown, LifeTime>): void {
+  onDefinitionTransform(_configType: ConfigurationType, _definition: IDefinitionTransform<unknown, LifeTime>): void {
     if (this.instancesStore.hasInherited(_definition.token)) {
       throw new Error(
         `Cannot freeze binding ${_definition.token.toString()} because it is already instantiated in some higher scope.`,
@@ -70,7 +70,7 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
       throw new Error(`Cannot freeze binding ${_definition.token.toString()} because it is already instantiated.`);
     }
 
-    this._bindingsRegistry.appendLazyDefinition(_definition);
+    this._bindingsRegistry.appendDefinitionTransform(_definition);
   }
 
   onDefinition(_configType: ConfigurationType, definition: IDefinition<unknown, LifeTime>): void {

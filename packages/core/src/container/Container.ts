@@ -243,7 +243,7 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
     // }
 
     return Boolean(
-      this.bindingsRegistry.findByToken(definition) ?? this.bindingsRegistry.hasLazyDefinition(definition),
+      this.bindingsRegistry.findByToken(definition) ?? this.bindingsRegistry.hasDefinitionTransform(definition),
     );
   }
 

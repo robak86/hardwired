@@ -1,7 +1,7 @@
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ConfigureResult, IModifyBuilder } from '../../../abstract/IModifyAware.js';
-import { ConfiguredDefinitionBuilder } from '../utils/ConfiguredDefinitionBuilder.js';
-import { DecoratedDefinitionBuilder } from '../utils/DecoratedDefinitionBuilder.js';
+import { ConfigureTransform } from '../utils/ConfigureTransform.js';
+import { DecorateTransform } from '../utils/DecorateTransform.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
 import type { AwaitedInstanceArray } from '../../../../container/Container.js';
@@ -36,7 +36,7 @@ export class ModifyDefinitionBuilder<
       ...deps: AwaitedInstanceArray<TDependencies>
     ) => ConfigureResult<TInstance>,
   ): void {
-    const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
+    const configuredDefinitionBuilder = new ConfigureTransform(
       this._token as any, // TODO
       this._dependencies as any, // TODO
       configureFn,
@@ -48,7 +48,7 @@ export class ModifyDefinitionBuilder<
   decorate(
     decorateFn: (instance: Awaited<TInstance>, ...deps: AwaitedInstanceArray<TDependencies>) => TInstance,
   ): void {
-    const decoratedDefinitionBuilder = new DecoratedDefinitionBuilder(
+    const decoratedDefinitionBuilder = new DecorateTransform(
       this._token as any, // TODO
       this._dependencies as any, // TODO
       decorateFn as any, // TODO,

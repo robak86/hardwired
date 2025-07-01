@@ -1,27 +1,26 @@
 import type { IDefinition } from '../../../../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import type { MaybePromise } from '../../../../utils/async.js';
 import type { InstancesTokens } from '../shared/AddDefinitionBuilder.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
-import type { ILazyDefinitionBuilder } from './abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionTransform } from './abstract/IDefinitionTransform.js';
 
-export class ConfiguredDefinitionBuilder<TInstance, TLifetime extends LifeTime, TArgs extends any[]>
-  implements ILazyDefinitionBuilder<TInstance, TLifetime>
+export class InheritTransform<TInstance, TLifetime extends LifeTime, TArgs extends any[]>
+  implements IDefinitionTransform<TInstance, TLifetime>
 {
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
-    private dependencies: InstancesTokens<TArgs, TLifetime>,
-    private configFn: (instance: TInstance, ...args: TArgs) => void | Promise<void>,
+    private readonly _dependencies: InstancesTokens<TArgs, TLifetime>,
+    private readonly _decorateFn: (instance: TInstance, ...args: TArgs) => MaybePromise<TInstance>,
   ) {}
 
   build(def: IDefinition<TInstance, TLifetime>): IDefinition<TInstance, TLifetime> {
     return def.override((container, interceptor) => {
-      return container.resolveAll(...this.dependencies).then(awaitedDependencies => {
+      return container.resolveAll(...this._dependencies).then(awaitedDependencies => {
         return def.create(container, interceptor).then(awaitedInstance => {
-          return MaybeAsync.resolve(this.configFn(awaitedInstance, ...(awaitedDependencies as TArgs))).then(() => {
-            return awaitedInstance;
-          });
+          return MaybeAsync.resolve(this._decorateFn(awaitedInstance, ...(awaitedDependencies as TArgs)));
         });
       });
     });

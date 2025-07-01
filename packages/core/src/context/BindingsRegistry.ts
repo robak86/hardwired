@@ -2,12 +2,12 @@ import type { IDefinition } from '../definitions/abstract/IDefinition.js';
 import { isDefinition } from '../definitions/abstract/IDefinition.js';
 import type { LifeTime } from '../definitions/abstract/LifeTime.js';
 import type { IDefinitionsRegistryConfiguration } from '../configuration/dsl/new/container/ContainerConfiguration.js';
-import type { ILazyDefinitionBuilder } from '../configuration/dsl/new/utils/abstract/ILazyDefinitionBuilder.js';
+import type { IDefinitionTransform } from '../configuration/dsl/new/utils/abstract/IDefinitionTransform.js';
 import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
 import { ScopeRegistry } from './ScopeRegistry.js';
 import type { IBindingsRegistryRead } from './abstract/IBindingsRegistryRead.js';
-import { LazyDefinitionsRegistry } from './LazyDefinitionsRegistry.js';
+import { DefinitionsTransformsRegistry } from './DefinitionsTransformsRegistry.js';
 
 // TODO: rename to DefinitionsRegistry
 export class BindingsRegistry implements IBindingsRegistryRead {
@@ -15,7 +15,7 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     const definitions = ScopeRegistry.root(configs.map(c => c.definitions));
     const shadowingDefinitions = ScopeRegistry.empty<IDefinition<unknown, LifeTime>>();
     const frozenDefinitions = ScopeRegistry.root(configs.map(c => c.frozenDefinitions));
-    const lazyDefinitions = LazyDefinitionsRegistry.root(configs.map(c => c.lazyDefinitions));
+    const lazyDefinitions = DefinitionsTransformsRegistry.root(configs.map(c => c.definitionsTransforms));
 
     return new BindingsRegistry(frozenDefinitions, definitions, lazyDefinitions, shadowingDefinitions);
   }
@@ -23,7 +23,7 @@ export class BindingsRegistry implements IBindingsRegistryRead {
   constructor(
     private _frozenDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
     private _definitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
-    private _lazyDefinitions: LazyDefinitionsRegistry,
+    private _definitionTransforms: DefinitionsTransformsRegistry,
     private _shadowingDefinitions: ScopeRegistry<IDefinition<unknown, LifeTime>>,
   ) {}
 
@@ -39,7 +39,7 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     return new BindingsRegistry(
       this._frozenDefinitions.checkoutScope(configs.map(c => c.frozenDefinitions)),
       this._definitions.checkoutScope(configs.map(c => c.definitions)),
-      this._lazyDefinitions.checkoutScope(configs.map(c => c.lazyDefinitions)),
+      this._definitionTransforms.checkoutScope(configs.map(c => c.definitionsTransforms)),
       this._shadowingDefinitions.checkoutScope([]),
     );
   }
@@ -57,8 +57,8 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     // we didnt' find any .add() definition that will override definition,
     // but we still might have a lazy definitions
 
-    if (this._lazyDefinitions.has(definition.id)) {
-      return this._lazyDefinitions.apply(definition);
+    if (this._definitionTransforms.has(definition.id)) {
+      return this._definitionTransforms.apply(definition);
     }
 
     return definition;
@@ -77,19 +77,21 @@ export class BindingsRegistry implements IBindingsRegistryRead {
         : (this._shadowingDefinitions.find(token.id) as IDefinition<TInstance, TLifeTime>)) ??
       (this._definitions.find(token.id) as IDefinition<TInstance, TLifeTime>);
 
-    if (definition && this._lazyDefinitions.has(token.id)) {
-      return this._lazyDefinitions.apply(definition);
+    if (definition && this._definitionTransforms.has(token.id)) {
+      return this._definitionTransforms.apply(definition);
     }
 
     if (!definition && isDefinition(token)) {
-      return this._lazyDefinitions.apply(token);
+      return this._definitionTransforms.apply(token);
     }
 
     return definition;
   }
 
-  hasLazyDefinition<TInstance, TLifeTime extends LifeTime>(token: IDefinitionToken<TInstance, TLifeTime>): boolean {
-    return this._lazyDefinitions.has(token.id);
+  hasDefinitionTransform<TInstance, TLifeTime extends LifeTime>(
+    token: IDefinitionToken<TInstance, TLifeTime>,
+  ): boolean {
+    return this._definitionTransforms.has(token.id);
   }
 
   getByToken<TInstance, TLifeTime extends LifeTime>(
@@ -117,7 +119,7 @@ export class BindingsRegistry implements IBindingsRegistryRead {
     this._frozenDefinitions.register(def.id, def);
   }
 
-  appendLazyDefinition(_definition: ILazyDefinitionBuilder<unknown, LifeTime>) {
-    this._lazyDefinitions.append(_definition);
+  appendDefinitionTransform(_definition: IDefinitionTransform<unknown, LifeTime>) {
+    this._definitionTransforms.append(_definition);
   }
 }
