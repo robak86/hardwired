@@ -1,12 +1,14 @@
-import type { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
+import { LifeTime } from '../../../../definitions/abstract/LifeTime.js';
 import type { ValidDependenciesLifeTime } from '../../../../definitions/abstract/InstanceDefinitionDependency.js';
 import type { FilterDepsByInstanceType } from '../../../abstract/IRegisterAware.js';
 import type { FinalizerOrVoid } from '../../../abstract/IDisposeFinalizer.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 import type { IInitBuilder } from '../../../abstract/IInitBuilder.js';
 import type { AwaitedInstanceArray } from '../../../../container/Container.js';
+import { ConfiguredDefinitionBuilder } from '../utils/ConfiguredDefinitionBuilder.js';
 
 import type { IConfigurationContext } from './abstract/IConfigurationContext.js';
+import { DisposeFinalizeBuilder } from './DisposeFinalizeBuilder.js';
 
 export class InitDefinitionBuilder<
   TInstance,
@@ -23,13 +25,25 @@ export class InitDefinitionBuilder<
     this.assertValidLifeTime();
   }
 
-  lazy(fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance): FinalizerOrVoid<TInstance, TLifeTime> {
-    throw new Error('Method not implemented.');
+  lazy(
+    configureFn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
+  ): FinalizerOrVoid<TInstance, TLifeTime> {
+    const configuredDefinitionBuilder = new ConfiguredDefinitionBuilder(
+      this._token as any, // TODO
+      this._dependencies as any, // TODO
+      configureFn as any,
+    );
+
+    this._context.onConfigureBuilder('modify', configuredDefinitionBuilder);
+
+    return this.buildFinalizer();
   }
   eager(
     fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
   ): FinalizerOrVoid<TInstance, TLifeTime> {
-    throw new Error('Method not implemented.');
+    this._context.onEagerInit(this._token, fn, this._dependencies as AwaitedInstanceArray<TDependencies>);
+
+    return this.buildFinalizer();
   }
 
   using<TDeps extends readonly IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
@@ -49,5 +63,18 @@ export class InitDefinitionBuilder<
 
       throw new Error(`Invalid life time "${this._token.strategy}" for ${this._token.toString()}. Allowed: ${allowed}`);
     }
+  }
+
+  // TODO: can be memoized
+  private buildFinalizer(): FinalizerOrVoid<TInstance, TLifeTime> {
+    if (
+      this._token.strategy === LifeTime.singleton ||
+      this._token.strategy === LifeTime.cascading ||
+      this._token.strategy === LifeTime.scoped
+    ) {
+      return new DisposeFinalizeBuilder(this._token, this._context) as unknown as FinalizerOrVoid<TInstance, TLifeTime>;
+    }
+
+    return undefined as unknown as FinalizerOrVoid<TInstance, TLifeTime>;
   }
 }

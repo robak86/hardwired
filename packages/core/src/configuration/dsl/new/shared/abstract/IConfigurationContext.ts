@@ -6,6 +6,8 @@ import type { IInterceptor, InterceptorClass } from '../../../../../container/in
 import type { MaybePromise } from '../../../../../utils/async.js';
 import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import type { IDefinitionToken } from '../../../../../definitions/DefinitionToken.js';
+import type { AwaitedInstanceArray } from '../../../../../container/Container.js';
+import type { ValidDependenciesLifeTime } from '../../../../../definitions/abstract/InstanceDefinitionDependency.js';
 
 export type ConfigurationType = 'add' | 'modify' | 'freeze';
 
@@ -25,4 +27,24 @@ export interface IConfigurationContext {
   ): void;
 
   toConfig(): IContainerConfiguration;
+
+  onLazyInit<
+    TInstance,
+    TLifeTime extends LifeTime,
+    TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >(
+    _token: IDefinitionToken<TInstance, TLifeTime>,
+    fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
+    dependencies: AwaitedInstanceArray<TDependencies>,
+  ): void;
+
+  onEagerInit<
+    TInstance,
+    TLifeTime extends LifeTime,
+    TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >(
+    _token: IDefinitionToken<TInstance, TLifeTime>,
+    fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
+    dependencies: AwaitedInstanceArray<TDependencies>,
+  ): void;
 }

@@ -9,6 +9,8 @@ import type { IInterceptor, InterceptorClass } from '../../../../../container/in
 import type { MaybePromise } from '../../../../../utils/async.js';
 import type { IContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import type { IDefinitionToken } from '../../../../../definitions/DefinitionToken.js';
+import type { ValidDependenciesLifeTime } from '../../../../../definitions/abstract/InstanceDefinitionDependency.js';
+import type { AwaitedInstanceArray } from '../../../../../container/Container.js';
 
 export class ContainerFreezeConfigurationContext implements IConfigurationContext {
   constructor(
@@ -83,5 +85,29 @@ export class ContainerFreezeConfigurationContext implements IConfigurationContex
     }
 
     this._bindingsRegistry.freeze(definition);
+  }
+
+  onLazyInit<
+    TInstance,
+    TLifeTime extends LifeTime,
+    TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >(
+    _token: IDefinitionToken<TInstance, TLifeTime>,
+    fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
+    dependencies: AwaitedInstanceArray<TDependencies>,
+  ): void {
+    throw new Error('Method not implemented.');
+  }
+
+  onEagerInit<
+    TInstance,
+    TLifeTime extends LifeTime,
+    TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >(
+    _token: IDefinitionToken<TInstance, TLifeTime>,
+    fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
+    dependencies: AwaitedInstanceArray<TDependencies>,
+  ): void {
+    throw new Error('Method not implemented.');
   }
 }

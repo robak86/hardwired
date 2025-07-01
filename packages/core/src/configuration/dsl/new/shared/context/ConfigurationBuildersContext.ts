@@ -15,6 +15,8 @@ import type { IContainerConfiguration } from '../../container/ContainerConfigura
 import { ContainerConfiguration } from '../../container/ContainerConfiguration.js';
 import { LazyDefinitionsRegistry } from '../../../../../context/LazyDefinitionsRegistry.js';
 import type { IDefinitionToken } from '../../../../../definitions/DefinitionToken.js';
+import type { ValidDependenciesLifeTime } from '../../../../../definitions/abstract/InstanceDefinitionDependency.js';
+import type { AwaitedInstanceArray } from '../../../../../container/Container.js';
 
 export class ConfigurationBuildersContext implements IConfigurationContext {
   static create(): ConfigurationBuildersContext {
@@ -143,5 +145,29 @@ export class ConfigurationBuildersContext implements IConfigurationContext {
         this._frozenDefinitions.register(definition.id, definition);
         break;
     }
+  }
+
+  onLazyInit<
+    TInstance,
+    TLifeTime extends LifeTime,
+    TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >(
+    _token: IDefinitionToken<TInstance, TLifeTime>,
+    fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
+    dependencies: AwaitedInstanceArray<TDependencies>,
+  ): void {
+    throw new Error('Method not implemented.');
+  }
+
+  onEagerInit<
+    TInstance,
+    TLifeTime extends LifeTime,
+    TDependencies extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[],
+  >(
+    _token: IDefinitionToken<TInstance, TLifeTime>,
+    fn: (...dependencies: AwaitedInstanceArray<TDependencies>) => TInstance,
+    dependencies: AwaitedInstanceArray<TDependencies>,
+  ): void {
+    throw new Error('Method not implemented.');
   }
 }
