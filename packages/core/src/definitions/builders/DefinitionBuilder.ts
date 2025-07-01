@@ -105,6 +105,7 @@ export class DefinitionBuilder<
     );
   }
 
+  // TODO: add thunk support
   using<TDeps extends IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
     ...deps: TDeps
   ): IDefinitionBuilder<TLifeTime, [...TDependencies, ...TDeps]> {
@@ -145,7 +146,7 @@ export class DefinitionBuilder<
 
     if (hasArguments) {
       return new ClassDefinitionDeferred(
-        Symbol(),
+        Symbol(klass.name),
         this._strategy,
         klass,
         this._dependencies,
@@ -153,7 +154,7 @@ export class DefinitionBuilder<
       ) as unknown as DefinitionBuilderClassDefinition<TDependencies, TLifeTime, TInstance>;
     } else {
       return new ClassDefinition(
-        Symbol(),
+        Symbol(klass.name),
         this._strategy,
         klass,
         this._dependencies as InstancesTokens<AwaitedInstanceArray<TDependencies>, TLifeTime>,
