@@ -2,8 +2,7 @@ import { configureContainer, container, scoped, singleton } from 'hardwired';
 import { expect } from 'vitest';
 
 import type { IReactLifeCycleAware } from '../ReactLifeCycleInterceptor.js';
-import { ReactLifeCycleRootInterceptor } from '../ReactLifeCycleInterceptor.js';
-import { withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
+import { ReactLifeCycleRootInterceptor, withReactLifeCycle } from '../ReactLifeCycleInterceptor.js';
 
 describe(`ReactLifeCycleInterceptor`, () => {
   const noLifeCyclesD = scoped.token<NoLifeCycles>('NoLifeCycles');
@@ -63,6 +62,55 @@ describe(`ReactLifeCycleInterceptor`, () => {
       const nodeReq2 = interceptor.getGraphNode(childSvc1D);
 
       expect(nodeReq).toBe(nodeReq2);
+    });
+
+    it(`works with deferred definitions`, async () => {
+      class Dependency {
+        static instance = singleton.class(this);
+      }
+
+      class DeferredCls {
+        static instance = singleton.arg<number>().using(Dependency.instance).class(this);
+
+        constructor(public value: number) {}
+      }
+
+      const cnt = container(withReactLifeCycle());
+
+      const factoryFn = cnt.use(DeferredCls.instance);
+
+      expect(factoryFn).toBeInstanceOf(Function);
+
+      const instance = factoryFn(42);
+
+      expect(instance).toBeInstanceOf(DeferredCls);
+      expect(instance.value).toBe(42);
+
+      const interceptor = cnt.getInterceptor(ReactLifeCycleRootInterceptor);
+
+      interceptor.getGraphNode(DeferredCls.instance);
+    });
+
+    it(`works with singletons propagated from a child scope`, async () => {
+      class DeferredCls {
+        static instance = singleton.class(this);
+
+        constructor() {}
+      }
+
+      const cnt = container(withReactLifeCycle());
+
+      const scope = cnt.scope();
+
+      const instance = scope.use(DeferredCls.instance);
+
+      expect(instance).toBeInstanceOf(DeferredCls);
+
+      const interceptor = scope.getInterceptor(ReactLifeCycleRootInterceptor);
+
+      const node = interceptor.getGraphNode(DeferredCls.instance);
+
+      expect(node).toBeDefined();
     });
   });
 

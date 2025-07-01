@@ -50,7 +50,7 @@ export abstract class AbstractDeferredDefinition<
         })
         .unwrap() as TInstance;
     }).then(factoryFn => {
-      return interceptor.onInstance(factoryFn, [], this, this._dependencies);
+      return interceptor.onInstance(factoryFn, [], this, []);
     });
   }
 
