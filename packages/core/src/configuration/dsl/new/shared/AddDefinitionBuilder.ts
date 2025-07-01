@@ -34,6 +34,7 @@ export class AddDefinitionBuilder<
     this.assertValidLifeTime();
   }
 
+  // TODO: add thunk support
   using<TDeps extends readonly IDefinitionToken<any, ValidDependenciesLifeTime<TLifeTime>>[]>(
     ...deps: FilterDepsByInstanceType<TInstance, TLifeTime, TDeps>
   ): IAddDefinitionBuilder<TInstance, TLifeTime, [...TDependencies, ...TDeps]> {
