@@ -1,10 +1,6 @@
-import { isThenable } from './IsThenable.js';
-
 export type UnwrapMaybePromise<T> = T extends MaybeAsync<infer U> ? U : T extends Promise<infer U> ? U : T;
 
-export class MaybeAsync<T> implements PromiseLike<T> {
-  static null = MaybeAsync.resolve(null);
-
+export abstract class MaybeAsync<T> implements PromiseLike<T> {
   static all<T extends readonly unknown[]>(values: [...T]): MaybeAsync<{ [K in keyof T]: UnwrapMaybePromise<T[K]> }> {
     let hasAsync = false;
 
@@ -13,54 +9,60 @@ export class MaybeAsync<T> implements PromiseLike<T> {
 
       // Unwrap nested MaybeAsync
       while (current instanceof MaybeAsync) {
-        if (!current.isSync) hasAsync = true;
+        if (current instanceof AsyncMaybeAsync) hasAsync = true;
 
-        current = current.value;
+        current = (current as SyncMaybeAsync<unknown>).value ?? (current as AsyncMaybeAsync<unknown>).promise;
       }
 
       // If still a Promise, mark as async
-      if (isThenable(current)) hasAsync = true;
+      if (current instanceof Promise) hasAsync = true;
 
       return current;
     });
 
     if (!hasAsync) {
-      return MaybeAsync.resolve(unwrapped as any); // fully sync
+      return new SyncMaybeAsync(unwrapped as any);
     }
 
-    return MaybeAsync.resolve(Promise.all(unwrapped) as any);
+    return new AsyncMaybeAsync(Promise.all(unwrapped) as any);
   }
-
-  protected readonly value: T | Promise<T>;
-
-  public unwrap(): T | Promise<T> {
-    if (this.isError) {
-      throw this.value as Error; // If it's an error, throw it
-    }
-
-    return this.value;
-  }
-
-  // TODO: this can be used to trivially optimize definitions. If the final result isSync, we can skip
-  //       MaybePromise completely an in next resolution use fully synchronous value.
-  public readonly isSync: boolean;
 
   static resolve<T>(value: T | MaybeAsync<T> | Promise<T>): MaybeAsync<T> {
     if (value instanceof MaybeAsync) return value;
 
-    return new MaybeAsync(value);
+    if (value instanceof Promise) {
+      return new AsyncMaybeAsync(value);
+    }
+
+    return new SyncMaybeAsync(value as T);
   }
 
   static reject<T>(reason: any): MaybeAsync<T> {
-    return new MaybeAsync(reason, true);
+    return new SyncMaybeAsync(reason, true);
   }
 
-  protected constructor(
-    value: T | Promise<T>,
-    private isError = false,
+  abstract then<TResult1 = T, TResult2 = never>(
+    onFulfilled?: (value: T) => TResult1 | MaybeAsync<TResult1> | Promise<TResult1>,
+    onRejected?: (reason: any) => TResult2 | MaybeAsync<TResult2> | Promise<TResult2>,
+  ): MaybeAsync<TResult1 | TResult2>;
+
+  abstract catch<TResult = never>(
+    onRejected?: ((reason: any) => TResult | MaybeAsync<TResult>) | null,
+  ): MaybeAsync<T | TResult>;
+
+  abstract finally(onFinally?: (() => void) | null): MaybeAsync<T>;
+
+  abstract trySync(): T;
+
+  abstract unwrap(): T | Promise<T>;
+}
+
+export class SyncMaybeAsync<T> extends MaybeAsync<T> {
+  constructor(
+    readonly value: T,
+    readonly isError = false,
   ) {
-    this.value = value;
-    this.isSync = !isThenable(value) || (value instanceof MaybeAsync && value.isSync);
+    super();
   }
 
   then<TResult1 = T, TResult2 = never>(
@@ -71,27 +73,37 @@ export class MaybeAsync<T> implements PromiseLike<T> {
       return this as MaybeAsync<TResult1 | TResult2>;
     }
 
-    if (this.isSync) {
-      try {
-        const result = onFulfilled?.(this.value as T);
+    if (this.isError) {
+      if (onRejected) {
+        try {
+          const result = onRejected(this.value as any);
 
-        return MaybeAsync.resolve(result as TResult1 | Promise<TResult1>);
-      } catch (err) {
-        if (onRejected) {
-          try {
-            const result = onRejected(err);
-
-            return MaybeAsync.resolve(result as TResult2 | Promise<TResult2>);
-          } catch (e) {
-            return MaybeAsync.reject(e) as MaybeAsync<TResult2>;
-          }
+          return MaybeAsync.resolve(result as TResult2 | Promise<TResult2>);
+        } catch (e) {
+          return new SyncMaybeAsync(e, true) as MaybeAsync<TResult2>;
         }
-
-        return MaybeAsync.reject(err) as MaybeAsync<TResult2>;
       }
+
+      return this as unknown as MaybeAsync<TResult1 | TResult2>;
     }
 
-    return MaybeAsync.resolve((this.value as Promise<T>).then(onFulfilled, onRejected));
+    try {
+      const result = onFulfilled?.(this.value as T);
+
+      return MaybeAsync.resolve(result as TResult1 | Promise<TResult1>);
+    } catch (err) {
+      if (onRejected) {
+        try {
+          const result = onRejected(err);
+
+          return MaybeAsync.resolve(result as TResult2 | Promise<TResult2>);
+        } catch (e) {
+          return new SyncMaybeAsync(e, true) as MaybeAsync<TResult2>;
+        }
+      }
+
+      return new SyncMaybeAsync(err, true) as MaybeAsync<TResult2>;
+    }
   }
 
   catch<TResult = never>(
@@ -101,32 +113,73 @@ export class MaybeAsync<T> implements PromiseLike<T> {
       return this;
     }
 
-    if (this.isSync) {
-      return MaybeAsync.resolve(onRejected(this.value)) as MaybeAsync<T | TResult>;
+    if (this.isError) {
+      try {
+        return MaybeAsync.resolve(onRejected(this.value));
+      } catch (e) {
+        return new SyncMaybeAsync(e, true) as MaybeAsync<TResult>;
+      }
     }
 
-    return MaybeAsync.resolve(Promise.resolve(this.value).catch(onRejected));
+    return this;
   }
 
   finally(onFinally?: (() => void) | null): MaybeAsync<T> {
-    if (this.isSync) {
-      onFinally?.();
+    onFinally?.();
 
-      return this;
-    }
-
-    return MaybeAsync.resolve(Promise.resolve(this.value).finally(onFinally));
+    return this;
   }
 
   trySync(): T {
     if (this.isError) {
-      throw this.value as Error; // If it's an error, throw it
+      throw this.value as Error;
     }
 
-    if (!this.isSync) {
-      throw new Error('Value is asynchronous');
+    return this.value;
+  }
+
+  unwrap(): T {
+    if (this.isError) {
+      throw this.value as Error;
     }
 
-    return this.value as T;
+    return this.value;
   }
 }
+
+export class AsyncMaybeAsync<T> extends MaybeAsync<T> {
+  constructor(readonly promise: Promise<T>) {
+    super();
+  }
+
+  then<TResult1 = T, TResult2 = never>(
+    onFulfilled?: (value: T) => TResult1 | MaybeAsync<TResult1> | Promise<TResult1>,
+    onRejected?: (reason: any) => TResult2 | MaybeAsync<TResult2> | Promise<TResult2>,
+  ): MaybeAsync<TResult1 | TResult2> {
+    return new AsyncMaybeAsync(this.promise.then(onFulfilled, onRejected));
+  }
+
+  catch<TResult = never>(
+    onRejected?: ((reason: any) => TResult | MaybeAsync<TResult>) | null,
+  ): MaybeAsync<T | TResult> {
+    if (!onRejected) {
+      return this;
+    }
+
+    return new AsyncMaybeAsync(this.promise.catch(onRejected));
+  }
+
+  finally(onFinally?: (() => void) | null): MaybeAsync<T> {
+    return new AsyncMaybeAsync(this.promise.finally(onFinally));
+  }
+
+  trySync(): T {
+    throw new Error('Value is asynchronous');
+  }
+
+  unwrap(): Promise<T> {
+    return this.promise;
+  }
+}
+
+export const maybeAsyncNull = MaybeAsync.resolve(null);

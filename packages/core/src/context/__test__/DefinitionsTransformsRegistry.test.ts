@@ -10,6 +10,7 @@ describe(`DefinitionsTransformsRegistry`, () => {
     decorateFn: (val: number) => number = val => val,
   ): IDefinitionTransform<number, LifeTime.transient> {
     return {
+      transformType: 'decorate',
       token: {
         id: Symbol.for(id),
         strategy: LifeTime.transient,

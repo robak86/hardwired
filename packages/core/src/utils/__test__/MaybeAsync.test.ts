@@ -157,6 +157,96 @@ describe('MaybeAsync', () => {
     });
   });
 
+  describe('sync rejected values', () => {
+    it('should call onRejected when then() is called with both handlers', () => {
+      const error = new Error('sync error');
+      const onFulfilled = vi.fn();
+      const onRejected = vi.fn(() => 'handled');
+
+      const mp = MaybeAsync.reject(error).then(onFulfilled, onRejected);
+
+      expect(onFulfilled).not.toHaveBeenCalled();
+      expect(onRejected).toHaveBeenCalledWith(error);
+      expect(mp.trySync()).toBe('handled');
+    });
+
+    it('should propagate rejection when then() has no onRejected handler', () => {
+      const error = new Error('sync error');
+      const onFulfilled = vi.fn();
+
+      const mp = MaybeAsync.reject<number>(error).then(onFulfilled);
+
+      expect(onFulfilled).not.toHaveBeenCalled();
+      expect(() => mp.trySync()).toThrowError('sync error');
+    });
+
+    it('should call catch handler for sync rejected value', () => {
+      const error = new Error('sync error');
+      const mp = MaybeAsync.reject(error).catch(e => {
+        expect(e).toBe(error);
+
+        return 'recovered';
+      });
+
+      expect(mp.trySync()).toBe('recovered');
+    });
+
+    it('should pass through sync resolved value without calling catch handler', () => {
+      const catchHandler = vi.fn();
+      const mp = MaybeAsync.resolve(42).catch(catchHandler);
+
+      expect(catchHandler).not.toHaveBeenCalled();
+      expect(mp.trySync()).toBe(42);
+    });
+
+    it('should run finally and preserve error for sync rejected value', () => {
+      const error = new Error('sync error');
+      const finallySpy = vi.fn();
+
+      const mp = MaybeAsync.reject(error).finally(finallySpy);
+
+      expect(finallySpy).toHaveBeenCalledOnce();
+      expect(() => mp.trySync()).toThrowError('sync error');
+    });
+
+    it('should allow chaining catch after then on sync rejected value', () => {
+      const error = new Error('sync error');
+      const thenFulfilled = vi.fn();
+
+      const mp = MaybeAsync.reject<number>(error)
+        .then(thenFulfilled)
+        .catch(() => 999);
+
+      expect(thenFulfilled).not.toHaveBeenCalled();
+      expect(mp.trySync()).toBe(999);
+    });
+
+    it('should propagate error thrown in onRejected handler', () => {
+      const originalError = new Error('original');
+      const newError = new Error('new error');
+
+      const mp = MaybeAsync.reject(originalError).then(
+        () => 'success',
+        () => {
+          throw newError;
+        },
+      );
+
+      expect(() => mp.trySync()).toThrowError('new error');
+    });
+
+    it('should propagate error thrown in catch handler', () => {
+      const originalError = new Error('original');
+      const newError = new Error('new error in catch');
+
+      const mp = MaybeAsync.reject(originalError).catch(() => {
+        throw newError;
+      });
+
+      expect(() => mp.trySync()).toThrowError('new error in catch');
+    });
+  });
+
   describe('edge cases', () => {
     it('should allow null handler in catch() and finally()', () => {
       const mp = MaybeAsync.resolve(123).catch(null).finally(null);

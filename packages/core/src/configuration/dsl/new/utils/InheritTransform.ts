@@ -5,11 +5,13 @@ import type { InstancesTokens } from '../shared/AddDefinitionBuilder.js';
 import { MaybeAsync } from '../../../../utils/MaybeAsync.js';
 import type { IDefinitionToken } from '../../../../definitions/DefinitionToken.js';
 
-import type { IDefinitionTransform } from './abstract/IDefinitionTransform.js';
+import type { IDefinitionTransform, TransformType } from './abstract/IDefinitionTransform.js';
 
 export class InheritTransform<TInstance, TLifetime extends LifeTime, TArgs extends any[]>
   implements IDefinitionTransform<TInstance, TLifetime>
 {
+  public readonly transformType: TransformType = 'inherit';
+
   constructor(
     public readonly token: IDefinitionToken<TInstance, TLifetime>,
     private readonly _dependencies: InstancesTokens<TArgs, TLifetime>,

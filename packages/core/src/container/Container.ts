@@ -175,7 +175,29 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
         const lifeCycleRegistry = new ContainerLifeCycleRegistry();
         const cascadingRoots = this.cascadingRoots.child();
 
+        // First, collect all tokens that child configures itself
+        const childConfiguredTokens = new Set<symbol>();
+
+        configs.forEach(config => {
+          config.cascadingTokens.forEach(token => childConfiguredTokens.add(token.id));
+          config.inheritedTokens.forEach(token => childConfiguredTokens.add(token.id));
+        });
+
+        // Inherit parent's inheritedTokens ONLY for definitions child doesn't configure
         const inheritedTokens = new Set<symbol>();
+
+        this.inheritedTokens.forEach(tokenId => {
+          if (!childConfiguredTokens.has(tokenId)) {
+            inheritedTokens.add(tokenId);
+          }
+        });
+
+        // Add child's own inherited tokens
+        configs.forEach(config => {
+          config.inheritedTokens.forEach(token => {
+            inheritedTokens.add(token.id);
+          });
+        });
 
         const cnt: Container = new Container(
           this,
@@ -197,10 +219,6 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
 
           config.cascadingTokens.forEach(token => {
             cascadingRoots.set(token.id, cnt);
-          });
-
-          config.inheritedTokens.forEach(token => {
-            inheritedTokens.add(token.id);
           });
         });
 
@@ -362,8 +380,6 @@ export class Container implements IContainer, ICascadingDefinitionResolver, IDep
   }
 
   resolveCascading<TValue>(definition: IDefinition<TValue, LifeTime>) {
-    console.log('resolving cascading definition', this.id);
-
     return this._scopedStrategy.build(definition, this, this._interceptor);
   }
 

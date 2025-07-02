@@ -26,8 +26,7 @@ describe(`useContainer`, () => {
 });
 
 describe(`withScope`, () => {
-  // TODO: there is a bug in container related to multiple configurations. They are not applicative
-  describe.todo(`multiple configs`, () => {
+  describe(`multiple configs`, () => {
     it(`accepts multiple configurations`, async () => {
       const myFn = asDefinition(() => -1);
 

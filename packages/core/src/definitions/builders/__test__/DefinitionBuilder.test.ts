@@ -221,20 +221,40 @@ describe(`DefinitionBuilder`, () => {
         });
 
         describe(`arguments mixed with async dependencies`, () => {
-          it(`returns correct instance via thunk`, async () => {
-            const num = singleton.fn(async () => 1);
-            const bool = singleton.fn(async () => true);
+          describe(`async dependencies`, () => {
+            it(`synchronously returns a factory function`, async () => {
+              const num = singleton.fn(async () => 1);
+              const bool = singleton.fn(async () => true);
 
-            const def = singleton
-              .using(num)
-              .arg<string>()
-              .using(bool)
-              .fn((n, str, b) => `${n} - ${str} - ${b}`);
+              const def = singleton
+                .using(num)
+                .arg<string>()
+                .using(bool)
+                .fn((n, str, b) => `${n} - ${str} - ${b}`);
 
-            const val = container().use(def);
+              const val = container().use(def);
 
-            expect(val).toBeInstanceOf(Function);
-            expect(await val('test')).toBe('1 - test - true');
+              expect(val).toBeInstanceOf(Function);
+              expect(await val('test')).toBe('1 - test - true');
+            });
+          });
+
+          describe(`sync dependencies`, () => {
+            it(`synchronously returns a factory function`, async () => {
+              const num = singleton.fn(() => 1);
+              const bool = singleton.fn(() => true);
+
+              const def = singleton
+                .using(num)
+                .arg<string>()
+                .using(bool)
+                .fn((n, str, b) => `${n} - ${str} - ${b}`);
+
+              const val = container().use(def);
+
+              expect(val).toBeInstanceOf(Function);
+              expect(val('test')).toBe('1 - test - true');
+            });
           });
         });
 

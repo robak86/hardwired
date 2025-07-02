@@ -32,6 +32,23 @@ describe(`ContainerConfiguration`, () => {
     });
   });
 
+  describe(`add`, () => {
+    it(`allows freezing added definitions`, async () => {
+      const def = singleton.token<number>('singletonDef');
+
+      const cnt = container(
+        c => {
+          c.add(def).static(123);
+        },
+        c => {
+          c.freeze(def).decorate(val => val + 1);
+        },
+      );
+
+      expect(cnt.use(def)).toEqual(123);
+    });
+  });
+
   describe(`modify`, () => {
     describe(`cascading`, () => {
       describe(`decorate`, () => {
@@ -60,9 +77,9 @@ describe(`ContainerConfiguration`, () => {
           });
 
           expect(cnt.use(def)).toEqual(2);
-          expect(child.use(def)).toEqual(11);
-          expect(child2.use(def)).toEqual(0);
-          expect(child3.use(def)).toEqual(2);
+          expect(child.use(def)).toEqual(13);
+          expect(child2.use(def)).toEqual(13);
+          expect(child3.use(def)).toEqual(15);
         });
 
         it(`throws when definition wasn't registered`, async () => {
@@ -191,10 +208,10 @@ describe(`ContainerConfiguration`, () => {
             c.modify(def).claimNew();
           });
 
-          const cntVal = cnt.use(def);
-          const child1Val = child1.use(def);
-          const child2Val = child2.use(def);
           const child3Val = child3.use(def);
+          const child2Val = child2.use(def);
+          const child1Val = child1.use(def);
+          const cntVal = cnt.use(def);
 
           expect(cntVal).toEqual(0);
           expect(child1Val).toEqual(1);
@@ -304,6 +321,40 @@ describe(`ContainerConfiguration`, () => {
           expect(inheritFactorySpy).toHaveBeenCalledTimes(1);
         });
 
+        it(`memorizes inherit factory result across multiple scopes`, async () => {
+          const def = cascading.token<number>('testCascadingDef');
+
+          const inheritFactorySpy1 = vi.fn((val: number) => val + 1);
+          const inheritFactorySpy2 = vi.fn((val: number) => val + 10);
+
+          const cnt = container(c => {
+            c.add(def).static(0);
+          });
+
+          const child1 = cnt.scope(c => {
+            c.modify(def).inherit(inheritFactorySpy1);
+          });
+
+          const child2 = child1.scope(c => {
+            c.modify(def).inherit(inheritFactorySpy2);
+          });
+
+          // Multiple calls at each level
+          expect(cnt.use(def)).toEqual(0);
+          expect(cnt.use(def)).toEqual(0);
+
+          expect(child1.use(def)).toEqual(1); // 0 + 1 = 1
+          expect(child1.use(def)).toEqual(1);
+          expect(child1.use(def)).toEqual(1);
+
+          expect(child2.use(def)).toEqual(11); // 1 + 10 = 11
+          expect(child2.use(def)).toEqual(11);
+
+          // Each inherit callback should only be called once
+          expect(inheritFactorySpy1).toHaveBeenCalledTimes(1);
+          expect(inheritFactorySpy2).toHaveBeenCalledTimes(1);
+        });
+
         it(`can be combined with modify`, async () => {
           const def = cascading.token<number>('testCascadingDef');
 
@@ -378,8 +429,8 @@ describe(`ContainerConfiguration`, () => {
           });
 
           expect(cnt.use(def)).toEqual(2);
-          expect(child.use(def)).toEqual(11);
-          expect(child2.use(def)).toEqual(2);
+          expect(child.use(def)).toEqual(13);
+          expect(child2.use(def)).toEqual(15);
         });
 
         it(`throws when definition wasn't registered`, async () => {
@@ -427,7 +478,7 @@ describe(`ContainerConfiguration`, () => {
 
     describe(`transient`, () => {
       describe(`decorate`, () => {
-        it.todo(`modify is applicative`, async () => {
+        it(`modify is applicative`, async () => {
           const def = transient.token<number>('testCascadingDef');
 
           const cfg1 = configureContainer(c => {
@@ -453,8 +504,8 @@ describe(`ContainerConfiguration`, () => {
           });
 
           expect(cnt.use(def)).toEqual(2);
-          expect(child.use(def)).toEqual(11);
-          expect(child2.use(def)).toEqual(2);
+          expect(child.use(def)).toEqual(13);
+          expect(child2.use(def)).toEqual(15);
         });
 
         it(`throws when definition wasn't registered`, async () => {

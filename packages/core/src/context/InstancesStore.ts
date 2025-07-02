@@ -1,6 +1,7 @@
 import { isThenable } from '../utils/IsThenable.js';
 import { CompositeDisposable } from '../disposable/CompositeDisposable.js';
-import { MaybeAsync } from '../utils/MaybeAsync.js';
+import type { MaybeAsync } from '../utils/MaybeAsync.js';
+import { maybeAsyncNull } from '../utils/MaybeAsync.js';
 import type { IDefinitionToken } from '../definitions/DefinitionToken.js';
 
 import { isDisposable } from './COWMap.js';
@@ -86,7 +87,7 @@ export class InstancesStore implements IInstancesStoreRead {
     return (
       (this._globalInstances.get(symbol.id) as MaybeAsync<TInstance>) ??
       (this._scopeInstances.get(symbol.id) as MaybeAsync<TInstance>) ??
-      MaybeAsync.null
+      maybeAsyncNull
     );
   }
 

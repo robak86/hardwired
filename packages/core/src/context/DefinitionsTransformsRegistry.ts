@@ -9,6 +9,7 @@ export class DefinitionsTransformsRegistry {
     return new DefinitionsTransformsRegistry(
       new Map<symbol, IDefinitionTransform<unknown, LifeTime>[]>(),
       new Map<symbol, IDefinitionTransform<unknown, LifeTime>[]>(),
+      new Map<symbol, IDefinitionTransform<unknown, LifeTime>[]>(),
     );
   }
 
@@ -19,6 +20,7 @@ export class DefinitionsTransformsRegistry {
   protected constructor(
     private _definitionsTransforms: Map<symbol, IDefinitionTransform<unknown, LifeTime>[]>,
     private _frozenDefinitionsTransforms: Map<symbol, IDefinitionTransform<unknown, LifeTime>[]>,
+    private _inheritTransforms: Map<symbol, IDefinitionTransform<unknown, LifeTime>[]>,
     private _prev?: DefinitionsTransformsRegistry,
     private _parent?: DefinitionsTransformsRegistry,
   ) {}
@@ -37,6 +39,7 @@ export class DefinitionsTransformsRegistry {
     return new DefinitionsTransformsRegistry(
       this._definitionsTransforms,
       this._frozenDefinitionsTransforms,
+      this._inheritTransforms,
       this._prev,
       parent,
     );
@@ -52,6 +55,7 @@ export class DefinitionsTransformsRegistry {
     return new DefinitionsTransformsRegistry(
       this._definitionsTransforms,
       this._frozenDefinitionsTransforms,
+      this._inheritTransforms,
       prev,
       this._parent,
     );
@@ -60,20 +64,29 @@ export class DefinitionsTransformsRegistry {
   append(definitionTransform: IDefinitionTransform<unknown, LifeTime>) {
     this.assertNotFrozen();
 
-    if (!this._definitionsTransforms.has(definitionTransform.token.id)) {
-      this._definitionsTransforms.set(definitionTransform.token.id, []);
+    // Route inherit transforms to separate collection
+    const targetMap =
+      definitionTransform.transformType === 'inherit' ? this._inheritTransforms : this._definitionsTransforms;
+
+    if (!targetMap.has(definitionTransform.token.id)) {
+      targetMap.set(definitionTransform.token.id, []);
     }
 
-    this._definitionsTransforms.get(definitionTransform.token.id)!.push(definitionTransform);
+    targetMap.get(definitionTransform.token.id)!.push(definitionTransform);
   }
 
   hasOwn(id: symbol): boolean {
     return (
       this._definitionsTransforms.has(id) ||
       this._frozenDefinitionsTransforms.has(id) ||
+      this._inheritTransforms.has(id) ||
       this._prev?.hasOwn(id) ||
       false
     );
+  }
+
+  hasOwnInherit(id: symbol): boolean {
+    return this._inheritTransforms.has(id) || this._prev?.hasOwnInherit(id) || false;
   }
 
   has(id: symbol): boolean {
@@ -86,6 +99,22 @@ export class DefinitionsTransformsRegistry {
 
   getOwnDefinitions(id: symbol): IDefinitionTransform<unknown, LifeTime>[] {
     return [...(this._definitionsTransforms.get(id) ?? []), ...(this._prev?.getOwnDefinitions(id) ?? [])];
+  }
+
+  getOwnInheritTransforms(id: symbol): IDefinitionTransform<unknown, LifeTime>[] {
+    return [...(this._inheritTransforms.get(id) ?? []), ...(this._prev?.getOwnInheritTransforms(id) ?? [])];
+  }
+
+  getParentInheritTransforms(id: symbol): IDefinitionTransform<unknown, LifeTime>[] {
+    return this._parent?.getAllInheritTransforms(id) ?? [];
+  }
+
+  getAllInheritTransforms(id: symbol): IDefinitionTransform<unknown, LifeTime>[] {
+    return [
+      ...(this._parent?.getAllInheritTransforms(id) ?? []),
+      ...(this._prev?.getAllInheritTransforms(id) ?? []),
+      ...(this._inheritTransforms.get(id) ?? []),
+    ];
   }
 
   getOwn(id: symbol): IDefinitionTransform<unknown, LifeTime>[] {
@@ -109,22 +138,27 @@ export class DefinitionsTransformsRegistry {
   apply<TInstance, TLifeTime extends LifeTime>(
     definition: IDefinition<TInstance, TLifeTime>,
   ): IDefinition<TInstance, TLifeTime> {
-    // for a singleton we need to collect all transformations from all scopes, as we might be instantiating it in a child scope
-    const definitionsTransforms =
-      definition.strategy === LifeTime.singleton
-        ? this.getAll(definition.id)
-        : (this._definitionsTransforms.get(definition.id) ?? []);
-
-    const frozenTransforms = this._frozenDefinitionsTransforms.get(definition.id) ?? [];
-
+    // Check frozen transforms first - they take precedence
+    const frozenTransforms = this.getOwnFrozen(definition.id);
     if (frozenTransforms.length > 0) {
       return frozenTransforms.reduce((composed, current) => {
         return current.build(composed) as IDefinition<TInstance, TLifeTime>;
       }, definition);
     }
 
-    if (definitionsTransforms.length > 0) {
-      return definitionsTransforms.reduce((composed, current) => {
+    // Get all accumulated regular transforms (decorate/configure) from parent chain
+    // These always accumulate
+    const regularTransforms = this.getAll(definition.id);
+
+    // Inherit transforms: only own scope's (parent's inherit already applied to parent's value)
+    // Multiple .inherit() calls within same scope DO accumulate
+    // Parent's inherit was already applied when producing the inherited value via shadowing definition
+    const inheritTransforms = this.getOwnInheritTransforms(definition.id);
+
+    const combinedTransforms = [...regularTransforms, ...inheritTransforms];
+
+    if (combinedTransforms.length > 0) {
+      return combinedTransforms.reduce((composed, current) => {
         return current.build(composed) as IDefinition<TInstance, TLifeTime>;
       }, definition);
     }
@@ -143,8 +177,9 @@ export class DefinitionsTransformsRegistry {
       return new DefinitionsTransformsRegistry(
         this._definitionsTransforms,
         this._frozenDefinitionsTransforms,
-        this._parent,
+        this._inheritTransforms,
         this._prev,
+        this._parent,
       );
     }
 
