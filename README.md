@@ -409,7 +409,7 @@ class ApiClient {
 
 // You must manually track which dependencies are async
 const config = await loadConfigAsync();
-const client = new ApiClient(config);  // Hope you remembered to await config!
+const client = new ApiClient(config);
 ```
 
 Hardwired solves this in two ways:
@@ -581,11 +581,11 @@ const cnt = container(c => {
 const cfg = cnt.use(config);  // Works - token is bound
 ```
 
-If you try to use an unbound token, Hardwired throws a descriptive runtime error:
+If you try to use an unbound token, Hardwired throws a runtime error:
 
 ```typescript
-const unbound = singleton.token<Config>();
-container.use(unbound);  // Error: Token 'unbound' has no implementation
+const unbound = singleton.token<Config>('unbound');
+container.use(unbound);  // Error: Cannot find definition for Symbol(unbound)
 ```
 
 ### Tokens for Interfaces
@@ -621,21 +621,9 @@ const prodContainer = container(c => {
 
 ## Container
 
-### Global Container
-
-The simplest way to use Hardwired is with the global container:
-
-```typescript
-import { container } from 'hardwired';
-
-const instance = container.use(myDefinition);
-```
-
-The global container is convenient for applications with a single container. All singletons are shared, all scopes branch from it.
-
 ### Creating Containers
 
-For isolation (tests, multiple apps, etc.), create separate containers:
+The `container` function creates a new container instance:
 
 ```typescript
 import { container } from 'hardwired';
@@ -665,18 +653,6 @@ const myContainer = container(c => {
     use(eventManager).startListening();
   });
 });
-```
-
-### Utility Functions
-
-```typescript
-import { once, all } from 'hardwired';
-
-// Create a temporary container, get one instance, discard container
-const value = once(myDefinition);
-
-// Get multiple instances from the same temporary container
-const [a, b, c] = all(defA, defB, defC);
 ```
 
 ## Scopes
@@ -747,6 +723,11 @@ const cnt = container(c => {
   // Modify existing definition
   c.modify(def).decorate(instance => wrapInstance(instance));
   c.modify(def).configure(instance => { instance.prop = value; });
+
+  // Transforms can inject additional dependencies
+  c.modify(def)
+    .using(extraDep1, extraDep2)
+    .decorate((instance, dep1, dep2) => wrapWithDeps(instance, dep1, dep2));
 });
 ```
 
@@ -874,43 +855,40 @@ Bun.serve({
 
 ## Advanced Topics
 
-### Arguments in Transient Definitions
+### Definitions with Arguments
 
-Transient definitions can accept runtime arguments, making them factories:
+Using `.arg<T>()` transforms a definition into a factory function. When resolved, you get a function that accepts the arguments and returns the instance:
 
 ```typescript
-const createUser = transient.arg<string>().arg<number>().fn((name, age) => ({
-  id: crypto.randomUUID(),
-  name,
-  age,
-}));
+class UserService {
+  constructor(private userId: string, private role: string) {}
+}
 
-// Pass arguments when calling
-const user = container.use(createUser)('Alice', 30);
-// { id: 'abc-123', name: 'Alice', age: 30 }
+// Definition with arguments
+const userService = singleton.arg<string>().arg<string>().class(UserService);
+
+// Resolving returns a factory function
+const createUserService = container().use(userService);
+// createUserService: (userId: string, role: string) => UserService
+
+const service = createUserService('user-123', 'admin');
 ```
 
-### Deferred Arguments
-
-Split argument passing into two steps:
+Arguments can be mixed with dependencies:
 
 ```typescript
-const updateUser = transient
-  .arg<string>()
-  .arg<UserParams>()
-  .fn((userId, params) => { /* update logic */ });
+const config = singleton.fn(() => ({ baseUrl: 'https://api.example.com' }));
 
-const controller = singleton.fn(() => {
-  // Defer captures the container context now
-  const update = container.defer(updateUser);
+const apiClient = singleton
+  .using(config)
+  .arg<string>()  // endpoint argument
+  .fn((cfg, endpoint) => new ApiClient(cfg.baseUrl, endpoint));
 
-  return {
-    handleUpdate(userId: string, params: UserParams) {
-      // Arguments provided later
-      update(userId, params);
-    },
-  };
-});
+// Resolving returns a factory that only needs the argument
+const createClient = container().use(apiClient);
+// createClient: (endpoint: string) => ApiClient
+
+const usersClient = createClient('/users');
 ```
 
 ### Disposal
