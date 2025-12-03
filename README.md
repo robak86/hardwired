@@ -399,18 +399,36 @@ const client = await container.use(apiClient);
 
 ### Why This Matters
 
-Traditional DI containers often have this problem:
+Async functions are often described as "colored"—once you introduce async anywhere in a call chain, it propagates all the way up. Without proper type tracking, this creates problems:
 
 ```typescript
-// Other libraries: Did you remember to await? Hope so!
-const client = container.get(ApiClient);  // Is this a Promise? Who knows!
+// Without Hardwired: manual async propagation is error-prone
+class ApiClient {
+  constructor(private config: Config) {}  // Is Config a Promise? Was it awaited?
+}
+
+// You must manually track which dependencies are async
+const config = await loadConfigAsync();
+const client = new ApiClient(config);  // Hope you remembered to await config!
 ```
 
-With Hardwired, the compiler catches this at build time:
+Hardwired solves this in two ways:
+
+**1. Auto-awaiting**: Your factory receives already-unwrapped values. No manual await chains:
 
 ```typescript
-// Won't compile if apiClient depends on anything async!
-const client: ApiClient = container.use(apiClient);  // Error: Type 'Promise<ApiClient>' is not assignable
+// Config is async, but your factory receives the resolved value
+const apiClient = singleton.using(config).fn((cfg) => {
+  // cfg is Config, not Promise<Config> - Hardwired awaited it for you
+  return new ApiClient(cfg);
+});
+```
+
+**2. Compile-time enforcement**: The return type reflects async status, so you can't forget:
+
+```typescript
+// Won't compile - container.use() returns Promise<ApiClient> because config is async
+const client: ApiClient = container.use(apiClient);  // Error!
 
 // You're forced to handle it correctly
 const client: ApiClient = await container.use(apiClient);  // Works
@@ -499,17 +517,16 @@ Use tokens when:
 - You're building a library and users provide implementations
 - You need runtime configuration (environment-specific values)
 - You want strict Dependency Inversion for certain components
-- Testing requires explicit mock injection
 
 ### Why Tokens Exist
 
-In languages like Java or C#, you can write something like:
+In languages like C#, you can bind an interface to an implementation directly:
 
-```java
-container.bind(ILogger.class).to(ConsoleLogger.class)
+```csharp
+services.AddSingleton<ILogger, ConsoleLogger>();
 ```
 
-The `.class` syntax gives you a runtime reference to the type. But TypeScript interfaces are erased during compilation—they don't exist at runtime. There's no `ILogger.class` equivalent.
+This works because C# has runtime type information—`ILogger` and `ConsoleLogger` exist as runtime artifacts. But TypeScript interfaces are erased during compilation—they don't exist at runtime. There's no way to reference `ILogger` as a value.
 
 To make dependency injection work, we need a **runtime artifact** that:
 1. Carries the type information (for compile-time checking)
@@ -523,12 +540,13 @@ Some DI libraries solve this with custom TypeScript transform plugins that gener
 Hardwired's tokens are plain JavaScript objects that work with any bundler, any runtime, no plugins required:
 
 ```typescript
-interface ILogger {
+// If you don't want to introduce new names, the token can use the same name as the interface
+export const ILogger = singleton.token<ILogger>();
+
+export interface ILogger {
   log(msg: string): void;
 }
 
-// The token has the SAME NAME as the interface—it's the runtime stand-in
-const ILogger = singleton.token<ILogger>();
 
 // Now you can use ILogger just like you would in Java/C#
 const app = singleton.using(ILogger).fn((logger) => {
