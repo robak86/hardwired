@@ -5,10 +5,10 @@
 **Hardwired** is a lightweight, type-safe dependency injection (DI) library for TypeScript. It simplifies managing dependencies in complex applications with a functional, chainable API.
 
 - **Type Safety**: All dependencies are checked at compile time, catching potential issues early in the development process
-- **Async Type Propagation**: Async dependencies automatically propagate their Promise type through the dependency chain—the compiler won't let you forget to await
+- **Support for async dependencies**: All dependencies are automatically passed as awaited values. The await call is required only at the top-level when there are async dependencies in the graph. It's expressed at the type level.
 - **No Decorators or Reflection**: Works with any TypeScript setup, any bundler, and any runtime
 - **Lazy Evaluation**: Instances are created only when requested, optimizing memory and startup time
-- **Designed for structural typing**: Polymorphism without requiring the definition of interfaces—TypeScript's duck typing means compatible objects are interchangeable
+- **Designed for structural typing**: Polymorphism without requiring the definition of interfaces
 - **Easy Testing**: Selective mocking for integration tests without complex setup
 - **Runtime Agnostic**: Works in Node.js, Bun, Deno, browsers, and any JavaScript environment
 
@@ -647,11 +647,6 @@ const myContainer = container(c => {
   c.modify(logger).configure(instance => {
     instance.level = 'debug';
   });
-
-  // Eager instantiation - create immediately, don't wait for first use
-  c.onInit(use => {
-    use(eventManager).startListening();
-  });
 });
 ```
 
@@ -908,20 +903,6 @@ Disposal behavior by lifetime:
 - **Singletons**: Disposed when root container is disposed
 - **Scoped**: Disposed when owning scope is disposed
 - **Transient**: Not tracked (would cause memory leaks)
-
-### Eager Instantiation
-
-Force immediate instantiation during container creation:
-
-```typescript
-const cnt = container(c => {
-  c.onInit(use => {
-    use(eventListenerManager).init();
-    use(databaseConnection);  // Connect now, not on first query
-  });
-});
-// Both are already initialized when container() returns
-```
 
 ## Lifetime Dependency Rules
 
