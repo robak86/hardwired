@@ -8,7 +8,7 @@
 - **Async Type Propagation**: Async dependencies automatically propagate their Promise type through the dependency chain—the compiler won't let you forget to await
 - **No Decorators or Reflection**: Works with any TypeScript setup, any bundler, and any runtime
 - **Lazy Evaluation**: Instances are created only when requested, optimizing memory and startup time
-- **Structural Typing**: Polymorphism without interfaces—TypeScript's duck typing means compatible objects are interchangeable
+- **Designed for structural typing**: Polymorphism without requiring the definition of interfaces—TypeScript's duck typing means compatible objects are interchangeable
 - **Easy Testing**: Selective mocking for integration tests without complex setup
 - **Runtime Agnostic**: Works in Node.js, Bun, Deno, browsers, and any JavaScript environment
 
@@ -493,6 +493,41 @@ Use tokens when:
 - You need runtime configuration (environment-specific values)
 - You want strict Dependency Inversion for certain components
 - Testing requires explicit mock injection
+
+### Why Tokens Exist
+
+In languages like Java or C#, you can write something like:
+
+```java
+container.bind(ILogger.class).to(ConsoleLogger.class)
+```
+
+The `.class` syntax gives you a runtime reference to the type. But TypeScript interfaces are erased during compilation—they don't exist at runtime. There's no `ILogger.class` equivalent.
+
+To make dependency injection work, we need a **runtime artifact** that:
+1. Carries the type information (for compile-time checking)
+2. Has a unique identity (for runtime resolution)
+
+Some DI libraries solve this with custom TypeScript transform plugins that generate runtime metadata. However, these plugins:
+- Aren't portable across build tools (Webpack, esbuild, Vite, etc.)
+- Require extending the language with non-standard syntax
+- Can break with TypeScript version updates
+
+Hardwired's tokens are plain JavaScript objects that work with any bundler, any runtime, no plugins required:
+
+```typescript
+interface ILogger {
+  log(msg: string): void;
+}
+
+// The token has the SAME NAME as the interface—it's the runtime stand-in
+const ILogger = singleton.token<ILogger>();
+
+// Now you can use ILogger just like you would in Java/C#
+const app = singleton.using(ILogger).fn((logger) => {
+  logger.log('Hello');
+});
+```
 
 ### Creating Tokens
 
