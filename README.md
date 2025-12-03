@@ -260,22 +260,29 @@ const requestContext = scoped.using(requestId).fn(id => ({
 Flows to child scopes unchanged, but can be reconfigured at any scope level. When reconfigured, the new value flows to that scope's children.
 
 ```typescript
-import { cascading } from 'hardwired';
+import { cascading, scoped, container, configureScope } from 'hardwired';
 
-// Theme flows down to all components unless overridden
+// Theme flows down to all child scopes
 const theme = cascading.fn(() => 'light');
 
-// Feature flags inherited by default, can be overridden per-scope
-const featureFlags = cascading.fn(() => ({
-  darkMode: false,
-  betaFeatures: false,
+// Component that uses the theme
+const button = scoped.using(theme).fn((currentTheme) => ({
+  render: () => `<button class="${currentTheme}">Click me</button>`,
 }));
 
-// In a child scope, you can override for that subtree:
-const darkModeScope = rootContainer.scope(configureScope(s => {
+// Root scope - button uses 'light' theme
+const rootScope = container.scope();
+rootScope.use(button).render();  // <button class="light">Click me</button>
+
+// Child scope with overridden theme - button uses 'dark' theme
+const darkModeScope = rootScope.scope(configureScope(s => {
   s.modify(theme).fn(() => 'dark');
 }));
-// All components in darkModeScope and its children get 'dark'
+darkModeScope.use(button).render();  // <button class="dark">Click me</button>
+
+// Grandchild inherits from darkModeScope
+const nestedScope = darkModeScope.scope();
+nestedScope.use(button).render();  // <button class="dark">Click me</button>
 ```
 
 ### Transient
